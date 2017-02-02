@@ -1,0 +1,35 @@
+{
+  "private": true,
+  "name": "ipr-api",
+  "version": "0.0.1",
+  "description": "Placeholder Interactive POG Report API",
+  "main": "server.js",
+  "scripts": {
+    "start": "SET NODE_ENV=dev && node ./server.js",
+    "test": "mocha --timeout 10000"
+  },
+  "author": "Brandon Pierce <bpierce@bcgsc.ca>",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.15.2",
+    "change-case": "^3.0.0",
+    "colors": "^1.1.2",
+    "cors": "^2.8.1",
+    "csv-parse": "^1.1.9",
+    "express": "^4.14.0",
+    "morgan": "^1.7.0",
+    "nconf": "^0.8.4",
+    "q": "^1.4.1",
+    "recursive-readdir": "^2.1.0",
+    "require-dir": "^0.3.1",
+    "sequelize": "^3.29.0",
+    "sequelize-cli": "^2.5.1",
+    "sqlite3": "^3.1.8"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
+    "chai-things": "^0.2.0"
+  }
+}

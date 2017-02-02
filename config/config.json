@@ -1,0 +1,137 @@
+{
+  "env": "development",
+  
+  "web": {
+    "port": 8001,
+    "hostname": "127.0.0.1"
+  },
+  
+  "database": {
+    "engine": "sqlite",
+    "migrate": false,
+    "hardMigration": false,
+    
+    "sqlite": {
+      "storage": "database/development.sqlite",
+      "username": "root",
+      "password": ""
+    },
+    
+    "postgres": {
+      "hostname": "",
+      "username": "",
+      "password": "",
+      "schema": "",
+      "database": "",
+      "prefix": "ipr_"
+    }
+  },
+  
+  "redis": {
+    "uri": "",
+    "host": "",
+    "port": 6379
+  },
+  
+  "columnMapping": {
+    "detailedGenomicAnalysis": {
+      "alterations": {
+        "Gene": "gene",
+        "Variant": "variant",
+        "KBVariant": "kbVariant",
+        "Disease": "disease",
+        "Effect": "effect",
+        "Association": "association",
+        "Therapeutic Context": "therapeuticContext",
+        "Status": "status",
+        "Reference": "reference",
+        "Copy Number": "copyNumber",
+        "Sample": "sample",
+        "LOH Region": "LOHRegion",
+        "Zygosity": "zygosity",
+        "Evidence": "evidence",
+        "Variant_type": "variant_type",
+        "KB_type": "kb_type",
+        "KB_ENTRY_type": "kb_entry_type",
+        "KB_event_key": "kb_event_key",
+        "KB_ENTRY_key": "kb_entry_key"
+      }
+    },
+    "summary": {
+      "patientInformation": {
+        "Physician": "physician",
+        "Gender": "gender",
+        "Age": "age",
+        "POG ID": "POGID",
+        "Case Type": "caseType",
+        "Tumour Type": "tumourType",
+        "Report Date": "reportDate",
+        "Biopsy Site": "biopsySite"
+      },
+      "tumourAnalysis": {
+        "Estimated Tumour Content": "tumourContent",
+        "Ploidy": "ploidy",
+        "Normal Exp Comparator": "normalExpressionComparator",
+        "Disease Expression Comparator": "diseaseExpressionComparator",
+        "TCGA Color": "tcgaColor"
+      },
+      "mutation": {
+        "nsSNV-truncating": "totalSNV",
+        "indels-frameshift": "totalIndel",
+        "sv-expressed": "totalSV",
+        "SNV_percentile_amongst_allTCGA": "snvPercentileTCGA",
+        "SNV_percentile_amongst_specificDisease": "snvPercentileDisease",
+        "INDEL_percentile_amongst_allTCGA": "indelPercentileTCGA",
+        "INDEL_percentile_amongst_specificDisease": "indelPercentileDisease",
+        "SV_percentile_amongst_allPOG": "svPercentilePOG",
+        "SNV_percentile_amongst_allTCGA_category": "snvPercentileTCGACategory",
+        "SNV_percentile_amongst_specificDisease_category": "snvPercentileDiseaseCategory",
+        "INDEL_percentile_amongst_allTCGA_category": "indelPercentileTCGACategory",
+        "INDEL_percentile_amongst_specificDisease_category": "indelPercentileDiseaseCategory",
+        "SV_percentile_amongst_allPOG_category": "svPercentilePOGCategory",
+        "SNV_Report_category": "snvReportCategory",
+        "INDEL_Report_category": "indelReportCategory"
+      },
+      "variantCounts": {
+        "Small Mutations": "smallMutations",
+        "Copy Number Variants": "CNVs",
+        "Structural Variants": "SVs",
+        "Expression Outliers": "expressionOutliers",
+        "Variants of Uncertain Significance": "variantsUnknown"
+      },
+      "genomicEventsTherapeutic": {
+        "Genomic Event": "genomicEvent",
+        "Approved in this cancer type": "approvedThisCancerType",
+        "Approved in other cancer type": "approvedOtherCancerType",
+        "Emerging preclinical evidence": "emergingPreclinicalEvidence"
+      },
+      "probeTargets": {
+        "Gene": "gene",
+        "Variant": "variant",
+        "KBVariant": "kbVariant",
+        "Disease": "disease",
+        "Effect": "effect",
+        "Association": "association",
+        "Therapeutic Context": "therapeuticContext",
+        "Status": "status",
+        "Reference": "reference",
+        "Copy Number": "copyNumber",
+        "Sample": "sample",
+        "LOH Region": "LOHRegion",
+        "Zygosity": "zygosity",
+        "Evidence": "evidence",
+        "Variant_type": "variant_type",
+        "KB_type": "kb_type",
+        "KB_ENTRY_type": "kb_entry_type",
+        "KB_event_key": "kb_event_key",
+        "KB_ENTRY_key": "kb_entry_key"
+      }
+    }
+  },
+  
+  "paths": {
+    "data": {
+      "POGdata": "/projects/POG/POG_test"
+    }
+  }
+}
