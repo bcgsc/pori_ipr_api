@@ -9,8 +9,8 @@ let changeCase = require('change-case'),
 
 // Ignored Routes for POG
 let ignored = {
-  files: ['POG.js', 'session.js', 'user.js'],
-  routes: ['loadPog'],
+  files: ['POG.js', 'session.js', 'user.js', '.svn'],
+  routes: ['loadPog', '.svn'],
 }
 
 // Middleware
@@ -19,11 +19,12 @@ router.use('(/POG/*|/user/*|/user)', require(process.cwd() + '/app/middleware/au
 
 // Retrieve route files
 recursive('./app/routes/', (err, files) => {
-  
+    
   files.forEach((route) => {
     
     // Remove index file
     if(route === 'app/routes/index.js') return;
+    if(route.indexOf('.svn') !== -1) return; // Must SVN make so many directories?!
     if(ignored.files.indexOf(_.last(route.split('/'))) !== -1) return;
     
     // Remove first two directories of path
