@@ -55,6 +55,24 @@
         "KB_ENTRY_type": "kb_entry_type",
         "KB_event_key": "kb_event_key",
         "KB_ENTRY_key": "kb_entry_key"
+      },
+      "targetedGenes": {
+        "Gene": "gene",
+        "Variant": "variant",
+        "Sample": "sample"
+      }
+    },
+    "somaticMutations": {
+      "smallMutations": {
+        "protein_change": "proteinChange",
+        "ref_alt": "refAlt",
+        "ploidy_corr_cp_change": "ploidyCorrCpChange",
+        "loh_state": "lohState",
+        "tumour_reads": "tumourReads",
+        "RNA_reads": "RNAReads",
+        "expression_rpkm": "expressionRpkm",
+        "fold_change": "foldChange",
+        "TCGA_perc": "TCGAPerc"
       }
     },
     "summary": {

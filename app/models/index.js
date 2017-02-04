@@ -43,6 +43,11 @@ POG.hasOne(summary.tumourAnalysis, {as: 'tumourAnalysis', foreignKey: 'pog_id'})
 
 // DetailedGenomicAnalysis
 let alterations = sequelize.import(__dirname + '/detailedGenomicAnalysis/alterations');
+let targetedGenes = sequelize.import(__dirname + '/detailedGenomicAnalysis/targetedGenes');
+
+// Somatic Mutations
+let somaticMutations = {}
+somaticMutations.smallMutations = sequelize.import(__dirname + '/somaticMutations/smallMutations');
 
 //POG.hasMany(alterations, {as: 'detailedGenomicAnalysis.alterations', foreignKey: 'pog_id'});
 //alterations.belongsTo(POG, { as: 'pog', foreignKey: 'pog_id'});

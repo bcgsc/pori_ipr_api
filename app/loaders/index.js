@@ -28,6 +28,10 @@ let loaders = [
   'detailedGenomicAnalysis/alterations',
   'detailedGenomicAnalysis/approvedThisCancer',
   'detailedGenomicAnalysis/approvedOtherCancer',
+  'detailedGenomicAnalysis/targetedGenes',
+
+  // Somatic Mutations
+  'somaticMutations/smallMutations',
 ];
 
 
