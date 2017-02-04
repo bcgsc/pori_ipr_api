@@ -75,6 +75,17 @@
         "TCGA_perc": "TCGAPerc"
       }
     },
+    "copyNumberAnalysis": {
+      "cnv": {
+        "ploidy_corr_cp_change": "ploidyCorrCpChange",
+        "loh_state": "lohState",
+        "cnv_state": "cnvState",
+        "chromosome_band": "chromosomeBand",
+        "expression_rpkm": "expressionRpkm",
+        "fold_change": "foldChange",
+        "TCGA_perc": "tcgaPerc"
+      }
+    },
     "summary": {
       "patientInformation": {
         "Physician": "physician",

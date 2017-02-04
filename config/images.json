@@ -88,5 +88,115 @@
       "w": 480
     },
     "optional": false
+  },
+  {
+    "name": "cnvLoh.circos",
+    "file": "/circos_cnv_loh/circos.png",
+    "compress": true,
+    "dimensions": {
+      "h": 2825,
+      "w": 2827
+    },
+    "optional": false
+  },
+  {
+    "name": "cnv.1",
+    "file": "/cnv/cnv_set_1.png",
+    "compress": true,
+    "dimensions": {
+      "h": 91,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "cnv.2",
+    "file": "/cnv/cnv_set_2.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "cnv.3",
+    "file": "/cnv/cnv_set_3.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "cnv.4",
+    "file": "/cnv/cnv_set_4.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "cnv.5",
+    "file": "/cnv/cnv_set_5.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "loh.1",
+    "file": "/loh/loh_set_1.png",
+    "compress": true,
+    "dimensions": {
+      "h": 91,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "loh.2",
+    "file": "/loh/loh_set_2.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "loh.3",
+    "file": "/loh/loh_set_3.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "loh.4",
+    "file": "/loh/loh_set_4.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
+  },
+  {
+    "name": "loh.5",
+    "file": "/loh/loh_set_5.png",
+    "compress": true,
+    "dimensions": {
+      "h": 87,
+      "w": 545
+    },
+    "optional": false
   }
 ]

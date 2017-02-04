@@ -49,6 +49,10 @@ let targetedGenes = sequelize.import(__dirname + '/detailedGenomicAnalysis/targe
 let somaticMutations = {}
 somaticMutations.smallMutations = sequelize.import(__dirname + '/somaticMutations/smallMutations');
 
+// Copy Number Analysis
+let copyNumberAnalysis = {}
+copyNumberAnalysis.cnv= sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
+
 //POG.hasMany(alterations, {as: 'detailedGenomicAnalysis.alterations', foreignKey: 'pog_id'});
 //alterations.belongsTo(POG, { as: 'pog', foreignKey: 'pog_id'});
 
