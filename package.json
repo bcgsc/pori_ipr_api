@@ -5,7 +5,8 @@
   "description": "Placeholder Interactive POG Report API",
   "main": "server.js",
   "scripts": {
-    "start": "SET NODE_ENV=dev && node ./server.js",
+    "start": "node ./server.js",
+    "hardMigrate": "node ./server.js --database.migrate --database.hardMigrate",
     "test": "mocha --timeout 10000"
   },
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
@@ -18,6 +19,7 @@
     "cors": "^2.8.1",
     "csv-parse": "^1.1.9",
     "express": "^4.14.0",
+    "imagemagick": "^0.1.3",
     "morgan": "^1.7.0",
     "nconf": "^0.8.4",
     "q": "^1.4.1",
