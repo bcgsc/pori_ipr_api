@@ -1,0 +1,92 @@
+[
+  {
+    "name": "subtypePlot.molecular",
+    "file": "/subtype_plot_image/molecular_subtype.png",
+    "compress": true,
+    "dimensions": {
+      "h": 375,
+      "w": 600
+    },
+    "optional": true
+  },
+  {
+    "name": "subtypePlot.receptorStatus",
+    "file": "/subtype_plot_image/receptor_status.png",
+    "compress": true,
+    "dimensions": {
+      "h": 375,
+      "w": 600
+    },
+    "optional": true
+  },
+  {
+    "name": "mutSummary.indel",
+    "file": "/mut_summary_image/mutation_summary_indel.png",
+    "compress": true,
+    "dimensions": {
+      "h": 273,
+      "w": 1177
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSummary.snv",
+    "file": "/mut_summary_image/mutation_summary_snv.png",
+    "compress": true,
+    "dimensions": {
+      "h": 273,
+      "w": 1177
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSummary.indel",
+    "file": "/mut_summary_image/mutation_summary_indel.png",
+    "compress": true,
+    "dimensions": {
+      "h": 273,
+      "w": 1177
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSummary.barIndel",
+    "file": "/mut_summary_image/mutation_summary_bar_indel.png",
+    "compress": true,
+    "dimensions": {
+      "h": 301,
+      "w": 1118
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSummary.barSnv",
+    "file": "/mut_summary_image/mutation_summary_bar_snv.png",
+    "compress": true,
+    "dimensions": {
+      "h": 301,
+      "w": 1121
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSignature.corPcors",
+    "file": "/mut_signature_image/msig_cor_pcors.png",
+    "compress": true,
+    "dimensions": {
+      "h": 3800,
+      "w": 2800
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSignature.snvsAllStrelka",
+    "file": "/mut_signature_image/msig_snvs_all_strelka.png",
+    "compress": true,
+    "dimensions": {
+      "h": 480,
+      "w": 480
+    },
+    "optional": false
+  }
+]

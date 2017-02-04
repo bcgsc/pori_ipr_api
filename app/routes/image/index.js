@@ -15,10 +15,7 @@ router.route('/:key')
     
     db.models.imageData.findOne({ where: { key: req.params.key } }).then(
       (result) => {
-        
-        let image = new Buffer(result.data).toString('base64')
-      
-        res.json({img: 'data:image/png;base64,'+image});
+        res.json({img: result.data});
       },
       (error) => {
         res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});

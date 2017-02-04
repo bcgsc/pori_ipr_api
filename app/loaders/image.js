@@ -5,34 +5,15 @@ let db = require(process.cwd() + '/app/models'),
     fs = require('fs'),
     _ = require('lodash'),
     Q = require('q'),
+    im = require('imagemagick'),
+    exec = require('child_process').exec,
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
 // Image Path
 let imagePath;
 
 // Map of images to be loaded
-let images = [
-  {
-    name: 'subtypePlot.molecular',
-    file: '/subtype_plot_image/molecular_subtype.png',
-    compress: true,
-    dimensions: {
-      h: 1500,
-      w: 2400,
-    },
-    optional: true
-  },
-  {
-    name: 'subtypePlot.receptorStatus',
-    file: '/subtype_plot_image/receptor_status.png',
-    compress: true,
-    dimensions: {
-      h: 1500,
-      w: 2400
-    },
-    optional: true
-  }
-]
+let images = require(process.cwd() + '/config/images.json');
 
 /*
  * Parse Image Data
@@ -59,8 +40,6 @@ module.exports = (POG, logger) => {
     
     // Check that image exists
     if(!fs.existsSync(imagePath + image.file)) {
-      console.log('Looking for: ', imagePath + image.file, fs.existsSync(imagePath + image.file));
-    
       // If it's not optional, hard fail.
       if(!image.optional) {
         log('Failed to read in required image file: ' + image.name, logger.ERROR);
@@ -97,18 +76,28 @@ module.exports = (POG, logger) => {
 let processImage = (POG, image, log) => {
   
   let deferred = Q.defer();
-  
-  // Read in file
-  fs.readFile(imagePath + image.file, {encoding: 'base64'}, (err, imgData) => {
-    
-    if(err) {
-      console.log('Image File Read Fail', image, err);
-      deferred.reject({reason: 'imageReadFail'});
-      return;
-    }
-        
-    // Process?
-    
+
+  // Set Image Path
+  imagePath = nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/images';
+  let imgData = "";
+
+  // Call Resize
+  let process = exec('convert '+imagePath + image.file+ ' -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' PNG:- | base64');
+
+  // On data, chunk
+  process.stdout.on('data', (res) => {
+    imgData = imgData + res;
+  });
+
+  process.stderr.on('data', (err) => {
+    consol.log('Imagemagick Processing Error', err);
+    deferred.reject({reason: 'ImageMagickError'});
+  });
+
+  // Done executing
+  process.on('close', (resp) => {
+
+    // Write to DB
     // Add to database
     db.models.imageData.create({
       pog_id: POG.id,
@@ -117,16 +106,16 @@ let processImage = (POG, image, log) => {
       data: imgData
     })
       .then(
-      (result) => {
-        log('Loaded image: ' + image.name);
-        deferred.resolve(true);
-      },
-      (err) => {
-        deferred.reject({reason: 'failedDBInsert'});
-      }
-    );
-    
+        (result) => {
+          log('Loaded image: ' + image.name);
+          deferred.resolve(true);
+        },
+        (err) => {
+          deferred.reject({reason: 'failedDBInsert'});
+        }
+      );
   });
+
   
   return deferred.promise;
   
