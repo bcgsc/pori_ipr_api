@@ -17,7 +17,7 @@ let db = require(process.cwd() + '/app/models'),
  * @param object log - /app/libs/logger instance
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
@@ -26,7 +26,7 @@ module.exports = (POG, logger) => {
   let log = logger.loader(POG.POGID, 'DGA.ApprovedThisCancer');
   
   // First parse in therapeutic
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/approved_detailed.csv', {'delimiter': ','})
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/approved_detailed.csv', {'delimiter': ','})
   
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},

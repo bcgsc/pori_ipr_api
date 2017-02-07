@@ -16,7 +16,7 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
@@ -25,7 +25,7 @@ module.exports = (POG, logger) => {
   let log = logger.loader(POG.POGID, 'Summary.VariantCounts');
   
   // First parse in therapeutic
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/variant_counts.csv')
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/variant_counts.csv');
   
   log('Found and read variant_counts.csv file.')
   

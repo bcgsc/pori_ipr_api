@@ -16,14 +16,14 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Read in file
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/patient_info.csv');
-  
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/patient_info.csv');
+
   // Setup Logger
   let log = logger.loader(POG.POGID, 'Summary.PatientInformation');
   
@@ -55,7 +55,7 @@ module.exports = (POG, logger) => {
           log('Patient information loaded.', logger.SUCCESS);
           
           // Call Subloader
-          require('./sampleSummary.js')(POG, logger).then(
+          require('./sampleSummary.js')(POG, dir, logger).then(
             (success) => {
               // Resolve Promise
               deferred.resolve(entry);

@@ -9,6 +9,9 @@ let db = require(process.cwd() + '/app/models'),
   Q = require('q'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
+
+let baseDir;
+
 /*
  * Parse Copy Number Analysis CNV File
  *
@@ -28,7 +31,7 @@ let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
   if(db.models.cnv.rawAttributes.cnvVariant.values.indexOf(cnvVariant) === -1) deferred.reject('Invalid MutationType. Given: ' + cnvVariant) && new Error('Invalid MutationType. Given: ' + cnvVariant);
 
   // First parse in therapeutic
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/' + cnvFile, {'delimiter': ','});
+  let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + cnvFile, {'delimiter': ','});
 
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},
@@ -90,10 +93,12 @@ let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
  * @param object options - Currently no options defined on this import
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
+
+  baseDir = dir;
 
   // Setup Logger
   let log = logger.loader(POG.POGID, 'CopyNumberAnalysis.CNV');

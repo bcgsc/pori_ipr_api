@@ -9,6 +9,8 @@ let db = require(process.cwd() + '/app/models'),
   Q = require('q'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
+let baseDir;
+
 /*
  * Parse Small Mutations File
  *
@@ -28,7 +30,7 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
   if(db.models.smallMutations.rawAttributes.mutationType.values.indexOf(mutationType) === -1) deferred.reject('Invalid MutationType. Given: ' + mutationType) && new Error('Invalid MutationType. Given: ' + mutationType);
 
   // First parse in therapeutic
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/' + smallMutationFile, {'delimiter': ','});
+  let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + smallMutationFile, {'delimiter': ','});
 
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},
@@ -87,7 +89,9 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
  * @param object options - Currently no options defined on this import
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
+
+  baseDir = dir;
 
   // Create promise
   let deferred = Q.defer();

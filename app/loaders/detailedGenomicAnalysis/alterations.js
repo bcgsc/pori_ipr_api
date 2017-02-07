@@ -9,6 +9,8 @@ let db = require(process.cwd() + '/app/models'),
     Q = require('q'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
+let baseDir;
+
 /*
  * Parse Alterations File
  *
@@ -28,7 +30,7 @@ let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
   if(db.models.alterations.rawAttributes.alterationType.values.indexOf(alterationType) === -1) deferred.reject('Invalid AlterationType. Given: ' + alterationType) && new Error('Invalid AlterationType. Given: ' + alterationType);
   
   // First parse in therapeutic
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/' + alterationFile, {'delimiter': ','})
+  let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + alterationFile, {'delimiter': ','});
   
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},
@@ -89,12 +91,13 @@ let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
  * @param object options - Currently no options defined on this import
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
   let alterations = [];
-  
+  baseDir = dir;
+
   // Setup Logger
   let log = logger.loader(POG.POGID, 'DGA.Variations');
   

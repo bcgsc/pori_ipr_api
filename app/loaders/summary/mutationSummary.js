@@ -16,13 +16,13 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Parsse input file
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/mutational_spectrum.csv')
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/mutational_spectrum.csv')
   
   // Setup Logger
   let log = logger.loader(POG.POGID, 'Summary.MutationSummary');

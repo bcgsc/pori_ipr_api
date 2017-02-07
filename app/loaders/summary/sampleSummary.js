@@ -12,20 +12,22 @@ let db = require(process.cwd() + '/app/models'),
 /*
  * Get Sample Summary Details and Append to Patient Information
  *
+ * !!! Called within Patient Information.
  * 
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
   
   // Read in file
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/JReport_CSV_ODF/sample_summary.csv');
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/sample_summary.csv');
   
   // Setup Logger
   let log = logger.loader(POG.POGID, 'Summary.SampleSummary');
+
   
   log('Found and read sample_summary.csv file.');
   
