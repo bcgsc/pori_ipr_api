@@ -84,9 +84,10 @@
     "name": "cnvLoh.circos",
     "file": "/circos_cnv_loh/circos.png",
     "compress": true,
+    "format": "JPG",
     "dimensions": {
-      "h": 2825,
-      "w": 2827
+      "h": 1000,
+      "w": 1000
     },
     "optional": false
   },
