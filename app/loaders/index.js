@@ -35,8 +35,11 @@ let loaders = [
   // Somatic Mutations
   'somaticMutations/smallMutations',
 
-  // Copy Number Analysis
+  // Copy Number Analyses
   'copyNumberAnalysis/cnv',
+
+  // Structural Variation
+  'structuralVariation/sv',
 ];
 
 

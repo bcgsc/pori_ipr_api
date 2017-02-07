@@ -62,6 +62,25 @@
         "Sample": "sample"
       }
     },
+    "structuralVariation": {
+      "sv": {
+        "Genes `5~`3": "genes",
+        "Exons `5/`3": "exons",
+        "Breakpoint": "breakpoint",
+        "Event type": "eventType",
+        "Detected in": "detectedIn",
+        "Conventional Name": "conventionalName",
+        "RPKM `5/`3": "rpkm",
+        "Fold change `5/`3": "foldChange",
+        "TCGA %ile `5/`3": "tcgaPerc",
+        "svg_filename": "svg",
+        "svg_title_file": "svgTitle",
+        "cterm_gene": "ctermGene",
+        "nterm_gene": "ntermGene",
+        "cterm_transcript": "ctermTranscript",
+        "nterm_transcript": "ntermTranscript"
+      }
+    },
     "somaticMutations": {
       "smallMutations": {
         "protein_change": "proteinChange",

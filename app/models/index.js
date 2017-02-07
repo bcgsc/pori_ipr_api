@@ -46,12 +46,16 @@ let alterations = sequelize.import(__dirname + '/detailedGenomicAnalysis/alterat
 let targetedGenes = sequelize.import(__dirname + '/detailedGenomicAnalysis/targetedGenes');
 
 // Somatic Mutations
-let somaticMutations = {}
+let somaticMutations = {};
 somaticMutations.smallMutations = sequelize.import(__dirname + '/somaticMutations/smallMutations');
 
 // Copy Number Analysis
-let copyNumberAnalysis = {}
-copyNumberAnalysis.cnv= sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
+let copyNumberAnalyses = {};
+copyNumberAnalyses.cnv= sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
+
+// Structural Variation
+let structuralVariation = {};
+structuralVariation.sv= sequelize.import(__dirname + '/structuralVariation/sv');
 
 //POG.hasMany(alterations, {as: 'detailedGenomicAnalysis.alterations', foreignKey: 'pog_id'});
 //alterations.belongsTo(POG, { as: 'pog', foreignKey: 'pog_id'});

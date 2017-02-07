@@ -40,6 +40,16 @@
     "optional": false
   },
   {
+    "name": "mutSummary.sv",
+    "file": "/mut_summary_image/mutation_summary_sv.png",
+    "compress": true,
+    "dimensions": {
+      "h": 124,
+      "w": 560
+    },
+    "optional": false
+  },
+  {
     "name": "mutSummary.barIndel",
     "file": "/mut_summary_image/mutation_summary_bar_indel.png",
     "compress": true,
@@ -52,6 +62,16 @@
   {
     "name": "mutSummary.barSnv",
     "file": "/mut_summary_image/mutation_summary_bar_snv.png",
+    "compress": true,
+    "dimensions": {
+      "h": 150,
+      "w": 560
+    },
+    "optional": false
+  },
+  {
+    "name": "mutSummary.barSv",
+    "file": "/mut_summary_image/mutation_summary_bar_sv.png",
     "compress": true,
     "dimensions": {
       "h": 150,
@@ -96,8 +116,8 @@
     "file": "/cnv/cnv_set_1.png",
     "compress": true,
     "dimensions": {
-      "h": 91,
-      "w": 545
+      "h": 166,
+      "w": 1000
     },
     "optional": false
   },
@@ -106,8 +126,8 @@
     "file": "/cnv/cnv_set_2.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -116,8 +136,8 @@
     "file": "/cnv/cnv_set_3.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -126,8 +146,8 @@
     "file": "/cnv/cnv_set_4.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -136,8 +156,8 @@
     "file": "/cnv/cnv_set_5.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -146,8 +166,8 @@
     "file": "/loh/loh_set_1.png",
     "compress": true,
     "dimensions": {
-      "h": 91,
-      "w": 545
+      "h": 166,
+      "w": 1000
     },
     "optional": false
   },
@@ -156,8 +176,8 @@
     "file": "/loh/loh_set_2.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -166,8 +186,8 @@
     "file": "/loh/loh_set_3.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -176,8 +196,8 @@
     "file": "/loh/loh_set_4.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
     },
     "optional": false
   },
@@ -186,8 +206,30 @@
     "file": "/loh/loh_set_5.png",
     "compress": true,
     "dimensions": {
-      "h": 87,
-      "w": 545
+      "h": 161,
+      "w": 1000
+    },
+    "optional": false
+  },
+  {
+    "name": "circosSv.genome",
+    "file": "/circos_strct_var/circos_strct_var_genome.png",
+    "compress": true,
+    "format": "JPG",
+    "dimensions": {
+      "h": 1001,
+      "w": 1000
+    },
+    "optional": false
+  },
+  {
+    "name": "circosSv.transcriptome",
+    "file": "/circos_strct_var/circos_strct_var_transcriptome.png",
+    "compress": true,
+    "format": "JPG",
+    "dimensions": {
+      "h": 1001,
+      "w": 1000
     },
     "optional": false
   }
