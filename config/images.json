@@ -12,7 +12,7 @@
   {
     "name": "subtypePlot.receptorStatus",
     "file": "/subtype_plot_image/receptor_status.png",
-    "compress": true,
+    "compress": false,
     "dimensions": {
       "h": 375,
       "w": 600
@@ -20,22 +20,12 @@
     "optional": true
   },
   {
-    "name": "mutSummary.indel",
-    "file": "/mut_summary_image/mutation_summary_indel.png",
-    "compress": true,
-    "dimensions": {
-      "h": 273,
-      "w": 1177
-    },
-    "optional": false
-  },
-  {
     "name": "mutSummary.snv",
     "file": "/mut_summary_image/mutation_summary_snv.png",
     "compress": true,
     "dimensions": {
-      "h": 273,
-      "w": 1177
+      "h": 124,
+      "w": 560
     },
     "optional": false
   },
@@ -44,8 +34,8 @@
     "file": "/mut_summary_image/mutation_summary_indel.png",
     "compress": true,
     "dimensions": {
-      "h": 273,
-      "w": 1177
+      "h": 124,
+      "w": 560
     },
     "optional": false
   },
@@ -54,8 +44,8 @@
     "file": "/mut_summary_image/mutation_summary_bar_indel.png",
     "compress": true,
     "dimensions": {
-      "h": 301,
-      "w": 1118
+      "h": 150,
+      "w": 560
     },
     "optional": false
   },
@@ -64,8 +54,8 @@
     "file": "/mut_summary_image/mutation_summary_bar_snv.png",
     "compress": true,
     "dimensions": {
-      "h": 301,
-      "w": 1121
+      "h": 150,
+      "w": 560
     },
     "optional": false
   },
@@ -73,9 +63,10 @@
     "name": "mutSignature.corPcors",
     "file": "/mut_signature_image/msig_cor_pcors.png",
     "compress": true,
+    "format": "JPG",
     "dimensions": {
-      "h": 3800,
-      "w": 2800
+      "h": 2000,
+      "w": 1000
     },
     "optional": false
   },

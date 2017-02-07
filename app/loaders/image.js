@@ -22,10 +22,10 @@ let images = require(process.cwd() + '/config/images.json');
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, logger) => {
+module.exports = (POG, dir, logger) => {
 
   // Set Image Path
-  imagePath = nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/images';
+  imagePath = dir + '/images';
   
   // Create promise
   let deferred = Q.defer();
@@ -77,12 +77,11 @@ let processImage = (POG, image, log) => {
   
   let deferred = Q.defer();
 
-  // Set Image Path
-  imagePath = nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Genomic/images';
   let imgData = "";
 
   // Call Resize
-  let process = exec('convert '+imagePath + image.file+ ' -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' PNG:- | base64');
+  let format = image.format || 'PNG';
+  let process = exec('convert '+imagePath + image.file+ ' -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' ' + format + ':- | base64');
 
   // On data, chunk
   process.stdout.on('data', (res) => {
@@ -90,7 +89,7 @@ let processImage = (POG, image, log) => {
   });
 
   process.stderr.on('data', (err) => {
-    consol.log('Imagemagick Processing Error', err);
+    console.log('Imagemagick Processing Error', err);
     deferred.reject({reason: 'ImageMagickError'});
   });
 
@@ -101,6 +100,7 @@ let processImage = (POG, image, log) => {
     // Add to database
     db.models.imageData.create({
       pog_id: POG.id,
+      format: image.format || 'PNG',
       filename: _.last(image.file.split('/')),
       key: image.name,
       data: imgData

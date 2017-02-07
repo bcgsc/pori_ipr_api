@@ -1,5 +1,6 @@
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
+    _ = require('lodash'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
     loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations');
@@ -11,11 +12,34 @@ router.param('POG', require(process.cwd() + '/app/middleware/pog'));
 // Route for getting an image
 router.route('/:key')
   .get((req,res,next) => {
+
+    let keys = [];
     // Get All Pogs
-    
-    db.models.imageData.findOne({ where: { key: req.params.key } }).then(
+    if(req.params.key.indexOf(',') === -1) keys.push(req.params.key);
+    if(req.params.key.indexOf(',') > -1) {
+      keys = req.params.key.split(',');
+    }
+
+    db.models.imageData.findAll({
+      where: {
+        key: {
+          in: keys
+        },
+        pog_id: req.POG.id
+      },
+      attributes: {exclude: ['id','deletedAt', 'pog_id']},
+    }).then(
       (result) => {
-        res.json({img: result.data});
+
+        output = {};
+
+        _.forEach(result, (v,k) => {
+
+          output[v.key] = v;
+
+        });
+
+        res.json(output);
       },
       (error) => {
         res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});

@@ -19,6 +19,10 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         }
       },
+      format: {
+        type: Sq.ENUM('PNG', 'JPG'),
+        defaultValue: "PNG"
+      },
       filename: {
         type: Sq.STRING,
         allowNull: false,
