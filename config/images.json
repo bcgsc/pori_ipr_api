@@ -218,7 +218,7 @@
     "format": "JPG",
     "dimensions": {
       "h": 1001,
-      "w": 1000
+      "w": 900
     },
     "optional": false
   },
@@ -229,7 +229,29 @@
     "format": "JPG",
     "dimensions": {
       "h": 1001,
+      "w": 900
+    },
+    "optional": false
+  },
+  {
+    "name": "expression.chart",
+    "file": "/expression/expression.png",
+    "compress": true,
+    "format": "JPG",
+    "dimensions": {
+      "h": 900,
       "w": 1000
+    },
+    "optional": false
+  },
+  {
+    "name": "expression.legend",
+    "file": "/expression/expression_legend.png",
+    "compress": true,
+    "format": "JPG",
+    "dimensions": {
+      "h": 500,
+      "w": 500
     },
     "optional": false
   }
