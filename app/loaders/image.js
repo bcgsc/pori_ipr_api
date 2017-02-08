@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
     Q = require('q'),
     im = require('imagemagick'),
     exec = require('child_process').exec,
+    glob = require('glob'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
 // Image Path
@@ -54,6 +55,8 @@ module.exports = (POG, dir, logger) => {
     promises.push(processImage(POG, image, log));
     
   });
+
+  promises.push(loadExpressionDensity(POG,log));
   
   Q.all(promises)
     .then((results) => {
@@ -119,5 +122,84 @@ let processImage = (POG, image, log) => {
   
   return deferred.promise;
   
-}
+};
 
+// Load in the expression denisty images
+let loadExpressionDensity = (POG, log) => {
+
+  let deferred = Q.defer();
+  let promises = [];
+
+
+  glob(imagePath + '/expr_density/*.png', (err, files) => {
+
+    _.forEach(files, (file) => {
+      // Ignore Legend
+      if(file === 'expr_histo_legend.png') return;
+      // Read in each file, and put into DB.
+      promises.push(processExpDensityImages(POG, file, log));
+    });
+
+    // Run all promises
+    Q.all(promises)
+    .then((results) => {
+        log('Loaded all Expression Density Images', logger.SUCCESS);
+        deferred.resolve(true);
+      },
+      (error) => {
+        log('Unable to load images.', logger.ERROR);
+        deferred.reject('Unable to load expression denisty images entries.');
+      }
+    );
+
+  });
+
+  // Return master promise
+  return deferred.promise;
+};
+
+// Process all Expression Density Images
+let processExpDensityImages = (POG, img, log) => {
+
+  let deferred = Q.defer();
+
+  let imgData = "";
+  let geneName = img.split('/')[img.split('/').length-1].split('.')[0];
+
+  let process = exec('convert '+img+ ' -resize 450x450 PNG:- | base64');
+
+  // On data, chunk
+  process.stdout.on('data', (res) => {
+    imgData = imgData + res;
+  });
+
+  process.stderr.on('data', (err) => {
+    console.log('Imagemagick Processing Error', err);
+    deferred.reject({reason: 'ImageMagickError'});
+  });
+
+  // Done executing
+  process.on('close', (resp) => {
+
+    // Write to DB
+    // Add to database
+    db.models.imageData.create({
+      pog_id: POG.id,
+      format: 'PNG',
+      filename: _.last(img.split('/')),
+      key: "expDensity."+geneName,
+      data: imgData
+    })
+      .then(
+        (result) => {
+          log('Loaded image: ' + "expDensity."+geneName);
+          deferred.resolve(true);
+        },
+        (err) => {
+          deferred.reject({reason: 'failedDBInsert'});
+        }
+      );
+  });
+
+  return deferred.promise;
+};
