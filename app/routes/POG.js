@@ -2,6 +2,7 @@
 let express = require('express'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
+    _ = require('lodash'),
     loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations');
   
 
@@ -22,6 +23,10 @@ router.route('/')
         order: 'POG.POGID ASC'
       }).then(
         (pogs) => {
+          _.forEach(pogs, (pog,k) => {
+            pogs[k].seqQC = JSON.parse(pog.seqQC);
+            pogs[k].sampleInfo = JSON.parse(pog.sampleInfo);
+          });
           res.json(pogs);
         },
         (error) => {
@@ -43,7 +48,9 @@ router.route('/:POG')
       createdAt: req.POG.createdAt, 
       updatedAt: req.POG.updatedAt, 
       patientInformation: req.POG.patientInformation, 
-      tumourAnalysis: req.POG.tumourAnalysis
+      tumourAnalysis: req.POG.tumourAnalysis,
+      seqQC: JSON.parse(req.POG.seqQC),
+     sampleInfo: JSON.parse(req.POG.sampleInfo)
     });
   });
 

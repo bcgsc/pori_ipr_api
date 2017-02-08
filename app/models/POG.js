@@ -16,6 +16,12 @@ module.exports = (sequelize, Sq) => {
         type: Sq.STRING,
         unique: false
       },
+      sampleInfo: {
+        type: Sq.JSONB,
+      },
+      seqQC: {
+        type: Sq.JSONB,
+      }
     }, {
       // Automatically create createdAt, updatedAt, deletedAt
       timestamps: true,
