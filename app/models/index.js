@@ -57,6 +57,12 @@ copyNumberAnalyses.cnv= sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
 let structuralVariation = {};
 structuralVariation.sv= sequelize.import(__dirname + '/structuralVariation/sv');
 
+
+// Structural Variation
+let expressionAnalysis = {};
+expressionAnalysis.outlier = sequelize.import(__dirname + '/expressionAnalysis/outlier');
+expressionAnalysis.drugTarget = sequelize.import(__dirname + '/expressionAnalysis/drugTarget');
+
 //POG.hasMany(alterations, {as: 'detailedGenomicAnalysis.alterations', foreignKey: 'pog_id'});
 //alterations.belongsTo(POG, { as: 'pog', foreignKey: 'pog_id'});
 

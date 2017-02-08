@@ -40,6 +40,10 @@ let loaders = [
 
   // Structural Variation
   'structuralVariation/sv',
+
+  // Expression Analysis
+  'expressionAnalysis/outlier',
+  'expressionAnalysis/drugTarget',
 ];
 
 

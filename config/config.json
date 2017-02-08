@@ -62,6 +62,29 @@
         "Sample": "sample"
       }
     },
+    "expressionAnalysis": {
+      "outlier": {
+        "ploidy_corr_cp_change": "copyChange",
+        "loh_state": "lohState",
+        "cnv_state": "cnvState",
+        "RNA_reads": "rnaReads",
+        "expression_rpkm": "rpkm",
+        "fold_change": "foldChange",
+        "TCGA_perc": "tcgaPerc"
+      },
+      "drugTarget": {
+        "Gene": "gene",
+        "Copy #": "copy",
+        "LOH Region": "lohRegion",
+        "Fold Change": "foldChange",
+        "TCGA percentile": "tcgaPerc",
+        "Drug Options": "drugOptions",
+        "kIQR": "kIQR",
+        "kIQR_column": "kIQRColumn",
+        "kIQR_normal": "kIQRNormal",
+        "kIQR_normal_column": "kIQRNormalColumn"
+      }
+    },
     "structuralVariation": {
       "sv": {
         "Genes `5~`3": "genes",
