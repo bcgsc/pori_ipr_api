@@ -56,7 +56,7 @@ module.exports = (POG, dir, logger) => {
     
   });
 
-  promises.push(loadExpressionDensity(POG,log));
+  promises.push(loadExpressionDensity(POG, log));
   
   Q.all(promises)
     .then((results) => {
@@ -128,27 +128,25 @@ let processImage = (POG, image, log) => {
 let loadExpressionDensity = (POG, log) => {
 
   let deferred = Q.defer();
-  let promises = [];
+  let expDenProm = [];
 
 
   glob(imagePath + '/expr_density/*.png', (err, files) => {
 
     _.forEach(files, (file) => {
       // Ignore Legend
-      if(file === 'expr_histo_legend.png') return;
+      if(file.indexOf('expr_histo_legend.png') !== -1) return;
       // Read in each file, and put into DB.
-      promises.push(processExpDensityImages(POG, file, log));
+      expDenProm.push(processExpDensityImages(POG, file, log));
     });
 
-    // Run all promises
-    Q.all(promises)
-    .then((results) => {
-        log('Loaded all Expression Density Images', logger.SUCCESS);
-        deferred.resolve(true);
+    Q.all(expDenProm).then(
+      (result) => {
+        log('Finished processing Expression Density images');
+        deferred.resolve({expDensityImages: true});
       },
-      (error) => {
-        log('Unable to load images.', logger.ERROR);
-        deferred.reject('Unable to load expression denisty images entries.');
+      (err) => {
+        console.log('Failed Exp Density Image Processing', err);
       }
     );
 

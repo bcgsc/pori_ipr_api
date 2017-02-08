@@ -10,7 +10,7 @@ let express = require('express'),
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
 
 // Route for getting an image
-router.route('/:key')
+router.route('/retrieve/:key')
   .get((req,res,next) => {
 
     let keys = [];
@@ -50,6 +50,35 @@ router.route('/:key')
     .put((req,res,next) => {
     // Add a new Potential Clinical Alteration...
   });
-  
+router.route('/expressionDensityGraphs')
+  .get((req,res,next) => {
+
+    db.models.imageData.findAll({
+      where: {
+        pog_id: req.POG.id,
+        key: {
+          $like: 'expDensity.%'
+        }
+      },
+      order: 'key ASC',
+      attributes: {exclude: ['id','deletedAt', 'pog_id']}
+    }).then(
+      (result) => {
+        output = {};
+
+        _.forEach(result, (v,k) => {
+
+          output[v.key] = v;
+
+        });
+
+        res.json(output);
+      },
+      (error) => {
+        res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});
+      }
+    )
+
+  });
 
 module.exports = router;

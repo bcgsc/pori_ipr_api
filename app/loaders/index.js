@@ -15,6 +15,7 @@ let db = require(process.cwd() + '/app/models'),
 // Map of loaders
 let loaders = [
   // Meta
+  './POG',
   './image',
 
   // Summary
@@ -44,6 +45,7 @@ let loaders = [
   // Expression Analysis
   'expressionAnalysis/outlier',
   'expressionAnalysis/drugTarget',
+
 ];
 
 
