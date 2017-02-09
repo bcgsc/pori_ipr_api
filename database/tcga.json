@@ -1,0 +1,569 @@
+[
+  {
+    "Full Name": "Adrenocortical Carcinoma",
+    "Code Name": "ACC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#79",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Urothelial Bladder Carcinoma",
+    "Code Name": "BLCA",
+    "Data Source": "TCGA",
+    "Tumour Count": "#408",
+    "Normal Count": "#19"
+  },
+  {
+    "Full Name": "Breast Ductal Carcinoma",
+    "Code Name": "BRCA",
+    "Data Source": "TCGA",
+    "Tumour Count": "#1095",
+    "Normal Count": "#113"
+  },
+  {
+    "Full Name": "Basal Breast Carcinoma Subtype",
+    "Code Name": "BRCA_BL",
+    "Data Source": "TCGA",
+    "Tumour Count": "#136",
+    "Normal Count": "#16"
+  },
+  {
+    "Full Name": "ER- Breast Carcinoma",
+    "Code Name": "BRCA_ER_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#236",
+    "Normal Count": "#21"
+  },
+  {
+    "Full Name": "ER-/PR-/HER2- Breast Carcinoma",
+    "Code Name": "BRCA_ER_Negative_PR_Negative_HER2_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#115",
+    "Normal Count": "#11"
+  },
+  {
+    "Full Name": "ER-/PR-/HER2+ Breast Carcinoma",
+    "Code Name": "BRCA_ER_Negative_PR_Negative_HER2_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#37",
+    "Normal Count": "#4"
+  },
+  {
+    "Full Name": "ER-/PR+/HER2- Breast Carcinoma",
+    "Code Name": "BRCA_ER_Negative_PR_Positive_HER2_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#8",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "ER-/PR+/HER2+ Breast Carcinoma",
+    "Code Name": "BRCA_ER_Negative_PR_Positive_HER2_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#2",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "ER+ Breast Carcinoma",
+    "Code Name": "BRCA_ER_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#806",
+    "Normal Count": "#79"
+  },
+  {
+    "Full Name": "ER+/PR-/HER2- Breast Carcinoma",
+    "Code Name": "BRCA_ER_Positive_PR_Negative_HER2_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#65",
+    "Normal Count": "#7"
+  },
+  {
+    "Full Name": "ER+/PR-/HER2+ Breast Carcinoma",
+    "Code Name": "BRCA_ER_Positive_PR_Negative_HER2_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#23",
+    "Normal Count": "#2"
+  },
+  {
+    "Full Name": "ER+/PR+/HER2- Breast Carcinoma",
+    "Code Name": "BRCA_ER_Positive_PR_Positive_HER2_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#369",
+    "Normal Count": "#37"
+  },
+  {
+    "Full Name": "ER+/PR+/HER2+ Breast Carcinoma",
+    "Code Name": "BRCA_ER_Positive_PR_Positive_HER2_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#100",
+    "Normal Count": "#15"
+  },
+  {
+    "Full Name": "HER2 Breast Carcinoma",
+    "Code Name": "BRCA_H2",
+    "Data Source": "TCGA",
+    "Tumour Count": "#65",
+    "Normal Count": "#9"
+  },
+  {
+    "Full Name": "HER2- Breast Carcinoma",
+    "Code Name": "BRCA_HER2_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#561",
+    "Normal Count": "#56"
+  },
+  {
+    "Full Name": "HER2+ Breast Carcinoma",
+    "Code Name": "BRCA_HER2_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#162",
+    "Normal Count": "#22"
+  },
+  {
+    "Full Name": "Luminal A Breast Carcinoma",
+    "Code Name": "BRCA_LA",
+    "Data Source": "TCGA",
+    "Tumour Count": "#415",
+    "Normal Count": "#57"
+  },
+  {
+    "Full Name": "Luminal B Breast Carcinoma",
+    "Code Name": "BRCA_LB",
+    "Data Source": "TCGA",
+    "Tumour Count": "#176",
+    "Normal Count": "#21"
+  },
+  {
+    "Full Name": "Normal-like Breast Carcinoma",
+    "Code Name": "BRCA_NL",
+    "Data Source": "TCGA",
+    "Tumour Count": "#25",
+    "Normal Count": "#2"
+  },
+  {
+    "Full Name": "PR- Breast Carcinoma",
+    "Code Name": "BRCA_PR_Negative",
+    "Data Source": "TCGA",
+    "Tumour Count": "#343",
+    "Normal Count": "#31"
+  },
+  {
+    "Full Name": "PR+ Breast Carcinoma",
+    "Code Name": "BRCA_PR_Positive",
+    "Data Source": "TCGA",
+    "Tumour Count": "#696",
+    "Normal Count": "#69"
+  },
+  {
+    "Full Name": "Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma",
+    "Code Name": "CESC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#0",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma",
+    "Code Name": "CESC_CAD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#47",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma",
+    "Code Name": "CESC_SCC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#257",
+    "Normal Count": "#2"
+  },
+  {
+    "Full Name": "Cholangiocarcinoma",
+    "Code Name": "CHOL",
+    "Data Source": "TCGA",
+    "Tumour Count": "#36",
+    "Normal Count": "#9"
+  },
+  {
+    "Full Name": "Colorectal Adenocarcinoma",
+    "Code Name": "COADREAD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#372",
+    "Normal Count": "#51"
+  },
+  {
+    "Full Name": "Diffuse Large B-Cell Lymphoma/ Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
+    "Code Name": "DLBC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#48",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "DLBCL Blood/Bone Marrow",
+    "Code Name": "DLBC_BM",
+    "Data Source": "BCGSC",
+    "Tumour Count": "#11",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "DLBCL Centroblasts",
+    "Code Name": "DLBC_CB",
+    "Data Source": "BCGSC",
+    "Tumour Count": "#0",
+    "Normal Count": "#20"
+  },
+  {
+    "Full Name": "DLBCL Cell lines",
+    "Code Name": "DLBC_CL",
+    "Data Source": "BCGSC",
+    "Tumour Count": "#35",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Esophageal carcinoma",
+    "Code Name": "ESCA",
+    "Data Source": "TCGA",
+    "Tumour Count": "#15",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "Esophageal carcinoma",
+    "Code Name": "ESCA_EAC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#79",
+    "Normal Count": "#8"
+  },
+  {
+    "Full Name": "Esophageal carcinoma",
+    "Code Name": "ESCA_SCC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#90",
+    "Normal Count": "#2"
+  },
+  {
+    "Full Name": "Follicular Lymphoma",
+    "Code Name": "FL",
+    "Data Source": "BCGSC",
+    "Tumour Count": "#50",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Glioblastoma Multiforme",
+    "Code Name": "GBM",
+    "Data Source": "TCGA",
+    "Tumour Count": "#161",
+    "Normal Count": "#5"
+  },
+  {
+    "Full Name": "Head and Neck Squamous Cell Carcinoma",
+    "Code Name": "HNSC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#520",
+    "Normal Count": "#44"
+  },
+  {
+    "Full Name": "Chromophobe Renal Cell Carcinoma/ Kidney Chromophobe",
+    "Code Name": "KICH",
+    "Data Source": "TCGA",
+    "Tumour Count": "#66",
+    "Normal Count": "#25"
+  },
+  {
+    "Full Name": "Clear Cell Kidney Carcinoma",
+    "Code Name": "KIRC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#533",
+    "Normal Count": "#72"
+  },
+  {
+    "Full Name": "Papillary Kidney Carcinoma",
+    "Code Name": "KIRP",
+    "Data Source": "TCGA",
+    "Tumour Count": "#290",
+    "Normal Count": "#32"
+  },
+  {
+    "Full Name": "Acute Myeloid Leukemia",
+    "Code Name": "LAML",
+    "Data Source": "TCGA",
+    "Tumour Count": "#173",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Chronic Myelogenous Leukemia",
+    "Code Name": "LCML",
+    "Data Source": "TCGA",
+    "Tumour Count": "#NA",
+    "Normal Count": "#NA"
+  },
+  {
+    "Full Name": "Lower Grade Glioma",
+    "Code Name": "LGG",
+    "Data Source": "TCGA",
+    "Tumour Count": "#516",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Liver Hepatocellular Carcinoma",
+    "Code Name": "LIHC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#371",
+    "Normal Count": "#50"
+  },
+  {
+    "Full Name": "Lung Adenocarcinoma",
+    "Code Name": "LUAD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#515",
+    "Normal Count": "#59"
+  },
+  {
+    "Full Name": "Lung Squamous Cell Carcinoma",
+    "Code Name": "LUSC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#501",
+    "Normal Count": "#50"
+  },
+  {
+    "Full Name": "Brain",
+    "Code Name": "MB-Adult",
+    "Data Source": "MAGIC",
+    "Tumour Count": "#143",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Medulloblastoma",
+    "Code Name": "MB-Infant",
+    "Data Source": "MAGIC",
+    "Tumour Count": "#NA",
+    "Normal Count": "#NA"
+  },
+  {
+    "Full Name": "Medulloblastoma",
+    "Code Name": "MB-Pediatric",
+    "Data Source": "MAGIC",
+    "Tumour Count": "#NA",
+    "Normal Count": "#NA"
+  },
+  {
+    "Full Name": "Mesothelioma",
+    "Code Name": "MESO",
+    "Data Source": "TCGA",
+    "Tumour Count": "#87",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Neuroblastoma",
+    "Code Name": "NBL",
+    "Data Source": "TCGA",
+    "Tumour Count": "#0",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Diffuse Large B-Cell Lymphoma/ Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
+    "Code Name": "NCI_GPH_DLBCL",
+    "Data Source": "NCI",
+    "Tumour Count": "#111",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Ovarian Serous Cystadenocarcinoma",
+    "Code Name": "OV",
+    "Data Source": "TCGA",
+    "Tumour Count": "#305",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Pancreatic Ductal Adenocarcinoma",
+    "Code Name": "PAAD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#178",
+    "Normal Count": "#4"
+  },
+  {
+    "Full Name": "Paraganglioma & Pheochromocytoma",
+    "Code Name": "PCPG",
+    "Data Source": "TCGA",
+    "Tumour Count": "#179",
+    "Normal Count": "#3"
+  },
+  {
+    "Full Name": "POG Pediatric",
+    "Code Name": "POG-pediatric",
+    "Data Source": "POG",
+    "Tumour Count": "#NA",
+    "Normal Count": "#NA"
+  },
+  {
+    "Full Name": "Prostate Adenocarcinoma",
+    "Code Name": "PRAD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#497",
+    "Normal Count": "#52"
+  },
+  {
+    "Full Name": "Rhabdoid",
+    "Code Name": "RHBD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#0",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Sarcoma",
+    "Code Name": "SARC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#259",
+    "Normal Count": "#2"
+  },
+  {
+    "Full Name": "Dedifferentiated Liposarcoma",
+    "Code Name": "SARC_DDL",
+    "Data Source": "TCGA",
+    "Tumour Count": "#57",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "Desmoid Tumour",
+    "Code Name": "SARC_desmoid",
+    "Data Source": "TCGA",
+    "Tumour Count": "#2",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Leiomyosarcoma",
+    "Code Name": "SARC_LMS",
+    "Data Source": "TCGA",
+    "Tumour Count": "#104",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "Myxofibrosarcoma",
+    "Code Name": "SARC_MFS",
+    "Data Source": "TCGA",
+    "Tumour Count": "#25",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Malignant Peripheral Nerve Sheath Tumors",
+    "Code Name": "SARC_MPNST",
+    "Data Source": "TCGA",
+    "Tumour Count": "#9",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Synovial Sarcoma",
+    "Code Name": "SARC_Synovial",
+    "Data Source": "TCGA",
+    "Tumour Count": "#9",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Undifferentiated pleomorphic sarcoma",
+    "Code Name": "SARC_UPS",
+    "Data Source": "TCGA",
+    "Tumour Count": "#20",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Cutaneous Melanoma",
+    "Code Name": "SKCM",
+    "Data Source": "TCGA",
+    "Tumour Count": "#469",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "Stomach Adenocarcinoma",
+    "Code Name": "STAD",
+    "Data Source": "TCGA",
+    "Tumour Count": "#415",
+    "Normal Count": "#35"
+  },
+  {
+    "Full Name": "Stomach Adenocarcinoma Chromosomal Instability",
+    "Code Name": "STAD_CIN",
+    "Data Source": "TCGA",
+    "Tumour Count": "#138",
+    "Normal Count": "#16"
+  },
+  {
+    "Full Name": "Stomach Adenocarcinoma Epstein-Barr virus positive",
+    "Code Name": "STAD_EBV",
+    "Data Source": "TCGA",
+    "Tumour Count": "#25",
+    "Normal Count": "#1"
+  },
+  {
+    "Full Name": "Stomach Adenocarcinoma Genomically Stable",
+    "Code Name": "STAD_GS",
+    "Data Source": "TCGA",
+    "Tumour Count": "#54",
+    "Normal Count": "#6"
+  },
+  {
+    "Full Name": "Stomach Adenocarcinoma Microsatellite",
+    "Code Name": "STAD_MSI",
+    "Data Source": "TCGA",
+    "Tumour Count": "#60",
+    "Normal Count": "#7"
+  },
+  {
+    "Full Name": "TFRI GBM Cell Line",
+    "Code Name": "TFRI_GBM_cell_line",
+    "Data Source": "TCGA",
+    "Tumour Count": "#NA",
+    "Normal Count": "#NA"
+  },
+  {
+    "Full Name": "TFRI GBM Cell Line",
+    "Code Name": "TFRI_GBM_CL",
+    "Data Source": "TFRI",
+    "Tumour Count": "#67",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "TFRI GBM Non Cell Line",
+    "Code Name": "TFRI_GBM_NCL",
+    "Data Source": "TFRI",
+    "Tumour Count": "#52",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Testicular Germ Cell Cancer",
+    "Code Name": "TGCT",
+    "Data Source": "TCGA",
+    "Tumour Count": "#150",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Papillary Thyroid Carcinoma/ Thyroid Carcinoma",
+    "Code Name": "THCA",
+    "Data Source": "TCGA",
+    "Tumour Count": "#505",
+    "Normal Count": "#59"
+  },
+  {
+    "Full Name": "Thymoma",
+    "Code Name": "THYM",
+    "Data Source": "TCGA",
+    "Tumour Count": "#120",
+    "Normal Count": "#2"
+  },
+  {
+    "Full Name": "Uterine Corpus Endometrial Carcinoma",
+    "Code Name": "UCEC",
+    "Data Source": "TCGA",
+    "Tumour Count": "#177",
+    "Normal Count": "#24"
+  },
+  {
+    "Full Name": "Uterine Carcinosarcoma",
+    "Code Name": "UCS",
+    "Data Source": "TCGA",
+    "Tumour Count": "#57",
+    "Normal Count": "#0"
+  },
+  {
+    "Full Name": "Uveal Melanoma",
+    "Code Name": "UVM",
+    "Data Source": "TCGA",
+    "Tumour Count": "#80",
+    "Normal Count": "#0"
+  }
+]
