@@ -10,6 +10,8 @@ let db = require(process.cwd() + '/app/models'),
     Q = require('q'),
     logger = require(process.cwd() + '/app/libs/logger'),
     glob = require('glob'),
+    _ = require('lodash'),
+    eventEmitter = require('events'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
 // Map of loaders
@@ -48,7 +50,6 @@ let loaders = [
 
 ];
 
-
 // Run loaders for a specified POGID
 module.exports = (POG, options={}) => {
 
@@ -62,11 +63,14 @@ module.exports = (POG, options={}) => {
   // Determine location to report base folder
   glob(nconf.get('paths:data:POGdata') + '/' + POG.POGID + nconf.get('paths:data:dataDir'), (err, files) => {
 
-    let promises = []; // Collection of module promises
-
-
     if(err) deferred.reject('Unable to find POG sources.');
     let baseDir = files[0];
+    let promises = []; // Collection of module promises
+
+    // Log Base Path for Source
+    log('Source path: '+baseDir);
+
+    // Create Event Tracker
 
     // Loop over loader files and create promises
     loaders.forEach((file) => {
@@ -88,13 +92,19 @@ module.exports = (POG, options={}) => {
         // A loader failed
         let fail = {};
 
-        // TODO: Cleanup!
+        /*
+        // Remove all entries for failed POG loading
+        _.forEach(db.models, (model) => {
+
+          model.destroy()
+
+        }); */
 
         // Log error
         log('Failed onboarding process.', logger.ERROR);
         console.log(error);
 
-        if(error.reason == 'sourceFileNotFound') fail.status = 400; // Bad POG source
+        if(error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
 
         // Return fail
         deferred.reject(fail);
