@@ -22,9 +22,10 @@ router.route('/')
         db.models.POG.create({ POGID: req.params.POG }).then(
           (POG) => {
             // Lets load in some data from sources!
-            
+
             // Loaders
-            require(process.cwd() + '/app/loaders')(POG).then(
+            require(process.cwd() + '/app/loaders')(POG)
+            .then(
               (result) => {
                 // Loaded!
                 res.json(POG);
@@ -42,28 +43,28 @@ router.route('/')
                 );
               }
             );
-            
+
           },
           (error) => {
             // Unable to create POG
             res.status(500).json({error: {message: 'Unable to create the new pog entry', code: 'pogCreateFailed'}});
           }
         );
-        
+
       },
       (err) => {
         // Unable to search for POGs
         res.status(500).json({error: {message: 'Unable to check for existing POGs', code: 'pogLookupFailed'}});
       }
     );
-    
-    
+
+
   })
   .delete((req,res,next) => {
     // Are we able to find this POG Report Entry?
     db.models.POG.findOne({ where: { POGID: req.params.POG} }).then(
       (pog) => {
-      
+
         if(pog !== null) {
           // One was found, remove it!
           db.models.POG.destroy({ where: { POGID: req.params.POG} }).then(
