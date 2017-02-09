@@ -21,6 +21,9 @@ module.exports = (sequelize, Sq) => {
       },
       seqQC: {
         type: Sq.JSONB,
+      },
+      config: {
+        type: Sq.TEXT
       }
     }, {
       // Automatically create createdAt, updatedAt, deletedAt

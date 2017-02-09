@@ -36,6 +36,7 @@ module.exports = (POG, dir, logger) => {
       // Pull and process results
       pogInfo.sampleInfo = results[0];
       pogInfo.seqQC = results[1];
+      pogInfo.config = fs.readFileSync(dir + '/Report_tracking.cfg', 'utf8'); // Read in POG Report Config Tracking
 
       // Add to Database
       db.models.POG.update(pogInfo, {where: { id: POG.id }, limit: 1})

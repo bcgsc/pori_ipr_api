@@ -50,7 +50,8 @@ router.route('/:POG')
       patientInformation: req.POG.patientInformation, 
       tumourAnalysis: req.POG.tumourAnalysis,
       seqQC: JSON.parse(req.POG.seqQC),
-     sampleInfo: JSON.parse(req.POG.sampleInfo)
+      sampleInfo: JSON.parse(req.POG.sampleInfo),
+      config: req.POG.config
     });
   });
 
