@@ -67,7 +67,7 @@ let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({reason: 'DGA-Alterations-sourceFileNotFound'});
   });
   
   return deferred.promise;
