@@ -57,8 +57,8 @@ module.exports = (POG, dir, logger) => {
           deferred.resolve(entry);
         },
         (err) => {
-          log('Failed to load patient tumour analysis.', logger.ERROR)
-          deferred.reject('Failed to load patient tumour analysis.');
+          log('Failed to write variant counts to db.', logger.ERROR);
+          deferred.reject('Failed to write variant counts to db.');
         }
       );
     }

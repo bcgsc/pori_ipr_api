@@ -41,7 +41,8 @@ module.exports = (sequelize, Sq) => {
       },
       variantsUnknown: {
         type: Sq.INTEGER,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 0
       },
     }, {
       // Table Name
