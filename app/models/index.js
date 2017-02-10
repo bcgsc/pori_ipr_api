@@ -4,10 +4,12 @@ let path = require('path');
 let nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 let colors = require('colors');
 
+/*
 // If testing, override config
 if(process.env.NODE_ENV === 'test') {
   nconf.file({file: './config/test.json'});
 }
+*/
 
 // Load database
 let sequelize = new Sq(nconf.get('database:postgres:database'), nconf.get('database:postgres:username'), nconf.get('database:postgres:password'), {
