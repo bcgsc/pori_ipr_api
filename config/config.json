@@ -18,12 +18,13 @@
     },
     
     "postgres": {
-      "hostname": "",
-      "username": "",
-      "password": "",
-      "schema": "",
-      "database": "",
-      "prefix": "ipr_"
+      "hostname": "iprweb01.bcgsc.ca",
+      "port": 5432,
+      "username": "bpierce",
+      "password": "iprdbdev",
+      "schema": "public",
+      "database": "ipr",
+      "prefix": ""
     }
   },
   

@@ -12,54 +12,19 @@ let chai = require('chai'),
     
 chai.use(chaiHttp);
 
-// Onboard/Loag POG129
-describe('/GET loadPog', () => {
-  it('It should load in the described POG', (done) => {
-    chai.request(server)
-      .get('/api/1.0/POG/POG129/loadPog')
-      .end((err, res) => {
-        res.should.have.status(200);
-        res.should.be.json;
-        res.body.should.be.a('object');
-        res.body.should.have.property('ident');
-        res.body.should.have.property('POGID');
-        res.body.should.have.property('updatedAt');
-        res.body.should.have.property('createdAt');
-        
-        done();
-      });
-  });
-});
-
-// Attempt to onboard/load non-existent POG
-describe('/GET loadPog-Fail', () => {
-  it('It should fail to load this POG', (done) => {
-    chai.request(server)
-      .get('/api/1.0/POG/POG250/loadPog')
-      .end((err, res) => {
-        res.should.have.status(400);
-        res.should.be.json;
-        res.body.should.be.a('object');
-        res.body.should.have.property('error');
-        
-        done();
-      });
-  });
-});
-
 // Check for valid POG
 describe('/GET POG', () => {
   it('Retrieve previously loaded POG', (done) => {
     
     chai.request(server)
-      .get('/api/1.0/POG/POG129')
+      .get('/api/1.0/POG/POG684')
       .end((err, res) => {
         
         res.should.have.status(200);
         res.should.be.json;
         res.body.should.be.a('object');
         res.body.should.have.property('ident');
-        res.body.should.have.property('POGID', 'POG129');
+        res.body.should.have.property('POGID', 'POG684');
         
         res.body.should.have.property('patientInformation');
         res.body.patientInformation.should.have.property('physician');
