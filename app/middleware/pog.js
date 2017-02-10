@@ -22,7 +22,7 @@ module.exports = (req,res,next,pogID) => {
         {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }, order: 'dataVersion DESC', group: 'ident' },
         {model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }, order: 'dataVersion DESC', group: 'ident' },
       ],
-      group: 'POG.ident',
+      group: '"POG".id, "patientInformation".id, "tumourAnalysis".id',
       //order: 'POG.dataVersion DESC'
     }).then(
     (result) => {
