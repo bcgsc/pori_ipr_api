@@ -1,14 +1,15 @@
 // app/routes/genomic/somaticMutation.js
 let express = require('express'),
   router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models');
+  db = require(process.cwd() + '/app/models'),
+  versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('mutation', (req,res,next,mutIdent) => {
   db.models.somaticMutations.findOne({ where: {ident: mutIdent}, attributes: {exclude: ['id', 'deletedAt']}, order: 'dataVersion DESC'}).then(
     (result) => {
       if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareSomaticMutationLookup'} });
 
-      req.alteration = result;
+      req.mutation = result;
       next();
 
     },
@@ -22,33 +23,27 @@ router.param('mutation', (req,res,next,mutIdent) => {
 router.route('/smallMutations/:mutation([A-z0-9-]{36})')
   .get((req,res,next) => {
 
-    res.json(req.alteration);
+    res.json(req.mutation);
 
   })
   .put((req,res,next) => {
 
-    // Bump the version number for this entry
-    req.body.dataVersion = req.alteration.dataVersion + 1;
-    req.body.ident = req.alteration.ident;
-    req.body.pog_id = req.POG.id;
-
-    // Update result
-    db.models.somaticMutations.create(req.body).then(
-      (result) => {
-        // Send back newly created/updated result.
-        res.json(result);
+    // Update DB Version for Entry
+    versionDatum(db.models.somaticMutations, req.mutation, req.body).then(
+      (resp) => {
+        res.json(resp.data.create);
       },
       (error) => {
-        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedSomaticMutationlookup'} });
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedOutlierVersion'}});
       }
     );
-
 
   })
   .delete((req,res,next) => {
     // Soft delete the entry
     // Update result
-    db.models.somaticMutations.destroy({ where: {ident: req.alteration.ident}}).then(
+    db.models.somaticMutations.destroy({ where: {ident: req.mutation.ident}}).then(
       (result) => {
         res.json({success: true});
       },
@@ -80,10 +75,8 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
       attributes: {
         exclude: ['id', 'deletedAt']
       },
-      order: 'dataVersion DESC',
       order: 'gene ASC',
-      group: 'ident'
-    }
+    };
 
     // Get all rows for this POG
     db.models.smallMutations.findAll(options).then(

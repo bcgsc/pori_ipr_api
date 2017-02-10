@@ -19,14 +19,10 @@ router.route('/')
           {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }, order: 'dataVersion DESC', group: 'ident' },
           {model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }, order: 'dataVersion DESC', group: 'ident' },
         ],
-        group: 'POG.ident',
-        order: 'POG.POGID ASC'
+        group: '"POG".id, "patientInformation".id, "tumourAnalysis".id',
+        order: '"POG"."POGID" ASC',
       }).then(
         (pogs) => {
-          _.forEach(pogs, (pog,k) => {
-            pogs[k].seqQC = JSON.parse(pog.seqQC);
-            pogs[k].sampleInfo = JSON.parse(pog.sampleInfo);
-          });
           res.json(pogs);
         },
         (error) => {
@@ -49,8 +45,8 @@ router.route('/:POG')
       updatedAt: req.POG.updatedAt, 
       patientInformation: req.POG.patientInformation, 
       tumourAnalysis: req.POG.tumourAnalysis,
-      seqQC: JSON.parse(req.POG.seqQC),
-      sampleInfo: JSON.parse(req.POG.sampleInfo),
+      seqQC: req.POG.seqQC,
+      sampleInfo: req.POG.sampleInfo,
       config: req.POG.config
     });
   });

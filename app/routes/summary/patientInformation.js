@@ -8,7 +8,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
   
   // Get Patient Information for this POG
-  db.models.patientInformation.findOne({ where: {pog_id: req.POG.id}, order: 'dataVersion DESC', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}}).then(
+  db.models.patientInformation.findOne({ where: {pog_id: req.POG.id}, attributes: {exclude: ['id', 'deletedAt']}}).then(
     (result) => {
 
       // Not found

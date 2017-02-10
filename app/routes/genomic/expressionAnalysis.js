@@ -1,7 +1,8 @@
 // app/routes/genomic/somaticMutation.js
 let express = require('express'),
   router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models');
+  db = require(process.cwd() + '/app/models'),
+  versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 
 /*
@@ -9,11 +10,11 @@ let express = require('express'),
  *
  */
 router.param('outlier', (req,res,next,oIdent) => {
-  db.models.outlier.findOne({ where: {ident: oIdent}, attributes: {exclude: ['id', 'deletedAt', 'pog_id']}, order: 'dataVersion DESC'}).then(
+  db.models.outlier.findOne({ where: {ident: oIdent}, attributes: {exclude: ['id', 'deletedAt', 'pog_id']}}).then(
     (result) => {
       if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
 
-      req.alteration = result;
+      req.outlier = result;
       next();
 
     },
@@ -23,37 +24,31 @@ router.param('outlier', (req,res,next,oIdent) => {
   );
 });
 
-// Handle requests for alterations
+// Handle requests for outliers
 router.route('/outlier/:outlier([A-z0-9-]{36})')
   .get((req,res,next) => {
 
-    res.json(req.alteration);
+    res.json(req.outlier);
 
   })
   .put((req,res,next) => {
 
-    // Bump the version number for this entry
-    req.body.dataVersion = req.alteration.dataVersion + 1;
-    req.body.ident = req.alteration.ident;
-    req.body.pog_id = req.POG.id;
 
-    // Update result
-    db.models.outlier.create(req.body).then(
-      (result) => {
-        // Send back newly created/updated result.
-        res.json(result);
+    // Update DB Version for Entry
+    versionDatum(db.models.outlier, req.outlier, req.body).then(
+      (resp) => {
+        res.json(resp.data.create);
       },
       (error) => {
-        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedOutlierlookup'} });
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedOutlierVersion'}});
       }
     );
-
 
   })
   .delete((req,res,next) => {
     // Soft delete the entry
-    // Update result
-    db.models.somaticMutations.destroy({ where: {ident: req.alteration.ident}}).then(
+    db.models.outlier.destroy({ where: {ident: req.outlier.ident}}).then(
       (result) => {
         res.json({success: true});
       },
@@ -72,10 +67,10 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
     // Setup where clause
     let where = {pog_id: req.POG.id}
 
-    // Searching for specific type of alterations
+    // Searching for specific type of outlier
     if(req.params.type) {
       // Are we looking for approved types?
-      where.mutationType = req.params.type;
+      where.outlierType = req.params.type;
     }
 
     console.log('Where clause', where);
@@ -85,10 +80,8 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
       attributes: {
         exclude: ['id', 'deletedAt', 'pog_id']
       },
-      order: 'dataVersion DESC',
-      order: 'gene ASC',
-      group: 'ident'
-    }
+      order: '"dataVersion" DESC, gene ASC'
+    };
 
     // Get all rows for this POG
     db.models.outlier.findAll(options).then(
@@ -108,11 +101,11 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
  *
  */
 router.param('drugTarget', (req,res,next,oIdent) => {
-  db.models.drugTarget.findOne({ where: {ident: oIdent}, attributes: {exclude: ['id', 'deletedAt', 'pog_id']}, order: 'dataVersion DESC'}).then(
+  db.models.drugTarget.findOne({ where: {ident: oIdent}, attributes: {exclude: ['id', 'deletedAt', 'pog_id']}}).then(
     (result) => {
       if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
 
-      req.alteration = result;
+      req.drugTarget = result;
       next();
 
     },
@@ -122,37 +115,30 @@ router.param('drugTarget', (req,res,next,oIdent) => {
   );
 });
 
-// Handle requests for alterations
+// Handle requests for drugTarget
 router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
   .get((req,res,next) => {
 
-    res.json(req.alteration);
+    res.json(req.drugTarget);
 
   })
   .put((req,res,next) => {
 
-    // Bump the version number for this entry
-    req.body.dataVersion = req.alteration.dataVersion + 1;
-    req.body.ident = req.alteration.ident;
-    req.body.pog_id = req.POG.id;
-
-    // Update result
-    db.models.drugTarget.create(req.body).then(
-      (result) => {
-        // Send back newly created/updated result.
-        res.json(result);
+    // Update DB Version for Entry
+    versionDatum(db.models.drugTarget, req.drugTarget, req.body).then(
+      (resp) => {
+        res.json(resp.data.create);
       },
       (error) => {
-        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedOutlierlookup'} });
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedMutationSummaryVersion'}});
       }
     );
-
 
   })
   .delete((req,res,next) => {
     // Soft delete the entry
-    // Update result
-    db.models.drugTarget.destroy({ where: {ident: req.alteration.ident}}).then(
+    db.models.drugTarget.destroy({ where: {ident: req.drugTarget.ident}}).then(
       (result) => {
         res.json({success: true});
       },
@@ -173,10 +159,8 @@ router.route('/drugTarget')
       attributes: {
         exclude: ['id', 'deletedAt', 'pog_id']
       },
-      order: 'dataVersion DESC',
-      order: 'gene ASC',
-      group: 'ident'
-    }
+      order: 'gene ASC'
+    };
 
     // Get all rows for this POG
     db.models.drugTarget.findAll(options).then(

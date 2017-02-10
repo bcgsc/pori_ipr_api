@@ -1,14 +1,15 @@
 // app/routes/genomic/somaticMutation.js
 let express = require('express'),
   router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models');
+  db = require(process.cwd() + '/app/models'),
+  versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('cnv', (req,res,next,mutIdent) => {
-  db.models.cnv.findOne({ where: {ident: mutIdent}, attributes: {exclude: ['id', 'deletedAt']}, order: 'dataVersion DESC'}).then(
+  db.models.cnv.findOne({ where: {ident: mutIdent}, attributes: {exclude: ['id', 'deletedAt']}}).then(
     (result) => {
       if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareCNVLookup'} });
 
-      req.alteration = result;
+      req.cnv = result;
       next();
 
     },
@@ -22,33 +23,27 @@ router.param('cnv', (req,res,next,mutIdent) => {
 router.route('/cnv/:cnv([A-z0-9-]{36})')
   .get((req,res,next) => {
 
-    res.json(req.alteration);
+    res.json(req.cnv);
 
   })
   .put((req,res,next) => {
 
-    // Bump the version number for this entry
-    req.body.dataVersion = req.alteration.dataVersion + 1;
-    req.body.ident = req.alteration.ident;
-    req.body.pog_id = req.POG.id;
-
-    // Update result
-    db.models.cnv.create(req.body).then(
-      (result) => {
-        // Send back newly created/updated result.
-        res.json(result);
+    // Update DB Version for Entry
+    versionDatum(db.models.cnv, req.cnv, req.body).then(
+      (resp) => {
+        res.json(resp.data.create);
       },
       (error) => {
-        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedCNVlookup'} });
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'} });
       }
     );
-
 
   })
   .delete((req,res,next) => {
     // Soft delete the entry
     // Update result
-    db.models.cnv.destroy({ where: {ident: req.alteration.ident}}).then(
+    db.models.cnv.destroy({ where: {ident: req.cnv.ident}}).then(
       (result) => {
         res.json({success: true});
       },
@@ -73,16 +68,12 @@ router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourS
       where.cnvVariant = req.params.type;
     }
 
-    console.log('Where clause', where);
-
     let options = {
       where: where,
       attributes: {
         exclude: ['id', 'deletedAt']
       },
-      order: 'dataVersion DESC',
-      order: 'gene ASC',
-      group: 'ident'
+      order: '"dataVersion" DESC, gene ASC',
     }
 
     // Get all rows for this POG
