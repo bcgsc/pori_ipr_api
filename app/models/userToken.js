@@ -7,13 +7,6 @@ module.exports = (sequelize, Sq) => {
         autoIncrement: true,
         primaryKey: true
       },
-      user_id: {
-        type: Sq.INTEGER,
-        references: {
-          model: 'users',
-          key: 'id',
-        }
-      },
       token: {
         type: Sq.UUID,
         unique: true,
@@ -27,7 +20,8 @@ module.exports = (sequelize, Sq) => {
         type: Sq.DATE,
         allowNull: false,
       },
-    }, {
+    },
+    {
       // Automatically create createdAt, updatedAt, deletedAt
       timestamps: true,
       // Do not use soft-deletes - destroy the tokens!

@@ -62,7 +62,7 @@ let parseAlterationsFile = (POG, alterationFile, log) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({reason: 'probeTarget - sourceFileNotFound'});
   });
   
   return deferred.promise;

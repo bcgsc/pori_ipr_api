@@ -42,7 +42,8 @@ module.exports = (sequelize, Sq) => {
         allowNull: false,
         defaultValue: 'public',
       }
-    }, {
+    },
+    {
       // Automatically create createdAt, updatedAt, deletedAt
       timestamps: true,
       // Use soft-deletes!

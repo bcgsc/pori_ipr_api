@@ -68,6 +68,7 @@ module.exports = (POG, dir, logger) => {
           deferred.resolve(result);
         },
         (err) => {
+          console.log(err);
           log('Failed to load patient tumour analysis.', logger.ERROR)
           deferred.reject('Failed to load Genomic Alterations Identified.');
         }
