@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 describe('/GET summary/variantCounts', () => {
   it('Get variant counts details', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/variantCounts')
+      .get('/api/1.0/POG/POG684/summary/variantCounts')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
@@ -48,7 +48,7 @@ describe('/PUT summary/variantCounts', () => {
     }
     
     chai.request(server)
-      .put('/api/1.0/POG/POG129/summary/variantCounts')
+      .put('/api/1.0/POG/POG684/summary/variantCounts')
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);

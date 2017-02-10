@@ -19,7 +19,7 @@ let ident;
 describe('/GET summary/genomicEventsTherapeutic', () => {
   it('Get genomic events with therapeutic association', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/genomicEventsTherapeutic')
+      .get('/api/1.0/POG/POG684/summary/genomicEventsTherapeutic')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
@@ -53,7 +53,7 @@ describe('/PUT summary/genomicEventsTherapeutic', () => {
     }
     
     chai.request(server)
-      .put('/api/1.0/POG/POG129/summary/genomicEventsTherapeutic/'+ident)
+      .put('/api/1.0/POG/POG684/summary/genomicEventsTherapeutic/'+ident)
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);

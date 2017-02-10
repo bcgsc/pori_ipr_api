@@ -16,48 +16,59 @@ chai.use(require('chai-things'));
 let ident;
 
 // Get genomic alterations identified
-describe('/GET summary/genomicAlterationsIdentified', () => {
-  it('Get genomic alterations that have been identified', (done) => {
+describe('/GET expressionAnalysis/Outliers', () => {
+  it('Get Expression Analysis Outliers', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/genomicAlterationsIdentified')
+      .get('/api/1.0/POG/POG684/genomic/expressionAnalysis/outlier')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('geneVariant');
+        res.body.should.all.have.property('dataVersion');
+        res.body.should.all.have.property('outlierType');
+        res.body.should.all.have.property('gene');
+        res.body.should.all.have.property('location');
+        res.body.should.all.have.property('copyChange');
+        res.body.should.all.have.property('lohState');
+        res.body.should.all.have.property('cnvState');
+        res.body.should.all.have.property('rnaReads');
+        res.body.should.all.have.property('rpkm');
+        res.body.should.all.have.property('foldChange');
+        res.body.should.all.have.property('tcgaPerc');
         res.body.should.all.have.property('createdAt');
         res.body.should.all.have.property('updatedAt');
-        
-        ident = res.body[0].ident;
-        
+
         done();
       });
   });
 });
 
-// Update variant counts details
-describe('/PUT summary/genomicAlterationsIdentified', () => {
-  it('Update genomic alterations that have been identified', (done) => {
-    
-    let update = {
-      "geneVariant": "AKT1 (p.Q79K) -- test-update",
-    }
-    
+// Get genomic alterations identified
+describe('/GET expressionAnalysis/DrugTargets', () => {
+  it('Get Expression Analysis Drug Targets', (done) => {
     chai.request(server)
-      .put('/api/1.0/POG/POG129/summary/genomicAlterationsIdentified/'+ident)
-      .send(update)
+      .get('/api/1.0/POG/POG684/genomic/expressionAnalysis/drugTarget')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
-        res.body.should.be.a('object');
-        res.body.should.have.property('ident');
-        res.body.should.have.property('geneVariant', 'AKT1 (p.Q79K) -- test-update');
-        res.body.should.have.property('createdAt');
-        res.body.should.have.property('updatedAt');
-        
+        res.body.should.be.a('array');
+        res.body.should.all.have.property('ident');
+        res.body.should.all.have.property('dataVersion');
+        res.body.should.all.have.property('gene');
+        res.body.should.all.have.property('copy');
+        res.body.should.all.have.property('lohRegion')
+        res.body.should.all.have.property('tcgaPerc');
+        res.body.should.all.have.property('foldChange');
+        res.body.should.all.have.property('drugOptions');
+        res.body.should.all.have.property('kIQR');
+        res.body.should.all.have.property('kIQRColumn');
+        res.body.should.all.have.property('kIQRNormal');
+        res.body.should.all.have.property('kIQRNormalColumn');
+        res.body.should.all.have.property('createdAt');
+        res.body.should.all.have.property('updatedAt');
+
         done();
       });
   });
 });
-

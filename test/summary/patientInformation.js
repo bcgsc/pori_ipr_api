@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 describe('/GET summary/patientInformation', () => {
   it('Load patient information', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/patientInformation')
+      .get('/api/1.0/POG/POG684/summary/patientInformation')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;

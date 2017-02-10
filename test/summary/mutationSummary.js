@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 describe('/GET summary/mutationSummary', () => {
   it('Get mutation summary', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/mutationSummary')
+      .get('/api/1.0/POG/POG684/summary/mutationSummary')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
@@ -70,7 +70,7 @@ describe('/PUT summary/mutationSummary', () => {
     }
     
     chai.request(server)
-      .put('/api/1.0/POG/POG129/summary/mutationSummary')
+      .put('/api/1.0/POG/POG684/summary/mutationSummary')
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);

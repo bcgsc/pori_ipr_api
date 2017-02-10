@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 describe('/GET summary/tumourAnalysis', () => {
   it('Get tumour analysis', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/tumourAnalysis')
+      .get('/api/1.0/POG/POG684/summary/tumourAnalysis')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
@@ -50,7 +50,7 @@ describe('/PUT summary/tumourAnalysis', () => {
     }
     
     chai.request(server)
-      .put('/api/1.0/POG/POG129/summary/tumourAnalysis')
+      .put('/api/1.0/POG/POG684/summary/tumourAnalysis')
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);

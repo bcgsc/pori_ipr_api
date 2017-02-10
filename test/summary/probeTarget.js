@@ -18,7 +18,7 @@ chai.use(chaiHttp);
 describe('/GET summary/probeTarget', () => {
   it('Get Probe Target variants', (done) => {
     chai.request(server)
-      .get('/api/1.0/POG/POG129/summary/probeTarget')
+      .get('/api/1.0/POG/POG684/summary/probeTarget')
       .end((err, res) => {
         res.should.have.status(200);
         res.should.be.json;
@@ -44,11 +44,11 @@ describe('/PUT summary/probeTarget', () => {
     let update = {
       gene: "AKT1 -- test-update",
       variant: "p.Q79K",
-      sample: "POG129-OCT-1; POG129-OCT-1_trans"
+      sample: "POG684-OCT-1; POG684-OCT-1_trans"
     }
     
     chai.request(server)
-      .put('/api/1.0/POG/POG129/summary/probeTarget/' + probeTarget.ident)
+      .put('/api/1.0/POG/POG684/summary/probeTarget/' + probeTarget.ident)
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);
@@ -71,7 +71,7 @@ describe('/DELETE summary/probeTarget', () => {
   it('Delete probe target details', (done) => {
         
     chai.request(server)
-      .delete('/api/1.0/POG/POG129/summary/probeTarget/' + probeTarget.ident)
+      .delete('/api/1.0/POG/POG684/summary/probeTarget/' + probeTarget.ident)
       .end((err, res) => {
         res.should.have.status(204);
         
