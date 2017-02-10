@@ -28,7 +28,7 @@ let loaders = [
   'summary/genomicAlterationsIdentified',
   'summary/genomicEventsTherapeutic',
   //'summary/probeTarget',
-  
+
   // Detailed Genomic Analysis
   'detailedGenomicAnalysis/alterations',
   'detailedGenomicAnalysis/approvedThisCancer',
@@ -104,7 +104,7 @@ module.exports = (POG, options={}) => {
         log('Failed onboarding process.', logger.ERROR);
         console.log(error);
 
-        if(error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
+        if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
 
         // Return fail
         deferred.reject(fail);
