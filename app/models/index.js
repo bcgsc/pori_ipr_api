@@ -10,14 +10,20 @@ if(process.env.NODE_ENV === 'test') {
 }
 
 // Load database
-let sequelize = new Sq('main', 'root', '', {storage: process.cwd() + '/database/development.sqlite', dialect: 'sqlite', logging:((nconf.get('env') == 'debug') ? console.log : null)});
-//let sequelize = new Sq('main', 'root', '', {storage: process.cwd() + '/database/development.sqlite', dialect: 'sqlite'});
+let sequelize = new Sq(nconf.get('database:postgres:database'), nconf.get('database:postgres:username'), nconf.get('database:postgres:password'), {
+  host: nconf.get('database:postgres:hostname'),
+  dialect: 'postgres',
+  port: nconf.get('database:postgres:port'),
+  schema: nconf.get('database:postgres:schema'),
+  logging: null
+});
 
 // Import Application Models
-let dataHistory = sequelize.import(__dirname + '/dataHistory');
-let user = sequelize.import(__dirname + '/user');
-let userToken = sequelize.import(__dirname + '/userToken');
 
+//let dataHistory = sequelize.import(__dirname + '/dataHistory');
+let user = sequelize.import(__dirname + '/user');
+
+let userToken = sequelize.import(__dirname + '/userToken');
 user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
 userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 
@@ -25,7 +31,7 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 let POG = sequelize.import(__dirname + '/POG');
 let imageData = sequelize.import(__dirname + '/imageData');
 
-imageData.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id'});
+imageData.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
 // Summary
 let summary = {};
@@ -40,6 +46,14 @@ summary.probeTarget = sequelize.import(__dirname + '/summary/probeTarget');
 
 POG.hasOne(summary.patientInformation, {as: 'patientInformation', foreignKey: 'pog_id'});
 POG.hasOne(summary.tumourAnalysis, {as: 'tumourAnalysis', foreignKey: 'pog_id'});
+
+summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.mutationSummary.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.variantCounts.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.genomicAlterationsIdentified.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.analystComments.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.probeTarget.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
 
 // DetailedGenomicAnalysis
 let alterations = sequelize.import(__dirname + '/detailedGenomicAnalysis/alterations');
@@ -57,25 +71,26 @@ copyNumberAnalyses.cnv= sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
 let structuralVariation = {};
 structuralVariation.sv= sequelize.import(__dirname + '/structuralVariation/sv');
 
-
 // Structural Variation
 let expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import(__dirname + '/expressionAnalysis/outlier');
 expressionAnalysis.drugTarget = sequelize.import(__dirname + '/expressionAnalysis/drugTarget');
 
-//POG.hasMany(alterations, {as: 'detailedGenomicAnalysis.alterations', foreignKey: 'pog_id'});
-//alterations.belongsTo(POG, { as: 'pog', foreignKey: 'pog_id'});
 
 // Syncronize tables to model schemas
 if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
-  sequelize.sync({force: true}).then(
+  sequelize.sync(
+    {
+      force: true,
+      schema: nconf.get('database:postgres:schema')
+    }).then(
     (res) => {
       console.log(colors.dim('[DB] ') + colors.bgGreen('Finished syncing'));
       
       // Create Admin User
       // Load in bcrypt
       let bcrypt = require('bcrypt-nodejs');
-      
+
       // Insert Admin User
       user.create({username: 'admin', password: bcrypt.hashSync('admin'), firstName: 'Admin', lastName: 'User', email: 'iprAdmin@bcgsc.ca', access: 'admin'}).then(
         (result) => {
@@ -83,11 +98,14 @@ if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
         },
         (error) => {
           console.log(colors.dim('[DB] ') + colors.bgRed('Unable to create admin user.'));
+          console.log(error);
         }
       );
-      
+
+
     },
     (err) => {
+      console.log(err);
       console.log(colors.dim('[DB] ') + colors.bgRed('Unable to sync database'));
     }
   );
@@ -95,7 +113,7 @@ if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
  
 }
 if(nconf.get('database:migrate') && !nconf.get('database:hardMigrate')) {
-  sequelize.sync();
+  sequelize.sync({schema: nconf.get('database:postgres:schema')});
   console.log('Updating database to match current model schemas'.white.bgRed);
 }
 
