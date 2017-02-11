@@ -41,13 +41,13 @@ module.exports = (sequelize, Sq) => {
         type: Sq.INTEGER
       },
       snvPercentileDisease: {
-        type: Sq.INTEGER
+        type: Sq.STRING
       },
       indelPercentileTCGA: {
         type: Sq.INTEGER
       },
       indelPercentileDisease: {
-        type: Sq.INTEGER
+        type: Sq.STRING
       },
       svPercentilePOG: {
         type: Sq.INTEGER
