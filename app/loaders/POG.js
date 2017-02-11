@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
+  glob = require('glob'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
 /*
@@ -32,25 +33,50 @@ module.exports = (POG, dir, logger) => {
     getInfo(dir, 'qc_summary.csv', log)
   ]).then(
     (results) => {
+      // Finished reading files
+      log('Finished reading Sample, QC & Config File', logger.SUCCESS);
 
       // Pull and process results
       pogInfo.sampleInfo = results[0];
       pogInfo.seqQC = results[1];
-      pogInfo.config = fs.readFileSync(dir + '/Report_tracking.cfg', 'utf8'); // Read in POG Report Config Tracking
 
-      // Add to Database
-      db.models.POG.update(pogInfo, {where: { id: POG.id }, limit: 1})
-        .then(
-          (result) => {
-            log('POG Sample & QC information loaded.', logger.SUCCESS);
-            deferred.resolve({pogSampleQC: true});
-          },
-          (err) => {
-            console.log('SQL Error', err);
-            log('Failed to load patient history.',logger.ERROR)
-            deferred.reject('Unable to load POG sample & QC info');
+      glob(dir + '/Report_tracking.c*', (err, files) => {
+
+        // Did we find it?
+        if(err || files.length == 0) {
+          log('Unable to find report config file.', logger.ERROR);
+          deferred.reject('Unable to find report config file');
+          throw new Error('Unable to find report config file');
+        }
+
+        fs.readFile(files[0], {encoding: 'utf8'}, (err, data) => {
+
+          if(err) {
+            console.log(err);
+            log('Failed to read config file', log.ERROR);
+            deferred.reject('Unable to read config file');
           }
-        );
+
+          // Read config file
+          log('Read in config file', log.SUCCESS);
+          pogInfo.config = data;
+
+          // Add to Database
+          db.models.POG.update(pogInfo, {where: { id: POG.id }, limit: 1})
+            .then(
+              (result) => {
+                log('POG Sample & QC information loaded.', logger.SUCCESS);
+                deferred.resolve({pogSampleQC: true});
+              },
+              (err) => {
+                console.log('SQL Error', err);
+                log('Failed to load patient history.',logger.ERROR)
+                deferred.reject('Unable to load POG sample & QC info');
+              }
+            );
+        }); // End Read File
+
+      }); // end Glob
     },
     (error) => {
       deferred.reject('Unable to load POG QC and sample info');
@@ -83,6 +109,7 @@ let getInfo = (dir, file, log) => {
         deferred.reject({reason: 'parseCSVFail'});
       }
 
+      log('Parsed and read ' + file+ '.');
       deferred.resolve(result);
     }
   );
