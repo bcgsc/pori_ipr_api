@@ -58,6 +58,7 @@ module.exports = (POG, dir, logger) => {
           deferred.resolve(entry);
         },
         (err) => {
+          console.log(err);
           log('Failed to create mutation summary entry.', logger.ERROR);
         }
       );
