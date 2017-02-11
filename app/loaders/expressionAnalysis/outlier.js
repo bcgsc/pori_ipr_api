@@ -134,8 +134,9 @@ module.exports = (POG, dir, logger) => {
         // Problem creating DB entries
         (err) => {
           log('Unable to create database entries.', logger.ERROR);
-          new Error('Unable to create expression outliers database entries.');
           deferred.reject('Unable to create expression outliers database entries.');
+          console.log(err);
+          new Error('Unable to create expression outliers database entries.');
         }
       );
 
