@@ -45,3 +45,29 @@ describe('/GET SomaticMutations/SmallMutations', () => {
       });
   });
 });
+
+// Get Mutation Signature
+describe('/GET SomaticMutations/MutationSignature', () => {
+  it('Get mutation signature data', (done) => {
+    chai.request(server)
+      .get('/api/1.0/POG/POG684/genomic/somaticMutations/mutationSignature')
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.should.be.json;
+        res.body.should.be.a('array');
+        res.body.should.all.have.property('ident');
+        res.body.should.all.have.property('dataVersion');
+        res.body.should.all.have.property('signature');
+        res.body.should.all.have.property('pearson');
+        res.body.should.all.have.property('nnls');
+        res.body.should.all.have.property('associations');
+        res.body.should.all.have.property('features');
+        res.body.should.all.have.property('numCancerTypes');
+        res.body.should.all.have.property('cancerTypes');
+        res.body.should.all.have.property('createdAt');
+        res.body.should.all.have.property('updatedAt');
+
+        done();
+      });
+  });
+});
