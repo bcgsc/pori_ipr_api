@@ -16,9 +16,9 @@ let deferred = Q.defer();
 chai.use(chaiHttp);
 
 // Onboard/Loag POG129
-describe('/GET loadPog', () => {
+describe('/GET loadPog', function() {
 
-
+  this.slow(8000);
 
   console.log('Waiting for server to come up before starting tests.');
 
