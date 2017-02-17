@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
+  p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
 /*
@@ -45,9 +46,10 @@ module.exports = (POG, dir, logger) => {
       // Create Entries Array
       let entries = remapKeys(result, nconf.get('columnMapping:expressionAnalysis:drugTarget'));
 
-      // Loop over returned rows, and read in each column value
-      _.forEach(result, (v, k) => {
-        entries[k].pog_id = POG.id
+      // Loop over returned rows, append row with POGid
+      _.forEach(entries, (v, k) => {
+        entries[k].pog_id = POG.id;
+        entries[k] = p2s(v, ['kIQR', 'kIQRNormal', 'copy']);
       });
 
       // Add to Database
@@ -59,6 +61,7 @@ module.exports = (POG, dir, logger) => {
           deferred.resolve(result);
         },
         (err) => {
+          console.log('SQL ERROR', err);
           log('Failed to load Expression Drug Target Analysis.', logger.ERROR)
           deferred.reject('Failed to load Expression Drug Target Analysis.');
         }
