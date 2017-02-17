@@ -91,5 +91,30 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
 
   });
 
+// Routing for Alteration
+router.route('/mutationSignature')
+  .get((req,res,next) => {
+
+    let options = {
+      where: {pog_id: req.POG.id},
+      attributes: {
+        exclude: ['id', 'deletedAt']
+      },
+      order: 'signature ASC',
+    };
+
+    // Get all rows for this POG
+    db.models.mutationSignature.findAll(options).then(
+      (result) => {
+        res.json(result);
+      },
+      (error) => {
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedMutationSignaturelookup'} });
+      }
+    );
+
+  });
+
 
 module.exports = router;
