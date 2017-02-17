@@ -67,8 +67,10 @@ targetedGenes.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', 
 // Somatic Mutations
 let somaticMutations = {};
 somaticMutations.smallMutations = sequelize.import(__dirname + '/somaticMutations/smallMutations');
+somaticMutations.mutationSignature = sequelize.import(__dirname + '/somaticMutations/mutationSignature');
 
 somaticMutations.smallMutations.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+somaticMutations.mutationSignature.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // Copy Number Analysis
 let copyNumberAnalyses = {};
