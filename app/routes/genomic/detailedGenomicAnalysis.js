@@ -75,9 +75,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       where.approvedTherapy = null;
       where.alterationType = {$ne: 'unknown'};
     }
-    
-    console.log('Where clause', where);
-    
+
     let options = {
       where: where, 
       attributes: {
