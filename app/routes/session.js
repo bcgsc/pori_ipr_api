@@ -1,5 +1,6 @@
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
+    ldapAuth = require(process.cwd() + '/app/libs/ldapAuth'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
     loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations'),
@@ -90,6 +91,26 @@ router.route('/:all?')
     );
     
     
+  });
+
+router.route('/ldapAuth')
+  .post((req,res,next) => {
+
+    // Attempt an LDAP Authentication
+    ldapAuth.authenticate(req.body.username, req.body.password).then(
+      (resp) => {
+
+        res.json({success:true});
+
+      },
+      (error) => {
+
+        console.log(error);
+        res.status(500).json({success:false});
+
+      }
+    );
+
   });
   
 module.exports = router;
