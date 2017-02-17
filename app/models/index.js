@@ -46,37 +46,49 @@ summary.genomicEventsTherapeutic = sequelize.import(__dirname + '/summary/genomi
 summary.analystComments = sequelize.import(__dirname + '/summary/analystComments');
 summary.probeTarget = sequelize.import(__dirname + '/summary/probeTarget');
 
-POG.hasOne(summary.patientInformation, {as: 'patientInformation', foreignKey: 'pog_id'});
-POG.hasOne(summary.tumourAnalysis, {as: 'tumourAnalysis', foreignKey: 'pog_id'});
+POG.hasOne(summary.patientInformation, {as: 'patientInformation', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
+POG.hasOne(summary.tumourAnalysis, {as: 'tumourAnalysis', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
 
-summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
-summary.mutationSummary.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
-summary.variantCounts.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
-summary.genomicAlterationsIdentified.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
-summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
-summary.analystComments.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
-summary.probeTarget.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE'});
+summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.mutationSummary.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.variantCounts.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.genomicAlterationsIdentified.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.analystComments.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.probeTarget.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // DetailedGenomicAnalysis
 let alterations = sequelize.import(__dirname + '/detailedGenomicAnalysis/alterations');
 let targetedGenes = sequelize.import(__dirname + '/detailedGenomicAnalysis/targetedGenes');
 
+alterations.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+targetedGenes.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+
 // Somatic Mutations
 let somaticMutations = {};
 somaticMutations.smallMutations = sequelize.import(__dirname + '/somaticMutations/smallMutations');
 
+somaticMutations.smallMutations.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+
 // Copy Number Analysis
 let copyNumberAnalyses = {};
-copyNumberAnalyses.cnv= sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
+copyNumberAnalyses.cnv = sequelize.import(__dirname + '/copyNumberAnalysis/cnv');
+
+copyNumberAnalyses.cnv.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // Structural Variation
 let structuralVariation = {};
-structuralVariation.sv= sequelize.import(__dirname + '/structuralVariation/sv');
+structuralVariation.sv = sequelize.import(__dirname + '/structuralVariation/sv');
+
+structuralVariation.sv.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // Structural Variation
 let expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import(__dirname + '/expressionAnalysis/outlier');
 expressionAnalysis.drugTarget = sequelize.import(__dirname + '/expressionAnalysis/drugTarget');
+
+expressionAnalysis.outlier.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+expressionAnalysis.drugTarget.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 
 // Syncronize tables to model schemas
