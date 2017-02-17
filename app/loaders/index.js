@@ -37,6 +37,7 @@ let loaders = [
 
   // Somatic Mutations
   'somaticMutations/smallMutations',
+  'somaticMutations/mutationSignature',
 
   // Copy Number Analyses
   'copyNumberAnalysis/cnv',

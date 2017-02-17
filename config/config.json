@@ -116,6 +116,15 @@
         "expression_rpkm": "expressionRpkm",
         "fold_change": "foldChange",
         "TCGA_perc": "TCGAPerc"
+      },
+      "mutationSignature": {
+        "Signature": "signature",
+        "Pearson": "pearson",
+        " NNLS  ": "nnls",
+        "Probable Associations": "associations",
+        "Additional Features": "features",
+        "# Cancer types": "numCancerTypes",
+        "Significant Cancer Type": "cancerTypes"
       }
     },
     "copyNumberAnalysis": {
