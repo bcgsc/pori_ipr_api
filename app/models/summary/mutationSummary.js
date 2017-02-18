@@ -24,9 +24,8 @@ module.exports = (sequelize, Sq) => {
         }
       },
       mutationSignature: {
-        type: Sq.STRING,
-        allowNull: true,
-        defaultValue: null,
+        type: Sq.JSONB,
+        defaultValue: [],
       },
       totalSNV: {
         type: Sq.STRING,
