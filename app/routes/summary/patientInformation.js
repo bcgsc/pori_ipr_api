@@ -2,7 +2,8 @@
 let express = require('express'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
-    logger = require(process.cwd() + '/app/libs/logger');
+    logger = require(process.cwd() + '/app/libs/logger'),
+    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
 
 // Middleware for Patient Information
 router.use('/', (req,res,next) => {
@@ -34,5 +35,20 @@ router.route('/')
     res.json(req.patientInformation);
     
   })
+  .put((req,res,next) => {
+
+    // Update DB Version for Entry
+    versionDatum(db.models.patientInformation, req.patientInformation, req.body).then(
+      (resp) => {
+        res.json(resp.data.create);
+      },
+      (error) => {
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPatientInformationVersion'}});
+      }
+    );
+
+
+  });
   
 module.exports = router;
