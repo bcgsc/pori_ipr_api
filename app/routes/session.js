@@ -25,10 +25,7 @@ router.route('/')
 
     // Attempt to find username
     db.models.user.findOne({ where: {username: username}}).then(
-
       (user) => {
-
-        console.log('User Lookup!', user);
 
         if(user === null) return res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
 
@@ -63,18 +60,12 @@ router.route('/')
         // Attempt BCGSC LDAP Authentication
         if(user.type === 'bcgsc') {
 
-          console.log('Proceeding to LDAP lookup');
-
           // Auth against local LDAP
           ldapAuth.authenticate(username, password).then(
             (resp) => {
 
-              console.log('[Session] Auth successful, create token');
-
               createToken(user, req).then(
                 (token) => {
-
-                  console.log('[Session] Token created, sending...');
 
                   res.set('X-token', token);
                   res.json({

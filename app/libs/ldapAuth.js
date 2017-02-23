@@ -25,24 +25,25 @@ module.exports = {
 
     let deferred = Q.defer();
 
-    console.log('Inside Attempt LDAP auth;');
-    
-    // Attempt LDAP bind
-    client.bind({
-      binddn: 'uid='+user+',ou=Webusers,dc=bcgsc,dc=ca',
-      password: pass
-    }, (err) => {
+    try {
+      // Attempt LDAP bind
+      client.bind({
+        binddn: 'uid=' + user + ',ou=Webusers,dc=bcgsc,dc=ca',
+        password: pass
+      }, (err) => {
 
-      console.log('LDAP return. Error: ', err);
-
-      if(err) {
-        deferred.reject({status: false, message: 'invalid credentials'});
-      }
-      if(!err) {
-        console.log('Successful LDAP auth');
-        deferred.resolve({status: true, message: 'success'});
-      }
-    });
+        if (err) {
+          deferred.reject({status: false, message: 'invalid credentials'});
+        }
+        if (!err) {
+          console.log('Successful LDAP auth');
+          deferred.resolve({status: true, message: 'success'});
+        }
+      });
+    } catch(error) {
+      console.log('Unable to attempt LDAP auth');
+      deferred.reject({status: false, message: 'unable to authenticate'});
+    }
 
     return deferred.promise;
   }
