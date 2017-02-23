@@ -1,9 +1,12 @@
+"use strict";
+
 // app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
+let validator = require('validator'),
+    express = require('express'),
+    bcrypt = require('bcrypt'),
     router = express.Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models'),
-    loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations');
-  
+    db = require(process.cwd() + '/app/models');
+
 // Route for getting a POG
 router.route('/')
 
@@ -42,8 +45,6 @@ router.route('/')
         res.status(500).json({error: { message: 'Unable to update your account. Please try again', code: 'failedUserUpdateQuery'}});
       }
     );
-    
-    
   });
   
 module.exports = router;

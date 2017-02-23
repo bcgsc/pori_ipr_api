@@ -1,10 +1,16 @@
 "use strict";
 
 let Q = require('q'),
-    ldap = require('ldapjs'),
-    client = ldap.createClient({
-      url: 'ldap://gsc-ldap.bcgsc.ca:389/ou=Webusers,dc=bcgsc,dc=ca?uid?sub'
-    });
+    ldap = require('ldap-client');
+
+let client = new ldap({
+  uri: 'ldap://gsc-ldap.bcgsc.ca:389',
+  validatecert: false,
+  connect: (err) => {
+    if(err) console.log('Connection Error: ', err);
+    console.log('Connected to LDAP');
+  }
+});
 
 module.exports = {
 
@@ -19,11 +25,23 @@ module.exports = {
 
     let deferred = Q.defer();
 
+    console.log('Inside Attempt LDAP auth;');
+    
     // Attempt LDAP bind
-    client.bind('cn='+user, pass, (err, resp) => {
-      console.log(err);
-      if(err) deferred.reject({status: false, message: 'Unable to authenticate', response: err}); // If error reject
-      if(!err) deferred.resolve({status:true, message: 'Authenticated', response: true}); // Success
+    client.bind({
+      binddn: 'uid='+user+',ou=Webusers,dc=bcgsc,dc=ca',
+      password: pass
+    }, (err) => {
+
+      console.log('LDAP return. Error: ', err);
+
+      if(err) {
+        deferred.reject({status: false, message: 'invalid credentials'});
+      }
+      if(!err) {
+        console.log('Successful LDAP auth');
+        deferred.resolve({status: true, message: 'success'});
+      }
     });
 
     return deferred.promise;
