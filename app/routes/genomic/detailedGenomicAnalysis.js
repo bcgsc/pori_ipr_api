@@ -29,6 +29,14 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
   })
   .put((req,res,next) => {
 
+    // Promoting from unknown to another state.
+    if(req.alteration.alterationType == 'unknown' && req.body.alterationType !== 'unknown') {
+      db.models.genomicAlterationsIdentified.create({
+        pog_id: req.POG.id,
+        geneVariant: req.alteration.gene + ' (' + req.alteration.variant + ')'
+      });
+    }
+
     // Update DB Version for Entry
     versionDatum(db.models.alterations, req.alteration, req.body).then(
       (resp) => {
