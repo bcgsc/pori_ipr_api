@@ -38,7 +38,7 @@ module.exports = (sequelize, Sq) => {
         }
       },
       access: {
-        type: Sq.ENUM('public','bioinformatician','analyst','admin'),
+        type: Sq.ENUM('clinician','bioinformatician','analyst','administration','superuser'),
         allowNull: false,
         defaultValue: 'public',
       }
