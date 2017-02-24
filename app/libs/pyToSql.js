@@ -14,7 +14,7 @@ const map = {
  * Map Python int & data values to SQL-safe values
  *
  * @param {string|object} input - Input value to be matched against
- * @param {array} cols -
+ * @param {array} [cols] - Array of cols to be remapped
  * @returns {string|object} - remapped text or input if not found
  */
 module.exports = (input, cols) => {
