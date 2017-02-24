@@ -1,8 +1,11 @@
+"use strict";
+
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
-  versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
+    _ = require('lodash'),
+    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('alteration', (req,res,next,altIdent) => {
    db.models.genomicAlterationsIdentified.findOne({ where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}}).then(
@@ -46,7 +49,27 @@ router.route('/:alteration([A-z0-9-]{36})')
     // Update result
     db.models.genomicAlterationsIdentified.destroy({ where: {ident: req.alteration.ident}}).then(
       (result) => {
-        res.json({success: true});
+
+        // Is there a query message?
+        if(req.query.cascade && req.query.cascade === 'true') {
+
+          // Check to see if we're propagating this down into Detailed Genomic
+          let gene = _.split(req.alteration.geneVariant, (/\s/));
+          let where = { gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), pog_id: req.POG.id };
+
+          // Cascade removal of variant through Detailed Genomic Analysis
+          db.models.alterations.destroy({where: where}).then(
+            (resp) => {
+              res.status(204).json();
+            },
+            (err) => {
+              res.status(500).json({status: true, message: 'Unable to cascade removal into Detailed Genomic Analysis.'});
+            }
+          );
+
+        } else {
+          res.status(204).send();
+        }
       },
       (error) => {
         res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedGenomicAlterationsIdentifiedRemove'} });
