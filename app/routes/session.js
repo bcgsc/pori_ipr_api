@@ -5,7 +5,6 @@ let express = require('express'),
     ldapAuth = require(process.cwd() + '/app/libs/ldapAuth'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
-    loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations'),
     bcrypt = require('bcrypt'),
     moment = require('moment'),
     _ = require('lodash'),
@@ -64,38 +63,34 @@ router.route('/')
 
           $jira.authenticate(req.body.username, req.body.password).then(
             (resp) => {
-              // Successful Login
-              if(!resp.errorMessages) {
-                // Ensure we have a real JIRA token
-                if(resp.session && resp.session.value) {
+              // Ensure we have a real JIRA token -- Successful Login
+              if(!resp.errorMessages && resp.session && resp.session.value) {
 
-                  createToken(user, req).then(
-                    (token) => {
+                // Update User Entry
+                user.jiraToken = resp.session.value;
+                user.save(); // Save Changes to User;
 
-                      res.set('X-token', token);
-                      res.json({
-                        ident: user.ident,
-                        username: user.username,
-                        type: user.type,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        email: user.email,
-                        access: user.access
-                      });
-                    },
-                    (error) => {
-                      res.status(500).json({message: 'Unable to create user token'});
-                    }
-                  ); // End create token
+                createToken(user, req).then(
+                  (token) => {
 
-                } else {
-                  res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
-                }
-              }
+                    res.set('X-token', token);
+                    res.json({
+                      ident: user.ident,
+                      username: user.username,
+                      type: user.type,
+                      firstName: user.firstName,
+                      lastName: user.lastName,
+                      email: user.email,
+                      access: user.access
+                    });
+                  },
+                  (error) => {
+                    res.status(500).json({message: 'Unable to create user token'});
+                  }
+                ); // End create token
+              } else {
 
-              // Unsuccessful Login
-              if(resp.errorMessages && resp.errorMessages.length > 0) {
-                res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
+                res.status(400).json({ status: false, message: 'Unable to authenticate with the provided credentials.' });
               }
             },
             (err) => {
@@ -109,9 +104,25 @@ router.route('/')
       }, // End user exists in DB...
       (error) => {
 
-        // TODO: Check BCGSC LDAP anyway, maybe they just haven't signed up for our accounts yet!
+        // TODO: Check BCGSC JIRA anyway, maybe they just haven't signed up for our accounts yet!
 
         res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
+      }
+    );
+  })
+  .delete((req,res,next) => {
+    // Delete Token
+    let token = req.header('Authorization');
+
+    if(token === null || token === undefined) return res.status(404).json({error: {message: 'Unable to destroy your session', code: 'noUserTokenSent'}});
+
+    // Remove Entry
+    db.models.userToken.destroy({ where: {token: token} }).then(
+      (result) => {
+        res.status(204).send();
+      },
+      (error) => {
+        res.status(500).json({error: {message: 'Unable to destroy your session', code: 'failedUserTokenDestroy'}});
       }
     );
   });
@@ -181,59 +192,7 @@ router.route('/create')
     );
 });
 
-router.route('/all')
-  .delete((req,res,next) => {
-    // Delete Token
-    let token = req.header('Authorization');
-    
-    if(token === null || token === undefined) return res.status(404).json({error: {message: 'Unable to destroy your session', code: 'noUserTokenSent'}});
-    
-    // Remove Entry
-    db.models.userToken.destroy({ where: {token: token} }).then(
-      (result) => {
-        res.status(204).send();
-      },
-      (error) => {
-        res.status(500).json({error: {message: 'Unable to destroy your session', code: 'failedUserTokenDestroy'}});
-      }
-    );
-    
-    
-  });
-
-
-  router.route('/jiraTest')
-  .post((req,res,next) => {
-
-    $jira.authenticate(req.body.username, req.body.password).then(
-      (resp) => {
-        // Successful Login
-        if(!resp.errorMessages) {
-          // Ensure we have a real JIRA token
-          if(resp.session && resp.session.value) {
-
-
-
-          } else {
-            res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
-          }
-        }
-
-        // Unsuccessful Login
-        if(resp.errorMessages && resp.errorMessages.length > 0) {
-          res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
-        }
-      },
-      (err) => {
-        console.log('Error', err);
-        res.status(500).json(err);
-      }
-    )
-
-  });
-  
 module.exports = router;
-
 
 /**
  * Check if an email address is in use.
