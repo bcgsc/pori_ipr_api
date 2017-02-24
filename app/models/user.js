@@ -21,7 +21,7 @@ module.exports = (sequelize, Sq) => {
         type: Sq.STRING,
       },
       type: {
-        type: Sq.ENUM('bcgsc','local'),
+        type: Sq.ENUM('bcgsc', 'local'),
         defaultValue: 'local',
       },
       firstName: {
@@ -37,10 +37,14 @@ module.exports = (sequelize, Sq) => {
           isEmail: true
         }
       },
+      jiraToken: {
+        type: Sq.STRING,
+        allowNull: true,
+        defaultValue: null
+      },
       access: {
-        type: Sq.ENUM('clinician','bioinformatician','analyst','administration','superuser'),
+        type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'administration', 'superUser'),
         allowNull: false,
-        defaultValue: 'public',
       }
     },
     {
@@ -49,7 +53,7 @@ module.exports = (sequelize, Sq) => {
       // Use soft-deletes!
       paranoid: true,
     });
-    
+
   return user;
 };
 

@@ -10,7 +10,8 @@ let express = require('express'),
     moment = require('moment'),
     _ = require('lodash'),
     validator = require('validator'),
-    Q = require('q');
+    Q = require('q'),
+    $jira = require(process.cwd() + '/app/api/jira');
 
 // Route for authentication actions
 router.route('/')
@@ -60,40 +61,56 @@ router.route('/')
         // Attempt BCGSC LDAP Authentication
         if(user.type === 'bcgsc') {
 
-          // Auth against local LDAP
-          ldapAuth.authenticate(username, password).then(
+
+          $jira.authenticate(req.body.username, req.body.password).then(
             (resp) => {
+              // Successful Login
+              if(!resp.errorMessages) {
+                // Ensure we have a real JIRA token
+                if(resp.session && resp.session.value) {
 
-              createToken(user, req).then(
-                (token) => {
+                  createToken(user, req).then(
+                    (token) => {
 
-                  res.set('X-token', token);
-                  res.json({
-                    ident: user.ident,
-                    username: user.username,
-                    type: user.type,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.email,
-                    access: user.access
-                  });
-                },
-                (error) => {
-                  res.status(500).json({message: 'Unable to create user token'});
+                      res.set('X-token', token);
+                      res.json({
+                        ident: user.ident,
+                        username: user.username,
+                        type: user.type,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        email: user.email,
+                        access: user.access
+                      });
+                    },
+                    (error) => {
+                      res.status(500).json({message: 'Unable to create user token'});
+                    }
+                  ); // End create token
+
+                } else {
+                  res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
                 }
-              ); // End create token
+              }
 
+              // Unsuccessful Login
+              if(resp.errorMessages && resp.errorMessages.length > 0) {
+                res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
+              }
             },
             (err) => {
-              res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
+              console.log('Error', err);
+              res.status(500).json(err);
             }
-          ); // Auth Attempt
+          );
+
         } // End attempt BCGSC LDAP Auth
 
       }, // End user exists in DB...
       (error) => {
 
         // TODO: Check BCGSC LDAP anyway, maybe they just haven't signed up for our accounts yet!
+
         res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
       }
     );
@@ -164,7 +181,7 @@ router.route('/create')
     );
 });
 
-router.route('/:all?')
+router.route('/all')
   .delete((req,res,next) => {
     // Delete Token
     let token = req.header('Authorization');
@@ -184,23 +201,34 @@ router.route('/:all?')
     
   });
 
-router.route('/ldapAuth')
+
+  router.route('/jiraTest')
   .post((req,res,next) => {
 
-    // Attempt an LDAP Authentication
-    ldapAuth.authenticate(req.body.username, req.body.password).then(
+    $jira.authenticate(req.body.username, req.body.password).then(
       (resp) => {
+        // Successful Login
+        if(!resp.errorMessages) {
+          // Ensure we have a real JIRA token
+          if(resp.session && resp.session.value) {
 
-        res.json({success:true});
 
+
+          } else {
+            res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
+          }
+        }
+
+        // Unsuccessful Login
+        if(resp.errorMessages && resp.errorMessages.length > 0) {
+          res.status(400).json({status: false, message: 'Unable to authenticate with the provided credentials.'});
+        }
       },
-      (error) => {
-
-        console.log(error);
-        res.status(500).json({success:false});
-
+      (err) => {
+        console.log('Error', err);
+        res.status(500).json(err);
       }
-    );
+    )
 
   });
   
