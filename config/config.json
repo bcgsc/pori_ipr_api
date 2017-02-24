@@ -27,6 +27,12 @@
       "prefix": ""
     }
   },
+
+  "jira": {
+    "hostname": "www.bcgsc.ca",
+    "api": "/jira/rest",
+    "version": "2"
+  },
   
   "redis": {
     "uri": "",
