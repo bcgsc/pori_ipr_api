@@ -37,6 +37,10 @@ module.exports = (sequelize, Sq) => {
       POGID: {
         type: Sq.STRING,
       },
+      caseType: {
+        type: Sq.STRING,
+        allowNull: false
+      },
       tumourType: {
         type: Sq.STRING,
       },
