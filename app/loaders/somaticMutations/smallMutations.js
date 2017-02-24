@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
+  p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 
 let baseDir;
@@ -51,6 +52,8 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
         // Map needed DB column values
         entries[k].pog_id = POG.id;
         entries[k].mutationType = mutationType;
+        entries[k].TCGAPerc = p2s(v.TCGAPerc);
+
       });
 
       // Log progress
@@ -134,6 +137,7 @@ module.exports = (POG, dir, logger) => {
         },
         // Problem creating DB entries
         (err) => {
+          console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create small mutations database entries.');
           deferred.reject('Unable to create small mutations database entries.');
