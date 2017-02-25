@@ -31,8 +31,14 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 
 // POG
 let POG = sequelize.import(__dirname + '/POG');
-let imageData = sequelize.import(__dirname + '/imageData');
+let POGuser = sequelize.import(__dirname + '/POGUser');
 
+POGuser.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+POGuser.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL'});
+POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'});
+
+
+let imageData = sequelize.import(__dirname + '/imageData');
 imageData.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
 // Summary
