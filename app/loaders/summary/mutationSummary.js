@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     _ = require('lodash'),
     Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Load Mutation Summary File
@@ -43,7 +43,7 @@ module.exports = (POG, dir, logger) => {
       if(result.length > 1) return new Error('['+POG.POGID+'][Loader][Summary.MutationSummary] More than one mutation summary entry found.');
     
       // Remap results
-      let entry = _.head(remapKeys(result, nconf.get('columnMapping:summary:mutation')));
+      let entry = _.head(remapKeys(result, nconf.get('summary:mutation')));
       
       // Map needed DB column values
       entry.pog_id = POG.id;

@@ -8,7 +8,7 @@ let db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
   Q = require('q'),
   p2s = require(process.cwd() + '/app/libs/pyToSql'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 let baseDir;
 
@@ -45,7 +45,7 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
       }
 
       // Remap results
-      let entries = remapKeys(result, nconf.get('columnMapping:somaticMutations:smallMutations'));
+      let entries = remapKeys(result, nconf.get('somaticMutations:smallMutations'));
 
       // Add new values for DB
       entries.forEach((v, k) => {

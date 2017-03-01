@@ -5,7 +5,19 @@
 
 
 // API Version
-const API_VERSION = '1.0'
+const API_VERSION = '1.0';
+let minimist = require('minimist');
+
+
+
+// Set environment based on config first.
+if(process.env.NODE_ENV === undefined || process.env.NODE_ENV === null) {
+  // Get from command line args
+  const args = minimist(process.argv.slice(2));
+  if(args.env) process.env.NODE_ENV = args.env;
+  if(!args.env) process.env.NODE_ENV = 'production';
+}
+const CONFIG = require('./config/'+process.env.NODE_ENV+'.json');
 
 // Call packages required
 let express	= require('express'),		// Call express
@@ -28,8 +40,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Set environment based on config first.
-process.env.NODE_ENV = nconf.get('env');
 
 // Suppress Console messages when testing...
 if (process.env.NODE_ENV !== 'test') {
@@ -39,7 +49,8 @@ if (process.env.NODE_ENV !== 'test') {
 // Start Server
 console.log(('  BCGSC - IPR-API Server '+ API_VERSION +'  ').blue.bold.bgWhite);
 console.log("=".repeat(50).dim);
-console.log(("Node Version: " + process.version).yellow, '\n');
+console.log(("Node Version: " + process.version).yellow);
+console.log(('Running Environment: '+ process.env.NODE_ENV).green, '\n');
 
 // Create router instance
 let router = express.Router();
@@ -62,12 +73,12 @@ app.use('/api/' + API_VERSION, require('./app/routes/index'));
 // START THE SERVER
 // =========================================================================
 try {
-  app.listen(nconf.get('web:port'));
+  app.listen(CONFIG.web.port);
 }
 catch(error) {
   console.log('Unable to start server', error);
   process.exit();
 }
-console.log(('API Ready for requests on port:').yellow, nconf.get('web:port'));
+console.log(('API Ready for requests on port:').yellow, CONFIG.web.port);
 
 module.exports = app;

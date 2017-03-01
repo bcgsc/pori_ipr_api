@@ -1,9 +1,9 @@
 {
-  "env": "production",
+  "env": "development",
 
   "web": {
     "port": 8001,
-    "hostname": "iprweb01.bcgsc.ca"
+    "hostname": "127.0.0.1"
   },
 
   "database": {
@@ -43,7 +43,8 @@
   "paths": {
     "data": {
       "POGdata": "/projects/tumour_char/pog/reports/genomic",
-      "dataDir": "/P*/jreport_genomic_summary_*/report"
+      "dataDir": "/P*/jreport_genomic_summary_*/report",
+      "probeData": "/projects/tumour_char/pog/reports/probing"
     }
   }
 }

@@ -7,7 +7,8 @@ let db = require(process.cwd() + '/app/models'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     _ = require('lodash'),
     Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'}),
+    colMap = require('nconf').file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Parse Alterations File
@@ -40,7 +41,7 @@ let parseAlterationsFile = (POG, alterationFile, log) => {
       }
     
       // Remap results
-      let entries = remapKeys(result, nconf.get('columnMapping:summary:probeTargets'));
+      let entries = remapKeys(result, colMap.get('summary:probeTargets'));
       
       // Add new values for DB
       entries.forEach((v, k) => {

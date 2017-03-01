@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     _ = require('lodash'),
     Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Parse Approved Therapries in this Cancer File
@@ -40,7 +40,7 @@ module.exports = (POG, dir, logger) => {
       }
     
       // Remap results
-      let entries = remapKeys(result, nconf.get('columnMapping:detailedGenomicAnalysis:alterations'));
+      let entries = remapKeys(result, nconf.get('detailedGenomicAnalysis:alterations'));
       
       // Add new values for DB
       entries.forEach((v, k) => {

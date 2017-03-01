@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     _ = require('lodash'),
     Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Parse Patient Information File
@@ -43,7 +43,7 @@ module.exports = (POG, dir, logger) => {
       if(result.length > 1) return new Error('['+POG.POGID+'][Loader][Summary.PatientInformation] More than one patient history entry found.');
     
       // Remap results
-      let entry = _.head(remapKeys(result, nconf.get('columnMapping:summary:patientInformation')));
+      let entry = _.head(remapKeys(result, nconf.get('summary:patientInformation')));
       
       // Map needed DB column values
       entry.pog_id = POG.id;

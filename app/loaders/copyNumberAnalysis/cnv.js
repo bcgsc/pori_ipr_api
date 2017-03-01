@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 
 let baseDir;
@@ -45,7 +45,7 @@ let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
       }
 
       // Remap results
-      let entries = remapKeys(result, nconf.get('columnMapping:copyNumberAnalysis:cnv'));
+      let entries = remapKeys(result, nconf.get('copyNumberAnalysis:cnv'));
 
       // Add new values for DB
       entries.forEach((v, k) => {

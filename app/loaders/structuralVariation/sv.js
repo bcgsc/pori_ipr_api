@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 let baseDir;
 
@@ -44,7 +44,7 @@ let parseStructuralVariantFile = (POG, structuralVariationFile, variantType, log
       }
 
       // Remap results
-      let entries = remapKeys(result, nconf.get('columnMapping:structuralVariation:sv'));
+      let entries = remapKeys(result, nconf.get('structuralVariation:sv'));
 
       // Add new values for DB
       entries.forEach((v, k) => {

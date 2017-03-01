@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 let baseDir;
 
@@ -44,7 +44,7 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
       }
 
       // Remap results
-      let entries = remapKeys(result, nconf.get('columnMapping:expressionAnalysis:outlier'));
+      let entries = remapKeys(result, nconf.get('expressionAnalysis:outlier'));
 
       // Add new values for DB
       entries.forEach((v, k) => {

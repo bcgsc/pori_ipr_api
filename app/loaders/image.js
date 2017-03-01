@@ -8,7 +8,7 @@ let db = require(process.cwd() + '/app/models'),
     im = require('imagemagick'),
     exec = require('child_process').exec,
     glob = require('glob'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 // Image Path
 let imagePath;

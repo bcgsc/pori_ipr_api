@@ -7,7 +7,7 @@ let db = require(process.cwd() + '/app/models'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     _ = require('lodash'),
     Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Parse Variant Counts File
@@ -43,7 +43,7 @@ module.exports = (POG, dir, logger) => {
       if(result.length > 1) return deferred.reject('More than one patient tumour analysis entry found.') && new Error('['+POG.POGID+'][Loader][Summary.VariantCounts] More than one patient variants count entry found.');
     
       // Remap results
-      let entry = _.head(remapKeys(result, nconf.get('columnMapping:summary:variantCounts')));
+      let entry = _.head(remapKeys(result, nconf.get('summary:variantCounts')));
       
       // Map needed DB column values
       entry.pog_id = POG.id;

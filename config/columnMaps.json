@@ -1,0 +1,175 @@
+{
+  "detailedGenomicAnalysis": {
+    "alterations": {
+      "Gene": "gene",
+      "Variant": "variant",
+      "KBVariant": "kbVariant",
+      "Disease": "disease",
+      "Effect": "effect",
+      "Association": "association",
+      "Therapeutic Context": "therapeuticContext",
+      "Status": "status",
+      "Reference": "reference",
+      "Copy Number": "copyNumber",
+      "Sample": "sample",
+      "LOH Region": "LOHRegion",
+      "Zygosity": "zygosity",
+      "Evidence": "evidence",
+      "Variant_type": "variant_type",
+      "KB_type": "kb_type",
+      "KB_ENTRY_type": "kb_entry_type",
+      "KB_event_key": "kb_event_key",
+      "KB_ENTRY_key": "kb_entry_key"
+    },
+    "targetedGenes": {
+      "Gene": "gene",
+      "Variant": "variant",
+      "Sample": "sample"
+    }
+  },
+  "expressionAnalysis": {
+    "outlier": {
+      "ploidy_corr_cp_change": "copyChange",
+      "loh_state": "lohState",
+      "cnv_state": "cnvState",
+      "RNA_reads": "rnaReads",
+      "expression_rpkm": "rpkm",
+      "fold_change": "foldChange",
+      "TCGA_perc": "tcgaPerc"
+    },
+    "drugTarget": {
+      "Gene": "gene",
+      "Copy #": "copy",
+      "LOH Region": "lohRegion",
+      "Fold Change": "foldChange",
+      "TCGA percentile": "tcgaPerc",
+      "Drug Options": "drugOptions",
+      "kIQR": "kIQR",
+      "kIQR_column": "kIQRColumn",
+      "kIQR_normal": "kIQRNormal",
+      "kIQR_normal_column": "kIQRNormalColumn"
+    }
+  },
+  "structuralVariation": {
+    "sv": {
+      "Genes `5~`3": "genes",
+      "Exons `5/`3": "exons",
+      "Breakpoint": "breakpoint",
+      "Event type": "eventType",
+      "Detected in": "detectedIn",
+      "Conventional Name": "conventionalName",
+      "RPKM `5/`3": "rpkm",
+      "Fold change `5/`3": "foldChange",
+      "TCGA %ile `5/`3": "tcgaPerc",
+      "svg_filename": "svg",
+      "svg_title_file": "svgTitle",
+      "cterm_gene": "ctermGene",
+      "nterm_gene": "ntermGene",
+      "cterm_transcript": "ctermTranscript",
+      "nterm_transcript": "ntermTranscript"
+    }
+  },
+  "somaticMutations": {
+    "smallMutations": {
+      "protein_change": "proteinChange",
+      "ref_alt": "refAlt",
+      "ploidy_corr_cp_change": "ploidyCorrCpChange",
+      "loh_state": "lohState",
+      "tumour_reads": "tumourReads",
+      "RNA_reads": "RNAReads",
+      "expression_rpkm": "expressionRpkm",
+      "fold_change": "foldChange",
+      "TCGA_perc": "TCGAPerc"
+    },
+    "mutationSignature": {
+      "Signature": "signature",
+      "Pearson": "pearson",
+      " NNLS  ": "nnls",
+      "Probable Associations": "associations",
+      "Additional Features": "features",
+      "# Cancer types": "numCancerTypes",
+      "Significant Cancer Type": "cancerTypes"
+    }
+  },
+  "copyNumberAnalysis": {
+    "cnv": {
+      "ploidy_corr_cp_change": "ploidyCorrCpChange",
+      "loh_state": "lohState",
+      "cnv_state": "cnvState",
+      "chromosome_band": "chromosomeBand",
+      "expression_rpkm": "expressionRpkm",
+      "fold_change": "foldChange",
+      "TCGA_perc": "tcgaPerc"
+    }
+  },
+  "summary": {
+    "patientInformation": {
+      "Physician": "physician",
+      "Gender": "gender",
+      "Age": "age",
+      "POG ID": "POGID",
+      "Case Type": "caseType",
+      "Tumour Type": "tumourType",
+      "Report Date": "reportDate",
+      "Biopsy Site": "biopsySite"
+    },
+    "tumourAnalysis": {
+      "Estimated Tumour Content": "tumourContent",
+      "Ploidy": "ploidy",
+      "Normal Exp Comparator": "normalExpressionComparator",
+      "Disease Expression Comparator": "diseaseExpressionComparator",
+      "TCGA Color": "tcgaColor"
+    },
+    "mutation": {
+      "nsSNV-truncating": "totalSNV",
+      "indels-frameshift": "totalIndel",
+      "sv-expressed": "totalSV",
+      "SNV_percentile_amongst_allTCGA": "snvPercentileTCGA",
+      "SNV_percentile_amongst_specificDisease": "snvPercentileDisease",
+      "INDEL_percentile_amongst_allTCGA": "indelPercentileTCGA",
+      "INDEL_percentile_amongst_specificDisease": "indelPercentileDisease",
+      "SV_percentile_amongst_allPOG": "svPercentilePOG",
+      "SNV_percentile_amongst_allTCGA_category": "snvPercentileTCGACategory",
+      "SNV_percentile_amongst_specificDisease_category": "snvPercentileDiseaseCategory",
+      "INDEL_percentile_amongst_allTCGA_category": "indelPercentileTCGACategory",
+      "INDEL_percentile_amongst_specificDisease_category": "indelPercentileDiseaseCategory",
+      "SV_percentile_amongst_allPOG_category": "svPercentilePOGCategory",
+      "SNV_Report_category": "snvReportCategory",
+      "INDEL_Report_category": "indelReportCategory"
+    },
+    "variantCounts": {
+      "Small Mutations": "smallMutations",
+      "Copy Number Variants": "CNVs",
+      "Structural Variants": "SVs",
+      "Expression Outliers": "expressionOutliers",
+      "Variants of Uncertain Significance": "variantsUnknown"
+    },
+    "genomicEventsTherapeutic": {
+      "Genomic Event": "genomicEvent",
+      "Approved in this cancer type": "approvedThisCancerType",
+      "Approved in other cancer type": "approvedOtherCancerType",
+      "Emerging preclinical evidence": "emergingPreclinicalEvidence"
+    },
+    "probeTargets": {
+      "Gene": "gene",
+      "Variant": "variant",
+      "KBVariant": "kbVariant",
+      "Disease": "disease",
+      "Effect": "effect",
+      "Association": "association",
+      "Therapeutic Context": "therapeuticContext",
+      "Status": "status",
+      "Reference": "reference",
+      "Copy Number": "copyNumber",
+      "Sample": "sample",
+      "LOH Region": "LOHRegion",
+      "Zygosity": "zygosity",
+      "Evidence": "evidence",
+      "Variant_type": "variant_type",
+      "KB_type": "kb_type",
+      "KB_ENTRY_type": "kb_entry_type",
+      "KB_event_key": "kb_event_key",
+      "KB_ENTRY_key": "kb_entry_key"
+    }
+  }
+}

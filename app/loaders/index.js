@@ -12,7 +12,7 @@ let db = require(process.cwd() + '/app/models'),
     glob = require('glob'),
     _ = require('lodash'),
     eventEmitter = require('events'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
 
 // Map of loaders
 let loaders = [

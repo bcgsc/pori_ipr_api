@@ -8,7 +8,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /**
  * Load Mutation Signature file and parse into database
@@ -51,7 +51,7 @@ module.exports = (POG, dir, logger) => {
           deferred.reject({reason: 'parseCSVFail', message: 'Unable to find CSV file for Mutation Signature'});
         }
 
-        let entries = remapKeys(result, nconf.get('columnMapping:somaticMutations:mutationSignature'));
+        let entries = remapKeys(result, nconf.get('somaticMutations:mutationSignature'));
 
         // Loop over entries
         _.forEach(entries, (v, k) => {

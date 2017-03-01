@@ -8,7 +8,7 @@ let db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
   Q = require('q'),
   p2s = require(process.cwd() + '/app/libs/pyToSql'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Parse Expression Drug Target Analysis File
@@ -44,7 +44,7 @@ module.exports = (POG, dir, logger) => {
       }
 
       // Create Entries Array
-      let entries = remapKeys(result, nconf.get('columnMapping:expressionAnalysis:drugTarget'));
+      let entries = remapKeys(result, nconf.get('expressionAnalysis:drugTarget'));
 
       // Loop over returned rows, append row with POGid
       _.forEach(entries, (v, k) => {

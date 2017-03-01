@@ -8,7 +8,7 @@ let db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
   Q = require('q'),
   glob = require('glob'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /*
  * Parse Patient Information File
