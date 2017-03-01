@@ -4,19 +4,24 @@ let path = require('path');
 let nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 let colors = require('colors');
 
+const CONFIG = require( process.cwd() + '/config/'+process.env.NODE_ENV+'.json');
 /*
-// If testing, override config
-if(process.env.NODE_ENV === 'test') {
-  nconf.file({file: './config/test.json'});
-}
-*/
-
 // Load database
 let sequelize = new Sq(nconf.get('database:postgres:database'), nconf.get('database:postgres:username'), nconf.get('database:postgres:password'), {
   host: nconf.get('database:postgres:hostname'),
   dialect: 'postgres',
   port: nconf.get('database:postgres:port'),
   schema: nconf.get('database:postgres:schema'),
+  logging: null
+});
+*/
+// Load database
+const dbSettings = CONFIG.database[CONFIG.database.engine];
+let sequelize = new Sq(dbSettings.database, dbSettings.username, dbSettings.password, {
+  host: dbSettings.hostname,
+  dialect: 'postgres',
+  port: dbSettings.port,
+  schema: dbSettings.schema,
   logging: null
 });
 
@@ -50,6 +55,7 @@ summary.variantCounts = sequelize.import(__dirname + '/summary/variantCounts');
 summary.genomicAlterationsIdentified = sequelize.import(__dirname + '/summary/genomicAlterationsIdentified');
 summary.genomicEventsTherapeutic = sequelize.import(__dirname + '/summary/genomicEventsTherapeutic');
 summary.analystComments = sequelize.import(__dirname + '/summary/analystComments');
+summary.pathwayAnalysis = sequelize.import(__dirname + '/summary/pathwayAnalysis');
 summary.probeTarget = sequelize.import(__dirname + '/summary/probeTarget');
 
 POG.hasOne(summary.patientInformation, {as: 'patientInformation', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
@@ -61,6 +67,7 @@ summary.variantCounts.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKe
 summary.genomicAlterationsIdentified.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.genomicEventsTherapeutic.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.analystComments.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.pathwayAnalysis.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.probeTarget.belongsTo(user, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // DetailedGenomicAnalysis
