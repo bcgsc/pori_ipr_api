@@ -48,10 +48,11 @@ router.param('group', (req,res,next,ident) => {
 // Route for getting a Group
 router.route('/')
 
-// Get All Users
+// Get All Groups
   .get((req,res,next) => {
     let opts = {
       attributes: {exclude: ['id','owner_id', 'deletedAt']},
+      order: 'name ASC',
       include: [
         {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}}
       ]
