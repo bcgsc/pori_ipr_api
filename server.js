@@ -1,3 +1,4 @@
+"use strict";
 // server.js
 
 // BASE SETUP
@@ -7,7 +8,6 @@
 // API Version
 const API_VERSION = '1.0';
 let minimist = require('minimist');
-
 
 
 // Set environment based on config first.
@@ -54,12 +54,6 @@ console.log(('Running Environment: '+ process.env.NODE_ENV).green, '\n');
 
 // Create router instance
 let router = express.Router();
-
-// Create test route for checking API health
-router.get('/', (req, res) => {
-  res.json({heart: 'beat'});
-});
-
 
 // ROUTING  ----------------------------------------------------------------
 // All API routes will be prefixed with /api/x.x
