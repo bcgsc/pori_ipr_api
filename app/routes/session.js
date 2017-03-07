@@ -10,7 +10,8 @@ let express = require('express'),
     _ = require('lodash'),
     validator = require('validator'),
     Q = require('q'),
-    $jira = require(process.cwd() + '/app/api/jira');
+    $jira = require(process.cwd() + '/app/api/jira'),
+    emailInUse = require(process.cwd() + '/app/libs/emailInUse');
 
 // Route for authentication actions
 router.route('/')
@@ -59,7 +60,6 @@ router.route('/')
 
         // Attempt BCGSC LDAP Authentication
         if(user.type === 'bcgsc') {
-
 
           $jira.authenticate(req.body.username, req.body.password).then(
             (resp) => {
@@ -127,93 +127,7 @@ router.route('/')
     );
   });
 
-router.route('/create')
-  .post((req,res,next) => {
-
-    // Create new user
-
-    // Validate input
-    let required_inputs = ['username', 'password', 'type', 'firstName', 'lastName', 'email', 'access'];
-    let input_errors = [];
-
-    // Inputs set
-    _.forEach(required_inputs, (v) => {
-      if(req.body[v] === undefined) {
-        input_errors.push({
-          input: v,
-          message: v + ' is a required input'
-        });
-      }
-    });
-
-    // Check if email password is valid only if type=local
-    if(req.body.type === 'local' && req.body.password.length > 8) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
-    if(req.body.type === 'local' && validator.isLength(req.body.password, {min:8,max:250})) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
-
-    if(!validator.isEmail(req.body.email)) input_errors.push({input: 'email', message: 'email address must be valid'});
-
-    if(req.body.firstName.length < 1) input_errors.push({input: 'firstName', message: 'first name must be set'});
-    if(req.body.lastName.length < 1) input_errors.push({input: 'lastName', message: 'last name must be set'});
-
-    if(req.body.username.length < 2) input_errors.push({input: 'username', message: 'username must be set'});
-
-    if(validator.isIn(req.body.access, [db.models.user.rawAttributes.access.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
-
-    if(validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
-
-    // Check if account
-    emailInUse(req.body.email).then(
-      (resp) => {
-        if(resp) input_errors.push({input: 'email', message: 'email address is already registered.'});
-
-        if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
-
-        // Hash password
-        if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
-        if(req.body.type === 'ldap') req.body.password = null;
-
-        // Everything looks good, create the account!
-        db.models.user.create(req.body).then(
-          (resp) => {
-            // Account created, send details
-            res.json(resp);
-          },
-          (err) => {
-            console.log('Unable to create user account', err);
-            res.status(500).json({status: false, message: 'Unable to create user account.'});
-          }
-        );
-      },
-      (err) => {
-        // Unable to lookup email address
-        console.log(err);
-        res.status(500).json({message: 'Unable to register account.'});
-      }
-    );
-});
-
 module.exports = router;
-
-/**
- * Check if an email address is in use.
- *
- * @param email
- * @returns {*|promise|boolean}
- */
-let emailInUse= (email) => {
-  let deferred = Q.defer();
-  db.models.user.findAll({where: {email: email}}).then(
-    (res) => {
-      if(res.length > 0) deferred.resolve(true);
-      if(res.length < 1) deferred.resolve(false);
-    },
-    (err) => {
-      console.log('EmaiLInUse Failed', err);
-      deferred.reject({status: false, message: 'Unable to lookup email in use status of: ' + email});
-    }
-  );
-  return deferred.promise;
-};
 
 /**
  * Create authentication token

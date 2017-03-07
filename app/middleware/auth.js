@@ -1,3 +1,5 @@
+"use strict";
+
 let _ = require('lodash'),
     router = require('express').Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models');
@@ -5,13 +7,13 @@ let _ = require('lodash'),
 let ignored = {
   files: ['index.js', 'POG.js', 'session.js'],
   routes: ['loadPog'],
-}
+};
 
 // Require Active Session Middleware
 module.exports = (req,res,next) => {
   
   // Get Authorization Header
-  token = req.header('Authorization');
+  let token = req.header('Authorization');
   
   // Test mode?
   if(process.env.NODE_ENV === 'test') {
@@ -36,13 +38,21 @@ module.exports = (req,res,next) => {
     if(token === null || token === undefined) return res.status(403).json({error: { message: 'Invalid authorization token', code: 'invalidAuthorizationToken'}});
     
     // Lookup token
-    db.models.userToken.findOne({where: {token: token}, include: [{model: db.models.user, as: 'user', attributes: {exclude:['id', 'password', 'deletedAt']}}]}).then(
+    db.models.userToken.findOne({
+      where: {token: token},
+      include: [{model: db.models.user, as: 'user', attributes: {exclude:['password', 'deletedAt']}, include: [
+        {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}}
+      ]}]
+    }).then(
       (result) => {
         if(result === null) return res.status(403).json({error: { message: 'Invalid authorization token', code: 'invalidAuthorizationToken'}});
-        
+
         if(result.token) {
           req.user = result.user;
+
+          db.models.user.update({lastLogin: db.fn('NOW')}, {where: {ident: result.user.ident}});
           next();
+
         }
       },
       (error) => {
@@ -52,4 +62,4 @@ module.exports = (req,res,next) => {
     );
   }
   
-}
+};

@@ -15,7 +15,7 @@ let ignored = {
 
 // Middleware
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
-router.use('(/POG/*|/user/*|/user)', require(process.cwd() + '/app/middleware/auth'));
+router.use('(/POG|/POG/*|/user/*|/user)', require(process.cwd() + '/app/middleware/auth'));
 
 // Retrieve route files
 recursive('./app/routes/', (err, files) => {
@@ -46,8 +46,6 @@ recursive('./app/routes/', (err, files) => {
     
   });
 });
-
-
   
 // Setup other routes
 router.use('/POG', require('./POG'));

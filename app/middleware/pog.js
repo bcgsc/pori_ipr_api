@@ -19,16 +19,20 @@ module.exports = (req,res,next,pogID) => {
       where: {POGID: pogID},
       attributes: {exclude: ['deletedAt']},
       include: [
-        {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }, order: 'dataVersion DESC', group: 'ident' },
-        {model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }, order: 'dataVersion DESC', group: 'ident' },
+        {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+        {model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+        {model: db.models.POGUser, as: 'POGUsers', attributes: {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']}, include: [
+          {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}},
+          {as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}}
+        ]}
       ],
-      group: '"POG".id, "patientInformation".id, "tumourAnalysis".id',
+      //group: '"POG".id, "patientInformation".id, "tumourAnalysis".id',
       //order: 'POG.dataVersion DESC'
     }).then(
     (result) => {
       // Nothing found?
       if(result === null) return res.status(404).json({error: {message: 'Unable to find the requested POG', code: 'pogMiddlewareLookupFail'}});
-      
+
       // POG found, next()
       if(result !== null) {
         req.POG = result;

@@ -5,16 +5,7 @@ let nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/c
 let colors = require('colors');
 
 const CONFIG = require( process.cwd() + '/config/'+process.env.NODE_ENV+'.json');
-/*
-// Load database
-let sequelize = new Sq(nconf.get('database:postgres:database'), nconf.get('database:postgres:username'), nconf.get('database:postgres:password'), {
-  host: nconf.get('database:postgres:hostname'),
-  dialect: 'postgres',
-  port: nconf.get('database:postgres:port'),
-  schema: nconf.get('database:postgres:schema'),
-  logging: null
-});
-*/
+
 // Load database
 const dbSettings = CONFIG.database[CONFIG.database.engine];
 let sequelize = new Sq(dbSettings.database, dbSettings.username, dbSettings.password, {
@@ -38,10 +29,17 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 let POG = sequelize.import(__dirname + '/POG');
 let POGuser = sequelize.import(__dirname + '/POGUser');
 
-POGuser.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+POG.belongsToMany(user, {as: 'users', through: {model: POGuser, unique: false }, foreignKey: 'pog_id', otherKey: 'user_id', onDelete: 'CASCADE'});
+user.belongsToMany(POG, {as: 'pogs', through: {model: POGuser, unique: false }, foreignKey: 'user_id', otherKey: 'pog_id', onDelete: 'CASCADE'});
+
+POG.hasMany(POGuser, {as: 'POGUsers', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 POGuser.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL'});
 POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'});
 
+let userGroup = sequelize.import(__dirname + '/userGroup.js');
+let userGroupMember = sequelize.import(__dirname + '/userGroupMember.js');
+user.belongsToMany(userGroup, {as: 'groups', through: userGroupMember, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE'});
+userGroup.belongsToMany(user, {as: 'users', through: userGroupMember, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE'});
 
 let imageData = sequelize.import(__dirname + '/imageData');
 imageData.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id', onDelete: 'CASCADE'});
@@ -124,6 +122,14 @@ if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
       user.create({username: 'admin', password: bcrypt.hashSync('AdminMaster', 10), firstName: 'Admin', lastName: 'User', email: 'iprAdmin@bcgsc.ca', access: 'superUser'}).then(
         (result) => {
           console.log(colors.dim('[DB] ') + colors.bgGreen('Admin user created.'));
+
+          userGroup.bulkCreate([
+            {name: 'superUser', owner_id: 1},
+            {name: 'admin', owner_id: 1},
+            {name: 'analyst', owner_id: 1},
+            {name: 'bioinformatician', owner_id: 1},
+            {name: 'clinician', owner_id: 1},
+          ]);
         },
         (error) => {
           console.log(colors.dim('[DB] ') + colors.bgRed('Unable to create admin user.'));

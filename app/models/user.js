@@ -45,6 +45,11 @@ module.exports = (sequelize, Sq) => {
       access: {
         type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'administration', 'superUser'),
         allowNull: false,
+      },
+      lastLogin: {
+        type: Sq.DATE,
+        defaultValue: null,
+        allowNull: true
       }
     },
     {

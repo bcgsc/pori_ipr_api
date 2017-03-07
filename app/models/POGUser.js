@@ -23,6 +23,13 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    user_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'users',
+        key: 'id',
+      }
+    },
     addedBy_id: {
       type: Sq.INTEGER,
       allowNull: true,
