@@ -127,6 +127,11 @@ function ACL(request, response) {
         if (_.intersection(userGroups, this._read).length > 0) allowed = true;
       }
 
+      // Write Access
+      if (['POST', 'PUT', 'DELETE'].indexOf(this._req.method) > -1) {
+        if (_.intersection(userGroups, this._write).length > 0) allowed = true;
+      }
+
       // Check Explicitly Not Allowed Groups
       let nintersect = _.intersection(this._nGroups, userGroups);
 

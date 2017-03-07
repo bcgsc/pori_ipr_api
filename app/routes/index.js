@@ -9,9 +9,9 @@ let changeCase = require('change-case'),
 
 // Ignored Routes for POG
 let ignored = {
-  files: ['POG.js', 'session.js', 'user.js', '.svn'],
+  files: ['POG.js', 'session.js', 'user.js', '.svn', 'user'],
   routes: ['loadPog', '.svn'],
-}
+};
 
 // Middleware
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
@@ -21,9 +21,10 @@ router.use('(/POG|/POG/*|/user/*|/user)', require(process.cwd() + '/app/middlewa
 recursive('./app/routes/', (err, files) => {
     
   files.forEach((route) => {
-    
+
     // Remove index file
     if(route === 'app/routes/index.js') return;
+    if(route.indexOf('/user/') !== -1) return;
     if(route.indexOf('.svn') !== -1) return; // Must SVN make so many directories?!
     if(ignored.files.indexOf(_.last(route.split('/'))) !== -1) return;
     
@@ -50,6 +51,7 @@ recursive('./app/routes/', (err, files) => {
 // Setup other routes
 router.use('/POG', require('./POG'));
 router.use('/session', require('./session'));
-router.use('/user', require('./user'));
+router.use('/user', require('./user/index'));
+router.use('/user/group', require('./user/group'));
 
 module.exports = router;

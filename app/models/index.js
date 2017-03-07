@@ -38,8 +38,8 @@ POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'}
 
 let userGroup = sequelize.import(__dirname + '/userGroup.js');
 let userGroupMember = sequelize.import(__dirname + '/userGroupMember.js');
-user.belongsToMany(userGroup, {as: 'groups', through: userGroupMember, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE'});
-userGroup.belongsToMany(user, {as: 'users', through: userGroupMember, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE'});
+user.belongsToMany(userGroup, {as: 'groups', through: {model: userGroupMember, unique: false }, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE'});
+userGroup.belongsToMany(user, {as: 'users', through: {model: userGroupMember, unique: false }, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE'});
 
 let imageData = sequelize.import(__dirname + '/imageData');
 imageData.belongsTo(POG, {as: 'POG', foreignKey: 'pog_id', onDelete: 'CASCADE'});

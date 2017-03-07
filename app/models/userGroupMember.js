@@ -2,8 +2,14 @@
 
 module.exports = (sequelize, Sq) => {
   let userGroupMember = sequelize.define('userGroupMember', {
+      id: {
+        type: Sq.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+      },
       user_id: {
         type: Sq.INTEGER,
+        unique: false,
         allowNull: false,
         references: {
           model: 'Users',
@@ -12,6 +18,7 @@ module.exports = (sequelize, Sq) => {
       },
       group_id: {
         type: Sq.INTEGER,
+        unique: false,
         allowNull: false,
         references: {
           model: 'userGroups',
