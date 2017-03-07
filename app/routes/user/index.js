@@ -55,51 +55,90 @@ router.route('/')
       }
     });
 
+    // Check for existing account.
+    db.models.user.findOne({where: {username: req.body.username, deletedAt: {$not: null}}, paranoid: false}).then(
+      (existCheck) => {
+        if(existCheck !== null) {
+          // Restore!
+          db.models.user.update({deletedAt: null}, {paranoid:false,where:{ident: existCheck.ident}, returning: true}).then(
+            (user) => {
 
-    // Check if email password is valid only if type=local
-    if(req.body.type === 'local' && req.body.password.length > 8) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
-    if(req.body.type === 'local' && validator.isLength(req.body.password, {min:8,max:250})) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
+              let response = {
+                ident: user[1][0].ident,
+                username: user[1][0].username,
+                type: user[1][0].type,
+                firstName: user[1][0].firstName,
+                lastName: user[1][0].lastName,
+                email: user[1][0].email,
+                access: user[1][0].access,
+                createdAt: user[1][0].createdAt,
+                updatedAt: user[1][0].updatedAt,
+                lastLogin: user[1][0].lastLogin
+              };
 
-    if(!validator.isEmail(req.body.email)) input_errors.push({input: 'email', message: 'email address must be valid'});
+              res.json(response);
+            },
+            (err) => {
+              console.log('Unable to restore username', err);
+              res.status(500).json({error: {message: 'Unable to restore existing username', code: 'failedUsernameCheckQuery'}});
+            }
+          )
 
-    if(req.body.firstName.length < 1) input_errors.push({input: 'firstName', message: 'first name must be set'});
-    if(req.body.lastName.length < 1) input_errors.push({input: 'lastName', message: 'last name must be set'});
+        }
 
-    if(req.body.username.length < 2) input_errors.push({input: 'username', message: 'username must be set'});
+        if(existCheck === null) {
 
-    //if(validator.isIn(req.body.access, [db.models.user.rawAttributes.access.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
+          // Check if email password is valid only if type=local
+          if(req.body.type === 'local' && req.body.password.length > 8) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
+          if(req.body.type === 'local' && validator.isLength(req.body.password, {min:8,max:250})) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
 
-    req.body.access = "clinician";
+          if(!validator.isEmail(req.body.email)) input_errors.push({input: 'email', message: 'email address must be valid'});
 
-    if(validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
+          if(req.body.firstName.length < 1) input_errors.push({input: 'firstName', message: 'first name must be set'});
+          if(req.body.lastName.length < 1) input_errors.push({input: 'lastName', message: 'last name must be set'});
 
-    // Check if account
-    emailInUse(req.body.email).then(
-      (resp) => {
-        if(resp) input_errors.push({input: 'email', message: 'email address is already registered.'});
+          if(req.body.username.length < 2) input_errors.push({input: 'username', message: 'username must be set'});
 
-        if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
+          //if(validator.isIn(req.body.access, [db.models.user.rawAttributes.access.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
 
-        // Hash password
-        if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
-        if(req.body.type === 'ldap') req.body.password = null;
+          req.body.access = "clinician";
 
-        // Everything looks good, create the account!
-        db.models.user.create(req.body).then(
-          (resp) => {
-            // Account created, send details
-            res.json(resp);
-          },
-          (err) => {
-            console.log('Unable to create user account', err);
-            res.status(500).json({status: false, message: 'Unable to create user account.'});
-          }
-        );
+          if(validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
+
+          // Check if account
+          emailInUse(req.body.email).then(
+            (resp) => {
+              if(resp) input_errors.push({input: 'email', message: 'email address is already registered.'});
+
+              if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
+
+              // Hash password
+              if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
+              if(req.body.type === 'ldap') req.body.password = null;
+
+              // Everything looks good, create the account!
+              db.models.user.create(req.body).then(
+                (resp) => {
+                  // Account created, send details
+                  res.json(resp);
+                },
+                (err) => {
+                  console.log('Unable to create user account', err);
+                  res.status(500).json({status: false, message: 'Unable to create user account.'});
+                }
+              );
+            },
+            (err) => {
+              // Unable to lookup email address
+              console.log(err);
+              res.status(500).json({message: 'Unable to register account.'});
+            }
+          );
+        }
       },
       (err) => {
-        // Unable to lookup email address
-        console.log(err);
-        res.status(500).json({message: 'Unable to register account.'});
+        console.log('Unable to check for existing username', err);
+        res.status(500).json({error: {message: 'unable to check if this username has been taken', code: 'failedUserNameExistsQuery'}});
       }
     );
 
@@ -180,6 +219,28 @@ router.route('/:ident([A-z0-9-]{36})')
         res.status(500).json({error: { message: 'Unable to update your account. Please try again', code: 'failedUserUpdateQuery'}});
       }
     );
+  })
+  // Remove a user
+  .delete((req,res,next) => {
+
+    // Remove a user
+    let access = new acl(req, res);
+    access.write('admin','superUser');
+    if(access.check() === false) return res.status(403).send();
+
+    // Find User
+    db.models.user.destroy({where: {ident: req.params.ident}, limit:1}).then(
+      (resp) => {
+        if(resp === null) res.status(400).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemove'}});
+
+        res.status(204).send();
+      },
+      (err) => {
+        console.log('SQL Failed User remove', err);
+        res.status(500).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemoveQuery'}});
+      }
+    )
+
   });
 
 // User Search
