@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 
 // Suppress Console messages when testing...
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('combined', {stream: null}));
+  app.use(morgan(':method :url :status [:req[Authorization]] :res[content-length] - :response-time ms', {stream: null}));
 }
 
 // Start Server
@@ -57,12 +57,7 @@ let router = express.Router();
 
 // ROUTING  ----------------------------------------------------------------
 // All API routes will be prefixed with /api/x.x
-app.use((req,res,next) => {
-  require('./app/libs/logger').route(req.url);
-  next();
-});
 app.use('/api/' + API_VERSION, require('./app/routes/index'));
-
 
 // START THE SERVER
 // =========================================================================
