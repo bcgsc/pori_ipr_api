@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let POG = sequelize.define('dataHistory', {
+  let dataHistory = sequelize.define('dataHistory', {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,
@@ -12,7 +12,27 @@ module.exports = (sequelize, Sq) => {
         unique: true,
         defaultValue: Sq.UUIDV4
       },
-      user: {
+      type: {
+        type: Sq.ENUM('change', 'version', 'tag'),
+        defaultValue: 'change',
+      },
+      table: {
+        type: Sq.STRING,
+        unique: false,
+      },
+      entry: {
+        type: Sq.STRING,
+        unique: false,
+      },
+      previous: {
+        type: Sq.TEXT,
+        unique: false
+      },
+      new: {
+        type: Sq.TEXT,
+        unique: false
+      },
+      user_id: {
         type: Sq.INTEGER,
         unique: false,
         references: {
@@ -20,17 +40,16 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         }
       },
-      note: {
+      comment: {
         type: Sq.TEXT,
-        allowNull: false,
+        allowNull: true
       }
     }, {
-      // Automatically create createdAt, updatedAt, deletedAt
-      timestamps: true,
-      // Use soft-deletes!
-      paranoid: true,
+      // Automatically create createdAt
+      createdAt: true,
+      updatedAt: false,
     });
     
-  return POG;
+  return dataHistory;
 };
 
