@@ -155,6 +155,7 @@ router.route('/me')
       lastName: req.user.lastName,
       email: req.user.email,
       jiraToken: req.user.jiraToken,
+      jiraXsrf: req.user.jiraXsrf,
       access: req.user.access,
       lastLogin: req.user.lastLogin,
       createdAt: req.user.createdAt,

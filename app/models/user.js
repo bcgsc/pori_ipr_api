@@ -42,6 +42,11 @@ module.exports = (sequelize, Sq) => {
         allowNull: true,
         defaultValue: null
       },
+      jiraXsrf: {
+        type: Sq.STRING,
+        allowNull: true,
+        defaultValue: null
+      },
       access: {
         type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'administration', 'superUser'),
         allowNull: false,

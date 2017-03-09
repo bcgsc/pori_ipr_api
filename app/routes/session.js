@@ -11,6 +11,7 @@ let express = require('express'),
     validator = require('validator'),
     Q = require('q'),
     $jira = require(process.cwd() + '/app/api/jira'),
+    crypto = require('crypto'),
     emailInUse = require(process.cwd() + '/app/libs/emailInUse');
 
 // Route for authentication actions
@@ -64,10 +65,19 @@ router.route('/')
           $jira.authenticate(req.body.username, req.body.password).then(
             (resp) => {
               // Ensure we have a real JIRA token -- Successful Login
-              if(!resp.errorMessages && resp.session && resp.session.value) {
+              if(!resp.data.errorMessages && resp.data.session && resp.data.session.value) {
+                
+                // Extract cookie values
+                let cookies = resp.raw.headers["set-cookie"];
+                let xsrf, jToken;
+                _.forEach(cookies, (c) => {
+                  // get tokens from headers
+                  if(c.indexOf('JSESSIONID') !== -1) jToken = c.match(/=([A-z0-9-|]*)/)[0].replace('=','');
+                });
 
                 // Update User Entry
-                user.jiraToken = resp.session.value;
+                user.jiraXsrf = xsrf;
+                user.jiraToken = jToken;
                 user.save(); // Save Changes to User;
 
                 createToken(user, req).then(

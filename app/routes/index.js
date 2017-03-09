@@ -15,7 +15,7 @@ let ignored = {
 
 // Middleware
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
-router.use('(/POG|/POG/*|/user/*|/user)', require(process.cwd() + '/app/middleware/auth'));
+router.use('(/POG|/POG/*|/user/*|/user|/jira)', require(process.cwd() + '/app/middleware/auth'));
 
 // Retrieve route files
 recursive('./app/routes/', (err, files) => {
@@ -53,5 +53,6 @@ router.use('/POG', require('./POG'));
 router.use('/session', require('./session'));
 router.use('/user', require('./user/index'));
 router.use('/user/group', require('./user/group'));
+router.use('/jira', require('./jira'));
 
 module.exports = router;

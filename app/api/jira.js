@@ -55,7 +55,7 @@ let $jira = {
 
         // On end
         res.on('end', (resp) => {
-          resolve(JSON.parse(data));
+          resolve({raw: res, data: JSON.parse(data)});
         });
 
       });
