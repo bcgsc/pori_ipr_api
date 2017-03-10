@@ -29,7 +29,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.somaticMutations, req.mutation, req.body).then(
+    versionDatum(db.models.somaticMutations, req.mutation, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },
@@ -67,8 +67,6 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
       // Are we looking for approved types?
       where.mutationType = req.params.type;
     }
-
-    console.log('Where clause', where);
 
     let options = {
       where: where,

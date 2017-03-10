@@ -29,7 +29,7 @@ router.route('/:target([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.probeTarget, req.target, req.body).then(
+    versionDatum(db.models.probeTarget, req.target, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },

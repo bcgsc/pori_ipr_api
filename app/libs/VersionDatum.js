@@ -23,7 +23,7 @@ const db = require(process.cwd() + '/app/models'),
  * @rejects object - {status: bool, message: string}
  *
  */
-module.exports = (model, currentEntry, newEntry, destroyIndex='ident', colsToMap=['ident','pog_id']) => {
+module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex='ident', colsToMap=['ident','pog_id']) => {
 
   let deferred = Q.defer();
 
@@ -60,6 +60,19 @@ module.exports = (model, currentEntry, newEntry, destroyIndex='ident', colsToMap
         // Delete existing version
         model.destroy({where: destroyWhere, limit: 1}).then(
           (destroyResponse) => {
+
+            // Create DataHistory entry
+            let dh = {
+              type: 'change',
+              table: model.getTableName(),
+              entry: newEntry.ident,
+              previous: currentEntry.dataVersion,
+              new: newEntry.dataVersion,
+              user_id: user.id,
+              comment: comment
+            };
+            db.models.dataHistory.create(dh);
+
             // Resolve promise
             deferred.resolve({status: true, data: {create: createResponse, destroy: destroyResponse}});
           },

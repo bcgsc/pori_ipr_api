@@ -37,7 +37,7 @@ router.route('/')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.variantCounts, req.variantCounts, req.body).then(
+    versionDatum(db.models.variantCounts, req.variantCounts, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },

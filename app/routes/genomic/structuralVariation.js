@@ -29,7 +29,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.sv, req.variation, req.body).then(
+    versionDatum(db.models.sv, req.variation, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },
@@ -67,8 +67,6 @@ router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport)?')
       // Are we looking for approved types?
       where.svVariant = req.params.type;
     }
-
-    console.log('Where clause', where);
 
     let options = {
       where: where,

@@ -32,7 +32,7 @@ router.route('/:alteration([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.genomicAlterationsIdentified, req.alteration, req.body).then(
+    versionDatum(db.models.genomicAlterationsIdentified, req.alteration, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },

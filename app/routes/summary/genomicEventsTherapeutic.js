@@ -31,7 +31,7 @@ router.route('/:gene([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(model, req.event, req.body).then(
+    versionDatum(model, req.event, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },

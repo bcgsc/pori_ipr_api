@@ -29,7 +29,7 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.cnv, req.cnv, req.body).then(
+    versionDatum(db.models.cnv, req.cnv, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },

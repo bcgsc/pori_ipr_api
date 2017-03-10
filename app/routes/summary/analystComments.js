@@ -57,7 +57,7 @@ router.route('/')
     } else {
       req.analystComments.pog_id = req.POG.id;
       // Update DB Version for Entry
-      versionDatum(db.models.analystComments, req.analystComments, req.body).then(
+      versionDatum(db.models.analystComments, req.analystComments, req.body, req.user).then(
         (resp) => {
           res.json(resp.data.create);
         },

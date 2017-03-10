@@ -74,7 +74,7 @@ router.route('/')
       req.pathwayAnalysis.pog_id = req.POG.id;
 
       // Update DB Version for Entry
-      versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request).then(
+      versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user).then(
         (resp) => {
           res.json(resp.data.create);
         },

@@ -35,7 +35,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 
 
     // Update DB Version for Entry
-    versionDatum(db.models.outlier, req.outlier, req.body).then(
+    versionDatum(db.models.outlier, req.outlier, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },
@@ -72,8 +72,6 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
       // Are we looking for approved types?
       where.outlierType = req.params.type;
     }
-
-    console.log('Where clause', where);
 
     let options = {
       where: where,
@@ -125,7 +123,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.drugTarget, req.drugTarget, req.body).then(
+    versionDatum(db.models.drugTarget, req.drugTarget, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },
