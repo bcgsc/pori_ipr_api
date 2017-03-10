@@ -1,7 +1,8 @@
 "use strict";
 
 const db = require('../models'),
-      Q = require('q');
+      Q = require('q'),
+      _ = require('lodash');
 
 
 /**
@@ -119,8 +120,48 @@ class HistoryManager {
 
   }
 
-  historyDetail() {
+  /**
+   * Get Detailed entry(ies) for dataHistory new/previous
+   *
+   * @returns {promise|object} - Promise resolves a hashmap of {dataVersion:{entry}}
+   */
+  detail() {
 
+    let deferred = Q.defer();
+
+    // Retrieve detailed entries for each history value
+    db.models.POGDataHistory.findOne({where: {ident: this.ident}, paranoid: false}).then(
+      (history) => {
+        if(history === null) return deferred.reject({status: false, message: 'Unable to find a data history with that identifier'});
+
+        this.history = history;
+        this.model = history.get('model');
+
+        // Find historical version of the data
+        db.models[this.model].findAll({where: {dataVersion: {$or: [this.history.get('previous'), this.history.get('new')]}, ident: this.history.get('entry') }, attributes: {exclude: ['id','pog_id']}, paranoid: false}).then(
+          (fetchedVersions) => {
+
+            let versions = {};
+            // Loop over versions and match
+            _.forEach(fetchedVersions, (v) => {
+              versions[v.dataVersion] = v;
+            });
+
+            deferred.resolve(versions);
+          },
+          (err) => {
+            console.log('Unable to find the data version entry(ies).', err);
+            deferred.reject({status: false, message: 'Unable to find the data version entry(ies).'});
+          }
+        );
+      },
+      (err) => {
+        console.log('Unable to find the history entry.', err);
+        deferred.reject({status: false, message: 'Unable to find the history entry.'});
+      }
+    );
+
+    return deferred.promise;
   }
 
 
