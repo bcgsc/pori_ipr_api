@@ -37,57 +37,73 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
   });
 
   // ++ Data Version
-  newEntry.dataVersion = currentEntry.dataVersion+ 1;
 
-  // Create new entry
-  model.create(newEntry).then(
-    (createResponse) => {
+  // Get the max for the current dataVersion in the table
+  model.max('dataVersion', {where: {ident: currentEntry.ident}}).then(
+    (maxCurrentVersion) => {
+      if(!typeof maxCurrentVersion === 'number') return deferred.reject({status: false, message: 'Unable to find current max version of data entry'});
 
-      // Are we not destroying?
-      if(!destroyIndex) {
+      newEntry.dataVersion = maxCurrentVersion + 1;
 
-        deferred.resolve({status: true, data: {create: createResponse}});
+      // Create new entry
+      model.create(newEntry).then(
+        (createResponse) => {
 
-      } else {
+          // Are we not destroying?
+          if(!destroyIndex) {
 
-        // Set version to be destroyed
-        let destroyWhere = {
-          dataVersion: currentEntry.dataVersion
-        };
-        // Set destroy index
-        destroyWhere[destroyIndex] = currentEntry[destroyIndex];
+            deferred.resolve({status: true, data: {create: createResponse}});
 
-        // Delete existing version
-        model.destroy({where: destroyWhere, limit: 1}).then(
-          (destroyResponse) => {
+          } else {
 
-            // Create DataHistory entry
-            let dh = {
-              type: 'change',
-              table: model.getTableName(),
-              entry: newEntry.ident,
-              previous: currentEntry.dataVersion,
-              new: newEntry.dataVersion,
-              user_id: user.id,
-              comment: comment
+            // Set version to be destroyed
+            let destroyWhere = {
+              dataVersion: currentEntry.dataVersion
             };
-            db.models.dataHistory.create(dh);
+            // Set destroy index
+            destroyWhere[destroyIndex] = currentEntry[destroyIndex];
 
-            // Resolve promise
-            deferred.resolve({status: true, data: {create: createResponse, destroy: destroyResponse}});
-          },
-          (destroyError) => {
-            deferred.reject({status: false, message: 'Unable to destroy old data version entry'});
-            throw Error('Unable to destroy old data version entry');
+            // Delete existing version
+            model.destroy({where: destroyWhere, limit: 1}).then(
+              (destroyResponse) => {
+
+                // Create DataHistory entry
+                let dh = {
+                  type: 'change',
+                  pog_id: newEntry.pog_id,
+                  table: model.getTableName(),
+                  model: model.name,
+                  entry: newEntry.ident,
+                  previous: currentEntry.dataVersion,
+                  new: newEntry.dataVersion,
+                  user_id: user.id,
+                  comment: comment
+                };
+                db.models.POGDataHistory.create(dh);
+
+                // Resolve promise
+                deferred.resolve({status: true, data: {create: createResponse, destroy: destroyResponse}});
+              },
+              (destroyError) => {
+                deferred.reject({status: false, message: 'Unable to destroy old data version entry'});
+                throw Error('Unable to destroy old data version entry');
+              }
+            )
           }
-        )
-      }
+
+        },
+        (createError) => {
+          console.log(createError);
+          deferred.reject({status: false, message: 'Unable to create new data version entry'});
+          throw Error('Unable to create new data version entry');
+        }
+      );
 
     },
-    (createError) => {
-      console.log(createError);
-      deferred.reject({status: false, message: 'Unable to create new data version entry'});
-      throw Error('Unable to create new data version entry');
+    (err) => {
+      console.log('SQL Error, unable to get current max version number of data for versioning');
+      console.log(err);
+      deferred.reject({status: false, message: 'SQL Error, unable to get max version number'});
     }
   );
 
