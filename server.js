@@ -27,7 +27,6 @@ let express	= require('express'),		// Call express
     sequelize = require('sequelize'),
     parse = require('csv-parse'),
     fs = require('fs'),
-    models = require('./app/models'),
     nconf = require('nconf').argv().env().file({file: './config/config.json'}),
     cors = require('cors'),
     morgan = require('morgan');
@@ -54,6 +53,10 @@ console.log(('Running Environment: '+ process.env.NODE_ENV).green, '\n');
 
 // Create router instance
 let router = express.Router();
+
+// Utility and Teapot
+app.get('/heart', (req,res,next)=> { res.json({beat: (new Date).getTime()}); });
+app.get('/teapot', (req,res,next) => { res.status(418).set({'hi':'mom!'}).send(fs.readFileSync('./lib/teapot.txt')); });
 
 // ROUTING  ----------------------------------------------------------------
 // All API routes will be prefixed with /api/x.x
