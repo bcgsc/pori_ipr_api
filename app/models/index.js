@@ -104,8 +104,10 @@ expressionAnalysis.outlier.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targ
 expressionAnalysis.drugTarget.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // Data History
-let dataHistory = sequelize.import(__dirname + '/dataHistory');
-dataHistory.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+let POGDataHistory = sequelize.import(__dirname + '/dataHistory');
+POGDataHistory.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+POGDataHistory.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+POG.hasMany(POGDataHistory, {as: 'dataHistory', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
 
 
 // Syncronize tables to model schemas
