@@ -164,6 +164,45 @@ class HistoryManager {
     return deferred.promise;
   }
 
+  /**
+   * Restore a remove entry
+   *
+   * @returns {promise|boolean|object} - Promise resolves returns boolean. Promise rejects with object {status: {boolean}, message: {string}}
+   */
+  restore() {
+    let deferred = Q.defer();
+
+    // Retrieve detailed entries for each history value
+    db.models.POGDataHistory.findOne({where: {ident: this.ident}, paranoid: false}).then(
+      (history) => {
+        if(history === null) return deferred.reject({status: false, message: 'Unable to find a data history with that identifier'});
+
+        this.history = history;
+        this.model = history.get('model');
+
+        // Find and restore!
+        db.models[this.model].restore({where: {ident: this.history.get('entry'), dataVersion: this.history.get('previous')}}).then(
+          (result) => {
+            if(result === null) deferred.reject({status: false, message: 'Unable to restore the removed entry'});
+
+            deferred.resolve(true);
+          },
+          (err) => {
+            console.log('Unable to restore the removed history entry.', err);
+            deferred.reject({status: false, message: 'Unable to restore the removed history entry.'});
+          }
+        );
+
+      },
+      (err) => {
+        console.log('Unable to find the history entry.', err);
+        deferred.reject({status: false, message: 'Unable to find the history entry.'});
+      }
+    );
+
+    return deferred.promise;
+  }
+
 
 }
 

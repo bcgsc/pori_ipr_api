@@ -76,4 +76,19 @@ router.route('/detail/:history([A-z0-9-]{36})')
     )
   });
 
+router.route('/restore/:history([A-z0-9-]{36})')
+  .get((req,res,next) => {
+    let history = new historyManager(req.params.history);
+
+    history.restore().then(
+      (response) => {
+        if(response) res.status(204).send();
+      },
+      (err) => {
+        console.log('Unable to get version details', err);
+        res.status(500).json(err);
+      }
+    )
+  });
+
 module.exports = router;
