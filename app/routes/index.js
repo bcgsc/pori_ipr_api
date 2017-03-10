@@ -35,7 +35,7 @@ recursive('./app/routes/', (err, files) => {
     let routeName = {
       file: _.pullAt(route, [route.length - 1]),
       path: (route.length === 0) ? '' : (_.join(route, '/')) + '/'
-    }
+    };
     
     //Initialize the route to add its func
     let module = require('./' + routeName.path + routeName.file);
@@ -54,5 +54,6 @@ router.use('/session', require('./session'));
 router.use('/user', require('./user/index'));
 router.use('/user/group', require('./user/group'));
 router.use('/jira', require('./jira'));
+router.use('/POG/:POG/history', require('./dataHistory'));
 
 module.exports = router;

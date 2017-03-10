@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let dataHistory = sequelize.define('dataHistory', {
+  let POGDataHistory = sequelize.define('POGDataHistory', {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,
@@ -12,11 +12,23 @@ module.exports = (sequelize, Sq) => {
         unique: true,
         defaultValue: Sq.UUIDV4
       },
+      pog_id: {
+        type: Sq.INTEGER,
+        unique: false,
+        references: {
+          model: 'POGs',
+          key: 'id',
+        }
+      },
       type: {
-        type: Sq.ENUM('change', 'version', 'tag'),
+        type: Sq.ENUM('change', 'remove', 'tag'),
         defaultValue: 'change',
       },
       table: {
+        type: Sq.STRING,
+        unique: false,
+      },
+      model: {
         type: Sq.STRING,
         unique: false,
       },
@@ -46,10 +58,10 @@ module.exports = (sequelize, Sq) => {
       }
     }, {
       // Automatically create createdAt
-      createdAt: true,
+      createdAt: 'createdAt',
       updatedAt: false,
     });
     
-  return dataHistory;
+  return POGDataHistory;
 };
 
