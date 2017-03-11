@@ -32,8 +32,6 @@ class HistoryManager {
     // Retrieve entry
     let deferred = new Q.defer();
 
-    console.log('Ident from within', this.ident);
-
     db.models.POGDataHistory.findOne({where: {ident: this.ident}, paranoid: false}).then(
       (history) => {
         if(history === null) return deferred.reject({status: false, message: 'Unable to find a data history with that identifier'});
