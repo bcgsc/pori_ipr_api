@@ -41,7 +41,7 @@ router.route('/revert/:history([A-z0-9-]{36})')
       (result) => {
 
         // Make nice
-        db.models.POGDataHistory.findOne({where: {ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include: [
+        db.models.POGDataHistory.findOne({where: {pog_id: req.POG.id, ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include:[
           {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
           {as: 'tags', model: db.models.POGDataHistoryTag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
         ]}).then(
