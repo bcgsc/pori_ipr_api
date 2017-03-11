@@ -39,10 +39,10 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
   // ++ Data Version
 
   // Get the max for the current dataVersion in the table
-  model.max('dataVersion', {where: {ident: currentEntry.ident}}).then(
+  model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false}).then(
     (maxCurrentVersion) => {
       if(!typeof maxCurrentVersion === 'number') return deferred.reject({status: false, message: 'Unable to find current max version of data entry'});
-
+      
       newEntry.dataVersion = maxCurrentVersion + 1;
 
       // Create new entry
