@@ -38,7 +38,7 @@ router.route('/')
   .put((req,res,next) => {
 
     // Update DB Version for Entry
-    versionDatum(db.models.patientInformation, req.patientInformation, req.body, req.user).then(
+    versionDatum(db.models.patientInformation, req.patientInformation, req.body, req.user, req.body.comment).then(
       (resp) => {
         res.json(resp.data.create);
       },
