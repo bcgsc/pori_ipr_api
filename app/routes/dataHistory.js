@@ -37,16 +37,16 @@ router.route('/revert/:history([A-z0-9-]{36})')
     let history = new historyManager(req.params.history);
 
     // Revert
-    history.revert(req.user, 'Lets try this').then(
+    history.revert(req.user, req.body.comment).then(
       (result) => {
 
         // Make nice
-        db.models.POGDataHistory.findOne({where: {pog_id: req.POG.id, ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include:[
+        db.models.POGDataHistory.findAll({where: {pog_id: req.POG.id, ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include:[
           {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
           {as: 'tags', model: db.models.POGDataHistoryTag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
         ]}).then(
           (history) => {
-            res.json(history);
+            res.json(history[0]);
           },
           (err) => {
             console.log('SQL ERROR', err);
