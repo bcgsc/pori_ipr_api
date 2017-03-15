@@ -183,6 +183,9 @@ class HistoryManager {
           (result) => {
             if(result === null) deferred.reject({status: false, message: 'Unable to restore the removed entry'});
 
+            // Remove the entry.
+            history.destroy();
+
             deferred.resolve(true);
           },
           (err) => {
