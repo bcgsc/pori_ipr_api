@@ -55,5 +55,6 @@ router.use('/user', require('./user/index'));
 router.use('/user/group', require('./user/group'));
 router.use('/jira', require('./jira'));
 router.use('/POG/:POG/history', require('./dataHistory'));
+router.use('/POG/:POG/export/csv', require('./export'));
 
 module.exports = router;
