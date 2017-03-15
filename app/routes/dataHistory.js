@@ -163,4 +163,30 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
   });
 
 
+router.route('/tag/search/:query')
+  .get((req,res,next) => {
+
+    let opts = {
+      attributes: {exclude: ['id', 'pog_id', 'user_id', 'history_id', 'ident', 'createdAt']},
+      group: 'tag',
+      where: {
+        $or: [
+          {tag: {$ilike: '%' + req.params.query + '%'}}
+        ]
+      }
+    };
+
+    // Search for Tags
+    db.models.POGDataHistoryTag.findAll(opts).then(
+      (tags) => {
+        res.json(tags);
+      },
+      (err) => {
+        console.log('Unable to search tags', err);
+        res.status(404).json({error: {message: 'Unable to search tags.', code: 'failedSearchHistoryTagQuery'}});
+      }
+    )
+
+  });
+
 module.exports = router;
