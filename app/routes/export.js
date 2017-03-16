@@ -8,12 +8,27 @@ let express = require('express'),
   reverseMapKeys = require(process.cwd() + '/app/libs/reverseMapKeys'),
   _ = require('lodash'),
   writeCSV = require(process.cwd() + '/lib/writeCSV'),
+  fs = require('fs'),
+  glob = require('glob'),
+  exportDataTables = require(process.cwd() + '/app/exporters/index'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 // Handle requests for loading POG into DB
 router.route('/csv')
   .get((req,res,next) => {
 
+    let exporter = new exportDataTables(req.POG, {stamp: '20170316-101714'});
+
+    exporter.export().then(
+      (result) => {
+        res.json({command: '/projects/tumour_char/analysis_scripts/SVIA/jreport_genomic_summary/trunk/genomicReport.py -c IPR_Report_export_20170316-101714.cfg --rebuild-pdf-only'});
+      },
+      (err) => {
+        console.log('Failed to run exporters', err);
+      }
+    );
+
+    /*
     let opts = {
       where: {
         pog_id: req.POG.id
@@ -72,15 +87,30 @@ router.route('/csv')
         });
 
         // Write CSV
-        let output = writeCSV(alterations.clin_rel_known_alt_detailed);
+        _.forEach(alterations, (group, file) => {
+          // Write each to a file in the specified directory
+          let dir = '/projects/tumour_char/pog/reports/genomic/POG684/P01887_P01879/jreport_genomic_summary_v3.0.1/report/IPR_CSV_export';
+          console.log('Attempting to write: ', dir+ '/' + file + '.csv');
 
-        res.send(output);
+          let writer_detail = fs.writeFile(dir + '/' + file + '.csv', writeCSV(group), (err) => {
+            if(err) console.log('Error in: ', file, err);
+            if(!err) console.log('Successfully wrote: ', file);
+          });
+
+          // Same as above without two keys: KB_event_key,	KB_ENTRY_key
+          let writer = fs.writeFile(dir + '/' + file.replace('_detailed', '') + '.csv', writeCSV(group, ['KB_event_key','KB_ENTRY_key']), (err) => {
+            if(err) console.log('Error in: ', file.replace('_detailed', ''), err);
+            if(!err) console.log('Successfully wrote: ', file.replace('_detailed', ''));
+          });
+        });
+
+        res.send(writeCSV(alterations.clin_rel_known_alt_detailed));
 
       },
       (err) => {
 
       }
-    );
+    ); */
 
   });
 
