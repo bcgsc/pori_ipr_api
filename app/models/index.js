@@ -128,7 +128,7 @@ if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
       
       // Create Admin User
       // Load in bcrypt
-      let bcrypt = require('bcrypt');
+      let bcrypt = require(process.cwd() + '/lib/bcrypt');
 
       // Insert Admin User
       user.create({username: 'admin', password: bcrypt.hashSync('AdminMaster', 10), firstName: 'Admin', lastName: 'User', email: 'iprAdmin@bcgsc.ca', access: 'superUser'}).then(
