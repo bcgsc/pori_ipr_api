@@ -136,7 +136,7 @@ class ExportDataTables {
 
     let writeConfig = fs.writeFile(this.directory.exportReportBase + '/IPR_Report_export_' + this.exportEvent.key + '.cfg', data, (err) => {
       if(err) console.log('Error write config file: ', err);
-      if(!err) console.log('Successfully export config file: ', 'IPR_Report_export_' + this.exportEvent.key + '.cfg');
+      this.logLine('Successfully export config file: IPR_Report_export_' + this.exportEvent.key + '.cfg');
 
       deferred.resolve({stage: 'config.write', status: true});
     });
