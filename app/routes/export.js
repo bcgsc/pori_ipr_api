@@ -30,6 +30,10 @@ router.route('/csv')
             exportEntry.result = true;
             exportEntry.save().then(
               (result) => {
+                let entry = result.get();
+                delete entry.id;
+                delete entry.pog_id;
+                delete entry.user_id;
                 // Send command back
                 res.json({command: exportResult.command, export: exportEntry});
               },
