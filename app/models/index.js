@@ -115,6 +115,10 @@ POGDataHistoryTag.belongsTo(POGDataHistory, {as: 'history', foreignKey: 'history
 POGDataHistoryTag.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 user.hasMany(POGDataHistory, {as: 'edits', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true});
 
+// Data Export
+let POGDataExport = sequelize.import(__dirname + '/POGDataExport');
+POGDataExport.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+POGDataExport.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
 // Syncronize tables to model schemas
 if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
