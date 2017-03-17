@@ -73,19 +73,16 @@ module.exports = (pog, directory) => {
       // Write CSV
       _.forEach(alterations, (group, file) => {
         // Write each to a file in the specified directory
-        console.log('Attempting to write: ', directory.export + '/' + file + '.csv');
 
         // Remove file, then write
         fs.unlink(directory.export + '/' + file + '.csv' ,(err) => {
           // Did unlink fail?
           if(err) return deferred.reject({stage: 'detailedGenomicAnalysis.alterations', status: false, data: err});
-          console.log('Unlinked', directory.export + '/' + file + '.csv');
 
           let data = new writeCSV(group).raw();
 
           let writer_detail = fs.writeFile(directory.export + '/' + file + '.csv', data, (err) => {
             if(err) console.log('Error in: ', file, err);
-            if(!err) console.log('Successfully wrote: ', file);
           });
         });
 
@@ -94,14 +91,12 @@ module.exports = (pog, directory) => {
 
           // Did unlink fail?
           if (err) return deferred.reject({stage: 'detailedGenomicAnalysis.alterations', status: false, data: err});
-          console.log('Unlinked', directory.export + '/' + file.replace('_detailed', '') + '.csv');
 
           let data = new writeCSV(group, ['KB_event_key', 'KB_ENTRY_key']).raw();
 
           // Same as above without two keys: KB_event_key,	KB_ENTRY_key
           let writer = fs.writeFile(directory.export + '/' + file.replace('_detailed', '') + '.csv', data, (err) => {
             if (err) console.log('Error in: ', file.replace('_detailed', ''), err);
-            if (!err) console.log('Successfully wrote: ', file.replace('_detailed', ''));
           });
 
         }); // End unlink non-detailed

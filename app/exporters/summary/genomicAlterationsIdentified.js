@@ -53,11 +53,9 @@ module.exports = (pog, directory) => {
       fs.unlink(directory.export + '/' + file + '.csv' ,(err) => {
         // Did unlink fail?
         if(err) return deferred.reject({stage: 'summary.genomicAlterationsIdentified', status: false, data: err});
-        console.log('Unlinked', directory.export + '/' + file + '.csv');
 
         let writer_detail = fs.writeFile(directory.export + '/' + file + '.csv', data, (err) => {
           if(err) console.log('Error in: ', file, err);
-          if(!err) console.log('Successfully wrote: ', file);
 
           deferred.resolve({stage: 'summary.genomicAlterationsIdentified', status: true});
         });
