@@ -13,6 +13,25 @@ let express = require('express'),
   exportDataTables = require(process.cwd() + '/app/exporters/index'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
+
+router.route('/all')
+  // Get all export entries
+  .get((req,res,next) => {
+
+    db.models.POGDataExport.findAll({where: {pog_id: req.POG.id}, attributes: {exclude: ['id', 'user_id', 'pog_id']}, order: '"createdAt" DESC', include: [
+      {as: 'user', model: db.models.user, attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']}}
+    ]}).then(
+      (entries) => {
+        res.json(entries);
+      },
+      (err) => {
+        console.log('Failed to get pog exports', err);
+        res.status(500).json({error: {message: 'Unable to get the list of export entries for this POG.', code: 'failedGetPOGDataExportsQuery'}});
+      }
+    );
+
+  });
+
 // Handle requests for loading POG into DB
 router.route('/csv')
   .get((req,res,next) => {
