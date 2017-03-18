@@ -9,6 +9,7 @@ const
   writeCSV = require(process.cwd() + '/lib/writeCSV'),
   pyconf = require('pyconf'),
   fs = require('fs'),
+  j2p = require('json2plain'),
   nconf = require('nconf').file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
 
 
@@ -57,6 +58,9 @@ class ExportDataTables {
    * @param {integer} spacing
    */
   logLine(line, spacing=0) {
+    // Parse
+    if(typeof line === 'object') line = j2p(line);
+
     this.log += line + "\n";
     if(spacing > 0) this.log += "\n".repeat(spacing);
   }
@@ -177,7 +181,7 @@ class ExportDataTables {
 
       fs.mkdirSync(this.directory.exportReportBase);
 
-      this.logLine('Export folder directory created');
+      this.logLine('Export folder created');
 
       this.readConfigFile().then(
         (result) => {
@@ -188,7 +192,7 @@ class ExportDataTables {
           this.duplicateDependencies().then(
             (success) => {
               // All good!
-              this.logLine('Copied existing data entriers successfully.', 1);
+              this.logLine('Copied existing data entries successfully.', 1);
 
               let promises = [];
 
@@ -202,6 +206,7 @@ class ExportDataTables {
               Q.all(promises)
                 .done(
                   (result) => {
+                    this.logLine('');
                     this.logLine('Finished running all exporters:');
                     this.logLine(result, 1);
                     // Successfully ran all exporters
