@@ -22,7 +22,7 @@ router.route('/')
     if(access.check() === false) return;
 
     db.models.user.all({
-      attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken']},
+      attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']},
       order: 'username ASC',
       include: [
         {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}, include: []}
