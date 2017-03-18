@@ -34,7 +34,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       unique: true,
       defaultValue: () => {
-        return moment().format('YYYYMMDD-hmmssSS');
+        return moment().format('YYYYMMDD-HmmssSS');
       }
     },
     log: {
