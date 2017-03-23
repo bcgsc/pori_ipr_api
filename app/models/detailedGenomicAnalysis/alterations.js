@@ -49,7 +49,7 @@ module.exports = (sequelize, Sq) => {
         type: Sq.STRING,
       },
       effect: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
       },
       association: {
         type: Sq.STRING,

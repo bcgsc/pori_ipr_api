@@ -137,6 +137,7 @@ module.exports = (POG, dir, logger) => {
       },
       // Problem creating DB entries
       (err) => {
+        console.log("SQL Error", err);
         log('Unable to create database entries.', logger.ERROR);
         new Error('Unable to create variations database entries.');
         deferred.reject('Unable to create variations database entries.');
