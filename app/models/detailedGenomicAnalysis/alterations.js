@@ -105,7 +105,7 @@ module.exports = (sequelize, Sq) => {
       kb_entry_key: {
         type: Sq.TEXT,
       },
-      kb_newEntry: {
+      kb_data: {
         type: Sq.JSONB
       }
     }, {
