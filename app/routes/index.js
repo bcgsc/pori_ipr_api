@@ -35,9 +35,7 @@ recursive('./app/routes/POG', (err, files) => {
       file: _.pullAt(route, [route.length - 1]),
       path: (route.length === 0) ? '' : (_.join(route, '/')) + '/'
     };
-
-    console.log('Trying to load', routeName.path, routeName.file);
-
+    
     //Initialize the route to add its func
     let module = require('./POG/' + routeName.path + routeName.file);
     

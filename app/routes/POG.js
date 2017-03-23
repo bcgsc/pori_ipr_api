@@ -20,19 +20,30 @@ router.param('POG', require(process.cwd() + '/app/middleware/pog'));
 router.route('/')
   .get((req,res,next) => {
 
+    // Create the getAllPogs query
+    let opts = {};
+    opts.attributes = {exclude: ['id','deletedAt', 'config', 'seqQC']};
+    opts.order = '"POG"."POGID" ASC';
+    opts.include = [];
+    if(req.query.query ) opts.where = {POGID: {$ilike: '%' + req.query.query + '%'}};
+    opts.include.push({model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } });
+    opts.include.push({model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } });
+
+    // Create the POGUser join object.
+    let pogUserInclude = { include: []};
+    pogUserInclude.model = db.models.POGUser;
+    pogUserInclude.as = 'POGUsers';
+    pogUserInclude.attributes = {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']};
+
+    if(req.query.all !== 'true') pogUserInclude.where = {user_id: req.user.id};
+
+    pogUserInclude.include.push({as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
+    pogUserInclude.include.push({as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
+
+    opts.include.push(pogUserInclude);
+    
     // Get All Pogs
-    db.models.POG.findAll({
-        attributes: {exclude: ['id','deletedAt', 'config', 'seqQC']},
-        include: [
-          {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
-          {model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
-          {model: db.models.POGUser, as: 'POGUsers', attributes: {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']}, include: [
-            {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}},
-            {as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}}
-          ]}
-        ],
-        order: '"POG"."POGID" ASC',
-      }).then(
+    db.models.POG.findAll(opts).then(
         (pogs) => {
           res.json(pogs);
         },
