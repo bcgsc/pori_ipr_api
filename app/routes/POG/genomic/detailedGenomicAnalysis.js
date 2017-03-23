@@ -1,3 +1,5 @@
+"use strict";
+
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
     router = express.Router({mergeParams: true}),
@@ -38,7 +40,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
     }
 
     // Update DB Version for Entry
-    versionDatum(db.models.alterations, req.alteration, req.body, req.user).then(
+    versionDatum(db.models.alterations, req.alteration, req.body, req.user, req.body.comment).then(
       (resp) => {
         res.json(resp.data.create);
       },
@@ -207,6 +209,6 @@ router.route('/targetedGenes')
       }
     );
 
-  })
+  });
   
 module.exports = router;
