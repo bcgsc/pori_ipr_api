@@ -21,7 +21,7 @@ module.exports = (sequelize, Sq) => {
         }
       },
       type: {
-        type: Sq.ENUM('change', 'remove', 'tag'),
+        type: Sq.ENUM('change', 'remove', 'tag', 'create'),
         defaultValue: 'change',
       },
       table: {

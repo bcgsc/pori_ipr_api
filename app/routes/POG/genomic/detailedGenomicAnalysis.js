@@ -106,8 +106,8 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     );
       
   })
+
   .post((req,res,next) => {
-  
     // Setup new data entry from vanilla
     req.body.dataVersion = 0;
     req.body.pog_id = req.POG.id;
@@ -117,8 +117,24 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       (result) => {
         // Send back newly created/updated result.
         res.json(result);
+
+        // Create DataHistory entry
+        let dh = {
+          type: 'create',
+          pog_id: result.pog_id,
+          table: db.models.alterations.getTableName(),
+          model: db.models.alterations.name,
+          entry: result.ident,
+          previous: null,
+          new: 0,
+          user_id: req.user.id,
+          comment: req.body.comment
+        };
+        db.models.POGDataHistory.create(dh);
+
       },
       (error) => {
+        console.log('SQL insert error', error);
         return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'} });
       }
     );
