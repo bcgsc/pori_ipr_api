@@ -9,7 +9,6 @@ module.exports = (sequelize, Sq) => {
       },
       ident: {
         type: Sq.UUID,
-        unique: true,
         defaultValue: Sq.UUIDV4
       },
       dataVersion: {
@@ -31,15 +30,15 @@ module.exports = (sequelize, Sq) => {
         type: Sq.INTEGER,
         defaultValue: 0
       },
-      gene: {
+      target: {
+        type: Sq.JSONB,
+        allowNull: true
+      },
+      targetContext: {
         type: Sq.STRING,
         allowNull: true
       },
-      geneContext: {
-        type: Sq.STRING,
-        allowNull: true
-      },
-      resistanceMarker: {
+      resistance: {
         type: Sq.STRING,
         allowNull: true
       },
