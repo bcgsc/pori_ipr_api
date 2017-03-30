@@ -43,12 +43,9 @@ module.exports = (sequelize, Sq) => {
         allowNull: true
       },
       biomarker: {
-        type: Sq.STRING,
-        allowNull: true
-      },
-      biomarkerContext: {
-        type: Sq.STRING,
-        allowNull: true
+        type: Sq.JSONB,
+        allowNull: true,
+        defaultValue: [],
       },
       notes: {
         type: Sq.TEXT
