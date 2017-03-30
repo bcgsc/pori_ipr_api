@@ -33,10 +33,6 @@ router.route('/subtask')
           id: 5, // type 5 is subtask
           subtask: true
         },
-        assignee: {
-          key: "bpierce",
-          name: "bpierce"
-        },
         reporter: {
           key: req.user.username,
           name: req.user.username
