@@ -79,7 +79,7 @@ module.exports = (pog, directory) => {
           // Did unlink fail?
           if(err) return deferred.reject({stage: 'detailedGenomicAnalysis.alterations', status: false, data: err});
 
-          let data = new writeCSV(group).raw();
+          let data = new writeCSV(group, ['kb_data']).raw();
 
           let writer_detail = fs.writeFile(directory.export + '/' + file + '.csv', data, (err) => {
             if(err) console.log('Error in: ', file, err);
