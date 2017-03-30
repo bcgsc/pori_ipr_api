@@ -5,4 +5,6 @@ let changeCase = require('change-case'),
 
 router.use('/validate', require('./validate'));
 
+router.use('/genevar', require('./genevar'));
+
 module.exports = router;
