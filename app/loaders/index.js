@@ -11,6 +11,7 @@ let db = require(process.cwd() + '/app/models'),
     logger = require(process.cwd() + '/app/libs/logger'),
     glob = require('glob'),
     _ = require('lodash'),
+    fs = require('fs'),
     eventEmitter = require('events'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
 
@@ -27,7 +28,7 @@ let loaders = [
   'summary/variantCounts',
   'summary/genomicAlterationsIdentified',
   'summary/genomicEventsTherapeutic',
-  //'summary/probeTarget',
+  'summary/probeTarget',
 
   // Detailed Genomic Analysis
   'detailedGenomicAnalysis/alterations',
@@ -48,7 +49,7 @@ let loaders = [
   // Expression Analysis
   'expressionAnalysis/outlier',
   'expressionAnalysis/drugTarget',
-
+  
 ];
 
 // Run loaders for a specified POGID
@@ -70,8 +71,6 @@ module.exports = (POG, options={}) => {
 
     // Log Base Path for Source
     log('Source path: '+baseDir);
-
-    // Create Event Tracker
 
     // Loop over loader files and create promises
     loaders.forEach((file) => {
