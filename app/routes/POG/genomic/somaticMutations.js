@@ -96,7 +96,7 @@ router.route('/mutationSignature')
     let options = {
       where: {pog_id: req.POG.id},
       attributes: {
-        exclude: ['id', 'deletedAt']
+        exclude: ['id', 'deletedAt', 'pog_id']
       },
       order: 'signature ASC',
     };
