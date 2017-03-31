@@ -35,8 +35,14 @@ router.route('/')
     pogUserInclude.as = 'POGUsers';
     pogUserInclude.attributes = {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']};
 
-    if(req.query.all !== 'true') pogUserInclude.where = {user_id: req.user.id};
-
+    // Are we filtering on POGUser relationship?
+    if(req.query.all !== 'true' || req.query.role) {
+      pogUserInclude.where = {};
+      // Don't search all if the requestee has also asked for role filtering
+      if(req.query.all !== 'true' || req.query.role) pogUserInclude.where.user_id = req.user.id;
+      if(req.query.role) pogUserInclude.where.role = req.query.role; // Role filtering
+    }
+    
     pogUserInclude.include.push({as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
     pogUserInclude.include.push({as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
 
