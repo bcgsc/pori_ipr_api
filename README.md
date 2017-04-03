@@ -1,4 +1,4 @@
-## POG Reports API
+### POG Reports API
 ======================================
 
 This API will store and serve Genomic and (future) Probe report data pertaining to all BC Cancer Angecy POG cases.
@@ -23,6 +23,7 @@ After pulling or cloning down the repository, the server's dependencies need to 
 ```
 npm install
 ```
+
 This process can take between 1-5 minutes depending on caches, and connection speed. Once NPM has finished installing
 all required dependencies, the server can be started with the following command:
 ```
@@ -33,11 +34,14 @@ If a new database installation is required:
 ```
 node server.js --database.migrate --database.hardMigrate
 ```
+--
 WARNING: Using the `--database.hardMigrate` flag will overwrite any existing data in the database. This flag will not
 execute in production mode.
-
+--
 
 #### Structure
+======================================
+
 ```
 .
 ├── app                                 # Application files
