@@ -10,6 +10,7 @@ http://api-ipr.bcgsc.ca. Detailed endpoint documentation can be found at http://
 
 #### Configuration
 ======================================
+
 This repository contains configuration profiles for production, testing, and development environments. A profile will be
 selected based on the NODE_ENV environment setting, or by explicitly calling --env [testing|production|development] when
 initializing the server.
@@ -17,6 +18,7 @@ initializing the server.
 
 #### Install
 ======================================
+
 After pulling or cloning down the repository, the server's dependencies need to be installed:
 ```
 npm install
