@@ -13,9 +13,13 @@ let express = require('express'),
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
 
 /**
+ * Retrieve all POGs available
  *
  *
+ * @query {string} query - Search string to filter returns
+ * @query {bool} all - Defaults to false, only returns POGs the user is bound to
  *
+ * @responds {array} - Responds with collection
  */
 router.route('/')
   .get((req,res,next) => {
@@ -64,6 +68,7 @@ router.route('/')
   });
 
 /**
+ * Retrieve a specific pog
  *
  */
 router.route('/:POG')
@@ -77,6 +82,11 @@ router.route('/:POG')
     res.json(req.POG);
 
   });
+
+/**
+ * Endpoints for user binding
+ *
+ */
 router.route('/:POG/user')
   // Bind a new user to this POG
   .post((req,res,next) => {
@@ -119,7 +129,6 @@ router.route('/:POG/user')
     )
 
   })
-router.route('/:POG/user')
   .delete((req,res,next) => {
     // Convert user to ID
     db.models.user.findOne({where: {ident: req.body.user}}).then(
@@ -147,4 +156,5 @@ router.route('/:POG/user')
     )
   });
 
+// NodeJS Module Return
 module.exports = router;
