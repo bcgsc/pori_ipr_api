@@ -18,7 +18,7 @@ let db = require(process.cwd() + '/app/models'),
  * @param logger
  * @returns {*|promise}
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (POG, dir, logger, options={}) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -27,7 +27,7 @@ module.exports = (POG, dir, logger) => {
   let log = logger.loader(POG.POGID, 'SomaticMutations.MutationSignature');
 
   // Find File
-  glob('/projects/tumour_char/pog/somatic/signature/' + POG.POGID + '/P*/v*/*_msig_combined.txt', (err, files) => {
+  glob('/projects/tumour_char/pog/somatic/signature/' + POG.POGID + '/'+options.library+'/v*/*_msig_combined.txt', (err, files) => {
 
     if(err) {
       log('Unable to find Mutation Signature source file', logger.ERROR);

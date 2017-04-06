@@ -39,15 +39,15 @@ module.exports = (POG, dir, logger) => {
         console.log(err);
         deferred.reject({reason: 'parseCSVFail'});
       }
-    
+
       // Create Entries Array
       let entries = remapKeys(result, nconf.get('summary:genomicEventsTherapeutic'));
-      
+
       // Loop over returned rows, and read in each column value
       _.forEach(result, (v, k) => {
           entries[k].pog_id = POG.id
       });
-      
+
       // Add to Database
       db.models.genomicEventsTherapeutic.bulkCreate(entries).then(
         (result) => {

@@ -219,7 +219,7 @@
   "paths": {
     "data": {
       "POGdata": "/projects/tumour_char/pog/reports/genomic",
-      "dataDir": "/P*/jreport_genomic_summary_*/report"
+      "dataDir": "/jreport_genomic_summary_*/report"
     }
   }
 }

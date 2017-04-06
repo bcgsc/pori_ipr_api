@@ -62,55 +62,78 @@ module.exports = (POG, options={}) => {
 
   let deferred = Q.defer(); // Create promise
 
-  // Determine location to report base folder
-  glob(nconf.get('paths:data:POGdata') + '/' + POG.POGID + nconf.get('paths:data:dataDir'), (err, files) => {
+  // Determine which folder/biopsy to go for (grabs oldest by default)
+  glob(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/P*', (err, files) => {
 
-    if(err) deferred.reject('Unable to find POG sources.');
-    let baseDir = files[0];
-    let promises = []; // Collection of module promises
-
-    // Log Base Path for Source
-    log('Source path: '+baseDir);
-
-    // Loop over loader files and create promises
-    loaders.forEach((file) => {
-      promises.push(require('./' + file)(POG, baseDir, logger));
+    // Explode out and get biggest
+    let libraryOptions = [];
+    _.forEach(files, (f) => {
+      let t = f.split('/');
+      libraryOptions.push(t[t.length-1]);
     });
+    libraryOptions.sort().reverse();
 
-    // Wait for all loaders to finish!
-    Q.all(promises)
-      .done((result) => {
+    let dir = nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/' + libraryOptions[0];
 
-        // Check Results
-        log('All loaders have completed.', logger.SUCCESS);
 
-        // All good!
-        deferred.resolve(true);
+    glob(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/' + libraryOptions[0] + '/jreport_genomic_summary_v*', (err, files) => {
 
-      },
-      (error) => {
-        // A loader failed
-        let fail = {};
+      // Explode out and get biggest
+      let versionOptions = [];
+      _.forEach(files, (f) => {
+        let t = f.split('/');
+        versionOptions.push(t[t.length-1]);
+      });
+      versionOptions.sort().reverse();
 
-        /*
-        // Remove all entries for failed POG loading
-        _.forEach(db.models, (model) => {
+      if(err) deferred.reject('Unable to find POG sources.');
+      let baseDir = nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/' + libraryOptions[0] + '/' + versionOptions[0] + '/report';
+      let promises = []; // Collection of module promises
 
-          model.destroy()
+      // Log Base Path for Source
+      log('Source path: '+baseDir);
 
-        }); */
+      // Loop over loader files and create promises
+      loaders.forEach((file) => {
+        promises.push(require('./' + file)(POG, baseDir, logger, {library: libraryOptions[0]}));
+      });
 
-        // Log error
-        log('Failed onboarding process.', logger.ERROR);
-        console.log(error);
+      // Wait for all loaders to finish!
+      Q.all(promises)
+        .done((result) => {
 
-        if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
+          // Check Results
+          log('All loaders have completed.', logger.SUCCESS);
 
-        // Return fail
-        deferred.reject(fail);
-      }
-    );
+          // All good!
+          deferred.resolve(true);
 
+        },
+        (error) => {
+          // A loader failed
+          let fail = {};
+
+          /*
+          // Remove all entries for failed POG loading
+          _.forEach(db.models, (model) => {
+
+            model.destroy()
+
+          }); */
+
+          // Log error
+          log('Failed onboarding process.', logger.ERROR);
+          console.log(error);
+
+          if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
+
+          // Return fail
+          deferred.reject(fail);
+        }
+      );
+
+
+    });
 
   });
 
