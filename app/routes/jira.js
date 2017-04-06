@@ -37,18 +37,24 @@ router.route('/subtask')
           key: req.user.username,
           name: req.user.username
         },
+        assignee: {
+          name: ""
+        },
         priority: {
           id: "6" // Medium priority
         },
         labels: [
           "IPR-Client"
         ],
-        description: req.body.description,
+        description: req.body.description + "\n\n---- Automated Notification ----\n Notifying: [~bpierce]",
         components: [
           { id: "15950" }
         ]
       }
     };
+
+    //res.status(400).json({error: {message: "The JIRA authtoken is stale and needs to be refreshed.", code: "JiraAuthStale"}});
+    //return;
 
     // Request options & settings
     let opts = {
@@ -75,7 +81,18 @@ router.route('/subtask')
       });
 
       jResult.on('end', () => {
-        res.set({'Content-Type': 'application/json'}).send(data);
+
+        if(jResult.statusCode === 401) {
+          return res.status(400).json({error: {message: "The JIRA authtoken is stale and needs to be refreshed.", code: "JiraAuthStale"}});
+        }
+        if(jResult.statusCode === 201) {
+          return res.set({'Content-Type': 'application/json'}).send(data);
+        }
+
+        console.log('=================== UNHANDLED ==============');
+        console.log('JIRA Response has no handler');
+        console.log(jResult, data);
+        return res.status(500).json({error: {message: "Something went wrong, and we're not sure what.", code: "UnhandledJiraResponse"}});
       });
 
     });
