@@ -125,8 +125,25 @@ let therapeuticTargets = sequelize.import(__dirname + '/therapeuticTargets');
 POGDataExport.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 POG.hasMany(therapeuticTargets, {as: 'therapeuticTargets', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
 
+// Knowledgebase
+let kb = {};
+kb.references = sequelize.import(__dirname + '/knowledgebase/kb_references');
+kb.references.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+kb.references.belongsTo(user, {as: 'reviewedBy', foreignKey: 'reviewedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+
+kb.events = sequelize.import(__dirname + '/knowledgebase/kb_events');
+kb.events.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+kb.events.belongsTo(user, {as: 'reviewedBy', foreignKey: 'reviewedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+
 // Syncronize tables to model schemas
 if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
+
+  // If we're in production mode STOP!!
+  if(nconf.get('env') === 'production') {
+    console.log(colors.red('!!!! Hard Migration not supported in production mode !!!!'));
+    process.exit();
+  }
+
   sequelize.sync(
     {
       force: true,
