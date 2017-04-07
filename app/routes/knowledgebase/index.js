@@ -23,6 +23,14 @@ router.route('/import')
 
   });
 
+router.route('/controlled-vocabulary')
+  .get((req,res,next) => {
+
+    // Send JSON values
+    res.json(require(process.cwd() + '/config/kbControlled.json'));
+
+  });
+
 router.use('/events', require('./events'));
 router.use('/references', require('./references'));
 
