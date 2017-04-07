@@ -11,9 +11,55 @@ let express = require('express'),
 router.route('/')
   .get((req,res) => {
 
+    // Query Options
     let opts = {};
     opts.limit = (req.query.limit && req.query.limit < 1001) ? req.query.limit : 100;
     opts.offset = (req.query.offset) ? req.query.offset : 0;
+
+    // Allow filters, and their query settings
+    const allowedFilters = {
+      'type': {operator: "$in", each: null, wrap: false},
+      'relevance': {operator: "$in", each: null}, wrap: false,
+      'disease_list': {operator: "$or", each: "$ilike", wrap: true},
+      'context': {operator: "$or", each: "$ilike", wrap: true},
+      'evidence': {operator: "$in", each: null, wrap: false},
+      'status': {operator: "$in", each: null, wrap: false},
+      'events_expression': {operator: '$or', each: '$ilike', wrap: true}
+    };
+
+    // Are we building a where clause?
+    if(_.intersection(_.keysIn(req.query), _.keysIn(allowedFilters)).length > 1) {
+
+      opts.where = { '$and': [] };
+
+      // Which filters, from the allowed list, have been sent?
+      let filters = _.chain(req.query).keysIn().intersection(_.keysIn(allowedFilters)).value();
+
+      // Loop over filters and build them into the ORM clause
+      _.forEach(filters, (filter) => {
+
+        // Split the filter values into arrays
+        let values = req.query[filter].split(',');
+
+        // Loop over each value and setup the query syntax
+        values.forEach((v, i, arr) => {
+          if(allowedFilters[filter].each) {
+            arr[i] = {}; // Make collection entry
+            arr[i][allowedFilters[filter].each] = (allowedFilters[filter].wrap) ? '%'+v+'%' : v;
+          }
+        });
+
+        // Build where clause
+        let clause = {};
+        clause[filter] = {};
+        clause[filter][allowedFilters[filter].operator] = values;
+
+        // Add to required (and) clauses
+        opts.where['$and'].push(clause);
+
+      });
+
+    }
 
     opts.attributes = {
       exclude: ['deletedAt', 'createdBy_id', 'reviewedBy_id']
