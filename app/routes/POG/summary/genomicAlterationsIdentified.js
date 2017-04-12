@@ -66,8 +66,10 @@ router.route('/:alteration([A-z0-9-]{36})')
         if(req.query.cascade && req.query.cascade === 'true') {
 
           // Check to see if we're propagating this down into Detailed Genomic
-          let gene = _.split(req.alteration.geneVariant, (/\s/));
+          let gene = _.split(req.alteration.geneVariant, (/\s(.+)/));
           let where = { gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), pog_id: req.POG.id };
+
+          db.models.genomicEventsTherapeutic.destroy({where: { genomicEvent: req.alteration.geneVariant, pog_id: req.POG.id }});
 
           // Cascade removal of variant through Detailed Genomic Analysis
           db.models.alterations.destroy({where: where}).then(
