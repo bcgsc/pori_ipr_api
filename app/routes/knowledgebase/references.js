@@ -16,50 +16,10 @@ router.route('/')
     opts.limit = (req.query.limit && req.query.limit < 1001) ? req.query.limit : 100;
     opts.offset = (req.query.offset) ? req.query.offset : 0;
 
-    // Allow filters, and their query settings
-    const allowedFilters = {
-      'type': {operator: "$in", each: null, wrap: false},
-      'relevance': {operator: "$in", each: null}, wrap: false,
-      'disease_list': {operator: "$or", each: "$ilike", wrap: true},
-      'context': {operator: "$or", each: "$ilike", wrap: true},
-      'evidence': {operator: "$in", each: null, wrap: false},
-      'status': {operator: "$in", each: null, wrap: false},
-      'events_expression': {operator: '$or', each: '$ilike', wrap: true}
-    };
+    let where = referenceQueryFilter(req);
+    if(where !== null) opts.where = where;
 
-    // Are we building a where clause?
-    if(_.intersection(_.keysIn(req.query), _.keysIn(allowedFilters)).length > 1) {
-
-      opts.where = { '$and': [] };
-
-      // Which filters, from the allowed list, have been sent?
-      let filters = _.chain(req.query).keysIn().intersection(_.keysIn(allowedFilters)).value();
-
-      // Loop over filters and build them into the ORM clause
-      _.forEach(filters, (filter) => {
-
-        // Split the filter values into arrays
-        let values = req.query[filter].split(',');
-
-        // Loop over each value and setup the query syntax
-        values.forEach((v, i, arr) => {
-          if(allowedFilters[filter].each) {
-            arr[i] = {}; // Make collection entry
-            arr[i][allowedFilters[filter].each] = (allowedFilters[filter].wrap) ? '%'+v+'%' : v;
-          }
-        });
-
-        // Build where clause
-        let clause = {};
-        clause[filter] = {};
-        clause[filter][allowedFilters[filter].operator] = values;
-
-        // Add to required (and) clauses
-        opts.where['$and'].push(clause);
-
-      });
-
-    }
+    //return res.json(opts.where);;
 
     opts.attributes = {
       exclude: ['deletedAt', 'createdBy_id', 'reviewedBy_id']
@@ -86,7 +46,12 @@ router.route('/')
 router.route('/count')
   .get((req,res) => {
 
-    db.models.kb_reference.count().then(
+    let opts = {};
+
+    let where = referenceQueryFilter(req);
+    if(where !== null) opts.where = where;
+
+    db.models.kb_reference.count(opts).then(
       (result) => {
         res.json({references: result});
       }
@@ -98,5 +63,64 @@ router.route('/{ident}')
     // Update Entry
 
   });
+
+/**
+ * Build where clause for searching references
+ *
+ * @param {object} req - Request object
+ * @returns {object} - Returns where object ready to be parsed by SequelizeJS ORM
+ */
+let referenceQueryFilter = (req) => {
+
+  let where = null;
+
+  // Allow filters, and their query settings
+  const allowedFilters = {
+    'type': {operator: "$in", each: null, wrap: false},
+    'relevance': {operator: "$in", each: null}, wrap: false,
+    'disease_list': {operator: "$or", each: "$ilike", wrap: true},
+    'context': {operator: "$or", each: "$ilike", wrap: true},
+    'evidence': {operator: "$in", each: null, wrap: false},
+    'status': {operator: "$in", each: null, wrap: false},
+    'events_expression': {operator: '$or', each: '$ilike', wrap: true}
+  };
+
+  // Are we building a where clause?
+  if(_.intersection(_.keysIn(req.query), _.keysIn(allowedFilters)).length > 0) {
+
+    where = { '$and': [] };
+
+    // Which filters, from the allowed list, have been sent?
+    let filters = _.chain(req.query).keysIn().intersection(_.keysIn(allowedFilters)).value();
+
+
+    // Loop over filters and build them into the ORM clause
+    _.forEach(filters, (filter) => {
+
+      // Split the filter values into arrays
+      let values = req.query[filter].split(',');
+
+      // Loop over each value and setup the query syntax
+      values.forEach((v, i, arr) => {
+        if(allowedFilters[filter].each) {
+          arr[i] = {}; // Make collection entry
+          arr[i][allowedFilters[filter].each] = (allowedFilters[filter].wrap) ? '%'+v+'%' : v;
+        }
+      });
+
+      // Build where clause
+      let clause = {};
+      clause[filter] = {};
+      clause[filter][allowedFilters[filter].operator] = values;
+
+      // Add to required (and) clauses
+      where['$and'].push(clause);
+
+    });
+
+  }
+
+  return where;
+};
 
 module.exports = router;
