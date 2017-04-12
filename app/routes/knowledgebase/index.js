@@ -26,8 +26,32 @@ router.route('/import')
 router.route('/controlled-vocabulary')
   .get((req,res,next) => {
 
+    let vocab = {controlled: require(process.cwd() + '/config/kbControlled.json')};
+
     // Send JSON values
-    res.json(require(process.cwd() + '/config/kbControlled.json'));
+    res.json(vocab.controlled);
+
+    delete vocab.controlled;
+
+  });
+
+router.route('/disease-ontology')
+  .get((req,res) => {
+
+    let data = {};
+
+    // Get Json DB
+    data.entries = require(process.cwd() + '/database/disease.json');
+
+    // Add to GenVar list
+    data.found = _.filter(data.entries, (e) => {
+      if(e.toLowerCase().indexOf(req.query.query.toLowerCase()) > -1) return true;
+    });
+
+    res.json(data.found);
+
+    delete data.entries;
+    delete data.found;
 
   });
 
