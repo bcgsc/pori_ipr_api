@@ -19,7 +19,6 @@
     "activates-pathway",
     "associated-pathway",
     "associated-with",
-    "associated-with",
     "cancer associated gene",
     "characteristic-of",
     "conditional loss-of-function",
@@ -293,5 +292,11 @@
     "uveal melanoma",
     "vulva adenocarcinoma",
     "waldenstrom macroglobulinemia"
+  ],
+  "status": [
+    "NEW",
+    "REVIEWED",
+    "FLAGGED-INCORRECT",
+    "REQUIRES-REVIEW"
   ]
 }
