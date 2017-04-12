@@ -60,7 +60,7 @@ app.get('/teapot', (req,res,next) => { res.status(418).set({'hi':'mom!'}).send(f
 
 // ROUTING  ----------------------------------------------------------------
 // All API routes will be prefixed with /api/x.x
-app.use('/api/' + API_VERSION, require('./app/routes/index'));
+app.use('/api/' + API_VERSION, require(__dirname + '/app/routes/index'));
 
 // START THE SERVER
 // =========================================================================
