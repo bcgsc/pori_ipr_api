@@ -135,6 +135,11 @@ kb.events = sequelize.import(__dirname + '/knowledgebase/kb_events');
 kb.events.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 kb.events.belongsTo(user, {as: 'reviewedBy', foreignKey: 'reviewedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
+kb.history = sequelize.import(__dirname + '/knowledgebase/kb_history');
+kb.history.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+user.hasMany(kb.history, {as: 'kbedits', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true});
+
+
 // Syncronize tables to model schemas
 if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
 
