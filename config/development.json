@@ -23,7 +23,7 @@
       "username": "bpierce",
       "password": "iprdbdev",
       "schema": "public",
-      "database": "ipr",
+      "database": "ipr-dev",
       "prefix": ""
     }
   },
