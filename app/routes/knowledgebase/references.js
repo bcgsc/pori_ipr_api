@@ -5,7 +5,34 @@ let express = require('express'),
   router = express.Router({mergeParams: true}),
   db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
-  acl = require(process.cwd() + '/app/middleware/acl');
+  acl = require(process.cwd() + '/app/middleware/acl'),
+  kbVersion = require(process.cwd() +  '/app/libs/kbVersionDatum.js');
+
+
+router.param('reference', (req,res,next,ref) => {
+
+  let opts = {};
+  opts.attributes = {
+    exclude: ['id', 'deletedAt', 'createdBy_id', 'reviewedBy_id']
+  };
+  opts.include = [
+    {model: db.models.user, as: 'createdBy',  attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
+    {model: db.models.user, as: 'reviewedBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
+  ];
+  opts.where = {ident: ref}
+
+  db.models.kb_reference.findOne(opts).then(
+    (result) => {
+      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
+      req.reference = result;
+      next();
+    },
+    (error) => {
+      console.log(error);
+      return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareReferenceQuery'} });
+    }
+  );
+});
 
 
 router.route('/')
@@ -41,7 +68,50 @@ router.route('/')
 
   })
   .post((req,res) => {
+    // Validation!!
 
+    req.body.createdBy_id = req.user.id;
+    req.body.status = 'NEW';
+
+    // Create new references entry
+    db.models.kb_reference.create(req.body).then(
+      (reference) => {
+
+        // History Entry
+        let createHistory = {
+          type: 'create',
+          table: db.models.kb_reference.getTableName(),
+          model: db.models.kb_reference.name,
+          entry: reference.ident,
+          previous: null,
+          new: 0,
+          user_id: req.user.id,
+          comment: req.body.comments
+        };
+
+        // Create history entry
+        db.models.kb_history.create(createHistory).then(
+          (history) => {
+
+            // Construct response object
+            reference = reference.get();
+            reference.history = [history];
+            reference.createdBy = {firstName: req.user.firstName, lastName: req.user.lastName, ident: req.user.ident};
+
+            // Return new object
+            res.status(201).json(reference);
+          },
+          (error) => {
+            res.status(500).json({error: {message: 'Unable to create the new references history entry', code: 'failedHistoryCreateQuery'}});
+          }
+
+        )
+
+      },
+      (err) => {
+        res.status(500).json({error: {message: 'Unable to create the new references entry', code: 'failedReferenceCreateQuery'}});
+      }
+    )
   });
 router.route('/count')
   .get((req,res) => {
@@ -58,9 +128,115 @@ router.route('/count')
     )
 
   });
-router.route('/{ident}')
-  .put((req,res) => {
+router.route('/:reference([A-z0-9-]{36})')
+  .put((req,res, next) => {
     // Update Entry
+    delete req.body.id;
+    delete req.body.createdAt;
+    delete req.body.approvedAt;
+
+    req.body.status = 'REQUIRES-REVIEW';
+    req.body.createdBy_id = req.user.id;
+    req.body.dataVersion = req.reference.dataVersion + 1;
+
+    console.log('Starting request', req.reference.ident);
+
+    // Version the data
+    let promise = kbVersion(db.models.kb_reference, req.reference, req.body, req.user, req.body.comments).then(
+      (result) => {
+
+        let reference = result.create;
+        let history = result.history;
+        let data = result.data.create.get();
+
+        // History Entry
+        let createHistory = {
+          type: 'create',
+          table: db.models.kb_reference.getTableName(),
+          model: db.models.kb_reference.name,
+          entry: reference.ident,
+          previous: null,
+          new: 0,
+          user_id: req.user.id,
+          comment: req.body.comments
+        };
+
+        // Create history entry
+        db.models.kb_history.create(createHistory).then(
+          (history) => {
+
+            // Construct response object
+            reference = reference.get();
+            reference.history = [history];
+            reference.createdBy = {firstName: req.user.firstName, lastName: req.user.lastName, ident: req.user.ident};
+
+            // Return new object
+            res.status(201).json(reference);
+          },
+          (error) => {
+            res.status(500).json({error: {message: 'Unable to create the new references history entry', code: 'failedHistoryCreateQuery'}});
+          }
+
+        );
+
+        // Send response
+        res.json(data);
+      },
+      (err) => {
+        console.log(err);
+        res.status(500).json('Unable to version the data');
+      }
+    );
+
+  })
+  .get((req,res,next) => {
+
+    res.json(req.reference);
+
+  });
+
+// Update Route Status
+router.route('/:reference([A-z0-9-]{36})/status/:status(REVIEWED|FLAGGED-INCORRECT|REQUIRES-REVIEW)')
+  .put((req,res) => {
+
+    let previousStatus = req.reference.status;
+
+    // Check updatability
+    if(req.reference.createdBy_id === req.user.id) res.status(400).json({error:{message:'The writer of a reference may not be the reviewer.'}});
+
+    // Write update
+    req.reference.status = req.params.status;
+
+    if(req.params.status === 'REVIEWED') req.reference.reviewedBy_id = req.user.id;
+
+    // Send Update to DB
+    db.models.kb_reference.update(req.reference.get(), { where: { ident: req.reference.ident, deletedAt: null } }).then(
+      (result) => {
+
+        // History Entry
+        let createHistory = {
+          type: 'status',
+          table: db.models.kb_reference.getTableName(),
+          model: db.models.kb_reference.name,
+          entry: req.reference.ident,
+          previous: previousStatus,
+          new: req.reference.status,
+          user_id: req.user.id,
+          comment: req.body.comments
+        };
+
+        // Send response
+        res.json(req.reference);
+
+        // Create history entry
+        db.models.kb_history.create(createHistory);
+
+      },
+      (err) => {
+        console.log('Unable to update reference status', err);
+        res.status(500).json({error: {message: 'Unable to update reference status'}});
+      }
+    )
 
   });
 
