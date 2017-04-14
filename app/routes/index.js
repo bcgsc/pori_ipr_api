@@ -12,9 +12,11 @@ let ignored = {
   routes: ['loadPog', '.svn'],
 };
 
-// Middleware
+/** Middleware **/
+// POG injection
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
-router.use('(/POG|/POG/*|/user/*|/user|/jira)', require(process.cwd() + '/app/middleware/auth'));
+// User Authentication
+router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase)', require(process.cwd() + '/app/middleware/auth'));
 
 // Retrieve automatic POG Routing
 recursive('./app/routes/POG', (err, files) => {
