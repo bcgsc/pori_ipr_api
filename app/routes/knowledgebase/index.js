@@ -2,6 +2,7 @@
 
 let _ = require('lodash'),
     router = require('express').Router({mergeParams: true}),
+    db = require(process.cwd() + '/app/models'),
     loader = require(process.cwd() + '/app/loaders/knowledgebase');
 
 router.use('/validate', require('./validate'));
@@ -52,6 +53,33 @@ router.route('/disease-ontology')
 
     delete data.entries;
     delete data.found;
+
+  });
+
+router.route('/history')
+  .get((req,res) => {
+
+  let model;
+
+    // set model from type
+    if(req.query.type === 'reference') model = 'kb_references';
+    if(req.query.type === 'event') model = 'kb_events';
+
+    // Get Events by ident
+    db.models.kb_history.findAll({
+      where: { table: model, entry: req.query.entry}, attributes: {exclude: ['id', 'user_id']}, order: '"createdAt" DESC',
+      include: [
+        {model: db.models.user, as: 'user', attributes: {exclude:['id', 'password', 'jiraXsrf']}}
+      ]
+    }).then(
+      (result) => {
+        res.json(result);
+      },
+      (err) => {
+        console.log('Unable to retrieve history entries', err);
+        res.status(500).json({error: {message: "Unable to retrieve entry's history."}});
+      }
+    )
 
   });
 
