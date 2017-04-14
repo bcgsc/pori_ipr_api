@@ -20,10 +20,10 @@ let mapUser = (inputUser) => {
 
   switch(inputUser) {
     case 'CRR':
-      return 10;
+      return 4;
       break;
     case 'MRJ':
-      return 4;
+      return 3;
       break;
     default:
       return null;
