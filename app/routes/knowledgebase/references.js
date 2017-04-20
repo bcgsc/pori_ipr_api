@@ -6,6 +6,7 @@ let express = require('express'),
   db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
   acl = require(process.cwd() + '/app/middleware/acl'),
+  kbEvent = require(process.cwd() + '/app/libs/kbEvent'),
   kbVersion = require(process.cwd() +  '/app/libs/kbVersionDatum.js');
 
 
@@ -46,7 +47,7 @@ router.route('/')
     let where = referenceQueryFilter(req);
     if(where !== null) opts.where = where;
 
-    //return res.json(opts.where);;
+    //return res.json(opts.where);
 
     opts.attributes = {
       exclude: ['deletedAt', 'createdBy_id', 'reviewedBy_id']
@@ -88,6 +89,12 @@ router.route('/')
           user_id: req.user.id,
           comment: req.body.comments
         };
+
+        // Start Event Creation loop
+        _.forEach(_.split(reference.events_expression,  /\||\&/g), (item) => {
+          kbEvent.eventCheck(item, req.user);
+        });
+
 
         // Create history entry
         db.models.kb_history.create(createHistory).then(
@@ -139,45 +146,16 @@ router.route('/:reference([A-z0-9-]{36})')
     req.body.createdBy_id = req.user.id;
     req.body.dataVersion = req.reference.dataVersion + 1;
 
-    console.log('Starting request', req.reference.ident);
-
     // Version the data
     let promise = kbVersion(db.models.kb_reference, req.reference, req.body, req.user, req.body.comments).then(
       (result) => {
 
-        let reference = result.create;
+        let reference = result.data.create;
         let history = result.history;
         let data = result.data.create.get();
 
-        // History Entry
-        let createHistory = {
-          type: 'create',
-          table: db.models.kb_reference.getTableName(),
-          model: db.models.kb_reference.name,
-          entry: reference.ident,
-          previous: null,
-          new: 0,
-          user_id: req.user.id,
-          comment: req.body.comments
-        };
-
-        // Create history entry
-        db.models.kb_history.create(createHistory).then(
-          (history) => {
-
-            // Construct response object
-            reference = reference.get();
-            reference.history = [history];
-            reference.createdBy = {firstName: req.user.firstName, lastName: req.user.lastName, ident: req.user.ident};
-
-            // Return new object
-            res.status(201).json(reference);
-          },
-          (error) => {
-            res.status(500).json({error: {message: 'Unable to create the new references history entry', code: 'failedHistoryCreateQuery'}});
-          }
-
-        );
+        // Return new object
+        res.status(200).json(reference);
 
         // Send response
         res.json(data);
@@ -253,12 +231,12 @@ let referenceQueryFilter = (req) => {
   // Allow filters, and their query settings
   const allowedFilters = {
     'type': {operator: "$in", each: null, wrap: false},
-    'relevance': {operator: "$in", each: null}, wrap: false,
+    'relevance': {operator: "$in", each: null, wrap: false},
     'disease_list': {operator: "$or", each: "$ilike", wrap: true},
     'context': {operator: "$or", each: "$ilike", wrap: true},
     'evidence': {operator: "$in", each: null, wrap: false},
     'status': {operator: "$in", each: null, wrap: false},
-    'events_expression': {operator: '$or', each: '$ilike', wrap: true}
+    'events_expression': {operator: '$or', each: '$ilike', wrap: true},
   };
 
   // Are we building a where clause?
@@ -294,6 +272,28 @@ let referenceQueryFilter = (req) => {
 
     });
 
+  }
+
+  // Search clause sent?
+  if(req.query.search) {
+    // Make a search query
+    if(where === null) where = {$and: []};
+
+    let query = req.query.search;
+
+    let searchClause = { $or: [] };
+    searchClause.$or.push({ events_expression: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ relevance: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ context: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ disease_list: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ evidence: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ id_type: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ ref_id: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ id_title: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ status: { $ilike: '%' + query + '%' }});
+    searchClause.$or.push({ comments: { $ilike: '%' + query + '%' }});
+
+    where.$and.push(searchClause);
   }
 
   return where;
