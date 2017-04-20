@@ -36,9 +36,6 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
     newEntry[col] = currentEntry[col]; // Map from old to new
   });
 
-  // ++ Data Version
-  console.log('Inside KB', currentEntry.ident);
-
   // Get the max for the current dataVersion in the table
   model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false}).then(
     (maxCurrentVersion) => {
@@ -46,14 +43,9 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
 
       newEntry.dataVersion = maxCurrentVersion + 1;
 
-
-      console.log('New data version', newEntry.dataVersion);
-
       // Create new entry
       model.create(newEntry).then(
         (createResponse) => {
-
-          console.log('New version created', createResponse.id);
 
           // Are we not destroying?
           if(!destroyIndex) {
@@ -72,8 +64,6 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
             // Delete existing version
             model.destroy({where: destroyWhere, limit: 1}).then(
               (destroyResponse) => {
-
-                console.log('Destroyed previous version', destroyResponse);
 
                 // Create DataHistory entry
                 let dh = {
