@@ -56,6 +56,9 @@ router.route('/disease-ontology')
 
   });
 
+// History Metrics Query
+// select user_id, COUNT(distinct kb_histories.ident) AS "numberOfEntries" from kb_histories GROUP BY user_id;
+
 router.route('/history')
   .get((req,res) => {
 
@@ -80,6 +83,25 @@ router.route('/history')
         res.status(500).json({error: {message: "Unable to retrieve entry's history."}});
       }
     )
+
+  });
+router.route('/metrics')
+  .get((req,res) => {
+
+    // Get Metrics
+    db.query(
+      "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", sum(case when kb_references.status = 'NEW' then 1 else 0 end) as \"refNew\", sum(case when kb_references.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"refRequiresReview\", sum(case when kb_references.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"refFlaggedIncorrect\", count(kb_events.id) as \"evTotal\", sum(case when kb_events.status = 'APPROVED' then 1 else 0 end) as \"evApproved\", sum(case when kb_events.status = 'NEW' then 1 else 0 end) as \"evNew\", sum(case when kb_events.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"evRequiresReview\", sum(case when kb_events.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"evFlaggedIncorrect\" from kb_references full outer join kb_events on kb_references.ident = kb_events.ident;",
+      { type: db.QueryTypes.SELECT }
+    )
+    .then(
+      (metrics) => {
+        res.json(metrics[0]);
+      },
+      (err) => {
+        res.status(500).json({error: {message: 'Unable to retrieve Knowledgebase metrics'}});
+      }
+    )
+
 
   });
 
