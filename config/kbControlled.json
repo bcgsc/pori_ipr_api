@@ -298,5 +298,14 @@
     "REVIEWED",
     "FLAGGED-INCORRECT",
     "REQUIRES-REVIEW"
+  ],
+  "display_coord": [
+    "amplification",
+    "increased expression",
+    "reduced expression",
+    "any expression",
+    "no expression",
+    "copy loss",
+    "copy gain"
   ]
 }
