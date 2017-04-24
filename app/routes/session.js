@@ -137,6 +137,28 @@ router.route('/')
     );
   });
 
+router.route('/validate')
+  .post((req,res) => {
+
+    // Validate a token to determine it's truthiness
+    let token = req.body.token;
+
+    // Lookup token
+    db.models.userToken.findOne({where: {token: token}}).then(
+      (result) => {
+        if(result !== null) return res.json({valid: true});
+        if(result === null) return res.json({valid: false});
+        res.json({valid:false});
+      },
+      (err) => {
+        if(err.message.indexOf('invalid input syntax for uuid') > -1) return res.status(400).json({error: {message: 'The UUID you supplied is not valid.', code: 'invalidUUID'}});
+        console.log('SQL error', err);
+        res.status(500).json({error: {message: 'Unable to validate the provided authentication token.', code: 'failedTokenValidationError'}});
+      }
+    )
+
+  });
+
 module.exports = router;
 
 /**
