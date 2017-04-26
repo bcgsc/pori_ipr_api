@@ -104,7 +104,7 @@ router.route('/')
       attributes: {
         exclude: ['id', '"deletedAt"', 'pog_id']
       },
-    }
+    };
     
     // Get all rows for this POG
     db.models.genomicAlterationsIdentified.findAll(options).then(
@@ -120,6 +120,9 @@ router.route('/')
   })
   .post((req,res,next) => {
     // Add a new Potential Clinical Alteration...
+
+
+
   });
   
 module.exports = router;

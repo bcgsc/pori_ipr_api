@@ -5,16 +5,18 @@ const db = require(process.cwd() + '/app/models'),
       Q = require('q');
 
 
-/*
+/**
  * Update a version of a given datum
  *
  * Creates new entry of same ident, then deletes previous version.
  *
- * @param required object model - Sequelize Model that the datum belongs to
- * @param required object currentEntry - The current/old version of the datum to be versioned
- * @param required object newEntry - The new version of the data to be entered
- * @param optional string destroyIndex - The column used to identify the entry to be destroyed (can be unique wrt dataVersion)
- * @param optional array colsToMap - The columns to map from old to new entries
+ * @param {object} model - Sequelize Model that the datum belongs to
+ * @param {object} currentEntry - The current/old version of the datum to be versioned
+ * @param {object} newEntry - The new version of the data to be entered
+ * @param {object} user - SequelizeJS Model of the user affecting the change
+ * @param {string=} comment - Comment to be associated with the history event
+ * @param {string=} destroyIndex - The column used to identify the entry to be destroyed (can be unique wrt dataVersion)
+ * @param {array=} colsToMap - The columns to map from old to new entries
  *
  * @returns promise
  *

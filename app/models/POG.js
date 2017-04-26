@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let POG = sequelize.define('POG', {
+  return sequelize.define('POG', {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,
@@ -31,7 +31,5 @@ module.exports = (sequelize, Sq) => {
       // Use soft-deletes!
       paranoid: true,
     });
-    
-  return POG;
 };
 
