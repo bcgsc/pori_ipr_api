@@ -45,7 +45,7 @@ module.exports = (sequelize, Sq) => {
   },
   {
     // Table Name
-    tableName: 'imageData',
+    tableName: 'pog_analysis_reports_image_data',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true
   });
