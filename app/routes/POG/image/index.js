@@ -6,8 +6,7 @@ let express = require('express'),
     loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations');
   
 
-// Register middleware  
-router.param('POG', require(process.cwd() + '/app/middleware/pog'));
+// Register middleware
 
 // Route for getting an image
 router.route('/retrieve/:key')
@@ -20,17 +19,18 @@ router.route('/retrieve/:key')
       keys = req.params.key.split(',');
     }
 
-    db.models.imageData.findAll({
+    let opts = {
       where: {
         key: {
           in: keys
         },
-        pog_id: req.POG.id
+        pog_id: req.POG.id,
       },
-      attributes: {exclude: ['id','deletedAt', 'pog_id']},
-    }).then(
-      (result) => {
+      attributes: {exclude: ['id','deletedAt', 'pog_id', 'pog_report_id']},
+    };
 
+    db.models.imageData.findAll(opts).then(
+      (result) => {
         output = {};
 
         _.forEach(result, (v,k) => {
