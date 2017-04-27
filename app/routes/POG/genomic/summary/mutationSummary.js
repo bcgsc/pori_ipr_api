@@ -12,10 +12,7 @@ router.use('/', (req,res,next) => {
   db.models.mutationSummary.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
     (result) => {
       // Not found
-      if(result == null) {
-        res.status(404).json({error: {message: 'Unable to find the mutation summary for ' + req.POG.POGID + '.', code: 'failedMutationSummaryLookup'}});
-        return;
-      }
+      if(result === null) return res.status(404).json({error: {message: 'Unable to find the mutation summary for ' + req.POG.POGID + '.', code: 'failedMutationSummaryLookup'}});
       
       // Found the patient information
       req.mutationSummary = result;
