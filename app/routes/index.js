@@ -58,6 +58,7 @@ router.use('/user/group', require('./user/group'));
 router.use('/jira', require('./jira'));
 router.use('/POG/:POG/history', require('./dataHistory'));
 router.use('/POG/:POG/export', require('./POG/export'));
+router.use('/POG/:POG/patientInformation', require('./patientInformation'));
 router.use('/reports', require('./reports'));
 
 // Setup Knowledge base routes

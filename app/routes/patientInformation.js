@@ -9,11 +9,11 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
   
   // Get Patient Information for this POG
-  db.models.patientInformation.findOne({ where: {pog_id: req.POG.id}, attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.patientInformation.scope('public').findOne({ where: {pog_id: req.POG.id}}).then(
     (result) => {
 
       // Not found
-      if(result == null) res.status(404).json({error: {message: 'Unable to find the patient information for ' + req.POG.POGID + '.', code: 'failedPatientInformationLookup'}});
+      if(result === null) res.status(404).json({error: {message: 'Unable to find the patient information for ' + req.POG.POGID + '.', code: 'failedPatientInformationLookup'}});
       
       // Found the patient information
       req.patientInformation = result;
