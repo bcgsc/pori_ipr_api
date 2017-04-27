@@ -71,6 +71,7 @@ router.route('/')
                 lastName: user[1][0].lastName,
                 email: user[1][0].email,
                 access: user[1][0].access,
+                settings: user[1][0].settings,
                 createdAt: user[1][0].createdAt,
                 updatedAt: user[1][0].updatedAt,
                 lastLogin: user[1][0].lastLogin
@@ -157,6 +158,7 @@ router.route('/me')
       jiraToken: req.user.jiraToken,
       jiraXsrf: req.user.jiraXsrf,
       access: req.user.access,
+      settings: req.user.settings,
       lastLogin: req.user.lastLogin,
       createdAt: req.user.createdAt,
       updatedAt: req.user.updatedAt,
@@ -164,6 +166,20 @@ router.route('/me')
     };
 
     return res.json(me);
+  });
+
+router.route('/settings')
+  .get((req,res,next) => {
+    res.json(req.user.get('settings'));
+  })
+  .put((req,res,next) => {
+
+    db.models.user.update(req.body, {where: {ident: req.user.ident}}).then(
+      (user) => {
+        res.json()
+      }
+    )
+
   });
 
 router.route('/:ident([A-z0-9-]{36})')
@@ -194,8 +210,10 @@ router.route('/:ident([A-z0-9-]{36})')
     let updateBody = {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
-      email: req.body.email
+      email: req.body.email,
     };
+
+    if(req.body.settings) updateBody.settings = req.body.settings;
 
     if(req.body.password && req.body.password.length > 7) updateBody.password = bcrypt.hashSync(req.body.password, 10);
 
