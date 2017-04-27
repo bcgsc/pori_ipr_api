@@ -31,7 +31,10 @@ router.route('/')
     opts.order = '"POG"."POGID" ASC';
     opts.include = [];
     if(req.query.query ) opts.where = {POGID: {$ilike: '%' + req.query.query + '%'}};
-    opts.include.push({model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } });
+    opts.include.push({model: db.models.patientInformation.scope('public'), as: 'patientInformation'});
+    opts.include.push({as: 'analysis_reports', model: db.models.analysis_report.scope('public'), include: [
+      {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'}
+    ]});
 
     // Create the POGUser join object.
     let pogUserInclude = { include: []};
@@ -47,8 +50,8 @@ router.route('/')
       if(req.query.role) pogUserInclude.where.role = req.query.role; // Role filtering
     }
     
-    pogUserInclude.include.push({as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
-    pogUserInclude.include.push({as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
+    pogUserInclude.include.push({as: 'user', model: db.models.user.scope('public')});
+    pogUserInclude.include.push({as: 'addedBy', model: db.models.user.scope('public')});
 
     opts.include.push(pogUserInclude);
     
@@ -157,7 +160,7 @@ router.route('/:POG/user')
   });
 
 // Get Reports for this pog
-router.route('/:POG/report')
+router.route('/:POG/reports')
   .get((req,res,next) => {
 
     // return all reports
@@ -181,7 +184,7 @@ router.route('/:POG/report')
   });
 
 // Get Reports for this pog
-router.route('/:POG/report/:report')
+router.route('/:POG/reports/:report')
   .get((req,res,next) => {
 
     let report = req.report.get();
