@@ -13,7 +13,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
 
   // Get Patient Information for this POG
-  db.models.pathwayAnalysis.findOne({ where: {pog_id: req.POG.id}, order: '"dataVersion" DESC', attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.pathwayAnalysis.findOne({ where: {pog_report_id: req.report.id}, order: '"dataVersion" DESC', attributes: {exclude: ['id', 'deletedAt']}}).then(
     (result) => {
 
       // Not found is allowed!
@@ -49,7 +49,7 @@ router.route('/')
       // Create
       let request = {
         pathway: req.file.buffer.toString(),
-        pog_id: req.POG.id,
+        pog_report_id: req.report.id,
         dataversion: 0
       };
 
@@ -67,11 +67,12 @@ router.route('/')
       // Updating
       let request = {
         pathway: req.file.buffer.toString(),
-        pog_id: req.POG.id
+        pog_report_id: req.report.id
       };
 
       // Remove current
       req.pathwayAnalysis.pog_id = req.POG.id;
+      req.pathwayAnalysis.pog_report_id = req.report.id;
 
       // Update DB Version for Entry
       versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user).then(
@@ -103,6 +104,7 @@ router.route('/')
 
           req.body.dataVersion = 0;
           req.body.pog_id = req.POG.id;
+          req.body.pog_report_id = req.report.id;
           req.body.pathway = file;
 
           // Create new entry

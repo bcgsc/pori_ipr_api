@@ -23,6 +23,13 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         }
       },
+      pog_report_id: {
+        type: Sq.INTEGER,
+        references: {
+          model: 'pog_analysis_reports',
+          key: 'id',
+        }
+      },
       comments: {
         type: Sq.TEXT,
         allowNull: true,
@@ -41,11 +48,18 @@ module.exports = (sequelize, Sq) => {
     }, 
     {
       // Table Name
-      tableName: 'summary.analystComments',
+      tableName: 'pog_analysis_reports_summary_analyst_comments',
       // Automatically create createdAt, updatedAt, deletedAt
       timestamps: true,
       // Use soft-deletes!
       paranoid: true,
+      scopes: {
+        public: {
+          attributes: {
+            exclude: ['id', 'pog_id', 'pog_report_id', 'deletedAt']
+          },
+        }
+      }
     });
     
   return analystComments;

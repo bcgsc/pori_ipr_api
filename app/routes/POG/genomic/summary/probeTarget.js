@@ -57,18 +57,13 @@ router.route('/:target([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/')
   .get((req,res,next) => {
-    
-    let where = {pog_id: req.POG.id}
-    
+
     let options = {
-      where: where, 
-      attributes: {
-        exclude: ['id', 'pog_id', 'deletedAt']
-      },
-    }
+      where: {pog_report_id: req.report.id},
+    };
     
     // Get all rows for this POG
-    db.models.probeTarget.findAll(options).then(
+    db.models.probeTarget.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },

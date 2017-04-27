@@ -9,7 +9,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
   
   // Get Patient Information for this POG
-  db.models.analystComments.findOne({ where: {pog_id: req.POG.id}, order: '"dataVersion" DESC', attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.analystComments.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
     (result) => {
     
       // Not found is allowed!
@@ -42,6 +42,7 @@ router.route('/')
 
       req.body.dataVersion = 0;
       req.body.pog_id = req.POG.id;
+      req.body.pog_report_id = req.report.id;
 
       // Create new entry
       db.models.analystComments.create(req.body).then(
@@ -56,6 +57,7 @@ router.route('/')
 
     } else {
       req.analystComments.pog_id = req.POG.id;
+      req.analystComments.pog_report_id = req.report.id;
       // Update DB Version for Entry
       versionDatum(db.models.analystComments, req.analystComments, req.body, req.user).then(
         (resp) => {

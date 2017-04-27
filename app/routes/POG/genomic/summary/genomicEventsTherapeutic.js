@@ -7,7 +7,7 @@ let express = require('express'),
 let model = db.models.genomicEventsTherapeutic;
 
 router.param('gene', (req,res,next,altIdent) => {
-   model.findOne({ where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}}).then(
+   model.scope('public').findOne({ where: {ident: altIdent},}).then(
       (result) => {
         if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedGenomicEventsTherapeuticLookup'} });
         
@@ -64,15 +64,12 @@ router.route('/')
     
     let options = {
       where: {
-        pog_id: req.POG.id
+        pog_report_id: req.report.id
       },
-      attributes: {
-        exclude: ['id', '"deletedAt"', 'pog_id']
-      }
-    }
+    };
     
     // Get all rows for this POG
-    model.findAll(options).then(
+    model.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },

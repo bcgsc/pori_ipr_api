@@ -8,7 +8,7 @@ let express = require('express'),
     versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('alteration', (req,res,next,altIdent) => {
-   db.models.genomicAlterationsIdentified.findOne({ where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}}).then(
+   db.models.genomicAlterationsIdentified.scope('public').findOne({ where: {ident: altIdent}}).then(
       (result) => {
         if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
         
@@ -67,9 +67,9 @@ router.route('/:alteration([A-z0-9-]{36})')
 
           // Check to see if we're propagating this down into Detailed Genomic
           let gene = _.split(req.alteration.geneVariant, (/\s(.+)/));
-          let where = { gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), pog_id: req.POG.id };
+          let where = { gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), pog_report_id: req.report.id };
 
-          db.models.genomicEventsTherapeutic.destroy({where: { genomicEvent: req.alteration.geneVariant, pog_id: req.POG.id }});
+          db.models.genomicEventsTherapeutic.destroy({where: { genomicEvent: req.alteration.geneVariant, pog_report_id: req.report.id }});
 
           // Cascade removal of variant through Detailed Genomic Analysis
           db.models.alterations.destroy({where: where}).then(
@@ -99,15 +99,12 @@ router.route('/')
     
     let options = {
       where: {
-        pog_id: req.POG.id
-      },
-      attributes: {
-        exclude: ['id', '"deletedAt"', 'pog_id']
+        pog_report_id: req.report.id
       },
     };
     
     // Get all rows for this POG
-    db.models.genomicAlterationsIdentified.findAll(options).then(
+    db.models.genomicAlterationsIdentified.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },

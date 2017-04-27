@@ -9,7 +9,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
   
   // Get Mutation Summary for this POG
-  db.models.tumourAnalysis.findOne({ where: {pog_id: req.POG.id}, attributes: {exclude: ['id', '"deletedAt"']}}).then(
+  db.models.tumourAnalysis.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
     (result) => {
       // Not found
       if(result == null) res.status(404).json({error: {message: 'Unable to find the tumour analysis for ' + req.POG.POGID + '.', code: 'failedTumourAnalysisLookup'}});

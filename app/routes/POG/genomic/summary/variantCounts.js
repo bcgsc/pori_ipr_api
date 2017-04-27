@@ -9,7 +9,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
   
   // Get Mutation Summary for this POG
-  db.models.variantCounts.findOne({ where: {pog_id: req.POG.id}, attributes: {exclude: ['id', '"deletedAt"']}}).then(
+  db.models.variantCounts.findOne({ where: {pog_report_id: req.report.id}, attributes: {exclude: ['id', '"deletedAt"']}}).then(
     (result) => {
       // Not found
       if(result == null) res.status(404).json({error: {message: 'Unable to find the variant counts for ' + req.POG.POGID + '.', code: 'failedVariantCountsLookup'}});
