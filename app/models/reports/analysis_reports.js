@@ -26,6 +26,11 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    type: {
+      type: Sq.ENUM('genomic','probe'),
+      defaultValue: 'genomic',
+      allowNull: false
+    },
     sampleInfo: {
       type: Sq.JSONB,
     },
