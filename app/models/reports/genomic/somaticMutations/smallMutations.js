@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let cnv = sequelize.define('cnv', {
+  let smallMutations = sequelize.define('smallMutations', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -30,32 +30,38 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
-    cnvVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss')
+    mutationType: {
+      type: Sq.ENUM('clinical', 'nostic', 'biological', 'unknown')
     },
     gene: {
       type: Sq.STRING,
     },
+    transcript: {
+      type: Sq.STRING,
+    },
+    proteinChange: {
+      type: Sq.STRING,
+    },
+    location: {
+      type: Sq.STRING,
+    },
+    refAlt: {
+      type: Sq.STRING,
+    },
+    zygosity: {
+      type: Sq.STRING,
+    },
     ploidyCorrCpChange: {
-      type: Sq.INTEGER,
+      type: Sq.STRING,
     },
     lohState: {
       type: Sq.STRING,
     },
-    cnvState: {
+    tumourReads: {
       type: Sq.STRING,
     },
-    chromosomeBand: {
+    RNAReads: {
       type: Sq.STRING,
-    },
-    start: {
-      type: Sq.INTEGER,
-    },
-    end: {
-      type: Sq.INTEGER,
-    },
-    size: {
-      type: Sq.FLOAT,
     },
     expressionRpkm: {
       type: Sq.FLOAT,
@@ -63,12 +69,12 @@ module.exports = (sequelize, Sq) => {
     foldChange: {
       type: Sq.FLOAT,
     },
-    tcgaPerc: {
-      type: Sq.FLOAT,
+    TCGAPerc: {
+      type: Sq.INTEGER,
     },
   }, {
     // Table Name
-    tableName: 'pog_analysis_reports_copy_number_analysis_cnv',
+    tableName: 'pog_analysis_reports_somatic_mutations_small_mutations',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
@@ -80,6 +86,6 @@ module.exports = (sequelize, Sq) => {
     }
   });
 
-  return cnv;
+  return smallMutations;
 };
 

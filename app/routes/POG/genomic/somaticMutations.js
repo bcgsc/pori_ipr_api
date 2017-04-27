@@ -5,9 +5,9 @@ let express = require('express'),
   versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('mutation', (req,res,next,mutIdent) => {
-  db.models.somaticMutations.findOne({ where: {ident: mutIdent}, attributes: {exclude: ['id', 'deletedAt']}, order: 'dataVersion DESC'}).then(
+  db.models.somaticMutations.scope('public').findOne({ where: {ident: mutIdent}}).then(
     (result) => {
-      if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareSomaticMutationLookup'} });
+      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareSomaticMutationLookup'} });
 
       req.mutation = result;
       next();
@@ -60,7 +60,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
   .get((req,res,next) => {
 
     // Setup where clause
-    let where = {pog_id: req.POG.id}
+    let where = {pog_report_id: req.report.id};
 
     // Searching for specific type of alterations
     if(req.params.type) {
@@ -70,14 +70,11 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
 
     let options = {
       where: where,
-      attributes: {
-        exclude: ['id', 'deletedAt']
-      },
       order: 'gene ASC',
     };
 
     // Get all rows for this POG
-    db.models.smallMutations.findAll(options).then(
+    db.models.smallMutations.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
@@ -94,15 +91,12 @@ router.route('/mutationSignature')
   .get((req,res,next) => {
 
     let options = {
-      where: {pog_id: req.POG.id},
-      attributes: {
-        exclude: ['id', 'deletedAt', 'pog_id']
-      },
+      where: {pog_report_id: req.report.id},
       order: 'signature ASC',
     };
 
     // Get all rows for this POG
-    db.models.mutationSignature.findAll(options).then(
+    db.models.mutationSignature.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },

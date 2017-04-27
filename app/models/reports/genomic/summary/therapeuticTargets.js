@@ -64,6 +64,11 @@ module.exports = (sequelize, Sq) => {
     timestamps: true,
     // Use soft-deletes
     paranoid: true,
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']}
+      }
+    }
   });
 };
 

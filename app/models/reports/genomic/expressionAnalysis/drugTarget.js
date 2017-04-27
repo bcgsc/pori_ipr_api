@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let mutationSignature = sequelize.define('mutationSignature', {
+  return sequelize.define('drugTarget', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -23,36 +23,55 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
-    signature: {
+    pog_report_id: {
       type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
     },
-    pearson: {
-      type: Sq.FLOAT,
-    },
-    nnls: {
-      type: Sq.FLOAT,
-    },
-    associations: {
+    gene: {
       type: Sq.STRING,
     },
-    features: {
-      type: Sq.STRING,
-    },
-    numCancerTypes: {
+    copy: {
       type: Sq.INTEGER,
     },
-    cancerTypes: {
+    lohRegion: {
+      type: Sq.STRING,
+    },
+    foldChange: {
+      type: Sq.FLOAT,
+    },
+    tcgaPerc: {
+      type: Sq.INTEGER,
+    },
+    drugOptions: {
+      type: Sq.TEXT
+    },
+    kIQR: {
+      type: Sq.STRING,
+    },
+    kIQRColumn: {
+      type: Sq.STRING,
+    },
+    kIQRNormal: {
+      type: Sq.STRING,
+    },
+    kIQRNormalColumn: {
       type: Sq.STRING,
     },
   }, {
     // Table Name
-    tableName: 'somaticMutations.mutationSignature',
+    tableName: 'pog_analysis_reports_expression_drug_target',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
-    paranoid: true
+    paranoid: true,
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']}
+      }
+    }
   });
-
-  return mutationSignature;
 };
 

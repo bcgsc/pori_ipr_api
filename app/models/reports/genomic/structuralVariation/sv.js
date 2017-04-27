@@ -23,6 +23,13 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    pog_report_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
+    },
     svVariant: {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport')
     },
@@ -95,11 +102,16 @@ module.exports = (sequelize, Sq) => {
     }
   }, {
     // Table Name
-    tableName: 'structuralVariation.sv',
+    tableName: 'pog_analysis_reports_structural_variation_sv',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
-    paranoid: true
+    paranoid: true,
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']}
+      }
+    }
   });
 
   return sv;

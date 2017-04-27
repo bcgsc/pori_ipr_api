@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let outlier = sequelize.define('outlier', {
+  return sequelize.define('targetedGenes', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -23,45 +23,34 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
-    outlierType: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological')
+    pog_report_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
     },
     gene: {
-      type: Sq.STRING,
-    },
-    location: {
-      type: Sq.STRING,
-    },
-    copyChange: {
-      type: Sq.STRING,
-    },
-    lohState: {
-      type: Sq.STRING,
-    },
-    cnvState: {
-      type: Sq.STRING,
-    },
-    rnaReads: {
       type: Sq.STRING
     },
-    rpkm: {
-      type: Sq.FLOAT,
+    variant: {
+      type: Sq.STRING,
     },
-    foldChange: {
-      type: Sq.FLOAT,
+    sample: {
+      type: Sq.STRING,
     },
-    tcgaPerc: {
-      type: Sq.INTEGER,
-    }
   }, {
     // Table Name
-    tableName: 'expression.outlier',
+    tableName: 'pog_analysis_reports_detailed_genomic_analysis_targeted_genes',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
-    paranoid: true
+    paranoid: true,
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']}
+      }
+    }
   });
-
-  return outlier;
 };
 

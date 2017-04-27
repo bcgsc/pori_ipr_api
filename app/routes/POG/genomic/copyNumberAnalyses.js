@@ -5,13 +5,11 @@ let express = require('express'),
   versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('cnv', (req,res,next,mutIdent) => {
-  db.models.cnv.findOne({ where: {ident: mutIdent}, attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.cnv.scope('public').findOne({ where: {ident: mutIdent}}).then(
     (result) => {
-      if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareCNVLookup'} });
-
+      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareCNVLookup'} });
       req.cnv = result;
       next();
-
     },
     (error) => {
       return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareCNVQuery'} });
@@ -60,7 +58,7 @@ router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourS
   .get((req,res,next) => {
 
     // Setup where clause
-    let where = {pog_id: req.POG.id}
+    let where = {pog_report_id: req.report.id};
 
     // Searching for specific type of alterations
     if(req.params.type) {
@@ -69,15 +67,11 @@ router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourS
     }
 
     let options = {
-      where: where,
-      attributes: {
-        exclude: ['id', 'deletedAt']
-      },
-      order: '"dataVersion" DESC, gene ASC',
-    }
+      where: where
+    };
 
     // Get all rows for this POG
-    db.models.cnv.findAll(options).then(
+    db.models.cnv.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },

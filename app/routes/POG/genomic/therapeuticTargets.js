@@ -7,7 +7,7 @@ let express = require('express'),
   versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('target', (req,res,next,target) => {
-  db.models.therapeuticTarget.findOne({ where: {ident: target}, attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.therapeuticTarget.scope('public').findOne({ where: {ident: target}}).then(
     (result) => {
       if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareTherapeuticTargetLookup'} });
       req.target = result;
@@ -72,17 +72,14 @@ router.route('/')
   .get((req,res,next) => {
 
     // Setup where clause
-    let where = {pog_id: req.POG.id}
+    let where = {pog_report_id: req.report.id};
     let options = {
       where: where,
-      attributes: {
-        exclude: ['id', 'deletedAt', 'pog_id']
-      },
       order: 'rank ASC',
     };
 
     // Get all rows for this POG
-    db.models.therapeuticTarget.findAll(options).then(
+    db.models.therapeuticTarget.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
@@ -97,6 +94,7 @@ router.route('/')
 
     // Create new entry
     req.body.pog_id = req.POG.id;
+    req.body.pog_report_id = req.report.id;
 
     db.models.therapeuticTarget.create(req.body).then(
       (result) => {

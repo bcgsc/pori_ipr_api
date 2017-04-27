@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let smallMutations = sequelize.define('smallMutations', {
+  let outlier = sequelize.define('outlier', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -23,57 +23,57 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
-    mutationType: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'unknown')
+    pog_report_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
+    },
+    outlierType: {
+      type: Sq.ENUM('clinical', 'nostic', 'biological')
     },
     gene: {
-      type: Sq.STRING,
-    },
-    transcript: {
-      type: Sq.STRING,
-    },
-    proteinChange: {
       type: Sq.STRING,
     },
     location: {
       type: Sq.STRING,
     },
-    refAlt: {
-      type: Sq.STRING,
-    },
-    zygosity: {
-      type: Sq.STRING,
-    },
-    ploidyCorrCpChange: {
+    copyChange: {
       type: Sq.STRING,
     },
     lohState: {
       type: Sq.STRING,
     },
-    tumourReads: {
+    cnvState: {
       type: Sq.STRING,
     },
-    RNAReads: {
-      type: Sq.STRING,
+    rnaReads: {
+      type: Sq.STRING
     },
-    expressionRpkm: {
+    rpkm: {
       type: Sq.FLOAT,
     },
     foldChange: {
       type: Sq.FLOAT,
     },
-    TCGAPerc: {
+    tcgaPerc: {
       type: Sq.INTEGER,
-    },
+    }
   }, {
     // Table Name
-    tableName: 'somaticMutations.smallMutations',
+    tableName: 'pog_analysis_reports_expression_outlier',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
-    paranoid: true
+    paranoid: true,
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']}
+      }
+    }
   });
 
-  return smallMutations;
+  return outlier;
 };
 

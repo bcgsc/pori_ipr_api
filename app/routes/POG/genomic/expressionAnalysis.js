@@ -10,9 +10,9 @@ let express = require('express'),
  *
  */
 router.param('outlier', (req,res,next,oIdent) => {
-  db.models.outlier.findOne({ where: {ident: oIdent}, attributes: {exclude: ['id', 'deletedAt', 'pog_id']}}).then(
+  db.models.outlier.scope('public').findOne({ where: {ident: oIdent}}).then(
     (result) => {
-      if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
+      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
 
       req.outlier = result;
       next();
@@ -65,7 +65,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
   .get((req,res,next) => {
 
     // Setup where clause
-    let where = {pog_id: req.POG.id}
+    let where = {pog_report_id: req.report.id}
 
     // Searching for specific type of outlier
     if(req.params.type) {
@@ -74,15 +74,11 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
     }
 
     let options = {
-      where: where,
-      attributes: {
-        exclude: ['id', 'deletedAt', 'pog_id']
-      },
-      order: '"dataVersion" DESC, gene ASC'
+      where: where
     };
 
     // Get all rows for this POG
-    db.models.outlier.findAll(options).then(
+    db.models.outlier.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
@@ -99,7 +95,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
  *
  */
 router.param('drugTarget', (req,res,next,oIdent) => {
-  db.models.drugTarget.findOne({ where: {ident: oIdent}, attributes: {exclude: ['id', 'deletedAt', 'pog_id']}}).then(
+  db.models.drugTarget.scope('public').findOne({ where: {ident: oIdent}}).then(
     (result) => {
       if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
 
@@ -153,15 +149,12 @@ router.route('/drugTarget')
   .get((req,res,next) => {
 
     let options = {
-      where: {pog_id: req.POG.id},
-      attributes: {
-        exclude: ['id', 'deletedAt', 'pog_id']
-      },
+      where: {pog_report_id: req.report.id},
       order: 'gene ASC'
     };
 
     // Get all rows for this POG
-    db.models.drugTarget.findAll(options).then(
+    db.models.drugTarget.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
