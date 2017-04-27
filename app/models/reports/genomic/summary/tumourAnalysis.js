@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let cnv = sequelize.define('cnv', {
+  return sequelize.define('tumourAnalysis', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -23,51 +23,49 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
-    cnvVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss')
-    },
-    gene: {
-      type: Sq.STRING,
-    },
-    ploidyCorrCpChange: {
+    pog_report_id: {
       type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
     },
-    lohState: {
-      type: Sq.STRING,
-    },
-    cnvState: {
-      type: Sq.STRING,
-    },
-    chromosomeBand: {
-      type: Sq.STRING,
-    },
-    start: {
+    tumourContent: {
       type: Sq.INTEGER,
+      allowNull: false,
     },
-    end: {
-      type: Sq.INTEGER,
+    ploidy: {
+      type: Sq.STRING,
+      allowNull: false,
     },
-    size: {
-      type: Sq.FLOAT,
+    normalExpressionComparator: {
+      type: Sq.STRING,
     },
-    expressionRpkm: {
-      type: Sq.FLOAT,
+    diseaseExpressionComparator: {
+      type: Sq.STRING,
     },
-    foldChange: {
-      type: Sq.FLOAT,
+    subtyping: {
+      type: Sq.STRING,
+      allowNull: true,
+      defaultValue: null,
     },
-    tcgaPerc: {
-      type: Sq.FLOAT,
+    tcgaColor: {
+      type: Sq.STRING,
     },
   }, {
     // Table Name
-    tableName: 'copyNumberAnalysis.cnv',
+    tableName: 'pog_analysis_reports_summary_tumour_analysis',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
-    paranoid: true
+    paranoid: true,
+    scopes: {
+      public: {
+        attributes: {
+          exclude: ['deletedAt', 'pog_report_id', 'id', 'pog_id']
+        },
+      }
+    }
   });
-
-  return cnv;
 };
 
