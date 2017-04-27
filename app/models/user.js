@@ -67,6 +67,13 @@ module.exports = (sequelize, Sq) => {
       timestamps: true,
       // Use soft-deletes!
       paranoid: true,
+      scopes: {
+        public: {
+          attributes: {
+            exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf', 'settings', 'access']
+          },
+        }
+      }
     });
 
   return user;
