@@ -10,7 +10,7 @@ let express = require('express'),
 router.param('alteration', (req,res,next,altIdent) => {
    db.models.genomicAlterationsIdentified.scope('public').findOne({ where: {ident: altIdent}}).then(
       (result) => {
-        if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
+        if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
         
         req.alteration = result;
         next();
@@ -118,7 +118,17 @@ router.route('/')
   .post((req,res,next) => {
     // Add a new Potential Clinical Alteration...
 
+    let alteration = req.body;
+    alteration.pog_report_id = req.report.id;
+    alteration.pog_id = req.report.pog_id;
 
+    db.models.genomicAlterationsIdentified.create(alteration).then((result) => {
+      // Respond with result
+      res.json(result);
+    })
+    .catch((err) => {
+      res.status(500).json({error: {message: 'Unable to create genomic alteration entry', code: 'failedKeyGenomicAlterationCreateEntry'}});
+    });
 
   });
   
