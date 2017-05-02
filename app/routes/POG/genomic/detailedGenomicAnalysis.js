@@ -118,6 +118,13 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
         // Send back newly created/updated result.
         res.json(result);
 
+        // Create new entry for Key Genomic Identified
+        db.models.genomicAlterationsIdentified.scope('public').create({
+          pog_report_id: req.report.id,
+          pog_id: req.POG.id,
+          geneVariant: req.body.gene + ' (' + req.body.variant + ')'
+        });
+
         // Create DataHistory entry
         let dh = {
           type: 'create',
