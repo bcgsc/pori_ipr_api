@@ -33,6 +33,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
     if(req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
       db.models.genomicAlterationsIdentified.scope('public').create({
         pog_report_id: req.report.id,
+        pog_id: req.POG.id,
         geneVariant: req.alteration.gene + ' (' + req.alteration.variant + ')'
       });
     }
@@ -70,6 +71,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     
     // Setup where clause
     let where = {pog_report_id: req.report.id};
+    where.reportType = 'genomic';
     
     // Searching for specific type of alterations
     if(req.params.type) {
@@ -78,6 +80,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
         where.approvedTherapy = req.params.type;
       } else {
         where.alterationType = req.params.type;
+        where.approvedTherapy = null;
       } 
     } else {
       where.approvedTherapy = null;
@@ -107,6 +110,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     req.body.dataVersion = 0;
     req.body.pog_id = req.POG.id;
     req.body.pog_report_id= req.report.id;
+    req.body.reportType = 'genomic';
 
     // Update result
     db.models.alterations.create(req.body).then(
