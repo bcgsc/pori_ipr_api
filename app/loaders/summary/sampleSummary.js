@@ -17,7 +17,7 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -26,7 +26,7 @@ module.exports = (POG, dir, logger) => {
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/sample_summary.csv');
   
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Summary.SampleSummary');
+  let log = logger.loader(report.ident, 'Summary.SampleSummary');
 
   
   log('Found and read sample_summary.csv file.');
@@ -42,7 +42,7 @@ module.exports = (POG, dir, logger) => {
         deferred.reject({reason: 'parseCSVFail'});
       }
       
-      if(result.length > 1) return new Error('['+POG.POGID+'][Loader][Summary.SampleSummary] More than one sample summary entry found.');
+      if(result.length > 1) return new Error('['+report.ident+'][Loader][Summary.SampleSummary] More than one sample summary entry found.');
     
       // create update
       let entry = {
@@ -50,11 +50,11 @@ module.exports = (POG, dir, logger) => {
         tumourProtocol: result[0].tumour_protocol,
         constitutionalSample: result[0].constitutional_sample,
         constitutionalProtocol: result[0].constitutional_protocol
-      }
+      };
       
       
       // Add to Database
-      db.models.patientInformation.update(entry, {where: {pog_id: POG.id}, limit: 1}).then(
+      db.models.patientInformation.update(entry, {where: {pog_id: report.pog_id}, limit: 1}).then(
         (result) => {
 
           log('Sample Summary appended.', logger.SUCCESS);

@@ -21,7 +21,7 @@ let baseDir;
  * @param object log - /app/libs/logger instance
  *
  */
-let parseStructuralVariantFile = (POG, structuralVariationFile, variantType, log) => {
+let parseStructuralVariantFile = (report, structuralVariationFile, variantType, log) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -49,7 +49,8 @@ let parseStructuralVariantFile = (POG, structuralVariationFile, variantType, log
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].svVariant = variantType;
 
         if(v.svg !== 'na' && v.svg !== '') {
@@ -93,7 +94,7 @@ let parseStructuralVariantFile = (POG, structuralVariationFile, variantType, log
 
 };
 
-/*
+/**
  * Structural Variation - Structural Variants Loader
  *
  * Load values for "Structural Variation: Genomic Details"
@@ -105,11 +106,12 @@ let parseStructuralVariantFile = (POG, structuralVariationFile, variantType, log
  *
  * Create DB entries for Small Mutations. Parse in CSV values, mutate, insert.
  *
- * @param object POG - POG model object
- * @param object options - Currently no options defined on this import
+ * @param {object} report - POG report model object
+ * @param {string} dir - Root directory
+ * @param {object} logger - logging interface
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   baseDir = dir;
 
@@ -117,7 +119,7 @@ module.exports = (POG, dir, logger) => {
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'SV.StructuralVariants');
+  let log = logger.loader(report.ident, 'SV.StructuralVariants');
 
   // Small Mutations to be processed
   let sources = [
@@ -132,7 +134,7 @@ module.exports = (POG, dir, logger) => {
 
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    promises.push(parseStructuralVariantFile(POG, input.file, input.type, log));
+    promises.push(parseStructuralVariantFile(report, input.file, input.type, log));
   });
 
   // Wait for all promises to be resolved

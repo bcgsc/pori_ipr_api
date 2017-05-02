@@ -16,7 +16,7 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
@@ -25,7 +25,7 @@ module.exports = (POG, dir, logger) => {
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/mutational_spectrum.csv')
   
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Summary.MutationSummary');
+  let log = logger.loader(report.ident, 'Summary.MutationSummary');
   
   log('Found and read mutational_spectrum.csv file.');
   
@@ -40,14 +40,15 @@ module.exports = (POG, dir, logger) => {
         deferred.reject({reason: 'parseCSVFail'});
       }
       
-      if(result.length > 1) return new Error('['+POG.POGID+'][Loader][Summary.MutationSummary] More than one mutation summary entry found.');
+      if(result.length > 1) return new Error('['+report.ident+'][Loader][Summary.MutationSummary] More than one mutation summary entry found.');
     
       // Remap results
       let entry = _.head(remapKeys(result, nconf.get('summary:mutation')));
       
       // Map needed DB column values
-      entry.pog_id = POG.id;
-      
+      entry.pog_id = report.pog_id;
+      entry.pog_report_id = report.id;
+
       // Add to Database
       db.models.mutationSummary.create(entry).then(
         (result) => {

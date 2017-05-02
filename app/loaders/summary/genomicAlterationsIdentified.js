@@ -16,18 +16,18 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Summary.GenomicAlterationsIdentified');
+  let log = logger.loader(report.ident, 'Summary.GenomicAlterationsIdentified');
   
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/genomic_alt_identified.csv')
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/genomic_alt_identified.csv');
   
-  log('Found and read genomic_alt_identified.csv file.')
+  log('Found and read genomic_alt_identified.csv file.');
   
   // Parse file!
   let parser = parse({delimiter: ','},
@@ -52,7 +52,8 @@ module.exports = (POG, dir, logger) => {
         // Check for empty value
         if(value !== '') {
           entries.push({
-            pog_id: POG.id,
+            pog_id: report.pog_id,
+            pog_report_id: report.id,
             geneVariant: value
           });
         }

@@ -22,7 +22,7 @@ let baseDir;
  * @param object log - /app/libs/logger instance
  *
  */
-let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
+let parseCnvFile = (report, cnvFile, cnvVariant, log) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -50,7 +50,8 @@ let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].cnvVariant = cnvVariant;
       });
 
@@ -74,7 +75,7 @@ let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
 
 };
 
-/*
+/**
  * Copy Number Analysis - CNV Loader
  *
  * Load values for "Copy Number Analysis"
@@ -89,11 +90,12 @@ let parseCnvFile = (POG, cnvFile, cnvVariant, log) => {
  *
  * Create DB entries for Small Mutations. Parse in CSV values, mutate, insert.
  *
- * @param object POG - POG model object
- * @param object options - Currently no options defined on this import
+ * @param {object} report - POG report model object
+ * @param {string} dir - base directory
+ * @param {object} logger - Logging interface
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -101,7 +103,7 @@ module.exports = (POG, dir, logger) => {
   baseDir = dir;
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'CopyNumberAnalysis.CNV');
+  let log = logger.loader(report.ident, 'CopyNumberAnalysis.CNV');
 
   // Small Mutations to be processed
   let sources = [
@@ -119,7 +121,7 @@ module.exports = (POG, dir, logger) => {
 
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    promises.push(parseCnvFile(POG, input.file, input.type, log));
+    promises.push(parseCnvFile(report, input.file, input.type, log));
   });
 
   // Wait for all promises to be resolved

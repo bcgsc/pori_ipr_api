@@ -16,14 +16,16 @@ let imagePath;
 // Map of images to be loaded
 let images = require(process.cwd() + '/config/images.json');
 
-/*
+/**
  * Parse Image Data
  *
- * 
- * @param object POG - POG model object
+ * Process POG Report images, and store in database
  *
+ * @param {object} report - Report model object
+ * @param {object} dir - working base directory
+ * @param {object} logger - Console logging interface
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   // Set Image Path
   imagePath = dir + '/images';
@@ -32,7 +34,7 @@ module.exports = (POG, dir, logger) => {
   let deferred = Q.defer();
   
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Images');
+  let log = logger.loader(report.ident, 'Images');
   
   let promises = [];
   
@@ -52,11 +54,11 @@ module.exports = (POG, dir, logger) => {
     }
     
     // Create Promise
-    promises.push(processImage(POG, image, log));
+    promises.push(processImage(report, image, log));
     
   });
 
-  promises.push(loadExpressionDensity(POG, log));
+  promises.push(loadExpressionDensity(report, log));
   
   Q.all(promises)
     .then((results) => {
@@ -76,7 +78,7 @@ module.exports = (POG, dir, logger) => {
 }
 
 // Read, Resize, and Insert Image Data
-let processImage = (POG, image, log) => {
+let processImage = (report, image, log) => {
   
   let deferred = Q.defer();
 
@@ -102,7 +104,8 @@ let processImage = (POG, image, log) => {
     // Write to DB
     // Add to database
     db.models.imageData.create({
-      pog_id: POG.id,
+      pog_id: report.pog_id,
+      pog_report_id: report.id,
       format: image.format || 'PNG',
       filename: _.last(image.file.split('/')),
       key: image.name,
@@ -125,7 +128,7 @@ let processImage = (POG, image, log) => {
 };
 
 // Load in the expression denisty images
-let loadExpressionDensity = (POG, log) => {
+let loadExpressionDensity = (report, log) => {
 
   let deferred = Q.defer();
   let expDenProm = [];
@@ -137,7 +140,7 @@ let loadExpressionDensity = (POG, log) => {
       // Ignore Legend
       if(file.indexOf('expr_histo_legend.png') !== -1) return;
       // Read in each file, and put into DB.
-      expDenProm.push(processExpDensityImages(POG, file, log));
+      expDenProm.push(processExpDensityImages(report, file, log));
     });
 
     Q.all(expDenProm).then(
@@ -157,7 +160,7 @@ let loadExpressionDensity = (POG, log) => {
 };
 
 // Process all Expression Density Images
-let processExpDensityImages = (POG, img, log) => {
+let processExpDensityImages = (report, img, log) => {
 
   let deferred = Q.defer();
 
@@ -182,7 +185,8 @@ let processExpDensityImages = (POG, img, log) => {
     // Write to DB
     // Add to database
     db.models.imageData.create({
-      pog_id: POG.id,
+      pog_id: report.pog_id,
+      pog_report_id: report.id,
       format: 'PNG',
       filename: _.last(img.split('/')),
       key: "expDensity."+geneName,

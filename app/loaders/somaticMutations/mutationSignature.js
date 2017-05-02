@@ -13,21 +13,22 @@ let db = require(process.cwd() + '/app/models'),
 /**
  * Load Mutation Signature file and parse into database
  *
- * @param POG
- * @param dir
- * @param logger
+ * @param {object} report
+ * @param {string} dir
+ * @param {object} logger
+ * @param {object} options
  * @returns {*|promise}
  */
-module.exports = (POG, dir, logger, options={}) => {
+module.exports = (report, dir, logger, options={}) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'SomaticMutations.MutationSignature');
+  let log = logger.loader(report.ident, 'SomaticMutations.MutationSignature');
 
   // Find File
-  glob('/projects/tumour_char/pog/somatic/signature/' + POG.POGID + '/'+options.library+'/v*/*_msig_combined.txt', (err, files) => {
+  glob('/projects/tumour_char/pog/somatic/signature/' + report.pog.POGID + '/'+options.library+'/v*/*_msig_combined.txt', (err, files) => {
 
     if(err) {
       log('Unable to find Mutation Signature source file', logger.ERROR);
@@ -55,7 +56,8 @@ module.exports = (POG, dir, logger, options={}) => {
 
         // Loop over entries
         _.forEach(entries, (v, k) => {
-          entries[k].pog_id = POG.id;
+          entries[k].pog_id = report.pog_id;
+          entries[k].pog_report_id = report.id;
           entries[k].signature = v.signature.match(/[0-9]{1,2}/g)[0];
         });
 

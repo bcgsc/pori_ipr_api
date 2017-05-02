@@ -11,17 +11,18 @@ let db = require(process.cwd() + '/app/models'),
 
 let baseDir;
 
-/*
+/**
  * Parse Alterations File
  *
  * 
- * @param object POG - POG model object
- * @param string alterationFile - name of CSV file for given alteration type
- * @param string alterationType - alterationType of these entries (therapeutic, biological, prognostic, diagnostic, unknown)
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG report model object
+ * @param {string} alterationFile - name of CSV file for given alteration type
+ * @param {string} alterationType - alterationType of these entries (therapeutic, biological, prognostic, diagnostic, unknown)
+ * @param {object} log - /app/libs/logger instance
+ * @param {object} options
  *
  */
-let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
+let parseAlterationsFile = (report, alterationFile, alterationType, log, options) => {
   
   // Create promise
   let deferred = Q.defer();
@@ -49,9 +50,11 @@ let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].alterationType = alterationType;
         entries[k].newEntry = false;
+        if(options.report === 'probe') entries[k].reportType = 'probe';
       });
       
       // Log progress
@@ -74,7 +77,7 @@ let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
   
 }
 
-/* 
+/**
  * Alterations Loader
  * 
  * Load values for "Alterations with potential clinical relevance"
@@ -87,11 +90,13 @@ let parseAlterationsFile = (POG, alterationFile, alterationType, log) => {
  * 
  * Create DB entries for Alterations. Parse in CSV values, mutate, insert.
  * 
- * @param object POG - POG model object
- * @param object options - Currently no options defined on this import
+ * @param {object} report - POG report model object
+ * @param {string} dir - base directory
+ * @param {object} logger - logging interface
+ * @param {object} options
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger, options) => {
   
   // Create promise
   let deferred = Q.defer();
@@ -99,7 +104,7 @@ module.exports = (POG, dir, logger) => {
   baseDir = dir;
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'DGA.Variations');
+  let log = logger.loader(report.ident, 'DGA.Variations');
   
   // Alterations to be processed
   let sources = [
@@ -115,7 +120,7 @@ module.exports = (POG, dir, logger) => {
   
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    promises.push(parseAlterationsFile(POG, input.file, input.type, log));
+    promises.push(parseAlterationsFile(report, input.file, input.type, log, options));
   });
   
   // Wait for all promises to be resolved
@@ -147,4 +152,4 @@ module.exports = (POG, dir, logger) => {
   });
       
   return deferred.promise;
-}
+};

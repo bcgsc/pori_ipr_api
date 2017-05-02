@@ -16,18 +16,18 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Summary.VariantCounts');
+  let log = logger.loader(report.ident, 'Summary.VariantCounts');
   
   // First parse in therapeutic
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/variant_counts.csv');
   
-  log('Found and read variant_counts.csv file.')
+  log('Found and read variant_counts.csv file.');
   
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},
@@ -40,18 +40,19 @@ module.exports = (POG, dir, logger) => {
         deferred.reject({reason: 'parseCSVFail'});
       }
       
-      if(result.length > 1) return deferred.reject('More than one patient tumour analysis entry found.') && new Error('['+POG.POGID+'][Loader][Summary.VariantCounts] More than one patient variants count entry found.');
+      if(result.length > 1) return deferred.reject('More than one patient tumour analysis entry found.') && new Error('['+report.ident+'][Loader][Summary.VariantCounts] More than one patient variants count entry found.');
     
       // Remap results
       let entry = _.head(remapKeys(result, nconf.get('summary:variantCounts')));
       
       // Map needed DB column values
-      entry.pog_id = POG.id;
-      
+      entry.pog_id = report.pog_id;
+      entry.pog_report_id = report.id;
+
       // Add to Database
       db.models.variantCounts.create(entry).then(
         (result) => {
-          log('Finished Variant Counts.', logger.SUCCESS)
+          log('Finished Variant Counts.', logger.SUCCESS);
          
           // Resolve Promise
           deferred.resolve(entry);
