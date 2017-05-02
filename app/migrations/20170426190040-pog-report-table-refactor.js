@@ -21,8 +21,8 @@ if(db.config.database !== 'ipr-dev') {
 let tables = [
   {current: 'copyNumberAnalysis.cnv',               updated: 'pog_analysis_reports_copy_number_analysis_cnv'},
   {current: 'expression.drugTarget',                updated: 'pog_analysis_reports_expression_drug_target'},
-  {current: 'detailedGenomicAnalysis.alterations',  updated: 'pog_analysis_reports_detailed_genomic_analysis_alterations'},
-  {current: 'detailedGenomicAnalysis.targetedGenes',updated: 'pog_analysis_reports_detailed_genomic_analysis_targeted_genes'},
+  {current: 'detailedGenomicAnalysis.alterations',  updated: 'pog_analysis_reports_dga_alterations'},
+  {current: 'detailedGenomicAnalysis.targetedGenes',updated: 'pog_analysis_reports_dga_targeted_genes'},
   {current: 'expression.outlier',                   updated: 'pog_analysis_reports_expression_outlier'},
   {current: 'somaticMutations.mutationSignature',   updated: 'pog_analysis_reports_somatic_mutations_mutation_signature'},
   {current: 'somaticMutations.smallMutations',      updated: 'pog_analysis_reports_somatic_mutations_small_mutations'},
@@ -87,7 +87,7 @@ let addForeignKeyConstraint = (tbls) => {
     let promises = [];
 
     _.forEach(tbls, (tbl) => {
-      promises.push(db.query('ALTER TABLE "' + tbl.current + '" ADD CONSTRAINT "FK_pog_analysis_report" FOREIGN KEY (pog_report_id) REFERENCES pog_analysis_reports(id);'));
+      promises.push(db.query('ALTER TABLE "' + tbl.current + '" ADD CONSTRAINT "FK_pog_analysis_report" FOREIGN KEY (pog_report_id) REFERENCES pog_analysis_reports(id) ON DELETE CASCADE;'));
     });
 
     Promise.all(promises).then(
@@ -153,12 +153,12 @@ let createReportEntries = (tbls) => {
           })
         });
 
-        db.models.pog_analysis_report.bulkCreate(entries).then(
+        db.models.analysis_report.bulkCreate(entries).then(
           (result) => {
             // Successfully created pog report entries
 
             // Get All created entries
-            db.models.pog_analysis_report.findAll().then(
+            db.models.analysis_report.findAll().then(
               (reports) => {
                 resolve(reports);
               },
