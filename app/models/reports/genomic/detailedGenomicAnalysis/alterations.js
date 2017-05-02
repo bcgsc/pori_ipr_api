@@ -30,6 +30,10 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    reportType: {
+      type: Sq.ENUM('genomic', 'probe'),
+      defaultValue: 'genomic'
+    },
     alterationType: {
       type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown'),
       allowNull: false
@@ -117,7 +121,7 @@ module.exports = (sequelize, Sq) => {
     }
   }, {
     // Table Name
-    tableName: 'pog_analysis_reports_detailed_genomic_analysis_alterations',
+    tableName: 'pog_analysis_reports_dga_alterations',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!

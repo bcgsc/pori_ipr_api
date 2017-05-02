@@ -41,7 +41,7 @@ module.exports = (sequelize, Sq) => {
     },
   }, {
     // Table Name
-    tableName: 'pog_analysis_reports_detailed_genomic_analysis_targeted_genes',
+    tableName: 'pog_analysis_reports_dga_targeted_genes',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!

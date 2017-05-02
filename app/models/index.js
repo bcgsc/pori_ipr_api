@@ -19,9 +19,9 @@ let sequelize = new Sq(dbSettings.database, dbSettings.username, dbSettings.pass
 // Import Application Models
 
 //let dataHistory = sequelize.import(__dirname + '/dataHistory');
-let user = sequelize.import(__dirname + '/user');
+let user = sequelize.import(__dirname + '/user/user');
 
-let userToken = sequelize.import(__dirname + '/userToken');
+let userToken = sequelize.import(__dirname + '/user/userToken');
 user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
 userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 
@@ -42,8 +42,8 @@ POG.hasMany(analysis_reports, {as: 'analysis_reports', foreignKey: 'pog_id', onD
 analysis_reports.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
 
-let userGroup = sequelize.import(__dirname + '/userGroup.js');
-let userGroupMember = sequelize.import(__dirname + '/userGroupMember.js');
+let userGroup = sequelize.import(__dirname + '/user/userGroup.js');
+let userGroupMember = sequelize.import(__dirname + '/user/userGroupMember.js');
 user.belongsToMany(userGroup, {as: 'groups', through: {model: userGroupMember, unique: false }, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE'});
 userGroup.belongsToMany(user, {as: 'users', through: {model: userGroupMember, unique: false }, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE'});
 
@@ -147,6 +147,11 @@ kb.events.belongsTo(user, {as: 'reviewedBy', foreignKey: 'reviewedBy_id', target
 kb.history = sequelize.import(__dirname + '/knowledgebase/kb_history');
 kb.history.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 user.hasMany(kb.history, {as: 'kbedits', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true});
+
+
+// Probe Report Table
+let probeTestInformation = sequelize.import(__dirname + '/reports/probe/test_information');
+probeTestInformation.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 
 // Syncronize tables to model schemas

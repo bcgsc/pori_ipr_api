@@ -30,6 +30,10 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    reportType: {
+      type: Sq.ENUM('genomic', 'probe'),
+      defaultValue: 'genomic'
+    },
     genomicEvent: {
       type: Sq.STRING,
       allowNull: false
