@@ -41,6 +41,7 @@
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "chai-things": "^0.2.0",
+    "eslint": "^3.19.0",
     "sequelize-cli": "^2.7.0"
   }
 }
