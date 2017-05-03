@@ -6,17 +6,18 @@
  *
  */
 
-let db = require(process.cwd() + '/app/models'),
+const db = require(process.cwd() + '/app/models'),
   Q = require('q'),
   logger = require(process.cwd() + '/app/libs/logger'),
   glob = require('glob'),
   _ = require('lodash'),
   fs = require('fs'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
+  nconf = require('nconf').file({file: __dirname + '/../../../config/'+process.env.NODE_ENV+'.json'});
+
+const config = nconf.get('paths:data');
 
 // Map of loaders
 let loaders = {
-
   // Probe Report Loaders
   alterations_identified: '/../summary/genomicEventsTherapeutic',
   alterations: '/../detailedGenomicAnalysis/alterations',
@@ -50,11 +51,26 @@ module.exports = (POG, report, options={}) => {
 
   // Started to onboard a POG Report
   log('Starting POG Probe data onboard into InteractiveReportAPI.');
-
+  
   let deferred = Q.defer(); // Create promise
 
   // Determine which folder/biopsy to go for (grabs oldest by default)
-  glob(nconf.get('paths:data:probeData') + '/' + POG.POGID + '/P*', (err, files) => {
+  glob(config.probeData + '/' + POG.POGID + '/P*', (err, files) => {
+
+    // Not able to find any folders...
+    if(files.length === 0) {
+      console.log('Unable to source probe data folder', files);
+      console.log('Attempting to glob: ', config.probeData + '/' + POG.POGID + '/P*');
+      return report.destroy().then(
+        () => {
+          throw new Error({status: false, message: "Unable to load probe report, source folder not found. Successfully cleaned up failed load"});
+        },
+        (err) => {
+          console.log('SQL error on analysis_report delete', err);
+          throw new Error({status: false, message: "Unable to load probe report, source folder not found. Unable to clean up failed load"});
+        }
+      );
+    }
 
     // Explode out and get biggest
     let libraryOptions = [];
@@ -64,7 +80,22 @@ module.exports = (POG, report, options={}) => {
     });
     libraryOptions.sort().reverse();
 
-    glob(nconf.get('paths:data:probeData') + '/' + POG.POGID + '/' + libraryOptions[0] + '/probing_v*/jreport_genomic_summary_v*', (err, files) => {
+    glob(config.probeData + '/' + POG.POGID + '/' + libraryOptions[0] + '/probing_v*/jreport_genomic_summary_v*', (err, files) => {
+
+      // Not able to find any folders...
+      if(files.length === 0) {
+        console.log('Unable to source probe jreport data folder', files);
+        console.log('Attempting to glob: ', config.probeData + '/' + POG.POGID + '/' + libraryOptions[0] + '/probing_v*/jreport_genomic_summary_v*');
+
+        return report.destroy().then(
+          () => {
+            deferred.reject({status: false, message: "Unable to load probe report, source folder not found. Successfully cleaned up failed load"});
+          },
+          (err) => {
+            deferred.reject({status: false, message: "Unable to load probe report, source folder not found. Unable to clean up failed load"});
+          }
+        );
+      }
 
       // Explode out and get biggest
       let versionOptions = [];
@@ -77,7 +108,7 @@ module.exports = (POG, report, options={}) => {
       versionOptions.sort().reverse();
 
       if(err) deferred.reject('Unable to find POG sources.');
-      let baseDir = nconf.get('paths:data:probeData') + '/' + POG.POGID + '/' + libraryOptions[0] + '/' + versionOptions[0].probe + '/' + versionOptions[0].report;
+      let baseDir = config.probeData + '/' + POG.POGID + '/' + libraryOptions[0] + '/' + versionOptions[0].probe + '/' + versionOptions[0].report;
       let promises = []; // Collection of module promises
 
       // Log Base Path for Source
