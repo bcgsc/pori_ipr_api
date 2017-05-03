@@ -2,7 +2,7 @@
   "env": "development",
 
   "web": {
-    "port": 8001,
+    "port": 8002,
     "hostname": "127.0.0.1"
   },
 
