@@ -13,8 +13,10 @@ let ignored = {
 };
 
 /** Middleware **/
+
 // POG injection
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
+router.param('report', require(process.cwd() + '/app/middleware/analysis_report'));
 // User Authentication
 router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase)', require(process.cwd() + '/app/middleware/auth'));
 
@@ -40,11 +42,11 @@ recursive('./app/routes/POG', (err, files) => {
     
     //Initialize the route to add its func
     let module = require('./POG/' + routeName.path + routeName.file);
-    
+
+    console.log('Routing Detected: ', '/POG/:POG/report/:report/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file));
+
     // Add router to specified route name in the app
-    router.use('/POG/:POG/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file), module);
-    
-    console.log('Routing Detected: ', '/POG/:POG/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file)); 
+    router.use('/POG/:POG/report/:report/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file), module);
     
   });
 });
@@ -57,6 +59,9 @@ router.use('/user/group', require('./user/group'));
 router.use('/jira', require('./jira'));
 router.use('/POG/:POG/history', require('./dataHistory'));
 router.use('/POG/:POG/export', require('./POG/export'));
+router.use('/POG/:POG/patientInformation', require('./patientInformation'));
+router.use('/POG/:POGID/load', require('./loadPog'));
+router.use('/reports', require('./reports'));
 
 // Setup Knowledge base routes
 router.use('/knowledgebase', require('./knowledgebase'));

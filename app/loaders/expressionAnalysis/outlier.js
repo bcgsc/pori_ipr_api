@@ -11,17 +11,17 @@ let db = require(process.cwd() + '/app/models'),
 
 let baseDir;
 
-/*
+/**
  * Parse Expression Outliers File
  *
  *
- * @param object POG - POG model object
- * @param string expressionOutlierFile - name of CSV file for given small mutation type
- * @param string outlierType - outlierType of these entries (clinical, nostic, biological)
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG report model object
+ * @param {string} expressionOutlierFile - name of CSV file for given small mutation type
+ * @param {string} outlierType - outlierType of these entries (clinical, nostic, biological)
+ * @param {object} log - /app/libs/logger instance
  *
  */
-let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) => {
+let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, log) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -49,7 +49,8 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].outlierType = outlierType;
       });
 
@@ -73,7 +74,7 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
 
 };
 
-/*
+/**
  * Expression - Outliers Loader
  *
  * Load values for "Expression Analysis"
@@ -84,12 +85,12 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
  *
  * Create DB entries for Expression Outliers. Parse in CSV values, mutate, insert.
  *
- * @param object POG - POG model object
- * @param string dir - Base directory to load from
- * @param object logger - Logging utility
+ * @param {object} report - POG report model object
+ * @param {string} dir - Base directory to load from
+ * @param {object} logger - Logging utility
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   baseDir = dir;
 
@@ -97,7 +98,7 @@ module.exports = (POG, dir, logger) => {
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Exp.Outlier');
+  let log = logger.loader(report.ident, 'Exp.Outlier');
 
   // Small Mutations to be processed
   let sources = [
@@ -111,7 +112,7 @@ module.exports = (POG, dir, logger) => {
 
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    promises.push(parseExpressionOutlierFile(POG, input.file, input.type, log));
+    promises.push(parseExpressionOutlierFile(report, input.file, input.type, log));
   });
 
   // Wait for all promises to be resolved

@@ -9,21 +9,22 @@ let db = require(process.cwd() + '/app/models'),
     Q = require('q'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Approved Therapries in Other Cancer File
- *
  * 
- * @param object POG - POG model object
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG model object
+ * @param {string} dir - POG model object
+ * @param {object} logger - /app/libs/logger instance
+ * @param {object} options
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger, options) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Create Logger
-  let log = logger.loader(POG.POGID, 'DGA.ApprovedOtherCancer');
+  let log = logger.loader(report.ident, 'DGA.ApprovedOtherCancer');
   
   // First parse in therapeutic
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv', {'delimiter': ','});
@@ -45,10 +46,12 @@ module.exports = (POG, dir, logger) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].alterationType = 'therapeutic';
         entries[k].approvedTherapy = 'otherCancer';
         entries[k].newEntry = false;
+        if(options.report === 'probe') entries[k].reportType = 'probe';
       });
       
       // Log progress

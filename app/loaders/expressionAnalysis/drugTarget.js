@@ -10,22 +10,22 @@ let db = require(process.cwd() + '/app/models'),
   p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Expression Drug Target Analysis File
  *
  *
- * @param object POG - POG model object
- * @param string dir - Base directory for loading sources
- * @param object logger - Logging object reference
+ * @param {object} report - POG Report model object
+ * @param {string} dir - Base directory for loading sources
+ * @param {object} logger - Logging object reference
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Exp.DrugTarget');
+  let log = logger.loader(report.ident, 'Exp.DrugTarget');
 
   // First parse in therapeutic
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/therapeutic_targets.csv');
@@ -48,21 +48,22 @@ module.exports = (POG, dir, logger) => {
 
       // Loop over returned rows, append row with POGid
       _.forEach(entries, (v, k) => {
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k] = p2s(v, ['kIQR', 'kIQRNormal', 'copy']);
       });
 
       // Add to Database
       db.models.drugTarget.bulkCreate(entries).then(
         (result) => {
-          log('Finished Expression Drug Target Analysis.', logger.SUCCESS)
+          log('Finished Expression Drug Target Analysis.', logger.SUCCESS);
 
           // Resolve Promise
           deferred.resolve(result);
         },
         (err) => {
           console.log('SQL ERROR', err);
-          log('Failed to load Expression Drug Target Analysis.', logger.ERROR)
+          log('Failed to load Expression Drug Target Analysis.', logger.ERROR);
           deferred.reject('Failed to load Expression Drug Target Analysis.');
         }
       );

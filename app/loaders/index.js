@@ -12,50 +12,58 @@ let db = require(process.cwd() + '/app/models'),
     glob = require('glob'),
     _ = require('lodash'),
     fs = require('fs'),
-    eventEmitter = require('events'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
 
 // Map of loaders
-let loaders = [
+let loaders = {
   // Meta
-  './POG',
-  './image',
+  meta: './POG',
+  image: './image',
 
   // Summary
-  'summary/patientInformation',
-  'summary/tumourAnalysis',
-  'summary/mutationSummary',
-  'summary/variantCounts',
-  'summary/genomicAlterationsIdentified',
-  'summary/genomicEventsTherapeutic',
-  'summary/probeTarget',
+  summary_patientInformation: 'summary/patientInformation',
+  summary_tumourAnalysis: 'summary/tumourAnalysis',
+  summary_mutationSummary: 'summary/mutationSummary',
+  summary_variantCounts: 'summary/variantCounts',
+  summary_genomicAlterationsIdentified: 'summary/genomicAlterationsIdentified',
+  summary_genomicEventsTherapeutic: 'summary/genomicEventsTherapeutic',
+  summary_probeTarget: 'summary/probeTarget',
 
   // Detailed Genomic Analysis
-  'detailedGenomicAnalysis/alterations',
-  'detailedGenomicAnalysis/approvedThisCancer',
-  'detailedGenomicAnalysis/approvedOtherCancer',
-  'detailedGenomicAnalysis/targetedGenes',
+  detailed_alterations: 'detailedGenomicAnalysis/alterations',
+  detailed_approvedThisCancer: 'detailedGenomicAnalysis/approvedThisCancer',
+  detailed_approvedOtherCancer: 'detailedGenomicAnalysis/approvedOtherCancer',
+  detailed_targetedGenes: 'detailedGenomicAnalysis/targetedGenes',
 
   // Somatic Mutations
-  'somaticMutations/smallMutations',
-  'somaticMutations/mutationSignature',
+  somatic_smallMutations: 'somaticMutations/smallMutations',
+  somatic_mutationSignature: 'somaticMutations/mutationSignature',
 
   // Copy Number Analyses
-  'copyNumberAnalysis/cnv',
+  copynumber_cnv: 'copyNumberAnalysis/cnv',
 
   // Structural Variation
-  'structuralVariation/sv',
+  structural_sv: 'structuralVariation/sv',
 
   // Expression Analysis
-  'expressionAnalysis/outlier',
-  'expressionAnalysis/drugTarget',
-  
-];
+  expression_outlier: 'expressionAnalysis/outlier',
+  expression_drugTarget: 'expressionAnalysis/drugTarget',
 
-// Run loaders for a specified POGID
-module.exports = (POG, options={}) => {
+};
 
-  let log = logger.loader(POG.POGID);
+/**
+ * Run POG Report onboarding process.
+ *
+ * Runs specified loads to onboard POG JReport data into API database
+ *
+ * @param {object} POG - POG Model instance
+ * @param {object} report - POG Report model instance
+ * @param {object} options - Key-value pair options object
+ * @returns {*|promise} - TODO: resolve design
+ */
+module.exports = (POG, report, options={}) => {
+
+  let log = logger.loader(POG.POGID + '-' + report.ident);
 
   // Started to onboard a POG Report
   log('Starting POG data onboard into InteractiveReportAPI.');
@@ -75,7 +83,6 @@ module.exports = (POG, options={}) => {
 
     let dir = nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/' + libraryOptions[0];
 
-
     glob(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/' + libraryOptions[0] + '/jreport_genomic_summary_v*', (err, files) => {
 
       // Explode out and get biggest
@@ -84,6 +91,8 @@ module.exports = (POG, options={}) => {
         let t = f.split('/');
         versionOptions.push(t[t.length-1]);
       });
+
+      // Sort by largest value (newest version)
       versionOptions.sort().reverse();
 
       if(err) deferred.reject('Unable to find POG sources.');
@@ -93,9 +102,18 @@ module.exports = (POG, options={}) => {
       // Log Base Path for Source
       log('Source path: '+baseDir);
 
+      // Set loaders to run - if none are specified, load them all.
+      let toLoad = (options.load) ? _.intersection(_.keys(loaders), options.load) : _.keys(loaders);
+
       // Loop over loader files and create promises
-      loaders.forEach((file) => {
-        promises.push(require('./' + file)(POG, baseDir, logger, {library: libraryOptions[0]}));
+      _.forEach(loaders, (file, k) => {
+
+        // Check for options
+
+
+        // If the looped loader exists in the toLoad intersection, queue the promise!
+        if(toLoad.indexOf(k) > -1) promises.push(require('./' + file)(report, baseDir, logger, {library: libraryOptions[0]}));
+
       });
 
       // Wait for all loaders to finish!
@@ -113,13 +131,7 @@ module.exports = (POG, options={}) => {
           // A loader failed
           let fail = {};
 
-          /*
-          // Remove all entries for failed POG loading
-          _.forEach(db.models, (model) => {
-
-            model.destroy()
-
-          }); */
+          // TODO: fail better
 
           // Log error
           log('Failed onboarding process.', logger.ERROR);
@@ -131,12 +143,8 @@ module.exports = (POG, options={}) => {
           deferred.reject(fail);
         }
       );
-
-
     });
-
   });
 
   return deferred.promise;
-
-}
+};

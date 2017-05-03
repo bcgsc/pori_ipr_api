@@ -11,6 +11,7 @@ let express = require('express'),
 
 // Register middleware  
 router.param('POG', require(process.cwd() + '/app/middleware/pog'));
+router.param('report', require(process.cwd() + '/app/middleware/analysis_report'));
 
 /**
  * Retrieve all POGs available
@@ -30,8 +31,10 @@ router.route('/')
     opts.order = '"POG"."POGID" ASC';
     opts.include = [];
     if(req.query.query ) opts.where = {POGID: {$ilike: '%' + req.query.query + '%'}};
-    opts.include.push({model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } });
-    opts.include.push({model: db.models.tumourAnalysis, as: 'tumourAnalysis', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } });
+    opts.include.push({model: db.models.patientInformation.scope('public'), as: 'patientInformation'});
+    opts.include.push({as: 'analysis_reports', model: db.models.analysis_report, attributes: { exclude: ['id', 'pog_id', 'createdBy_id', 'deletedAt'] }, include: [
+      {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'}
+    ]});
 
     // Create the POGUser join object.
     let pogUserInclude = { include: []};
@@ -47,8 +50,8 @@ router.route('/')
       if(req.query.role) pogUserInclude.where.role = req.query.role; // Role filtering
     }
     
-    pogUserInclude.include.push({as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
-    pogUserInclude.include.push({as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}});
+    pogUserInclude.include.push({as: 'user', model: db.models.user.scope('public')});
+    pogUserInclude.include.push({as: 'addedBy', model: db.models.user.scope('public')});
 
     opts.include.push(pogUserInclude);
     
@@ -154,6 +157,44 @@ router.route('/:POG/user')
         res.status(500).json({error: {message: 'Unable to bind new user to this POG', code: 'failedPOGUserBind'}});
       }
     )
+  });
+
+// Get Reports for this pog
+router.route('/:POG/reports')
+  .get((req,res,next) => {
+
+    // return all reports
+    db.models.analysis_report.scope('public').findAll({
+      where: { pog_id: req.POG.id },
+      include: [
+        {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+        {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
+        {model: db.models.user.scope('public'), as: 'createdBy'},
+        {model: db.models.POG.scope('public'), as: 'pog' }
+      ]
+    }).then(
+      (reports) => {
+        res.json(reports);
+      })
+      .catch((err) => {
+        console.log('Unable to lookup analysis reports', err);
+        res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
+      });
+
+  });
+
+// Get Reports for this pog
+router.route('/:POG/reports/:report')
+  .get((req,res,next) => {
+
+    let report = req.report.get();
+    delete report.id;
+    delete report.pog_id;
+    delete report.createdBy_id;
+    delete report.deletedAt;
+
+    res.json(req.report);
+
   });
 
 // NodeJS Module Return

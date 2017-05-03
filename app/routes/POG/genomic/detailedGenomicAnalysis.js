@@ -7,9 +7,9 @@ let express = require('express'),
     versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
 
 router.param('alteration', (req,res,next,altIdent) => {
-   db.models.alterations.findOne({ where: {ident: altIdent}, attributes: {exclude: ['id', 'deletedAt']}}).then(
+   db.models.alterations.scope('public').findOne({ where: {ident: altIdent}}).then(
       (result) => {
-        if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
+        if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
         
         req.alteration = result;
         next();
@@ -25,15 +25,14 @@ router.param('alteration', (req,res,next,altIdent) => {
 // Handle requests for alterations
 router.route('/alterations/:alteration([A-z0-9-]{36})')
   .get((req,res,next) => {
-    
     res.json(req.alteration);
-    
   })
   .put((req,res,next) => {
 
     // Promoting from unknown to another state.
-    if(req.alteration.alterationType == 'unknown' && req.body.alterationType !== 'unknown') {
-      db.models.genomicAlterationsIdentified.create({
+    if(req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
+      db.models.genomicAlterationsIdentified.scope('public').create({
+        pog_report_id: req.report.id,
         pog_id: req.POG.id,
         geneVariant: req.alteration.gene + ' (' + req.alteration.variant + ')'
       });
@@ -71,7 +70,8 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
   .get((req,res,next) => {
     
     // Setup where clause
-    let where = {pog_id: req.POG.id}
+    let where = {pog_report_id: req.report.id};
+    where.reportType = 'genomic';
     
     // Searching for specific type of alterations
     if(req.params.type) {
@@ -80,6 +80,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
         where.approvedTherapy = req.params.type;
       } else {
         where.alterationType = req.params.type;
+        where.approvedTherapy = null;
       } 
     } else {
       where.approvedTherapy = null;
@@ -87,15 +88,12 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     }
 
     let options = {
-      where: where, 
-      attributes: {
-        exclude: ['id', '"deletedAt"']
-      },
+      where: where,
       order: 'gene ASC',
-    }
+    };
     
     // Get all rows for this POG
-    db.models.alterations.findAll(options).then(
+    db.models.alterations.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
@@ -111,12 +109,21 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     // Setup new data entry from vanilla
     req.body.dataVersion = 0;
     req.body.pog_id = req.POG.id;
-    
+    req.body.pog_report_id= req.report.id;
+    req.body.reportType = 'genomic';
+
     // Update result
     db.models.alterations.create(req.body).then(
       (result) => {
         // Send back newly created/updated result.
         res.json(result);
+
+        // Create new entry for Key Genomic Identified
+        db.models.genomicAlterationsIdentified.scope('public').create({
+          pog_report_id: req.report.id,
+          pog_id: req.POG.id,
+          geneVariant: req.body.gene + ' (' + req.body.variant + ')'
+        });
 
         // Create DataHistory entry
         let dh = {
@@ -142,10 +149,10 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
   });
 
 
-router.param('gene', (req,res,next,altIdent) => {
-  db.models.targetedGenes.findOne({ where: {ident: altIdent}, attributes: {exclude: ['id', 'deletedAt']}, order: 'dataVersion DESC'}).then(
+router.param('gene', (req,res,next,geneIdent) => {
+  db.models.targetedGenes.scope('public').findOne({ where: {ident: geneIdent}}).then(
     (result) => {
-      if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareTargetedGeneLookup'} });
+      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareTargetedGeneLookup'} });
 
       req.alteration = result;
       next();
@@ -170,6 +177,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
     req.body.dataVersion = req.alteration.dataVersion + 1;
     req.body.ident = req.alteration.ident;
     req.body.pog_id = req.POG.id;
+    req.body.pog_report_id = req.report.id;
 
     // Update result
     db.models.alterations.create(req.body).then(
@@ -204,18 +212,15 @@ router.route('/targetedGenes')
   .get((req,res,next) => {
 
     // Setup where clause
-    let where = {pog_id: req.POG.id}
+    let where = {pog_report_id: req.report.id};
 
     let options = {
       where: where,
-      attributes: {
-        exclude: ['id', 'deletedAt']
-      },
       order: 'gene ASC',
-    }
+    };
 
     // Get all rows for this POG
-    db.models.targetedGenes.findAll(options).then(
+    db.models.targetedGenes.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },

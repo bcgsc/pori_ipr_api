@@ -20,7 +20,7 @@ let db = require(process.cwd() + '/app/models'),
  * @param object log - /app/libs/logger instance
  *
  */
-let parseAlterationsFile = (POG, probeFile, probeDir, log) => {
+let parseAlterationsFile = (report, probeFile, probeDir, log) => {
   
   // Create promise
   let deferred = Q.defer();
@@ -45,7 +45,8 @@ let parseAlterationsFile = (POG, probeFile, probeDir, log) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].newEntry = false;
       });
       
@@ -86,14 +87,14 @@ let parseAlterationsFile = (POG, probeFile, probeDir, log) => {
  * @param object options - Currently no options defined on this import
  *
  */
-module.exports = (POG, basedir, logger) => {
+module.exports = (report, basedir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
   let alterations = [];
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'summary.ProbeTarget');
+  let log = logger.loader(report.ident, 'summary.ProbeTarget');
 
   // Read in config file.
   let config;
@@ -125,7 +126,7 @@ module.exports = (POG, basedir, logger) => {
         log('Unable to find probe report data. Missing input file(s): '+input.file, logger.WARNING);
         return;
       }
-      promises.push(parseAlterationsFile(POG, input.file, probeDir, log));
+      promises.push(parseAlterationsFile(report, input.file, probeDir, log));
     });
 
     if(promises.length == 0) {
@@ -152,7 +153,7 @@ module.exports = (POG, basedir, logger) => {
             return false;
 
           })) {
-          entries.push({gene: val.gene, variant: val.variant, sample: val.sample, pog_id: POG.id});
+          entries.push({gene: val.gene, variant: val.variant, sample: val.sample, pog_id: report.pog_id, pog_report_id: report.id});
         }
 
       });

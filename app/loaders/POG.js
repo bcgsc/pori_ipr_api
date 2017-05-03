@@ -10,20 +10,25 @@ let db = require(process.cwd() + '/app/models'),
   glob = require('glob'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Patient Information File
  *
  *
- * @param object POG - POG model object
+ * @param {object} report - POG report model object
+ * @param {string} dir - base directory
+ * @param {object} logger - logging interface
+ * @param {object} options
+ *
+ * @returns {promise|object} - Resolves with boolean
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger, options={}) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'POG.SampleInfo');
+  let log = logger.loader(report.ident, 'POG.SampleInfo');
 
   let pogInfo = {};
 
@@ -43,7 +48,7 @@ module.exports = (POG, dir, logger) => {
       glob(dir + '/Report_tracking.c*', (err, files) => {
 
         // Did we find it?
-        if(err || files.length == 0) {
+        if(err || files.length === 0) {
           log('Unable to find report config file.', logger.ERROR);
           deferred.reject('Unable to find report config file');
           throw new Error('Unable to find report config file');
@@ -62,7 +67,7 @@ module.exports = (POG, dir, logger) => {
           pogInfo.config = data;
 
           // Add to Database
-          db.models.POG.update(pogInfo, {where: { id: POG.id }, limit: 1})
+          db.models.analysis_report.update(pogInfo, {where: { id: report.id }, limit: 1})
             .then(
               (result) => {
                 log('POG Sample & QC information loaded.', logger.SUCCESS);
