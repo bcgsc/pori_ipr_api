@@ -12,7 +12,7 @@ router.use('/genevar', require('./genevar'));
 router.route('/import')
   .get((req,res,next) => {
 
-    loader({directory: '/home/bpierce/bcgsc_svia/databases/knowledge_base/trunk'}).then(
+    loader({directory: '/home/bpierce/kbtemp/v2.5.0'}).then(
       (result) => {
         res.json({success:true});
       },
@@ -90,7 +90,7 @@ router.route('/metrics')
 
     // Get Metrics
     db.query(
-      "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", sum(case when kb_references.status = 'NEW' then 1 else 0 end) as \"refNew\", sum(case when kb_references.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"refRequiresReview\", sum(case when kb_references.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"refFlaggedIncorrect\", count(kb_events.id) as \"evTotal\", sum(case when kb_events.status = 'APPROVED' then 1 else 0 end) as \"evApproved\", sum(case when kb_events.status = 'NEW' then 1 else 0 end) as \"evNew\", sum(case when kb_events.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"evRequiresReview\", sum(case when kb_events.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"evFlaggedIncorrect\" from kb_references full outer join kb_events on kb_references.ident = kb_events.ident;",
+      "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", sum(case when kb_references.status = 'NEW' then 1 else 0 end) as \"refNew\", sum(case when kb_references.status = 'interim' then 1 else 0 end) as \"refInterim\", sum(case when kb_references.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"refRequiresReview\", sum(case when kb_references.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"refFlaggedIncorrect\", count(kb_events.id) as \"evTotal\", sum(case when kb_events.status = 'APPROVED' then 1 else 0 end) as \"evApproved\", sum(case when kb_events.status = 'NEW' then 1 else 0 end) as \"evNew\", sum(case when kb_events.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"evRequiresReview\", sum(case when kb_events.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"evFlaggedIncorrect\" from kb_references full outer join kb_events on kb_references.ident = kb_events.ident;",
       { type: db.QueryTypes.SELECT }
     )
     .then(
