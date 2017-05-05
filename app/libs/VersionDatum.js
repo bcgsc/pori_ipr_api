@@ -48,6 +48,7 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
           if(!typeof maxCurrentVersion === 'number') return deferred.reject({status: false, message: 'Unable to find current max version of data entry'});
 
           newEntry.dataVersion = maxCurrentVersion + 1;
+          delete newEntry.id; // Remove the ID value if it got through some how.
 
           // Create new entry
           model.create(newEntry).then(
