@@ -19,12 +19,6 @@ let mapUser = (inputUser) => {
   }
 
   switch(inputUser) {
-    case 'CRR':
-      return 4;
-      break;
-    case 'MRJ':
-      return 3;
-      break;
     default:
       return null;
       break;
