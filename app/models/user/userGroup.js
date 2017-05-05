@@ -18,9 +18,9 @@ module.exports = (sequelize, Sq) => {
       },
       owner_id: {
         type: Sq.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
-          model: 'POGs',
+          model: 'users',
           key: 'id',
         }
       }
