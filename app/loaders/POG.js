@@ -8,6 +8,7 @@ let db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
   Q = require('q'),
   glob = require('glob'),
+  pyconf = require('pyconf'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /**
@@ -54,7 +55,7 @@ module.exports = (report, dir, logger, options={}) => {
           throw new Error('Unable to find report config file');
         }
 
-        fs.readFile(files[0], {encoding: 'utf8'}, (err, data) => {
+        pyconf.readFile(files[0], (err, conf) => {
 
           if(err) {
             console.log(err);
@@ -64,10 +65,15 @@ module.exports = (report, dir, logger, options={}) => {
 
           // Read config file
           log('Read in config file', log.SUCCESS);
-          pogInfo.config = data;
+          pogInfo.config = _.join(conf.__lines, "\r\n");
+
+
+          // Get Version Numbers
+          pogInfo.kbVersion = conf.KnowledgebaseModuleVersion;
+          pogInfo.reportVersion = conf.programVersion;
 
           // Add to Database
-          db.models.analysis_report.update(pogInfo, {where: { id: report.id }, limit: 1})
+          db.models.analysis_report.update(pogInfo, {where: {id: report.id}, limit: 1})
             .then(
               (result) => {
                 log('POG Sample & QC information loaded.', logger.SUCCESS);
@@ -75,10 +81,11 @@ module.exports = (report, dir, logger, options={}) => {
               },
               (err) => {
                 console.log('SQL Error', err);
-                log('Failed to load patient history.',logger.ERROR)
+                log('Failed to load patient history.', logger.ERROR)
                 deferred.reject('Unable to load POG sample & QC info');
               }
             );
+
         }); // End Read File
 
       }); // end Glob

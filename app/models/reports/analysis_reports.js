@@ -39,6 +39,16 @@ module.exports = (sequelize, Sq) => {
     },
     config: {
       type: Sq.TEXT
+    },
+    reportVersion: {
+      type: Sq.STRING,
+      defaultValue: null,
+      allowNull: true,
+    },
+    kbVersion: {
+      type: Sq.STRING,
+      defaultValue: null,
+      allowNull: true,
     }
   },
   {
