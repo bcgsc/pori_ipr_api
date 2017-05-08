@@ -34,14 +34,25 @@ module.exports = (sequelize, Sq) => {
         type: Sq.TEXT,
         allowNull: true,
       },
-      reviewedBy: {
+      reviewerSignedBy_id: {
         type: Sq.INTEGER,
         references: {
           model: 'users',
           key: 'id'
         }
       },
-      reviewedAt: {
+      reviewerSignedAt: {
+        type: Sq.DATE,
+        allowNull: true,
+      },
+      authorSignedBy_id: {
+        type: Sq.INTEGER,
+        references: {
+          model: 'users',
+          key: 'id'
+        }
+      },
+      authorSignedAt: {
         type: Sq.DATE,
         allowNull: true,
       },
@@ -56,8 +67,12 @@ module.exports = (sequelize, Sq) => {
       scopes: {
         public: {
           attributes: {
-            exclude: ['id', 'pog_id', 'pog_report_id', 'deletedAt']
+            exclude: ['id', 'pog_id', 'pog_report_id', 'deletedAt', 'authorSignedBy_id', 'reviewerSignedBy_id']
           },
+          include: [
+            {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
+            {model: sequelize.models.user.scope('public'), as: 'authorSignature'}
+          ]
         }
       }
     });
