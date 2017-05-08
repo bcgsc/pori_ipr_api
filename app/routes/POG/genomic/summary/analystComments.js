@@ -1,9 +1,12 @@
+"use strict";
+
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
     router = express.Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
     logger = require(process.cwd() + '/app/libs/logger'),
-    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
+    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum'),
+    moment = require('moment');
 
 // Middleware for Analyst Comments
 router.use('/', (req,res,next) => {
@@ -36,9 +39,8 @@ router.route('/')
   })
   .put((req,res,next) => {
 
-
     // First Comments
-    if(req.analystComments == null) {
+    if(req.analystComments === null) {
 
       req.body.dataVersion = 0;
       req.body.pog_id = req.POG.id;
@@ -71,5 +73,80 @@ router.route('/')
     }
     
   });
-  
+
+router.route('/sign/:role(author|reviewer)')
+  .put((req,res,next) => {
+
+    // Get the role
+    let role;
+    if(req.params.role === 'author') role = 'authorSigned';
+    if(req.params.role === 'reviewer') role = 'reviewerSigned';
+
+    if(!role) return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidCommentSignRole'}});
+
+    // Update Comments
+    let data= {};
+    data[`${role}By_id`] = req.user.id;
+    data[`${role}At`] = moment().toISOString();
+
+    let update = (u) => {
+      return db.models.analystComments.update(u, {where: {ident: req.analystComments.ident}, options: {returning: true}});
+    };
+
+    let get = () => {
+      return db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+    };
+
+    update(data)
+      .then(get)
+      .then(
+      (result) => {
+        res.json(result);
+      },
+      (err) => {
+        console.log('Unable to sign comments', err);
+        res.status(500).json({error: {message: 'Unable to sign comments', code: 'failedSignCommentsQuery'}});
+      }
+    );
+
+
+  });
+router.route('/sign/revoke/:role(author|reviewer)')
+  .put((req,res,next) => {
+
+    // Get the role
+    let role;
+    if(req.params.role === 'author') role = 'authorSigned';
+    if(req.params.role === 'reviewer') role = 'reviewerSigned';
+
+    if(!role) return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidCommentSignRole'}});
+
+    // Update Comments
+    let data= {};
+    data[`${role}By_id`] = null;
+    data[`${role}At`] = null;
+
+    let update = (u) => {
+      return db.models.analystComments.update(u, {where: {ident: req.analystComments.ident}, options: {returning: true}});
+    };
+
+    let get = () => {
+      return db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+    };
+
+    update(data)
+      .then(get)
+      .then(
+      (result) => {
+        res.json(result);
+      },
+      (err) => {
+        console.log('Unable to sign comments', err);
+        res.status(500).json({error: {message: 'Unable to sign comments', code: 'failedSignCommentsQuery'}});
+      }
+    );
+
+
+  });
+
 module.exports = router;

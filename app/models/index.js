@@ -82,6 +82,9 @@ summary.analystComments.belongsTo(analysis_reports, {as: 'report', foreignKey: '
 summary.pathwayAnalysis.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.probeTarget.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
+summary.analystComments.belongsTo(user, {as: 'authorSignature', foreignKey: 'authorSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+summary.analystComments.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+
 // DetailedGenomicAnalysis
 let alterations = sequelize.import(__dirname + '/reports/genomic/detailedGenomicAnalysis/alterations');
 let targetedGenes = sequelize.import(__dirname + '/reports/genomic/detailedGenomicAnalysis/targetedGenes');
