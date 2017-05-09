@@ -90,8 +90,7 @@ router.route('/')
         if(existCheck === null) {
 
           // Check if email password is valid only if type=local
-          if(req.body.type === 'local' && req.body.password.length > 8) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
-          if(req.body.type === 'local' && validator.isLength(req.body.password, {min:8,max:250})) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
+          if(req.body.type === 'local' && req.body.password.length < 8) input_errors.push({input: 'password', message: 'password must be at least 8 characters'});
 
           if(!validator.isEmail(req.body.email)) input_errors.push({input: 'email', message: 'email address must be valid'});
 
