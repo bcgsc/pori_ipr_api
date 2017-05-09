@@ -11,13 +11,14 @@ let db = require(process.cwd() + '/app/models'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'}),
     colMap = require('nconf').file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Alterations File
  *
  * 
- * @param object POG - POG model object
- * @param string alterationFile - name of CSV file for given alteration type
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG report model object
+ * @param {string} probeFile - name of CSV file for given alteration type
+ * @param {string} probeDir - /app/libs/logger instance
+ * @param {object} log - /app/libs/logger instance
  *
  */
 let parseAlterationsFile = (report, probeFile, probeDir, log) => {
@@ -70,7 +71,7 @@ let parseAlterationsFile = (report, probeFile, probeDir, log) => {
   
 }
 
-/* 
+/**
  * Alterations Loader
  * 
  * Load values for "Alterations with potential clinical relevance"
@@ -83,8 +84,9 @@ let parseAlterationsFile = (report, probeFile, probeDir, log) => {
  * 
  * Create DB entries for Alterations. Parse in CSV values, mutate, insert.
  * 
- * @param object POG - POG model object
- * @param object options - Currently no options defined on this import
+ * @param {object} report - POG report model object
+ * @param {string} basedir - base working directory
+ * @param {object} logger - Logging interface
  *
  */
 module.exports = (report, basedir, logger) => {
@@ -129,7 +131,7 @@ module.exports = (report, basedir, logger) => {
       promises.push(parseAlterationsFile(report, input.file, probeDir, log));
     });
 
-    if(promises.length == 0) {
+    if(promises.length === 0) {
       log('Probe Target Gene data not available.', logger.WARNING);
       return;
     }
