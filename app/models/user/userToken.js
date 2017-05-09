@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let userToken = sequelize.define('userToken', {
+  return sequelize.define('userToken', {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,
@@ -20,6 +20,11 @@ module.exports = (sequelize, Sq) => {
         type: Sq.DATE,
         allowNull: false,
       },
+      permanentToken: {
+        type: Sq.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      }
     },
     {
       // Automatically create createdAt, updatedAt, deletedAt
@@ -27,7 +32,5 @@ module.exports = (sequelize, Sq) => {
       // Do not use soft-deletes - destroy the tokens!
       paranoid: false,
     });
-    
-  return userToken;
 };
 
