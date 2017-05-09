@@ -155,6 +155,7 @@ user.hasMany(kb.history, {as: 'kbedits', foreignKey: 'user_id', onDelete: 'SET N
 // Probe Report Table
 let probeTestInformation = sequelize.import(__dirname + '/reports/probe/test_information');
 probeTestInformation.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+probeTestInformation.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 
 // Syncronize tables to model schemas

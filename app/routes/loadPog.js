@@ -10,7 +10,7 @@ let express = require('express'),
     _ = require('lodash');
 
 // Handle requests for loading POG into DB
-router.route('/:type')
+router.route('/:type(genomic|probe)')
   .get((req,res,next) => {
 
     // Check valid report type to load

@@ -31,8 +31,8 @@ router.route('/')
     opts.order = '"POG"."POGID" ASC';
     opts.include = [];
     if(req.query.query ) opts.where = {POGID: {$ilike: '%' + req.query.query + '%'}};
-    opts.include.push({model: db.models.patientInformation.scope('public'), as: 'patientInformation'});
-    opts.include.push({as: 'analysis_reports', model: db.models.analysis_report.scope('public'), include: [
+    opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
+    opts.include.push({as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: [
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'}
     ]});
 

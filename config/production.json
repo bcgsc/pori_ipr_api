@@ -43,7 +43,10 @@
   "paths": {
     "data": {
       "POGdata": "/projects/tumour_char/pog/reports/genomic",
-      "dataDir": "/P*/jreport_genomic_summary_*/report"
+      "dataDir": "/P*/jreport_genomic_summary_*/report",
+      "reportRoot": "/P*/jreport_genomic_summary_*/",
+      "probeData": "/projects/tumour_char/pog/reports/probing",
+      "probeDir": "/P*/jreport_genomic_summary_v*/"
     }
   }
 }
