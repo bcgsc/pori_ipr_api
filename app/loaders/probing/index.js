@@ -59,17 +59,22 @@ module.exports = (POG, report, options={}) => {
 
     // Not able to find any folders...
     if(files.length === 0) {
+      log('Failed to glob: ' + config.probeData + '/' + POG.POGID + '/P*', logger.ERROR);
       console.log('Unable to source probe data folder', files);
-      console.log('Attempting to glob: ', config.probeData + '/' + POG.POGID + '/P*');
-      return report.destroy().then(
+
+      deferred.reject({error: {message: 'Unable to source probe data folder'}});
+
+      report.destroy().then(
         () => {
-          throw new Error({status: false, message: "Unable to load probe report, source folder not found. Successfully cleaned up failed load"});
+          log('Unable to load probe report, source folder not found. Successfully cleaned up failed load');
         },
         (err) => {
+          log('Unable to load probe report, source folder not found. Unable to clean up failed load');
           console.log('SQL error on analysis_report delete', err);
-          throw new Error({status: false, message: "Unable to load probe report, source folder not found. Unable to clean up failed load"});
         }
       );
+
+      return; // Stop execution
     }
 
     // Explode out and get biggest
@@ -85,16 +90,20 @@ module.exports = (POG, report, options={}) => {
       // Not able to find any folders...
       if(files.length === 0) {
         console.log('Unable to source probe jreport data folder', files);
-        console.log('Attempting to glob: ', config.probeData + '/' + POG.POGID + '/' + libraryOptions[0] + '/probing_v*/jreport_genomic_summary_v*');
+        log('Failed to glob: '+ config.probeData + '/' + POG.POGID + '/' + libraryOptions[0] + '/probing_v*/jreport_genomic_summary_v*');
 
-        return report.destroy().then(
+        deferred.reject({status: false, message: "Unable to load probe report, source folder not found. Successfully cleaned up failed load"});
+
+        report.destroy().then(
           () => {
-            deferred.reject({status: false, message: "Unable to load probe report, source folder not found. Successfully cleaned up failed load"});
+            log("Unable to load probe report, source folder not found. Successfully cleaned up failed load");
           },
           (err) => {
-            deferred.reject({status: false, message: "Unable to load probe report, source folder not found. Unable to clean up failed load"});
+            console.log('Unable to remove report entry', err);
+            log("Unable to load probe report, source folder not found. Unable to clean up failed load", logger.ERROR);
           }
         );
+        return; // Stop Execution
       }
 
       // Explode out and get biggest
@@ -107,7 +116,7 @@ module.exports = (POG, report, options={}) => {
       // Sort by largest value (newest version)
       versionOptions.sort().reverse();
 
-      if(err) deferred.reject('Unable to find POG sources.');
+      if(err) deferred.reject({error: {message: 'Unable to find POG sources.'}});
       let baseDir = config.probeData + '/' + POG.POGID + '/' + libraryOptions[0] + '/' + versionOptions[0].probe + '/' + versionOptions[0].report;
       let promises = []; // Collection of module promises
 
