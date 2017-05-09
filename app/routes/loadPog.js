@@ -31,15 +31,14 @@ router.route('/:type(genomic|probe)')
             let loader = (req.params.type === 'genomic') ? require(process.cwd() + '/app/loaders')(POG, report) : require(process.cwd() + '/app/loaders/probing')(POG, report);
 
             // Loader promise resolution
-            loader
-              .then((result) => {
-              // Loaded!
-              res.json(POG);
-            })
-            .catch((err) => {
-              console.log('Failed to remove POG after loader failed', err);
-              return res.status(error.status || 500).json({error: {message: 'Unable to load new POG data entries', code: 'loadersFailed'}});
-            });
+            loader.then(
+              (result) => {
+                res.json(report);
+              },
+              (err) => {
+                res.status(500).json({error: {message: 'Unable to load new POG report', code: 'loadersFailed'}});
+              }
+            );
 
           })
           .catch((err) => {
