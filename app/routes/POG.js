@@ -31,12 +31,24 @@ router.route('/')
     opts.order = '"POG"."POGID" ASC';
     opts.include = [];
     opts.where = { nonPOG: false};
+
     if(req.query.query ) opts.where.POGID = {$ilike: '%' + req.query.query + '%'};
     if(req.query.nonPOG === "true") opts.where.nonPOG = true;
+
     opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
     opts.include.push({as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: [
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'}
     ]});
+
+    // Are we filtering on POGUser relationship?
+    if(req.query.all !== 'true' || req.query.role) {
+      let userFilter = {model: db.models.POGUser, as: 'POGUserFilter', where: {}};
+      // Don't search all if the requestee has also asked for role filtering
+      if(req.query.all !== 'true' || req.query.role) userFilter.where.user_id = req.user.id;
+      if(req.query.role) userFilter.where.role = req.query.role; // Role filtering
+
+      opts.include.push(userFilter);
+    }
 
     // Create the POGUser join object.
     let pogUserInclude = { include: []};
@@ -44,20 +56,12 @@ router.route('/')
     pogUserInclude.as = 'POGUsers';
     //pogUserInclude.separate = true;
     pogUserInclude.attributes = {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']};
-
-    // Are we filtering on POGUser relationship?
-    if(req.query.all !== 'true' || req.query.role) {
-      pogUserInclude.where = {};
-      // Don't search all if the requestee has also asked for role filtering
-      if(req.query.all !== 'true' || req.query.role) pogUserInclude.where.user_id = req.user.id;
-      if(req.query.role) pogUserInclude.where.role = req.query.role; // Role filtering
-    }
     
     pogUserInclude.include.push({as: 'user', model: db.models.user.scope('public')});
     pogUserInclude.include.push({as: 'addedBy', model: db.models.user.scope('public')});
 
     opts.include.push(pogUserInclude);
-    
+
     // Get All Pogs
     db.models.POG.findAll(opts).then(
         (pogs) => {
