@@ -23,6 +23,13 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    pog_report_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
+    },
     mutationSignature: {
       type: Sq.JSONB,
       defaultValue: [],
