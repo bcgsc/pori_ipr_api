@@ -87,7 +87,7 @@ let addForeignKeyConstraint = (tbls) => {
     let promises = [];
 
     _.forEach(tbls, (tbl) => {
-      promises.push(db.query('ALTER TABLE "' + tbl.current + '" ADD CONSTRAINT "FK_pog_analysis_report" FOREIGN KEY (pog_report_id) REFERENCES pog_analysis_reports(id) ON DELETE CASCADE;'));
+      promises.push(db.query('ALTER TABLE "' + tbl.updated + '" ADD CONSTRAINT "FK_pog_analysis_report" FOREIGN KEY (pog_report_id) REFERENCES pog_analysis_reports(id) ON DELETE CASCADE;'));
     });
 
     Promise.all(promises).then(
