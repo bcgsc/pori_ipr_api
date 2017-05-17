@@ -27,12 +27,15 @@ module.exports = (report, dir, logger, options={}) => {
   // Setup Logger
   let log = logger.loader(report.ident, 'SomaticMutations.MutationSignature');
 
-  // Find File
-  glob('/projects/tumour_char/pog/somatic/signature/' + report.pog.POGID + '/'+options.library+'/v*/*_msig_combined.txt', (err, files) => {
+  let project = options.project || 'pog';
 
-    if(err) {
+  // Find File
+  glob('/projects/tumour_char/'+project+'/somatic/signature/' + report.pog.POGID + '/'+options.library+'/v*/*_msig_combined.txt', (err, files) => {
+
+    if(err || files.length === 0) {
       log('Unable to find Mutation Signature source file', logger.ERROR);
       console.log('Mutation Signature Error', err);
+      console.log('Attempted to load', '/projects/tumour_char/'+project+'/somatic/signature/' + report.pog.POGID + '/'+options.library+'/v*/*_msig_combined.txt');
       throw new Error('Unable to find Mutation Signature source file')
     }
 
