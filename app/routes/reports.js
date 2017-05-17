@@ -46,6 +46,26 @@ router.route('/:report')
 
     res.json(req.report);
 
+  })
+  .put((req,res) => {
+
+    // Update Report
+    if(req.body.state) {
+      if(['ready', 'active', 'presented', 'archived'].indexOf(req.body.state) === -1) return res.status(400).json({error: { message: 'The provided report state is not valid'}});
+      req.report.state = req.body.state;
+    }
+
+    // Update report
+    req.report.save().then(
+      (result) => {
+        res.json(req.report);
+      },
+      (err) => {
+        res.status(500).json({error: {message: 'Unable to update report.'}});
+      }
+    )
+    
+
   });
 
 

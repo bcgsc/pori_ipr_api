@@ -30,7 +30,9 @@ router.route('/')
     opts.attributes = {exclude: ['id','deletedAt', 'config', 'seqQC']};
     opts.order = '"POG"."POGID" ASC';
     opts.include = [];
-    if(req.query.query ) opts.where = {POGID: {$ilike: '%' + req.query.query + '%'}};
+    opts.where = { nonPOG: false};
+    if(req.query.query ) opts.where.POGID = {$ilike: '%' + req.query.query + '%'};
+    if(req.query.nonPOG === "true") opts.where.nonPOG = true;
     opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
     opts.include.push({as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: [
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'}
@@ -40,6 +42,7 @@ router.route('/')
     let pogUserInclude = { include: []};
     pogUserInclude.model = db.models.POGUser;
     pogUserInclude.as = 'POGUsers';
+    //pogUserInclude.separate = true;
     pogUserInclude.attributes = {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']};
 
     // Are we filtering on POGUser relationship?

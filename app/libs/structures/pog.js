@@ -34,8 +34,14 @@ module.exports = class POG {
           // Not found, and asked to create
           if(POG === null && options.create) {
 
+            let createOpts = {};
+            if(options.nonPOG) {
+              createOpts.nonPOG = true;
+              createOpts.type = 'genomic';
+            }
+
             // Run create
-            return this.create()
+            return this.create(createOpts)
               .then((created) => {
                 this.instance = created;
                 resolve(this.instance);
@@ -68,11 +74,19 @@ module.exports = class POG {
   /**
    * Create new entry in database
    *
+   * @param {object} options? - Optional instructions for creating a new POG entry
+   *
    * @returns {promise|object} - Promise resolves with new POG. Rejects with error message.
    */
-  create() {
+  create(options={}) {
     return new Promise((resolve, reject) => {
-      this.model.create({POGID: this.POGID})
+
+      let data = { POGID: this.POGID };
+
+      // Check for nonPOG flag
+      if(options.nonPOG) data.nonPOG = true;
+
+      this.model.create(data)
         .then((POG) => {
           this.instance = POG;
           resolve(POG);

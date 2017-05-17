@@ -7,35 +7,93 @@ let express = require('express'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     pogLib = require(process.cwd() + '/app/libs/structures/pog'),
     reportLib = require(process.cwd() + '/app/libs/structures/analysis_report'),
+    nconf = require('nconf').file(process.cwd() + '/config/'+process.env.NODE_ENV+'.json'),
     _ = require('lodash');
 
-// Handle requests for loading POG into DB
-router.route('/:type(genomic|probe)')
-  .get((req,res,next) => {
+let loaderConf = nconf.get('loader');
 
-    // Check valid report type to load
-    if(['genomic','probe'].indexOf(req.params.type) < 0) return res.status(400).json({error: {message: 'Only genomic and probe are accepted report types to be loaded.', code: 'invalidReportTypeLoad'}});
+// Handle requests for loading POG into DB
+router.route('/:type(genomic|probe|nonPOG)')
+  .post((req,res,next) => {
+
+    // Pog Options
+    let pogOpts = { create: true};
+
+    // Check if it's a nonPOG
+    if(req.params.type === 'nonPOG') {
+      pogOpts.nonPOG = true;
+      pogOpts.create = true;
+    }
+
+    // V
 
     // First check if there's a POG entry..
     let POG = new pogLib(req.params.POGID);
 
     // Check if the POG has been created yet
-    POG.retrieve({create:true})
+    POG.retrieve(pogOpts)
       .then((POG) => {
         // Create Report
         let report = new reportLib();
-        report.create(POG, req.user, req.params.type)
+        let createPogOpts = {};
+
+        report.create(POG, req.user, (req.params.type !== 'genomic' && req.params.type !== 'probe') ? 'genomic' : req.params.type)
           .then((report) => {
+
+            // Set POG to report
             report.pog = POG;
-            // All Good, time to run loader based on type
-            let loader = (req.params.type === 'genomic') ? require(process.cwd() + '/app/loaders')(POG, report) : require(process.cwd() + '/app/loaders/probing')(POG, report);
+
+            let loaderOptions = {};
+
+            // Check for nonPOG
+            if(req.params.type === 'nonPOG') {
+
+            }
+
+            // POG Genomic
+            if(req.params.type === 'genomic') {
+              loaderOptions.profile = 'pogGenomic';
+            }
+
+            let runLoader;
+
+            // Genomic/Non-pog or Probe Report?
+            if(req.params.type === 'genomic' || loaderOptions.reportType === 'genomic') {
+              let GenomicLoader = new require(process.cwd() + '/app/loaders');
+              let Loader = new GenomicLoader(POG, report, loaderOptions);
+              runLoader = Loader.load();
+            }
+
+            if(req.params.type === 'probe') {
+              runLoader = require(process.cwd() + '/app/loaders/probing')(POG, report);
+            }
+
+            if(req.params.type === 'nonPOG') {
+              // Non-POG options
+              loaderOptions.nonPOG = true;
+              loaderOptions.load = loaderConf.defaults[req.body.profile].loaders;
+              loaderOptions.baseDir = req.body.baseDir;
+              loaderOptions.profile = 'nonPOG';
+              loaderOptions.libraries = loaderConf.defaults[req.body.profile].libraries;
+              loaderOptions.moduleOptions = loaderConf.defaults[req.body.profile].moduleOptions;
+
+              let GenomicLoader = new require(process.cwd() + '/app/loaders');
+              let Loader = new GenomicLoader(POG, report, loaderOptions);
+              runLoader = Loader.load();
+            }
+
+            if(runLoader === null) {
+              res.status(500).json({error: {message: 'Unable to invoke loading mechanism'}});
+              throw new Error('No Loaders Running');
+            }
 
             // Loader promise resolution
-            loader.then(
+            runLoader.then(
               (result) => {
                 res.json(report);
               },
               (err) => {
+                console.log('Loader Error', err);
                 res.status(500).json({error: {message: 'Unable to load new POG report', code: 'loadersFailed'}});
               }
             );

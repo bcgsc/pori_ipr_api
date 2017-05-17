@@ -15,6 +15,10 @@ module.exports = (sequelize, Sq) => {
     POGID: {
       type: Sq.STRING,
       unique: false
+    },
+    nonPOG: {
+      type: Sq.BOOLEAN,
+      defaultValue: false
     }
   },
   {
