@@ -64,6 +64,7 @@ summary.analystComments = sequelize.import(__dirname + '/reports/genomic/summary
 summary.pathwayAnalysis = sequelize.import(__dirname + '/reports/genomic/summary/pathwayAnalysis');
 summary.probeTarget = sequelize.import(__dirname + '/reports/genomic/summary/probeTarget');
 summary.therapeuticTargets = sequelize.import(__dirname + '/reports/genomic/summary/therapeuticTargets');
+summary.microbial = sequelize.import(__dirname + '/reports/genomic/summary/microbial');
 
 POG.hasMany(summary.therapeuticTargets, {as: 'therapeuticTargets', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
 
@@ -81,6 +82,7 @@ summary.genomicEventsTherapeutic.belongsTo(analysis_reports, {as: 'report', fore
 summary.analystComments.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.pathwayAnalysis.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.probeTarget.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.microbial.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 summary.analystComments.belongsTo(user, {as: 'authorSignature', foreignKey: 'authorSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 summary.analystComments.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});

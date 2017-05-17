@@ -254,5 +254,15 @@
       "w": 500
     },
     "optional": false
+  },
+  {
+    "name": "microbial.circos",
+    "file": "/microbial_circos_image/microbial_circos_transcriptome.png",
+    "compress": true,
+    "dimensions": {
+      "h": 900,
+      "w": 900
+    },
+    "optional": true
   }
 ]

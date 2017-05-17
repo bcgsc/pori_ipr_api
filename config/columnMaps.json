@@ -170,6 +170,10 @@
       "KB_ENTRY_type": "kb_entry_type",
       "KB_event_key": "kb_event_key",
       "KB_ENTRY_key": "kb_entry_key"
+    },
+    "microbial": {
+      "Species": "species",
+      "Integration Site": "integrationSite"
     }
   }
 }
