@@ -49,6 +49,10 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       defaultValue: null,
       allowNull: true,
+    },
+    state: {
+      type: Sq.STRING,
+      defaultValue: 'ready'
     }
   },
   {
