@@ -33,7 +33,7 @@
     "q": "^1.4.1",
     "recursive-readdir": "^2.1.0",
     "require-dir": "^0.3.1",
-    "sequelize": "^3.29.0",
+    "sequelize": "^3.30.4",
     "sequelize-cli": "^2.5.1",
     "sqlite3": "^3.1.8",
     "validator": "^6.2.1"
