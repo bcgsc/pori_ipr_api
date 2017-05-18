@@ -36,9 +36,13 @@ router.route('/')
     if(req.query.nonPOG === "true") opts.where.nonPOG = true;
 
     opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
-    opts.include.push({as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: [
-      {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'}
-    ]});
+
+    let reportInclude = {as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: []};
+    reportInclude.include.push({model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'});
+
+    if(!req.query.archived) reportInclude.where = { state: {$not: 'archived'} };
+
+    opts.include.push(reportInclude);
 
     // Are we filtering on POGUser relationship?
     if(req.query.all !== 'true' || req.query.role) {
