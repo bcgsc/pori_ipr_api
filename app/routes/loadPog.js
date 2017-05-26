@@ -13,19 +13,27 @@ let express = require('express'),
 let loaderConf = nconf.get('loader');
 
 // Handle requests for loading POG into DB
-router.route('/:type(genomic|probe|nonPOG)')
+router.route('/:type(genomic|probe)')
   .post((req,res,next) => {
 
     // Pog Options
-    let pogOpts = { create: true};
+    let pogOpts = { create: true };
+    let profile;
 
-    // Check if it's a nonPOG
-    if(req.params.type === 'nonPOG') {
-      pogOpts.nonPOG = true;
-      pogOpts.create = true;
+    if(!req.body.project) return res.status(400).json({error: {message: "Project type is required in body.", code: "projectTypeNotSpecified"}});
+
+    // Determine Loading Profile
+    if(req.body.project === "POG") {
+      pogOpts.nonPOG = false;
+      if(req.params.type === 'genomic') profile = "pog_genomic";
+      if(req.params.type === 'probe') profile = "pog_probe";
     }
 
-    // V
+    // Check if it's a nonPOG
+    if(req.body.project !== 'POG') {
+      pogOpts.nonPOG = true;
+      profile = req.body.project + '_' + req.params.type;
+    }
 
     // First check if there's a POG entry..
     let POG = new pogLib(req.params.POGID);
@@ -43,32 +51,31 @@ router.route('/:type(genomic|probe|nonPOG)')
             // Set POG to report
             report.pog = POG;
 
-            let loaderOptions = {};
+            // Set profile
+            let loaderOptions = { profile: profile };
 
-            // Check for nonPOG
-            if(req.params.type === 'nonPOG') {
+            if(req.body.baseDir) loaderOptions.baseDir = req.body.baseDir;
 
-            }
-
-            // POG Genomic
-            if(req.params.type === 'genomic') {
-              loaderOptions.profile = 'pogGenomic';
-            }
+            // Check for supplied base directory
 
             let runLoader;
 
             // Genomic/Non-pog or Probe Report?
-            if(req.params.type === 'genomic' || loaderOptions.reportType === 'genomic') {
+            if(loaderOptions.profile === 'pog_genomic') {
               let GenomicLoader = new require(process.cwd() + '/app/loaders');
               let Loader = new GenomicLoader(POG, report, loaderOptions);
               runLoader = Loader.load();
             }
 
-            if(req.params.type === 'probe') {
-              runLoader = require(process.cwd() + '/app/loaders/probing')(POG, report);
+            if(loaderOptions.profile === 'pog_probe') {
+
+              let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
+              let Loader = new ProbeLoader(POG, report, loaderOptions);
+              runLoader = Loader.load();
             }
 
-            if(req.params.type === 'nonPOG') {
+            if(req.body.project !== 'POG' && req.params.type === 'genomic') {
+
               // Non-POG options
               loaderOptions.nonPOG = true;
               loaderOptions.load = loaderConf.defaults[req.body.profile].loaders;
@@ -90,11 +97,30 @@ router.route('/:type(genomic|probe|nonPOG)')
             // Loader promise resolution
             runLoader.then(
               (result) => {
-                res.json(report);
+
+
+                db.models.analysis_report.scope('public').findOne({
+                  where: { id: report.id },
+                  include: [
+                    {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+                    {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
+                    {model: db.models.user.scope('public'), as: 'createdBy'},
+                    {model: db.models.POG.scope('public'), as: 'pog' }
+                  ]
+                }).then(
+                  (reports) => {
+                    res.json(reports);
+                  })
+                  .catch((err) => {
+                    console.log('Unable to lookup analysis reports', err);
+                    res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
+                  });
+
+
               },
               (err) => {
                 console.log('Loader Error', err);
-                res.status(500).json({error: {message: 'Unable to load new POG report', code: 'loadersFailed'}});
+                res.status(400).json({error: {message: 'Unable to load new POG report', code: 'loadersFailed', error: err}});
               }
             );
 
