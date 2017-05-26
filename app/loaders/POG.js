@@ -73,7 +73,7 @@ module.exports = (report, dir, logger, options={}) => {
           pogInfo.reportVersion = conf.programVersion;
 
           // Add to Database
-          db.models.analysis_report.update(pogInfo, {where: {id: report.id}, limit: 1})
+          db.models.analysis_report.update(pogInfo, {where: {id: report.id}})
             .then(
               (result) => {
                 log('POG Sample & QC information loaded.', logger.SUCCESS);
