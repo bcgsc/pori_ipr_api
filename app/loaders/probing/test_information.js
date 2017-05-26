@@ -42,6 +42,8 @@ module.exports = (report, dir, logger) => {
         deferred.reject({reason: 'parseCSVFail'});
       }
 
+      if(result.length === 0) log('Unable to find test information', logger.ERROR);
+
       if(result.length > 1) return new Error('['+report.ident+'][Loader][ProbeTestInformation] More than one probe test information entry found.');
 
       // Remap results
