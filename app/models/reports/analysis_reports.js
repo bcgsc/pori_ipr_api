@@ -53,7 +53,11 @@ module.exports = (sequelize, Sq) => {
     state: {
       type: Sq.STRING,
       defaultValue: 'ready'
-    }
+    },
+    /*name: {
+      type: Sq.STRING,
+      defaultValue: 'production'
+    }*/
   },
   {
     tableName: 'pog_analysis_reports',
