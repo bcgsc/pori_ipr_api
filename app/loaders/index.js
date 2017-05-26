@@ -12,6 +12,7 @@ let db = require(process.cwd() + '/app/models'),
     glob = require('glob'),
     _ = require('lodash'),
     fs = require('fs'),
+    pyconf = require('pyconf'),
     nconf = require('nconf').file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
 
 // Load config into memory
@@ -62,6 +63,7 @@ class GenomicLoader {
     this.POG = POG;
     this.report = report;
     this.options = options;
+    this.config = {};
     this.libraries = options.libraries || [];
     this.baseDir = options.baseDir || null;
     this.moduleOptions = options.moduleOptions || {};
@@ -81,7 +83,7 @@ class GenomicLoader {
       this.log('Starting Genomic Loader');
 
       // Run default POG Genomic Report loading
-      if(this.options.profile === 'pogGenomic') {
+      if(this.options.profile === 'pog_genomic') {
 
         this.log('Running POG Genomic Loader');
 
@@ -89,15 +91,17 @@ class GenomicLoader {
         if(this.baseDir !== null) {
 
           // Run Loaders
-          this.runLoaders().then(
-            (successLoaders) => {
-              resolve(successLoaders);
-            },
-            // Rejects with load-ending failures.
-            (err) => {
-              console.log('Unable to finish loaders', err);
-              reject(err);
-            }
+          this.getConfig()
+            .then(this.runLoaders.bind(this))
+            .then(
+              (successLoaders) => {
+                resolve(successLoaders);
+              },
+              // Rejects with load-ending failures.
+              (err) => {
+                console.log('Unable to finish loaders', err);
+                reject(err);
+              }
           );
           return;
         }
@@ -108,6 +112,7 @@ class GenomicLoader {
         // Run Default Loader Scenario
         this.getLibraryFolder()
           .then(this.getReportFolder.bind(this))
+          .then(this.getConfig.bind(this))
           .then(this.runLoaders.bind(this))
           .then(
             // Resolves with status of loaders
@@ -124,7 +129,11 @@ class GenomicLoader {
       }
 
       // Loader NonPOG Report
-      if(this.options.profile === 'nonPOG') {
+      if(this.options.profile !== 'pog_genomic') {
+
+        if(!this.baseDir) {
+          this.log('Non-POG no base directory specified', logger.ERROR);
+        }
 
         // Run Loaders
         this.runLoaders().then(
@@ -242,6 +251,9 @@ class GenomicLoader {
         let moduleOptions = this.moduleOptions[loader.name] || {};
         moduleOptions.library = this.libraries[0];
 
+        // Include report config file in options
+        moduleOptions.config = this.config;
+
         // Check for new class designed loader
         if(loader.loaderType === 'class') {
           let classLoader = new l(this.report, this.baseDir, logger, moduleOptions);
@@ -266,19 +278,13 @@ class GenomicLoader {
 
           },
           (error) => {
-            // A loader failed
-            let fail = {};
-
-            // TODO: fail better
-
-            // Log error
-            this.log('Failed onboarding process.', logger.ERROR);
+            // A Loader failed
+            this.log('Loading process failed', logger.ERROR);
+            this.log('A loader failed: ' + error.loader, logger.ERROR);
+            this.log('Reason: ' + error.message, logger.ERROR);
             console.log(error);
 
-            if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
-
-            // Return fail
-            reject(fail);
+            reject(error);
           }
         );
 
@@ -300,262 +306,46 @@ class GenomicLoader {
 
   }
 
-  //
-  handleFails(failedLoaders) {
+  /**
+   * Get POG Report Config File
+   *
+   * Retrieve and parse the Report Tracking config file
+   *
+   */
+  getConfig() {
 
+    return new Promise((resolve, reject) => {
+      // From the base directory read in the Report_Tracking.cfg file
+      fs.readFile(this.baseDir + '/Report_tracking.cfg', 'utf8', (err, data) => {
+        if(err) {
+          // Unable to find config file
+          this.log('Unable to find Report_Tracking.cfg file', logger.ERROR);
+          reject('Unable to find config file');
+        }
+
+        // Parse config file with pyconf
+        pyconf.parse(data, (err, config) => {
+
+          if(err) {
+            this.log('Unable to parse python report tracking config file', logger.ERROR);
+            reject('Unable to parse python report tracking config file');
+          }
+
+          this.log('Loaded & parsed Report config file', logger.SUCCESS);
+
+          this.config = config;
+
+          resolve(this.config);
+
+        });
+      });
+    });
   }
 
 }
 
 module.exports = GenomicLoader;
 
-
-
-
-/**
- * Run POG Report onboarding process.
- *
- * Runs specified loads to onboard POG JReport data into API database
- *
- * @param {object} POG - POG Model instance
- * @param {object} report - POG Report model instance
- * @param {object} options - Key-value pair options object
- * @returns {*|promise} - TODO: resolve design
- */
-/*
-module.exports = (POG, report, options={}) => {
-
-  let log = logger.loader(POG.POGID + '-' + report.ident);
-
-  // Started to onboard a POG Report
-  log('Starting POG data onboard into InteractiveReportAPI.');
-
-  let deferred = Q.defer(); // Create promise
-
-  // Determine which folder/biopsy to go for (grabs oldest by default)
-  glob(config.POGdata + '/' + POG.POGID + '/P*', (err, files) => {
-
-    // Explode out and get biggest
-    let libraryOptions = [];
-    _.forEach(files, (f) => {
-      let t = f.split('/');
-      libraryOptions.push(t[t.length-1]);
-    });
-    libraryOptions.sort().reverse();
-
-    let dir = config.POGdata + '/' + POG.POGID + '/' + libraryOptions[0];
-
-
-    glob(config.POGdata + '/' + POG.POGID + '/' + libraryOptions[0] + '/jreport_genomic_summary_v*', (err, files) => {
-
-      // Explode out and get biggest
-      let versionOptions = [];
-      _.forEach(files, (f) => {
-        let t = f.split('/');
-        versionOptions.push(t[t.length-1]);
-      });
-
-      // Sort by largest value (newest version)
-      versionOptions.sort().reverse();
-
-      if(err) deferred.reject('Unable to find POG sources.');
-      let baseDir = config.POGdata + '/' + POG.POGID + '/' + libraryOptions[0] + '/' + versionOptions[0] + '/report';
-
-      // Log Base Path for Source
-      log('Source path: '+baseDir);
-
-      let promises = []; // Collection of module promises
-
-      // Set loaders to run - if none are specified, load them all.
-      let toLoad = (options.load) ? _.intersection(_.keys(loaders), options.load) : _.keys(loaders);
-
-      // Loop over loader files and create promises
-      _.forEach(loaders, (file, k) => {
-
-        // If the looped loader exists in the toLoad intersection, queue the promise!
-        if(toLoad.indexOf(k) > -1) promises.push(require('./' + file)(report, baseDir, logger, {library: libraryOptions[0]}));
-
-      });
-
-      // Wait for all loaders to finish!
-      Q.all(promises)
-        .done((result) => {
-
-          // Check Results
-          log('All loaders have completed.', logger.SUCCESS);
-
-          // All good!
-          deferred.resolve(true);
-
-        },
-        (error) => {
-          // A loader failed
-          let fail = {};
-
-          // TODO: fail better
-
-          // Log error
-          log('Failed onboarding process.', logger.ERROR);
-          console.log(error);
-
-          if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
-
-          // Return fail
-          deferred.reject(fail);
-        }
-      );
-    });
-  });
-
-  return deferred.promise;
-};
-*/
-
-/**
- * Get the biopsy/library folder
- *
- * Use glob to detect the library folders. If multiples are found, take the larger ones!
- *
- * @param {object} POG - POG Model instance
- * @param {object} report - POG Report model instance
- * @param {object} options - Loader options passed down the chain
- *
- * @returns {Promise} - Resolves with inputs plus the directory
- */
-let getBiopsyFolder = (POG, report, options={}) => {
-
-  return  new Promise((resolve, reject) => {
-    // Determine which folder/biopsy to go for (grabs oldest by default)
-    glob(config.POGdata + '/' + POG.POGID + '/P*', (err, files) => {
-
-      // Explode out and get biggest
-      let libraryOptions = [];
-      _.forEach(files, (f) => {
-        let t = f.split('/');
-        libraryOptions.push(t[t.length-1]);
-      });
-      libraryOptions.sort().reverse();
-
-      let dir = config.POGdata + '/' + POG.POGID + '/' + libraryOptions[0];
-
-      resolve({POG: POG, report: report, options: options, libraryOptions: libraryOptions});
-
-    });
-
-  });
-
-
-
-};
-
-
-/**
- * Get the Report Directory
- *
- * Finds the report directory regardless of report version by globbing based on patterns
- *
- * @param {object} args - Model chaining passed arguments object {POG, report, options, libraryOptions}
- *
- * @returns {Promise} - Resolves with the passed args and the amended directory
- */
-let getReportFolder = (args) => {
-
-  let POG = args.POG;
-  let report = args.report;
-  let options = args.options;
-  let libraryOptions = args.libraryOptions;
-
-  return new Promise((resolve, reject) => {
-
-    // Go globbing for the report directory
-    glob(config.POGdata + '/' + POG.POGID + '/' + libraryOptions[0] + '/jreport_genomic_summary_v*', (err, files) => {
-
-      // Explode out and get biggest
-      let versionOptions = [];
-      _.forEach(files, (f) => {
-        let t = f.split('/');
-        versionOptions.push(t[t.length - 1]);
-      });
-
-      // Sort by largest value (newest version)
-      versionOptions.sort().reverse();
-
-      if (err) reject('Unable to find POG sources.');
-      let baseDir = config.POGdata + '/' + POG.POGID + '/' + libraryOptions[0] + '/' + versionOptions[0] + '/report';
-
-      // Log Base Path for Source
-      log('Source path: ' + baseDir);
-
-      resolve({POG: POG, report: report, options: options, dir: baseDir, libraryOptions: libraryOptions});
-
-
-    });
-
-  });
-
-};
-
-/**
- * Run the loaders
- *
- * Based on configuration profile, run the specified loaders
- *
- * @param {object} args - Model chaining passed arguments object {POG, report, options, baseDir}
- *
- * @returns {Promise} - Resolves with the passed args and the amended directory
- */
-let runLoaders = (args) => {
-
-  let POG = args.POG;
-  let report = args.report;
-  let options = args.options;
-  let baseDir = args.baseDir;
-  let libraryOptions = args.libraryOptions;
-
-  return new Promise((resolve, reject) => {
-
-    let promises = []; // Collection of module promises
-
-    // Set loaders to run - if none are specified, load them all.
-    let toLoad = (options.load) ? _.intersection(_.keys(loaders), options.load) : _.keys(loaders);
-
-    // Loop over loader files and create promises
-    _.forEach(loaders, (file, k) => {
-
-      // If the looped loader exists in the toLoad intersection, queue the promise!
-      if(toLoad.indexOf(k) > -1) promises.push(require('./' + file)(report, baseDir, logger, {library: libraryOptions[0]}));
-
-    });
-
-    // Wait for all loaders to finish!
-    Q.all(promises)
-      .done((result) => {
-          // Check Results
-          log('All loaders have completed.', logger.SUCCESS);
-
-          // All good!
-          resolve(true);
-        },
-        (error) => {
-          // A loader failed
-          let fail = {};
-
-          // TODO: fail better
-
-          // Log error
-          log('Failed onboarding process.', logger.ERROR);
-          console.log(error);
-
-          if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
-
-          // Return fail
-          reject(fail);
-        }
-      );
-
-  });
-
-};
 
 class DirectoryNotFound extends Error {
 
