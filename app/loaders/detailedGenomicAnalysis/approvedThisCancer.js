@@ -38,7 +38,7 @@ module.exports = (report, dir, logger, options) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'approvedThisCancer', message: 'Unable to parse the CSV: ' + dir + '/JReport_CSV_ODF/approved_detailed.csv', result: false});
       }
     
       // Remap results
@@ -70,9 +70,10 @@ module.exports = (report, dir, logger, options) => {
         },
         // Problem creating DB entries
         (err) => {
+          console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create variations database entries.');
-          deferred.reject('Unable to create variations database entries.');
+          deferred.reject({loader: 'approvedThisCancer', result: false, message: 'Unable to create variations database entries.'});
         }
       );
       
@@ -84,7 +85,7 @@ module.exports = (report, dir, logger, options) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'approvedThisCancer', message: 'Unable to find the CSV file: ' + dir + '/JReport_CSV_ODF/approved_detailed.csv', result: false});
   });
   
   return deferred.promise;

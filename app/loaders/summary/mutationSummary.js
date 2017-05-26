@@ -37,7 +37,7 @@ module.exports = (report, dir, logger) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'mutationSummary', message: 'Unable to parse the source file: ' + dir + '/JReport_CSV_ODF/mutational_spectrum.csv'});
       }
       
       if(result.length > 1) return new Error('['+report.ident+'][Loader][Summary.MutationSummary] More than one mutation summary entry found.');
@@ -60,6 +60,7 @@ module.exports = (report, dir, logger) => {
         },
         (err) => {
           console.log(err);
+          deferred.reject({loader: 'mutationSummary', message: 'Unable to create database entries'});
           log('Failed to create mutation summary entry.', logger.ERROR);
         }
       );
@@ -71,7 +72,7 @@ module.exports = (report, dir, logger) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'mutationSummary', message: 'Unable to find the source file: ' + dir + '/JReport_CSV_ODF/mutational_spectrum.csv'});
   });
   
   return deferred.promise;

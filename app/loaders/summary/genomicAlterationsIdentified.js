@@ -37,7 +37,7 @@ module.exports = (report, dir, logger) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to parse the genomic alterations identified file: ' + dir + '/JReport_CSV_ODF/genomic_alt_identified.csv', result: false});
       }
     
       // Create Entries Array
@@ -63,15 +63,15 @@ module.exports = (report, dir, logger) => {
       // Add to Database
       db.models.genomicAlterationsIdentified.bulkCreate(entries).then(
         (result) => {
-          log('Finished Genomic Alterations Identified.', logger.SUCCESS)
+          log('Finished Genomic Alterations Identified.', logger.SUCCESS);
          
           // Resolve Promise
           deferred.resolve(result);
         },
         (err) => {
           console.log(err);
-          log('Failed to load patient tumour analysis.', logger.ERROR)
-          deferred.reject('Failed to load Genomic Alterations Identified.');
+          log('Failed to load patient tumour analysis.', logger.ERROR);
+          deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to create database entries', result: false});
         }
       );
     }
@@ -82,7 +82,7 @@ module.exports = (report, dir, logger) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to find the genomic alterations identified file: ' + dir + '/JReport_CSV_ODF/genomic_alt_identified.csv', result: false});
   });
   
   return deferred.promise;

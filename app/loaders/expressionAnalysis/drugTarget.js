@@ -40,7 +40,7 @@ module.exports = (report, dir, logger) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'drugTarget', message: 'Unable to parse the CSV: ' + dir + '/JReport_CSV_ODF/therapeutic_targets.csv', result: false});
       }
 
       // Create Entries Array
@@ -59,12 +59,12 @@ module.exports = (report, dir, logger) => {
           log('Finished Expression Drug Target Analysis.', logger.SUCCESS);
 
           // Resolve Promise
-          deferred.resolve(result);
+          deferred.resolve({module: 'drugTarget', result: true, data: result});
         },
         (err) => {
           console.log('SQL ERROR', err);
           log('Failed to load Expression Drug Target Analysis.', logger.ERROR);
-          deferred.reject('Failed to load Expression Drug Target Analysis.');
+          deferred.reject({loader: 'drugTarget', message: 'Unable to create database entries.', result: false});
         }
       );
     }
@@ -75,7 +75,7 @@ module.exports = (report, dir, logger) => {
 
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'drugTarget', message: 'Unable to find the CSV: ' + dir + '/JReport_CSV_ODF/therapeutic_targets.csv', result: false});
   });
 
   return deferred.promise;

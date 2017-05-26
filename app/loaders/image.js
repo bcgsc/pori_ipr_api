@@ -40,19 +40,19 @@ module.exports = (report, dir, logger) => {
   
   // Read in images, process and insert into DB
   images.forEach((image) => {
-    
+
     // Check that image exists
     if(!fs.existsSync(imagePath + image.file)) {
       // If it's not optional, hard fail.
       if(!image.optional) {
         log('Failed to read in required image file: ' + image.name, logger.ERROR);
-        deferred.reject({reason: 'requiredImageReadFail'});
+        deferred.reject({loader: 'image', message: 'Failed to find the required image: ' + image.file});
         return;
       }
       // Optional, soft fail
       if(image.optional) return log('Failed to find optional image file: ' + image.name, logger.WARNING);
     }
-    
+
     // Create Promise
     promises.push(processImage(report, image, log));
     
@@ -64,12 +64,12 @@ module.exports = (report, dir, logger) => {
     .then((results) => {
         
         log('Loaded all images', logger.SUCCESS);
-        deferred.resolve(true);
+        deferred.resolve({loader: 'images', result: true});
         
       },
       (error) => {
         log('Unable to load images.', logger.ERROR);
-        deferred.reject('Unable to load image entries.');
+        deferred.reject({loader: 'image', message: 'Unable to load image entries: ' + err.message});
       }
     );
   
@@ -95,7 +95,7 @@ let processImage = (report, image, log) => {
 
   process.stderr.on('data', (err) => {
     console.log('Imagemagick Processing Error', err);
-    deferred.reject({reason: 'ImageMagickError'});
+    deferred.reject({loader: 'image', message: 'ImageMagick failed to convert: ' + image.file});
   });
 
   // Done executing
@@ -117,7 +117,7 @@ let processImage = (report, image, log) => {
           deferred.resolve(true);
         },
         (err) => {
-          deferred.reject({reason: 'failedDBInsert'});
+          deferred.reject({loader: 'image', message: 'failed to create database entry for: ' + image.file});
         }
       );
   });
@@ -150,6 +150,7 @@ let loadExpressionDensity = (report, log) => {
       },
       (err) => {
         console.log('Failed Exp Density Image Processing', err);
+        deferred.reject({loader: 'image', message: 'Unable to load one or more density images:' + err.message});
       }
     );
 
@@ -175,8 +176,8 @@ let processExpDensityImages = (report, img, log) => {
   });
 
   process.stderr.on('data', (err) => {
-    console.log('Imagemagick Processing Error', err);
-    deferred.reject({reason: 'ImageMagickError'});
+    console.log('Imagemagick Processing Error for',img, err);
+    deferred.reject({loader: 'image', message: 'ImageMagick was unable to convert the image: ' + img});
   });
 
   // Done executing
@@ -198,7 +199,7 @@ let processExpDensityImages = (report, img, log) => {
           deferred.resolve(true);
         },
         (err) => {
-          deferred.reject({reason: 'failedDBInsert'});
+          deferred.reject({loader: 'image', reason: 'failed to created database entry for: ' + img});
         }
       );
   });

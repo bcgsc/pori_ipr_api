@@ -30,12 +30,15 @@ module.exports = (report, dir, logger, options={}) => {
   let project = options.project || 'pog';
 
   // Find File
-  glob('/projects/tumour_char/'+project+'/somatic/signature/' + report.pog.POGID + '/'+options.library+'/v*/*_msig_combined.txt', (err, files) => {
+  glob(options.config['mutationSigFolder'] + '/*_msig_combined.txt', (err, files) => {
 
     if(err || files.length === 0) {
       log('Unable to find Mutation Signature source file', logger.ERROR);
       console.log('Mutation Signature Error', err);
-      console.log('Attempted to load', '/projects/tumour_char/'+project+'/somatic/signature/' + report.pog.POGID + '/'+options.library+'/v*/*_msig_combined.txt');
+      console.log('Attempted to load', options.config['mutationSigFolder'] + '/*_msig_combined.txt');
+
+      deferred.reject({loader: 'mutationSignature', message: 'Unable to find the mutation signature file: ' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
+
       throw new Error('Unable to find Mutation Signature source file')
     }
 
@@ -52,7 +55,8 @@ module.exports = (report, dir, logger, options={}) => {
         if(err) {
           log('Unable to parse CSV file');
           console.log(err);
-          deferred.reject({reason: 'parseCSVFail', message: 'Unable to find CSV file for Mutation Signature'});
+
+          deferred.reject({loader: 'mutationSignature', message: 'Unable to parse the CSV file :' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
         }
 
         let entries = remapKeys(result, nconf.get('somaticMutations:mutationSignature'));
@@ -70,12 +74,12 @@ module.exports = (report, dir, logger, options={}) => {
             log('Mutation Signatures successfully created.', logger.SUCCESS);
 
             // Resolve Promise
-            deferred.resolve({status: true, db: result, data: entries, message: 'Successfully loaded mutation signatures', loader: 'SomaticMutations.MutationSignature'});
+            deferred.resolve({result: true, db: result, data: entries, message: 'Successfully loaded mutation signatures', loader: 'MutationSignature'});
           },
           (err) => {
             console.log(err);
             log('Mutation Signatures failed to insert.',logger.ERROR);
-            deferred.reject({status: false, error: err, message: 'Failed to load Mutation Signatures', loader: 'SomaticMutations.MutationSignature'});
+            deferred.reject({result: false, error: err, message: 'Unable to create database entries', loader: 'MutationSignature'});
           }
         );
       }
@@ -87,7 +91,7 @@ module.exports = (report, dir, logger, options={}) => {
     output.on('error', (err) => {
       log('Unable to find required CSV file', logger.ERROR);
       console.log(err);
-      deferred.reject({status: false, error: err, message: 'Source txt file not found', loader: 'SomaticMutations.MutationSignature'});
+      deferred.reject({result: false, error: err, message: 'Source txt file not found', loader: 'MutationSignature'});
     });
 
   });

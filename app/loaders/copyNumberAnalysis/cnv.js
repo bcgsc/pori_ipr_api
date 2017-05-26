@@ -41,7 +41,7 @@ let parseCnvFile = (report, cnvFile, cnvVariant, log) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'cnv', message: 'Unable to parse the CSV file: ' + baseDir + '/JReport_CSV_ODF/' + cnvFile});
       }
 
       // Remap results
@@ -68,7 +68,7 @@ let parseCnvFile = (report, cnvFile, cnvVariant, log) => {
 
   output.on('error', (err) => {
     log('Unable to find required CSV file: ' + cnvFile);
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'cnv', message: 'Unable to find the CSV file: ' + baseDir + '/JReport_CSV_ODF/' + cnvFile});
   });
 
   return deferred.promise;
@@ -143,12 +143,16 @@ module.exports = (report, dir, logger) => {
         },
         // Problem creating DB entries
         (err) => {
+          console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create cnv database entries.');
-          deferred.reject('Unable to create cnv database entries.');
+          deferred.reject({loader: 'cnv', message: 'Unable to create cnv database entries.'});
         }
       );
 
+    },
+    (err) => {
+      deferred.reject({loader: 'cnv', message: 'Unable to load all CSVs: ' + err.message});
     });
 
   return deferred.promise;

@@ -29,7 +29,9 @@ let parseAlterationsFile = (report, alterationFile, alterationType, log, options
   
   // Check that the provided alterationType is valid according to the schema
   if(db.models.alterations.rawAttributes.alterationType.values.indexOf(alterationType) === -1) deferred.reject('Invalid AlterationType. Given: ' + alterationType) && new Error('Invalid AlterationType. Given: ' + alterationType);
-  
+
+  log('Looking for file: ' + baseDir + '/JReport_CSV_ODF/' + alterationFile);
+
   // First parse in therapeutic
   let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + alterationFile, {'delimiter': ','});
   
@@ -54,11 +56,12 @@ let parseAlterationsFile = (report, alterationFile, alterationType, log, options
         entries[k].pog_report_id = report.id;
         entries[k].alterationType = alterationType;
         entries[k].newEntry = false;
-        if(options.report === 'probe') entries[k].reportType = 'probe';
+        if(report.type === 'probe') entries[k].reportType = 'probe';
+        if(report.type === 'probe') entries[k].report = 'probe';
       });
       
       // Log progress
-      log('Parsed .csv for: ' + alterationType);
+      log('Parsed '+ alterationFile +' for: ' + alterationType + ' with ' + entries.length + ' entries found');
       
       // Resolve Promise
       deferred.resolve(entries);
@@ -75,7 +78,7 @@ let parseAlterationsFile = (report, alterationFile, alterationType, log, options
   
   return deferred.promise;
   
-}
+};
 
 /**
  * Alterations Loader
@@ -105,7 +108,9 @@ module.exports = (report, dir, logger, options) => {
 
   // Setup Logger
   let log = logger.loader(report.ident, 'DGA.Variations');
-  
+
+  log('Running loader in mode: ' + report.type);
+
   // Alterations to be processed
   let sources = [
     {file: 'clin_rel_known_alt_detailed.csv', type: 'therapeutic'},

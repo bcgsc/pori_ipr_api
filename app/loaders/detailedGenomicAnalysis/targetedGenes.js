@@ -28,9 +28,9 @@ module.exports = (report, dir, logger) => {
   let log = logger.loader(report.ident, 'DetailedGenomicAnalysis.TargetedGenes');
 
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/probe_summary.csv')
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/probe_summary.csv');
 
-  log('Found and read probe_summary.csv file.')
+  log('Found and read probe_summary.csv file.');
 
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},

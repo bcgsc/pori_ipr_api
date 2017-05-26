@@ -33,7 +33,6 @@ class microbialLoader {
   load() {
     return new Promise((resolve,reject) => {
 
-
       this.retrieveFileEntry()
         .then(this.insertEntries.bind(this))
         .then(
@@ -44,11 +43,11 @@ class microbialLoader {
         (err) => {
           console.log(err);
           this.logging('Microbial Data was not able to complete.', this.logger.ERROR);
-          resolve({name: 'microbial', result: false});
+          resolve({loader: 'microbial', message: 'Unable to load microbial data: ' + err.message, result: false});
         }
       )
 
-    })
+    });
   }
 
   /**
@@ -70,7 +69,7 @@ class microbialLoader {
           if(err) {
             this.logging('Unable to parse CSV file');
             console.log(err);
-            reject({reason: 'parseCSVFail'});
+            reject({loader: 'microbial', message: 'Unable to parse the microbial file: ' + this.baseDir + '/JReport_CSV_ODF/microbial_detection.csv', result: false});
           }
 
           if(result.length > 1) return new Error('['+this.report.ident+'][Loader][Summary.PatientInformation] More than one microbial data entry found.');
@@ -85,7 +84,7 @@ class microbialLoader {
 
       output.on('error', (err) => {
         log('Unable to find required CSV file');
-        reject({reason: 'sourceFileNotFound'});
+        reject({loader: 'microbial', message: 'Unable to find the microbial file: ' + this.baseDir + '/JReport_CSV_ODF/microbial_detection.csv', result: false});
       });
 
     });
@@ -116,8 +115,8 @@ class microbialLoader {
 
         },
         (err) => {
-          this.logging('Failed to load microbial data.', this.logger.ERROR)
-          reject('insertEntries');
+          this.logging('Failed to load microbial data.', this.logger.ERROR);
+          reject({loader: 'microbial', message: 'Unable to create database entries', result: false});
         }
       );
 

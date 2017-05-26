@@ -69,7 +69,7 @@ let parseAlterationsFile = (report, probeFile, probeDir, log) => {
   
   return deferred.promise;
   
-}
+};
 
 /**
  * Alterations Loader
@@ -87,9 +87,12 @@ let parseAlterationsFile = (report, probeFile, probeDir, log) => {
  * @param {object} report - POG report model object
  * @param {string} basedir - base working directory
  * @param {object} logger - Logging interface
+ * @param {object} options - Module options
+ *
+ * @returns {Promise|object} - Returns a promise, resolves with loader success object
  *
  */
-module.exports = (report, basedir, logger) => {
+module.exports = (report, basedir, logger, options) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -99,93 +102,94 @@ module.exports = (report, basedir, logger) => {
   let log = logger.loader(report.ident, 'summary.ProbeTarget');
 
   // Read in config file.
-  let config;
+  let config = options.config;
   let probeDir;
-  pyconf.readFile(basedir + '/Report_tracking.cfg', (err, conf) => {
-    // Set config
-    config = conf;
-    // Set probe directory from Python config
-    probeDir = config.Probe_Report_Folder;
 
-    // Alterations to be processed
-    let sources = [
-      {file: 'clin_rel_known_alt_detailed.csv'},
-      {file: 'clin_rel_known_biol_detailed.csv'},
-      {file: 'clin_rel_known_diag_detailed.csv'},
-      {file: 'clin_rel_known_prog_detailed.csv'},
-      {file: 'clin_rel_unknown_alt_detailed.csv'}
-    ];
+  // Set probe directory from Python config
+  probeDir = config.Probe_Report_Folder;
 
-    // Check for sources first.
+  // Alterations to be processed
+  let sources = [
+    {file: 'clin_rel_known_alt_detailed.csv'},
+    {file: 'clin_rel_known_biol_detailed.csv'},
+    {file: 'clin_rel_known_diag_detailed.csv'},
+    {file: 'clin_rel_known_prog_detailed.csv'},
+    {file: 'clin_rel_unknown_alt_detailed.csv'}
+  ];
 
-    // Promises Array
-    let promises = [];
+  // Check for sources first.
 
-    // Loop over sources and collect promises
-    sources.forEach((input) => {
-      if(!fs.existsSync(probeDir + '/JReport_CSV_ODF/' + input.file)) {
-        deferred.resolve({probeTarget: false});
-        log('Unable to find probe report data. Missing input file(s): '+input.file, logger.WARNING);
-        return;
-      }
-      promises.push(parseAlterationsFile(report, input.file, probeDir, log));
-    });
+  // Promises Array
+  let promises = [];
 
-    if(promises.length === 0) {
-      log('Probe Target Gene data not available.', logger.WARNING);
+  // Loop over sources and collect promises
+  sources.forEach((input) => {
+    if(!fs.existsSync(probeDir + '/JReport_CSV_ODF/' + input.file)) {
+      deferred.resolve({loader: 'probeTarget', message: 'Failed to find the file for probe targeting: ' + probeDir + '/JReport_CSV_ODF/' + input.file, result: false});
+      log('Unable to find probe report data. Missing input file(s): '+input.file, logger.WARNING);
       return;
     }
-
-    // Wait for all promises to be resolved
-    Q.all(promises)
-    .then((results) => {
-      // Log progress
-      log('Variations collected: ' + _.flattenDepth(results, 2).length);
-
-      let entries = [];
-
-      // Process Results
-      results = _.flattenDepth(results, 2);
-      results.forEach((val) => {
-
-        // Look for an entry
-        if(!_.find(entries, (e) => {
-
-            if(e.gene === val.gene && e.variant === val.variant && e.sample === val.sample) return true;
-            return false;
-
-          })) {
-          entries.push({gene: val.gene, variant: val.variant, sample: val.sample, pog_id: report.pog_id, pog_report_id: report.id});
-        }
-
-      });
-
-      db.models.probeTarget.bulkCreate(entries).then(
-        (result) => {
-
-          // Successfull create into DB
-          log('Database entries created.', logger.SUCCESS);
-
-          // Done!
-          deferred.resolve({probeTarget: true});
-
-        },
-        // Problem creating DB entries
-        (err) => {
-          log('Unable to create database entries.', logger.ERROR);
-          new Error('Unable to create probe target database entries.');
-          deferred.reject('Unable to create probe target database entries.');
-        }
-      );
-
-    },
-    (error) => {
-      log('Unable to create probe report data.', logger.WARNING);
-      deferred.resolve({probeTarget: false});
-    }
-
-    );
-
+    promises.push(parseAlterationsFile(report, input.file, probeDir, log));
   });
+
+  if(promises.length === 0) {
+    log('Probe Target Gene data not available.', logger.WARNING);
+    return;
+  }
+
+  // Wait for all promises to be resolved
+  Q.all(promises)
+    .then((results) => {
+        // Log progress
+        log('Variations collected: ' + _.flattenDepth(results, 2).length);
+
+        let entries = [];
+
+        // Process Results
+        results = _.flattenDepth(results, 2);
+        results.forEach((val) => {
+
+          // Look for an entry
+          if (!_.find(entries, (e) => {
+
+              if (e.gene === val.gene && e.variant === val.variant && e.sample === val.sample) return true;
+              return false;
+
+            })) {
+            entries.push({
+              gene: val.gene,
+              variant: val.variant,
+              sample: val.sample,
+              pog_id: report.pog_id,
+              pog_report_id: report.id
+            });
+          }
+
+        });
+
+        db.models.probeTarget.bulkCreate(entries).then(
+          (result) => {
+
+            // Successfull create into DB
+            log('Database entries created.', logger.SUCCESS);
+
+            // Done!
+            deferred.resolve({module: 'probeTarget', result: true});
+
+          },
+          // Problem creating DB entries
+          (err) => {
+            log('Unable to create database entries.', logger.ERROR);
+            new Error('Unable to create probe target database entries.');
+            deferred.reject({loader: 'probeTarget', message:'Unable to create probe target database entries.'});
+          }
+        );
+
+      },
+      (error) => {
+        log('Unable to create probe report data.', logger.WARNING);
+        deferred.resolve({loader: 'probeTarget', result: false, message: 'Unable to find the required probe target file(s): ' + error.message});
+      }
+    );
   return deferred.promise;
-}
+};

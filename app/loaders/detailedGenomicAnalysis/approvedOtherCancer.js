@@ -37,7 +37,7 @@ module.exports = (report, dir, logger, options) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'approvedOtherCancer', message: 'unable to parse CSV file: ' + dir + '/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv', result: false});
       }
     
       // Remap results
@@ -64,14 +64,15 @@ module.exports = (report, dir, logger, options) => {
           log('Database entries created.', logger.SUCCESS);
           
           // Done!
-          deferred.resolve({approvedThisCancer: true});
+          deferred.resolve({module: 'approvedOtherCancer', result: true});
           
         },
         // Problem creating DB entries
         (err) => {
+          console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create approved other cancer type detailed database entries.');
-          deferred.reject('Unable to create approved other cancer type detailed database entries.');
+          deferred.reject({module: 'approvedOtherCancer', result: false, message: 'Unable to create approved other cancer type detailed database entries.'});
         }
       );
       
@@ -83,7 +84,7 @@ module.exports = (report, dir, logger, options) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({module: 'approvedOtherCancer', message: 'Unable to find the CSV file: ' + dir + '/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv'});
   });
   
   return deferred.promise;

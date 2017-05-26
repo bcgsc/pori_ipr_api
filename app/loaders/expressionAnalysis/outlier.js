@@ -40,7 +40,7 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
       if(err) {
         log('Unable to parse Expression Outlier CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'expressionOutlier', message: 'Unable to parse the CSV: ' + baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, result: false});
       }
 
       // Remap results
@@ -67,7 +67,7 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
 
   output.on('error', (err) => {
     log('Unable to find required CSV file: ' + expressionOutlierFile);
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'expressionOutlier', message: 'Unable to find the CSV: ' + baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, result: false});
   });
 
   return deferred.promise;
@@ -129,18 +129,22 @@ module.exports = (report, dir, logger) => {
           log('Database entries created.', logger.SUCCESS);
 
           // Done!
-          deferred.resolve({expressionOutliers: true});
-
+          deferred.resolve({loader: 'expressionOutliers', result: true, data: result});
         },
         // Problem creating DB entries
         (err) => {
-          log('Unable to create database entries.', logger.ERROR);
-          deferred.reject('Unable to create expression outliers database entries.');
           console.log(err);
+          log('Unable to create database entries.', logger.ERROR);
+          deferred.reject({loader: 'expressionOutlier', message: 'Unable to create the database entries.', result: false});
           new Error('Unable to create expression outliers database entries.');
         }
       );
 
+    },
+    (err) => {
+      console.log(err);
+      log('Unable to load a CSV file', logger.ERROR);
+      deferred.reject({loader: 'expressionOutlier', message: 'Unable to load a CSV file: ' + err.message, result: false});
     });
 
   return deferred.promise;

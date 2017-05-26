@@ -40,7 +40,7 @@ module.exports = (report, dir, logger, options={}) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'genomicEventsTherapeutic', message: 'Unable to parse the CSV file: ' + dir + '/JReport_CSV_ODF/genomic_events_thera_assoc.csv'});
       }
 
       // Create Entries Array
@@ -50,8 +50,10 @@ module.exports = (report, dir, logger, options={}) => {
       _.forEach(result, (v, k) => {
           entries[k].pog_id = report.pog_id;
           entries[k].pog_report_id = report.id;
-          if(options.report === 'probe') entries[k].reportType = 'probe';
+          if(report.type === 'probe') entries[k].reportType = 'probe';
       });
+
+      log('Entries found: ' + entries.length);
 
       // Add to Database
       db.models.genomicEventsTherapeutic.bulkCreate(entries).then(
@@ -62,8 +64,9 @@ module.exports = (report, dir, logger, options={}) => {
           deferred.resolve(result);
         },
         (err) => {
+          console.log(err);
           log('Failed to load patient genomic events with therapeutic association.', logger.ERROR);
-          deferred.reject('Failed to load Genomic Events With Therapeutic Association.');
+          deferred.reject({loader: 'genomicEventsTherapeutic', message: 'Failed to created DB entries'});
         }
       );
     }
@@ -74,7 +77,7 @@ module.exports = (report, dir, logger, options={}) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'genomicEventsTherapeutic', message: 'Unable to find the source file: ' + dir + '/JReport_CSV_ODF/genomic_events_thera_assoc.csv'});
   });
   
   return deferred.promise;

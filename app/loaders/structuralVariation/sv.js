@@ -40,7 +40,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'structuralVariants', message: 'Unable to parse the structural variants file: ' + baseDir + '/JReport_CSV_ODF/' + structuralVariationFile, result: false});
       }
 
       // Remap results
@@ -87,7 +87,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
 
   output.on('error', (err) => {
     log('Unable to find required CSV file: ' + structuralVariationFile);
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'structuralVariants', message: 'Unable to find the structural variants file: ' + baseDir + '/JReport_CSV_ODF/' + structuralVariationFile, result: false});
   });
 
   return deferred.promise;
@@ -151,16 +151,23 @@ module.exports = (report, dir, logger) => {
           log('Database entries created.', logger.SUCCESS);
 
           // Done!
-          deferred.resolve({smallMutations: true});
+          deferred.resolve({loader: 'structuralVariants', result: true, data: result});
 
         },
         // Problem creating DB entries
         (err) => {
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create structural variants database entries.');
-          deferred.reject('Unable to create structural variants database entries.');
+          deferred.reject({loader: 'structuralVariants', message: 'Unable to create database entries.', result: false});
         }
       );
+
+    },
+    (error) => {
+
+      console.log(error);
+      log('Unable to process structrual variant file', logger.ERROR);
+      deferred.reject({loader: 'structuralVariants', message: 'Unable to process a structural variants file: ' + error.message, result: false});
 
     });
 

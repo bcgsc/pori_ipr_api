@@ -23,10 +23,10 @@ module.exports = (report, dir, logger) => {
   
   // Setup Logger
   let log = logger.loader(report.ident, 'Summary.TumourAnalysis');
-  
+
   // First parse in therapeutic
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/patient_tumour_analysis.csv');
-  
+
   log('Found and read patient_tumour_analysis.csv file.');
   
   // Parse file!
@@ -44,6 +44,12 @@ module.exports = (report, dir, logger) => {
     
       // Remap results
       let entry = _.head(remapKeys(result, nconf.get('summary:tumourAnalysis')));
+
+      if(parseInt(entry.tumourContent).toString().length !== entry.tumourContent.length) {
+        log('Non-integer tumour content detected', logger.ERROR);
+        deferred.reject({loader: 'tumourAnalysis', message: 'Tumour content was not an integer'});
+        return;
+      }
       
       // Map needed DB column values
       entry.pog_id = report.pog_id;
@@ -52,14 +58,14 @@ module.exports = (report, dir, logger) => {
       // Add to Database
       db.models.tumourAnalysis.create(entry).then(
         (result) => {
-          log('Finished Patient tumour analysis.', logger.SUCCESS)
-         
+          log('Finished Patient tumour analysis.', logger.SUCCESS);
           // Resolve Promise
           deferred.resolve(entry);
         },
         (err) => {
-          log('Failed to load patient tumour analysis.', logger.ERROR)
-          deferred.reject('Failed to load patient tumour analysis.');
+          console.log('Unable to create table entry for tumour analysis', err);
+          log('Failed to load patient tumour analysis.', logger.ERROR);
+          deferred.reject({loader: 'tumourAnalysis', message: 'Unable to insert records into database'});
         }
       );
     }

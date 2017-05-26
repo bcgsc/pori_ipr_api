@@ -37,9 +37,9 @@ module.exports = (report, dir, logger) => {
       
       // Was there a problem processing the file?
       if(err) {
-        log('Unable to parse CSV file');
+        log('Unable to parse CSV file', logger.ERROR);
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'sampleSummary', message: 'Unable to parse the source file: ' + dir + '/JReport_CSV_ODF/sample_summary.csv'});
       }
       
       if(result.length > 1) return new Error('['+report.ident+'][Loader][Summary.SampleSummary] More than one sample summary entry found.');
@@ -60,7 +60,7 @@ module.exports = (report, dir, logger) => {
           log('Sample Summary appended.', logger.SUCCESS);
          
           // Resolve Promise
-          deferred.resolve(entry);
+          deferred.resolve({data: entry, result: true, loader: 'sampleSummary'});
         },
         (err) => {
           log('Failed to append Sample Summary.',logger.ERROR)
@@ -74,7 +74,7 @@ module.exports = (report, dir, logger) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'sampleSummary', message: 'Unable to find the source file: ' + dir + '/JReport_CSV_ODF/sample_summary.csv', result: false});
   });
   
   return deferred.promise;

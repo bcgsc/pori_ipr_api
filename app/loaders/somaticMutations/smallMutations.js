@@ -41,7 +41,7 @@ let parseSmallMutationFile = (report, smallMutationFile, mutationType, log) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'smallMutations', message: 'Unable to parse the small mutation file: ' + baseDir + '/JReport_CSV_ODF/' + smallMutationFile, result: false});
       }
 
       // Remap results
@@ -70,7 +70,7 @@ let parseSmallMutationFile = (report, smallMutationFile, mutationType, log) => {
 
   output.on('error', (err) => {
     log('Unable to find required CSV file: ' + smallMutationFile);
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'smallMutations', message: 'Unable to find the small mutation file: ' + baseDir + '/JReport_CSV_ODF/' + smallMutationFile, result: false});
   });
 
   return deferred.promise;
@@ -133,7 +133,7 @@ module.exports = (report, dir, logger) => {
           log('Database entries created.', logger.SUCCESS);
 
           // Done!
-          deferred.resolve({smallMutations: true});
+          deferred.resolve({loader: 'smallMutations', result: true, data: result});
 
         },
         // Problem creating DB entries
@@ -141,10 +141,15 @@ module.exports = (report, dir, logger) => {
           console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create small mutations database entries.');
-          deferred.reject('Unable to create small mutations database entries.');
+          deferred.reject({loader: 'smallMutations', message: 'Unable to create database entries.', result: false});
         }
       );
 
+    },
+    (error) => {
+      console.log(error);
+      log('Unable to process a small mutation file', logger.ERROR);
+      deferred.reject({loader: 'smallMutations', message: 'Unable to process a small mutation file: ' + error.message, result: false});
     });
 
   return deferred.promise;
