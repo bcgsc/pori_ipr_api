@@ -39,7 +39,7 @@ module.exports = (report, dir, logger, options={}) => {
 
       deferred.reject({loader: 'mutationSignature', message: 'Unable to find the mutation signature file: ' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
 
-      throw new Error('Unable to find Mutation Signature source file')
+      //throw new Error('Unable to find Mutation Signature source file')
     }
 
     // Get File

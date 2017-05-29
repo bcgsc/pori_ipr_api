@@ -83,7 +83,7 @@ class microbialLoader {
       output.pipe(parser);
 
       output.on('error', (err) => {
-        log('Unable to find required CSV file');
+        this.logging('Unable to find required CSV file');
         reject({loader: 'microbial', message: 'Unable to find the microbial file: ' + this.baseDir + '/JReport_CSV_ODF/microbial_detection.csv', result: false});
       });
 

@@ -19,7 +19,7 @@ router.route('/:type(genomic|probe)')
     // Pog Options
     let pogOpts = { create: true };
     let profile;
-
+    
     if(!req.body.project) return res.status(400).json({error: {message: "Project type is required in body.", code: "projectTypeNotSpecified"}});
 
     // Determine Loading Profile
@@ -78,11 +78,11 @@ router.route('/:type(genomic|probe)')
 
               // Non-POG options
               loaderOptions.nonPOG = true;
-              loaderOptions.load = loaderConf.defaults[req.body.profile].loaders;
+              loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
               loaderOptions.baseDir = req.body.baseDir;
               loaderOptions.profile = 'nonPOG';
-              loaderOptions.libraries = loaderConf.defaults[req.body.profile].libraries;
-              loaderOptions.moduleOptions = loaderConf.defaults[req.body.profile].moduleOptions;
+              loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
+              loaderOptions.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
 
               let GenomicLoader = new require(process.cwd() + '/app/loaders');
               let Loader = new GenomicLoader(POG, report, loaderOptions);
