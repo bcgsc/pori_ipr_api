@@ -171,6 +171,20 @@ probeSignature.belongsTo(user, {as: 'readySignature', foreignKey: 'readySignedBy
 probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
 
+// Tracking
+let tracking = {};
+tracking.state = sequelize.import(__dirname + '/tracking/states');
+tracking.task = sequelize.import(__dirname + '/tracking/state_task');
+
+tracking.state.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
+tracking.state.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', onDelete: 'SET NULL', constraints: true});
+
+tracking.state.hasMany(tracking.state, {as: 'tasks', foreignKey: 'state_id'});
+tracking.state.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDelete: 'SET NULL', constraints: true});
+
+tracking.task.belongsTo(tracking.state, {as: 'state', foreignKey: 'state_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+tracking.task.belongsTo(user, {as: 'assignedTo', foreignKey: 'assignedTo_id', onDelete: 'SET NULL', constraints: true});
+
 // Syncronize tables to model schemas
 if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
 
