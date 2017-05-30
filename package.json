@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node ./bin/www",
-    "hardMigrate": "node ./server.js --database.migrate --database.hardMigrate",
+    "migrate": "node ./bin/www --database.migrate",
+    "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
     "test": "mocha --timeout 10000"
   },
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
