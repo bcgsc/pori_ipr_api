@@ -5,7 +5,7 @@
   "description": "Placeholder Interactive POG Report API",
   "main": "server.js",
   "scripts": {
-    "start": "node ./server.js",
+    "start": "node ./bin/www",
     "hardMigrate": "node ./server.js --database.migrate --database.hardMigrate",
     "test": "mocha --timeout 10000"
   },
