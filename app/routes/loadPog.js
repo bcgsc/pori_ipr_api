@@ -98,14 +98,14 @@ router.route('/:type(genomic|probe)')
             runLoader.then(
               (result) => {
 
-
                 db.models.analysis_report.scope('public').findOne({
                   where: { id: report.id },
                   include: [
                     {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
                     {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
                     {model: db.models.user.scope('public'), as: 'createdBy'},
-                    {model: db.models.POG.scope('public'), as: 'pog' }
+                    {model: db.models.POG.scope('public'), as: 'pog' },
+                    {model: db.models.pog_analysis.scope('public'), as: 'analysis'}
                   ]
                 }).then(
                   (reports) => {
