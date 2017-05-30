@@ -20,16 +20,19 @@ if(process.env.NODE_ENV === undefined || process.env.NODE_ENV === null) {
 const CONFIG = require('./config/'+process.env.NODE_ENV+'.json');
 
 // Call packages required
-let express	= require('express'),		// Call express
-    app		= express(),			// define app using express
-    bodyParser  = require('body-parser'),	// Body parsing lib
-    colors = require('colors'),
-    sequelize = require('sequelize'),
-    parse = require('csv-parse'),
-    fs = require('fs'),
-    nconf = require('nconf').argv().env().file({file: './config/config.json'}),
-    cors = require('cors'),
-    morgan = require('morgan');
+let express	    = require('express');		    // Call express
+let app         = express();			          // define app using express
+let socket_io   = require("socket.io");     // Ready the socket server
+let bodyParser  = require('body-parser');   // Body parsing lib
+let colors      = require('colors');        // Console colours
+let fs          = require('fs');            // File System access
+let nconf       = require('nconf').argv().env().file({file: './config/config.json'});
+let cors        = require('cors');          // CORS support
+let morgan      = require('morgan');        // Logging
+
+// Setup and store Socket IO in app
+let io          = socket_io();
+app.io          = io;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -38,7 +41,6 @@ app.use((req, res, next) => {
   res.header("Access-Control-Expose-Headers", "X-token, X-Requested-With ,Origin, Content-Type, Accept");
   next();
 });
-
 
 // Suppress Console messages when testing...
 if (process.env.NODE_ENV !== 'test') {
@@ -60,17 +62,10 @@ app.get('/teapot', (req,res,next) => { res.status(418).set({'hi':'mom!'}).send(f
 
 // ROUTING  ----------------------------------------------------------------
 // All API routes will be prefixed with /api/x.x
-app.use('/api/' + API_VERSION, require(__dirname + '/app/routes/index'));
 
-// START THE SERVER
-// =========================================================================
-try {
-  app.listen(CONFIG.web.port);
-}
-catch(error) {
-  console.log('Unable to start server', error);
-  process.exit();
-}
-console.log(('API Ready for requests on port:').yellow, CONFIG.web.port);
+let routing = require(__dirname + '/app/routes');
+let Routing = new routing(app.io);
+
+app.use('/api/' + API_VERSION, Routing.getRouter());
 
 module.exports = app;
