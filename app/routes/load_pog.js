@@ -19,7 +19,7 @@ router.route('/:type(genomic|probe)')
     // Pog Options
     let pogOpts = { create: true };
     let profile;
-    
+
     if(!req.body.project) return res.status(400).json({error: {message: "Project type is required in body.", code: "projectTypeNotSpecified"}});
 
     // Determine Loading Profile
