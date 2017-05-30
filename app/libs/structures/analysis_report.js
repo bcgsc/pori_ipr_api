@@ -56,7 +56,10 @@ module.exports = class analysis_report {
    */
   create(pog, user, type) {
     return new Promise((resolve, reject) => {
-      this.model.create({ ident: this.makeReportIdent(), createdBy_id: user.id, type: type, pog_id: pog.id })
+
+      if(pog.analysis.length === 0) return reject({message: 'No analysis entry on pog object'});
+
+      this.model.create({ ident: this.makeReportIdent(), createdBy_id: user.id, type: type, pog_id: pog.id, analysis_id: pog.analysis[pog.analysis.length-1].id })
         .then((report) => {
           this.instance = report;
           this.ident = report.ident;

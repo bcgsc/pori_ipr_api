@@ -89,7 +89,19 @@ module.exports = class POG {
       this.model.create(data)
         .then((POG) => {
           this.instance = POG;
-          resolve(POG);
+
+          // Create analysis entry
+          db.models.pog_analysis.create({pog_id: POG.id, biopsyDate: (options.biopsyDate) ? options.biopsyDate : null, name: 'biopsy_1'})
+            .then((analysis) => {
+
+              POG.analysis = [analysis]; // Nest analysis inside POG
+              resolve(POG);
+            },
+              (error) => {
+                console.log('Unable to create pog analysis entry', error);
+                reject({message: 'Unable to create pog analysis entry'});
+                POG.destroy();
+              });
         })
         .catch((err) => {
           // Unable to create POG
