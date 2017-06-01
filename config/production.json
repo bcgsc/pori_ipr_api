@@ -52,6 +52,15 @@
 
   "loader": {
     "defaults": {
+      "default_genomic": {
+        "libraries": [
+          "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
+          "summary_variantCounts", "summary_mutationSummary", "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic", "summary_probeTarget", "detailed_alterations",
+          "detailed_approvedThisCancer", "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
+          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
+        ]
+      },
       "pog_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",

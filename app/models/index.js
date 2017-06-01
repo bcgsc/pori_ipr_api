@@ -37,6 +37,10 @@ POG.hasMany(POGuser, {as: 'POGUserFilter', foreignKey: 'pog_id', onDelete: 'CASC
 POGuser.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL'});
 POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'});
 
+let analysis = sequelize.import(__dirname + '/POGAnalysis');
+POG.hasMany(analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+analysis.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+
 // Pog Analysis Reports
 let analysis_reports = sequelize.import(__dirname + '/reports/analysis_reports');
 POG.hasMany(analysis_reports, {as: 'analysis_reports', foreignKey: 'pog_id', onDelete: 'CASCADE'});

@@ -319,8 +319,9 @@ class GenomicLoader {
       fs.readFile(this.baseDir + '/Report_tracking.cfg', 'utf8', (err, data) => {
         if(err) {
           // Unable to find config file
-          this.log('Unable to find Report_Tracking.cfg file', logger.ERROR);
-          reject('Unable to find config file');
+          this.log('Unable to find Report_tracking.cfg file', logger.ERROR);
+          reject('Unable to find Report_tracking.cfg file');
+          return;
         }
 
         // Parse config file with pyconf
