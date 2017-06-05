@@ -1,14 +1,14 @@
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const MiddlewareNotFound  = require('../../../middleware/exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed  = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+const _                       = require('lodash');
+const db                      = require(process.cwd() + '/app/models');
+const MiddlewareNotFound      = require('../../../middleware/exceptions/MiddlewareNotFound');
+const MiddlewareQueryFailed   = require('../../../middleware/exceptions/MiddlewareQueryFailed');
 
 // Lookup POG middleware
-module.exports = (req,res,next,ident) => {
+module.exports = (req,res,next,lookup) => {
 
   // Lookup POG first
   db.models.tracking_state_task.scope('public').findOne({
-    where: {ident: ident},
+    where: {$or: [{ident: lookup}, {name: lookup}]},
     limit: 1,
   }).then(
     (result) => {
