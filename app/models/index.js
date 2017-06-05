@@ -47,6 +47,7 @@ let userGroup = sequelize.import(__dirname + '/user/userGroup.js');
 let userGroupMember = sequelize.import(__dirname + '/user/userGroupMember.js');
 user.belongsToMany(userGroup, {as: 'groups', through: {model: userGroupMember, unique: false }, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE'});
 userGroup.belongsToMany(user, {as: 'users', through: {model: userGroupMember, unique: false }, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE'});
+userGroup.belongsTo(user, {as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL'});
 
 let imageData = sequelize.import(__dirname + '/reports/imageData');
 imageData.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', onDelete: 'CASCADE'});
@@ -166,6 +167,27 @@ probeSignature.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id',
 probeSignature.belongsTo(user, {as: 'readySignature', foreignKey: 'readySignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
+// Tracking
+let tracking = {};
+tracking.task = sequelize.import(__dirname + '/tracking/state_task');
+tracking.state = sequelize.import(__dirname + '/tracking/states');
+tracking.definition = sequelize.import(__dirname + '/tracking/state_definitions');
+
+tracking.state.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
+tracking.state.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', onDelete: 'SET NULL', constraints: true});
+
+tracking.state.hasMany(tracking.task, {as: 'tasks', foreignKey: 'state_id', constraints: true});
+tracking.state.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDelete: 'SET NULL', constraints: true});
+
+tracking.task.belongsTo(tracking.state, {as: 'state', foreignKey: 'state_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+tracking.task.belongsTo(user, {as: 'assignedTo', foreignKey: 'assignedTo_id', onDelete: 'SET NULL', constraints: true});
+
+tracking.definition.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDekete: 'SET NULL', constraints: true});
+
+// Subscription
+let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');
+subscription.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
+subscription.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true});
 
 // Syncronize tables to model schemas
 if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
