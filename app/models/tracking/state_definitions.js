@@ -34,6 +34,10 @@ module.exports = (sequelize, Sq) => {
     tasks: {
       type: Sq.JSON,
       allowNull: true
+    },
+    jira: {
+      type: Sq.JSON,
+      allowNull: true
     }
   },
   {
@@ -44,9 +48,13 @@ module.exports = (sequelize, Sq) => {
     paranoid: true,
     scopes: {
       public: {
+        order: [['ordinal', 'ASC']],
         attributes: {
-          exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id']
+          exclude: ['deletedAt', 'group_id']
         },
+        include: [
+          {as: 'group', model: sequelize.models.userGroup.scope('public')}
+        ]
       }
     }
   });

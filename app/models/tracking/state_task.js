@@ -21,11 +21,25 @@ module.exports = (sequelize, Sq) => {
     },
     name: {
       type: Sq.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        is: {
+          args: ["^[A-z0-9_-]+$", 'i'],
+          msg: 'Only alphanumeric and underscores are allowed in the task name'
+        },
+        len: {
+          args: [3,50],
+          msg: 'Task name must be between 3 and 50 characters long'
+        }
+      }
     },
     description: {
       type: Sq.TEXT,
       allowNull: true
+    },
+    ordinal: {
+      type: Sq.INTEGER,
+      allowNull: false
     },
     assignedTo_id: {
       type: Sq.INTEGER,
@@ -36,7 +50,13 @@ module.exports = (sequelize, Sq) => {
     },
     status: {
       type: Sq.STRING,
-      defaultValue: null
+      defaultValue: null,
+      validate: {
+        isIn: {
+          args: [['pending', 'active', 'complete', 'pause', 'blocked']],
+          msg: 'The specified task status is not valid. Allowed values: pending, active, complete, pause, blocked'
+        }
+      }
     },
     outcome: {
       type: Sq.JSONB,
@@ -73,8 +93,11 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id']
+          exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
         },
+        include: [
+          { as: 'assignedTo', model: sequelize.models.user.scope('public') }
+        ]
       }
     }
   });

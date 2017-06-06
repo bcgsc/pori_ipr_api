@@ -55,6 +55,10 @@ module.exports = (sequelize, Sq) => {
     completedAt: {
       type: Sq.DATE,
       allowNull: true
+    },
+    jira: {
+      type: Sq.JSONB,
+      allowNull: true
     }
   },
   {
@@ -68,6 +72,13 @@ module.exports = (sequelize, Sq) => {
         attributes: {
           exclude: ['deletedAt', 'id', 'analysis_id', 'createdBy_id', 'group_id']
         },
+        include: [
+          {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
+          {as: 'tasks', model: sequelize.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}}
+        ],
+        order: [
+          ['ordinal', 'ASC']
+        ]
       }
     }
   });
