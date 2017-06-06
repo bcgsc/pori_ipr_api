@@ -173,7 +173,6 @@ probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSi
 let tracking = {};
 tracking.task = sequelize.import(__dirname + '/tracking/state_task');
 tracking.state = sequelize.import(__dirname + '/tracking/states');
-tracking.task = sequelize.import(__dirname + '/tracking/state_task');
 tracking.definition = sequelize.import(__dirname + '/tracking/state_definitions');
 
 tracking.state.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
