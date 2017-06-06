@@ -46,6 +46,9 @@ module.exports = (sequelize, Sq) => {
         attributes: {
           exclude: ['id', 'pog_id', 'deletedAt']
         },
+        include: [
+          { as: 'pog', model: sequelize.models.POG.scope('public') }
+        ]
       }
     }
   });
