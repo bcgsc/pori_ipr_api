@@ -28,7 +28,7 @@ module.exports = class POG {
       if(this.instance) resolve(this.instance);
 
       // Lookup in Database
-      this.model.findOne({ where: {POGID: this.POGID } })
+      this.model.findOne({ where: {POGID: this.POGID }, include: {as: 'analysis', model: db.models.pog_analysis } })
         .then((POG) => {
 
           // Not found, and asked to create
