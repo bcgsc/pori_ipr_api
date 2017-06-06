@@ -43,9 +43,11 @@ router.route('/:type(genomic|probe)')
       .then((POG) => {
         // Create Report
         let report = new reportLib();
-        let createPogOpts = {};
+        let createReportOpts = {};
 
-        report.create(POG, req.user, (req.params.type !== 'genomic' && req.params.type !== 'probe') ? 'genomic' : req.params.type)
+        if(req.body.state) createReportOpts.state = req.body.state;
+
+        report.create(POG, req.user, (req.params.type !== 'genomic' && req.params.type !== 'probe') ? 'genomic' : req.params.type, createReportOpts)
           .then((report) => {
 
             // Set POG to report
