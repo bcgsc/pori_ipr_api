@@ -48,9 +48,7 @@ router.route('/')
       if(!req.query.archived) reportInclude.where.state.$not.push('archived');
       if(!req.query.nonproduction) reportInclude.where.state.$not.push('nonproduction');
     }
-
-    console.log(reportInclude);
-
+    
     opts.include.push(reportInclude);
 
     // Are we filtering on POGUser relationship?
