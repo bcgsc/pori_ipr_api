@@ -47,7 +47,7 @@ module.exports = (sequelize, Sq) => {
       allowNull: true
     },
     emergingPreclinicalEvidence: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true
     },
     comments: {

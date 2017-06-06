@@ -3,6 +3,7 @@
 let _ = require('lodash'),
     router = require('express').Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
+    kbExport = require(process.cwd() + '/app/exporters/knowledgebase'),
     loader = require(process.cwd() + '/app/loaders/knowledgebase');
 
 router.use('/validate', require('./validate'));
@@ -102,6 +103,24 @@ router.route('/metrics')
       }
     )
 
+
+  });
+
+router.route('/export')
+  .get((req,res) => {
+
+    // Generate output TSVs
+    let exportEvent = new kbExport('v2.4.3', {output: '/home/bpierce/tmp/run5'});
+
+    exportEvent.export().then(
+      (result) => {
+        console.log('KB Export Result', result);
+        res.json({result: true});
+      },
+      (err) => {
+        res.status(500).json({error: {message: 'Unable to perform export'}});
+      }
+    )
 
   });
 

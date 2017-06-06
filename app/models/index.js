@@ -45,6 +45,7 @@ analysis.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 let analysis_reports = sequelize.import(__dirname + '/reports/analysis_reports');
 POG.hasMany(analysis_reports, {as: 'analysis_reports', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 analysis_reports.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+analysis_reports.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
 
 
 let userGroup = sequelize.import(__dirname + '/user/userGroup.js');

@@ -78,11 +78,11 @@ router.route('/:type(genomic|probe)')
 
               // Non-POG options
               loaderOptions.nonPOG = true;
-              loaderOptions.load = loaderConf.defaults[req.body.profile].loaders;
+              loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
               loaderOptions.baseDir = req.body.baseDir;
               loaderOptions.profile = 'nonPOG';
-              loaderOptions.libraries = loaderConf.defaults[req.body.profile].libraries;
-              loaderOptions.moduleOptions = loaderConf.defaults[req.body.profile].moduleOptions;
+              loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
+              loaderOptions.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
 
               let GenomicLoader = new require(process.cwd() + '/app/loaders');
               let Loader = new GenomicLoader(POG, report, loaderOptions);
@@ -98,14 +98,14 @@ router.route('/:type(genomic|probe)')
             runLoader.then(
               (result) => {
 
-
                 db.models.analysis_report.scope('public').findOne({
                   where: { id: report.id },
                   include: [
                     {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
                     {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
                     {model: db.models.user.scope('public'), as: 'createdBy'},
-                    {model: db.models.POG.scope('public'), as: 'pog' }
+                    {model: db.models.POG.scope('public'), as: 'pog' },
+                    {model: db.models.pog_analysis.scope('public'), as: 'analysis'}
                   ]
                 }).then(
                   (reports) => {
