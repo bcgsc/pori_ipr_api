@@ -14,6 +14,7 @@ module.exports = class analysis_report {
     this.ident = ident; // Store POGID
     this.instance = null;
     this.model = db.models.analysis_report;
+    this.allowedStates = ['nonproduction', 'ready', 'active', 'presented', 'archived'];
   }
 
   /**
@@ -52,14 +53,27 @@ module.exports = class analysis_report {
   /**
    * Create new entry in database
    *
+   * @param {object} pog - POG model instance
+   * @param {user} user - Owning user for the report creation event
+   * @param {type} type - report type to be created (genomic vs probe)
+   * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived)
+   *
    * @returns {promise|object} - Promise resolves with new POG Analysis Report. Rejects with error message.
    */
-  create(pog, user, type) {
+  create(pog, user, type, options) {
     return new Promise((resolve, reject) => {
 
       if(pog.analysis.length === 0) return reject({message: 'No analysis entry on pog object'});
 
-      this.model.create({ ident: this.makeReportIdent(), createdBy_id: user.id, type: type, pog_id: pog.id, analysis_id: pog.analysis[pog.analysis.length-1].id })
+      let report = {};
+      report.ident = this.makeReportIdent();
+      report.createdBy_id = user.id;
+      report.type = type;
+      report.pog_id = pog.id;
+      report.analysis_id = pog.analysis[pog.analysis.length-1].id;
+      if(options.state &&  this.allowedStates.indexOf(options.state) !== -1) report.state = options.state;
+
+      this.model.create(report)
         .then((report) => {
           this.instance = report;
           this.ident = report.ident;
