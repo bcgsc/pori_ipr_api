@@ -37,10 +37,22 @@ router.route('/')
   })
   .put((req,res,next) => {
 
-    // Update DB Version for Entry
-    versionDatum(db.models.patientInformation, req.patientInformation, req.body, req.user, req.body.comment).then(
+    /**
+     *
+     * !!!!
+     * Bypass versioning for temporary patient information storage
+     * !!!!
+     *
+     */
+    db.models.patientInformation.update(req.patientInformation, {where: {pog_id: req.POG.id}}).then(
       (resp) => {
-        res.json(resp.data.create);
+
+        db.models.patientInformation.findOne({where: {pog_id: req.POG.id}}).then(
+          (resp) => {
+            res.json(resp);
+          }
+        );
+
       },
       (error) => {
         console.log(error);
