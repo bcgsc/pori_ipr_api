@@ -40,7 +40,16 @@ router.route('/')
     let reportInclude = {as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: []};
     reportInclude.include.push({model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'});
 
-    if(!req.query.archived) reportInclude.where = { state: {$not: 'archived'} };
+    //if(!req.query.archived) reportInclude.where = { state: {$not: ['archived', 'nonproduction']} };
+
+    // Optional States
+    if(!req.query.archived || !req.query.nonproduction) {
+      reportInclude.where = {state: {$not: []}};
+      if(!req.query.archived) reportInclude.where.state.$not.push('archived');
+      if(!req.query.nonproduction) reportInclude.where.state.$not.push('nonproduction');
+    }
+
+    console.log(reportInclude);
 
     opts.include.push(reportInclude);
 
