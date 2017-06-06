@@ -77,7 +77,6 @@ POG.hasMany(summary.therapeuticTargets, {as: 'therapeuticTargets', foreignKey: '
 POG.hasOne(patientInformation, {as: 'patientInformation', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
 analysis_reports.belongsTo(patientInformation, {as: 'patientInformation', foreignKey: 'pog_id', targetKey: 'pog_id'});
 analysis_reports.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true});
-
 analysis_reports.hasOne(summary.tumourAnalysis, {as: 'tumourAnalysis', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true});
 
 summary.genomicEventsTherapeutic.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
@@ -111,7 +110,6 @@ somaticMutations.mutationSignature.belongsTo(analysis_reports, {as: 'report', fo
 // Copy Number Analysis
 let copyNumberAnalyses = {};
 copyNumberAnalyses.cnv = sequelize.import(__dirname + '/reports/genomic/copyNumberAnalysis/cnv');
-
 copyNumberAnalyses.cnv.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // Structural Variation
@@ -159,7 +157,6 @@ kb.history = sequelize.import(__dirname + '/knowledgebase/kb_history');
 kb.history.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 user.hasMany(kb.history, {as: 'kbedits', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true});
 
-
 // Probe Report
 let probeTestInformation = sequelize.import(__dirname + '/reports/probe/test_information');
 probeTestInformation.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
@@ -175,6 +172,7 @@ probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSi
 let tracking = {};
 tracking.task = sequelize.import(__dirname + '/tracking/state_task');
 tracking.state = sequelize.import(__dirname + '/tracking/states');
+tracking.task = sequelize.import(__dirname + '/tracking/state_task');
 tracking.definition = sequelize.import(__dirname + '/tracking/state_definitions');
 
 tracking.state.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
@@ -185,8 +183,6 @@ tracking.state.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDele
 
 tracking.task.belongsTo(tracking.state, {as: 'state', foreignKey: 'state_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 tracking.task.belongsTo(user, {as: 'assignedTo', foreignKey: 'assignedTo_id', onDelete: 'SET NULL', constraints: true});
-
-tracking.definition.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDekete: 'SET NULL', constraints: true});
 
 // Subscription
 let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');
