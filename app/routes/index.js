@@ -3,18 +3,13 @@
 let changeCase  = require('change-case');
 let recursive   = require('recursive-readdir');
 let _           = require('lodash');
-let RoutingInterface = require(__dirname + '/routingInterface');
+let router      = require('express').Router({mergeParams: true});
+    
 
-class Routing extends RoutingInterface {
 
-  /**
-   * Primary routing load
-   *
-   * @param {object} io - Socket.io socket object
-   */
+class Routing {
+
   constructor(io) {
-    super(); // Invoke RoutingInterface constructor
-
     this.io = io;
 
     this.ignored = {
@@ -27,17 +22,21 @@ class Routing extends RoutingInterface {
 
     });
 
+    // Add router to class
+    this.router = router;
+
     // Add MiddleWare to routing
     this.router.param('POG', require(process.cwd() + '/app/middleware/pog'));  // POG Middleware injection
     this.router.param('report', require(process.cwd() + '/app/middleware/analysis_report')); // Analysis report middleware injection
 
     // Add Authentication coverage
-    this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase|/tracking)', require(process.cwd() + '/app/middleware/auth'));
+    this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase)', require(process.cwd() + '/app/middleware/auth'));
 
     // Auto-Build routes
     this.buildRecursiveRoutes();
 
     // Add Single Routes
+    // Setup other routes
     this.bindRouteFile('/POG', __dirname + '/POG');
     this.bindRouteFile('/session', __dirname + '/session');
 
@@ -54,18 +53,9 @@ class Routing extends RoutingInterface {
 
     this.bindRouteFile('/knowledgebase', __dirname + '/knowledgebase');
 
-    // Get Tracking Routes
-    let tracking = require('../modules/tracking/routing');
-    let TrackingRoutes = new tracking(io);
-
-    this.bindRouteObject('/tracking', TrackingRoutes.getRouter());
-
   }
 
-  /**
-   * Automatically map POG endpoints
-   *
-   */
+  // Build recursive
   buildRecursiveRoutes() {
 
     // Recursively include routes
@@ -91,16 +81,57 @@ class Routing extends RoutingInterface {
         //Initialize the route to add its func
         let module = require('./POG/' + routeName.path + routeName.file);
 
+        console.log('Routing Detected: ', '/POG/:POG/report/:report/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file));
+
         // Add router to specified route name in the app
-        this.bindRouteObject('/POG/:POG/report/:report/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file), module);
-        
+        this.router.use('/POG/:POG/report/:report/' + routeName.path + ((routeName.file[0] === 'index') ? '' : routeName.file), module);
+
       });
     });
 
   }
 
+  bindRouteFile(binding, file) {
+    this.router.use(binding, require(file));
+  }
+
+  bindRouteObject(binding, router) {
+    this.router.use(binding, router);
+  }
+
+  getRouter() {
+    return this.router;
+  }
+
+
 }
 
-module.exports = Routing;
 
-module.exports = router;
+/*
+// Ignored Routes for POG
+let ignored = {
+  files: ['POG.js', 'session.js', 'user.js', '.svn', 'user'],
+};
+
+// POG injection
+router.param('POG', require(process.cwd() + '/app/middleware/pog'));
+router.param('report', require(process.cwd() + '/app/middleware/analysis_report'));
+// User Authentication
+router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase)', require(process.cwd() + '/app/middleware/auth'));
+
+    this.io = io;
+
+    this.ignored = {
+      files: ['POG.js', 'session.js', 'user.js', '.svn', 'user'],
+      routes: ['loadPog', '.svn'],
+    };
+
+    io.on('connect', (socket) => {
+      console.log('Socket connected', socket.id);
+
+    });
+
+// Setup Knowledge base routes
+router.use('/knowledgebase', require('./knowledgebase'));
+*/
+module.exports = Routing;
