@@ -44,7 +44,8 @@ router.route('/')
      * !!!!
      *
      */
-    db.models.patientInformation.update(req.patientInformation, {where: {pog_id: req.POG.id}}).then(
+
+    db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id}}).then(
       (resp) => {
 
         db.models.patientInformation.findOne({where: {pog_id: req.POG.id}}).then(
