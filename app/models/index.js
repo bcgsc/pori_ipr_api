@@ -184,6 +184,8 @@ tracking.state.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDele
 tracking.task.belongsTo(tracking.state, {as: 'state', foreignKey: 'state_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 tracking.task.belongsTo(user, {as: 'assignedTo', foreignKey: 'assignedTo_id', onDelete: 'SET NULL', constraints: true});
 
+tracking.definition.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDelete: 'SET NULL', constraints: true});
+
 // Subscription
 let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');
 subscription.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
