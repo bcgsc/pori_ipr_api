@@ -80,6 +80,7 @@ module.exports = class TrackingGenerator {
         analysis_id:  this.analysis.id,
         group_id:     definition.group_id,
         name:         definition.name,
+        slug:         definition.slug,
         description:  definition.description,
         ordinal:      definition.ordinal,
         status:       definition.status,
@@ -104,12 +105,15 @@ module.exports = class TrackingGenerator {
             })
             .catch((e) => {
               console.log('Create tasks error', e);
+              reject({error: {message: 'Unable to create tasks due to: '+ e.error.message}});
               throw new Error('Unable to create tasks');
             });
 
         },
         (err) => {
+          console.log(err);
           // Throw Exception
+          reject({error: {message: 'Failed to init tracking, a bad state definition was the cause: ' + err.message}});
           throw new InvalidStateDefintion('Bad state definition, unable to create state: ' + definition.name);
         }
       )
@@ -132,6 +136,7 @@ module.exports = class TrackingGenerator {
       let newTask = {
         state_id:         state.id,
         name:             task.name,
+        slug:             task.slug,
         description:      task.description,
         ordinal:          ordinal,
         status:           task.status,
@@ -144,6 +149,7 @@ module.exports = class TrackingGenerator {
           resolve(task);
         },
         (err) => {
+          reject({error: {message: 'Failed to create task: "' + task.slug + '" due to an SQL error: ' + err.message}});
           console.log(err);
           throw new InvalidTaskDefinition('Unable to create task (sql error)');
         }

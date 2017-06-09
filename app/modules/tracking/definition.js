@@ -16,19 +16,19 @@ module.exports = class StateDefinition {
   constructor(init=null, options={}) {
     this.instance = null;
     this.model = db.models.tracking_state_definition;
+    this.validTasks = [];
+    this.allowedOutcomeType = ['date', 'text', 'directory', 'string', 'boolean'];
 
     // No existing instance
     if(init === null) this.instance = this.model.build();
 
     // New instance with passed values
     if(typeof init === 'object' && init.ident === undefined) {
-      console.log('New instance with prefills');
-      this.instance = this.model.build({name: init.name, ordinal: init.ordinal, description: init.description, group_id: init.group_id});
+      this.instance = this.model.build({name: init.name, ordinal: init.ordinal, description: init.description, group_id: init.group_id, slug: init.slug});
     }
 
     // Existing instance
     if(typeof init === "object" && typeof init.ident === "string") {
-      console.log('Existing object');
       this.instance = init;
     }
 
@@ -44,22 +44,17 @@ module.exports = class StateDefinition {
   updateTasks(tasks, save=false) {
     return new Promise((resolve, reject) => {
 
-      let validTasks = [];
-
       // Loop over tasks and validate
       _.forEach(tasks, (t) => {
         if(!this.validateTask(t)) throw new InvalidTaskDefinition('Task "' + t.name + '" is not a valid task definition.');
 
-        // Check for duplicate names
-        if(_.find(validTasks, {name: t.name})) throw new InvalidTaskDefinition('Duplicate name for task: "' + t.name + '" found.');
-
         // Add to validated tasks
-        validTasks.push(t);
+        this.validTasks.push(t);
       });
 
-      this.instance.tasks = validTasks;
+      this.instance.tasks = this.validTasks;
 
-      if(!save) return resolve(validTasks);
+      if(!save) return resolve(this.validTasks);
 
       if(save) {
         this.instance.save().then(
@@ -79,16 +74,19 @@ module.exports = class StateDefinition {
   /**
    * Validate a task
    *
-   * @param task
+   * @param {object} task - The task to be validated
    * @returns {boolean}
    */
   validateTask(task) {
+    // Check task slug
+    if(!/^[A-z0-9_-]*$/g.test(task.slug)) throw new InvalidTaskDefinition('The task "'+task.name+'" name must only contain A-z0-9 and underscores.');
 
-    // Check task name
-    if(!/^[A-z0-9_-]*$/g.test(task.name)) throw new InvalidTaskDefinition('The task name must only contain A-z0-9 and underscores.');
+    // Check that the slug is unique
+    if(_.find(this.validTasks, {slug: task.slug})) throw new InvalidTaskDefinition('The Task "'+task.name+'" is using a slug that is already in use');
+
+    if(task.outcomeType && this.allowedOutcomeType.indexOf(task.outcomeType) === -1) throw new InvalidTaskDefinition('The task "' + task.name + '" has an unsupported outcome type: ' + task.outcomeType);
 
     return true;
-
   }
 
   /**
@@ -98,6 +96,7 @@ module.exports = class StateDefinition {
    */
   setUnprotected(input) {
     if(input.name) this.instance.name = input.name;
+    if(input.slug) this.instance.name = input.slug;
     if(input.description) this.instance.description = input.description;
     if(input.ordinal) this.instance.ordinal = input.ordinal;
     if(input.group_id) this.instance.group_id = input.group_id;
