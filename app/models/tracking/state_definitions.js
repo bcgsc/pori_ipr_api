@@ -23,6 +23,21 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: false
     },
+    slug: {
+      type: Sq.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        is: {
+          args: ["^[A-z0-9_-]+$", 'i'],
+          msg: 'Only alphanumeric and underscores are allowed in the state slug'
+        },
+        len: {
+          args: [3,40],
+          msg: 'State slug must be between 3 and 40 characters long'
+        }
+      }
+    },
     description: {
       type: Sq.TEXT,
       allowNull: true

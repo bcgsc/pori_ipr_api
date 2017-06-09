@@ -30,6 +30,20 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: false
     },
+    slug: {
+      type: Sq.STRING,
+      allowNull: false,
+      validate: {
+        is: {
+          args: /^[A-z0-9-_]*$/,
+          msg: 'The state slug name has invalid characters'
+        },
+        len: {
+          args: [3,20],
+          msg: 'The state slug name must be between 3 and 20 characters'
+        }
+      }
+    },
     description: {
       type: Sq.TEXT,
       allowNull: true
@@ -75,6 +89,17 @@ module.exports = (sequelize, Sq) => {
         include: [
           {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
           {as: 'tasks', model: sequelize.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}}
+        ],
+        order: [
+          ['ordinal', 'ASC']
+        ]
+      },
+      noTasks: {
+        attributes: {
+          exclude: ['deletedAt', 'analysis_id', 'createdBy_id', 'group_id']
+        },
+        include: [
+          {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
         ],
         order: [
           ['ordinal', 'ASC']

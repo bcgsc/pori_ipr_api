@@ -22,14 +22,18 @@ module.exports = (sequelize, Sq) => {
     name: {
       type: Sq.STRING,
       allowNull: false,
+    },
+    slug: {
+      type: Sq.STRING,
+      allowNull: false,
       validate: {
         is: {
           args: ["^[A-z0-9_-]+$", 'i'],
-          msg: 'Only alphanumeric and underscores are allowed in the task name'
+          msg: 'Only alphanumeric and underscores are allowed in the task slug'
         },
         len: {
           args: [3,50],
-          msg: 'Task name must be between 3 and 50 characters long'
+          msg: 'Task slug must be between 3 and 50 characters long'
         }
       }
     },
@@ -57,6 +61,11 @@ module.exports = (sequelize, Sq) => {
           msg: 'The specified task status is not valid. Allowed values: pending, active, complete, pause, blocked'
         }
       }
+    },
+    outcomeType: {
+      type: Sq.STRING,
+      allowNull: false,
+      defaultValue: 'text'
     },
     outcome: {
       type: Sq.JSONB,
@@ -92,6 +101,7 @@ module.exports = (sequelize, Sq) => {
     paranoid: true,
     scopes: {
       public: {
+        order:  'ordinal ASC',
         attributes: {
           exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
         },
