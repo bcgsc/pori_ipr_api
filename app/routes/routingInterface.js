@@ -23,7 +23,7 @@ module.exports = class RoutingInterface {
     // Add router to class
     this.router = require('express').Router({mergeParams: true});
     this.root = null;
-    this.allowedMethods = ['get', 'put', 'post', 'delete'];
+    this.allowedMethods = ['get', 'put', 'post', 'delete', 'patch'];
   }
 
   /**
