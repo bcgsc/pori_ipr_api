@@ -75,10 +75,14 @@ module.exports = class analysis_report {
 
       this.model.create(report)
         .then((report) => {
-          this.instance = report;
-          this.ident = report.ident;
-          resolve(report);
-        })
+            this.instance = report;
+            this.ident = report.ident;
+            resolve(report);
+          },
+          (err) => {
+            console.log(err);
+            reject({error: {message: 'failed to create analysis report: ' + err.message}});
+          })
         .catch((err) => {
           // Unable to create POG
           console.log('Failed to create the POG Analysis Report', err);
