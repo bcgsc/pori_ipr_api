@@ -6,28 +6,6 @@
     "hostname": "127.0.0.1"
   },
 
-  "database": {
-    "engine": "postgres",
-    "migrate": false,
-    "hardMigration": false,
-
-    "sqlite": {
-      "storage": "database/development.sqlite",
-      "username": "root",
-      "password": ""
-    },
-
-    "postgres": {
-      "hostname": "iprweb01.bcgsc.ca",
-      "port": 5432,
-      "username": "bpierce",
-      "password": "iprdbdev",
-      "schema": "public",
-      "database": "ipr-dev",
-      "prefix": ""
-    }
-  },
-
   "jira": {
     "hostname": "www.bcgsc.ca",
     "api": "/jira/rest",

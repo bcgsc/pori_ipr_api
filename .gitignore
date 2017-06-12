@@ -2,3 +2,4 @@
 node_modules/*
 *.sqlite
 npm-debug.log
+.env.json
