@@ -24,7 +24,7 @@ module.exports = (req,res,next,ident) => {
   opts.attributes = {exclude: ['deletedAt']};
   opts.limit = 1;
   opts.include = [
-    {as: 'tasks', model: db.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}}
+    {as: 'tasks', model: db.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}, order: [['ordinal','ASC']]}
   ];
 
 

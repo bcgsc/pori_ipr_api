@@ -88,7 +88,7 @@ module.exports = (sequelize, Sq) => {
         },
         include: [
           {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
-          {as: 'tasks', model: sequelize.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}}
+          {as: 'tasks', model: sequelize.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}, order: [['ordinal','ASC']]}
         ],
         order: [
           ['ordinal', 'ASC']
