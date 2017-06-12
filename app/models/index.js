@@ -4,7 +4,22 @@ let path = require('path');
 let nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 let colors = require('colors');
 
-const CONFIG = require( process.cwd() + '/config/'+process.env.NODE_ENV+'.json');
+let CONFIG = {};
+
+if(process.env.NODE_ENV === 'production') {
+  CONFIG = require('/var/www/ipr/api/production/persist/.env.json');
+}
+if(process.env.NODE_ENV === 'development') {
+  try {
+    // iprweb01 dev
+    CONFIG = require('/var/www/ipr/api/development/persist/.env.json');
+  }
+  catch (e) {
+    console.log('Not found...');
+    // Probably running on local dev
+    CONFIG = require(process.cwd() + '/.env.json');
+  }
+}
 
 // Load database
 const dbSettings = CONFIG.database[CONFIG.database.engine];
