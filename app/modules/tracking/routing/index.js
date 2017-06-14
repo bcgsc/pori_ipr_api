@@ -9,7 +9,8 @@ const _                   = require('lodash');
 const db                  = require(process.cwd() + '/app/models');
 const RoutingInterface    = require('../../../routes/routingInterface');
 let DefinitionRoutes      = require('./definition');
-let StateRoutes      = require('./state');
+let StateRoutes           = require('./state');
+let TaskRoutes            = require('./task');
 const Generator           = require('./../generate');
 
 
@@ -32,16 +33,28 @@ module.exports = class TrackingRouter extends RoutingInterface {
     let Definitions = new DefinitionRoutes(this.io);
     this.bindRouteObject('/definition', Definitions.getRouter());
 
+    // Register Middleware
+    this.registerMiddleware('analysis', require('../../../middleware/analysis'));
+    this.registerMiddleware('definition', require('../middleware/definition'));
+    this.registerMiddleware('state', require('../middleware/state'));
+    this.registerMiddleware('task', require('../middleware/task'));
+
+
     let States = new StateRoutes(this.io);
     this.bindRouteObject('/state', States.getRouter());
 
-    this.registerMiddleware('analysis', require('../../../middleware/analysis'));
+    let Tasks = new TaskRoutes(this.io);
+    this.bindRouteObject('/task', Tasks.getRouter());
 
     // Enable Generator
     this.generator();
 
     // Enable Root Racking
     this.tracking();
+
+    this.registerEndpoint('get', '/test', (req,res) => {
+      res.json({stack: this.getRouter().stack, task: Tasks.getRouter().stack, task_params: Tasks.getRouter().params});
+    });
 
   }
 
@@ -63,7 +76,9 @@ module.exports = class TrackingRouter extends RoutingInterface {
           console.log(err);
           res.status(400).json(err);
         }
-      );
+      ).catch((e) => {
+        res.status(500).json({error: {message: 'Tracking initialization failed: ' + e.message}});
+      });
 
     });
 
@@ -74,7 +89,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
     this.registerEndpoint('get', '/', (req,res,next) => {
 
       // Get all tracking
-      db.models.tracking_state.scope('public').findAll({order: [['analysis_id', 'ASC'], ['ordinal', 'ASC']] }).then(
+      db.models.tracking_state.scope('public').findAll({order: [['analysis_id', 'ASC'], ['ordinal', 'ASC']]}).then(
         (states) => {
           res.json(states)
         },
