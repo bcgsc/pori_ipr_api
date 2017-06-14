@@ -1,6 +1,7 @@
 "use strict";
 
 const _                       = require('lodash');
+const moment                  = require('moment');
 const db                      = require('../../models/');
 const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
@@ -25,7 +26,6 @@ module.exports = class State {
 
     // Existing instance
     if(typeof init === "object" && typeof init.ident === "string") {
-      console.log('Existing object');
       this.instance = init;
     }
 
@@ -46,6 +46,7 @@ module.exports = class State {
 
       // Validate status
       if(this.allowedStates.indexOf(status) === -1) {
+        reject({error: {message: 'The provided status is not vailid'}});
         throw new InvalidStateStatus('The provided status is not valid');
       }
 
@@ -68,6 +69,76 @@ module.exports = class State {
 
       if(!save) {
         resolve(this.instance);
+      }
+
+    });
+
+  }
+
+  /**
+   * Check if a state has completed all tasks
+   *
+   */
+  checkCompleted() {
+
+    return new Promise((resolve, reject) => {
+
+      let stateComplete = true;
+
+      _.forEach(this.instance.tasks, (t) => {
+        if(t.status !== 'complete') stateComplete = false;
+      });
+
+
+      // Current state has completed!
+      if(stateComplete) {
+
+        this.instance.status = 'complete';
+        this.instance.completedAt = moment().toISOString();
+
+        this.instance.save().then(
+          (result) => {
+
+            // Find next in line!
+            this.model.findOne({
+              where: {
+                analysis_id: this.instance.analysis_id,
+                ordinal: { $gt: this.instance.ordinal }
+              },
+              order: 'ordinal ASC'
+            }).then(
+              (state) => {
+                // No higher states not yet started!
+                if(state === null) return resolve(null);
+
+                // Adjacent state already started or held
+                if(state.status === 'complete' || state.status === 'hold') return resolve(null);
+
+                state.status = 'active';
+                state.startedAt = moment().toISOString();
+
+                // Started next stage, save change to DB
+                state.save().then(
+                  (result) => {
+                    resolve(state);
+                  },
+                  (err) => {
+                    console.log(err);
+                    reject({error: {message: 'Unable to set next stage to active due to sql error: ' + err.message}});
+                  })
+              })
+
+          },
+          (err) => {
+            console.log(err);
+            reject({error: {message: 'Unable to update state to completed due to SQL error: ' + err.message}});
+          })
+
+      }
+
+      // State not complete
+      if(!stateComplete) {
+        resolve(false);
       }
 
     });
