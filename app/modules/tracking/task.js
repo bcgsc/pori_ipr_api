@@ -242,7 +242,7 @@ module.exports = class Task {
 
       // Check valid ident or id
 
-      let opts = {};
+      let opts = { where: {} };
       if(typeof user === "number") opts.where.id = user;
       if(typeof user === "string") opts.where.ident = user;
       if(opts.where === undefined) throw new Error('No valid user identification given (expected id or ident).');
@@ -250,15 +250,29 @@ module.exports = class Task {
       db.models.user.findOne(opts).then(
         (result) => {
 
-          if(result === null) throw new Error('Unable to find the specified user.');
+          if(result === null) {
+            reject({error: {message: 'Unable to find the specified user'}});
+            throw new Error('Unable to find the specified user.');
+          }
 
           // Update entry
           this.instance.assignedTo_id = result.id;
           this.instance.save().then(
             (saved) => {
-              resolve(result);
+
+              let task = this.model.scope('public').findOne({where: {ident: this.instance.ident}}).then(
+                (result) => {
+                  resolve(result);
+                },
+                (err) => {
+                  console.log('Failed task query after updating user', err);
+                  reject({error: {message: 'Unable to get updated task: ' + err.message, cause: err}});
+                }
+              );
+
             },
             (err) => {
+              console.log(err);
               throw new Error('Query to update task with updated assignee failed.');
             });
         },

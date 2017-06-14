@@ -34,6 +34,9 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
     // Register checkin operation endpoints
     this.checkIns();
 
+    // User Assignment
+    this.assignUser();
+
   }
 
   // URL Root
@@ -186,7 +189,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
     });
 
-    this.registerEndpoint('delete', '/checkin/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/:outcome/:all?', (req, res, next) => {
+    this.registerEndpoint('delete', '/checkin/:task('+this.UUIDregex+')/:outcome/:all?', (req, res, next) => {
 
       let entry = new Task(req.task);
 
@@ -207,4 +210,28 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
     });
 
   }
+
+
+  assignUser() {
+
+    this.registerEndpoint('put', '/:task('+this.UUIDregex+')/assignTo/:user('+this.UUIDregex+')', (req,res,next) => {
+
+      let entry = new Task(req.task);
+
+      entry.setAsignedTo(req.params.user).then(
+        (result) => {
+          res.json(result);
+        },
+        (err) => {
+          console.log(err);
+          res.status(400).json({error: {message: 'Unable to update assigned user.', cause: err}});
+        })
+        .catch((e) => {
+          res.status(400).json({error: {message: 'Unable to update the assigned user: ' + e.message, cause: e}});
+        });
+
+    })
+
+  }
+
 };
