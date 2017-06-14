@@ -90,10 +90,11 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
       .put(this.updateTask);
 
     // Update Task Details
-    this.registerEndpoint('put', '/checkin/:POG/:analysis/:state/:task', this.updateTask);
+    this.registerEndpoint('put', '/:POG/:analysis/:state/:task', this.updateTask);
+    this.registerEndpoint('put', '/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', this.updateTask);
 
     // Retrieve Task
-    this.registerEndpoint('get', '/checkin/:POG/:analysis/:state/:task', (req, res, next) => {
+    this.registerEndpoint('get', '/:POG/:analysis/:state/:task', (req, res, next) => {
       let response = req.task.toJSON();
       delete response.id;
 
@@ -109,7 +110,8 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
    * @param req
    * @param next
    */
-  updateTask(res, req, next) {
+  updateTask(req, res, next) {
+
     // Create object
     let existing = new Task(req.task);
 
@@ -158,6 +160,48 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
           console.log('Error', e);
         });
 
+
+
+    });
+
+    this.registerEndpoint('patch', '/checkin/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', (req, res, next) => {
+
+      let entry = new Task(req.task);
+
+      // Update
+      entry.checkIn(req.body.outcome).then(
+        (result) => {
+          let response = result.toJSON();
+          delete response.id;
+          delete response.state_id;
+          delete response.assignedTo_id;
+          res.json(response);
+        },
+        (err) => {
+          res.status(400).json({error: {message: "Unable to check-in task.", cause: err}});
+        })
+        .catch((e) => {
+          console.log('Error', e);
+        });
+
+    });
+
+    this.registerEndpoint('delete', '/checkin/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/:outcome/:all?', (req, res, next) => {
+
+      let entry = new Task(req.task);
+
+      let outcomes = (req.params.outcome.indexOf(',')) ? req.params.outcome.split(',') : [req.params.outcome];
+      let all = (req.params.all);
+
+      entry.cancelCheckIn(outcomes,all).then(
+        (result) => {
+          res.json(result);
+        },
+        (err) => {
+          console.log('Error', err);
+          res.status(500).json({error: {message: "Unable to revoke check-in.", cause: err}});
+        }
+      )
 
 
     });

@@ -3,11 +3,13 @@
 const _                       = require('lodash');
 const moment                  = require('moment');
 const db                      = require('../../models/');
+const FailedFindQuery         = require('../../models/exceptions/FailedFindQuery');
 const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const InvalidTaskDefinition   = require('./exceptions/InvalidTaskDefinition');
 const TooManyCheckIns         = require('./exceptions/TooManyCheckIns');
 const InvalidTaskOperation    = require('./exceptions/InvalidTaskOperation');
 const InvalidCheckInTarget    = require('./exceptions/InvalidCheckInTarget');
+const State                   = require('./state');
 
 module.exports = class Task {
 
@@ -30,7 +32,6 @@ module.exports = class Task {
 
     // Existing instance
     if(typeof init === "object" && typeof init.ident === "string") {
-      console.log('Existing object');
       this.instance = init;
     }
 
@@ -46,20 +47,28 @@ module.exports = class Task {
    * @returns {Promise} - Resolves with updated task instance
    */
   checkIn(payload=null) {
-    return new Promise((resolve, result) => {
+    return new Promise((resolve, reject) => {
+
+      // Get state object
+      const state = new State(this.instance.state);
 
       // Validate CheckIn
-      // TODO: What does this look like?
+      if(typeof this.instance.outcome !== 'object' || this.instance.outcome === null) this.instance.outcome = {};
 
       // Log outcome into JSON
-      if(payload !== null) this.instance.outcome[moment.toISOString()] = payload;
+      let outcome = {};
+      outcome = {
+        type: this.instance.outcomeType,
+        value: payload
+      };
+      
+      if (payload !== null) this.instance.outcome[moment().toISOString()] = outcome;
 
       // Check for completion
       if(this.instance.checkInsTarget === this.instance.checkIns + 1) {
         // This task is complete!
         this.instance.status = 'complete';
       }
-
 
       // Check for triggers
       // TODO: Build trigger support
@@ -68,16 +77,43 @@ module.exports = class Task {
       this.instance.checkIns = this.instance.checkIns + 1;
 
       if(this.instance.checkIns > this.instance.checkInsTarget) {
-        throw new TooManyCheckIns('Too many check ins have occurred for this task', this.instance.checkInsTarget);
+        reject({error: {message: 'Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ' - Attempted: ' + this.instance.checkIns}});
+        throw new TooManyCheckIns('Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ' - Attempted: ' + this.instance.checkIns);
       }
 
-      this.instance.save().then(
-        (result) => {
-          resolve(this.instance);
+      // Get all other tasks
+      this.model.findAll({where: {state_id: this.instance.state_id, ident: {$not: this.instance.ident}}}).then(
+        (tasks) => {
+
+          let stateComplete = true;
+
+          _.forEach(tasks, (t) => {
+            if(t.status !== 'complete') stateComplete = false;
+          });
+
+          this.instance.save().then(
+            (result) => {
+
+              state.checkCompleted().then(
+                (result) => {
+                  resolve(this.instance);
+                },
+                (err) => {
+                  console.log('Failed to check state completion', err);
+                  reject({error: {message: 'Failed to check state completion: ' + err.error.message }});
+                });
+            },
+            (err) => {
+              console.log('Failed to update task', err);
+              reject({error: {message: 'Query to update task failed'}});
+            }
+          );
+
         },
         (err) => {
-          console.log('Failed to update task', err);
-          reject({error: {message: 'Query to update task failed'}});
+          reject({error: {message: 'Unable to get all sibling tasks to check for state completeness due to SQL error: ' + err.message}});
+          console.log(err);
+          throw new FailedFindQuery('Failed to lookup task siblings for state completeness check.');
         }
       );
 
@@ -93,7 +129,7 @@ module.exports = class Task {
    *
    * @returns {Promise} - Resolves with the current task instance
    */
-  updateCheckIns(target) {
+  updateCheckInsTarget(target) {
 
     return new Promise((resolve, reject)=> {
 
@@ -115,19 +151,42 @@ module.exports = class Task {
   /**
    * Undo a check in
    *
-   * @param {integer} amount - The amount of check ins to undo
+   * @param {array|string} target - The datestamp of the check-in to be removed
+   * @param {boolean} all - Remove all checkins
    *
    * @returns {Promise} - Resolves with updated instance
    */
-  cancelCheckIn(amount=1) {
+  cancelCheckIn(target, all=false) {
 
     return new Promise((resolve, reject)=> {
 
-      if(typeof amount !== 'number') throw new InvalidTaskOperation('The supplied check in cancellation amount is not a valid integer');
+      if(this.instance.checkIns === 0) throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
 
-      if((this.instance.checkIns - amount) < 0) throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
+      // Removing a single entry
+      if(!all) {
+        if(typeof target === 'string') target = [target];
 
-      this.instance.checkIns = this.instance.checkIns - amount;
+        _.forEach(target, (t) => {
+          console.log('Attempting to delete', t);
+          if(!this.instance.outcome[t]) throw new InvalidTaskOperation('Unable to find the outcome to revoke');
+          delete this.instance.outcome[t];
+          console.log('Delete result', this.instance.outcome);
+        });
+
+        if(Object.keys(this.instance.outcome).length === 0) this.instance.outcome = null;
+
+        this.instance.checkIns = this.instance.checkIns - 1;
+      }
+
+      if(all) {
+        this.instance.outcome = null;
+        this.instance.checkIns = 0;
+      }
+
+      // Change current status based on target
+      if(this.instance.checkIns === 0) this.instance.status = 'pending';
+      if(this.instance.checkIns > 0 && this.instance.checkIns < this.instance.checkInsTarget) this.instance.status = 'active';
+
       this.instance.save().then(
         (result) => {
           resolve(this.instance);
@@ -150,7 +209,6 @@ module.exports = class Task {
   validateTask(task) {
 
     // Check task name
-    if(!/^[A-z0-9_-]*$/g.test(task.name)) throw new InvalidTaskDefinition('The task name must only contain A-z0-9 and underscores.');
 
     return true;
 
@@ -168,6 +226,8 @@ module.exports = class Task {
 
     if(task.name) this.instance.name = task.name;
     if(task.description) this.instance.description = task.description;
+    if(task.status) this.instance.status = task.status;
+    if(task.assignedTo_id) this.instance.assignedTo_id = task.assignedTo_id;
   }
 
 
