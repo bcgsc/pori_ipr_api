@@ -24,6 +24,9 @@ module.exports = class RoutingInterface {
     this.router = require('express').Router({mergeParams: true});
     this.root = null;
     this.allowedMethods = ['get', 'put', 'post', 'delete', 'patch'];
+
+    // Static Strings
+    this.UUIDregex = '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
   }
 
   /**
