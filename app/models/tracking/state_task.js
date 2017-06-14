@@ -57,7 +57,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
       validate: {
         isIn: {
-          args: [['pending', 'active', 'complete', 'pause', 'blocked']],
+          args: [['pending', 'active', 'complete', 'hold', 'failed']],
           msg: 'The specified task status is not valid. Allowed values: pending, active, complete, pause, blocked'
         }
       }
@@ -69,7 +69,8 @@ module.exports = (sequelize, Sq) => {
     },
     outcome: {
       type: Sq.JSONB,
-      allowNull: true
+      allowNull: true,
+      defaultValue: null
     },
     triggeredBy: {
       type: Sq.STRING,
@@ -101,7 +102,7 @@ module.exports = (sequelize, Sq) => {
     paranoid: true,
     scopes: {
       public: {
-        order:  'ordinal ASC',
+        order:  [['ordinal', 'ASC']],
         attributes: {
           exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
         },
