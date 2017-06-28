@@ -30,6 +30,9 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
     // Register Definition endpoint
     this.statePath();
 
+    // Assignee Path
+    this.assignUser();
+
   }
 
   // URL Root
@@ -93,10 +96,33 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
         // Update Tasks & save
         existing.setStatus(req.body.status, true).then(
           (result) => {
-            let response = result.toJSON();
-            delete response.id;
-            delete response.group_id;
-            res.json(result);
+
+            let opts = { where: {} };
+
+            if(req.analysis) opts.where.analysis_id = req.analysis.id;
+
+            // Check if it's a UUID
+            opts.where.ident = req.state.ident;
+
+            opts.attributes = {exclude: ['deletedAt']};
+            opts.limit = 1;
+            opts.include = [
+              {as: 'tasks', model: db.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}, order: [['ordinal','ASC']]}
+            ];
+
+
+            db.models.tracking_state.findOne(opts).then(
+              (result) => {
+                // Nothing found?
+                res.json(result);
+              },
+              (error) => {
+                console.log(error);
+                throw new MiddlewareQueryFailed("Unable to looking the requested state.", req, res, "failedTrackingStateMiddlewareQuery");
+              }
+            );
+
+
           },
           (err) => {
             console.log(err);
@@ -105,4 +131,32 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
         )
       });
   }
+
+  /**
+   * Assign user to all state tasks
+   *
+   */
+  assignUser() {
+
+    this.registerEndpoint('put', '/:state([A-z0-9-]{36})/assign/:assignee', (req, res, next) => {
+
+      // Create object
+      let existing = new State(req.state);
+
+      // Update values
+      existing.assignUser(req.params.assignee).then(
+        (result) => {
+          res.json(result);
+        },
+        (err) => {
+          console.log(err);
+          if(err.error && err.error.code && err.error.code === 'userNotFound') return res.status(400).json({error: {message: 'Unable to find the user provided'}});
+          res.status(500).json({error: {message: 'Unable to assign the specified user: ' + err.error.message, cause: err }});
+        }
+      );
+
+    });
+
+  }
+
 };
