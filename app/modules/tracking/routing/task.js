@@ -148,7 +148,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
       let entry = new Task(req.task);
 
       // Update
-      entry.checkIn(req.body.outcome).then(
+      entry.checkIn(req.user, req.body.outcome).then(
         (result) => {
           let response = result.toJSON();
           delete response.id;
@@ -162,8 +162,6 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
         .catch((e) => {
           console.log('Error', e);
         });
-
-
 
     });
 
@@ -172,7 +170,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
       let entry = new Task(req.task);
 
       // Update
-      entry.checkIn(req.body.outcome).then(
+      entry.checkIn(req.user, req.body.outcome).then(
         (result) => {
           let response = result.toJSON();
           delete response.id;
@@ -181,6 +179,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
           res.json(response);
         },
         (err) => {
+          console.log(err);
           res.status(400).json({error: {message: "Unable to check-in task.", cause: err}});
         })
         .catch((e) => {
@@ -189,14 +188,14 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
     });
 
-    this.registerEndpoint('delete', '/checkin/:task('+this.UUIDregex+')/:outcome/:all?', (req, res, next) => {
+    this.registerEndpoint('delete', '/checkin/:task('+this.UUIDregex+')/:checkin/:all?', (req, res, next) => {
 
       let entry = new Task(req.task);
 
-      let outcomes = (req.params.outcome.indexOf(',')) ? req.params.outcome.split(',') : [req.params.outcome];
+      let outcomes = (req.params.checkin.indexOf(',')) ? req.params.checkin.split(',') : [req.params.checkin];
       let all = (req.params.all);
 
-      entry.cancelCheckIn(outcomes,all).then(
+      entry.cancelCheckIn(outcomes, all).then(
         (result) => {
           res.json(result);
         },

@@ -10,6 +10,7 @@ const TooManyCheckIns         = require('./exceptions/TooManyCheckIns');
 const InvalidTaskOperation    = require('./exceptions/InvalidTaskOperation');
 const InvalidCheckInTarget    = require('./exceptions/InvalidCheckInTarget');
 const State                   = require('./state');
+const Checkin                 = require('./checkin');
 
 module.exports = class Task {
 
@@ -42,61 +43,60 @@ module.exports = class Task {
   /**
    * Process task check-in
    *
+   * @param {object} user - The user creating the checkin
    * @param {object} payload - Payload response from check-in input
    *
    * @returns {Promise} - Resolves with updated task instance
    */
-  checkIn(payload=null) {
+  checkIn(user, payload=null) {
     return new Promise((resolve, reject) => {
 
-      // Get state object
-      const state = new State(this.instance.state);
+      let state = new State(this.instance.state);
 
-      // Validate CheckIn
-      if(typeof this.instance.outcome !== 'object' || this.instance.outcome === null) this.instance.outcome = {};
+      console.log('Current checkins', this.instance.checkins);
 
-      // Log outcome into JSON
-      let outcome = {};
-      outcome = {
-        type: this.instance.outcomeType,
-        value: payload
-      };
-      
-      if (payload !== null) this.instance.outcome[moment().toISOString()] = outcome;
-
-      // Check for completion
-      if(this.instance.checkInsTarget === this.instance.checkIns + 1) {
-        // This task is complete!
-        this.instance.status = 'complete';
+      // Is this too many checkins?
+      if((this.instance.checkins.length + 1) > this.instance.checkInsTarget) {
+        reject({error: {message: 'Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1)}});
+        throw new TooManyCheckIns('Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1));
       }
 
-      // Check for triggers
-      // TODO: Build trigger support
+      // Create new checkin
+      let checkin = new Checkin(null);
 
-      // Update check-in count
-      this.instance.checkIns = this.instance.checkIns + 1;
+      checkin.createCheckin(this.instance, user, payload).then(
+        (result) => {
 
-      if(this.instance.checkIns > this.instance.checkInsTarget) {
-        reject({error: {message: 'Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ' - Attempted: ' + this.instance.checkIns}});
-        throw new TooManyCheckIns('Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ' - Attempted: ' + this.instance.checkIns);
-      }
+          result.user = user;
 
-      // Get all other tasks
-      this.model.findAll({where: {state_id: this.instance.state_id, ident: {$not: this.instance.ident}}}).then(
-        (tasks) => {
+          // Add checkin to all checkins
+          this.instance.checkins.push(result);
 
-          let stateComplete = true;
+          // Check for task completion
+          if(this.instance.checkInsTarget === this.instance.checkins.length) {
+            // This task is complete!
+            this.instance.status = 'complete';
+          }
 
-          _.forEach(tasks, (t) => {
-            if(t.status !== 'complete') stateComplete = false;
-          });
-
+          // Save this instance
           this.instance.save().then(
             (result) => {
 
+              // Check
               state.checkCompleted().then(
                 (result) => {
-                  resolve(this.instance);
+
+                  // Get Public version
+
+                  this.getPublic().then(
+                    (result) => {
+                      resolve(result);
+                    },
+                    (err) => {
+                      console.log('Failed to get instance', err);
+                      reject({error: {message: 'Failed to get instance after update: ' + err.error.message }});
+                    }
+                  )
                 },
                 (err) => {
                   console.log('Failed to check state completion', err);
@@ -111,9 +111,8 @@ module.exports = class Task {
 
         },
         (err) => {
-          reject({error: {message: 'Unable to get all sibling tasks to check for state completeness due to SQL error: ' + err.message}});
           console.log(err);
-          throw new FailedFindQuery('Failed to lookup task siblings for state completeness check.');
+          reject({error: {message: 'Unable to perform checkin: ' + err.error.message, cause: err }});
         }
       );
 
@@ -151,7 +150,7 @@ module.exports = class Task {
   /**
    * Undo a check in
    *
-   * @param {array|string} target - The datestamp of the check-in to be removed
+   * @param {array|string} target - The idents of the check-in to be removed
    * @param {boolean} all - Remove all checkins
    *
    * @returns {Promise} - Resolves with updated instance
@@ -162,40 +161,48 @@ module.exports = class Task {
 
       if(this.instance.checkIns === 0) throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
 
-      // Removing a single entry
-      if(!all) {
-        if(typeof target === 'string') target = [target];
+      if(typeof target === 'string') target = [target];
 
-        _.forEach(target, (t) => {
-          console.log('Attempting to delete', t);
-          if(!this.instance.outcome[t]) throw new InvalidTaskOperation('Unable to find the outcome to revoke');
-          delete this.instance.outcome[t];
-          console.log('Delete result', this.instance.outcome);
-        });
+      // Build Query
+      let opts = {};
 
-        if(Object.keys(this.instance.outcome).length === 0) this.instance.outcome = null;
+      if(!all) opts.where = {ident: {$in: target}};
+      if(all) opts.where = {task_id: this.instance.id};
 
-        this.instance.checkIns = this.instance.checkIns - 1;
-      }
-
-      if(all) {
-        this.instance.outcome = null;
-        this.instance.checkIns = 0;
-      }
-
-      // Change current status based on target
-      if(this.instance.checkIns === 0) this.instance.status = 'pending';
-      if(this.instance.checkIns > 0 && this.instance.checkIns < this.instance.checkInsTarget) this.instance.status = 'active';
-
-      this.instance.save().then(
+      db.models.tracking_state_task_checkin.destroy(opts).then(
         (result) => {
-          resolve(this.instance);
+
+          // Change current status based on target
+          if(this.instance.checkins.length === 0) this.instance.status = 'pending';
+          if(this.instance.checkins.length > 0 && this.instance.checkins.length < this.instance.checkInsTarget) this.instance.status = 'active';
+
+          this.instance.save().then(
+            (result) => {
+
+              // Get public version
+              this.getPublic().then(
+                (task) => {
+                  resolve(task);
+                },
+                (err) => {
+                  console.log(err);
+                  reject({error: {message: 'Failed public lookup for task: ' + err.error.message}});
+                }
+              )
+
+            },
+            (err) => {
+              console.log(err);
+              throw new InvalidTaskOperation('Unable to save the updated check ins amount');
+            }
+          )
+
         },
         (err) => {
           console.log(err);
-          throw new InvalidTaskOperation('Unable to save the updated check ins amount');
+          reject({message: 'Unable to delete tasks'});
         }
-      )
+      );
     });
 
   }
@@ -260,7 +267,7 @@ module.exports = class Task {
           this.instance.save().then(
             (saved) => {
 
-              let task = this.model.scope('public').findOne({where: {ident: this.instance.ident}}).then(
+              this.getPublic().then(
                 (result) => {
                   resolve(result);
                 },
@@ -280,6 +287,44 @@ module.exports = class Task {
           console.log(err);
           throw new Error('Query to find the specified user failed.');
         })
+    });
+  }
+
+  /**
+   * Get public version of this instance
+   *
+   * @returns {Promise} - Resolves with a public instance of the model
+   */
+  getPublic() {
+    return new Promise((resolve, reject) => {
+
+      let opts = {};
+      opts.where = {ident: this.instance.ident};
+      opts.limit = 1;
+      opts.order = 'ordinal ASC';
+
+      opts.attributes = {
+        exclude: ['deletedAt', 'assignedTo_id', 'state_id']
+      };
+
+      opts.include = [
+        {as: 'state', model: db.models.tracking_state.scope('noTasks'), },
+        {as: 'assignedTo', model: db.models.user.scope('public')},
+        {as: 'checkins', model: db.models.tracking_state_task_checkin, include:[{as: 'user', model: db.models.user.scope('public')}], separate: true}
+      ];
+
+
+
+      this.model.findOne(opts).then(
+        (result) => {
+          resolve(result);
+        },
+        (err) => {
+          console.log(err);
+          reject({error: {message: 'Query failed to find the public instance: ' + err.message}});
+        }
+      )
+
     });
   }
 
