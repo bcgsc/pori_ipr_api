@@ -25,7 +25,8 @@ module.exports = (req,res,next,lookup) => {
 
   opts.include = [
     {as: 'state', model: db.models.tracking_state.scope('noTasks'), },
-    {as: 'assignedTo', model: db.models.user.scope('public')}
+    {as: 'assignedTo', model: db.models.user.scope('public')},
+    {as: 'checkins', model: db.models.tracking_state_task_checkin, include:[{as: 'user', model: db.models.user.scope('public')}], separate: true}
   ];
 
   // Lookup POG first
