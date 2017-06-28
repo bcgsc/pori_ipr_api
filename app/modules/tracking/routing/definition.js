@@ -67,8 +67,14 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
       // Get all state definitions
       .get((req,res,next) => {
 
+        let opts = {
+          where: {}
+        };
+
+        opts.where = (req.query.hidden && req.query.hidden === 'true') ? {} : {hidden: false};
+
         // Get All Definitions
-        db.models.tracking_state_definition.scope('public').findAll().then(
+        db.models.tracking_state_definition.scope('public').findAll(opts).then(
           (definitions) => {
             res.json(definitions);
           },
@@ -89,7 +95,6 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
       .delete((req, res) => {
         req.definition.destroy().then(
           (response) => {
-            console.log(response);
             res.status(204);
           }
         )
@@ -124,6 +129,7 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
             res.status(500).json({error: {message: 'Failed query to update definitions'}});
           }
         )
+
       });
   }
 };
