@@ -136,7 +136,9 @@ class GenomicLoader {
         }
 
         // Run Loaders
-        this.runLoaders().then(
+        this.getConfig()
+          .then(this.runLoaders.bind(this))
+          .then(
           (successLoaders) => {
             resolve(successLoaders);
           },
@@ -315,6 +317,7 @@ class GenomicLoader {
   getConfig() {
 
     return new Promise((resolve, reject) => {
+
       // From the base directory read in the Report_Tracking.cfg file
       fs.readFile(this.baseDir + '/Report_tracking.cfg', 'utf8', (err, data) => {
         if(err) {
