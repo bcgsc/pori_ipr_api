@@ -53,6 +53,10 @@ module.exports = (sequelize, Sq) => {
     jira: {
       type: Sq.JSON,
       allowNull: true
+    },
+    hidden: {
+      type: Sq.BOOLEAN,
+      defaultValue: false
     }
   },
   {

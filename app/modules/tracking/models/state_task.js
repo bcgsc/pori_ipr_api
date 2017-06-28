@@ -67,20 +67,10 @@ module.exports = (sequelize, Sq) => {
       allowNull: false,
       defaultValue: 'text'
     },
-    outcome: {
-      type: Sq.JSONB,
-      allowNull: true,
-      defaultValue: null
-    },
     triggeredBy: {
       type: Sq.STRING,
       defaultValue: null,
       allowNull: true
-    },
-    checkIns: {
-      type: Sq.INTEGER,
-      defaultValue: 0,
-      allowNull: false
     },
     checkInsTarget: {
       type: Sq.INTEGER,
@@ -107,7 +97,8 @@ module.exports = (sequelize, Sq) => {
           exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
         },
         include: [
-          { as: 'assignedTo', model: sequelize.models.user.scope('public') }
+          { as: 'assignedTo', model: sequelize.models.user.scope('public') },
+          { as: 'checkins', model: sequelize.models.tracking_state_task_checkin.scope('public'), separate: true }
         ]
       }
     }

@@ -15,7 +15,7 @@ if(process.env.NODE_ENV === 'development') {
     CONFIG = require('/var/www/ipr/api/development/persist/.env.json');
   }
   catch (e) {
-    console.log('Not found...');
+    console.log('!! DB Config not found - attempting to load local dev .env.json file');
     // Probably running on local dev
     CONFIG = require(process.cwd() + '/.env.json');
   }
@@ -184,22 +184,10 @@ probeSignature.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id',
 probeSignature.belongsTo(user, {as: 'readySignature', foreignKey: 'readySignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
-// Tracking
-let tracking = {};
-tracking.task = sequelize.import(__dirname + '/tracking/state_task');
-tracking.state = sequelize.import(__dirname + '/tracking/states');
-tracking.definition = sequelize.import(__dirname + '/tracking/state_definitions');
 
-tracking.state.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
-tracking.state.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', onDelete: 'SET NULL', constraints: true});
+// Load Tracking Models
 
-tracking.state.hasMany(tracking.task, {as: 'tasks', foreignKey: 'state_id', constraints: true});
-tracking.state.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDelete: 'SET NULL', constraints: true});
-
-tracking.task.belongsTo(tracking.state, {as: 'state', foreignKey: 'state_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
-tracking.task.belongsTo(user, {as: 'assignedTo', foreignKey: 'assignedTo_id', onDelete: 'SET NULL', constraints: true});
-
-tracking.definition.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDelete: 'SET NULL', constraints: true});
+let trackingModels = require('../modules/tracking/models')(sequelize);
 
 // Subscription
 let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');
