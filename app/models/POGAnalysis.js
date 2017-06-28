@@ -34,20 +34,20 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: true,
       validate: {
-        in: {
+        /*in: {
           args: /^(biospec_[0-9]*)$/,
           msg: 'The provided clinical biopsy id must be in the form of: biospec_n'
-        }
+        }*/
       }
     },
     analysis_biopsy: {
       type: Sq.STRING,
       allowNull: true,
       validate: {
-        in: {
+        /*in: {
           args: /^(biop_[0-9]*)$/,
           msg: '/The analysis biopsy id must be in the form if: biop_n'
-        }
+        }*/
       }
     },
     bioapps_source_id: {
