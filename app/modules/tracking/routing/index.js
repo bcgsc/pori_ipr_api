@@ -12,6 +12,8 @@ let DefinitionRoutes      = require('./definition');
 let StateRoutes           = require('./state');
 let TaskRoutes            = require('./task');
 const Generator           = require('./../generate');
+const AnalysisLib         = require('../../../libs/structures/analysis');
+const POGLib              = require('../../../libs/structures/pog');
 
 
 /**
@@ -52,19 +54,71 @@ module.exports = class TrackingRouter extends RoutingInterface {
     // Enable Root Racking
     this.tracking();
 
-    this.registerEndpoint('get', '/test', (req,res) => {
-      res.json({stack: this.getRouter().stack, task: Tasks.getRouter().stack, task_params: Tasks.getRouter().params});
-    });
-
   }
 
 
   /**
-   *
+   * Generate Tracking from source
    *
    */
   generator() {
 
+    // Create parent elements, then initiate tracking
+    this.registerEndpoint('post', '/', (req, res, next) => {
+
+      if(!req.body.POGID) return res.status(400).json({error: {message: 'POGID is a required input', code: 'failedValidation', input: 'POGID'}});
+
+      // Create POG
+      let pog = new POGLib(req.body.POGID);
+
+      let pogOpts = {
+        create: true,
+        analysis: {}
+      };
+
+      if(req.body.analysis_biopsy) pogOpts.analysis.analysis_biopsy = req.body.analysis_biopsy;
+
+      pog.retrieve(pogOpts).then(
+        (pog) => {
+
+          let Analysis = new AnalysisLib(req.body.clinical_biopsy, pog);
+
+          let analysisOpts = {
+            name: req.body.name,
+            clinical_biopsy: req.body.clinical_biopsy,
+            priority: req.body.priority,
+            biopsy_notes: req.body.biopsy_notes,
+            disease: req.body.disease,
+            create: true
+          };
+
+          Analysis.retrieve(analysisOpts).then(
+            (analysis) => {
+
+              let generator = new Generator(pog, analysis, req.user).then(
+                (results) => {
+                  res.json(results);
+                },
+                (err) => {
+                  console.log(err);
+                  res.status(400).json(err);
+                });
+
+            },
+            (err) => {
+              console.log(err);
+              res.status(400).json({error: {message: 'Unable to create analysis/biopsy entry: ' + err.message, cause: err}});
+            }
+          );
+
+        },
+        (err) => {
+
+        })
+
+    });
+
+    // Generate Tracking Only
     this.registerEndpoint('get', '/POG/:POG/analysis/:analysis([A-z0-9-]{36})/generate', (req,res,next) => {
 
       // Generate Request
@@ -89,7 +143,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
     this.registerEndpoint('get', '/', (req,res,next) => {
 
       // Get all tracking
-      db.models.tracking_state.scope('public').findAll({order: [['analysis_id', 'ASC'], ['ordinal', 'ASC']]}).then(
+      db.models.tracking_state.scope('public').findAll().then(
         (states) => {
           res.json(states)
         },
