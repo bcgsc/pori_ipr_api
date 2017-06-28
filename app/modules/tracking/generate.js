@@ -5,6 +5,7 @@ const db                      = require('../../models/');
 const InvalidTaskDefinition   = require('./exceptions/InvalidTaskDefinition');
 const InvalidStateDefintion   = require('./exceptions/InvalidStateDefinition');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
+const moment                  = require('moment');
 
 module.exports = class TrackingGenerator {
 
@@ -24,7 +25,7 @@ module.exports = class TrackingGenerator {
     return new Promise((resolve, reject) => {
 
       // Retrieve current set of definitions
-      db.models.tracking_state_definition.findAll().then(
+      db.models.tracking_state_definition.findAll({where: {hidden: false}}).then(
         (definitions) => {
 
           let promises = [];
@@ -83,8 +84,9 @@ module.exports = class TrackingGenerator {
         slug:         definition.slug,
         description:  definition.description,
         ordinal:      definition.ordinal,
-        status:       definition.status,
-        createdBy_id: this.user.id
+        status:       (definition.ordinal === 1) ? 'active' : 'pending',  // Default to start as pending if not ordinal=0
+        startedAt:    moment().toISOString(),
+        createdBy_id: this.user.id,
       };
 
       // Create State

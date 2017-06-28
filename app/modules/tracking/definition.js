@@ -17,7 +17,7 @@ module.exports = class StateDefinition {
     this.instance = null;
     this.model = db.models.tracking_state_definition;
     this.validTasks = [];
-    this.allowedOutcomeType = ['date', 'text', 'directory', 'string', 'boolean'];
+    this.allowedOutcomeType = ['date', 'text', 'location', 'string', 'boolean'];
 
     // No existing instance
     if(init === null) this.instance = this.model.build();
@@ -96,10 +96,12 @@ module.exports = class StateDefinition {
    */
   setUnprotected(input) {
     if(input.name) this.instance.name = input.name;
-    if(input.slug) this.instance.name = input.slug;
+    if(input.slug) this.instance.slug = input.slug;
     if(input.description) this.instance.description = input.description;
     if(input.ordinal) this.instance.ordinal = input.ordinal;
     if(input.group_id) this.instance.group_id = input.group_id;
+    if(input.hidden) this.instance.hidden = input.hidden;
+
   }
 
 
