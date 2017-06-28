@@ -184,6 +184,5 @@ router.route('/:type(genomic|probe)')
     
     
   });
-  
-  
+
 module.exports = router;

@@ -3,6 +3,7 @@
 
   "web": {
     "port": 8001,
+    "admin_port": 8002,
     "hostname": "iprweb01.bcgsc.ca"
   },
 

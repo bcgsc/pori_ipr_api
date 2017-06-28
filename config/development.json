@@ -2,7 +2,8 @@
   "env": "development",
   "version": "1.1.0",
   "web": {
-    "port": 8002,
+    "port": 8081,
+    "admin_port": 8082,
     "hostname": "127.0.0.1"
   },
 

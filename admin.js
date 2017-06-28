@@ -41,7 +41,6 @@ app.use((req, res, next) => {
   res.header("Access-Control-Expose-Headers", "X-token, X-Requested-With ,Origin, Content-Type, Accept");
   next();
 });
-
 // Suppress Console messages when testing...
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(':method :url :status [:req[Authorization]] :res[content-length] - :response-time ms', {stream: null}));
@@ -57,7 +56,7 @@ app.get('/teapot', (req,res,next) => { res.status(418).set({'hi':'mom!'}).send(f
 // ROUTING  ----------------------------------------------------------------
 // All API routes will be prefixed with /api/x.x
 
-let routing = require(__dirname + '/app/routes');
+let routing = require(__dirname + '/app/routes/admin');
 let Routing = new routing(app.io);
 
 app.use('/api/' + API_VERSION, Routing.getRouter());
