@@ -142,7 +142,7 @@ module.exports = class TrackingGenerator {
         description:      task.description,
         ordinal:          ordinal,
         status:           task.status,
-        checkIns:         0,
+        outcomeType:      task.outcomeType,
         checkInsTarget:   task.checkInsTarget,
       };
 
