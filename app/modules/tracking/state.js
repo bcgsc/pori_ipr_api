@@ -89,75 +89,87 @@ module.exports = class State {
 
       let stateComplete = true;
 
-      _.forEach(this.instance.tasks, (t) => {
-        if(t.status !== 'complete') stateComplete = false;
-      });
+      this.instance.status = 'active';
 
-      if(this.instance.startedAt === null) this.instance.completedAt = moment().toISOString();
+      // get Tasks
+      db.models.tracking_state_task.findAll({where: {state_id: this.instance.id}}).then(
+        (tasks) => {
 
-      this.instance.save().then(
-        (res) => {
+          _.forEach(tasks, (t) => {
+            if(t.status !== 'complete') stateComplete = false;
+          });
 
-          // Current state has completed!
-          if(stateComplete) {
+          if(this.instance.startedAt === null) this.instance.completedAt = moment().toISOString();
 
-            this.instance.status = 'complete';
-            this.instance.completedAt = moment().toISOString();
+          this.instance.save().then(
+            (res) => {
 
-            this.instance.save().then(
-              (result) => {
+              // Current state has completed!
+              if(stateComplete) {
 
-                // Find next in line!
-                this.model.findOne({
-                  where: {
-                    analysis_id: this.instance.analysis_id,
-                    ordinal: { $gt: this.instance.ordinal }
-                  },
-                  order: 'ordinal ASC'
-                }).then(
-                  (state) => {
-                    // No higher states not yet started!
-                    if(state === null) return resolve(null);
+                this.instance.status = 'complete';
+                this.instance.completedAt = moment().toISOString();
 
-                    // Adjacent state already started or held
-                    if(state.status === 'complete' || state.status === 'hold') return resolve(null);
+                this.instance.save().then(
+                  (result) => {
 
-                    state.status = 'active';
-                    state.startedAt = moment().toISOString();
-
-                    // Started next stage, save change to DB
-                    state.save().then(
-                      (result) => {
-                        resolve(state);
+                    // Find next in line!
+                    this.model.findOne({
+                      where: {
+                        analysis_id: this.instance.analysis_id,
+                        ordinal: { $gt: this.instance.ordinal }
                       },
-                      (err) => {
-                        console.log(err);
-                        reject({error: {message: 'Unable to set next stage to active due to sql error: ' + err.message}});
+                      order: 'ordinal ASC'
+                    }).then(
+                      (state) => {
+                        // No higher states not yet started!
+                        if(state === null) return resolve(null);
+
+                        // Adjacent state already started or held
+                        if(state.status === 'complete' || state.status === 'hold') return resolve(null);
+
+                        state.status = 'active';
+                        state.startedAt = moment().toISOString();
+
+                        // Started next stage, save change to DB
+                        state.save().then(
+                          (result) => {
+                            resolve(state);
+                          },
+                          (err) => {
+                            console.log(err);
+                            reject({error: {message: 'Unable to set next stage to active due to sql error: ' + err.message}});
+                          })
                       })
+
+                  },
+                  (err) => {
+                    console.log(err);
+                    reject({error: {message: 'Unable to update state to completed due to SQL error: ' + err.message}});
                   })
 
-              },
-              (err) => {
-                console.log(err);
-                reject({error: {message: 'Unable to update state to completed due to SQL error: ' + err.message}});
-              })
+              }
 
-          }
-
-          // State not complete
-          if(!stateComplete) {
-            resolve(false);
-          }
+              // State not complete
+              if(!stateComplete) {
+                resolve(false);
+              }
 
 
-        },
-        (err) => {
-          console.log('Unable to update state on completion check', err);
-          reject({error: {message: 'Failed to update state on checking for completion:' + err.message, cause: err}});
-        }
-      );
+            },
+            (err) => {
+              console.log('Unable to update state on completion check', err);
+              reject({error: {message: 'Failed to update state on checking for completion:' + err.message, cause: err}});
+            }
+          );
 
-    });
+        });
+      },
+      (err) => {
+        console.log('Unable to get state tasks on completion check', err);
+        reject({error: {message: 'Failed to retrieve state tasks on checking for completion:' + err.message, cause: err}});
+      }
+    );
 
   }
 
@@ -255,7 +267,21 @@ module.exports = class State {
           exclude: ['deletedAt']
         },
         include: [
-          {as: 'tasks', model: db.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}, order: [['ordinal','ASC']]}
+          {as: 'analysis', model: db.models.pog_analysis.scope('public')},
+          {
+            as: 'tasks',
+            model: db.models.tracking_state_task,
+            attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
+            order: [['ordinal', 'ASC']],
+            include: [
+              {as: 'assignedTo', model: db.models.user.scope('public')},
+              {
+                as: 'checkins',
+                model: db.models.tracking_state_task_checkin,
+                include: [{as: 'user', model: db.models.user.scope('public')}],
+              }
+            ]
+          }
         ]
       };
 
