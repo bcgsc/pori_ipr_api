@@ -97,31 +97,15 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
         existing.setStatus(req.body.status, true).then(
           (result) => {
 
-            let opts = { where: {} };
-
-            if(req.analysis) opts.where.analysis_id = req.analysis.id;
-
-            // Check if it's a UUID
-            opts.where.ident = req.state.ident;
-
-            opts.attributes = {exclude: ['deletedAt']};
-            opts.limit = 1;
-            opts.include = [
-              {as: 'tasks', model: db.models.tracking_state_task.scope('public'), attributes: {exclude: ['id', 'state_id', 'assignedTo_id']}, order: [['ordinal','ASC']]}
-            ];
-
-
-            db.models.tracking_state.findOne(opts).then(
-              (result) => {
-                // Nothing found?
-                res.json(result);
+            existing.getPublic().then(
+              (publicState) => {
+                res.json(publicState);
               },
-              (error) => {
-                console.log(error);
-                throw new MiddlewareQueryFailed("Unable to looking the requested state.", req, res, "failedTrackingStateMiddlewareQuery");
+              (err) => {
+                console.log('Unable to get public state', err);
+                res.status(500).json({error: {message: err.error.message, cause: err}});
               }
-            );
-
+            )
 
           },
           (err) => {

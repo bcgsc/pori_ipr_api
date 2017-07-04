@@ -41,81 +41,75 @@ module.exports = class Task {
   }
 
   /**
-   * Process task check-in
+   * Create a checkin for this task
    *
-   * @param {object} user - The user creating the checkin
-   * @param {object} payload - Payload response from check-in input
-   *
-   * @returns {Promise} - Resolves with updated task instance
+   * @param {object} user - The user model instance
+   * @param {string|int|boolean} payload - The payload to be placed with the checkin
+   * @param {boolean} limitOverride - Over ride the check-in limit?
+   * @returns {Promise} - Resolves with updated task. Rejects with error object
    */
-  checkIn(user, payload=null) {
+  checkIn(user, payload=null, limitOverride=false) {
     return new Promise((resolve, reject) => {
 
+      // Init State wrapper
       let state = new State(this.instance.state);
 
-      console.log('Current checkins', this.instance.checkins);
-
-      // Is this too many checkins?
-      if((this.instance.checkins.length + 1) > this.instance.checkInsTarget) {
+      // Check for too many checkins
+      if((this.instance.checkins.length + 1) > this.instance.checkInsTarget && !limitOverride) {
         reject({error: {message: 'Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1)}});
         throw new TooManyCheckIns('Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1));
       }
 
-      // Create new checkin
+      // Start chain
+      this.createCheckin(user, payload)
+        .then(this.checkCompletion.bind(this))
+        .then(state.checkCompleted())
+        .then(this.getPublic.bind(this))
+        .then(
+          (result) => {
+            resolve(result);
+          },
+          (err) => {
+            console.log('Failed to get instance', err);
+            reject({message: 'Failed to get instance after update: ' + err.error.message, cause: err });
+          }
+        )
+        .catch((e) => {
+          console.log('Failed to perform checkin', e);
+          reject({message: 'Failed to perform checkin. Reason: :' + e.message, cause: e});
+        });
+
+    });
+  }
+
+
+  /**
+   * Create a new task checkin event
+   *
+   * @param {object} user - The user model instance
+   * @param {string|int|boolean} payload - The payload to be provided in the checkin
+   * @returns {Promise} - Resolves with
+   */
+  createCheckin(user, payload) {
+    return new Promise((resolve, reject) => {
       let checkin = new Checkin(null);
 
       checkin.createCheckin(this.instance, user, payload).then(
         (result) => {
 
+          // Add user to result.
           result.user = user;
 
           // Add checkin to all checkins
           this.instance.checkins.push(result);
 
-          // Check for task completion
-          if(this.instance.checkInsTarget === this.instance.checkins.length) {
-            // This task is complete!
-            this.instance.status = 'complete';
-          }
-
-          // Save this instance
-          this.instance.save().then(
-            (result) => {
-
-              // Check
-              state.checkCompleted().then(
-                (result) => {
-
-                  // Get Public version
-
-                  this.getPublic().then(
-                    (result) => {
-                      resolve(result);
-                    },
-                    (err) => {
-                      console.log('Failed to get instance', err);
-                      reject({error: {message: 'Failed to get instance after update: ' + err.error.message }});
-                    }
-                  )
-                },
-                (err) => {
-                  console.log('Failed to check state completion', err);
-                  reject({error: {message: 'Failed to check state completion: ' + err.error.message }});
-                });
-            },
-            (err) => {
-              console.log('Failed to update task', err);
-              reject({error: {message: 'Query to update task failed'}});
-            }
-          );
-
+          resolve(result);
         },
         (err) => {
           console.log(err);
-          reject({error: {message: 'Unable to perform checkin: ' + err.error.message, cause: err }});
+          reject({message: 'Unable to perform checkin: ' + err.error.message, cause: err});
         }
       );
-
     });
   }
 
@@ -203,6 +197,52 @@ module.exports = class Task {
           reject({message: 'Unable to delete tasks'});
         }
       );
+    });
+
+  }
+
+  /**
+   * Check Completion
+   *
+   * @returns {Promise} - Resolves with current instance
+   */
+  checkCompletion() {
+
+    return new Promise((resolve, reject) => {
+      let completed = true;
+
+      // Get all checkins
+      db.models.tracking_state_task_checkin.findAll({where: { task_id: this.instance.id }}).then(
+        (checkins) => {
+
+          console.log('Number of checkins found: ', checkins.length);
+          console.log('Required: ', this.instance.checkInsTarget);
+
+          // Target met!
+          if(checkins.length >= this.instance.checkInsTarget) {
+
+            this.instance.status = 'complete';
+
+            this.instance.save().then(
+              (result) => {
+                return resolve(this.instance);
+              },
+              (err) => {
+                
+              }
+            )
+          }
+
+          // Target not met yet
+          if(checkins.length < this.instance.checkInsTarget) resolve(this.instance);
+        },
+        (err) => {
+          // SQL Error
+          console.log('Failed to get checkins', err);
+          reject({message: 'Failed to retrieve checkins for a task: ' + err.message});
+        }
+      );
+
     });
 
   }

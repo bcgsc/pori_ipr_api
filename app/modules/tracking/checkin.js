@@ -43,6 +43,8 @@ module.exports = class Checkin {
    */
   createCheckin(task, user, payload) {
 
+
+
     return new Promise((resolve, reject) => {
       let outcome;
 
@@ -50,14 +52,10 @@ module.exports = class Checkin {
       switch(task.outcomeType) {
         case 'date':
           // Valid IOS date
-          if(moment(payload, "YYYY-MM-DDTHH:mm:ss", true).isValid()) {
-            outcome = payload;
-          } else {
-            return reject({error: {message: 'The datestamp provided is not valid ISO 8601 format'}});
-          }
+          outcome = moment(payload).toISOString();
           break;
         case 'boolean':
-          if(payload === true || payload === false) return outcome = payload;
+          if(payload === true || payload === false) outcome = payload;
           if(payload === 'true') outcome = true;
           if(payload === 'false') outcome = false;
           break;

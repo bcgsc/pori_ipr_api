@@ -95,6 +95,7 @@ module.exports = (sequelize, Sq) => {
             order: [['ordinal','ASC']],
             include: [
               {as: 'assignedTo', model: sequelize.models.user.scope('public')},
+              {as: 'checkins', model: sequelize.models.tracking_state_task_checkin, include:[{as: 'user', model: sequelize.models.user.scope('public')}], attributes: {exclude: ['id', 'task_id', 'deletedAt', 'user_id']}}
             ] // end tasks include
           } // end state tasks include
         ],
