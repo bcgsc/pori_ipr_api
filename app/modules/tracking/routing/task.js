@@ -142,6 +142,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
    */
   checkIns() {
 
+    // Checkin by pog/analysis(biospec, or biop)/state_slug/task_slug
     this.registerEndpoint('patch', '/checkin/:POG/:analysis/:state/:task', (req, res, next) => {
 
       // Instantiate the object
@@ -157,6 +158,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
           res.json(response);
         },
         (err) => {
+          console.log(err);
           res.status(400).json({error: {message: "Unable to check-in task.", cause: err}});
         })
         .catch((e) => {
@@ -165,6 +167,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
     });
 
+    // Checkin by ident
     this.registerEndpoint('patch', '/checkin/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', (req, res, next) => {
 
       let entry = new Task(req.task);
@@ -188,6 +191,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
     });
 
+    // Cancel a check-in
     this.registerEndpoint('delete', '/checkin/:task('+this.UUIDregex+')/:checkin/:all?', (req, res, next) => {
 
       let entry = new Task(req.task);
@@ -211,6 +215,9 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
   }
 
 
+  /**
+   * Assign a user to a task
+   */
   assignUser() {
 
     this.registerEndpoint('put', '/:task('+this.UUIDregex+')/assignTo/:user('+this.UUIDregex+')', (req,res,next) => {
