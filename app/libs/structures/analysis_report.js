@@ -14,7 +14,9 @@ module.exports = class analysis_report {
     this.ident = ident; // Store POGID
     this.instance = null;
     this.model = db.models.analysis_report;
-    this.allowedStates = ['nonproduction', 'ready', 'active', 'presented', 'archived'];
+    this.allowedStates = ['nonproduction', 'ready', 'active', 'presented', 'archived', 'reviewed', 'uploaded', 'signedoff'];
+
+    if(typeof ident === 'object' && ident !== null && ident.ident) this.instance = ident;
   }
 
   /**
@@ -61,6 +63,7 @@ module.exports = class analysis_report {
    * @returns {promise|object} - Promise resolves with new POG Analysis Report. Rejects with error message.
    */
   create(pog, user, type, options) {
+
     return new Promise((resolve, reject) => {
 
       if(pog.analysis.length === 0) return reject({message: 'No analysis entry on pog object'});
@@ -99,11 +102,212 @@ module.exports = class analysis_report {
   public() {
     return new Promise((resolve, reject) => {
 
-      if(!this.instance) {
-
-      }
-
+      this.model.scope('public').findOne({
+        where: {ident: this.instance.ident},
+        attributes: {exclude: ['deletedAt']},
+        include: [
+          {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+          {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
+          {model: db.models.POG.scope('public'), as: 'pog' },
+          {model: db.models.user.scope('public'), as: 'createdBy'},
+          {model: db.models.analysis_reports_user, as: 'users', attributes: {exclude: ['id', 'pog_id', 'report_id', 'user_id', 'addedBy_id', 'deletedAt']}, include: [{model: db.models.user.scope('public'), as: 'user'}]}
+        ],
+      }).then(
+        (result) => {
+          console.log('Got updated')
+          if(result === null) return reject({message: 'Instance not found.'});
+          resolve(result);
+        },
+        (err) => {
+          console.log('Failed to get public form of analysis report', err);
+          reject({message: "Failed to retrieve public form of report: " + err.message});
+        }
+      )
     });
+  }
+
+
+  /**
+   * Bind a user to this report
+   *
+   * @param {object|string} user - User object or ident
+   * @param {string} role - User role wrt this report
+   * @param {object} addedBy - User model instance of user performing the binding
+   *
+   * @returns {Promise} - Resolves with updated instance
+   */
+  bindUser(user, role, addedBy) {
+
+    let report = this.instance;
+    return new Promise((resolve, reject) => {
+
+      // Get user if string
+      let getUser = () => {
+        return new Promise((resolve, reject) => {
+
+          if(typeof user !== 'string' && user.id) return resolve(user);
+          if(typeof user !== 'string' && !user.id && user.ident) user = user.ident;
+
+          // Nothing we can do for you. No way to identify this user
+          if(typeof user !== 'string' && !user.id && !user.ident) return reject({message: 'user provided is not valid', code: 'invalidUserForBinding'});
+
+          let opts = { where: {} };
+
+          if(user.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/)) {
+            opts.where.ident = user;
+          } else {
+            opts.where.username = user;
+          }
+
+          db.models.user.findOne(opts).then(
+            (result) => {
+              if(user !== null) return resolve(result);
+              reject({message: 'Specified user not found', code: 'userNotFound'});
+            },
+            (err) => {
+              console.log('Unable to find user for binding:', err);
+              reject({message: 'Unable to find the specified user', code: 'userNotFound', cause: err.message});
+            }
+          )
+        });
+      };
+
+      // Check if the attempting user is already bound in this role
+      let checkUserBound = (user) => {
+        return new Promise((resolve, reject) => {
+
+          db.models.analysis_reports_user.findAll({where: {user_id: user.id, report_id: report.id, role: role}}).then(
+            (result) => {
+              if(result.length > 0) return reject({message: 'User is already bound in this role.', code: 'userAlreadyBound'});
+              resolve(user);
+            },
+            (err) => {
+              console.log('Unable to find user for binding:', err);
+              reject({message: 'Unable to find the specified user', code: 'userNotFound', cause: err.message});
+            }
+          )
+
+        });
+      };
+
+      // Perform user binding
+      let bindUser = (user) => {
+        return new Promise((resolve, reject) => {
+
+          db.models.analysis_reports_user.create({
+            user_id: user.id,
+            report_id: report.id,
+            role: role,
+            addedBy_id: addedBy.id
+          }).then(
+            (result) => {
+              result.user = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                ident: user.ident,
+                username: user.username
+              };
+              resolve(result);
+            },
+            (err) => {
+              console.log('Unable to create user binding:', err);
+              reject({message: 'Unable to create user binding', code: 'failedUserBindCreate', cause: err.message});
+            }
+          );
+
+        });
+      };
+
+      // Proceed after getting user
+      getUser(user)
+        .then(checkUserBound)
+        .then(bindUser)
+        .then(this.public.bind(this))
+        .then(
+          (report) => {
+            resolve(report);
+          },
+          (err) => {
+            console.log('Failed user binding pipe', err);
+            reject(err);
+          }
+        )
+    });
+  }
+
+  /**
+   * Unbind a user from an association with the report
+   *
+   * @param {object|string} user - User object or ident
+   * @param {string} role - User role wrt this report
+   *
+   * @returns {Promise}
+   */
+  unbindUser(user, role) {
+    return new Promise((resolve, reject) => {
+
+      // Get user if string
+      let getUser = () => {
+        return new Promise((resolve, reject) => {
+
+          if(typeof user !== 'string' && user.id) return resolve(user);
+          if(typeof user !== 'string' && !user.id && user.ident) user = user.ident;
+
+          // Nothing we can do for you. No way to identify this user
+          if(typeof user !== 'string' && !user.id && !user.ident) return reject({message: 'user provided is not valid', code: 'invalidUserForBinding'});
+
+          let opts = { where: {} };
+
+          if(user.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/)) {
+            opts.where.ident = user;
+          } else {
+            opts.where.username = user;
+          }
+
+          db.models.user.findOne(opts).then(
+            (result) => {
+              if(user !== null) return resolve(result);
+              reject({message: 'Specified user not found', code: 'userNotFound'});
+            },
+            (err) => {
+              console.log('Unable to find user for binding:', err);
+              reject({message: 'Unable to find the specified user', code: 'userNotFound', cause: err.message});
+            }
+          )
+        });
+      };
+
+      // Remove binding from DB (soft-delete)
+      let destroyBinding = (user) => {
+        return new Promise((resolve, reject) => {
+          db.models.analysis_reports_user.destroy({where: {report_id: this.instance.id, user_id: user.id, role: role}}).then(
+            (result) => {
+              if(result === 0) return reject({message: 'No binding found', code: 'noBindingFound'});
+              resolve(true);
+            },
+            (err) => {
+              console.log('Unable to unbind user: ', err);
+              reject({message: 'Unable to unbind the specified user', code: 'failedUnbind', cause: err.message});
+            }
+          )
+        })
+      };
+
+      getUser(user)
+        .then(destroyBinding)
+        .then(this.public.bind(this))
+        .then(
+          (report) => {
+            resolve(report);
+          },
+          (err) => {
+            console.log('Failed to unbind the user:', err);
+            reject(err);
+          }
+        )
+
+    })
   }
 
   /**

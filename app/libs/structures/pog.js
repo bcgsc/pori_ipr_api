@@ -1,6 +1,7 @@
 "use strict";
 
 const db = require(process.cwd() + "/app/models");
+const _  = require('lodash');
 
 module.exports = class POG {
 
@@ -28,7 +29,7 @@ module.exports = class POG {
       if(this.instance) resolve(this.instance);
 
       // Lookup in Database
-      this.model.findOne({ where: {POGID: this.POGID }, include: {as: 'analysis', model: db.models.pog_analysis } })
+      this.model.findOne({ where: {POGID: this.POGID }, include: {as: 'analysis', model: db.models.pog_analysis }})
         .then((POG) => {
 
           // Not found, and asked to create
@@ -60,6 +61,19 @@ module.exports = class POG {
 
           // POG found
           if(POG !== null) {
+            /*
+             // Check if there's any existing analysis:
+             if(POG.analysis.length > 0) {
+             // Check if we have a match
+             if(_.find(POG.analysis, {clinical_biopsy: options.analysis.clinical_biopsy})) {
+             // Found by clinical
+             }
+             if(_.find(POG.analysis, {analysis_biopsy: options.analysis.analysis_biopsy})) {
+             // Found by analysis
+             }
+             }
+             */
+
             this.instance = POG;
             resolve(this.instance);
           }
@@ -90,13 +104,26 @@ module.exports = class POG {
         .then((POG) => {
           this.instance = POG;
 
+          let analysis = { pog_id: POG.id };
+
+          // Optional Analysis settings that can be passed in
+          if(options.analysis && options.analysis.clinical_biopsy) analysis.clinical_biopsy = options.analysis.clinical_biopsy;
+          if(options.analysis && options.analysis.analysis_biopsy) analysis.analysis_biopsy = options.analysis.analysis_biopsy;
+          if(options.analysis && options.analysis.priority) analysis.priority = options.analysis.priority;
+          if(options.analysis && options.analysis.disease) analysis.disease = options.analysis.disease;
+          if(options.analysis && options.analysis.biopsy_notes) analysis.biopsy_notes = options.analysis.biopsy_notes;
+          if(options.analysis && options.analysis.libraries) analysis.libraries = options.analysis.libraries;
+          if(options.analysis && options.analysis.bioapps_source_id) analysis.bioapps_source_id = options.analysis.bioapps_source_id;
+
+          analysis.name = (options.analysis && options.analysis.name) ? options.analysis.name : 'N/A';
+
           // Create analysis entry
-          db.models.pog_analysis.create({pog_id: POG.id, biopsyDate: (options.biopsyDate) ? options.biopsyDate : null, name: 'biopsy_1'})
+          return db.models.pog_analysis.create(analysis)
             .then((analysis) => {
 
-              POG.analysis = [analysis]; // Nest analysis inside POG
-              resolve(POG);
-            },
+                POG.analysis = [analysis]; // Nest analysis inside POG
+                resolve(POG);
+              },
               (error) => {
                 console.log('Unable to create pog analysis entry', error);
                 reject({message: 'Unable to create pog analysis entry'});
