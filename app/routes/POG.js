@@ -39,11 +39,24 @@ router.route('/')
 
     let reportInclude = {as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: []};
     reportInclude.include.push({model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'});
+    reportInclude.where = {};
 
-    if(!req.query.archived) reportInclude.where = { state: {$not: 'archived'} };
+    // Check for types
+    if(req.query.report_type === 'probe') reportInclude.where.type = 'probe';
+    if(req.query.report_type === 'genomic') reportInclude.where.type = 'genomic';
 
+
+    //if(!req.query.archived) reportInclude.where = { state: {$not: ['archived', 'nonproduction']} };
+
+    // Optional States
+    if(!req.query.archived || !req.query.nonproduction) {
+      reportInclude.where.state = {$not: []};
+      if(!req.query.archived) reportInclude.where.state.$not.push('archived');
+      if(!req.query.nonproduction) reportInclude.where.state.$not.push('nonproduction');
+    }
+    
     opts.include.push(reportInclude);
-
+    /*
     // Are we filtering on POGUser relationship?
     if(req.query.all !== 'true' || req.query.role) {
       let userFilter = {model: db.models.POGUser, as: 'POGUserFilter', where: {}};
@@ -52,9 +65,10 @@ router.route('/')
       if(req.query.role) userFilter.where.role = req.query.role; // Role filtering
 
       opts.include.push(userFilter);
-    }
+    } */
 
     // Create the POGUser join object.
+    /*
     let pogUserInclude = { include: []};
     pogUserInclude.model = db.models.POGUser;
     pogUserInclude.as = 'POGUsers';
@@ -65,6 +79,7 @@ router.route('/')
     pogUserInclude.include.push({as: 'addedBy', model: db.models.user.scope('public')});
 
     opts.include.push(pogUserInclude);
+    */
 
     // Get All Pogs
     db.models.POG.findAll(opts).then(

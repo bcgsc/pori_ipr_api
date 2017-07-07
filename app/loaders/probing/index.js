@@ -103,7 +103,10 @@ class ProbeLoader {
               console.log('Unable to finish loaders', err);
               reject(err);
             }
-          );
+          )
+          .catch((e) => {
+            reject({error: {message: 'A required loader failed: ' + e.message}});
+          });
         return;
       }
 
@@ -134,7 +137,7 @@ class ProbeLoader {
    * @returns {Promise} - Resolves with the directory to the latest libraries available
    */
   getLibraryFolder() {
-    return Q.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
       this.log('Attempting to find library directory');
 

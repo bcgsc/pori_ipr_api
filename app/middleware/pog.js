@@ -21,10 +21,6 @@ module.exports = (req,res,next,pogID) => {
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
         {as: 'analysis_reports', model: db.models.analysis_report.scope('public')},
-        {model: db.models.POGUser, as: 'POGUsers', attributes: {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']}, include: [
-          {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken', 'jiraXsrf']}},
-          {as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken', 'jiraXsrf']}}
-        ]}
       ],
     }).then(
     (result) => {

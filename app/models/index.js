@@ -4,7 +4,22 @@ let path = require('path');
 let nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 let colors = require('colors');
 
-const CONFIG = require( process.cwd() + '/config/'+process.env.NODE_ENV+'.json');
+let CONFIG = {};
+
+if(process.env.NODE_ENV === 'production') {
+  CONFIG = require('/var/www/ipr/api/production/persist/.env.json');
+}
+if(process.env.NODE_ENV === 'development') {
+  try {
+    // iprweb01 dev
+    CONFIG = require('/var/www/ipr/api/development/persist/.env.json');
+  }
+  catch (e) {
+    console.log('!! DB Config not found - attempting to load local dev .env.json file');
+    // Probably running on local dev
+    CONFIG = require(process.cwd() + '/.env.json');
+  }
+}
 
 // Load database
 const dbSettings = CONFIG.database[CONFIG.database.engine];
@@ -27,15 +42,14 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 
 // POG
 let POG = sequelize.import(__dirname + '/POG');
-let POGuser = sequelize.import(__dirname + '/POGUser');
 
-POG.belongsToMany(user, {as: 'users', through: {model: POGuser, unique: false }, foreignKey: 'pog_id', otherKey: 'user_id', onDelete: 'CASCADE'});
-user.belongsToMany(POG, {as: 'pogs', through: {model: POGuser, unique: false }, foreignKey: 'user_id', otherKey: 'pog_id', onDelete: 'CASCADE'});
+//POG.belongsToMany(user, {as: 'users', through: {model: POGuser, unique: false }, foreignKey: 'pog_id', otherKey: 'user_id', onDelete: 'CASCADE'});
+//user.belongsToMany(POG, {as: 'pogs', through: {model: POGuser, unique: false }, foreignKey: 'user_id', otherKey: 'pog_id', onDelete: 'CASCADE'});
 
-POG.hasMany(POGuser, {as: 'POGUsers', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-POG.hasMany(POGuser, {as: 'POGUserFilter', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-POGuser.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL'});
-POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'});
+//POG.hasMany(POGuser, {as: 'POGUsers', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+//POG.hasMany(POGuser, {as: 'POGUserFilter', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+//POGuser.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL'});
+//POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'});
 
 let analysis = sequelize.import(__dirname + '/POGAnalysis');
 POG.hasMany(analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
@@ -43,9 +57,19 @@ analysis.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
 // Pog Analysis Reports
 let analysis_reports = sequelize.import(__dirname + '/reports/analysis_reports');
+let analysis_reports_users = sequelize.import(__dirname + '/analysis_report_user');
 POG.hasMany(analysis_reports, {as: 'analysis_reports', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 analysis_reports.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 analysis_reports.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
+
+analysis_reports.hasMany(analysis_reports_users, {as: 'users', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});
+analysis_reports.hasMany(analysis_reports_users, {as: 'ReportUserFilter', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});
+analysis_reports_users.belongsTo(analysis_reports, {as: 'report', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});
+analysis_reports_users.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL', constraints: true});
+analysis_reports_users.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true});
+
+//analysis_reports.belongsToMany(user, {as: 'users', through: {model: analysis_reports_users, unique: false }, foreignKey: 'report_id', otherKey: 'user_id', onDelete: 'CASCADE'});
+user.belongsToMany(analysis_reports, {as: 'reports', through: {model: analysis_reports_users, unique: false }, foreignKey: 'user_id', otherKey: 'report_id', onDelete: 'CASCADE'});
 
 
 let userGroup = sequelize.import(__dirname + '/user/userGroup.js');
@@ -169,22 +193,10 @@ probeSignature.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id',
 probeSignature.belongsTo(user, {as: 'readySignature', foreignKey: 'readySignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
-// Tracking
-let tracking = {};
-tracking.task = sequelize.import(__dirname + '/tracking/state_task');
-tracking.state = sequelize.import(__dirname + '/tracking/states');
-tracking.definition = sequelize.import(__dirname + '/tracking/state_definitions');
 
-tracking.state.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
-tracking.state.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', onDelete: 'SET NULL', constraints: true});
+// Load Tracking Models
 
-tracking.state.hasMany(tracking.task, {as: 'tasks', foreignKey: 'state_id', constraints: true});
-tracking.state.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDelete: 'SET NULL', constraints: true});
-
-tracking.task.belongsTo(tracking.state, {as: 'state', foreignKey: 'state_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
-tracking.task.belongsTo(user, {as: 'assignedTo', foreignKey: 'assignedTo_id', onDelete: 'SET NULL', constraints: true});
-
-tracking.definition.belongsTo(userGroup, {as: 'group', foreignKey: 'group_id', onDekete: 'SET NULL', constraints: true});
+let trackingModels = require('../modules/tracking/models')(sequelize);
 
 // Subscription
 let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');

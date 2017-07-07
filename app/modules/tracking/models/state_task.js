@@ -22,14 +22,18 @@ module.exports = (sequelize, Sq) => {
     name: {
       type: Sq.STRING,
       allowNull: false,
+    },
+    slug: {
+      type: Sq.STRING,
+      allowNull: false,
       validate: {
         is: {
           args: ["^[A-z0-9_-]+$", 'i'],
-          msg: 'Only alphanumeric and underscores are allowed in the task name'
+          msg: 'Only alphanumeric and underscores are allowed in the task slug'
         },
         len: {
           args: [3,50],
-          msg: 'Task name must be between 3 and 50 characters long'
+          msg: 'Task slug must be between 3 and 50 characters long'
         }
       }
     },
@@ -53,24 +57,20 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
       validate: {
         isIn: {
-          args: [['pending', 'active', 'complete', 'pause', 'blocked']],
+          args: [['pending', 'active', 'complete', 'hold', 'failed']],
           msg: 'The specified task status is not valid. Allowed values: pending, active, complete, pause, blocked'
         }
       }
     },
-    outcome: {
-      type: Sq.JSONB,
-      allowNull: true
+    outcomeType: {
+      type: Sq.STRING,
+      allowNull: false,
+      defaultValue: 'text'
     },
     triggeredBy: {
       type: Sq.STRING,
       defaultValue: null,
       allowNull: true
-    },
-    checkIns: {
-      type: Sq.INTEGER,
-      defaultValue: 0,
-      allowNull: false
     },
     checkInsTarget: {
       type: Sq.INTEGER,
@@ -92,11 +92,13 @@ module.exports = (sequelize, Sq) => {
     paranoid: true,
     scopes: {
       public: {
+        order:  [['ordinal', 'ASC']],
         attributes: {
           exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
         },
         include: [
-          { as: 'assignedTo', model: sequelize.models.user.scope('public') }
+          { as: 'assignedTo', model: sequelize.models.user.scope('public') },
+          { as: 'checkins', model: sequelize.models.tracking_state_task_checkin.scope('public'), separate: true }
         ]
       }
     }

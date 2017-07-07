@@ -2,30 +2,9 @@
   "env": "development",
   "version": "1.1.0",
   "web": {
-    "port": 8002,
+    "port": 8081,
+    "admin_port": 8082,
     "hostname": "127.0.0.1"
-  },
-
-  "database": {
-    "engine": "postgres",
-    "migrate": false,
-    "hardMigration": false,
-
-    "sqlite": {
-      "storage": "database/development.sqlite",
-      "username": "root",
-      "password": ""
-    },
-
-    "postgres": {
-      "hostname": "iprweb01.bcgsc.ca",
-      "port": 5432,
-      "username": "bpierce",
-      "password": "iprdbdev",
-      "schema": "public",
-      "database": "ipr-dev",
-      "prefix": ""
-    }
   },
 
   "jira": {
@@ -51,6 +30,7 @@
   },
   "loader": {
     "defaults": {
+
       "default_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
@@ -60,6 +40,7 @@
           "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
         ]
       },
+
       "pog_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
@@ -69,16 +50,17 @@
           "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
         ]
       },
-      "pog_probe": {
+
+      "default_probe": {
         "loaders": [
           "summary_patientInformation", "summary_genomicAlterationsIdentified", "alterations_identified", "alterations", "sample_information", "test_information", "approved_thisCancer", "approved_otherCancer"
         ]
       },
-      "Profyle_genomic": {
 
-      },
-      "TFRI_GBM_genomic": {
-
+      "pog_probe": {
+        "loaders": [
+          "summary_patientInformation", "summary_genomicAlterationsIdentified", "alterations_identified", "alterations", "sample_information", "test_information", "approved_thisCancer", "approved_otherCancer"
+        ]
       },
       "GPH_Lymphoma_genomic": {
         "libraries": ["A*_A*"],

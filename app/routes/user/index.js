@@ -219,7 +219,7 @@ router.route('/:ident([A-z0-9-]{36})')
     // Attempt user model update
     db.models.user.update(updateBody, { where: {ident: req.user.ident}, limit: 1 }).then(
       (result) => {
-        if(typeof result == 'Object') {
+        if(typeof result === 'Object') {
           res.json(result);
         } else {
           // Success, get user -- UGH
