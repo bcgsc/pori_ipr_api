@@ -32,7 +32,7 @@ module.exports = (sequelize, Sq) => {
       }
     },
     {
-      tableName: 'tracking_state_task_checkins',
+      tableName: 'pog_tracking_state_task_checkins',
       // Automatically create createdAt, updatedAt, deletedAt
       timestamps: true,
       // Use soft-deletes!
