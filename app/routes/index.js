@@ -34,7 +34,7 @@ class Routing extends RouterInterface {
     this.router.param('report', require(process.cwd() + '/app/middleware/analysis_report')); // Analysis report middleware injection
 
     // Add Authentication coverage
-    this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase|/tracking)', require(process.cwd() + '/app/middleware/auth'));
+    this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase|/tracking|/reports)', require(process.cwd() + '/app/middleware/auth'));
 
     // Auto-Build routes
     this.buildRecursiveRoutes();
