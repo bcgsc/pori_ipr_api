@@ -1,6 +1,8 @@
 ### POG Reports API
 ======================================
 
+![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
+
 This API will store and serve Genomic and (future) Probe report data pertaining to all BC Cancer Angecy POG cases.
 Currently cases have to be loaded on an as-necessary basis. Future pipeline support will include automated triggering of
 the loading process. The API is designed in conjunction with the POG Report WebApp client to render and display the

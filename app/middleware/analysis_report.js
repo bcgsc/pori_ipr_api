@@ -14,7 +14,10 @@ module.exports = (req,res,next,ident) => {
       {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
       {model: db.models.POG.scope('public'), as: 'pog' },
-      {model: db.models.user.scope('public'), as: 'createdBy'}
+      {model: db.models.user.scope('public'), as: 'createdBy'},
+      {model: db.models.analysis_reports_user, as: 'users', separate: true, include: [
+        {model: db.models.user.scope('public'), as: 'user'}
+      ]}
     ],
   }).then(
     (result) => {

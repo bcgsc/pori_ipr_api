@@ -62,17 +62,17 @@ module.exports = class POG {
           // POG found
           if(POG !== null) {
             /*
-             // Check if there's any existing analysis:
-             if(POG.analysis.length > 0) {
-             // Check if we have a match
-             if(_.find(POG.analysis, {clinical_biopsy: options.analysis.clinical_biopsy})) {
-             // Found by clinical
-             }
-             if(_.find(POG.analysis, {analysis_biopsy: options.analysis.analysis_biopsy})) {
-             // Found by analysis
-             }
-             }
-             */
+            // Check if there's any existing analysis:
+            if(POG.analysis.length > 0) {
+              // Check if we have a match
+              if(_.find(POG.analysis, {clinical_biopsy: options.analysis.clinical_biopsy})) {
+                // Found by clinical
+              }
+              if(_.find(POG.analysis, {analysis_biopsy: options.analysis.analysis_biopsy})) {
+                // Found by analysis
+              }
+            }
+            */
 
             this.instance = POG;
             resolve(this.instance);
@@ -121,9 +121,9 @@ module.exports = class POG {
           return db.models.pog_analysis.create(analysis)
             .then((analysis) => {
 
-                POG.analysis = [analysis]; // Nest analysis inside POG
-                resolve(POG);
-              },
+              POG.analysis = [analysis]; // Nest analysis inside POG
+              resolve(POG);
+            },
               (error) => {
                 console.log('Unable to create pog analysis entry', error);
                 reject({message: 'Unable to create pog analysis entry'});

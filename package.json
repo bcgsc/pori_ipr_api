@@ -1,12 +1,13 @@
 {
   "private": true,
   "name": "ipr-api",
-  "version": "0.0.1",
+  "version": "1.2.0",
   "description": "Placeholder Interactive POG Report API",
   "main": "server.js",
   "scripts": {
-    "start": "node ./server.js",
-    "hardMigrate": "node ./server.js --database.migrate --database.hardMigrate",
+    "start": "node ./bin/www",
+    "migrate": "node ./bin/www --database.migrate",
+    "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
     "test": "mocha --timeout 10000"
   },
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",

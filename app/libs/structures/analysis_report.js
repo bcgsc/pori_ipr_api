@@ -298,14 +298,14 @@ module.exports = class analysis_report {
         .then(destroyBinding)
         .then(this.public.bind(this))
         .then(
-          (report) => {
-            resolve(report);
-          },
-          (err) => {
-            console.log('Failed to unbind the user:', err);
-            reject(err);
-          }
-        )
+        (report) => {
+          resolve(report);
+        },
+        (err) => {
+          console.log('Failed to unbind the user:', err);
+          reject(err);
+        }
+      )
 
     })
   }
