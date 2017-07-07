@@ -118,7 +118,7 @@ module.exports = class POG {
           analysis.name = (options.analysis && options.analysis.name) ? options.analysis.name : 'N/A';
 
           // Create analysis entry
-          db.models.pog_analysis.create(analysis)
+          return db.models.pog_analysis.create(analysis)
             .then((analysis) => {
 
               POG.analysis = [analysis]; // Nest analysis inside POG
