@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let POGUser = sequelize.define('POGUser', {
+  return sequelize.define('analysis_reports_user', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -23,6 +23,13 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    report_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      }
+    },
     user_id: {
       type: Sq.INTEGER,
       references: {
@@ -41,12 +48,21 @@ module.exports = (sequelize, Sq) => {
 
   },
   {
+    tableName: 'pog_analysis_reports_users',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes
     paranoid: true,
+    scopes: {
+      public: {
+        attributes: {
+          exclude: ['id', 'report_id', 'user_id']
+        },
+        include: [
+          {model: sequelize.models.user.scope('public'), as: 'user'}
+        ]
+      }
+    }
   });
-
-  return POGUser;
 };
 
