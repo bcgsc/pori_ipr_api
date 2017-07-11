@@ -39,12 +39,14 @@ router.route('/')
     if(req.query.type === 'genomic') opts.where.type = 'genomic';
 
 
-    // Optional States
-    if(!req.query.archived || !req.query.nonproduction || !req.query.reviewed) {
-      opts.where.state = {$not: []};
-      if(!req.query.archived) opts.where.state.$not.push('archived');
-      if(!req.query.nonproduction) opts.where.state.$not.push('nonproduction');
-      if(!req.query.reviewed) opts.where.state.$not.push('reviewed');
+    // States
+    if(req.query.states) {
+      let states = req.query.states.split(',');
+      opts.where.state = {$in: states};
+    }
+
+    if(!req.query.states) {
+      opts.where.state = { $not: ['archived', 'nonproduction', 'reviewed']};
     }
 
     // Are we filtering on POGUser relationship?
