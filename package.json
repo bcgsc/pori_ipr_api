@@ -36,6 +36,7 @@
     "require-dir": "^0.3.1",
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.5.1",
+    "socket.io": "^2.0.3",
     "sqlite3": "^3.1.8",
     "validator": "^6.2.1"
   },
