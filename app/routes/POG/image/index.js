@@ -24,7 +24,7 @@ router.route('/retrieve/:key')
         key: {
           in: keys
         },
-        pog_id: req.POG.id,
+        pog_report_id: req.report.id,
       },
       attributes: {exclude: ['id','deletedAt', 'pog_id', 'pog_report_id']},
     };
