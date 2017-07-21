@@ -14,6 +14,8 @@ let express = require('express'),
     crypto = require('crypto'),
     emailInUse = require(process.cwd() + '/app/libs/emailInUse');
 
+let Session     = require(process.cwd() + '/app/libs/Session');
+
 // Route for authentication actions
 router.route('/')
   .post((req,res,next) => {
@@ -25,100 +27,31 @@ router.route('/')
     let username = req.body.username,
         password = req.body.password;
 
-    // Attempt to find username
-    db.models.user.findOne({ where: {username: username}}).then(
-      (user) => {
+    let session = new Session(username, password, req);
 
-        if(user === null) return res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
+    session.authenticate().then(
+      (result) => {
+        res.set('X-token', result.token);
+        res.json({
+          ident: result.user.ident,
+          username: result.user.username,
+          type: result.user.type,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          email: result.user.email,
+          access: result.user.access
+        });
 
-        // User found!
-        if(user.type === 'local') {
-          // Check password hashing
-          if(bcrypt.compareSync(password, user.password)) {
-            createToken(user, req).then(
-              (token) => {
-                res.set('X-token', token);
-                res.json({
-                  ident: user.ident,
-                  username: user.username,
-                  type: user.type,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                  email: user.email,
-                  access: user.access
-                });
-              },
-              (error) => {
-                res.status(500).json({message: 'Unable to create user token'});
-              }
-            ); // End create token
-            
-          } else {
-            res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
-          }
-          
-        }
-
-        // Attempt BCGSC LDAP Authentication
-        if(user.type === 'bcgsc') {
-
-          $jira.authenticate(req.body.username, req.body.password).then(
-            (resp) => {
-              // Ensure we have a real JIRA token -- Successful Login
-              if(!resp.data.errorMessages && resp.data.session && resp.data.session.value) {
-                
-                // Extract cookie values
-                let cookies = resp.raw.headers["set-cookie"];
-                let xsrf, jToken;
-                _.forEach(cookies, (c) => {
-                  // get tokens from headers
-                  if(c.indexOf('JSESSIONID') !== -1) jToken = c.match(/=([A-z0-9-|]*)/)[0].replace('=','');
-                });
-
-                // Update User Entry
-                user.jiraXsrf = xsrf;
-                user.jiraToken = jToken;
-                user.save(); // Save Changes to User;
-
-                createToken(user, req).then(
-                  (token) => {
-
-                    res.set('X-token', token);
-                    res.json({
-                      ident: user.ident,
-                      username: user.username,
-                      type: user.type,
-                      firstName: user.firstName,
-                      lastName: user.lastName,
-                      email: user.email,
-                      access: user.access
-                    });
-                  },
-                  (error) => {
-                    res.status(500).json({message: 'Unable to create user token'});
-                  }
-                ); // End create token
-              } else {
-
-                res.status(400).json({ status: false, message: 'Unable to authenticate with the provided credentials.' });
-              }
-            },
-            (err) => {
-              console.log('Error', err);
-              res.status(500).json(err);
-            }
-          );
-
-        } // End attempt BCGSC LDAP Auth
-
-      }, // End user exists in DB...
-      (error) => {
-
-        // TODO: Check BCGSC JIRA anyway, maybe they just haven't signed up for our accounts yet!
-
-        res.status(400).json({error: { message: 'Unable to authenticate the provided credentials', code: 'invalidCredentials'}});
+        res.send();
+      },
+      (err) => {
+        res.status(500).json({message: "unable to authenticate"});
       }
-    );
+    )
+      .catch((e) => {
+        console.log('Exception thrown', e);
+      });
+
   })
   .delete((req,res,next) => {
     // Delete Token
