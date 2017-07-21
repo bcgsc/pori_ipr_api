@@ -41,8 +41,40 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
     this.registerResource('/')
       // Get all state definitions
       .get((req,res,next) => {
+
+        let opts = {
+          attributes: {
+            exclude: ['deletedAt', 'id', 'analysis_id', 'createdBy_id', 'group_id']
+          },
+          include: [
+            {as: 'analysis', model: db.models.pog_analysis.scope('public')},
+          ],
+          order: [
+            ['ordinal', 'ASC']
+          ],
+          where: {}
+        };
+
+        if(req.query.name) opts.where.name = req.query.name;
+        if(req.query.slug) opts.where.slug = req.query.slug;
+
+        let taskInclude = {
+          as: 'tasks',
+          model: db.models.tracking_state_task,
+          attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
+          order: [['ordinal','ASC']],
+          include: [
+            {as: 'assignedTo', model: db.models.user.scope('public')},
+            {as: 'checkins', model: db.models.tracking_state_task_checkin, include:[{as: 'user', model: db.models.user.scope('public')}], attributes: {exclude: ['id', 'task_id', 'deletedAt', 'user_id']}}
+          ] // end tasks include
+        }; // end state tasks include
+
+        if(req.query.unassigned === 'true') taskInclude.where = {assignedTo_id: null};
+
+        opts.include.push(taskInclude);
+
         // Get All Definitions
-        db.models.tracking_state.scope('public').findAll().then(
+        db.models.tracking_state.scope('public').findAll(opts).then(
           (states) => {
             res.json(states);
           },
@@ -65,7 +97,7 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
    */
   statePath() {
 
-    this.registerResource('/:state([A-z0-9-]{36})')
+    this.registerResource('/:state('+this.UUIDregex+')')
 
     // Delete definition
       .delete((req, res) => {
@@ -84,12 +116,24 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
         res.json(state);
       })
 
-      // Update definition
+      // Update State
       .put((req, res) => {
 
         // Create object
         let existing = new State(req.state);
 
+        existing.updateAll(req.body).then(
+          (result) => {
+            res.json(result);
+          },
+          (err) => {
+            console.log('Failed to update');
+            console.log(err);
+            res.status(400).json({message: 'Failed to update the task', cause: err});
+          }
+        )
+
+        /*
         // Update values
         existing.setUnprotected(req.body);
 
@@ -113,6 +157,7 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
             res.status(500).json({error: {message: 'Failed query to update state'}});
           }
         )
+        */
       });
   }
 
@@ -122,7 +167,7 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
    */
   assignUser() {
 
-    this.registerEndpoint('put', '/:state([A-z0-9-]{36})/assign/:assignee', (req, res, next) => {
+    this.registerEndpoint('put', '/:state('+this.UUIDregex+')/assign/:assignee', (req, res, next) => {
 
       // Create object
       let existing = new State(req.state);
