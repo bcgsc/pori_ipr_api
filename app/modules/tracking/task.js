@@ -56,7 +56,7 @@ module.exports = class Task {
 
       // Check for too many checkins
       if((this.instance.checkins.length + 1) > this.instance.checkInsTarget && !limitOverride) {
-        reject({error: {message: 'Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1)}});
+        reject({message: 'Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1), code: 'tooManyCheckins'});
         throw new TooManyCheckIns('Too many check ins have occurred for this task. Max: ' + this.instance.checkInsTarget + ', attempted: ' + (this.instance.checkins.length+1));
       }
 
@@ -180,7 +180,7 @@ module.exports = class Task {
                 },
                 (err) => {
                   console.log(err);
-                  reject({error: {message: 'Failed public lookup for task: ' + err.error.message}});
+                  reject({message: 'Failed public lookup for task: ' + err.error.message});
                 }
               )
 
@@ -214,9 +214,6 @@ module.exports = class Task {
       // Get all checkins
       db.models.tracking_state_task_checkin.findAll({where: { task_id: this.instance.id }}).then(
         (checkins) => {
-
-          console.log('Number of checkins found: ', checkins.length);
-          console.log('Required: ', this.instance.checkInsTarget);
 
           // Target met!
           if(checkins.length >= this.instance.checkInsTarget) {
@@ -298,7 +295,7 @@ module.exports = class Task {
         (result) => {
 
           if(result === null) {
-            reject({error: {message: 'Unable to find the specified user'}});
+            reject({message: 'Unable to find the specified user'});
             throw new Error('Unable to find the specified user.');
           }
 
@@ -313,7 +310,7 @@ module.exports = class Task {
                 },
                 (err) => {
                   console.log('Failed task query after updating user', err);
-                  reject({error: {message: 'Unable to get updated task: ' + err.message, cause: err}});
+                  reject({message: 'Unable to get updated task: ' + err.message, cause: err});
                 }
               );
 
@@ -361,7 +358,7 @@ module.exports = class Task {
         },
         (err) => {
           console.log(err);
-          reject({error: {message: 'Query failed to find the public instance: ' + err.message}});
+          reject({message: 'Query failed to find the public instance: ' + err.message});
         }
       )
 

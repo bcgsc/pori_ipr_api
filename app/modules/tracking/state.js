@@ -34,6 +34,45 @@ module.exports = class State {
 
   }
 
+  /**
+   * Update all possible settings
+   *
+   * @param {object} update - Key-value pair of items to be updated
+   * @returns {Promise} - Resolves with updated instance
+   */
+  updateAll(update) {
+
+    return new Promise((resolve, reject) => {
+
+      this.assignUser((update.assignedTo !== undefined && update.assignedTo !== null) ? update.assignedTo : null).then(
+        (assignRes) => {
+
+          this.setUnprotected(update);
+          this.setStatus(update.status).then(
+            (statusRes) => {
+              this.getPublic().then(
+                (pub) => {
+                  resolve(pub);
+                },
+                (err) => {
+                  reject({message: 'Unable to update the public version of state: ' + err.message});
+                }
+              );
+            },
+            (err) => {
+              reject({message: 'Unable to set State status: ' + err.message});
+            }
+          );
+        },
+        (err) => {
+          reject({message: 'Unable to assign user to all tasks: ' + err.message});
+        }
+      );
+
+    });
+
+  }
+
 
   /**
    * Set the status of a state
@@ -179,19 +218,28 @@ module.exports = class State {
    * @param {object} input - key-value pair object with values to be updated
    */
   setUnprotected(input) {
+
     if(input.name) this.instance.name = input.name;
     if(input.description) this.instance.description = input.description;
+    if(input.completedAt) this.instance.completedAt = input.completedAt;
+    if(input.startedAt) this.instance.startedAt = input.startedAt;
   }
 
 
   /**
    * Assigns a user to all state tasks
    *
-   * @param {string} user - The username or user ident to be assigned
+   * @param {string|null} user - The username or user ident to be assigned
    * @returns {Promise|object} - Resolves with update state instance
    */
   assignUser(user) {
     return new Promise((resolve, reject) => {
+
+      // Check for null first
+      if(user === null) return resolve(this.instance);
+
+      // Check for passed object
+      if(typeof user === 'object' && user.ident) user = user.ident;
 
       // Find user
       if(typeof user !== 'string') return reject({error: {message: 'user input must be a string'}});
@@ -211,11 +259,15 @@ module.exports = class State {
 
           if(userResult === null) return reject({error: {message: 'unable to find the specified user', code: 'userNotFound'}});
 
+          if(userResult.id === this.instance.assignedTo_id) return resolve(this.instance);
+
           let taskOpts = {
             where: {
               state_id: this.instance.id
             }
           };
+
+          this.instance.assignedTo_id = userResult.id;
 
           // Update tasks with new assigneee
           db.models.tracking_state_task.update({assignedTo_id: userResult.id}, taskOpts).then(
