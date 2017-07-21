@@ -159,7 +159,9 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
         },
         (err) => {
           console.log(err);
-          res.status(400).json({error: {message: "Unable to check-in task.", cause: err}});
+          let response = {message: 'Unable to check-in task: ' + err.message};
+          if(err.code) response.code = err.code;
+          res.status(400).json(response);
         })
         .catch((e) => {
           console.log('Error', e);
