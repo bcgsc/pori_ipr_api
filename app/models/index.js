@@ -197,6 +197,7 @@ probeSignature.belongsTo(user, {as: 'reviewerSignature', foreignKey: 'reviewerSi
 // Load Tracking Models
 
 let trackingModels = require('../modules/tracking/models')(sequelize);
+let notification = require('../modules/notification/models')(sequelize);
 
 // Subscription
 let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');

@@ -1,11 +1,11 @@
 'use strict';
 
-let changeCase  = require('change-case');
-let recursive   = require('recursive-readdir');
-let _           = require('lodash');
-let router      = require('express').Router({mergeParams: true});
-
-let RouterInterface = require('./routingInterface');
+let changeCase        = require('change-case');
+let recursive         = require('recursive-readdir');
+let _                 = require('lodash');
+let router            = require('express').Router({mergeParams: true});
+let SocketAuth        = require(process.cwd() + '/app/middleware/socketAuth');
+let RouterInterface   = require('./routingInterface');
 
 
 class Routing extends RouterInterface {
@@ -21,9 +21,18 @@ class Routing extends RouterInterface {
       routes: ['loadPog', '.svn'],
     };
 
+
     io.on('connect', (socket) => {
+      let auth = new SocketAuth(socket, this.io);
+      auth.challenge();
+
       console.log('Socket connected', socket.id);
 
+    });
+
+
+    io.on('disconnect', (socket) => {
+      console.log('Socket disconnected', socket.id);
     });
 
     // Add router to class
