@@ -90,6 +90,43 @@ module.exports = class StateDefinition {
   }
 
   /**
+   * Update the group setting
+   *
+   * @param {string} group - Update the group setting for this definition
+   * @returns {Promise}
+   */
+  updateGroup(group) {
+    return new Promise((resolve, reject) => {
+
+      if(group === this.instance.group.ident) return resolve(this.instance);
+
+      db.models.userGroup.findOne({where: {ident: group}}).then(
+        (result) => {
+
+          if(result === null) return reject({message: 'Unable to find the specified group'});
+
+          this.instance.group_id = result.id;
+          this.instance.save().then(
+            (result) => {
+              resolve(this.instance);
+            },
+            (err) => {
+              console.log('Unable to save tracking definition', err);
+              reject({message: 'Unable to save updated group'});
+            }
+          )
+
+        },
+        (err) => {
+          console.log(err);
+          reject({message: 'Unable to query for changed group.'});
+        }
+      )
+    });
+
+  }
+
+  /**
    * Update unprotected values
    *
    * @param {object} input - key-value pair object with values to be updated

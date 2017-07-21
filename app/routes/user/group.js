@@ -28,9 +28,10 @@ router.param('group', (req,res,next,ident) => {
   // Lookup group!
   let opts = {
     where: {ident: ident},
-    attributes: {exclude: ['owner_id', 'deletedAt']},
+    attributes: {exclude: ['deletedAt']},
     include: [
-      {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}}
+      {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
+      {as: 'owner', model: db.models.user.scope('public'), }
     ]
   };
   db.models.userGroup.findOne(opts).then(
@@ -51,10 +52,11 @@ router.route('/')
 // Get All Groups
   .get((req,res,next) => {
     let opts = {
-      attributes: {exclude: ['id','owner_id', 'deletedAt']},
+      attributes: {exclude: ['id', 'deletedAt']},
       order: 'name ASC',
       include: [
-        {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}}
+        {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
+        {as: 'owner', model: db.models.user.scope('public'), }
       ]
     };
 
@@ -70,33 +72,47 @@ router.route('/')
     );
   })
   .post((req,res,next) => {
-    // Add new group
-    db.models.userGroup.create({name: req.body.name, owner_id: req.user.id}).then(
-      (resp) => {
-        let opts = {
-          where: {ident: resp.ident},
-          attributes: {exclude: ['id','owner_id', 'deletedAt']},
-          include: [
-            {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}}
-          ]
-        };
 
-        // Get Group with inclusions
-        db.models.userGroup.findOne(opts).then(
-          (group) => {
-            res.json(group);
+    // Get Owner/User ID resolve
+    db.models.user.findOne({where: {ident: req.body.owner}}).then(
+      (result) => {
+
+        let newGroup = {name: req.body.name};
+
+        if ((result === null || result === undefined)&& req.body.user) return res.status(400).json({message: 'Unable to find the specified owner'});
+        if (result !== null) newGroup.owner_id = result.id;
+
+        // Add new group
+        db.models.userGroup.create(newGroup).then(
+          (resp) => {
+            let opts = {
+              where: {ident: resp.ident},
+              attributes: {exclude: ['id', 'deletedAt']},
+              include: [
+                {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
+                {as: 'owner', model: db.models.user.scope('public')}
+              ]
+            };
+
+            // Get Group with inclusions
+            db.models.userGroup.findOne(opts).then(
+              (group) => {
+                res.json(group);
+              },
+              (err) => {
+                console.log('SQL Groups lookup failure', err);
+                res.status(500).json({error: {message: 'There was an error loading the newly created group.', code: 'failedGroupLookup'}});
+              }
+            )
           },
           (err) => {
-            console.log('SQL Groups lookup failure', err);
-            res.status(500).json({error: {message: 'There was an error loading the newly created group.', code: 'failedGroupLookup'}});
+            console.log('SQL Groups Creation Error', err);
+            res.status(400).json({error: {message: 'Unable to create the new group', code: 'failedGroupsCreate'}});
           }
         )
-      },
-      (err) => {
-        console.log('SQL Groups Creation Error', err);
-        res.status(400).json({error: {message: 'Unable to create the new group', code: 'failedGroupsCreate'}});
+
       }
-    )
+    );
 
   });
 
@@ -108,17 +124,32 @@ router.route('/:group([A-z0-9-]{36})')
   })
 
   .put((req,res,next) => {
-    // Update Group
-    req.group.name = req.body.name;
-    req.group.save().then(
-      (resp) => {
-        res.json(resp);
+
+    // Get Owner/User ID resolve
+    db.models.user.findOne({where: {ident: req.body.owner}}).then(
+      (result) => {
+        if(result === null && req.body.user) return res.status(400).json({message: 'Unable to find the specified owner'});
+        if(result !== null) req.group.owner_id = result.id;
+
+        // Update Group
+        req.group.name = req.body.name;
+        req.group.save().then(
+          (resp) => {
+            res.json(resp);
+          },
+          (err) => {
+            console.log('Unable to update group', err);
+            res.status(400).json({error: {message: 'Unable to update the specified group', code: 'failedGroupUpdateQuery'}});
+          }
+        );
+
+
       },
       (err) => {
-        console.log('Unable to update group', err);
-        res.status(400).json({error: {message: 'Unable to update the specified group', code: 'failedGroupUpdateQuery'}});
+        console.log(err);
+        return res.status(400).json({message: 'Unable to update the group. Internal server issue.'});
       }
-    )
+    );
 
   })
 
