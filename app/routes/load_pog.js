@@ -12,6 +12,10 @@ let express = require('express'),
 
 let loaderConf = nconf.get('loader');
 
+const allowProbeStates = ['uploaded', 'nonproduction'];
+const allowGenomicStates = ['ready', 'archived', 'nonproduction'];
+
+
 // Handle requests for loading POG into DB
 router.route('/:type(genomic|probe)')
   .post((req,res,next) => {
@@ -48,10 +52,18 @@ router.route('/:type(genomic|probe)')
         let createReportOpts = {};
 
         // Check for state detail being set
-        if(req.body.state) createReportOpts.state = req.body.state;
+        if(req.params.type === 'genomic') {
+          createReportOpts.state = 'ready';
+
+          if(req.body.state && allowGenomicStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
+        }
 
         // If no state set, and probe, change default start to uploaded
-        if(!req.body.state && req.params.type === 'probe') createReportOpts.state = 'uploaded';
+        if(req.params.type === 'probe') {
+          createReportOpts.state = 'uploaded';
+
+          if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
+        }
         
         report.create(POG, req.user, (req.params.type !== 'genomic' && req.params.type !== 'probe') ? 'genomic' : req.params.type, createReportOpts)
           .then((report) => {
