@@ -90,11 +90,11 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
       })
 
       // Update definition
-      .put(this.updateTask);
+      .put(this.updateTask.bind(this));
 
     // Update Task Details
-    this.registerEndpoint('put', '/:POG/:analysis/:state/:task', this.updateTask);
-    this.registerEndpoint('put', '/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', this.updateTask);
+    this.registerEndpoint('put', '/:POG/:analysis/:state/:task', this.updateTask.bind(this));
+    this.registerEndpoint('put', '/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', this.updateTask.bind(this));
 
     // Retrieve Task
     this.registerEndpoint('get', '/:POG/:analysis/:state/:task', (req, res, next) => {
@@ -122,12 +122,12 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
     existing.setUnprotected(req.body);
 
     // Update Tasks & save
-    existing.instance.save().then(
+    existing.instance.save()
+      .then(existing.getPublic.bind(existing))
+      .then(
       (result) => {
-        let response = result.toJSON();
-        delete response.id;
-        delete response.group_id;
         res.json(result);
+        this.io.emit('taskStatusChange', result);
       },
       (err) => {
         console.log(err);
@@ -156,12 +156,15 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
           delete response.state_id;
           delete response.assignedTo_id;
           res.json(response);
+
+          this.io.emit('taskStatusChange', response);
         },
         (err) => {
           console.log(err);
           let response = {message: 'Unable to check-in task: ' + err.message};
           if(err.code) response.code = err.code;
           res.status(400).json(response);
+
         })
         .catch((e) => {
           console.log('Error', e);
