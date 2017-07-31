@@ -53,13 +53,41 @@
 
       "default_probe": {
         "loaders": [
-          "summary_patientInformation", "summary_genomicAlterationsIdentified", "alterations_identified", "alterations", "sample_information", "test_information", "approved_thisCancer", "approved_otherCancer"
+          "summary_patientInformation",
+          "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
         ]
       },
-
+      "PROFYLE_probe": {
+        "loaders": [
+          "summary_patientInformation",
+          "summary_genomicEventsTherapeutic",
+          "summary_genomicEventsTherapeutic",
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
+        ]
+      },
       "pog_probe": {
         "loaders": [
-          "summary_patientInformation", "summary_genomicAlterationsIdentified", "alterations_identified", "alterations", "sample_information", "test_information", "approved_thisCancer", "approved_otherCancer"
+          "summary_patientInformation",
+          "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
         ]
       },
       "GPH_Lymphoma_genomic": {
