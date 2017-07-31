@@ -71,7 +71,12 @@ module.exports = class Task {
           },
           (err) => {
             console.log('Failed to get instance', err);
-            reject({message: 'Failed to get instance after update: ' + err.error.message, cause: err });
+            let response = {
+              message: 'Failed to check-in task: ' + err.message,
+              cause: err
+            };
+            if(err.code) response.code = err.code;
+            reject(response);
           }
         )
         .catch((e) => {
@@ -107,7 +112,7 @@ module.exports = class Task {
         },
         (err) => {
           console.log(err);
-          reject({message: 'Unable to perform checkin: ' + err.error.message, cause: err});
+          reject({message: 'Unable to perform checkin: ' + err.error.message, cause: err, code: 'failedCreateCheckin'});
         }
       );
     });
@@ -180,7 +185,7 @@ module.exports = class Task {
                 },
                 (err) => {
                   console.log(err);
-                  reject({message: 'Failed public lookup for task: ' + err.error.message});
+                  reject({message: 'Failed public lookup for task: ' + err.message, code: 'failedCheckinRetrieve'});
                 }
               )
 
@@ -225,7 +230,8 @@ module.exports = class Task {
                 return resolve(this.instance);
               },
               (err) => {
-                
+                console.log('Failed to update completed task', err);
+                reject({message: 'Unable to update completed task', code: 'failedTaskUpdate'});
               }
             )
           }
@@ -269,6 +275,7 @@ module.exports = class Task {
     if(!this.validateTask(task))
 
     if(task.name) this.instance.name = task.name;
+    if(task.checkInsTarget) this.instance.checkInsTarget = task.checkInsTarget;
     if(task.description) this.instance.description = task.description;
     if(task.status) this.instance.status = task.status;
     if(task.assignedTo_id) this.instance.assignedTo_id = task.assignedTo_id;
@@ -310,7 +317,7 @@ module.exports = class Task {
                 },
                 (err) => {
                   console.log('Failed task query after updating user', err);
-                  reject({message: 'Unable to get updated task: ' + err.message, cause: err});
+                  reject({message: 'Unable to get updated task: ' + err.message, cause: err, code: 'failedRetrieveTask'});
                 }
               );
 

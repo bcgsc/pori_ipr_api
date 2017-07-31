@@ -71,6 +71,12 @@ class Routing extends RouterInterface {
 
     this.bindRouteObject('/tracking', TrackingRoutes.getRouter());
 
+    // Get Notification Routes
+    let notification = require('../modules/notification/routing');
+    let NotificationRoutes = new notification(io);
+
+    this.bindRouteObject('/notification', NotificationRoutes.getRouter());
+
   }
 
   /**

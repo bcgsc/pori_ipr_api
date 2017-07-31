@@ -55,6 +55,7 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -67,6 +68,7 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicEventsTherapeutic",
+          "summary_genomicAlterationsIdentified",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -79,6 +81,7 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
           "alterations_identified",
           "alterations",
           "sample_information",
