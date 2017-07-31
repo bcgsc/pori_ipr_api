@@ -9,6 +9,7 @@ module.exports = {
     {
       name              : 'IPR-API',
       script            : 'bin/www',
+      cwd               : '/var/www/ipr/api/production/current',
       watch             : false,
       log_date_format   : 'YYYY-MM-DD HH:mm Z',
       log_file          : '../persist/logs/combined.outerr.log',
