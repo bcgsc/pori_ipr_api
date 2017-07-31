@@ -40,6 +40,7 @@
           "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
         ]
       },
+
       "pog_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
@@ -49,10 +50,12 @@
           "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
         ]
       },
+
       "default_probe": {
         "loaders": [
           "summary_patientInformation",
           "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -65,6 +68,7 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicEventsTherapeutic",
+          "summary_genomicAlterationsIdentified",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -77,6 +81,7 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -84,9 +89,6 @@
           "approved_thisCancer",
           "approved_otherCancer"
         ]
-      },
-      "TFRI_GBM_genomic": {
-
       },
       "GPH_Lymphoma_genomic": {
         "libraries": ["A*_A*"],
