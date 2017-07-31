@@ -31,7 +31,6 @@
 
   "loader": {
     "defaults": {
-
       "default_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
@@ -41,7 +40,6 @@
           "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
         ]
       },
-
       "pog_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
@@ -51,17 +49,44 @@
           "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
         ]
       },
-
       "default_probe": {
         "loaders": [
-          "summary_patientInformation", "summary_genomicAlterationsIdentified", "alterations_identified", "alterations", "sample_information", "test_information", "approved_thisCancer", "approved_otherCancer"
+          "summary_patientInformation",
+          "summary_genomicAlterationsIdentified",
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
         ]
       },
-
+      "PROFYLE_probe": {
+        "loaders": [
+          "summary_patientInformation",
+          "summary_genomicEventsTherapeutic",
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
+        ]
+      },
       "pog_probe": {
         "loaders": [
-          "summary_patientInformation", "summary_genomicAlterationsIdentified", "alterations_identified", "alterations", "sample_information", "test_information", "approved_thisCancer", "approved_otherCancer"
+          "summary_patientInformation",
+          "summary_genomicAlterationsIdentified",
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
         ]
+      },
+      "TFRI_GBM_genomic": {
+
       },
       "GPH_Lymphoma_genomic": {
         "libraries": ["A*_A*"],
