@@ -4,7 +4,7 @@ const _         = require('lodash');
 const db        = require(process.cwd() + '/app/models');
 const $jira     = require(process.cwd() + '/app/api/jira');
 const crypto    = require('crypto');
-const bcrypt    = require(process.cwd() + '/lib/bcrypt');
+const bcrypt    = require('bcrypt');
 const moment    = require('moment');
 
 
@@ -45,6 +45,18 @@ class Session {
         .then(this._createToken.bind(this))
         .then(
           (result) => {
+
+            console.log("Authentication");
+
+            db.models.user.update({lastLogin: db.fn('NOW')}, {where: {id: this.user.id}}).then(
+              (result) => {
+                console.log('Updated lastLogin:', result);
+              },
+              (err) => {
+                console.log('Failed to update', err);
+              }
+            );
+
             resolve({user: this.user, token: this.token});
           },
           (err) => {
@@ -296,7 +308,6 @@ class Session {
 
     });
   }
-
 
 }
 
