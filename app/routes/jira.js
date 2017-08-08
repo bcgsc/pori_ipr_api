@@ -2,18 +2,14 @@
 
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
-  ldapAuth = require(process.cwd() + '/app/libs/ldapAuth'),
   router = express.Router({mergeParams: true}),
   db = require(process.cwd() + '/app/models'),
-  bcrypt = require(process.cwd() + '/lib/bcrypt'),
   moment = require('moment'),
   _ = require('lodash'),
-  validator = require('validator'),
   Q = require('q'),
   $jira = require(process.cwd() + '/app/api/jira'),
   crypto = require('crypto'),
-  $https = require('https'),
-  emailInUse = require(process.cwd() + '/app/libs/emailInUse');
+  $https = require('https');
 
 // Route for authentication actions
 router.route('/subtask')

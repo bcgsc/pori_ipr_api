@@ -3,7 +3,7 @@
 // app/routes/genomic/detailedGenomicAnalysis.js
 let validator = require('validator'),
   express = require('express'),
-  bcrypt = require(process.cwd() + '/lib/bcrypt'),
+  bcrypt = require('bcrypt'),
   router = express.Router({mergeParams: true}),
   acl = require(process.cwd() + '/app/middleware/acl'),
   _ = require('lodash'),
