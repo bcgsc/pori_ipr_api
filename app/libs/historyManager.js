@@ -32,7 +32,7 @@ class HistoryManager {
     // Retrieve entry
     let deferred = new Q.defer();
 
-    db.models.POGDataHistory.findOne({where: {ident: this.ident}, paranoid: false}).then(
+    db.models.pog_analysis_reports_history.findOne({where: {ident: this.ident}, paranoid: false}).then(
       (history) => {
         if(history === null) return deferred.reject({status: false, message: 'Unable to find a data history with that identifier'});
 
@@ -70,7 +70,7 @@ class HistoryManager {
                         };
 
                         // Log the restoration in the datahistory table.
-                        db.models.POGDataHistory.create(entry, {returning: true}).then(
+                        db.models.pog_analysis_reports_history.create(entry, {returning: true}).then(
                           (newHistory) => {
                             deferred.resolve({status: true, data: newHistory});
                           },
@@ -128,7 +128,7 @@ class HistoryManager {
     let deferred = Q.defer();
 
     // Retrieve detailed entries for each history value
-    db.models.POGDataHistory.findOne({where: {ident: this.ident}, paranoid: false}).then(
+    db.models.pog_analysis_reports_history.findOne({where: {ident: this.ident}, paranoid: false}).then(
       (history) => {
         if(history === null) return deferred.reject({status: false, message: 'Unable to find a data history with that identifier'});
 
@@ -171,7 +171,7 @@ class HistoryManager {
     let deferred = Q.defer();
 
     // Retrieve detailed entries for each history value
-    db.models.POGDataHistory.findOne({where: {ident: this.ident}, paranoid: false}).then(
+    db.models.pog_analysis_reports_history.findOne({where: {ident: this.ident}, paranoid: false}).then(
       (history) => {
         if(history === null) return deferred.reject({status: false, message: 'Unable to find a data history with that identifier'});
 
@@ -206,10 +206,6 @@ class HistoryManager {
 
 
 }
-
-
-
-
 
 
 module.exports = HistoryManager;
