@@ -35,7 +35,12 @@
       "RNA_reads": "rnaReads",
       "expression_rpkm": "rpkm",
       "fold_change": "foldChange",
-      "TCGA_perc": "tcgaPerc"
+      "TCGA_perc": "tcgaPerc",
+      "TCGA_qc": "tcgaQC",
+      "TCGA_norm_perc": "tcgaNormPerc",
+      "kIQR_normal": "kIQRNormal",
+      "ptx_percentile": "ptxPerc",
+      "ptx_kIQR": "ptxkIQR"
     },
     "drugTarget": {
       "Gene": "gene",
