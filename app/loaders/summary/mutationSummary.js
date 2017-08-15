@@ -18,6 +18,11 @@ let db = require(process.cwd() + '/app/models'),
  */
 module.exports = (report, dir, logger) => {
   
+  let required = {
+    integer: ['snvPercentileTCGA', 'indelPercentileTCGA', 'svPercentilePOG']
+  };
+  let validation = true;
+  
   // Create promise
   let deferred = Q.defer();
   
@@ -45,25 +50,38 @@ module.exports = (report, dir, logger) => {
       // Remap results
       let entry = _.head(remapKeys(result, nconf.get('summary:mutation')));
       
+      // Ensure we have integers
+      _.forEach(entry, (val, col) => {
+        if(required.integer.indexOf(col) > -1 && isNaN(parseInt(val))) {
+          validation = false;
+          deferred.reject({loader: 'mutationSummary', message: 'na values are not allowed. Expecting integers for column: ' + col, source: dir + '/JReport_CSV_ODF/mutational_spectrum.csv'});
+          return new Error('['+report.ident+'][Loader][Summary.MutationSummary] na values are not allowed. Expecting integers.');
+        }
+      });
+      
       // Map needed DB column values
       entry.pog_id = report.pog_id;
       entry.pog_report_id = report.id;
-
-      // Add to Database
-      db.models.mutationSummary.create(entry).then(
-        (result) => {
-          // Done
-          log('Patient mutation summary loaded.', logger.SUCCESS);
-         
-          // Resolve Promise
-          deferred.resolve(entry);
-        },
-        (err) => {
-          console.log(err);
-          deferred.reject({loader: 'mutationSummary', message: 'Unable to create database entries'});
-          log('Failed to create mutation summary entry.', logger.ERROR);
-        }
-      );
+      
+      if(validation) {
+        // Add to Database
+        db.models.mutationSummary.create(entry).then(
+          (result) => {
+            // Done
+            log('Patient mutation summary loaded.', logger.SUCCESS);
+      
+            // Resolve Promise
+            deferred.resolve(entry);
+          },
+          (err) => {
+            console.log(err);
+            deferred.reject({loader: 'mutationSummary', message: 'Unable to create database entries'});
+            log('Failed to create mutation summary entry.', logger.ERROR);
+          }
+        );
+      } else {
+        return;
+      }
     }
   );
   

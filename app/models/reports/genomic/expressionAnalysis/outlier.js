@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let outlier = sequelize.define('outlier', {
+  return sequelize.define('outlier', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -59,6 +59,30 @@ module.exports = (sequelize, Sq) => {
     },
     tcgaPerc: {
       type: Sq.INTEGER,
+    },
+    kIQR: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    tcgaQC: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    tcgaNormPerc: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    kIQRNormal: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    ptxPerc: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    ptxkIQR: {
+      type: Sq.FLOAT,
+      defaultValue: null,
     }
   }, {
     // Table Name
@@ -73,7 +97,5 @@ module.exports = (sequelize, Sq) => {
       }
     }
   });
-
-  return outlier;
 };
 

@@ -84,6 +84,8 @@ router.route('/:report')
   })
   .put((req,res) => {
 
+    let pastState = req.report.state;
+
     // Update Report
     if(req.body.state) {
       if(['ready', 'active', 'presented', 'archived', 'nonproduction', 'reviewed', 'uploaded', 'signedoff'].indexOf(req.body.state) === -1) return res.status(400).json({error: { message: 'The provided report state is not valid'}});
@@ -94,12 +96,29 @@ router.route('/:report')
     req.report.save().then(
       (result) => {
         res.json(req.report);
+
+        // Add history record
+        // Create DataHistory entry
+        let dh = {
+          type: 'change',
+          pog_id: req.report.pog_id,
+          pog_report_id: req.report.id,
+          table: "pog_analysis_reports",
+          model: "analysis_report",
+          entry: req.report.ident,
+          previous: pastState,
+          new: req.report.state,
+          user_id: req.user.id,
+          comment: 'N/A'
+        };
+        db.models.pog_analysis_reports_history.create(dh);
+
       },
       (err) => {
         res.status(500).json({error: {message: 'Unable to update report.'}});
       }
     )
-    
+
 
   });
 

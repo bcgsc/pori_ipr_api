@@ -16,9 +16,9 @@ router.param('POG', require(process.cwd() + '/app/middleware/pog'));
 router.route('/')
   // Get All POG History Entries
   .get((req,res,next) => {
-    db.models.POGDataHistory.findAll({where: {pog_id: req.POG.id}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include: [
+    db.models.pog_analysis_reports_history.findAll({where: {pog_id: req.POG.id, pog_report_id: req.report.id}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include: [
       {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
-      {as: 'tags', model: db.models.POGDataHistoryTag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
+      {as: 'tags', model: db.models.history_tag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
     ]}).then(
       (histories) => {
         res.json(histories);
@@ -56,9 +56,9 @@ router.route('/revert/:history([A-z0-9-]{36})')
       (result) => {
 
         // Make nice
-        db.models.POGDataHistory.findAll({where: {pog_id: req.POG.id, ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include:[
+        db.models.pog_analysis_reports_history.findAll({where: {ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include:[
           {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
-          {as: 'tags', model: db.models.POGDataHistoryTag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
+          {as: 'tags', model: db.models.history_tag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
         ]}).then(
           (history) => {
             res.json(history[0]);
@@ -99,14 +99,15 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
 
     let opts;
     // Create a tag on the latest change or on a specific entry
-    if(!req.params.ident) opts = {where: {pog_id: req.POG.id}, order: '"createdAt" DESC'};
+    if(!req.params.ident) opts = {where: {pog_id: req.POG.id, pog_report_id: req.report.id}, order: '"createdAt" DESC'};
     if(req.params.ident) opts = {where: {pog_id: req.POG.id, ident: req.params.ident}};
 
-    db.models.POGDataHistory.findOne(opts).then(
+    db.models.pog_analysis_reports_history.findOne(opts).then(
       (history) => {
         // Create tag entry
-        db.models.POGDataHistoryTag.create({
+        db.models.history_tag.create({
           pog_id: req.POG.id,
+          pog_report_id: req.report.id,
           history_id: history.id,
           user_id: req.user.id,
           tag: req.body.tag,
@@ -131,7 +132,7 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
   .delete((req,res,next) => {
 
     // Destroy!
-    db.models.POGDataHistoryTag.destroy({where: {ident: req.params.ident}, limit: 1}).then(
+    db.models.history_tag.destroy({where: {ident: req.params.ident}, limit: 1}).then(
       (result) => {
         if(result === 1) res.status(204).send();
         if(result !== 1) res.status(404).json({error: {message: 'Unable to find the tag to remove.', code: 'failedDestroyHistoryTagQuery'}});
@@ -149,7 +150,7 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
     // Create a tag on the latest change or on a specific entry
     if(req.params.ident) opts.where.ident = req.params.ident;
 
-    db.models.POGDataHistoryTag.findAll(opts).then(
+    db.models.history_tag.findAll(opts).then(
       (tags) => {
         if(tags.length === 1) tags = tags[0];
 
@@ -177,7 +178,7 @@ router.route('/tag/search/:query')
     };
 
     // Search for Tags
-    db.models.POGDataHistoryTag.findAll(opts).then(
+    db.models.history_tag.findAll(opts).then(
       (tags) => {
         res.json(tags);
       },

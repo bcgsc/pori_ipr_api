@@ -3,7 +3,6 @@
 // app/routes/genomic/detailedGenomicAnalysis.js
 let validator = require('validator'),
   express = require('express'),
-  bcrypt = require(process.cwd() + '/lib/bcrypt'),
   router = express.Router({mergeParams: true}),
   acl = require(process.cwd() + '/app/middleware/acl'),
   _ = require('lodash'),
@@ -15,7 +14,7 @@ let validator = require('validator'),
 router.use('/', (req,res,next) => {
   // Access Control
   let access = new acl(req, res);
-  access.read('admin', 'superUser');
+  access.read('*');
   if(access.check() === false) return res.status(403).send();
 
   // All good!

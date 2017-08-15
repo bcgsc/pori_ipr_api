@@ -6,8 +6,11 @@ const map = {
   "inf": "+infinity",
   "-inf": "-infinity",
   "NaN": null,
+  "NAN": null,
   "nan": null,
-  "na": null
+  "NA": null,
+  "na": null,
+  "Na": null
 };
 
 /**

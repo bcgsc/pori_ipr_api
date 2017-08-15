@@ -51,7 +51,8 @@ module.exports = (report, dir, logger, options) => {
         entries[k].alterationType = 'therapeutic';
         entries[k].approvedTherapy = 'otherCancer';
         entries[k].newEntry = false;
-        if(options.report === 'probe') entries[k].reportType = 'probe';
+        if(report.type === 'probe') entries[k].reportType = 'probe';
+        if(report.type === 'probe') entries[k].report = 'probe';
       });
       
       // Log progress

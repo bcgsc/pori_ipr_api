@@ -13,6 +13,7 @@
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
   "license": "GPL-3.0",
   "dependencies": {
+    "bcrypt": "^1.0.2",
     "body-parser": "^1.15.2",
     "change-case": "^3.0.0",
     "colors": "^1.1.2",
@@ -48,6 +49,7 @@
     "chai-http": "^3.0.0",
     "chai-things": "^0.2.0",
     "eslint": "^3.19.0",
-    "sequelize-cli": "^2.7.0"
+    "sequelize-cli": "^2.7.0",
+    "uuid": "^3.1.0"
   }
 }

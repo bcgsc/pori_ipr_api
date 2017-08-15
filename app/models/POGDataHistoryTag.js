@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  let POGDataHistoryTag = sequelize.define('POGDataHistoryTag', {
+  let POGDataHistoryTag = sequelize.define('history_tag', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -17,6 +17,14 @@ module.exports = (sequelize, Sq) => {
       unique: false,
       references: {
         model: 'POGs',
+        key: 'id',
+      }
+    },
+    pog_report_id: {
+      type: Sq.INTEGER,
+      unique: false,
+      references: {
+        model: 'pog_analysis_reports',
         key: 'id',
       }
     },
@@ -36,7 +44,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.INTEGER,
       unique: false,
       references: {
-        model: 'POGDataHistories',
+        model: 'pog_analysis_reports_histories',
         key: 'id',
       }
     },
@@ -44,6 +52,7 @@ module.exports = (sequelize, Sq) => {
     // Automatically create createdAt
     createdAt: 'createdAt',
     updatedAt: false,
+    tableName: 'pog_analysis_reports_history_tags'
   });
 
   return POGDataHistoryTag;

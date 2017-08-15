@@ -39,8 +39,10 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
           throw Error('The column: ' + col + ' does not exist on the current Entry.');
         }
         newEntry[col] = fullCurrentEntry[col]; // Map from old to new
-      });
 
+
+      });
+      console.log('New Entry', newEntry);
 
       // Get the max for the current dataVersion in the table
       model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false}).then(
@@ -72,10 +74,15 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
                 model.destroy({where: destroyWhere, limit: 1}).then(
                   (destroyResponse) => {
 
+                    let report_id = null;
+                    if(newEntry.pog_report_id) report_id = newEntry.pog_report_id;
+                    if(newEntry.report_id) report_id = newEntry.report_id;
+
                     // Create DataHistory entry
                     let dh = {
                       type: 'change',
                       pog_id: newEntry.pog_id,
+                      pog_report_id: report_id,
                       table: model.getTableName(),
                       model: model.name,
                       entry: newEntry.ident,
@@ -84,7 +91,7 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
                       user_id: user.id,
                       comment: comment
                     };
-                    db.models.POGDataHistory.create(dh);
+                    db.models.pog_analysis_reports_history.create(dh);
 
                     // Resolve promise
                     deferred.resolve({status: true, data: {create: createResponse, destroy: destroyResponse}});
