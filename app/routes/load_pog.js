@@ -43,8 +43,10 @@ router.route('/:type(genomic|probe)')
 
     // First check if there's a POG entry..
     let POG = new pogLib(req.params.POGID);
-
-    // Check if the POG has been created yet
+  
+    /**
+     * Retrieve/Create POG/Patient Entry First
+     */
     POG.retrieve(pogOpts)
       .then((POG) => {
         // Create Report
@@ -64,7 +66,10 @@ router.route('/:type(genomic|probe)')
 
           if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
         }
-        
+  
+        /**
+         * Create a new report entry (Also creates new analysis run)
+         */
         report.create(POG, req.user, (req.params.type !== 'genomic' && req.params.type !== 'probe') ? 'genomic' : req.params.type, createReportOpts)
           .then((report) => {
 
@@ -73,40 +78,43 @@ router.route('/:type(genomic|probe)')
 
             // Set profile
             let loaderOptions = { profile: profile };
-
+            
+            // Check for supplied base directory
             if(req.body.baseDir) loaderOptions.baseDir = req.body.baseDir;
 
-            // Check for supplied base directory
-
+            // Check for specified loaders
+            if(req.body.loaders) {
+              loaderOptions.load = req.body.loaders;
+            }
+            
+            // Create RunLoader promise object
             let runLoader;
 
-            // Genomic/Non-pog or Probe Report?
+            // POG Genomic Report
             if(loaderOptions.profile === 'pog_genomic') {
               let GenomicLoader = new require(process.cwd() + '/app/loaders');
               let Loader = new GenomicLoader(POG, report, loaderOptions);
               runLoader = Loader.load();
             }
-
+            
+            // POG Probe Report
             if(loaderOptions.profile === 'pog_probe') {
-
               let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
               let Loader = new ProbeLoader(POG, report, loaderOptions);
               runLoader = Loader.load();
             }
 
-
+            // Non-POG Probe Report
             if(req.body.project !== 'POG' && req.params.type === 'probe') {
-
               loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
               loaderOptions.profile = 'nonPOG';
-
               let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
               let Loader = new ProbeLoader(POG, report, loaderOptions);
               runLoader = Loader.load();
             }
 
+            // Non-POG Genomic Report
             if(req.body.project !== 'POG' && req.params.type === 'genomic') {
-
               // Non-POG options
               loaderOptions.nonPOG = true;
               loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
@@ -121,6 +129,7 @@ router.route('/:type(genomic|probe)')
               runLoader = Loader.load();
             }
 
+            // No Loader Profile could be found
             if(runLoader === null) {
               res.status(500).json({error: {message: 'Unable to invoke loading mechanism'}});
               throw new Error('No Loaders Running');

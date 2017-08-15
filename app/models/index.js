@@ -146,9 +146,11 @@ structuralVariation.sv.belongsTo(analysis_reports, {as: 'report', foreignKey: 'p
 // Structural Variation
 let expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import(__dirname + '/reports/genomic/expressionAnalysis/outlier');
+expressionAnalysis.proteinExpression = sequelize.import(__dirname + '/reports/genomic/expressionAnalysis/proteinExpression');
 expressionAnalysis.drugTarget = sequelize.import(__dirname + '/reports/genomic/expressionAnalysis/drugTarget');
 
 expressionAnalysis.outlier.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+expressionAnalysis.proteinExpression.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 expressionAnalysis.drugTarget.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 // Data History
