@@ -56,6 +56,7 @@ router.route('/expressionDensityGraphs')
     db.models.imageData.findAll({
       where: {
         pog_id: req.POG.id,
+        pog_report_id: req.report.id,
         key: {
           $like: 'expDensity.%'
         }
