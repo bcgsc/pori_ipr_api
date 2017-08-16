@@ -76,6 +76,13 @@ class Routing extends RouterInterface {
     let NotificationRoutes = new notification(io);
 
     this.bindRouteObject('/notification', NotificationRoutes.getRouter());
+  
+    
+    // Get Notification Routes
+    let GeneViewer = require('../modules/geneViewer/routing');
+    let GeneViewerRoutes = new GeneViewer(io);
+    
+    this.bindRouteObject('/POG/:POG/report/:report/geneviewer', GeneViewerRoutes.getRouter());
 
   }
 
