@@ -3,48 +3,71 @@
 process.env.NODE_ENV = 'test';
 
 // Dependencies
-let recursive = require('recursive-readdir');
-let _ = require('lodash');
+const assert      = require('assert');
+const http        = require('http');
+const colors      = require('colors');        // Console colours
+
+const port        = '8081'; // Data Access
+const admin_port  = '8082'; // Admin Functions
+const API_VERSION = '1.0';
 
 
-let chai = require('chai'),
-  chaiHttp = require('chai-http'),
-  server = require(process.cwd() + '/server.js'),
-  should = chai.should(),
-  Q = require('q');
+// Start Server
+console.log(('  BCGSC - IPR-API Server '+ API_VERSION +' | Testing ').blue.bold.bgWhite);
+console.log("=".repeat(50).dim);
+console.log(("Node Version: " + process.version).yellow);
+console.log(('Running Environment: '+ process.env.NODE_ENV).green, '\n');
+console.log(('Application API Port: ').green,  port.toString().white);
+console.log(('Admin API Port: ').green, admin_port.toString().white, '\n');
 
-chai.use(chaiHttp);
-
-
-// Index for orderly execution of unit tests
-require('./exclude/loadPog.js').then(
-  (success) => {
-
-    console.log('Successfully loaded the pog.', success);
-
-    require('./exclude/pog.js'); // Must be first
-    require('./exclude/session.js');
-
-    // All Others
-
-    // Retrieve test files
-    recursive(process.cwd() +'/test', (err, files) => {
-
-      files.forEach((file) => {
-
-        if(file.indexOf('exclude') !== -1) return;
-        if(file.indexOf('tests.js') !== -1) return;
-        if(file.indexOf('.svn') !== -1) return;
-
-        // Require in additional tests
-        require(file);
-      });
-
+describe('IPR API', () => {
+  
+  before(function(done) {
+    
+    this.timeout(30000);
+    
+    let App = require('../app').then((app) => {
+    
+      let admin = require('../admin');
+    
+      app.set('port', port);
+      admin.set('port', admin_port);
+      
+      
+      /**
+       * Create HTTP server.
+       */
+      
+      let server = http.createServer(app);
+      let admin_server = http.createServer(admin);
+      
+      /**
+       * Socket.io
+       */
+      
+      let io     = app.io;
+      io.attach(server);
+      
+      /**
+       * Listen on provided port, on all network interfaces.
+       */
+      
+      server.listen(port);
+      admin_server.listen(admin_port);
+      
+      console.log('Server listening');
+      
+      done();
+      
     });
-
-
-  },
-  (err) => {
-    console.log('Unable to load POG.');
-  }
-);
+    
+  });
+  
+  // Reports Tests
+  require('./reports/reports');
+  
+  // Utilities
+  require('./utilities/pyToSql');
+  require('./utilities/remapKeys');
+  
+});

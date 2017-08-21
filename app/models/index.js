@@ -9,15 +9,16 @@ let CONFIG = {};
 if(process.env.NODE_ENV === 'production') {
   CONFIG = require('/var/www/ipr/api/production/persist/.env.json');
 }
-if(process.env.NODE_ENV === 'development') {
+if(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
   try {
     // iprweb01 dev
-    CONFIG = require('/var/www/ipr/api/development/persist/.env.json');
+    CONFIG = require('/var/www/ipr/api/development/persist/.env.json')[process.env.NODE_ENV];
   }
   catch (e) {
     console.log('!! DB Config not found - attempting to load local dev .env.json file');
     // Probably running on local dev
-    CONFIG = require(process.cwd() + '/.env.json');
+    let configs = require(process.cwd() + '/.env.json');
+    CONFIG = configs[process.env.NODE_ENV];
   }
 }
 
@@ -25,7 +26,7 @@ if(process.env.NODE_ENV === 'development') {
 const dbSettings = CONFIG.database[CONFIG.database.engine];
 let sequelize = new Sq(dbSettings.database, dbSettings.username, dbSettings.password, {
   host: dbSettings.hostname,
-  dialect: 'postgres',
+  dialect: CONFIG.database.engine,
   port: dbSettings.port,
   schema: dbSettings.schema,
   logging: null
