@@ -1,4 +1,14 @@
 #!~/apps/node-v6.10.3-linux-x64/bin/node
+"use strict";
+
+// Set environment based on config first.
+if(process.env.NODE_ENV === undefined || process.env.NODE_ENV === null) {
+  // Get from command line args
+  const args = minimist(process.argv.slice(2));
+  if (args.env) process.env.NODE_ENV = args.env;
+  if (!args.env) process.env.NODE_ENV = 'production';
+}
+
 
 /**
  * Module dependencies.
@@ -34,38 +44,54 @@ console.log(('Admin API Port: ').green, admin_port.toString().white, '\n');
 
 
 // Import Namespaces
-let admin = require('../admin');
-let app = require('../app');
-
-app.set('port', port);
-admin.set('port', admin_port);
-
-
-/**
- * Create HTTP server.
- */
-
-let server = http.createServer(app);
-let admin_server = http.createServer(admin);
-
-/**
- * Socket.io
- */
-
-let io     = app.io;
-io.attach(server);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-
-admin_server.listen(admin_port);
-server.on('error', onError);
-server.on('listening', onListening);
+let App = require('../app').then((app) => {
+  
+  
+  let admin = require('../admin');
+  app.set('port', port);
+  admin.set('port', admin_port);
+  
+  
+  /**
+   * Create HTTP server.
+   */
+  
+  let server = http.createServer(app);
+  let admin_server = http.createServer(admin);
+  
+  /**
+   * Socket.io
+   */
+  
+  let io     = app.io;
+  io.attach(server);
+  
+  /**
+   * Listen on provided port, on all network interfaces.
+   */
+  
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+  
+  admin_server.listen(admin_port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+  
+  
+  /**
+   * Event listener for HTTP server "listening" event.
+   */
+  
+  function onListening() {
+    let addr = server.address();
+    let bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+    debug('Listening on ' + bind);
+  }
+  
+});
 
 /**
  * Normalize a port into a number, string, or false.
@@ -73,17 +99,17 @@ server.on('listening', onListening);
 
 function normalizePort(val) {
   let port = parseInt(val, 10);
-
+  
   if (isNaN(port)) {
     // named pipe
     return val;
   }
-
+  
   if (port >= 0) {
     // port number
     return port;
   }
-
+  
   return false;
 }
 
@@ -95,11 +121,11 @@ function onError(error) {
   if (error.syscall !== 'listen') {
     throw error;
   }
-
+  
   let bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
-
+  
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
@@ -113,16 +139,4 @@ function onError(error) {
     default:
       throw error;
   }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  let addr = server.address();
-  let bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
 }
