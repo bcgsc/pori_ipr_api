@@ -4,6 +4,7 @@
 let validator = require('validator'),
   express = require('express'),
   bcrypt = require('bcrypt'),
+  bcryptjs = require('bcryptjs'),
   router = express.Router({mergeParams: true}),
   acl = require(process.cwd() + '/app/middleware/acl'),
   _ = require('lodash'),
@@ -113,7 +114,8 @@ router.route('/')
               if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
 
               // Hash password
-              if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
+              //if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
+              if(req.body.type === 'local') req.body.password = bcryptjs.hashSync(req.body.password, 10);
               if(req.body.type === 'ldap') req.body.password = null;
 
               // Everything looks good, create the account!
@@ -216,7 +218,8 @@ router.route('/:ident([A-z0-9-]{36})')
 
     if(req.body.settings) updateBody.settings = req.body.settings;
 
-    if(req.body.password && req.body.password.length > 5) updateBody.password = bcrypt.hashSync(req.body.password, 10);
+    //if(req.body.password && req.body.password.length > 5) updateBody.password = bcrypt.hashSync(req.body.password, 10);
+    if(req.body.password && req.body.password.length > 5) updateBody.password = bcryptjs.hashSync(req.body.password, 10);
 
     // Attempt user model update
     db.models.user.update(updateBody, { where: {ident: req.user.ident}, limit: 1 }).then(
