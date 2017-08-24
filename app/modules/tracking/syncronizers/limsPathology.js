@@ -5,6 +5,7 @@ const Syncro      = require(process.cwd() + '/app/synchronizer/synchro'); // Imp
 const db          = require(process.cwd() + '/app/models/'); // Load database
 const $lims       = require(process.cwd() + '/app/api/lims');
 const _           = require('lodash');
+const moment      = require('moment');
 
 //let logger        = require('winston'); // Load logging library
 let logger        = process.logger;
@@ -20,9 +21,11 @@ class LimsPathologySync {
   
   constructor (options={}) {
     this.dryrun = options.dryrun || false;
-    this.pogids = [];
-    this.pogs = {};
-    this.diseaseLibraries = [];
+    this.pogids = [];             // POGIDs that need to be check for Path passed
+    this.pog_analyses = {};       // Analyses being tracked
+    this.pogs = {};               // Processed POGs from LIMS
+    this.diseaseLibraries = [];   // Libraries that need resolution from LIMS Library API
+    this.maxPathWindow = options.maxPathWindow || "2592000"; // Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
   }
   
   /**
@@ -38,6 +41,7 @@ class LimsPathologySync {
         .then(this._parseLimsSampleResults.bind(this))
         .then(this.queryLimsLibrary.bind(this))
         .then(this._parseLimsLibraryResults.bind(this))
+        .then(this.sortLibraryToBiopsy.bind(this))
         .then(this.updateIprTracking.bind(this))
         .then((result) => {
           console.log('Outcome', result);
@@ -62,12 +66,12 @@ class LimsPathologySync {
       let opt = {
         where: {
           slug: 'pathology_passed',
-          deletedAt: null
+          deletedAt: null,
+          status: 'pending',
         },
         include: [
           {as: 'state', model: db.models.tracking_state.scope('noTasks'), }
-        ],
-        limit: 1
+        ]
       };
   
       logger.info('Querying DB for all tracking tasks without pathology');
@@ -79,9 +83,30 @@ class LimsPathologySync {
       
           // Loop over results
           _.forEach(result, (r) => {
-            pogs.push(r.state.analysis.pog.POGID);
+            
+            let POGID = r.state.analysis.pog.POGID;
+            
+            pogs.push(POGID);
+            
+            if(!this.pog_analyses[POGID]) this.pog_analyses[POGID] = [];
+            this.pog_analyses[POGID].push({
+              ident: r.state.analysis.ident,
+              clinical_biopsy: r.state.analysis.clinical_biopsy,
+              analysis_biopsy: r.state.analysis.analysis_biopsy,
+              disease: r.state.analysis.disease,
+              biopsy_notes: r.state.analysis.biopsy_notes,
+              libraries: r.state.analysis.libraries,
+              createdAt: r.state.analysis.createdAt,
+              task: {
+                ident: r.ident,
+                status: r.status,
+                name: r.name,
+                slug: r.slug
+              },
+              pathDetected: false,
+            });
+            
           });
-  
   
           logger.debug('Found ' + result.length + ' tasks requiring lookup');
           this.pogids = pogs;
@@ -98,7 +123,6 @@ class LimsPathologySync {
   /**
    * Query LIMS Sample endpoint for POGs that have results
    *
-   * @param {array} pogids
    * @returns {Promise}
    */
   queryLimsSample() {
@@ -107,8 +131,8 @@ class LimsPathologySync {
       logger.info('Querying LIMS for sample details for supplied POGs');
       
       $lims.sample(this.pogids).then(
-        (result) => {
-          logger.info('Found ' + result.results.length + ' Results from LIMS sample endpoint.');
+        (pogs) => {
+          logger.info('Found ' + pogs.results.length + ' Results from LIMS sample endpoint.');
           resolve(pogs.results);
         })
         .catch((err) => {
@@ -139,10 +163,11 @@ class LimsPathologySync {
           name: sample.library,
           type: (sample.disease_status === 'Normal') ? 'normal' : null,
           source: sample.original_source_name,
-          disease: sample.disease
+          disease: sample.disease,
+          sample_collection_time: sample.sample_collection_time
         };
     
-        if(sample.disease_status === 'Diseased') {
+        if(sample.disease_status === 'Diseased' && this.diseaseLibraries.indexOf(sample.library) === -1) {
           this.diseaseLibraries.push(sample.library);
         }
     
@@ -160,7 +185,7 @@ class LimsPathologySync {
     
       });
   
-      logger.info('Resulting in ' + Object.keys(pogs).length + ' POGs that have pathology information and need biopsy library details.');
+      logger.info('Resulting in ' + this.diseaseLibraries.length + ' POGs that have pathology information and need biopsy library details.');
       
       resolve();
   
@@ -176,10 +201,10 @@ class LimsPathologySync {
    */
   queryLimsLibrary() {
     return new Promise((resolve, reject) => {
-      $lims.library(diseaseLibraries).then(
+      $lims.library(this.diseaseLibraries).then(
         (libraries) => {
   
-          logger.info('Received ' + libraryDetails.results.length + ' libraries from LIMS library endpoint.');
+          logger.info('Received ' + libraries.results.length + ' libraries from LIMS library endpoint.');
           
           resolve(libraries.results);
         })
@@ -229,7 +254,73 @@ class LimsPathologySync {
   
       logger.info('Finished receiving library details.');
       
+      resolve();
+      
     });
+  }
+  
+  /**
+   * Detect biopsy events
+   *
+   */
+  sortLibraryToBiopsy() {
+    
+    return new Promise((resolve, reject) => {
+      
+      // Loop over LIMS entries results
+      _.forEach(this.pogs, (lims_biops, pogid) => {
+        
+        // Are there any Tracking Entries waiting?
+        let tracking = this.pog_analyses[pogid];
+        
+        // Are there any biopsies waiting?
+        if(Object.keys(tracking).length > 0) {
+          
+          // Loop over tracking analysis to see if there's a matching biopsy window by then looping over LIMS entries
+          _.forEach(tracking, (tracking_analysis, track_i) => {
+            
+            // Loop over the found LIMS biopsy sorted libraries
+            _.forEach(lims_biops, (lims_libs, lims_biopsy_date) => {
+  
+              let normal = _.find(lims_libs, {type: 'normal'});
+              let tumour = _.find(lims_libs, {type: 'tumour'});
+              let transcriptome = _.find(lims_libs, {type: 'transcriptome'});
+  
+              // Find Normal
+              // Check that the library's collection date isn't out of scope for this tracking biopsy
+              //console.log(pogid, lims_biopsy_date, moment(lims_biopsy_date).unix(), tracking_analysis.createdAt, moment(tracking_analysis.createdAt).unix());
+              
+              if(Math.abs(moment(tracking_analysis.createdAt).unix() - moment(lims_biopsy_date).unix()) > this.maxPathWindow) {
+                logger.info('Tracking event ' + pogid + ' ' + tracking_analysis.task.ident + ' has a LIMS biopsy event out of the acceptable max pathology waiting window.');
+                return;
+              }
+              
+              //console.log('normal', normal);
+              //console.log('tumour', tumour);
+              //console.log('transcriptome', transcriptome);
+              
+              this.pog_analyses[pogid][track_i].libraries = {
+                normal: normal.name,
+                tumour: tumour.name,
+                transcriptome: transcriptome.name,
+              };
+              this.pog_analyses[pogid][track_i].pathDetected = true;
+              this.pog_analyses[pogid][track_i].status = 'complete';
+              
+              
+            });
+            
+          });
+          
+        }
+        
+      });
+  
+      //console.log('Have tracking waiting for', pogid, tracking);
+      console.log('Finished lims/tracking sync', JSON.stringify(this.pog_analyses));
+    
+    });
+  
   }
   
   /**
@@ -243,9 +334,11 @@ class LimsPathologySync {
     return new Promise((resolve, reject) => {
     
       console.log('Ready to update IPR', JSON.stringify(this.pogs));
+      
     
     });
   }
+  
   
   /**
    * TODO: Trigger hooks
@@ -261,7 +354,10 @@ class LimsPathologySync {
 }
 
 
+let run = new LimsPathologySync({});
+run.init();
 
+/*
 let limsPathologySync = () => {
   return new Promise((resolve, reject) => {
     // First get list of all tracking cases that exist without path pass
@@ -280,7 +376,6 @@ let limsPathologySync = () => {
     
     db.models.tracking_state_task.findAll(opt).then(
       (result) => {
-        console.log(JSON.stringify(result));
         
         let pogs = [];
         
@@ -305,8 +400,6 @@ let limsPathologySync = () => {
 };
 
 
-let run = new LimsPathologySync({});
-run.init();
 
 let queryLimsSample = (pogids) => {
 
@@ -395,17 +488,8 @@ let queryLimsSample = (pogids) => {
   });
   
 };
-
+*/
 
 //LimsSync.registerHook('PassedPathology', 10000, limsPathologySync);
-
-queryLimsSample(['POG914', 'POG922', 'POG695']).then(
-  (result) => {
-    console.log('Successful LIMS API call', result);
-  }
-)
-  .catch((err) => {
-    console.log('Error Returned', err);
-  });
 
 module.exports = LimsSync;
