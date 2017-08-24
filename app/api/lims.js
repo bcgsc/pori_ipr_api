@@ -61,7 +61,6 @@ $lims.sample = (pogid) => {
         }
         
         if(!err) {
-          console.log('result', body);
           resolve(JSON.parse(body));
         }
       
@@ -79,28 +78,24 @@ $lims.sample = (pogid) => {
  */
 $lims.library = (libraries) => {
   
+  if(libraries.length === 0) throw new Error("Must be searching for more than 1 library");
+  
   return new Promise((resolve, reject) => {
-    
-    let body = {
-      filters: {
-        op: "or",
-        content: []
-      }
-    };
     
     if(typeof libraries === 'string') {
       libraries = [libraries];
     }
   
-    _.forEach(libraries, (l) => {
-      body.filters.content.push({
-        op: "=",
+    let body = {
+      filters: {
+        op: "in",
         content: {
-          field: 'name',
-          value: l
+          field: "name",
+          value: libraries
         }
-      })
-    });
+      }
+    };
+    
     
     request({
       method: 'POST',
