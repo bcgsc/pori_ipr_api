@@ -1,8 +1,8 @@
 "use strict";
-let Sq = require('sequelize');
-let path = require('path');
-let nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
-let colors = require('colors');
+const Sq          = require('sequelize');
+const nconf       = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
+const colors      = require('colors');
+const bcrypt      = require('bcryptjs');
 
 let CONFIG = {};
 
@@ -225,9 +225,6 @@ if(nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
     (res) => {
       console.log(colors.dim('[DB] ') + colors.bgGreen('Finished syncing'));
       
-      // Create Admin User
-      // Load in bcrypt
-      let bcrypt = require(process.cwd() + '/lib/bcrypt');
 
       // Insert Admin User
       user.create({username: 'admin', password: bcrypt.hashSync('AdminMaster', 10), firstName: 'Admin', lastName: 'User', email: 'iprAdmin@bcgsc.ca', access: 'superUser'}).then(
