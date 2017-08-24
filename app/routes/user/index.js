@@ -3,8 +3,7 @@
 // app/routes/genomic/detailedGenomicAnalysis.js
 let validator = require('validator'),
   express = require('express'),
-  bcrypt = require('bcrypt'),
-  bcryptjs = require('bcryptjs'),
+  bcrypt = require('bcryptjs'),
   router = express.Router({mergeParams: true}),
   acl = require(process.cwd() + '/app/middleware/acl'),
   _ = require('lodash'),
@@ -114,8 +113,7 @@ router.route('/')
               if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
 
               // Hash password
-              //if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
-              if(req.body.type === 'local') req.body.password = bcryptjs.hashSync(req.body.password, 10);
+              if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
               if(req.body.type === 'ldap') req.body.password = null;
 
               // Everything looks good, create the account!
