@@ -53,6 +53,7 @@ router.route('/:alteration([A-z0-9-]{36})')
         // Need to create DataHistory entry
         db.models.pog_analysis_reports_history.create({
           pog_id: req.POG.id,
+          pog_report_id: req.report.id,
           type: 'remove',
           table: db.models.genomicAlterationsIdentified.getTableName(),
           model: db.models.genomicAlterationsIdentified.name,
