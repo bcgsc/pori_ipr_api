@@ -4,8 +4,7 @@ const _         = require('lodash');
 const db        = require(process.cwd() + '/app/models');
 const $jira     = require(process.cwd() + '/app/api/jira');
 const crypto    = require('crypto');
-const bcrypt    = require('bcrypt');
-const bcryptjs    = require('bcryptjs');
+const bcrypt    = require('bcryptjs');
 const moment    = require('moment');
 
 
@@ -220,8 +219,7 @@ class Session {
   _localAuth() {
     return new Promise((resolve, reject) => {
       // Check password hashing
-      //if(bcrypt.compareSync(this.password, this.user.password)) {
-      if(bcryptjs.compareSync(this.password, this.user.password)) {
+      if(bcrypt.compareSync(this.password, this.user.password)) {
 
         resolve(this.user);
       } else {
