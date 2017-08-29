@@ -4,6 +4,7 @@ const uuidv4        = require('uuid/v4');
 const moment        = require('moment');
 const db            = require(process.cwd() + '/app/models');
 const _             = require('lodash');
+const logger        = process.logger;
 
 /**
  * Synchronizer base class
@@ -40,13 +41,13 @@ class Synchro {
       // Loop over registered hooks
       _.forEach(this.hooks, (hook, uuid) => {
         
-       promises.push(this._checkHook(uuid));
-       
+        promises.push(this._checkHook(uuid));
+        
       });
       
       Promise.all(promises).then(
         (result) => {
-          console.log('Invocation', round, ' | Waiting another ' + this.interval + 's');
+          logger.info('Invocation', round, ' | Waiting another ' + this.interval + 's');
         }
       ).catch((err) => {
         console.log('There was a problem with the hook processing', err);
@@ -67,24 +68,24 @@ class Synchro {
    * Takes in a name, frequency, and callback function to be invoked
    *
    * @param {string} name - Name of hook to register
-   * @param {integer} frequency - Number of sections between iterations
-   * @param {function} fn - The function to be invoked on each iteration
+   * @param {number} frequency - Number of sections between iterations
+   * @param {object} obj - The obj with init function
    *
    * @returns {object} - Returns the UUID
    */
-  registerHook(name, frequency, fn) {
-  
+  registerHook(name, frequency, obj) {
+    
     let uuid = uuidv4();
     
     this.hooks[uuid] = {
-      fn: fn,
+      obj: obj,
       name: name,
       frequency: frequency
     };
     
     this.hookMap[name] = uuid;
     
-    console.log('Hook registered: ', this.hooks[uuid].name, uuid);
+    logger.info('Hook registered: ', this.hooks[uuid].name, uuid);
     
     return this.hooks[uuid];
   }
@@ -119,7 +120,7 @@ class Synchro {
       if(history === undefined || history === null || history.length === 0) {
         resolve(this._invokeHook(uuid));
       }
-  
+      
       // Check if stale
       if(history.length > 0 && moment.unix() - _.last(history).time > this.hooks[uuid].frequency) {
         // Hook is stale, invoke it!
@@ -128,7 +129,6 @@ class Synchro {
       
       // Hook is not stale
       return resolve(false);
-      
     });
     
   }
@@ -139,34 +139,63 @@ class Synchro {
    */
   _invokeHook(uuid) {
     
+    if(this.runMode === 'dryRun') {
+      logger.info('[DRYRUN] Not invoking: ' + this.hooks[uuid].name);
+      return;
+    }
+    
     return new Promise((resolve, reject) => {
-      console.log('Invoking hook', uuid);
-  
+      logger.info('Invoking hook', uuid);
+      
+      // Create invocation entry array
+      if(!this.invocationRegistry[uuid]) this.invocationRegistry[uuid] = [];
+      
+      // Get Hook
       let hook = this.hooks[uuid];
-  
-      hook.fn()
+      
+      // Check if there are any currently running?
+      if(_.find(this.invocationRegistry[uuid], {status: 'running'})) {
+        logger.warn('Hook ' + hook.name + ' is still running the last invocation');
+        resolve();
+        return;
+      }
+      
+      // Create entry for invocation
+      this.invocationRegistry[uuid].push({
+        start: moment.unix(),
+        end: null,
+        result: null,
+        status: 'running'
+      });
+      
+      // Get run index for logging result
+      let runIndex = this.invocationRegistry[uuid].length - 1;
+      
+      hook.obj.init()
         .then((result) => {
-          this.invocationRegistry[uuid].push({
-            time: moment.unix(),
-            result: result.summary,
-            success: true
-          });
+          
+          this.invocationRegistry[uuid][runIndex].status = 'success';
+          this.invocationRegistry[uuid][runIndex].result = result.summary;
+          this.invocationRegistry[uuid][runIndex].end = moment.unix();
           
           console.log('Success hook invocation', uuid, this.hooks[uuid].name);
           
           resolve(true);
+          return;
         })
         .catch((err) => {
-          this.invocationRegistry[uuid].push({
-            time: moment.unix(),
-            result: err.message,
-            success: false
-          });
+          
+          this.invocationRegistry[uuid][runIndex].status = 'failed';
+          this.invocationRegistry[uuid][runIndex].result = err.message;
+          this.invocationRegistry[uuid][runIndex].end = moment.unix();
+          
+          console.log(err);
           reject(false);
+          return;
         });
       
     });
-  
+    
   }
   
   
