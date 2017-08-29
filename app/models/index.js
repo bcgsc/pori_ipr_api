@@ -44,24 +44,15 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 // POG
 let POG = sequelize.import(__dirname + '/POG');
 
-//POG.belongsToMany(user, {as: 'users', through: {model: POGuser, unique: false }, foreignKey: 'pog_id', otherKey: 'user_id', onDelete: 'CASCADE'});
-//user.belongsToMany(POG, {as: 'pogs', through: {model: POGuser, unique: false }, foreignKey: 'user_id', otherKey: 'pog_id', onDelete: 'CASCADE'});
-
-//POG.hasMany(POGuser, {as: 'POGUsers', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-//POG.hasMany(POGuser, {as: 'POGUserFilter', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-//POGuser.belongsTo(user, {as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL'});
-//POGuser.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE'});
-
-let analysis = sequelize.import(__dirname + '/POGAnalysis');
-POG.hasMany(analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-analysis.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+let analysis = require('../modules/analysis/models')(sequelize);
+POG.hasMany(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
 // Pog Analysis Reports
 let analysis_reports = sequelize.import(__dirname + '/reports/analysis_reports');
 let analysis_reports_users = sequelize.import(__dirname + '/analysis_report_user');
 POG.hasMany(analysis_reports, {as: 'analysis_reports', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 analysis_reports.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-analysis_reports.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
+analysis_reports.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
 
 analysis_reports.hasMany(analysis_reports_users, {as: 'users', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});
 analysis_reports.hasMany(analysis_reports_users, {as: 'ReportUserFilter', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});
@@ -71,7 +62,6 @@ analysis_reports_users.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDel
 
 //analysis_reports.belongsToMany(user, {as: 'users', through: {model: analysis_reports_users, unique: false }, foreignKey: 'report_id', otherKey: 'user_id', onDelete: 'CASCADE'});
 user.belongsToMany(analysis_reports, {as: 'reports', through: {model: analysis_reports_users, unique: false }, foreignKey: 'user_id', otherKey: 'report_id', onDelete: 'CASCADE'});
-
 
 let userGroup = sequelize.import(__dirname + '/user/userGroup.js');
 let userGroupMember = sequelize.import(__dirname + '/user/userGroupMember.js');
@@ -205,7 +195,7 @@ let notification = require('../modules/notification/models')(sequelize);
 
 // Subscription
 let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');
-subscription.belongsTo(analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
+subscription.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
 subscription.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true});
 
 // Syncronize tables to model schemas
