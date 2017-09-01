@@ -73,26 +73,23 @@ module.exports = class TrackingRouter extends RoutingInterface {
 
       let pogOpts = {
         create: true,
-        analysis: {}
+        analysis: false
       };
-
-      if(req.body.analysis_biopsy) pogOpts.analysis.analysis_biopsy = req.body.analysis_biopsy;
-
+      
       pog.retrieve(pogOpts).then(
         (pog) => {
-
-          let Analysis = new AnalysisLib(req.body.clinical_biopsy, pog);
-
-          let analysisOpts = {
-            name: req.body.name,
+          
+          let data = {
+            pog_id: pog.id,
+            libraries: {normal: null, tumour: null, transcriptome: null},
             clinical_biopsy: req.body.clinical_biopsy,
+            analysis_biopsy: req.body.analysis_biopsy,
             priority: req.body.priority,
-            biopsy_notes: req.body.biopsy_notes,
             disease: req.body.disease,
-            create: true
+            biopsy_notes: req.body.biopsy_notes
           };
-
-          Analysis.retrieve(analysisOpts).then(
+          
+          db.models.pog_analysis.create(data).then(
             (analysis) => {
 
               let generator = new Generator(pog, analysis, req.user).then(

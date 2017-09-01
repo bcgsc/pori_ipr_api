@@ -20,9 +20,11 @@ module.exports = class POG {
   /**
    * Retrieve entry from database
    *
+   * @param {object} options - Optional args (nonPOG, type, analysis)
+   *
    * @returns {promise|object} - Resolves with database instance of model
    */
-  retrieve(options) {
+  retrieve(options={}) {
     return new Promise((resolve, reject) => {
 
       // Return cached object
@@ -40,7 +42,9 @@ module.exports = class POG {
               createOpts.nonPOG = true;
               createOpts.type = 'genomic';
             }
-
+            
+            createOpts.analysis = (options.analysis !== undefined) ? options.analysis : true;
+            
             // Run create
             return this.create(createOpts)
               .then((created) => {
@@ -99,7 +103,7 @@ module.exports = class POG {
 
       // Check for nonPOG flag
       if(options.nonPOG) data.nonPOG = true;
-
+      
       this.model.create(data)
         .then((POG) => {
           this.instance = POG;
@@ -116,19 +120,24 @@ module.exports = class POG {
           if(options.analysis && options.analysis.bioapps_source_id) analysis.bioapps_source_id = options.analysis.bioapps_source_id;
 
           analysis.name = (options.analysis && options.analysis.name) ? options.analysis.name : 'N/A';
-
-          // Create analysis entry
-          return db.models.pog_analysis.create(analysis)
-            .then((analysis) => {
-
-              POG.analysis = [analysis]; // Nest analysis inside POG
-              resolve(POG);
-            },
-              (error) => {
-                console.log('Unable to create pog analysis entry', error);
-                reject({message: 'Unable to create pog analysis entry'});
-                POG.destroy();
-              });
+          
+          if(options.analysis) {
+  
+            // Create analysis entry
+            return db.models.pog_analysis.create(analysis)
+              .then((analysis) => {
+        
+                  POG.analysis = [analysis]; // Nest analysis inside POG
+                  resolve(POG);
+                },
+                (error) => {
+                  console.log('Unable to create pog analysis entry', error);
+                  reject({message: 'Unable to create pog analysis entry'});
+                  POG.destroy();
+                });
+          } else {
+            return resolve(POG);
+          }
         })
         .catch((err) => {
           // Unable to create POG
