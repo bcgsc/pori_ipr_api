@@ -119,7 +119,7 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
         // Update values
         existing.setUnprotected(req.body);
 
-        existing.updateGroup(req.body.group).then(
+        existing.updateGroup(req.body.group.ident).then(
           (result) => {
 
             // Update Tasks & save
