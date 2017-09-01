@@ -78,7 +78,7 @@ $lims.sample = (pogid) => {
  */
 $lims.library = (libraries) => {
   
-  if(libraries.length === 0) throw new Error("Must be searching for more than 1 library");
+  if(libraries.length === 0) throw new Error("Must be searching for 1 or more libraries");
   
   return new Promise((resolve, reject) => {
     
@@ -116,6 +116,54 @@ $lims.library = (libraries) => {
     
   });
   
+};
+
+$lims.illuminaRun = (libraries) => {
+  
+  if(libraries.length === 0) throw new Error('Must be searching for 1 or more libraries.');
+  
+  return new Promise((resolve, reject) => {
+  
+    let body = {
+      filters: {
+        op: 'or',
+        content: [
+          {
+            op: "in",
+            content: {
+              field: "library",
+              value: libraries
+            }
+          },
+          {
+            op: "in",
+            content: {
+              field: "multiplex_library",
+              value: libraries
+            }
+          }
+        ]
+      }
+    }
+    
+    request({
+      method: 'POST',
+      uri: host + basePath + '/illumina_run',
+      gzip: true,
+      body: JSON.stringify(body)
+    },
+      (err, res, body) => {
+        if(err) {
+          reject({message: 'Unable to query lims for illumina data: ' + err.message, cause: err});
+        }
+  
+        if(!err) {
+          resolve(JSON.parse(body));
+        }
+      })
+      .auth('bpierce', 'k4tYp3Rry~');
+  
+  });
 };
 
 module.exports = $lims;
