@@ -5,6 +5,7 @@ const moment                  = require('moment');
 const db                      = require('../../models/');
 const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
+const logger                  = require(process.cwd() + '/lib/log');
 
 module.exports = class State {
 
@@ -48,21 +49,17 @@ module.exports = class State {
         (assignRes) => {
 
           this.setUnprotected(update);
-          this.setStatus(update.status).then(
-            (statusRes) => {
-              this.getPublic().then(
-                (pub) => {
-                  resolve(pub);
-                },
-                (err) => {
-                  reject({message: 'Unable to update the public version of state: ' + err.message});
-                }
-              );
-            },
-            (err) => {
-              reject({message: 'Unable to set State status: ' + err.message});
-            }
-          );
+          this.setStatus(update.status)
+            .then(() => {
+              return this.instance.save();
+            })
+            .then(this.getPublic.bind(this))
+            .then((pub) => {
+              resolve(pub);
+            })
+            .catch((err) => {
+              reject({message: 'Unable to update the public version of state: ' + err.message});
+            });
         },
         (err) => {
           reject({message: 'Unable to assign user to all tasks: ' + err.message});
@@ -92,7 +89,9 @@ module.exports = class State {
 
       // Update State Status
       this.instance.status = status;
-
+      
+      logger.debug('Setting status of', this.instance.status);
+      
       if(this.instance.startedAt === null && (status === 'active' || status === 'completed')) this.instance.startedAt = moment().toISOString();
       if(this.instance.completedAt === null && status === 'completed') this.instance.completedAt = moment().toISOString();
 
@@ -125,83 +124,67 @@ module.exports = class State {
   checkCompleted() {
 
     return new Promise((resolve, reject) => {
-
+      
       let stateComplete = true;
-
       this.instance.status = 'active';
-
+    
+      logger.debug('[state]', 'Starting Check Completed');
+  
       // get Tasks
       db.models.tracking_state_task.findAll({where: {state_id: this.instance.id}}).then(
         (tasks) => {
-
+          
           _.forEach(tasks, (t) => {
             if(t.status !== 'complete') stateComplete = false;
           });
 
-          if(this.instance.startedAt === null) this.instance.completedAt = moment().toISOString();
-
+          if(this.instance.startedAt === null) {
+            this.instance.startedAt = moment().toISOString();
+          }
+          
+          if(stateComplete) {
+            this.instance.completedAt = moment().toISOString();
+            this.instance.status = 'complete';
+          }
+          
+          _.forEach(tasks, (t, i) => {
+            tasks[i] = t.toJSON();
+          });
+          
+          logger.debug('[state]', 'Checking if state is complete', stateComplete);
+          
           this.instance.save().then(
-            (res) => {
-
+            (result) => {
+              
               // Current state has completed!
               if(stateComplete) {
-
-                this.instance.status = 'complete';
-                this.instance.completedAt = moment().toISOString();
-
-                this.instance.save().then(
-                  (result) => {
-
-                    // Find next in line!
-                    this.model.findOne({
-                      where: {
-                        analysis_id: this.instance.analysis_id,
-                        ordinal: { $gt: this.instance.ordinal }
-                      },
-                      order: 'ordinal ASC'
-                    }).then(
-                      (state) => {
-                        // No higher states not yet started!
-                        if(state === null) return resolve(null);
-
-                        // Adjacent state already started or held
-                        if(state.status === 'complete' || state.status === 'hold') return resolve(null);
-
-                        state.status = 'active';
-                        state.startedAt = moment().toISOString();
-
-                        // Started next stage, save change to DB
-                        state.save().then(
-                          (result) => {
-                            resolve(state);
-                          },
-                          (err) => {
-                            console.log(err);
-                            reject({error: {message: 'Unable to set next stage to active due to sql error: ' + err.message}});
-                          })
-                      })
-
-                  },
-                  (err) => {
-                    console.log(err);
-                    reject({error: {message: 'Unable to update state to completed due to SQL error: ' + err.message}});
+                
+                logger.debug('[state]', 'Marking state as complete');
+                
+                this.findNextState()
+                  .then(this.startNextState)
+                  .then((result) => {
+                    // State updated to complete
+                    resolve(true);
                   })
-
+                  .catch((err) => {
+                  
+                  });
+                
               }
-
+              
               // State not complete
               if(!stateComplete) {
+                logger.debug('[state]', 'State not complete');
                 resolve(false);
               }
-
-
+  
             },
             (err) => {
-              console.log('Unable to update state on completion check', err);
-              reject({error: {message: 'Failed to update state on checking for completion:' + err.message, cause: err}});
-            }
-          );
-
+              console.log(err);
+              reject({error: {message: 'Unable to update state to completed due to SQL error: ' + err.message}});
+            });
+          
         });
       },
       (err) => {
@@ -210,6 +193,52 @@ module.exports = class State {
       }
     );
 
+  }
+  
+  /**
+   * Find the next state in line
+   *
+   * @returns {Promise|object|null} - Resolves with state model object
+   */
+  findNextState() {
+    return this.model.findOne({
+      where: {
+        analysis_id: this.instance.analysis_id,
+        ordinal: { $gt: this.instance.ordinal }
+      },
+      order: 'ordinal ASC'
+    });
+  }
+  
+  /**
+   * Start next State in Line
+   *
+   * Takes in the next state model object and triggers the "active" status on it.
+   *
+   * @param {object} state
+   * @returns {Promise}
+   */
+  startNextState(state) {
+    return new Promise((resolve, reject) => {
+      if(state === null) return resolve(); // Not a state/none found
+  
+      // Adjacent state already started or held
+      if(state.status === 'complete' || state.status === 'hold') return resolve(null);
+  
+      state.status = 'active';
+      state.startedAt = moment().toISOString();
+  
+      // Started next stage, save change to DB
+      state.save().then(
+        (result) => {
+          resolve(state);
+        },
+        (err) => {
+          console.log(err);
+          reject({message: 'Unable to set next stage to active due to sql error: ' + err.message});
+        })
+      
+    });
   }
 
   /**
@@ -242,7 +271,7 @@ module.exports = class State {
       if(typeof user === 'object' && user.ident) user = user.ident;
 
       // Find user
-      if(typeof user !== 'string') return reject({error: {message: 'user input must be a string'}});
+      if(typeof user !== 'string') return reject({message: 'user input must be a string'});
 
       // Lookup user
       let userOpts = {where: {}};
@@ -257,7 +286,7 @@ module.exports = class State {
       db.models.user.findOne(userOpts).then(
         (userResult) => {
 
-          if(userResult === null) return reject({error: {message: 'unable to find the specified user', code: 'userNotFound'}});
+          if(userResult === null) return reject({message: 'unable to find the specified user', code: 'userNotFound'});
 
           if(userResult.id === this.instance.assignedTo_id) return resolve(this.instance);
 
@@ -287,7 +316,7 @@ module.exports = class State {
             },
             (err) => {
               console.log(err);
-              reject({error: {message: 'failed to assign user to all state tasks.'}});
+              reject({message: 'failed to assign user to all state tasks.'});
               throw new Error('failed to assign user to all state tasks');
             }
           )
@@ -295,7 +324,7 @@ module.exports = class State {
         },
         (err) => {
           console.log(err);
-          reject({error: {message: 'failed user lookup due to internal problem.'}});
+          reject({message: 'failed user lookup due to internal problem.'});
           throw new Error('Unable to query for users when assigning all state tasks');
         }
       );
@@ -344,7 +373,7 @@ module.exports = class State {
         },
         (err) => {
           console.log(err);
-          reject({error: {message: 'Unable to get updated state.'}});
+          reject({message: 'Unable to get updated state.'});
           throw new Error('failed to get updated state.');
         }
       );
