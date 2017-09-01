@@ -6,6 +6,7 @@ const db                  = require(process.cwd() + '/app/models');
 const _                   = require('lodash');
 const RoutingInterface    = require('../../../routes/routingInterface');
 const State               = require('../state');
+const logger              = require(process.cwd() + '/lib/log');
 
 module.exports = class TrackingStateRoute extends RoutingInterface {
 
@@ -32,6 +33,21 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
 
     // Assignee Path
     this.assignUser();
+    
+    
+    this.registerEndpoint('get', `/:state(${this.UUIDregex})/check`, (req,res) => {
+  
+      // Create object
+      let existing = new State(req.state);
+      
+      existing.checkCompleted().then(
+        (result) => {
+          res.json({result: result});
+        }
+      )
+      
+      
+    });
 
   }
 
@@ -121,43 +137,17 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
 
         // Create object
         let existing = new State(req.state);
-
+        
         existing.updateAll(req.body).then(
           (result) => {
             res.json(result);
-          },
-          (err) => {
+          })
+          .catch((err) => {
             console.log('Failed to update');
             console.log(err);
             res.status(400).json({message: 'Failed to update the task', cause: err});
-          }
-        )
-
-        /*
-        // Update values
-        existing.setUnprotected(req.body);
-
-        // Update Tasks & save
-        existing.setStatus(req.body.status, true).then(
-          (result) => {
-
-            existing.getPublic().then(
-              (publicState) => {
-                res.json(publicState);
-              },
-              (err) => {
-                console.log('Unable to get public state', err);
-                res.status(500).json({error: {message: err.error.message, cause: err}});
-              }
-            )
-
-          },
-          (err) => {
-            console.log(err);
-            res.status(500).json({error: {message: 'Failed query to update state'}});
-          }
-        )
-        */
+          });
+        
       });
   }
 
