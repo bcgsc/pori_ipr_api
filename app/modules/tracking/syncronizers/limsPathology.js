@@ -381,30 +381,11 @@ class LimsPathologySync {
           
           let task_promises = [];
           
-          // Loop over the tasks, and update their details
-          _.forEach(tasks, (task) => {
-            
-            // Update Tracking Item
-            let entry = new Task(task);
-            
-            // Instantiate the object
-            task_promises.push(entry.checkIn(this.user, moment().format('YYYY-MM-DD H:m:s')));
-            
-          });
-          
-          //
-          Promise.all(task_promises).then(
+          //Promise.all(task_promises).then(
+          Promise.all(_.map(tasks, (t) => { let e = new Task(t); e.checkIn(this.user, moment().toISOString())})).then(
             (result) => {
               
-              let analysis_promises = [];
-              
-              _.forEach(report_opts, (report) => {
-                
-                analysis_promises.push(db.models.analysis_report.update(report.data, report.opts));
-                
-              });
-              
-              Promise.all(analysis_promises).then(
+              Promise.all(_.map(report_opts, (r) => { return db.models.pog_analysis.update(r.data, r.opts) })).then(
                 (result) => {
                   // Update Analysis
                   logger.info('Checked in all ready tasks');
@@ -441,7 +422,7 @@ class LimsPathologySync {
   retrieveTrackingTasks(state_ids) {
     return new Promise((resolve, reject) => {
       
-      console.log('Retrieving tasks for', state_ids);
+      logger.debug('Retrieving tasks for states: ', state_ids.join(','));
       
       let opts = {
         where: {
