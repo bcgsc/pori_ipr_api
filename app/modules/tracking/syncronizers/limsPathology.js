@@ -33,26 +33,26 @@ class LimsPathologySync {
   init() {
     return new Promise((resolve, reject) => {
       
-      this.getTasksPendingPath()
-        .then(this._getSyncUser.bind(this))
-        .then(this.queryLimsSample.bind(this))
-        .then(this._parseLimsSampleResults.bind(this))
-        .then(this.queryLimsLibrary.bind(this))
-        .then(this._parseLimsLibraryResults.bind(this))
-        .then(this.sortLibraryToBiopsy.bind(this))
-        .then(this.updateIprTracking.bind(this))
-        .then((result) => {
-          console.log('Finished!');
+      this.getTasksPendingPath()                          // 1. Get Tasks pending pathology passed
+        .then(this._getSyncUser.bind(this))               // 2. Get the Sync user account
+        .then(this.queryLimsSample.bind(this))            // 3. Query LIMS api with list of POGs awaiting Path passed
+        .then(this._parseLimsSampleResults.bind(this))    // 4. Parse the results from LIMS sample api
+        .then(this.queryLimsLibrary.bind(this))           // 5. Query LIMS Library API to differentiate Tumour/Normal DNA libraries
+        .then(this._parseLimsLibraryResults.bind(this))   // 6. Parse results from LIMS Library API
+        .then(this.sortLibraryToBiopsy.bind(this))        // 7. Sort LIMS result data into update queries for IPR Tracking DB
+        .then(this.updateIprTracking.bind(this))          // 8. Update the IPR Tracking API/DB with results
+        .then((result) => {                               // 9. Profit.
           
-          resolve({summary: 'Finished running pathology check.'});
+          logger.info('Finished processing Pathology Passed LIMS sync.');
+          resolve({summary: 'Finished running pathology check.', result: result});
+          this._reset(); // Reset
           
-          this._reset();
         })
         .catch((err) => {
-          console.log('Failed to run Syncro');
-          console.log(err);
+        
+          logger.error('Failed to complete Pathology Passed LIMS sync: ' + err.message);
+          this._reset(); // Reset
           
-          this._reset();
         });
       
     });
