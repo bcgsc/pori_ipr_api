@@ -50,9 +50,12 @@ POG.hasMany(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_id'
 // Pog Analysis Reports
 let analysis_reports = sequelize.import(__dirname + '/reports/analysis_reports');
 let analysis_reports_users = sequelize.import(__dirname + '/analysis_report_user');
+
 POG.hasMany(analysis_reports, {as: 'analysis_reports', foreignKey: 'pog_id', onDelete: 'CASCADE'});
+
 analysis_reports.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 analysis_reports.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
+sequelize.models.pog_analysis.hasMany(analysis_reports, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
 
 analysis_reports.hasMany(analysis_reports_users, {as: 'users', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});
 analysis_reports.hasMany(analysis_reports_users, {as: 'ReportUserFilter', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true});

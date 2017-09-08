@@ -22,11 +22,8 @@ module.exports = (sequelize, Sq) => {
         type: Sq.JSONB,
         defaultValue: { tumour: null, normal: null, transcriptome: null }
       },
-      biopsyDate: {
-        type: Sq.DATE
-      },
-      name: {
-        type: Sq.STRING,
+      notes: {
+        type: Sq.TEXT,
         allowNull: true
       },
       clinical_biopsy: {
@@ -65,6 +62,10 @@ module.exports = (sequelize, Sq) => {
         type: Sq.INTEGER,
         defaultValue: 2,
         allowNull: false
+      },
+      onco_panel_submitted: {
+        type: Sq.DATE,
+        defaultValue: null
       }
     },
     {
