@@ -174,7 +174,7 @@ router.route('/:type(genomic|probe)')
       })
       .catch((err) => {
         console.log('Failed to remove POG after loader failed', err);
-        return res.status(error.status || 500).json({error: {message: 'Unable to load new POG data entries', code: 'pogObjectQueryFailed'}});
+        return res.status(err.status || 500).json({error: {message: 'Unable to load new POG data entries', code: 'pogObjectQueryFailed'}});
       });
 
   })
