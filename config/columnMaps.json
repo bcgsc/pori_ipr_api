@@ -39,13 +39,16 @@
       "TCGA_perc": "tcgaPerc",
       "TCGA_perc_column": "tcgaPercCol",
       "TCGA_qc": "tcgaQC",
+      "TCGA_qc_column": "tcgaQCCol",
       "TCGA_kIQR": "tcgakIQR",
+
       "TCGA_average_perc": "tcgaAvgPerc",
-      "TCGA_average_kIQRC": "tcgaAvgkIQR",
-      "TCGA_average_qc": "tcgaAvgQc",
+      "TCGA_average_kIQR": "tcgaAvgkIQR",
+      "TCGA_average_qc": "tcgaAvgQC",
+      "TCGA_average_qc_column": "tcgaAvgQCCol",
 
       "TCGA_norm_perc": "tcgaNormPerc",
-      "kIQR_normal": "kIQRNormal",
+      "TCGA_norm_kIQR": "tcgaNormkIQR",
 
       "PTX_percentile": "ptxPerc",
       "PTX_kIQR": "ptxkIQR",
@@ -55,10 +58,10 @@
 
       "gtex_comp": "gtexComp",
       "gtex_comp_percentile": "gtexPerc",
-      "gtex_comp_fc": "gtexFc",
-      "gtex_comp_kIQRC": "gtexkIQR",
+      "gtex_comp_FC": "gtexFc",
+      "gtex_comp_kIQR": "gtexkIQR",
       "gtex_comp_average_percentile": "gtexAvgPerc",
-      "gtex_comp_average_fc": "gtexAvgFc",
+      "gtex_comp_average_FC": "gtexAvgFc",
       "gtex_comp_average_kIQR": "gtexAvgkIQR"
     },
     "proteinExpression": {

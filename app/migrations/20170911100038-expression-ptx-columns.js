@@ -23,11 +23,14 @@ let addOutlierPtxCols2 = () => {
     console.log('[MIGRATION][addOutlierPtxCols2]', 'Starting migration');
     
     db.query('ALTER TABLE pog_analysis_reports_expression_outlier RENAME COLUMN "kIQR" TO "tcgakIQR";' +
-      'ALTER TABLE pog_analysis_reports_expression_outlier ' + 
+      'ALTER TABLE pog_analysis_reports_expression_outlier RENAME COLUMN "kIQRNormal" TO "tcgaNormkIQR";' +
+      'ALTER TABLE pog_analysis_reports_expression_outlier ' +
       'ADD COLUMN "tcgaPercCol" character varying DEFAULT null, ' +
       'ADD COLUMN "tcgaAvgPerc" double precision DEFAULT null, ' +
       'ADD COLUMN "tcgaAvgkIQR" double precision DEFAULT null, ' +
       'ADD COLUMN "tcgaAvgQC" double precision DEFAULT null, ' +
+      'ADD COLUMN "tcgaAvgQCCol" double precision DEFAULT null, ' +
+      'ADD COLUMN "tcgaQCCol" double precision DEFAULT null, ' +
       'ADD COLUMN "ptxPercCol" character varying DEFAULT null, ' +
       'ADD COLUMN "ptxTotSampObs" integer DEFAULT null, ' +
       'ADD COLUMN "ptxPogPerc" double precision DEFAULT null, ' +
