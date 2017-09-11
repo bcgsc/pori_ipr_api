@@ -97,7 +97,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaQCAvgCol: {
+    tcgaAvgQCCol: {
       type: Sq.STRING,
       defaultValue: null,
     },
