@@ -29,8 +29,8 @@ let addOutlierPtxCols2 = () => {
       'ADD COLUMN "tcgaAvgPerc" double precision DEFAULT null, ' +
       'ADD COLUMN "tcgaAvgkIQR" double precision DEFAULT null, ' +
       'ADD COLUMN "tcgaAvgQC" double precision DEFAULT null, ' +
-      'ADD COLUMN "tcgaAvgQCCol" double precision DEFAULT null, ' +
-      'ADD COLUMN "tcgaQCCol" double precision DEFAULT null, ' +
+      'ADD COLUMN "tcgaAvgQCCol" character varying DEFAULT null, ' +
+      'ADD COLUMN "tcgaQCCol" character varying DEFAULT null, ' +
       'ADD COLUMN "ptxPercCol" character varying DEFAULT null, ' +
       'ADD COLUMN "ptxTotSampObs" integer DEFAULT null, ' +
       'ADD COLUMN "ptxPogPerc" double precision DEFAULT null, ' +

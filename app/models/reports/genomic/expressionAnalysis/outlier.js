@@ -81,6 +81,10 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
+    tcgaQCCol: {
+      type: Sq.STRING,
+      defaultValue: null,
+    },
     tcgaAvgPerc: {
       type: Sq.FLOAT,
       defaultValue: null,
@@ -93,13 +97,17 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
+    tcgaQCAvgCol: {
+      type: Sq.STRING,
+      defaultValue: null,
+    },
     
     
     tcgaNormPerc: {
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    kIQRNormal: {
+    tcgaNormkIQR: {
       type: Sq.FLOAT,
       defaultValue: null,
     },
