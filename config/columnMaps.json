@@ -58,10 +58,10 @@
 
       "gtex_comp": "gtexComp",
       "gtex_comp_percentile": "gtexPerc",
-      "gtex_comp_FC": "gtexFc",
+      "gtex_comp_FC": "gtexFC",
       "gtex_comp_kIQR": "gtexkIQR",
       "gtex_comp_average_percentile": "gtexAvgPerc",
-      "gtex_comp_average_FC": "gtexAvgFc",
+      "gtex_comp_average_FC": "gtexAvgFC",
       "gtex_comp_average_kIQR": "gtexAvgkIQR"
     },
     "proteinExpression": {
