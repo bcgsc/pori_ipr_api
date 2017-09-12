@@ -90,7 +90,7 @@ class proteinExpressionLoader {
           }
   
           // Remap results
-          let entries = remapKeys(result, nconf.get('expressionAnalysis:outliers'));
+          let entries = remapKeys(result, nconf.get('expressionAnalysis:outlier'));
   
           // Add new values for DB
           entries.forEach((v, k) => {
