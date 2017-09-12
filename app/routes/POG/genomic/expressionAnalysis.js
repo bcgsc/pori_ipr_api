@@ -10,7 +10,7 @@ let express = require('express'),
  *
  */
 router.param('outlier', (req,res,next,oIdent) => {
-  db.models.outlier.scope('public').findOne({ where: {ident: oIdent}}).then(
+  db.models.outlier.scope('public').findOne({ where: {ident: oIdent, expType: {$in: ['rna', 'protein']}}}).then(
     (result) => {
       if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
 
@@ -65,7 +65,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
   .get((req,res,next) => {
 
     // Setup where clause
-    let where = {pog_report_id: req.report.id}
+    let where = {pog_report_id: req.report.id, expType: {$in: ['rna', 'protein']}};
 
     // Searching for specific type of outlier
     if(req.params.type) {
@@ -97,7 +97,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
 router.param('drugTarget', (req,res,next,oIdent) => {
   db.models.drugTarget.scope('public').findOne({ where: {ident: oIdent}}).then(
     (result) => {
-      if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
+      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'} });
 
       req.drugTarget = result;
       next();
@@ -170,7 +170,7 @@ router.route('/drugTarget')
 
 
 router.param('protein', (req,res,next,oIdent) => {
-  db.models.proteinExpression.scope('public').findOne({ where: {ident: oIdent}}).then(
+  db.models.outlier.scope('public').findOne({ where: {ident: oIdent, expType: 'protein'}}).then(
     (result) => {
       if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareProteinLookup'} });
       
@@ -195,7 +195,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
     
     
     // Update DB Version for Entry
-    versionDatum(db.models.proteinExpression, req.outlier, req.body, req.user).then(
+    versionDatum(db.models.outlier, req.outlier, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },
@@ -208,7 +208,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
   })
   .delete((req,res,next) => {
     // Soft delete the entry
-    db.models.proteinExpression.destroy({ where: {ident: req.outlier.ident}}).then(
+    db.models.outlier.destroy({ where: {ident: req.outlier.ident}}).then(
       (result) => {
         res.json({success: true});
       },
@@ -225,7 +225,7 @@ router.route('/protein/:type(clinical|nostic|biological)?')
   .get((req,res,next) => {
     
     // Setup where clause
-    let where = {pog_report_id: req.report.id};
+    let where = {pog_report_id: req.report.id, expType: 'protein'};
     
     // Searching for specific type of outlier
     if(req.params.type) {
@@ -238,7 +238,7 @@ router.route('/protein/:type(clinical|nostic|biological)?')
     };
     
     // Get all rows for this POG
-    db.models.proteinExpression.scope('public').findAll(options).then(
+    db.models.outlier.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
