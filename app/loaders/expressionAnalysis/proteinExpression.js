@@ -91,13 +91,13 @@ class proteinExpressionLoader {
   
           // Remap results
           let entries = remapKeys(result, nconf.get('expressionAnalysis:outlier'));
-  
+          
           // Add new values for DB
           entries.forEach((v, k) => {
             // Map needed DB column values
             entries[k].pog_id = this.report.pog_id;
             entries[k].pog_report_id = this.report.id;
-            entries[k].proteinType = type;
+            entries[k].outlierType = type;
             entries[k].expType = 'protein';
           });
   
