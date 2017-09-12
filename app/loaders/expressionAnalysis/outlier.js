@@ -52,6 +52,7 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
         entries[k].pog_id = report.pog_id;
         entries[k].pog_report_id = report.id;
         entries[k].outlierType = outlierType;
+        entries[k].expType = 'rna';
       });
 
       // Log progress

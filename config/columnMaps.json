@@ -64,21 +64,6 @@
       "gtex_comp_average_FC": "gtexAvgFC",
       "gtex_comp_average_kIQR": "gtexAvgkIQR"
     },
-    "proteinExpression": {
-      "ploidy_corr_cp_change": "copyChange",
-      "loh_state": "lohState",
-      "cnv_state": "cnvState",
-      "RNA_reads": "rnaReads",
-      "expression_rpkm": "rpkm",
-      "fold_change": "foldChange",
-      "TCGA_perc": "tcgaPerc",
-      "kIQR_column": "kIQRColumn",
-      "TCGA_qc": "tcgaQC",
-      "TCGA_norm_perc": "tcgaNormPerc",
-      "kIQR_normal": "kIQRNormal",
-      "ptx_percentile": "ptxPerc",
-      "ptx_kIQR": "ptxkIQR"
-    },
     "drugTarget": {
       "Gene": "gene",
       "Copy #": "copy",

@@ -90,7 +90,7 @@ class proteinExpressionLoader {
           }
   
           // Remap results
-          let entries = remapKeys(result, nconf.get('expressionAnalysis:proteinExpression'));
+          let entries = remapKeys(result, nconf.get('expressionAnalysis:outliers'));
   
           // Add new values for DB
           entries.forEach((v, k) => {
@@ -98,6 +98,7 @@ class proteinExpressionLoader {
             entries[k].pog_id = this.report.pog_id;
             entries[k].pog_report_id = this.report.id;
             entries[k].proteinType = type;
+            entries[k].expType = 'protein';
           });
   
           this.entryData = this.entryData.concat(entries);
@@ -130,7 +131,7 @@ class proteinExpressionLoader {
     return new Promise((resolve, reject) => {
       
       // Add to Database
-      db.models.proteinExpression.bulkCreate(this.entryData).then(
+      db.models.outlier.bulkCreate(this.entryData).then(
         (result) => {
           
           this.logging('Protein Expression data loaded.', this.logger.SUCCESS);
