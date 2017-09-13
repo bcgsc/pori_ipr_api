@@ -24,6 +24,8 @@ let addOutlierPtxCols2 = () => {
     
     db.query('ALTER TABLE pog_analysis_reports_expression_outlier RENAME COLUMN "kIQR" TO "tcgakIQR";' +
       'ALTER TABLE pog_analysis_reports_expression_outlier RENAME COLUMN "kIQRNormal" TO "tcgaNormkIQR";' +
+      'ALTER TYPE "enum_expression.outlier_outlierType" ADD VALUE \'upreg_onco\';' +
+      'ALTER TYPE "enum_expression.outlier_outlierType" ADD VALUE \'downreg_tsg\';' +
       'ALTER TABLE pog_analysis_reports_expression_outlier ' +
       'ADD COLUMN "tcgaPercCol" character varying DEFAULT null, ' +
       'ADD COLUMN "tcgaAvgPerc" double precision DEFAULT null, ' +

@@ -35,7 +35,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: 'rna'
     },
     outlierType: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological')
+      type: Sq.ENUM('clinical', 'nostic', 'biological', 'downreg_tsg', 'upreg_onco')
     },
     gene: {
       type: Sq.STRING,

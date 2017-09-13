@@ -6,6 +6,7 @@ let db = require(process.cwd() + '/app/models'),
   parse = require('csv-parse'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
+  p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 /**
@@ -21,9 +22,11 @@ class proteinExpressionLoader {
     this.logger = logger;
     this.logging = logger.loader(this.report.ident, 'Expression.Protein');
     this.filesToLoad = [
-      {file: 'ptx_biol.csv', type: 'biological'},
-      {file: 'ptx_pot_clin_rel.csv', type: 'clinical'},
-      {file: 'ptx_prog_diag.csv', type: 'nostic'},
+      {file: 'ptx_biol.csv', type: 'biological', expType: 'protein'},
+      {file: 'ptx_pot_clin_rel.csv', type: 'clinical', expType: 'protein'},
+      {file: 'ptx_prog_diag.csv', type: 'nostic', expType: 'protein'},
+      {file: 'downregulated_tsg.csv', type: 'downreg_tsg', expType: 'rna'},
+      {file: 'upregulated_oncogenes.csv', type: 'upreg_onco', expType: 'rna'}
     ];
     this.entryData = [];
     
@@ -42,7 +45,7 @@ class proteinExpressionLoader {
       let promises = [];
       
       _.forEach(this.filesToLoad, (ld) => {
-        promises.push(this.retrieveFileEntry(ld.file, ld.type));
+        promises.push(this.retrieveFileEntry(ld.file, ld.type, ld.expType));
       });
       
       Promise.all(promises)
@@ -70,9 +73,13 @@ class proteinExpressionLoader {
   /**
    * Load
    *
+   * @param {string} file - The file to load
+   * @param {string} type - The KB match type
+   * @param {string} expType - The expression outlier type (rna vs protein)
+   *
    * @returns {Promise}
    */
-  retrieveFileEntry(file, type) {
+  retrieveFileEntry(file, type, expType) {
     return new Promise((resolve, reject) => {
       
       // Read in file
@@ -95,10 +102,11 @@ class proteinExpressionLoader {
           // Add new values for DB
           entries.forEach((v, k) => {
             // Map needed DB column values
+            entries[k] = p2s(v, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
             entries[k].pog_id = this.report.pog_id;
             entries[k].pog_report_id = this.report.id;
             entries[k].outlierType = type;
-            entries[k].expType = 'protein';
+            entries[k].expType = expType;
           });
   
           this.entryData = this.entryData.concat(entries);
@@ -139,7 +147,8 @@ class proteinExpressionLoader {
           
         },
         (err) => {
-          this.logging('Failed to load protein expression data.', this.logger.ERROR);
+          this.logging('Failed to load protein expression data: ' + err.message, this.logger.ERROR);
+          console.log(err);
           reject({loader: 'proteinExpression', message: 'Unable to create database entries', result: false});
         }
       );
