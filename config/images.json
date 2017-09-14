@@ -27,7 +27,7 @@
       "h": 124,
       "w": 560
     },
-    "optional": false
+    "optional": true
   },
   {
     "name": "mutSummary.indel",
@@ -37,7 +37,7 @@
       "h": 124,
       "w": 560
     },
-    "optional": false
+    "optional": true
   },
   {
     "name": "mutSummary.sv",
@@ -47,7 +47,7 @@
       "h": 124,
       "w": 560
     },
-    "optional": false
+    "optional": true
   },
   {
     "name": "mutSummary.barIndel",
@@ -57,7 +57,7 @@
       "h": 150,
       "w": 560
     },
-    "optional": false
+    "optional": true
   },
   {
     "name": "mutSummary.barSnv",
@@ -67,7 +67,7 @@
       "h": 150,
       "w": 560
     },
-    "optional": false
+    "optional": true
   },
   {
     "name": "mutSummary.barSv",
@@ -77,7 +77,7 @@
       "h": 150,
       "w": 560
     },
-    "optional": false
+    "optional": true
   },
   {
     "name": "mutSignature.corPcors",
