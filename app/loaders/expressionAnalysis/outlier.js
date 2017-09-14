@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
+  p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 let baseDir;
@@ -49,6 +50,7 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
+        entries[k] = p2s(v, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
         entries[k].pog_id = report.pog_id;
         entries[k].pog_report_id = report.id;
         entries[k].outlierType = outlierType;
