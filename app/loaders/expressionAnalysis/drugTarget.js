@@ -48,9 +48,9 @@ module.exports = (report, dir, logger) => {
 
       // Loop over returned rows, append row with POGid
       _.forEach(entries, (v, k) => {
+        entries[k] = p2s(v, ['kIQR', 'kIQRNormal', 'copy']);
         entries[k].pog_id = report.pog_id;
         entries[k].pog_report_id = report.id;
-        entries[k] = p2s(v, ['kIQR', 'kIQRNormal', 'copy']);
       });
 
       // Add to Database
