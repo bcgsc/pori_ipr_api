@@ -20,66 +20,6 @@
     "optional": true
   },
   {
-    "name": "mutSummary.snv",
-    "file": "/mut_summary_image/mutation_summary_snv.png",
-    "compress": true,
-    "dimensions": {
-      "h": 124,
-      "w": 560
-    },
-    "optional": true
-  },
-  {
-    "name": "mutSummary.indel",
-    "file": "/mut_summary_image/mutation_summary_indel.png",
-    "compress": true,
-    "dimensions": {
-      "h": 124,
-      "w": 560
-    },
-    "optional": true
-  },
-  {
-    "name": "mutSummary.sv",
-    "file": "/mut_summary_image/mutation_summary_sv.png",
-    "compress": true,
-    "dimensions": {
-      "h": 124,
-      "w": 560
-    },
-    "optional": true
-  },
-  {
-    "name": "mutSummary.barIndel",
-    "file": "/mut_summary_image/mutation_summary_bar_indel.png",
-    "compress": true,
-    "dimensions": {
-      "h": 150,
-      "w": 560
-    },
-    "optional": true
-  },
-  {
-    "name": "mutSummary.barSnv",
-    "file": "/mut_summary_image/mutation_summary_bar_snv.png",
-    "compress": true,
-    "dimensions": {
-      "h": 150,
-      "w": 560
-    },
-    "optional": true
-  },
-  {
-    "name": "mutSummary.barSv",
-    "file": "/mut_summary_image/mutation_summary_bar_sv.png",
-    "compress": true,
-    "dimensions": {
-      "h": 150,
-      "w": 560
-    },
-    "optional": true
-  },
-  {
     "name": "mutSignature.corPcors",
     "file": "/mut_signature_image/msig_cor_pcors.png",
     "compress": true,
