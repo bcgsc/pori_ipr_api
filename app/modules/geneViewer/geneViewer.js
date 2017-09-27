@@ -44,7 +44,6 @@ module.exports = class GeneViewer {
         this._getSmallMutations(),
         this._getCopyNumber(),
         this._getExpRNA(),
-        this._getExpProtein(),
         this._getExpDrugTarget(),
         this._getExpDensityGraph()
       ];
