@@ -51,7 +51,7 @@ class Routing extends RouterInterface {
       this.router.param('report', require(process.cwd() + '/app/middleware/analysis_report')); // Analysis report middleware injection
   
       // Add Authentication coverage
-      this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase|/tracking|/reports)', require(process.cwd() + '/app/middleware/auth'));
+      this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase|/tracking|/reports|/analysis|/analysis_reports)', require(process.cwd() + '/app/middleware/auth'));
   
       // Add Single Routes
       // Setup other routes
@@ -88,8 +88,18 @@ class Routing extends RouterInterface {
       let GeneViewerRoutes = new GeneViewer(this.io);
   
       this.bindRouteObject('/POG/:POG/report/:report/geneviewer', GeneViewerRoutes.getRouter());
+      
+      // Get Notification Routes
+      let Analysis = require('../modules/analysis/routing');
+      let AnalysisRoutes = new Analysis(this.io);
   
+      this.bindRouteObject('/analysis', AnalysisRoutes.getRouter());
   
+      // Get Notification Routes
+      let RecentReports = require('../modules/recentReports/routing');
+      let RecentReportsRoutes = new RecentReports(this.io);
+  
+      this.bindRouteObject('/analysis_reports/recent/report/', RecentReportsRoutes.getRouter());
   
       // Auto-Build routes
       this.buildRecursiveRoutes().then(

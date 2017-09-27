@@ -27,7 +27,8 @@ let loaders = [
   // Summary
   { name: 'summary_patientInformation', required: true, location: '/summary/patientInformation', loaderType: 'class' },
   { name: 'summary_tumourAnalysis', required: true, location: '/summary/tumourAnalysis' },
-  { name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary' },
+  { name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary', loaderType: 'class' },
+  //{ name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary'},
   { name: 'summary_variantCounts', required: false, location: '/summary/variantCounts' },
   { name: 'summary_genomicAlterationsIdentified', required: true, location: '/summary/genomicAlterationsIdentified' },
   { name: 'summary_genomicEventsTherapeutic', required: true, location: '/summary/genomicEventsTherapeutic' },

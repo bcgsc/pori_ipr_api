@@ -66,6 +66,32 @@ module.exports = (sequelize, Sq) => {
       onco_panel_submitted: {
         type: Sq.DATE,
         defaultValue: null
+      },
+      comparator_disease: {
+        type: Sq.JSONB,
+        allowNull: true,
+        defaultValue: '[]'
+      },
+      comparator_normal: {
+        type: Sq.JSONB,
+        allowNull: true,
+        defaultValue: '{"disease_comparator_for_analysis": null, "gtex_comparator_primary_site": null, "normal_comparator_biopsy_site": null, "normal_comparator_primary_site": null}'
+      },
+      biopsy_site: {
+        type: Sq.STRING,
+        defaultValue: null,
+      },
+      biopsy_type: {
+        type: Sq.STRING,
+        defaultValue: null,
+      },
+      date_analysis: {
+        type: Sq.DATE,
+        defaultValue: null
+      },
+      date_presentation: {
+        type: Sq.DATE,
+        defaultValue: null
       }
     },
     {

@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  return sequelize.define('tumourAnalysis', {
+  return sequelize.define('mutationSummaryv2', {
     id: {
       type: Sq.INTEGER,
       autoIncrement: true,
@@ -30,35 +30,49 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
-    tumourContent: {
+    comparator: {
+      type: Sq.STRING,
+      defaultValue: null
+    },
+    snv: {
       type: Sq.INTEGER,
-      allowNull: false,
+      defaultValue: null
     },
-    ploidy: {
-      type: Sq.STRING,
-      allowNull: false,
+    snv_truncating: {
+      type: Sq.INTEGER,
+      defaultValue: null
     },
-    normalExpressionComparator: {
-      type: Sq.STRING,
+    indels: {
+      type: Sq.INTEGER,
+      defaultValue: null
     },
-    diseaseExpressionComparator: {
-      type: Sq.STRING,
+    indels_frameshift: {
+      type: Sq.INTEGER,
+      defaultValue: null
     },
-    subtyping: {
-      type: Sq.STRING,
-      allowNull: true,
-      defaultValue: null,
+    sv: {
+      type: Sq.INTEGER,
+      defaultValue: null
     },
-    tcgaColor: {
-      type: Sq.STRING,
+    sv_expressed: {
+      type: Sq.INTEGER,
+      defaultValue: null
     },
-    mutationSignature: {
-      type: Sq.JSONB,
-      defaultValue: []
+    snv_percentile: {
+      type: Sq.INTEGER,
+      defaultValue: null
+    },
+    indel_percentile: {
+      type: Sq.INTEGER,
+      defaultValue: null
+    },
+    sv_percentile: {
+      type: Sq.INTEGER,
+      defaultValue: null
     }
   }, {
     // Table Name
-    tableName: 'pog_analysis_reports_summary_tumour_analysis',
+    tableName: 'pog_analysis_reports_summary_mutation',
     // Automatically create createdAt, updatedAt, deletedAt
     timestamps: true,
     // Use soft-deletes!
@@ -66,7 +80,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['deletedAt', 'pog_report_id', 'id', 'pog_id']
+          exclude: ['id', 'pog_id', 'pog_report_id', 'deletedAt']
         },
       }
     }

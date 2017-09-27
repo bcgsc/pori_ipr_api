@@ -9,7 +9,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
   
   // Get Mutation Summary for this POG
-  db.models.mutationSummary.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
+  db.models.mutationSummaryv2.scope('public').findAll({ where: {pog_report_id: req.report.id}}).then(
     (result) => {
       // Not found
       if(result === null) return res.status(404).json({error: {message: 'Unable to find the mutation summary for ' + req.POG.POGID + '.', code: 'failedMutationSummaryLookup'}});
