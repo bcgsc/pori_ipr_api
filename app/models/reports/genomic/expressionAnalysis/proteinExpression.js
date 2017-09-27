@@ -31,7 +31,7 @@ module.exports = (sequelize, Sq) => {
       }
     },
     proteinType: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological')
+      type: Sq.ENUM('clinical', 'nostic', 'biological', 'upreg_onco', 'downreg_tsg')
     },
     gene: {
       type: Sq.STRING,
