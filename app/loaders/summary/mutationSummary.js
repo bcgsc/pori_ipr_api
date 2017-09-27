@@ -259,8 +259,6 @@ class mutationSummaryLoader {
       let parser = parse({delimiter: ',', columns: true},
         (err, results) => {
           
-          console.log('Mutation Summary results', results);
-        
           // Was there a problem processing the file?
           if(err) {
             this.logging('Unable to parse CSV file: ' + this.baseDir + this.files.spectrum, this.logger.ERROR);
