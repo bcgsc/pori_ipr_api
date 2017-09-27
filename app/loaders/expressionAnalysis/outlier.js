@@ -26,10 +26,7 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
 
   // Create promise
   let deferred = Q.defer();
-
-  // Check that the provided alterationType is valid according to the schema
-  if(db.models.outlier.rawAttributes.outlierType.values.indexOf(outlierType) === -1) deferred.reject('Invalid outlierType. Given: ' + outlierType) && new Error('Invalid outlierType. Given: ' + outlierType);
-
+  
   // First parse in therapeutic
   let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, {'delimiter': ','});
 
