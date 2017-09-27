@@ -42,7 +42,6 @@ module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex=
 
 
       });
-      console.log('New Entry', newEntry);
 
       // Get the max for the current dataVersion in the table
       model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false}).then(
