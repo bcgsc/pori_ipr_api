@@ -139,8 +139,23 @@ module.exports = class TrackingRouter extends RoutingInterface {
 
     this.registerEndpoint('get', '/', (req,res,next) => {
 
+      let opts = {
+        where: {
+          status: {
+          }
+        }
+      };
+      
+      // Default has only active/failed/hold states
+      if(!req.query.status) opts.where.status = { $not: ['complete', 'pending']};
+      
+      // Display custom list of statuses
+      if(req.query.status) opts.where.status = {$in: req.query.status.split(',')};
+      
+      
+      
       // Get all tracking
-      db.models.tracking_state.scope('public').findAll().then(
+      db.models.tracking_state.scope('public').findAll(opts).then(
         (states) => {
           res.json(states)
         },
