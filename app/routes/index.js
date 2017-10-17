@@ -6,6 +6,7 @@ let _                 = require('lodash');
 let router            = require('express').Router({mergeParams: true});
 let SocketAuth        = require(process.cwd() + '/app/middleware/socketAuth');
 let RouterInterface   = require('./routingInterface');
+let db                = require(process.cwd() + '/app/models/');
 
 
 class Routing extends RouterInterface {
@@ -69,6 +70,9 @@ class Routing extends RouterInterface {
       this.bindRouteFile('/reports', __dirname + '/reports');
   
       this.bindRouteFile('/knowledgebase', __dirname + '/knowledgebase');
+      
+      // Register Get All Projects route
+      this.getProjects();
   
       // Get Tracking Routes
       let tracking = require('../modules/tracking/routing');
@@ -153,7 +157,26 @@ class Routing extends RouterInterface {
     });
     
   }
-
+  
+  /**
+   * Get list of available projects
+   *
+   */
+  getProjects() {
+    
+    this.registerEndpoint('get', '/projects', (req, res) => {
+      db.query('SELECT DISTINCT project FROM "POGs"').then(
+        (result) => {
+          res.json(_.map(result[0], (e) => { return e.project }));
+        },
+        (err) => {
+          res.status(500).json({message: "Unable to retrieve list of projects"});
+          console.log(err);
+        }
+      );
+    });
+  }
+  
 }
 
 module.exports = Routing;

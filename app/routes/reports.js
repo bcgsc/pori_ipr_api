@@ -20,17 +20,22 @@ router.route('/')
 
     let opts = { where: {}};
 
+    let POGWhere= {};
+    
+    if(req.query.project) POGWhere.project = req.query.project;
+    
+    
     opts.include = [
       {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
       {model: db.models.user.scope('public'), as: 'createdBy'},
-      {model: db.models.POG.scope('public'), as: 'pog' },
+      {model: db.models.POG.scope('public'), as: 'pog', where: POGWhere },
       {model: db.models.pog_analysis.scope('public'), as: 'analysis' },
       {model: db.models.analysis_reports_user, as: 'users', separate: true, include: [
         {model: db.models.user.scope('public'), as: 'user'}
       ]}
     ];
-
+    
     // Where clauses
     opts.where = {};
 
