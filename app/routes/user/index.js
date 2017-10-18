@@ -192,6 +192,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Access Control
     let access = new acl(req, res);
+    access.write('*'); // Anyone is allowed to edit their account details. Controller later protects non-self edits.
     if(access.check() === false) return;
     
     
