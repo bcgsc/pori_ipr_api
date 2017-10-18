@@ -120,6 +120,10 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
+    ptxQC: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
     ptxPercCol: {
       type: Sq.STRING,
       defaultValue: null,

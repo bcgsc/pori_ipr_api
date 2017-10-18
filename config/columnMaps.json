@@ -55,6 +55,7 @@
       "PTX_percentile_column": "ptxPercCol",
       "PTX_total_samples_observed": "ptxTotSampObs",
       "PTX_POG_percentile": "ptxPogPerc",
+      "PTX_protein_expression_quality": "ptxQC",
 
       "gtex_comp": "gtexComp",
       "gtex_comp_percentile": "gtexPerc",

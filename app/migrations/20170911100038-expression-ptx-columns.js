@@ -36,6 +36,7 @@ let addOutlierPtxCols2 = () => {
       'ADD COLUMN "ptxPercCol" character varying DEFAULT null, ' +
       'ADD COLUMN "ptxTotSampObs" integer DEFAULT null, ' +
       'ADD COLUMN "ptxPogPerc" double precision DEFAULT null, ' +
+      'ADD COLUMN "ptxQC" double precision DEFAULT null, ' +
       'ADD COLUMN "gtexComp" character varying DEFAULT null, ' +
       'ADD COLUMN "gtexPerc" double precision DEFAULT null, ' +
       'ADD COLUMN "gtexFC" double precision DEFAULT null, ' +
