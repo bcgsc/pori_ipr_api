@@ -131,6 +131,9 @@ function ACL(request, response) {
       if (['POST', 'PUT', 'DELETE'].indexOf(this._req.method) > -1) {
         if (_.intersection(userGroups, this._write).length > 0) allowed = true;
       }
+  
+      // Check if everyone is allowed to write to this function
+      if (['POST', 'PUT', 'DELETE'].indexOf(this._req.method) > -1 && this._write.indexOf('*') > -1) allowed = true;
 
       // Check Explicitly Not Allowed Groups
       let nintersect = _.intersection(this._nGroups, userGroups);
