@@ -1,6 +1,7 @@
 "use strict";
 module.exports = (sequelize, Sq) => {
-  return sequelize.define('pog_analysis', {
+  return sequelize.define('pog_analysis',
+    {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,
@@ -85,12 +86,20 @@ module.exports = (sequelize, Sq) => {
         type: Sq.STRING,
         defaultValue: null,
       },
+      biopsy_date: {
+        type: Sq.DATE,
+        defaultValue: null
+      },
       date_analysis: {
         type: Sq.DATE,
         defaultValue: null
       },
       date_presentation: {
         type: Sq.DATE,
+        defaultValue: null
+      },
+      threeLetterCode: {
+        type: Sq.STRING,
         defaultValue: null
       }
     },

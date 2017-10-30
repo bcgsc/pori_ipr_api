@@ -51,6 +51,8 @@ class Analysis {
       if(options.biopsy_notes) data.biopsy_notes = options.biopsy_notes;
       if(options.libraries) data.libraries = options.libraries;
       if(options.bioapps_source_id) data.bioapps_source_id = options.bioapps_source_id;
+      if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
+      if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
     
       this.model.create(data)
         .then((analysis) => {
@@ -84,6 +86,8 @@ class Analysis {
       if(data.biopsy_notes) this.instance.biopsy_notes = data.biopsy_notes;
       if(data.libraries) this.instance.libraries = data.libraries;
       if(data.bioapps_source_id) this.instance.bioapps_source_id = data.bioapps_source_id;
+      if(data.biopsy_date) this.instance.biopsy_date = data.biopsy_date;
+      if(data.threeLetterCode) this.instance.threeLetterCode = data.threeLetterCode;
       
       resolve(this.instance.save());
       

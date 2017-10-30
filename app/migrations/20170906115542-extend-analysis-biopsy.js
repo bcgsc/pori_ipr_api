@@ -27,8 +27,10 @@ let addAnalysisColumns = () => {
       'ADD COLUMN comparator_normal JSONB DEFAULT \'{"disease_comparator_for_analysis": null, "gtex_comparator_primary_site": null, "normal_comparator_biopsy_site": null, "normal_comparator_primary_site": null}\'' +
       'ADD COLUMN biopsy_site character varying DEFAULT null' +
       'ADD COLUMN biopsy_type character varying DEFAULT null' +
-      'ADD COLUMN date_analysis date with timezone DEFAULT null' +
-      'ADD COLUMN date_presentation date with timezone DEFAULT null' +
+      'ADD COLUMN biopsy_date timestamp with time zone DEFAULT null' +
+      'ADD COLUMN date_analysis timestamp with time zone DEFAULT null' +
+      'ADD COLUMN date_presentation timestamp with time zone DEFAULT null' +
+      'ADD COLUMN threeLetterCode character varying DEFAULT null' +
       ';')
       .then(
         (result) => {
