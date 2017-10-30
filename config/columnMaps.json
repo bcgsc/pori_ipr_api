@@ -41,6 +41,7 @@
       "TCGA_qc": "tcgaQC",
       "TCGA_qc_column": "tcgaQCCol",
       "TCGA_kIQR": "tcgakIQR",
+      "kIQR": "tcgakIQR",
 
       "TCGA_average_perc": "tcgaAvgPerc",
       "TCGA_average_kIQR": "tcgaAvgkIQR",
@@ -49,6 +50,7 @@
 
       "TCGA_norm_perc": "tcgaNormPerc",
       "TCGA_norm_kIQR": "tcgaNormkIQR",
+      "kIQR_normal": "tcgaNormkIQR",
 
       "PTX_percentile": "ptxPerc",
       "PTX_kIQR": "ptxkIQR",
