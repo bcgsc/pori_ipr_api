@@ -22,7 +22,8 @@ class LimsPathologySync {
     this.pogs = {};               // Processed POGs from LIMS
     this.diseaseLibraries = [];   // Libraries that need resolution from LIMS Library API
     this.user = null;             // Sync User
-    this.maxPathWindow = options.maxPathWindow || "2592000"; // Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
+    //this.maxPathWindow = options.maxPathWindow || (50 * 86400); // (50 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
+    this.maxPathWindow = options.maxPathWindow || (90 * 86400); // (90 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
   }
   
   /**
@@ -51,6 +52,7 @@ class LimsPathologySync {
         .catch((err) => {
         
           logger.error('Failed to complete Pathology Passed LIMS sync: ' + err.message);
+          console.log(err);
           this._reset(); // Reset
           
         });
@@ -297,15 +299,13 @@ class LimsPathologySync {
                 return;
               }
               
-              //console.log('normal', normal);
-              //console.log('tumour', tumour);
-              //console.log('transcriptome', transcriptome);
+              if(!normal || !tumour || !transcriptome) return;
               
-              this.pog_analyses[pogid][track_i].libraries = {
-                normal: normal.name,
-                tumour: tumour.name,
-                transcriptome: transcriptome.name,
-              };
+              this.pog_analyses[pogid][track_i].libraries = {};
+  
+              if(normal) this.pog_analyses[pogid][track_i].libraries.normal = normal.name;
+              if(tumour) this.pog_analyses[pogid][track_i].libraries.tumour = tumour.name;
+              if(transcriptome) this.pog_analyses[pogid][track_i].libraries.transcriptome = transcriptome.name;
               
               // Update Entries
               this.pog_analyses[pogid][track_i].disease = tumour.disease.trim();
