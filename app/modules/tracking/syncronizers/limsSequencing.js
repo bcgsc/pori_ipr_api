@@ -425,13 +425,13 @@ class LimsSeqSync {
           
           // Check if the library has entries
           _.forEach(response.results, (result) => {
-            if(result.validation === 'Approved') {
+            if(result.approval === 'Approved') {
               passed = passed.concat(_.intersection(Object.keys(libraries), result.multiplex_libraries)); // Check in pooled libraries
               passed = passed.concat(_.intersection(Object.keys(libraries), [result.library])); // Check for non-pooled libraries (normal)
             }
             
             // Failed run, collect the problem libraries
-            if(result.validation === 'Rejected') {
+            if(result.approval === 'Rejected') {
               rejected = rejected.concat(_.intersection(Object.keys(libraries), result.multiplex_libraries)); // Check in pooled libraries
               rejected = rejected.concat(_.intersection(Object.keys(libraries), [result.library])); // Check for non-pooled libraries (normal)
               run_status.rejected = true;
@@ -455,6 +455,7 @@ class LimsSeqSync {
           if(_.difference(rejected, passed).length === 0) {
             run_status.rejected = false;
           }
+          
           let actionTask = new Task(task);
   
           // One or more libraries failed?
