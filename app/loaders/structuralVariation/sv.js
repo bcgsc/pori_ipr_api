@@ -55,10 +55,22 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
 
         if(v.svg !== 'na' && v.svg !== '') {
           // Load in SVG !! SYNC-Block
-          entries[k].svg = fs.readFileSync(v.svg, "utf-8");
-
-          // Load in Text File !! SYNC-Block
-          entries[k].svgTitle = fs.readFileSync(v.svgTitle, "utf-8");
+          try {
+            entries[k].svg = fs.readFileSync(v.svg, "utf-8");
+          }
+          catch (e) {
+            d.reject({message: 'Failed to read SVG file: ' + e.message, cause: e});
+            console.log('Failed to load SV SVG file', e);
+          }
+          
+          try {
+            // Load in Text File !! SYNC-Block
+            entries[k].svgTitle = fs.readFileSync(v.svgTitle, "utf-8");
+          }
+          catch (e) {
+            d.reject({message: 'Failed to read SVG title file: ' + e.message, cause: e});
+            console.log('Failed to load SV SVG title file', e);
+          }
         }
 
         // Set null values
