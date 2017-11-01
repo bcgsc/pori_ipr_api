@@ -59,7 +59,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
             entries[k].svg = fs.readFileSync(v.svg, "utf-8");
           }
           catch (e) {
-            d.reject({message: 'Failed to read SVG file: ' + e.message, cause: e});
+            deferred.reject({message: 'Failed to read SVG file: ' + e.message, cause: e});
             console.log('Failed to load SV SVG file', e);
           }
           
@@ -68,7 +68,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
             entries[k].svgTitle = fs.readFileSync(v.svgTitle, "utf-8");
           }
           catch (e) {
-            d.reject({message: 'Failed to read SVG title file: ' + e.message, cause: e});
+            deferred.reject({message: 'Failed to read SVG title file: ' + e.message, cause: e});
             console.log('Failed to load SV SVG title file', e);
           }
         }
