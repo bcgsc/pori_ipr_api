@@ -87,7 +87,7 @@ let processImage = (report, image, log) => {
 
   // Call Resize
   let format = image.format || 'PNG';
-  let process = exec('convert '+imagePath + image.file+ ' -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' ' + format + ':- | base64');
+  let process = exec('convert "'+imagePath + image.file+ '" -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' ' + format + ':- | base64');
 
   // On data, chunk
   process.stdout.on('data', (res) => {
