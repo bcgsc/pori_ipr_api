@@ -53,7 +53,7 @@ let loaders = [
 
   // Expression Analysis
   { name: 'expression_outlier', required: false, location: '/expressionAnalysis/outlier' },
-  { name: 'protein_expression', required: false, location: '/expressionAnalysis/proteinExpression', loaderType: 'class' },
+  //{ name: 'protein_expression', required: false, location: '/expressionAnalysis/proteinExpression', loaderType: 'class' },
   { name: 'expression_drugTarget', required: false, location: '/expressionAnalysis/drugTarget' },
 
 ];
