@@ -57,8 +57,9 @@ module.exports = (report, dir, logger) => {
     promises.push(processImage(report, image, log));
     
   });
-
+  
   promises.push(loadExpressionDensity(report, log));
+  promises.push(loadSummaryImage(report, log));
   
   Q.all(promises)
     .then((results) => {
@@ -86,7 +87,7 @@ let processImage = (report, image, log) => {
 
   // Call Resize
   let format = image.format || 'PNG';
-  let process = exec('convert '+imagePath + image.file+ ' -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' ' + format + ':- | base64');
+  let process = exec('convert "'+imagePath + image.file+ '" -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' ' + format + ':- | base64');
 
   // On data, chunk
   process.stdout.on('data', (res) => {
@@ -127,6 +128,104 @@ let processImage = (report, image, log) => {
   
 };
 
+/**
+ * Load all mutation summary images
+ *
+ * @param {object} report - Report model object
+ * @param {object} log - Logger interface
+ *
+ * @returns {Promise}
+ */
+let loadSummaryImage = (report, log) => {
+  
+  return new Promise((resolve, reject) => {
+    
+    glob(imagePath + '/mut_summary_image/*.png', (err, files) => {
+      
+      if(err) {
+        reject({message: 'Failed to find any mutation summary image files in ' + imagePath + '/mut_summary_image/', cause: err, loader: 'image'});
+        log('Failed to find mutation summary images');
+        return;
+      }
+      
+      Promise.all(_.map(files, (f) => { return processSummaryImage(report, f, log)}))
+        .then((result) => {
+          log('Finished loading all mutation summary images');
+          resolve({loader: 'mutation_summary', status: true});
+        })
+        .catch((err) => {
+          console.log(err);
+          log('Failed to load all mutation summary images: ' + err.message);
+          reject(({loader: 'image', reason: 'failed to load all mutation summary images'}));
+        });
+      
+    });
+    
+  });
+  
+};
+
+
+/**
+ * Process Mutation Summary Images
+ *
+ * @param {object} report - Report model object
+ * @param {string} file - Path to file
+ * @param {object} log - Logging interface
+ *
+ * @returns {Promise}
+ */
+let processSummaryImage = (report, file, log) => {
+  return new Promise((resolve, reject) => {
+    
+    
+    let process = exec('convert "' + file + '" -resize 560x151 PNG:- | base64');
+    let imgData = ""; // Image data chunk string
+    
+    let filename = _.last(file.split('/'));
+    
+    let image_string = filename.substring(17,filename.lastIndexOf('.png'));
+    
+    // Chunk data
+    process.stdout.on('data', (res) => {
+      imgData += res;
+    });
+    
+    // Imagemagick command failed
+    process.stderr.on('data', (err) => {
+      console.log('Imagemagick Processing Error for', file, err);
+      reject({loader: 'image', message: 'ImageMagick was unable to convert the image: ' + file});
+    });
+    
+    // On close of process
+    process.on('close', (result) => {
+      // Write result to DB
+  
+      db.models.imageData.create({
+        pog_id: report.pog_id,
+        pog_report_id: report.id,
+        format: 'PNG',
+        filename: _.last(file.split('/')),
+        key: "mutation_summary."+image_string,
+        data: imgData
+      })
+        .then((result) => {
+          log('Loaded image: ' + "mutation_summary."+image_string);
+          resolve(true);
+        })
+        .catch((err) => {
+          // DB Error
+          console.log('Failed to insert image file for: ' + "mutation_summary."+image_string);
+          console.log(err);
+          reject({})
+        });
+    });
+    
+  
+  });
+};
+
+
 // Load in the expression denisty images
 let loadExpressionDensity = (report, log) => {
 
@@ -150,7 +249,7 @@ let loadExpressionDensity = (report, log) => {
       },
       (err) => {
         console.log('Failed Exp Density Image Processing', err);
-        deferred.reject({loader: 'image', message: 'Unable to load one or more density images:' + err.message});
+        deferred.reject({loader: 'image', reason: 'failed to created database entry for: ' + img});
       }
     );
 
@@ -168,7 +267,7 @@ let processExpDensityImages = (report, img, log) => {
   let imgData = "";
   let geneName = img.split('/')[img.split('/').length-1].split('.')[0];
 
-  let process = exec('convert '+img+ ' -resize 450x450 PNG:- | base64');
+  let process = exec('convert "'+img+ '" -resize 450x450 PNG:- | base64');
 
   // On data, chunk
   process.stdout.on('data', (res) => {

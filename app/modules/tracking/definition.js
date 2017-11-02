@@ -137,7 +137,7 @@ module.exports = class StateDefinition {
     if(input.description) this.instance.description = input.description;
     if(input.ordinal) this.instance.ordinal = input.ordinal;
     if(input.group_id) this.instance.group_id = input.group_id;
-    if(input.hidden) this.instance.hidden = input.hidden;
+    if(input.hidden !== undefined) this.instance.hidden = input.hidden;
 
   }
 

@@ -27,7 +27,8 @@ let loaders = [
   // Summary
   { name: 'summary_patientInformation', required: true, location: '/summary/patientInformation', loaderType: 'class' },
   { name: 'summary_tumourAnalysis', required: true, location: '/summary/tumourAnalysis' },
-  { name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary' },
+  { name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary', loaderType: 'class' },
+  //{ name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary'},
   { name: 'summary_variantCounts', required: false, location: '/summary/variantCounts' },
   { name: 'summary_genomicAlterationsIdentified', required: true, location: '/summary/genomicAlterationsIdentified' },
   { name: 'summary_genomicEventsTherapeutic', required: true, location: '/summary/genomicEventsTherapeutic' },
@@ -52,6 +53,7 @@ let loaders = [
 
   // Expression Analysis
   { name: 'expression_outlier', required: false, location: '/expressionAnalysis/outlier' },
+  //{ name: 'protein_expression', required: false, location: '/expressionAnalysis/proteinExpression', loaderType: 'class' },
   { name: 'expression_drugTarget', required: false, location: '/expressionAnalysis/drugTarget' },
 
 ];
@@ -68,7 +70,7 @@ class GenomicLoader {
     this.baseDir = options.baseDir || null;
     this.moduleOptions = options.moduleOptions || {};
     this.log = logger.loader(POG.POGID + '-' + report.ident);
-
+    
   }
 
   /**
@@ -321,6 +323,7 @@ class GenomicLoader {
       // From the base directory read in the Report_Tracking.cfg file
       fs.readFile(this.baseDir + '/Report_tracking.cfg', 'utf8', (err, data) => {
         if(err) {
+          console.log(err);
           // Unable to find config file
           this.log('Unable to find Report_tracking.cfg file', logger.ERROR);
           reject('Unable to find Report_tracking.cfg file');
@@ -344,6 +347,24 @@ class GenomicLoader {
         });
       });
     });
+  }
+
+  /**
+   * Handle a failed loader scenario
+   *
+   * If environment is production, allow passage of
+   *
+   * @param err
+   * @returns {Promise}
+   */
+  LoaderFailed(err) {
+
+    return new Promise((resolve, reject) => {
+
+
+
+    });
+
   }
 
 }

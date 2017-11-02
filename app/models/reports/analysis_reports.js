@@ -70,6 +70,15 @@ module.exports = (sequelize, Sq) => {
         attributes: {
           exclude: ['id', 'pog_id', 'createdBy_id', 'deletedAt']
         },
+      },
+      extended: {
+        attributes: {
+          exclude: ['id', 'pog_id', 'createdBy_id', 'deletedAt']
+        },
+        include: [
+          { model: sequelize.models.POG, as: 'pog'},
+          { model: sequelize.models.pog_analysis, as: 'analysis'}
+        ]
       }
     }
   });

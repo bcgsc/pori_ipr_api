@@ -52,6 +52,10 @@ module.exports = (sequelize, Sq) => {
     tcgaColor: {
       type: Sq.STRING,
     },
+    mutationSignature: {
+      type: Sq.JSONB,
+      defaultValue: []
+    }
   }, {
     // Table Name
     tableName: 'pog_analysis_reports_summary_tumour_analysis',

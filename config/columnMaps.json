@@ -35,12 +35,37 @@
       "RNA_reads": "rnaReads",
       "expression_rpkm": "rpkm",
       "fold_change": "foldChange",
+
       "TCGA_perc": "tcgaPerc",
+      "TCGA_perc_column": "tcgaPercCol",
       "TCGA_qc": "tcgaQC",
+      "TCGA_qc_column": "tcgaQCCol",
+      "TCGA_kIQR": "tcgakIQR",
+      "kIQR": "tcgakIQR",
+
+      "TCGA_average_perc": "tcgaAvgPerc",
+      "TCGA_average_kIQR": "tcgaAvgkIQR",
+      "TCGA_average_qc": "tcgaAvgQC",
+      "TCGA_average_qc_column": "tcgaAvgQCCol",
+
       "TCGA_norm_perc": "tcgaNormPerc",
-      "kIQR_normal": "kIQRNormal",
-      "ptx_percentile": "ptxPerc",
-      "ptx_kIQR": "ptxkIQR"
+      "TCGA_norm_kIQR": "tcgaNormkIQR",
+      "kIQR_normal": "tcgaNormkIQR",
+
+      "PTX_percentile": "ptxPerc",
+      "PTX_kIQR": "ptxkIQR",
+      "PTX_percentile_column": "ptxPercCol",
+      "PTX_total_samples_observed": "ptxTotSampObs",
+      "PTX_POG_percentile": "ptxPogPerc",
+      "PTX_protein_expression_quality": "ptxQC",
+
+      "gtex_comp": "gtexComp",
+      "gtex_comp_percentile": "gtexPerc",
+      "gtex_comp_FC": "gtexFC",
+      "gtex_comp_kIQR": "gtexkIQR",
+      "gtex_comp_average_percentile": "gtexAvgPerc",
+      "gtex_comp_average_FC": "gtexAvgFC",
+      "gtex_comp_average_kIQR": "gtexAvgkIQR"
     },
     "drugTarget": {
       "Gene": "gene",

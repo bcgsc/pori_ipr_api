@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
+  p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 let baseDir;
@@ -25,10 +26,7 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
 
   // Create promise
   let deferred = Q.defer();
-
-  // Check that the provided alterationType is valid according to the schema
-  if(db.models.outlier.rawAttributes.outlierType.values.indexOf(outlierType) === -1) deferred.reject('Invalid outlierType. Given: ' + outlierType) && new Error('Invalid outlierType. Given: ' + outlierType);
-
+  
   // First parse in therapeutic
   let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, {'delimiter': ','});
 
@@ -49,9 +47,11 @@ let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, lo
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
+        entries[k] = p2s(v, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
         entries[k].pog_id = report.pog_id;
         entries[k].pog_report_id = report.id;
         entries[k].outlierType = outlierType;
+        entries[k].expType = 'rna';
       });
 
       // Log progress

@@ -1,4 +1,5 @@
-// app/routes/genomic/detailedGenomicAnalysis.js
+"use strict";
+
 let express = require('express'),
     _ = require('lodash'),
     router = express.Router({mergeParams: true}),
@@ -31,7 +32,7 @@ router.route('/retrieve/:key')
 
     db.models.imageData.findAll(opts).then(
       (result) => {
-        output = {};
+        let output = {};
 
         _.forEach(result, (v,k) => {
 
@@ -56,6 +57,7 @@ router.route('/expressionDensityGraphs')
     db.models.imageData.findAll({
       where: {
         pog_id: req.POG.id,
+        pog_report_id: req.report.id,
         key: {
           $like: 'expDensity.%'
         }
@@ -64,7 +66,7 @@ router.route('/expressionDensityGraphs')
       attributes: {exclude: ['id','deletedAt', 'pog_id']}
     }).then(
       (result) => {
-        output = {};
+        let output = {};
 
         _.forEach(result, (v,k) => {
 
@@ -79,6 +81,39 @@ router.route('/expressionDensityGraphs')
       }
     )
 
+  });
+
+router.route('/mutationSummary')
+  .get((req,res,next) => {
+    
+    let opts = {
+      where: {
+        pog_report_id: req.report.id,
+        key: {
+            $or: [
+            { $like: 'mutation_summary.%' },
+            { $like: 'mutSummary.%' }
+          ]
+        }
+      },
+      order: 'key ASC',
+      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'pog_report_id']}
+    };
+    
+    db.models.imageData.findAll(opts)
+      .then((result) => {
+        let output = {};
+        
+        _.forEach(result, (v) => {
+          output[v.key] = v;
+        });
+        
+        res.json(output);
+      })
+      .catch((err) => {
+      
+      });
+  
   });
 
 module.exports = router;

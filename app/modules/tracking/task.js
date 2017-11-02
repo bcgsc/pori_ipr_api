@@ -11,6 +11,7 @@ const InvalidTaskOperation    = require('./exceptions/InvalidTaskOperation');
 const InvalidCheckInTarget    = require('./exceptions/InvalidCheckInTarget');
 const State                   = require('./state');
 const Checkin                 = require('./checkin');
+const logger                  = require(process.cwd() + '/lib/log');
 
 module.exports = class Task {
 
@@ -63,7 +64,7 @@ module.exports = class Task {
       // Start chain
       this.createCheckin(user, payload)
         .then(this.checkCompletion.bind(this))
-        .then(state.checkCompleted())
+        .then(state.checkCompleted.bind(state))
         .then(this.getPublic.bind(this))
         .then(
           (result) => {
@@ -97,6 +98,8 @@ module.exports = class Task {
    */
   createCheckin(user, payload) {
     return new Promise((resolve, reject) => {
+      
+      
       let checkin = new Checkin(null);
 
       checkin.createCheckin(this.instance, user, payload).then(
@@ -107,7 +110,7 @@ module.exports = class Task {
 
           // Add checkin to all checkins
           this.instance.checkins.push(result);
-
+          
           resolve(result);
         },
         (err) => {
@@ -215,7 +218,7 @@ module.exports = class Task {
 
     return new Promise((resolve, reject) => {
       let completed = true;
-
+      
       // Get all checkins
       db.models.tracking_state_task_checkin.findAll({where: { task_id: this.instance.id }}).then(
         (checkins) => {
