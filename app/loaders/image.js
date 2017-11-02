@@ -179,7 +179,7 @@ let processSummaryImage = (report, file, log) => {
   return new Promise((resolve, reject) => {
     
     
-    let process = exec('convert ' + file + ' -resize 560x151 PNG:- | base64');
+    let process = exec('convert "' + file + '" -resize 560x151 PNG:- | base64');
     let imgData = ""; // Image data chunk string
     
     let filename = _.last(file.split('/'));
@@ -267,7 +267,7 @@ let processExpDensityImages = (report, img, log) => {
   let imgData = "";
   let geneName = img.split('/')[img.split('/').length-1].split('.')[0];
 
-  let process = exec('convert '+img+ ' -resize 450x450 PNG:- | base64');
+  let process = exec('convert "'+img+ '" -resize 450x450 PNG:- | base64');
 
   // On data, chunk
   process.stdout.on('data', (res) => {
