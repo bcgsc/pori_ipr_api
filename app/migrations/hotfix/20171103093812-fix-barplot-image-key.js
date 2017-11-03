@@ -12,9 +12,12 @@ const logger = require(process.cwd() + '/app/libs/logger');
  */
 
 console.log('Loaded dependencies');
+let reports = {};
+
 
 // Make sure we're working on dev
-if(db.config.database !== 'ipr-dev') {
+if(db.config.database === 'ipr') {
+  console.log('### Can not run this migration on production');
   process.exit();
 }
 
@@ -29,6 +32,9 @@ let getAllComparators = () => {
     db.models.tumourAnalysis.findAll()
       .then((results) => {
         console.log('[MIGRATION][getAllComparators]', 'Retrieved All Comparators');
+        _.forEach(results, (c) => {
+          reports[c.pog_report_id] = c;
+        });
         resolve(results);
       })
       .catch((err) => {
@@ -52,16 +58,64 @@ let updateComparatorEntry = (comparators) => {
   
   return new Promise((resolve, reject) => {
     
-    Promise.all(_.map(comparators, (comp) => {
-        return db.models.mutationSummaryv2.update({ comparator: comp.diseaseExpressionComparator }, {where: {pog_report_id: comp.pog_report_id, comparator: null, sv_percentile: {$not: null}}})
-      }))
-      .then((result) => {
-        console.log('Affected Rows: ' + result.length);
-        resolve(true);
+    db.models.imageData.findAll({ where: db.where(db.fn('char_length', db.col('key')), '>',  90), attributes: ['id', 'key', 'filename', 'pog_report_id'] })
+      .then((images) => {
+        console.log('Entries: ', images.length);
+        
+        
+        Promise.all(_.map(images, (i) => {
+            let ta = reports[i.pog_report_id];
+            let key = null;
+            
+            if(ta) {
+              switch (i.filename) {
+                case 'mutation_summary_sv.png': // Mutation Summary SV density plot
+                  key = 'mutation_summary.density_plot_sv.' + ta.diseaseExpressionComparator;
+                  break;
+                case 'mutation_summary_bar_sv.png': // Mutation Summary SV density plot
+                  key = 'mutation_summary.barplot_sv.' + ta.diseaseExpressionComparator;
+                  break;
+                case 'mutation_summary_snv.png': // Mutation Summary SV density plot
+                  key = 'mutation_summary.density_plot_snv.' + ta.diseaseExpressionComparator;
+                  break;
+                case 'mutation_summary_bar_snv.png': // Mutation Summary SV density plot
+                  key = 'mutation_summary.barplot_snv.' + ta.diseaseExpressionComparator;
+                  break;
+                case 'mutation_summary_indel.png': // Mutation Summary SV density plot
+                  key = 'mutation_summary.density_plot_indel.' + ta.diseaseExpressionComparator;
+                  break;
+                case 'mutation_summary_bar_indel.png': // Mutation Summary SV density plot
+                  key = 'mutation_summary.barplot_indel.' + ta.diseaseExpressionComparator;
+                  break;
+              }
+            }
+            
+            if(!key) {
+              console.log(`[${i.id}] No updated key found.`);
+              key = i.key;
+            } else {
+              console.log(`[${i.id}] Updated key set`);
+            }
+            
+            i.key = key;
+            
+            return i.save();
+            
+          }))
+          .then((result) => {
+            console.log('Finished updating results');
+            resolve();
+          })
+          .catch((err) => {
+            console.log('Failed to update keys');
+            console.log(err);
+          });
+          
+        
       })
       .catch((err) => {
-        console.log('error', err);
-        reject();
+        console.log('Failed to query image data entries');
+        console.log(err);
       })
     
   });
