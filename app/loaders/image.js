@@ -181,15 +181,30 @@ let processSummaryImage = (report, file, log) => {
     
     let process = exec('convert "' + file + '" -resize 560x151 PNG:- | base64');
     let imgData = ""; // Image data chunk string
+    let legacy_names =  {   // Convert pre genomicReport.py v5.0.0 summary image names to updated format
+      'bar_indel': 'barplot_indel',
+      'bar_snv': 'barplot_snv',
+      'bar_sv': 'barplot_sv',
+      'snv': 'density_plot_snv',
+      'sv': 'density_plot_sv',
+      'indel': 'density_plot_indel'
+    };
     
     let filename = _.last(file.split('/'));
     
     let image_string = filename.substring(17,filename.lastIndexOf('.png'));
     
+    /* Legacy Name Check */
+    if(image_string in legacy_names) {
+      console.log('#### Found legacy name, renaming', image_string, 'to', legacy_names[image_string]);
+      image_string = legacy_names[image_string];
+    }
+    
     // Chunk data
     process.stdout.on('data', (res) => {
       imgData += res;
     });
+    
     
     // Imagemagick command failed
     process.stderr.on('data', (err) => {
@@ -268,7 +283,7 @@ let processExpDensityImages = (report, img, log) => {
   let geneName = img.split('/')[img.split('/').length-1].split('.')[0];
 
   let process = exec('convert "'+img+ '" -resize 450x450 PNG:- | base64');
-
+  
   // On data, chunk
   process.stdout.on('data', (res) => {
     imgData = imgData + res;
@@ -278,7 +293,7 @@ let processExpDensityImages = (report, img, log) => {
     console.log('Imagemagick Processing Error for',img, err);
     deferred.reject({loader: 'image', message: 'ImageMagick was unable to convert the image: ' + img});
   });
-
+  
   // Done executing
   process.on('close', (resp) => {
 
