@@ -340,7 +340,7 @@ class mutationSummaryLoader {
         sv_expressed: row['sv-expressed'].split(' ')[1].replace(/(\[|\])/g, ''),
         snv_percentile: row['SNV_percentile_amongst_specificDisease'],
         indel_percentile: row['INDEL_percentile_amongst_specificDisease'],
-        sv_percentile: row['SV_percentile_amongst_allPOG'],
+        sv_percentile: null,
         pog_id: this.report.pog_id,
         pog_report_id: this.report.id
       },
@@ -354,7 +354,7 @@ class mutationSummaryLoader {
         sv_expressed: row['sv-expressed'].split(' ')[1].replace(/(\[|\])/g, ''),
         snv_percentile: row['SNV_percentile_amongst_allTCGA'],
         indel_percentile: row['INDEL_percentile_amongst_allTCGA'],
-        sv_percentile: null,
+        sv_percentile: row['SV_percentile_amongst_allPOG'],
         pog_id: this.report.pog_id,
         pog_report_id: this.report.id
       }
