@@ -98,7 +98,8 @@ let updateReportMutationSummaryImages = (ta) => {
 console.log('[MIGRATION]', 'Starting Migration');
 
 // Start migration chain
-addOutlierPtxCols2()
+getAllReports()
+  
   .then((success) => {
     console.log('[MIGRATION]', 'Finished migrations', success);
   })

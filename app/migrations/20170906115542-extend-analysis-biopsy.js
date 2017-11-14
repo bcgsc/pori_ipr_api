@@ -22,11 +22,11 @@ let addAnalysisColumns = () => {
     
     console.log('[MIGRATION][addAnalysisColumns]', 'Starting migration');
     
-    db.query('ALTER TABLE pog_analysis ADD COLUMN "onco_panel_submitted" timestamp with time zone DEFAULT null, drop column "biopsyDate"' +
+    db.query('ALTER TABLE pog_analysis ADD COLUMN "onco_panel_submitted" timestamp with time zone DEFAULT null,' +
       'ADD COLUMN comparator_disease JSONB DEFAULT \'[]\', ' +
       'ADD COLUMN comparator_normal JSONB DEFAULT \'{"disease_comparator_for_analysis": null, "gtex_comparator_primary_site": null, "normal_comparator_biopsy_site": null, "normal_comparator_primary_site": null}\'' +
-      'ADD COLUMN biopsy_site character varying DEFAULT null' +
-      'ADD COLUMN biopsy_type character varying DEFAULT null' +
+      'ADD COLUMN biopsy_site character varying DEFAULT null,' +
+      'ADD COLUMN biopsy_type character varying DEFAULT null,' +
       'ADD COLUMN biopsy_date timestamp with time zone DEFAULT null' +
       'ADD COLUMN date_analysis timestamp with time zone DEFAULT null' +
       'ADD COLUMN date_presentation timestamp with time zone DEFAULT null' +
