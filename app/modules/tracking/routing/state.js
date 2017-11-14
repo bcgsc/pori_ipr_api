@@ -56,51 +56,64 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
 
     this.registerResource('/')
       // Get all state definitions
-      .get((req,res,next) => {
+      .get(this.getFilteredStates);
 
-        let opts = {
-          attributes: {
-            exclude: ['deletedAt', 'id', 'analysis_id', 'createdBy_id', 'group_id']
-          },
-          include: [
-            {as: 'analysis', model: db.models.pog_analysis.scope('public')},
-          ],
-          order: [
-            ['ordinal', 'ASC']
-          ],
-          where: {}
-        };
-
-        if(req.query.name) opts.where.name = req.query.name;
-        if(req.query.slug) opts.where.slug = req.query.slug;
-
-        let taskInclude = {
-          as: 'tasks',
-          model: db.models.tracking_state_task,
-          attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
-          order: [['ordinal','ASC']],
-          include: [
-            {as: 'assignedTo', model: db.models.user.scope('public')},
-            {as: 'checkins', model: db.models.tracking_state_task_checkin, include:[{as: 'user', model: db.models.user.scope('public')}], attributes: {exclude: ['id', 'task_id', 'deletedAt', 'user_id']}}
-          ] // end tasks include
-        }; // end state tasks include
-
-        if(req.query.unassigned === 'true') taskInclude.where = {assignedTo_id: null};
-
-        opts.include.push(taskInclude);
-
-        // Get All Definitions
-        db.models.tracking_state.scope('public').findAll(opts).then(
-          (states) => {
-            res.json(states);
-          },
-          (err) => {
-            console.log(err);
-            res.status(500).json({error: {message: 'Unable to query definitions'}});
-          }
-        )
-      });
-
+  }
+  
+  /**
+   * Endpoint handler for retrieving filtered states
+   *
+   * @param {object} res
+   * @param {object} req
+   * @param {object} next
+   */
+  getFilteredStates(req, res, next) {
+    let opts = {
+      attributes: {
+        exclude: ['deletedAt', 'id', 'analysis_id', 'createdBy_id', 'group_id']
+      },
+      include: [
+        {as: 'analysis', model: db.models.pog_analysis.scope('public')},
+      ],
+      order: [
+        ['startedAt', 'ASC'],
+        ['ordinal', 'ASC']
+      ],
+      where: {}
+    };
+  
+    if(req.query.name) opts.where.name = req.query.name;
+    if(req.query.slug) opts.where.slug = {$in: req.query.slug.split(',')};
+    if(req.query.status) opts.where.status = {$in: req.query.status.split(',')};
+  
+    if(req.query.createdAt && req.query.createdAt.split(',').length === 2) opts.where.createdAt = {$between: req.query.createdAt.split(',')};
+    if(req.query.startedAt && req.query.startedAt.split(',').length === 2) opts.where.startedAt = {$between: req.query.startedAt.split(',')};
+  
+    let taskInclude = {
+      as: 'tasks',
+      model: db.models.tracking_state_task,
+      attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
+      order: [['ordinal','ASC']],
+      include: [
+        {as: 'assignedTo', model: db.models.user.scope('public')},
+        {as: 'checkins', model: db.models.tracking_state_task_checkin, include:[{as: 'user', model: db.models.user.scope('public')}], attributes: {exclude: ['id', 'task_id', 'deletedAt', 'user_id']}}
+      ] // end tasks include
+    }; // end state tasks include
+  
+    if(req.query.unassigned === 'true') taskInclude.where = {assignedTo_id: null};
+  
+    opts.include.push(taskInclude);
+  
+    // Get All Definitions
+    db.models.tracking_state.scope('public').findAll(opts).then(
+      (states) => {
+        res.json(states);
+      },
+      (err) => {
+        console.log(err);
+        res.status(500).json({error: {message: 'Unable to query definitions'}});
+      }
+    )
   }
 
   /**

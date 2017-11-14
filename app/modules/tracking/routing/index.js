@@ -11,6 +11,7 @@ const RoutingInterface    = require('../../../routes/routingInterface');
 let DefinitionRoutes      = require('./definition');
 let StateRoutes           = require('./state');
 let TaskRoutes            = require('./task');
+let TicketTemplateRoutes  = require('./ticket_template');
 const Generator           = require('./../generate');
 const AnalysisLib         = require('../../../libs/structures/analysis');
 const POGLib              = require('../../../libs/structures/pog');
@@ -48,11 +49,14 @@ module.exports = class TrackingRouter extends RoutingInterface {
     let Tasks = new TaskRoutes(this.io);
     this.bindRouteObject('/task', Tasks.getRouter());
 
+    let Ticket_Template = new TicketTemplateRoutes(this.io);
+    this.bindRouteObject('/ticket/template', Ticket_Template.getRouter());
+
     // Enable Generator
     this.generator();
 
     // Enable Root Racking
-    this.tracking();
+    this.tracking(States);
 
   }
 
@@ -134,40 +138,15 @@ module.exports = class TrackingRouter extends RoutingInterface {
     });
 
   }
-
-  tracking() {
-
-    this.registerEndpoint('get', '/', (req,res,next) => {
-
-      let opts = {
-        where: {
-          status: {
-          }
-        }
-      };
-      
-      // Default has only active/failed/hold states
-      if(!req.query.status) opts.where.status = { $not: ['complete', 'pending']};
-      
-      // Display custom list of statuses
-      if(req.query.status) opts.where.status = {$in: req.query.status.split(',')};
-      
-      
-      
-      // Get all tracking
-      db.models.tracking_state.scope('public').findAll(opts).then(
-        (states) => {
-          res.json(states)
-        },
-        (err) => {
-          console.log(err);
-          res.status(500).json({error: {message: 'Unable to retrieve POG tracking states due to an internal error'}});
-        }
-      )
-
-
-
-    });
+  
+  /**
+   * Tracking Home Route
+   *
+   */
+  tracking(stateRouter) {
+    
+    // Map to state router function
+    this.registerEndpoint('get', '/', stateRouter.getFilteredStates);
 
   }
 
