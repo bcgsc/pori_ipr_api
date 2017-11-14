@@ -85,7 +85,7 @@ module.exports = class TrackingGenerator {
         description:  definition.description,
         ordinal:      definition.ordinal,
         status:       (definition.ordinal === 1) ? 'active' : 'pending',  // Default to start as pending if not ordinal=0
-        startedAt:    moment().toISOString(),
+        startedAt:    null,
         createdBy_id: this.user.id,
       };
 

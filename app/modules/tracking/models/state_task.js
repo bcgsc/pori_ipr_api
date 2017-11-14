@@ -57,7 +57,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
       validate: {
         isIn: {
-          args: [['pending', 'active', 'complete', 'hold', 'failed']],
+          args: [['pending', 'active', 'complete', 'hold', 'failed', 'cancelled']],
           msg: 'The specified task status is not valid. Allowed values: pending, active, complete, pause, blocked'
         }
       }

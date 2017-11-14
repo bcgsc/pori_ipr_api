@@ -1,4 +1,19 @@
 "use strict";
+/*
+ IPR-API - Integrated Pipeline Reports API
+
+ COPYRIGHT 2016 MICHAEL SMITH GENOME SCIENCES CENTRE
+ CONFIDENTIAL -- FOR RESEARCH PURPOSES ONLY
+ 
+ Author: Brandon Pierce <bpierce@bcgsc.ca>
+ Support JIRA ticket space: DEVSU
+
+ This Node.JS script is designed to be run in ES6 compliant mode
+ 
+ Description
+ The synchronization main class. Iterates over itself, invoking registered hooks when they are determined to be stale.
+
+*/
 
 const uuidv4        = require('uuid/v4');
 const moment        = require('moment');
@@ -15,19 +30,27 @@ const logger        = process.logger;
 
 class Synchro {
   
+  /**
+   * Constructor
+   *
+   * @param {integer} interval - Interval in milliseconds
+   * @param {string} mode - The operation mode
+   */
   constructor(interval=null, mode=null) {
     
     this.hooks = {};                  // Hooks registry { uuid: {name: str, frequency: int, fn: fn() } }
     this.hookMap = {};                // Map of hook UUIDs to Names - used to prevent naming collisions { name: uuid, ... }
     this.runMode = mode || 'dryrun';  // Run mode for the synchronizer. Default is dryrun
     this.invocationRegistry = {};     // Time since last invocation for each hook { uuid: {time: int, result: str/text} }
-    this.interval = interval || 1000; // Default iteration time
+    this.interval = (interval*1000) || 1000; // Default iteration time
+  
+    logger.info(`Syncro set up to run every ${this.interval/1000}s`);
   }
   
   /**
    * Start the synchronizer
    *
-   * Recursive loop to wait for hook events to be invoked
+   * Never-ending loop; Invokes hooks if they become stale
    *
    */
   start() {
@@ -36,39 +59,36 @@ class Synchro {
     
     setInterval(() => {
       
-      let promises = [];
+      logger.debug(`Starting round ${round}`);
+      
+      let hooksToInit = [];
       
       // Loop over registered hooks
       _.forEach(this.hooks, (hook, uuid) => {
-        
-        promises.push(this._checkHook(uuid));
-        
+        if(this._checkHook(uuid)) hooksToInit.push(uuid);
       });
       
-      Promise.all(promises).then(
-        (result) => {
-          logger.info('Invocation', round, ' | Waiting another ' + this.interval + 's');
-        }
-      ).catch((err) => {
-        console.log('There was a problem with the hook processing', err);
+      // Loop over invocations and trigger!
+      _.forEach(hooksToInit, (u) => {
+        this._invokeHook(u);
       });
-      
       
       round++;
       
-      
-      
     }, this.interval);
+    // ♪ I'm going to live forever ♪
     
   }
   
   /**
-   * Register a syncronization hook
+   * Register a synchronization hook
    *
    * Takes in a name, frequency, and callback function to be invoked
    *
+   * @synchronous
+   *
    * @param {string} name - Name of hook to register
-   * @param {number} frequency - Number of sections between iterations
+   * @param {number} frequency - Number of seconds between iterations
    * @param {object} obj - The obj with init function
    *
    * @returns {object} - Returns the UUID
@@ -85,7 +105,7 @@ class Synchro {
     
     this.hookMap[name] = uuid;
     
-    logger.info('Hook registered: ', this.hooks[uuid].name, uuid);
+    logger.info(`Hook registered: ${this.hooks[uuid].name} on index ${uuid}. It will run every ${frequency} seconds.`);
     
     return this.hooks[uuid];
   }
@@ -105,37 +125,49 @@ class Synchro {
    *
    * Check to see if a hook is stale, and needs to be executed.
    *
-   * @param uuid
-   * @synchronous
    * @private
+   * @synchronous
+   *
+   * @param {string} uuid - UUID of task to be checked for stale and invocation history
+   *
+   * @returns {boolean} - Returns a bool on whether the task is stale or not
    */
   _checkHook(uuid) {
     
-    return new Promise((resolve, reject) => {
-      
-      // Retrieve invocation history for this uuid
-      let history = this.invocationRegistry[uuid];
-      
-      // Check that there's an invocation history
-      if(history === undefined || history === null || history.length === 0) {
-        resolve(this._invokeHook(uuid));
-      }
-      
-      // Check if stale
-      if(history.length > 0 && moment.unix() - _.last(history).time > this.hooks[uuid].frequency) {
-        // Hook is stale, invoke it!
-        resolve(this._invokeHook(uuid));
-      }
-      
-      // Hook is not stale
-      return resolve(false);
-    });
+    // Retrieve invocation history for this uuid
+    let history = this.invocationRegistry[uuid];
     
+    // Check that there's an invocation history
+    if(history === undefined || history === null || history.length === 0) {
+      logger.debug('No history yet for this hook: ' + uuid);
+      return true;
+    }
+    
+    // Check if stale
+    if(history.length > 0 && moment().unix() - _.last(history).end > this.hooks[uuid].frequency) {
+      logger.debug('Hook is stale: ' + uuid);
+      // Hook is stale, invoke it!
+      return true;
+    }
+
+    logger.debug('Hook has history and is not stale: ' + uuid);
+    
+    // Hook is not stale
+    return false;
+  
+  
   }
   
   
   /**
    * Invoke Hook
+   *
+   * Takes in a hook UUID and invokes the associated function. Performs some basic hook invocation collision checking,
+   * but will not check for stale vs not stale. Simply will not allow concurrent task execution.
+   *
+   * @param {string} uuid - UUID of hook to be invoked
+   * @returns {Promise} - Resolves with undefined; Rejects with false
+   *
    */
   _invokeHook(uuid) {
     
@@ -162,7 +194,7 @@ class Synchro {
       
       // Create entry for invocation
       this.invocationRegistry[uuid].push({
-        start: moment.unix(),
+        start: moment().unix(),
         end: null,
         result: null,
         status: 'running'
@@ -176,9 +208,7 @@ class Synchro {
           
           this.invocationRegistry[uuid][runIndex].status = 'success';
           this.invocationRegistry[uuid][runIndex].result = result.summary;
-          this.invocationRegistry[uuid][runIndex].end = moment.unix();
-          
-          console.log('Success hook invocation', uuid, this.hooks[uuid].name);
+          this.invocationRegistry[uuid][runIndex].end = moment().unix();
           
           resolve(true);
           return;
@@ -187,7 +217,7 @@ class Synchro {
           
           this.invocationRegistry[uuid][runIndex].status = 'failed';
           this.invocationRegistry[uuid][runIndex].result = err.message;
-          this.invocationRegistry[uuid][runIndex].end = moment.unix();
+          this.invocationRegistry[uuid][runIndex].end = moment().unix();
           
           console.log(err);
           reject(false);
@@ -198,10 +228,6 @@ class Synchro {
     
   }
   
-  
-  
-  
 }
-
 
 module.exports = Synchro;

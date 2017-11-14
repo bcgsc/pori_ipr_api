@@ -23,7 +23,8 @@ module.exports = class State {
       'pending',
       'complete',
       'hold',
-      'failed'
+      'failed',
+      'cancelled'
     ];
 
     // Existing instance

@@ -1,5 +1,17 @@
 "use strict";
-// server.js
+/*
+ IPR-API - Integrated Pipeline Reports API
+
+ COPYRIGHT 2016 MICHAEL SMITH GENOME SCIENCES CENTRE
+ CONFIDENTIAL -- FOR RESEARCH PURPOSES ONLY
+ 
+ Author: Brandon Pierce <bpierce@bcgsc.ca>
+ Support JIRA ticket space: DEVSU
+
+ This Node.JS script is designed to be run in ES6ES6 compliant mode
+
+*/
+
 
 // BASE SETUP
 // =========================================================================
@@ -28,4 +40,10 @@ const logger        = require('./lib/log');       // Load logging library
 
 process.logger = logger;
 
-const limsPathology = require(process.cwd() + '/app/modules/tracking/syncronizers/limsPathology');
+//const limsPathology = require(process.cwd() + '/app/modules/tracking/syncronizers/limsPathology');
+//const limsSequencing = require(process.cwd() + '/app/modules/tracking/syncronizers/limsSequencing');
+//const bioappsSync = require(process.cwd() + '/app/modules/tracking/syncronizers/BioApps');
+//const TestSyncro = require(process.cwd() + '/app/synchronizer/test');
+
+const TrackingSync = require(process.cwd() + '/app/modules/tracking/synchronizers')();
+

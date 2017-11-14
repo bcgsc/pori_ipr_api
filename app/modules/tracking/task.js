@@ -29,7 +29,8 @@ module.exports = class Task {
       'active',
       'hold',
       'complete',
-      'failed'
+      'failed',
+      'cancelled'
     ];
 
     // Existing instance
@@ -282,6 +283,41 @@ module.exports = class Task {
     if(task.description) this.instance.description = task.description;
     if(task.status) this.instance.status = task.status;
     if(task.assignedTo_id) this.instance.assignedTo_id = task.assignedTo_id;
+  }
+  
+  
+  /**
+   * Update a task's status with trigger for state status flipping
+   *
+   * @param {string} status - The state to change the task to
+   *
+   * @returns {Promise} - Resolves with updated task
+   */
+  setStatus(status) {
+    return new Promise((resolve, reject) => {
+      
+      // Check that the provided status is allowed
+      if(this.allowedStates.indexOf(status) === -1) throw new Error('The provided status is not allowed');
+      
+      this.instance.status = status;
+      
+      if(status !== 'pending') {
+        // Init State wrapper
+        let state = new State(this.instance.state);
+        
+        state.setStatus('active', true)
+          .then(this.model.update({status: status}, { where: { ident: this.instance.ident} }))
+          .then((result) => {
+            resolve(this.instance);
+          })
+          .catch((err) => {
+            console.log('Failed to update task or state status: ', err.message);
+            console.log(err);
+          });
+      }
+      
+      
+    });
   }
 
 

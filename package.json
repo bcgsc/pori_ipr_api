@@ -38,6 +38,7 @@
     "recursive-readdir": "^2.1.0",
     "redis": "^2.7.1",
     "request": "^2.81.0",
+    "request-promise-native": "^1.0.5",
     "require-dir": "^0.3.1",
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.5.1",

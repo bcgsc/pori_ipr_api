@@ -1,5 +1,16 @@
 "use strict";
+/*
+ IPR-API - Integrated Pipeline Reports API
 
+ COPYRIGHT 2016 MICHAEL SMITH GENOME SCIENCES CENTRE
+ CONFIDENTIAL -- FOR RESEARCH PURPOSES ONLY
+ 
+ Author: Brandon Pierce <bpierce@bcgsc.ca>
+ Support JIRA ticket space: DEVSU
+
+ This Node.JS script is designed to be run in ES6ES6 compliant mode
+
+*/
 
 const Syncro      = require(process.cwd() + '/app/synchronizer/synchro'); // Import syncronizer Object
 const db          = require(process.cwd() + '/app/models/'); // Load database
@@ -8,7 +19,6 @@ const _           = require('lodash');
 const moment      = require('moment');
 const Task        = require('../task');
 
-//let logger        = require('winston'); // Load logging library
 let logger        = process.logger;
 
 logger.info('Starting LIMS Sync');
@@ -43,7 +53,7 @@ class LimsSeqSync {
         .then(this.getTasksPendingSequenceQC0.bind(this))               // 5. Look for tasks pending sequencing QC0
         .then((results) => {
           logger.info('Finished LIMS Sequencing Synchro');
-          resolve();
+          resolve({summary: 'Finished running sequencing check', result: results});
         })
         .catch((err) => {
           logger.debug('Failed to update tasks pending sequencing submission');
@@ -263,7 +273,7 @@ class LimsSeqSync {
               run_status.failed = true;
             }
   
-            if(result.status === 'In Process') {
+            if(result.status === 'In Process' || result.status === 'Analyzing') {
               run_status.active = true;
             }
           });
@@ -302,8 +312,7 @@ class LimsSeqSync {
           if(run_status.active && !run_status.failed) {
             
             // Set task status to active
-            actionTask.setUnprotected({status: 'active'});
-            actionTask.instance.save()
+            actionTask.setStatus('active')
               .then((result) => {
                 logger.info('[SeqComplete] One or more libraries are still actively being sequenced for :' + task.state.analysis.pog.POGID);
                 resolve();
@@ -311,9 +320,7 @@ class LimsSeqSync {
               .catch((err) => {
                 logger.error('[SeqComplete] Unable to update task as active for: ' + task.state.analysis.pog.POGID);
               });
-            
-            
-            
+              
           }
           
           // If they're all complete, lets blow this popsicle joint!
@@ -475,7 +482,7 @@ class LimsSeqSync {
           
           // If they're all complete, lets blow this popsicle joint!
           if(run_status.passed && !run_status.failed) {
-            actionTask.checkIn(this.user, moment().toISOString())
+            actionTask.checkIn(this.user, true)
               .then((result) => {
                 logger.info('[SeqValid] Checked-in task for: ' + task.state.analysis.pog.POGID);
                 resolve();
@@ -632,7 +639,7 @@ class LimsSeqSync {
           
           // If they're all complete, lets blow this popsicle joint!
           if(run_status.passed && !run_status.failed) {
-            actionTask.checkIn(this.user, moment().toISOString())
+            actionTask.checkIn(this.user, true)
               .then((result) => {
                 logger.info('[SeqQC0] Checked-in task for: ' + task.state.analysis.pog.POGID);
                 resolve();
@@ -685,18 +692,12 @@ class LimsSeqSync {
   
 }
 
-// Create Synchronizer
-let LimsSync = new Syncro(5000, 'dryrun');
 
-// Start Syncronizer
-//LimsSync.start();
-
+/*
 let run = new LimsSeqSync({});
-//LimsSync.registerHook('TrackingPassedPathology', 30000, run);
 run.init().then((res) => {
   logger.info('Syncro Done');
 });
+*/
 
-//LimsSync.registerHook('PassedPathology', 10000, limsPathologySync);
-
-module.exports = LimsSync;
+module.exports = LimsSeqSync;

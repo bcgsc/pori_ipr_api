@@ -23,23 +23,24 @@ module.exports = (req,res,next,ident) => {
     opts.where = {$or: [{clinical_biopsy: ident}, {analysis_biopsy: ident}], pog_id: req.POG.id};
   }
   
-  opts.attributes = {exclude: ['deletedAt']},
+  opts.attributes = {exclude: ['deletedAt']};
     
-    // Lookup POG first
-    db.models.pog_analysis.findOne(opts).then(
-      (result) => {
-        // Nothing found?
-        if(result === null) return res.status(404).json({error: {message: 'Unable to find the requested analysis', code: 'analysisMiddlewareLookupFail'}});
-        
-        // POG found, next()
-        if(result !== null) {
-          req.analysis = result;
-          next();
-        }
-      },
-      (error) => {
-        console.log(error);
-        if(result === null) return res.status(404).json({error: {message: 'Unable to find the requested analysis', code: 'analysisMiddlewareQueryFail'}});
+  // Lookup POG first
+  db.models.pog_analysis.findOne(opts).then(
+    (result) => {
+      // Nothing found?
+      if(result === null) return res.status(404).json({error: {message: 'Unable to find the requested analysis', code: 'analysisMiddlewareLookupFail'}});
+      
+      // POG found, next()
+      if(result !== null) {
+        req.analysis = result;
+        next();
       }
-    );
-}
+    },
+    (error) => {
+      console.log(error);
+      if(result === null) return res.status(404).json({error: {message: 'Unable to find the requested analysis', code: 'analysisMiddlewareQueryFail'}});
+    }
+  );
+  
+};
