@@ -73,9 +73,11 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
         let opts = {
           where: {}
         };
-
+        
         opts.where = (req.query.hidden && req.query.hidden === 'true') ? {} : {hidden: false};
-
+  
+        if(req.query.slug) opts.where.slug = {$in: req.query.slug.split(',')};
+        
         // Get All Definitions
         db.models.tracking_state_definition.scope('public').findAll(opts).then(
           (definitions) => {
@@ -91,7 +93,7 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
   }
 
   definitionPath() {
-
+    
     this.registerResource('/:definition([A-z0-9-]{36})')
 
       // Delete definition
@@ -144,6 +146,18 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
         );
 
       });
+  
+    this.registerResource('/:slug')
+      .get((req, res) => {
+        db.models.tracking_state_definition.scope('public').findOne({ where: { slug: req.params.slug } })
+          .then((def) => {
+            res.json(def);
+          })
+          .catch((err) => {
+            res.status(500).json({message: 'Unable to query database.'});
+            console.log(err);
+          });
+      });
   }
 
   /**
@@ -185,7 +199,19 @@ module.exports = class TrackingDefinitionRoute extends RoutingInterface {
       db.query(getTotalTasks).then(
         (totalTasks) => {
           totalTasks = totalTasks[0][0];
-
+          
+          if(totalTasks === undefined) {
+            let response = {
+              users: [],
+              state: {
+                name: req.definition.name,
+                slug: req.definition.slug,
+                tasks: 0
+              }
+            };
+            return res.json(response);
+          }
+          
           db.models.userGroupMember.findAll({where: {group_id: totalTasks.group_id}}).then(
             (users) => {
 
