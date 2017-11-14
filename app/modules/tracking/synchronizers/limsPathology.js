@@ -1,4 +1,16 @@
 "use strict";
+/*
+ IPR-API - Integrated Pipeline Reports API
+
+ COPYRIGHT 2016 MICHAEL SMITH GENOME SCIENCES CENTRE
+ CONFIDENTIAL -- FOR RESEARCH PURPOSES ONLY
+ 
+ Author: Brandon Pierce <bpierce@bcgsc.ca>
+ Support JIRA ticket space: DEVSU
+
+ This Node.JS script is designed to be run in ES6ES6 compliant mode
+
+*/
 
 
 const Syncro      = require(process.cwd() + '/app/synchronizer/synchro'); // Import syncronizer Object
@@ -189,7 +201,7 @@ class LimsPathologySync {
         
       });
       
-      logger.info('Resulting in ' + this.diseaseLibraries.length + ' POGs that have pathology information and need biopsy library details.');
+      logger.info('Resulting in ' + this.diseaseLibraries.length + ' disease libraries that have pathology information and need additional library details to differentiate RNA vs DNA.');
       
       resolve();
       
@@ -205,6 +217,12 @@ class LimsPathologySync {
    */
   queryLimsLibrary() {
     return new Promise((resolve, reject) => {
+      
+      if(this.diseaseLibraries.length === 0) {
+        logger.info('Zero disease libraries requiring lookup');
+        return resolve();
+      }
+      
       $lims.library(this.diseaseLibraries).then(
         (libraries) => {
           
@@ -222,14 +240,16 @@ class LimsPathologySync {
   /**
    * Parse Library results into master collection
    *
+   * Differentiate RNA from DNA libraries, and sort into POG object
+   *
    * @param {array} libraries - Array of libraries found by LIMS library API
    * @returns {Promise}
    * @private
    */
   _parseLimsLibraryResults(libraries) {
+    
     return new Promise((resolve, reject) => {
-      
-      // Loop over found libraries
+  
       _.forEach(libraries, (library) => {
         
         // Grab associated POG biopsies
@@ -240,6 +260,8 @@ class LimsPathologySync {
           
           // The index key of the library we're looking for
           let i = _.findKey(libraries, {name: library.name});
+          
+          if(!i) return;
           
           logger.debug('Found mapped POG biopsy entry for ' + library.name + ' in position ' + i + ' in biopsy ' + biopsy_date + ' for ' + library.full_name.split('-')[0]);
           
@@ -253,9 +275,6 @@ class LimsPathologySync {
         });
         
       });
-      
-      //console.log(JSON.stringify(pogs));
-      
       logger.info('Finished receiving library details.');
       
       resolve();
@@ -286,19 +305,29 @@ class LimsPathologySync {
             // Loop over the found LIMS biopsy sorted libraries
             _.forEach(lims_biops, (lims_libs, lims_biopsy_date) => {
               
+              // Find the libraries for each type
               let normal = _.find(lims_libs, {type: 'normal'});
               let tumour = _.find(lims_libs, {type: 'tumour'});
               let transcriptome = _.find(lims_libs, {type: 'transcriptome'});
               
-              // Find Normal
-              // Check that the library's collection date isn't out of scope for this tracking biopsy
-              //console.log(pogid, lims_biopsy_date, moment(lims_biopsy_date).unix(), tracking_analysis.createdAt, moment(tracking_analysis.createdAt).unix());
-              
+              // Check that the biopsy overlap window is respected
               if(Math.abs(moment(tracking_analysis.createdAt).unix() - moment(lims_biopsy_date).unix()) > this.maxPathWindow) {
                 logger.info('Tracking event ' + pogid + ' ' + tracking_analysis.task.ident + ' has a LIMS biopsy event out of the acceptable max pathology waiting window.');
                 return;
               }
               
+              // Check for other normals if one is not in this biopsy date.
+              if(!normal) {
+                // Loop over all biopsies
+                _.forEach(lims_biops, (biop) => {
+                  // If already set, continue.
+                  if(normal) return;
+                  // Find a normal
+                  normal = _.find(biop, {type: 'normal'});
+                });
+              }
+              
+              // Make sure there are 3 libraries ready to go.
               if(!normal || !tumour || !transcriptome) return;
               
               this.pog_analyses[pogid][track_i].libraries = {};
@@ -336,8 +365,6 @@ class LimsPathologySync {
    */
   updateIprTracking() {
     return new Promise((resolve, reject) => {
-      
-      //console.log('Ready to update IPR', JSON.stringify(this.pogs));
       
       let promises = [];
       let states = [];
@@ -427,7 +454,7 @@ class LimsPathologySync {
       let opts = {
         where: {
           slug: {$in: [
-            'tumour_recieved',
+            'tumour_received',
             'blood_received',
             'pathology_passed'
           ]},
