@@ -7,6 +7,7 @@ module.exports = (sequelize) => {
   tracking.task = sequelize.import(__dirname + '/state_task');
   tracking.state = sequelize.import(__dirname + '/states');
   tracking.definition = sequelize.import(__dirname + '/state_definitions');
+  tracking.ticket_template = sequelize.import(__dirname + '/ticket_template');
 
   tracking.state.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
   tracking.state.belongsTo(sequelize.models.user, {as: 'createdBy', foreignKey: 'createdBy_id', onDelete: 'SET NULL', constraints: true});
@@ -23,5 +24,7 @@ module.exports = (sequelize) => {
 
   tracking.checkins.belongsTo(tracking.task, {as: 'task', foreignKey: 'task_id', onDelete: 'CASCADE', constraints: true});
   tracking.checkins.belongsTo(sequelize.models.user, {as: 'user', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true,});
+  
+  tracking.ticket_template.belongsTo(tracking.definition, {as: 'definition', foreignKey: 'definition_id', sourceKey: 'id', onDelete: 'cascade', constraints: true});
 
 };
