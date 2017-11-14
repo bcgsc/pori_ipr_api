@@ -19,7 +19,6 @@ const _           = require('lodash');
 const moment      = require('moment');
 const Task        = require('../task');
 
-//let logger        = require('winston'); // Load logging library
 let logger        = process.logger;
 
 logger.info('Starting LIMS Sync');
@@ -54,7 +53,7 @@ class LimsSeqSync {
         .then(this.getTasksPendingSequenceQC0.bind(this))               // 5. Look for tasks pending sequencing QC0
         .then((results) => {
           logger.info('Finished LIMS Sequencing Synchro');
-          resolve();
+          resolve({summary: 'Finished running sequencing check', result: results});
         })
         .catch((err) => {
           logger.debug('Failed to update tasks pending sequencing submission');
@@ -693,18 +692,12 @@ class LimsSeqSync {
   
 }
 
-// Create Synchronizer
-let LimsSync = new Syncro(5000, 'dryrun');
 
-// Start Syncronizer
-//LimsSync.start();
-
+/*
 let run = new LimsSeqSync({});
-//LimsSync.registerHook('TrackingPassedPathology', 30000, run);
 run.init().then((res) => {
   logger.info('Syncro Done');
 });
+*/
 
-//LimsSync.registerHook('PassedPathology', 10000, limsPathologySync);
-
-module.exports = LimsSync;
+module.exports = LimsSeqSync;

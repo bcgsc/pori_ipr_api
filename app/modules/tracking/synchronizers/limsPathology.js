@@ -531,16 +531,7 @@ class LimsPathologySync {
   
 }
 
-// Create Synchronizer
-let LimsSync = new Syncro(5000, 'dryrun');
+//let run = new LimsPathologySync({});
+//run.init();
 
-// Start Syncronizer
-//LimsSync.start();
-
-let run = new LimsPathologySync({});
-//LimsSync.registerHook('TrackingPassedPathology', 30000, run);
-run.init();
-
-//LimsSync.registerHook('PassedPathology', 10000, limsPathologySync);
-
-module.exports = LimsSync;
+module.exports = LimsPathologySync;
