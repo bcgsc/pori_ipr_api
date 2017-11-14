@@ -29,7 +29,8 @@ module.exports = class Task {
       'active',
       'hold',
       'complete',
-      'failed'
+      'failed',
+      'cancelled'
     ];
 
     // Existing instance
