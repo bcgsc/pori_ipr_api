@@ -7,6 +7,7 @@ const _                   = require('lodash');
 const db                  = require(process.cwd() + '/app/models');
 const RoutingInterface    = require('../../../routes/routingInterface');
 const AnalysisLib         = require('../../../libs/structures/analysis');
+const Analysis            = require('../analysis.object');
 const POGLib              = require('../../../libs/structures/pog');
 const Generator           = require('../../tracking/generate');
 
@@ -25,12 +26,15 @@ module.exports = class TrackingRouter extends RoutingInterface {
     
     // Register Middleware
     this.registerMiddleware('analysis', require('../../../middleware/analysis'));
+  
+    // Setup analysis endpoint
+    this.analysis();
     
     this.registerResource('/')
       .get((req, res, next) => {
         
         let opts = {
-          limit: 20,
+          limit: req.query.limit || 15,
           offset: req.query.offset || 0,
           order: [['createdAt', 'DESC']],
           include: [
@@ -94,6 +98,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
             analysis.clinical_biopsy = req.body.clinical_biopsy;
             analysis.disease = req.body.disease;
             analysis.biopsy_notes = req.body.biopsy_notes;
+            analysis.biopsy_date = req.body.biopsy_date;
             analysis.notes = req.body.notes;
             
             if(req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
@@ -135,6 +140,33 @@ module.exports = class TrackingRouter extends RoutingInterface {
         
       
       });
+  }
+  
+  // Single Entry
+  analysis() {
+    
+    this.registerResource(`/:analysis(${this.UUIDregex})`)
+      .put((req, res, next) => {
+        
+        let analysis = new Analysis(req.analysis);
+        
+        analysis.update(req.body)
+          .then((result) => {
+            res.json(result);
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(500).json({message: 'Failed to update analysis settings: ' + err.message});
+          });
+      
+      })
+      .get((req, res, next) => {
+        res.json(req.analysis);
+      })
+      .delete((req, res, next) => {
+        res.status(420).send();
+      });
+    
   }
   
 };

@@ -76,22 +76,41 @@ class Analysis {
    * @returns {Promise}
    */
   update(data) {
+    
     return new Promise((resolve, reject) => {
-      
-      if(data.name) this.instance.name = data.name;
-      if(data.clinical_biopsy) this.instance.clinical_biopsy = data.clinical_biopsy;
-      if(data.analysis_biopsy) this.instance.analysis_biopsy = data.analysis_biopsy;
-      if(data.priority) this.instance.priority = data.priority;
-      if(data.disease) this.instance.disease = data.disease;
-      if(data.biopsy_notes) this.instance.biopsy_notes = data.biopsy_notes;
-      if(data.libraries) this.instance.libraries = data.libraries;
-      if(data.bioapps_source_id) this.instance.bioapps_source_id = data.bioapps_source_id;
-      if(data.biopsy_date) this.instance.biopsy_date = data.biopsy_date;
-      if(data.threeLetterCode) this.instance.threeLetterCode = data.threeLetterCode;
-      
-      resolve(this.instance.save());
+  
+      // Update Payload
+      let update = { libraries: {} };
+  
+      // Fields that can be updated
+      if(data.name) update.name = this.instance.name = data.name;
+      if(data.clinical_biopsy) update.clinical_biopsy = this.instance.clinical_biopsy = data.clinical_biopsy;
+      if(data.analysis_biopsy) update.analysis_biopsy = this.instance.analysis_biopsy = data.analysis_biopsy;
+      if(data.priority) update.priority = this.instance.priority = data.priority;
+      if(data.disease) update.disease = this.instance.disease = data.disease;
+      if(data.biopsy_notes) update.biopsy_notes = this.instance.biopsy_notes = data.biopsy_notes;
+  
+      if(data.libraries && data.libraries.normal) update.libraries.normal = this.instance.libraries.normal = data.libraries.normal;
+      if(data.libraries && data.libraries.tumour) update.libraries.tumour = this.instance.libraries.tumour = data.libraries.tumour;
+      if(data.libraries && data.libraries.transcriptome) update.libraries.transcriptome = this.instance.libraries.transcriptome = data.libraries.transcriptome;
+  
+      if(data.bioapps_source_id) update.bioapps_source_id = this.instance.bioapps_source_id = data.bioapps_source_id;
+      if(data.biopsy_date) update.biopsy_date = this.instance.biopsy_date = data.biopsy_date;
+      if(data.threeLetterCode) update.threeLetterCode = this.instance.threeLetterCode = data.threeLetterCode;
+  
+      // Return a promise.
+      this.model.update(data, {where: {ident: this.instance.ident}})
+        .then(this.getPublic.bind(this))
+        .then((result) => {
+          resolve(result);
+        })
+        .catch((err) => {
+          console.log(err);
+          reject({message: err.message});
+        });
       
     });
+    
   }
   
   /**
@@ -144,5 +163,42 @@ class Analysis {
   
   }
   
+  /**
+   * Get public version of this instance
+   *
+   * @returns {Promise} - Resolves with a public instance of the model
+   */
+  getPublic() {
+    return new Promise((resolve, reject) => {
+      
+      let opts = {where: {}};
+  
+      // Check if it's a UUID
+      opts.where.ident = this.instance.ident;
+      opts.attributes = {exclude: ['deletedAt']};
+    
+      // Lookup POG first
+      this.model.scope('public').findOne(opts).then(
+        (result) => {
+          // Nothing found?
+          if(result === null) return reject({message: 'Unable to find the requested analysis'});
+      
+          // POG found, next()
+          if(result !== null) {
+            resolve(result);
+          }
+        },
+        (error) => {
+          console.log(error);
+          if(result === null) reject({message: 'Unable to find the requested analysis'});
+        }
+      );
+      
+    });
+  }
+  
   
 }
+
+// Return Analysis class
+module.exports = Analysis;
