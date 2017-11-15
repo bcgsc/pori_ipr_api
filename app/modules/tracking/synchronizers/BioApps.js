@@ -53,9 +53,9 @@ class BioAppsSync {
       .then(this.getAssemblyCompleteRequired.bind(this))    // 08. Get tasks with assembly required pending
       .then(this.queryAssemblyComplete.bind(this))          // 09. Query BioApps to see which have completed assembly // GET http://bioappsdev01.bcgsc.ca:8104/assembly?library=P02511
       .then(this.parseAssemblyComplete.bind(this))          // 10. Parse response from BioApps and update tracking
-      //.then(this.getSymlinksRequired.bind(this))          // 11. Get tasks with Symlink required pending  //
-      //.then(this.querySymlinksCreated.bind(this))         // 12. Query BioApps to see which tasks have completed symlink creation
-      //.then(this.parseSymlinksCreated.bind(this))         // 13. Parse response from BioApps and update tracking
+      .then(this.getSymlinksRequired.bind(this))            // 11. Get tasks with Symlink required pending  //
+      .then(this.querySymlinksCreated.bind(this))           // 12. Query BioApps to see which tasks have completed symlink creation
+      .then(this.parseSymlinksCreated.bind(this))           // 13. Parse response from BioApps and update tracking
       .then((result) => {                                   // 14. Profit.
         
         logger.info('Finished processing BioApps syncing.');
@@ -463,39 +463,20 @@ class BioAppsSync {
   }
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   /**
-   * Lookup tasks pending pathology results
+   * Get all tasks that require symlink checking
    *
    * @returns {Promise}
    */
-  getTasksPendingPath () {
+  getSymlinksRequired() {
     return new Promise((resolve, reject) => {
       
       // Query Params
       let opt = {
         where: {
-          slug: 'pathology_passed',
+          slug: 'bioapps_symlinks_created',
           deletedAt: null,
-          status: 'pending',
+          status: ['pending', 'failed'],
         },
         attributes: {
           include: ['state_id']
@@ -505,370 +486,121 @@ class BioAppsSync {
         ]
       };
       
-      logger.info('Querying DB for all tracking tasks without pathology');
+      logger.info('Querying DB for all tracking tasks with symlinks pending');
       
-      db.models.tracking_state_task.scope('public').findAll(opt).then(
-        (result) => {
-          
-          let pogs = [];
-          
-          // Loop over results
-          _.forEach(result, (r) => {
-            
-            let POGID = r.state.analysis.pog.POGID;
-            
-            pogs.push(POGID);
-            
-            if(!this.pog_analyses[POGID]) this.pog_analyses[POGID] = [];
-            this.pog_analyses[POGID].push({
-              ident: r.state.analysis.ident,
-              clinical_biopsy: r.state.analysis.clinical_biopsy,
-              analysis_biopsy: r.state.analysis.analysis_biopsy,
-              disease: r.state.analysis.disease,
-              biopsy_notes: r.state.analysis.biopsy_notes,
-              libraries: r.state.analysis.libraries,
-              createdAt: r.state.analysis.createdAt,
-              task: r,
-              pathDetected: false,
-            });
-            
-          });
-          
-          logger.debug('Found ' + result.length + ' tasks requiring lookup');
-          this.pogids = pogs;
-          
-          resolve();
-        })
-        .catch((err) => {
-          console.log('Unable to retrieve pending pathology tasks', err);
-          reject({message: 'Unable to retrieve pathology tasks', cause: err.message});
-        });
-    });
-  }
-  
-  /**
-   * Query LIMS Sample endpoint for POGs that have results
-   *
-   * @returns {Promise}
-   */
-  queryLimsSample() {
-    return new Promise((resolve, reject) => {
-      
-      logger.info('Querying LIMS for sample details for supplied POGs');
-      
-      $lims.sample(this.pogids).then(
-        (pogs) => {
-          logger.info('Found ' + pogs.results.length + ' Results from LIMS sample endpoint.');
-          resolve(pogs.results);
-        })
-        .catch((err) => {
-          logger.error('Unable to retrieve LIMS Sample results for the provided pogs');
-          reject({message: 'Unable to retrieve LIMS Sample results for the provided pogs: ' + err.message, cause: err});
-        });
-    });
-  }
-  
-  /**
-   * Parse LIMS Sample endpoint results
-   *
-   * @param {array} pogs - LIMS Sample endpoint result collection
-   * @returns {Promise}
-   * @private
-   */
-  _parseLimsSampleResults(pogs) {
-    return new Promise((resolve, reject) => {
-      
-      logger.info('Starting to process sample results.');
-      
-      _.forEach(pogs, (sample) => {
-        
-        let pogid = sample.participant_study_id;
-        let datestamp = sample.sample_collection_time.substring(0,10);
-        
-        let library = {
-          name: sample.library,
-          type: (sample.disease_status === 'Normal') ? 'normal' : null,
-          source: sample.original_source_name,
-          disease: sample.disease,
-          sample_collection_time: sample.sample_collection_time
-        };
-        
-        if(sample.disease_status === 'Diseased' && this.diseaseLibraries.indexOf(sample.library) === -1) {
-          this.diseaseLibraries.push(sample.library);
-        }
-        
-        // Check if pog has been seen yet in this cycle
-        if(!this.pogs[pogid]) this.pogs[pogid] = {};
-        
-        // Check if this biopsy event date
-        if(!this.pogs[pogid][datestamp]) this.pogs[pogid][datestamp] = [];
-        
-        // Has this library name been listed yet?
-        if(!_.find(this.pogs[pogid][datestamp], {name: library.name})) {
-          this.pogs[pogid][datestamp].push(library);
-          logger.debug('Setting ' + library.name + ' for ' + pogid + ' biopsy ' + datestamp + ((library.type !== null) ? ' | library type detected: ' + library.type : ''));
-        }
-        
-      });
-      
-      logger.info('Resulting in ' + this.diseaseLibraries.length + ' POGs that have pathology information and need biopsy library details.');
-      
-      resolve();
-      
-    });
-  }
-  
-  /**
-   * Query the LIMS Library API
-   *
-   * Resolve library details to determine RNA from DNA libs
-   *
-   * @returns {Promise}
-   */
-  queryLimsLibrary() {
-    return new Promise((resolve, reject) => {
-      $lims.library(this.diseaseLibraries).then(
-        (libraries) => {
-          
-          logger.info('Received ' + libraries.results.length + ' libraries from LIMS library endpoint.');
-          
-          resolve(libraries.results);
-        })
-        .catch((err) => {
-          logger.error('Unable to query LIMS library API endpoint: ' + err.message);
-          reject({error: 'Unable to query LIMS library API endpoint: ' + err.message, cause: err});
-        });
-    });
-  }
-  
-  /**
-   * Parse Library results into master collection
-   *
-   * @param {array} libraries - Array of libraries found by LIMS library API
-   * @returns {Promise}
-   * @private
-   */
-  _parseLimsLibraryResults(libraries) {
-    return new Promise((resolve, reject) => {
-      
-      // Loop over found libraries
-      _.forEach(libraries, (library) => {
-        
-        // Grab associated POG biopsies
-        let pog = this.pogs[library.full_name.split('-')[0]];
-        
-        // Loop over biopsies
-        _.forEach(pog, (libraries, biopsy_date) => {
-          
-          // The index key of the library we're looking for
-          let i = _.findKey(libraries, {name: library.name});
-          
-          logger.debug('Found mapped POG biopsy entry for ' + library.name + ' in position ' + i + ' in biopsy ' + biopsy_date + ' for ' + library.full_name.split('-')[0]);
-          
-          // If the index is valid, store the updated data
-          if(i) {
-            // Types of library strategy mappings
-            if(library.library_strategy === 'WGS') this.pogs[library.full_name.split('-')[0]][biopsy_date][i].type = 'tumour';
-            if(library.library_strategy.indexOf('RNA') > -1) this.pogs[library.full_name.split('-')[0]][biopsy_date][i].type = 'transcriptome';
-          }
-          
-        });
-        
-      });
-      
-      //console.log(JSON.stringify(pogs));
-      
-      logger.info('Finished receiving library details.');
-      
-      resolve();
-      
-    });
-  }
-  
-  /**
-   * Detect biopsy events
-   *
-   */
-  sortLibraryToBiopsy() {
-    
-    return new Promise((resolve, reject) => {
-      
-      // Loop over LIMS entries results
-      _.forEach(this.pogs, (lims_biops, pogid) => {
-        
-        // Are there any Tracking Entries waiting?
-        let tracking = this.pog_analyses[pogid];
-        
-        // Are there any biopsies waiting?
-        if(Object.keys(tracking).length > 0) {
-          
-          // Loop over tracking analysis to see if there's a matching biopsy window by then looping over LIMS entries
-          _.forEach(tracking, (tracking_analysis, track_i) => {
-            
-            // Loop over the found LIMS biopsy sorted libraries
-            _.forEach(lims_biops, (lims_libs, lims_biopsy_date) => {
-              
-              let normal = _.find(lims_libs, {type: 'normal'});
-              let tumour = _.find(lims_libs, {type: 'tumour'});
-              let transcriptome = _.find(lims_libs, {type: 'transcriptome'});
-              
-              // Find Normal
-              // Check that the library's collection date isn't out of scope for this tracking biopsy
-              //console.log(pogid, lims_biopsy_date, moment(lims_biopsy_date).unix(), tracking_analysis.createdAt, moment(tracking_analysis.createdAt).unix());
-              
-              if(Math.abs(moment(tracking_analysis.createdAt).unix() - moment(lims_biopsy_date).unix()) > this.maxPathWindow) {
-                logger.info('Tracking event ' + pogid + ' ' + tracking_analysis.task.ident + ' has a LIMS biopsy event out of the acceptable max pathology waiting window.');
-                return;
-              }
-              
-              if(!normal || !tumour || !transcriptome) return;
-              
-              this.pog_analyses[pogid][track_i].libraries = {};
-              
-              if(normal) this.pog_analyses[pogid][track_i].libraries.normal = normal.name;
-              if(tumour) this.pog_analyses[pogid][track_i].libraries.tumour = tumour.name;
-              if(transcriptome) this.pog_analyses[pogid][track_i].libraries.transcriptome = transcriptome.name;
-              
-              // Update Entries
-              this.pog_analyses[pogid][track_i].disease = tumour.disease.trim();
-              this.pog_analyses[pogid][track_i].pathDetected = true;
-              this.pog_analyses[pogid][track_i].status = 'complete';
-              
-            });
-            
-          });
-          
-        }
-        
-      });
-      
-      //console.log('Have tracking waiting for', pogid, tracking);
-      resolve();
-      
-    });
-    
-  }
-  
-  /**
-   * Update IPR tracking with LIMs results
-   *
-   * Parse updated POG libraries into IPR data, and update tracking
-   *
-   * @returns {Promise}
-   */
-  updateIprTracking() {
-    return new Promise((resolve, reject) => {
-      
-      //console.log('Ready to update IPR', JSON.stringify(this.pogs));
-      
-      let promises = [];
-      let states = [];
-      let report_opts = [];
-      
-      // Loop over pog analyses
-      _.forEach(this.pog_analyses, (analyses, pogid) => {
-        
-        // Loop over each analysis
-        _.forEach(analyses, (analysis) => {
-          
-          if(!analysis.pathDetected) {
-            logger.info('Pathology not detected for ' + pogid);
-            return;
-          }
-          
-          // add State IDs to array
-          states.push(analysis.task.state.id);
-          
-          // Update Analysis
-          let opts = {
-            where: {
-              ident: analysis.ident,
-            }
-          };
-          let data = {
-            libraries: analysis.libraries,
-            disease: analysis.disease,
-          };
-          
-          // Add future analysis_report updates
-          report_opts.push({opts: opts, data: data});
-          
-        });
-        
-      });
-      
-      // Get all the tasks that need to be updated
-      this.retrieveTrackingTasks(states).then(
-        (tasks) => {
-          
-          let task_promises = [];
-          
-          //Promise.all(task_promises).then(
-          Promise.all(_.map(tasks, (t) => { let e = new Task(t); e.checkIn(this.user, moment().toISOString())})).then(
-            (result) => {
-              
-              Promise.all(_.map(report_opts, (r) => { return db.models.pog_analysis.update(r.data, r.opts) })).then(
-                (result) => {
-                  // Update Analysis
-                  logger.info('Checked in all ready tasks');
-                  resolve();
-                  
-                })
-                .catch((err) => {
-                  reject({message: 'Unable to update analysis_reports: ' + err.message, cause: err});
-                });
-              
-            })
-            .catch((err) => {
-              logger.error('Failed to update tracking ' + err.message);
-              reject({message: 'Failed to update tracking ' + err.message, cause: err});
-              console.log(err);
-            });
-          
-        })
-        .catch((err) => {
-          logger.warn('Failed to retrieve tasks for updating tracking: ' + err.message);
-          console.log(err);
-        });
-      
-      
-    });
-  }
-  
-  /**
-   * Retrieve Tracking Tasks
-   *
-   * @param {array} state_ids - State id for tracking tasks
-   * @return {Promise|array} - Resolves with array of tracking tasks
-   */
-  retrieveTrackingTasks(state_ids) {
-    return new Promise((resolve, reject) => {
-      
-      logger.debug('Retrieving tasks for states: ', state_ids.join(','));
-      
-      let opts = {
-        where: {
-          slug: {$in: [
-            'tumour_recieved',
-            'blood_received',
-            'pathology_passed'
-          ]},
-          state_id: {$in: state_ids }
-        },
-        include: [
-          {as: 'state', model: db.models.tracking_state},
-          {as: 'checkins', model: db.models.tracking_state_task_checkin}
-        ]
-      };
-      
-      db.models.tracking_state_task.findAll(opts).then(
-        (tasks) => {
+      db.models.tracking_state_task.scope('public').findAll(opt)
+        .then((tasks) => {
+          logger.info('Tasks requiring symlink lookup', tasks.length);
+          this.cache.tasks.symlinks = tasks;
           resolve(tasks);
         })
         .catch((err) => {
-          logger.error('Failed to retrieve all tracking tasks for this state: ' + state_id);
-          reject({message: 'Failed to retrieve all tracking tasks for this state.', cause: err});
+          logger.error('Unable to retrieve pending symlink tasks', err);
+          reject({message: 'Unable to retrieve symlink tasks', cause: err.message});
+        });
+      
+    });
+  }
+  
+  /**
+   * Get all tasks that require symlink checking
+   *
+   * @returns {Promise}
+   */
+  querySymlinksCreated() {
+    return new Promise((resolve, reject) => {
+      // Get target number of lanes for all libraries
+      let libs = [];
+      let targets = {};
+      let libcores = {};
+      
+      _.forEach(this.cache.tasks.symlinks, (t) => {
+        // Extract libraries
+        libs.push(_.values(t.state.analysis.libraries));
+      });
+      
+      // Flatten nested arrays
+      libs = _.flatten(libs);
+      
+      // Query BioApps for Target number of lanes
+      $bioapps.targetLanes(_.join(libs, ','))
+        .then((tgs) => {
+        
+          // Loop over ForEach
+          _.forEach(tgs, (r) => {
+            targets[_.keys(r)[0]] = _.values(r)[0];
+          });
+          
+        })
+        
+        // Query BioApps for Library Aligned Cores
+        .then(() => { return $bioapps.libraryAlignedCores(_.join(libs, ',')) })
+        .then((result) => {
+          
+          // Loop over libcore results, and cache into library name object
+          _.forEach(result, (l) => {
+            
+            // If no entry yet, set to zero
+            if(!libcores[l.libcore.library.name]) libcores[l.libcore.library.name] = 0;
+            libcores[l.libcore.library.name]++;
+          });
+          
+          resolve({targets: targets, libcores: libcores});
+          
+        })
+        .catch((err) => {
+          // Failed
+          reject({message: 'Failed to get target lanes & aligned libcore counts from BioApps'});
           console.log(err);
+        });
+      // Get number of aligned libcores (and therefore symlinks created if target met)
+      
+    });
+  }
+  
+  
+  /**
+   * Parse Targets and Libcore values
+   *
+   * Determine if the target number of aligned libcores has been hit. If it has, we can infer that symlinks have
+   * been created.
+   *
+   * @param {object} libs - Object with keys: {targets, libcores}
+   *
+   * @returns {Promise} - Resolves with nothing.
+   */
+  parseSymlinksCreated(libs) {
+    return new Promise((resolve, reject) => {
+      
+      let requireCheckin = [];
+      
+      // Loop over tasks, and determine which need checkins
+      _.forEach(this.cache.tasks.symlinks, (t) => {
+      
+        let targetReached = {
+          normal: false,
+          tumour: false,
+          transcriptome: false
+        };
+        
+        // Check Libraries for targets
+        if(libs.targets[t.state.analysis.libraries.normal] === libs.libcores[t.state.analysis.libraries.normal]) targetReached.normal = true;
+        if(libs.targets[t.state.analysis.libraries.tumour] === libs.libcores[t.state.analysis.libraries.tumour]) targetReached.tumour = true;
+        if(libs.targets[t.state.analysis.libraries.transcriptome] === libs.libcores[t.state.analysis.libraries.transcriptome]) targetReached.transcriptome = true;
+        
+        if(targetReached.normal && targetReached.tumour && targetReached.transcriptome) requireCheckin.push(t);
+      
+      });
+      
+      // Map checkins
+      // For each completed task, check-in!
+      Promise.all(_.map(requireCheckin, (t) => { let task = new Task(t); return task.checkIn(this.user, true); }))
+        .then((results) => {
+          logger.info('Checked in symlinks for ' + results.length + ' tasks.');
+          resolve(true);
+        })
+        .catch((err) => {
+          logger.error('Failed to check in symlinks: ' + err.message);
         });
       
     });
