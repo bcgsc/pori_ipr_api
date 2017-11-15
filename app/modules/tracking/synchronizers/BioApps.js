@@ -584,9 +584,9 @@ class BioAppsSync {
         };
         
         // Check Libraries for targets
-        if(libs.targets[t.state.analysis.libraries.normal] === libs.libcores[t.state.analysis.libraries.normal]) targetReached.normal = true;
-        if(libs.targets[t.state.analysis.libraries.tumour] === libs.libcores[t.state.analysis.libraries.tumour]) targetReached.tumour = true;
-        if(libs.targets[t.state.analysis.libraries.transcriptome] === libs.libcores[t.state.analysis.libraries.transcriptome]) targetReached.transcriptome = true;
+        if(libs.targets[t.state.analysis.libraries.normal] > 0 && libs.targets[t.state.analysis.libraries.normal] === libs.libcores[t.state.analysis.libraries.normal]) targetReached.normal = true;
+        if(libs.targets[t.state.analysis.libraries.tumour] > 0 && libs.targets[t.state.analysis.libraries.tumour] === libs.libcores[t.state.analysis.libraries.tumour]) targetReached.tumour = true;
+        if(libs.targets[t.state.analysis.libraries.transcriptome] > 0 && libs.targets[t.state.analysis.libraries.transcriptome] === libs.libcores[t.state.analysis.libraries.transcriptome]) targetReached.transcriptome = true;
         
         if(targetReached.normal && targetReached.tumour && targetReached.transcriptome) requireCheckin.push(t);
       
