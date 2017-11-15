@@ -197,6 +197,62 @@ $bioapps.assembly = (library) => {
 };
 
 /**
+ * Retrieve Target Lanes for a library
+ *
+ * @param {string} libraries
+ * @returns {Promise} - Resolves with key-value object of library names to lanes
+ */
+$bioapps.targetLanes = (libraries) => {
+  return new Promise((resolve, reject) => {
+    
+    if(Array.isArray(libraries)) libraries = _.join(libraries, ',');
+    
+    $bioapps.query({
+        method: 'GET',
+        uri: host + basePath + '/library/lane_target?production=true&library=' + libraries,
+        gzip: true,
+        json: true
+      })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((err) => {
+        reject({message: 'Failed to retrieve target lanes'});
+        console.log('Failed to retrieve target lanes: ', err);
+      });
+    
+  });
+};
+
+
+/**
+ * Retrieve lib aligned cores
+ *
+ * @param {string} libraries - Libraries; Comma separated if more than 1
+ * @returns {Promise} - Resolves with array of libcores aligned
+ */
+$bioapps.libraryAlignedCores = (libraries) => {
+  return new Promise((resolve, reject) => {
+  
+    if (Array.isArray(libraries)) libraries = _.join(libraries, ',');
+    
+    $bioapps.query({
+      method: 'GET',
+      uri: host + basePath + '/aligned_libcore/info?production=true&library=' + libraries,
+      gzip: true,
+      json: true
+    })
+      .then((result) => {
+        resolve(result);
+      })
+      .catch((err) => {
+        reject(err);
+        console.log('Failed to retrieve lib aligned cores', err);
+      });
+  });
+};
+
+/**
  * Retrieve Patient Data
  *
  * @param {string} pogid - The patient POGID
