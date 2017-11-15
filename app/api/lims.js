@@ -52,7 +52,8 @@ $lims.sample = (pogid) => {
       method: 'POST',
       uri: host + basePath + '/sample',
       gzip: true,
-      body: JSON.stringify(body)
+      body: body,
+      json: true
     },
       (err, res, body) => {
         
@@ -60,9 +61,8 @@ $lims.sample = (pogid) => {
           reject({message: 'Unable to query lims for POG sample data: ' + err.message, cause: err});
         }
         
-        if(!err) {
-          resolve(JSON.parse(body));
-        }
+        resolve(body);
+        
       
       })
       .auth('bpierce', 'k4tYp3Rry~', true);
