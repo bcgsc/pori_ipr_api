@@ -148,7 +148,11 @@ class LimsPathologySync {
       
       $lims.sample(this.pogids).then(
         (pogs) => {
-          logger.info('Found ' + pogs.results.length + ' Results from LIMS sample endpoint.');
+          
+          // If no results, send empty
+          if(!pogs || !pogs.results) return resolve([]);
+          
+          logger.info(`Found ${pogs.results.length} results from LIMS sample endpoint.`);
           resolve(pogs.results);
         })
         .catch((err) => {
@@ -169,6 +173,9 @@ class LimsPathologySync {
     return new Promise((resolve, reject) => {
       
       logger.info('Starting to process sample results.');
+      
+      // If no results, continue
+      if(pogs.length === 0) return resolve([]);
       
       _.forEach(pogs, (sample) => {
         
