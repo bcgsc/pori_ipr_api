@@ -155,6 +155,9 @@ class BioAppsSync {
         // Set Libraries
         libraries = _.keys(task.state.analysis.libraries);
         
+        // Workaround, would rather sort by createdAt
+        p.sources = _.sortBy(p.sources, 'id');
+        
         // Pick the sources we're looking for.
         _.forEach(p.sources, (s) => {
           let search = _.find(s.libraries, {name: task.state.analysis.libraries.tumour});
@@ -170,28 +173,39 @@ class BioAppsSync {
         
         if(source.source_analysis_settings.length === 0) return;
         
-        // With a source Found, time to build the update for this case;
-        update.data.analysis_biopsy     = 'biop'.concat(_.last(source.source_analysis_settings).biopsy_number);
-        update.data.bioapps_source_id   = source.id;
-        update.data.biopsy_site         = source.anatomic_site;
+        try {
+          source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'id');
   
-        // Three Letter Code
-        update.data.threeLetterCode     = _.last(source.source_analysis_settings).cancer_group.code;
-        
-        // Compile Disease Comparator
-        update.data.comparator_disease = {};
-        
-        let settings = _.last(source.source_analysis_settings);
+          // With a source Found, time to build the update for this case;
+          update.data.analysis_biopsy = 'biop'.concat(_.last(source.source_analysis_settings).biopsy_number);
+          update.data.bioapps_source_id = source.id;
+          update.data.biopsy_site = source.anatomic_site;
   
-        update.data.comparator_disease.tcga = _.map(_.sortBy(settings.disease_comparators, 'ordinal'), (c) => {
-          return c.disease_code.code;
-        });
-        update.data.comparator_disease.gtex_primary_site = settings.gtex_comparator_primary_site.name;
-        update.data.comparator_disease.gtex_bioposy_site = settings.gtex_comparator_biopsy_site.name;
+          // Three Letter Code
+          update.data.threeLetterCode = _.last(source.source_analysis_settings).cancer_group.code;
+        }
+        catch (e) {
+          reject({message: 'BioApps source analysis settings missing required details: ' + e.message});
+        }
         
-        // Compile Disease Comparator
-        update.data.comparator_normal.illumina_bodymap_primary_site = settings.normal_comparator_primary_site.name;
-        update.data.comparator_normal.illumina_bodymap_biopsy_site = settings.normal_comparator_biopsy_site.name;
+        if(_.last(source.source_analysis_settings).comparator_disease) {
+          // Compile Disease Comparator
+          update.data.comparator_disease = {};
+  
+          let settings = _.last(source.source_analysis_settings);
+  
+          update.data.comparator_disease.tcga = _.map(_.sortBy(settings.disease_comparators, 'ordinal'), (c) => {
+            return c.disease_code.code;
+          });
+          update.data.comparator_disease.gtex_primary_site = settings.gtex_comparator_primary_site.name;
+          update.data.comparator_disease.gtex_bioposy_site = settings.gtex_comparator_biopsy_site.name;
+        }
+  
+        if(_.last(source.source_analysis_settings).comparator_normal) {
+          // Compile Disease Comparator
+          update.data.comparator_normal.illumina_bodymap_primary_site = settings.normal_comparator_primary_site.name;
+          update.data.comparator_normal.illumina_bodymap_biopsy_site = settings.normal_comparator_biopsy_site.name;
+        }
         
         // Set update where clause.
         update.where = { ident: task.state.analysis.ident };
