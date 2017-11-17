@@ -10,6 +10,8 @@ const AnalysisLib         = require('../../../libs/structures/analysis');
 const Analysis            = require('../analysis.object');
 const POGLib              = require('../../../libs/structures/pog');
 const Generator           = require('../../tracking/generate');
+const $bioapps            = require('../../../api/bioapps');
+const $lims               = require('../../../api/lims');
 
 
 /**
@@ -29,6 +31,9 @@ module.exports = class TrackingRouter extends RoutingInterface {
   
     // Setup analysis endpoint
     this.analysis();
+    
+    // Extended Details
+    this.extended();
     
     this.registerResource('/')
       .get((req, res, next) => {
@@ -168,5 +173,114 @@ module.exports = class TrackingRouter extends RoutingInterface {
       });
     
   }
+  
+  // Extended Details
+  extended() {
+    
+    this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, (req, res) => {
+  
+      let bioAppsPatient = null;
+      let limsIllumina = {};
+      let analysis = null;
+  
+      let opts = {
+        limit: req.query.limit || 15,
+        offset: req.query.offset || 0,
+        order: [['createdAt', 'DESC']],
+        include: [
+          {as: 'analysis', model: db.models.analysis_report, separate: true}
+        ],
+        where: { ident: req.params.analysisIdent }
+      };
+  
+      let pog_include = { as: 'pog', model: db.models.POG.scope('public'), where: {} };
+  
+      opts.include.push(pog_include);
+      
+      // Execute Query
+      db.models.pog_analysis.findOne(opts)
+        .then((result) => {
+          analysis = result;
+        })
+        .then(() => { return $bioapps.patient(analysis.pog.POGID) })
+        .then((result) => {
+          bioAppsPatient = result[0];
+        })
+        .then(() => { return $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]); })
+        .then((result) => {
+          
+          // Loop over lanes
+          _.forEach(result.results, (row) => {
+            
+            let tumour = null;
+            let rna = null;
+            let pool = null;
+            
+            // Multiplex library
+            if(row.multiplex_libraries.length > 0) {
+              if(row.multiplex_libraries.indexOf(analysis.libraries.tumour) > -1) pool = tumour = true;
+              if(row.multiplex_libraries.indexOf(analysis.libraries.transcriptome) > -1) pool = rna = true;
+            }
+            
+            // Non-multiplex
+            if(row.multiplex_libraries.length === 0) {
+              if(row.library === analysis.libraries.tumour) tumour = true;
+              if(row.library === analysis.libraries.transcriptome) rna = true;
+            }
+            
+            if(tumour) {
+              if(analysis.libraries.tumour in limsIllumina) limsIllumina[analysis.libraries.tumour].lanes++;
+              if(!(analysis.libraries.tumour in limsIllumina)) limsIllumina[analysis.libraries.tumour] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : false };
+              
+            }
+            
+            if(rna) {
+              if(analysis.libraries.transcriptome in limsIllumina) limsIllumina[analysis.libraries.transcriptome].lanes++;
+              if(!(analysis.libraries.transcriptome in limsIllumina)) limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : false };
+            }
+            
+          });
+          
+        })
+        .then(() => {
+          // Get Source
+          let source = _.findLast(bioAppsPatient.sources, {pathology: 'Diseased'});
+          let analysis_settings = _.last(source.source_analysis_settings);
+          
+          // Map to variables
+          let response = {
+            patient: analysis.pog.POGID,
+            sex: source.sex,
+            age: source.stage,
+            threeLetterCode: analysis.threeLetterCode,
+            lib_normal: analysis.libraries.normal,
+            lib_tumour: analysis.libraries.tumour,
+            pool_tumour: limsIllumina[analysis.libraries.tumour].pool,
+            lib_rna: analysis.libraries.transcriptome,
+            pool_rna: limsIllumina[analysis.libraries.transcriptome].pool,
+            disease: analysis.disease,
+            biopsy_notes: analysis.biopsy_notes,
+            biop: analysis_settings.sample_type + analysis_settings.biopsy_number,
+            num_lanes_rna: limsIllumina[analysis.libraries.transcriptome].lanes,
+            num_lanes_tumour: limsIllumina[analysis.libraries.tumour].lanes,
+            sequencer_rna: limsIllumina[analysis.libraries.transcriptome].sequencer,
+            sequencer_tumour: limsIllumina[analysis.libraries.tumour].sequencer,
+            priority: analysis.priority,
+            biofxician: null,
+            analysis_due: analysis.date_analysis
+          };
+      
+          res.json(response);
+      
+        })
+        .catch((err) => {
+          res.status(500).json({message: 'Failed to query extended details'});
+          console.log('Error', err);
+        });
+      
+    });
+  }
+  
+  
   
 };

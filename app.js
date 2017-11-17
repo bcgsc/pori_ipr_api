@@ -22,6 +22,10 @@ let nconf       = require('nconf').argv().env().file({file: './config/config.jso
 let cors        = require('cors');          // CORS support
 let morgan      = require('morgan');        // Logging
 
+const logger        = require('./lib/log');       // Load logging library
+
+process.logger = logger;
+
 module.exports = new Promise((resolve, reject) => {
   
   // Setup and store Socket IO in app

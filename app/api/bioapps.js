@@ -13,6 +13,8 @@ const basePath  = "";
 let logger      = process.logger;
 
 
+let _TOKEN = null;
+
 let $bioapps = {};
 
 $bioapps.session = {
@@ -35,12 +37,10 @@ $bioapps.loginWrapper = () => {
       return resolve($bioapps.session);
     }
     
-    console.log('Current Login Status', $bioapps.session);
-    
     // Check if Session Promise is set
     if($bioapps.session.token === null && $bioapps.session.promise !== null) {
       
-      console.log('### PROMISE IN PROCESS. WAITING FOR IT');
+      logger.debug('Waiting for previous login request to finish.');
       
       $bioapps.session.promise
         .then((session) => {
@@ -55,11 +55,14 @@ $bioapps.loginWrapper = () => {
     }
     
     if($bioapps.session.token === null && $bioapps.session.promise === null) {
+      
+      logger.debug('No login session, calling login');
+      
       $bioapps.session.promise = $bioapps.login();
-  
+      
       $bioapps.session.promise
         .then((session) => {
-          console.log('#### LOGGED INTO BIOAPPS #####');
+          logger.debug('Login resolved successfully');
           resolve(session);
         })
         .catch((err) => {
@@ -93,10 +96,8 @@ $bioapps.login = () => {
         })
         .then((data) => {
           
-          logger.debug('Response from BioApps /session endpoint received');
-          
           // Store token for session use.
-          $bioapps.session.token = data.token;
+          $bioapps.session.token = _TOKEN = data.token;
           
           logger.info('Logged into BioApps');
           resolve($bioapps.session);
@@ -126,12 +127,11 @@ $bioapps.login = () => {
  */
 $bioapps.query = (opts) => {
   return new Promise((resolve, reject) => {
-  
-    // Add session token
-    opts.headers = {'X-Token': $bioapps.session.token};
     
     $bioapps.loginWrapper()
-      .then(() => {
+      .then((session) => {
+        // Add session token
+        opts.headers = {'X-Token': $bioapps.session.token};
         return request(opts);
       })
       .then((result) => {
