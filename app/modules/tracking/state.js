@@ -253,6 +253,7 @@ module.exports = class State {
     if(input.description) this.instance.description = input.description;
     if(input.completedAt) this.instance.completedAt = input.completedAt;
     if(input.startedAt) this.instance.startedAt = input.startedAt;
+    if(input.jira) this.instance.jira = input.jira;
   }
 
 
