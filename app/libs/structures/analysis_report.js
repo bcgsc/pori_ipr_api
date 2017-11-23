@@ -114,7 +114,6 @@ module.exports = class analysis_report {
         ],
       }).then(
         (result) => {
-          console.log('Got updated')
           if(result === null) return reject({message: 'Instance not found.'});
           resolve(result);
         },
