@@ -27,28 +27,32 @@ router.route('/')
         password = req.body.password;
 
     let session = new Session(username, password, req);
-
-    session.authenticate().then(
-      (result) => {
-        res.set('X-token', result.token);
-        res.json({
-          ident: result.user.ident,
-          username: result.user.username,
-          type: result.user.type,
-          firstName: result.user.firstName,
-          lastName: result.user.lastName,
-          email: result.user.email,
-          access: result.user.access
-        });
-
-        res.send();
-      },
-      (err) => {
-        res.status(500).json({message: "unable to authenticate"});
-      }
-    )
-      .catch((e) => {
-        console.log('Exception thrown', e);
+    
+    let token;
+    
+    session.authenticate()
+      .then((result) => {
+      
+        token = result.token;
+        
+        // Retrieve full user
+        let opts = {
+          where: {ident: result.user.ident},
+          attributes: { exclude: ['password', 'deletedAt', 'jiraToken', 'jiraXsrf']},
+          include: [
+            { model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedat', 'createdAt']} }
+          ]
+        };
+        
+        return db.models.user.findOne(opts);
+      })
+      .then((user) => {
+        res.set('X-token', token);
+        res.json(user);
+      })
+      .catch((err) => {
+        console.log('Failed to authenticate', err);
+        if(err.code === 'failedAuthentication' || err.code === 'userNotFound') res.status(400).json({message: "unable to authenticate"});
       });
 
   })
