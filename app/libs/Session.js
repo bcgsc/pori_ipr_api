@@ -43,9 +43,7 @@ class Session {
       this._getUser()
         .then(this._auth.bind(this))
         .then(this._createToken.bind(this))
-        .then(
-          (result) => {
-
+        .then((result) => {
             console.log("Authentication");
 
             db.models.user.update({lastLogin: db.fn('NOW')}, {where: {id: this.user.id}}).then(
@@ -58,13 +56,9 @@ class Session {
             );
 
             resolve({user: this.user, token: this.token});
-          },
-          (err) => {
-            console.log('Authentication pipe failed', err);
-            reject({message: 'Unable to authenticate'});
-          }
-        )
+          })
         .catch((e) => {
+          console.log('Reject trigger', e);
           if(e.constructor.name === 'UserNotFound') {
             reject({message: 'Unable to find a user with the provided credentials', code: 'userNotFound'});
           }
@@ -91,7 +85,7 @@ class Session {
 
       db.models.user.findOne(opts).then(
         (result) => {
-          if(result === null) throw new UserNotFound('unable to find requested user', 'userNotFound');
+          if(result === null) return reject({message:'unable to find requested user', code: 'userNotFound'});
 
           this.user = result;
           resolve(result);
@@ -99,7 +93,7 @@ class Session {
         },
         (err) => {
           console.log('Unable to query the user for session authentication', err);
-          throw new UserNotFound('Unable to query for user', 'userNotFound');
+          return reject({message:'unable to find requested user', code: 'userNotFound'});
         }
       )
     });
@@ -122,17 +116,12 @@ class Session {
             .then(this._createToken.bind(this))
             .then(
               (result) => {
-                if(result === false) reject({message: 'Unable to authenticate with provided credentials'});
+                if(result === false) return reject({message: 'Unable to authenticate with provided credentials', code: 'failedAuthentication'});
                 resolve(result);
-              },
-              (err) => {
-
-                reject({message: 'Unable to authenticate with provided credentials'});
-              }
-            )
+              })
             .catch((e) => {
               console.log('Failed bcgsc authentication driver', e);
-              reject({message: 'Unable to authenticate with the provided credentials'});
+              reject({message: 'Unable to authenticate with the provided credentials', code: 'failedAuthentication'});
             });
           break;
         case 'local':
@@ -141,17 +130,13 @@ class Session {
             .then(this._createToken.bind(this))
             .then(
               (result) => {
-                if(resolve === false) reject({message: 'Unable to authenticate with provided credentials'});
+                if(resolve === false) return reject({message: 'Unable to authenticate with provided credentials', code: 'failedAuthentication'});
                 resolve(result);
 
-              },
-              (err) => {
-                reject({message: 'Unable to authenticate with provided credentials'});
-              }
-            )
+              })
             .catch((e) => {
               console.log('Failed local authentication driver', e);
-              reject({message: 'Unable to authenticate with the provided credentials'});
+              reject({message: 'Unable to authenticate with the provided credentials', code: 'failedAuthentication'});
             });
           break;
       }
@@ -172,8 +157,8 @@ class Session {
       // Attempt BCGSC LDAP Authentication
       if(this.user.type === 'bcgsc') {
 
-        $jira.authenticate(this.username, this.password).then(
-          (resp) => {
+        $jira.authenticate(this.username, this.password)
+          .then((resp) => {
 
             // Ensure we have a real JIRA token -- Successful Login
             if(!resp.data.errorMessages && resp.data.session && resp.data.session.value) {
@@ -195,16 +180,13 @@ class Session {
               resolve(this.user);
 
             } else {
-              reject({message: 'Unable to authenticate with the provided credentials'});
-              throw new FailedAuthentication('Unable to authenticate with the provided credentials', 'failedAuthentication');
+              reject({message: 'Unable to authenticate with the provided credentials', code: 'failedAuthentication'});
             }
-          },
-          (err) => {
+          })
+          .catch((err) => {
             console.log('Authentication query failed', err);
-            reject({message: 'Unable to authenticate with the provided credentials'});
-            throw new FailedAuthentication('Unable to authenticate with the provided credentials', 'failedAuthentication');
-          }
-        );
+            reject({message: 'Unable to authenticate with the provided credentials', code: 'failedAuthentication'});
+          });
 
       } // End attempt BCGSC LDAP Auth
 
