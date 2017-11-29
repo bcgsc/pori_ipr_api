@@ -11,9 +11,23 @@ router.use('/validate', require('./validate'));
 router.use('/genevar', require('./genevar'));
 
 router.route('/import')
-  .get((req,res,next) => {
-
-    loader({directory: '/home/bpierce/kbtemp/v2.5.0'}).then(
+  .post((req,res,next) => {
+  
+    let directory = req.body.directory;
+    let references = req.body.references;
+    let events = req.body.events;
+    
+    if(!directory) return res.status(400).json({message: 'A directory value is required to be sent in the body'});
+    
+    if(!events && !references) return res.status(400).json({message: 'At least one of: an events filename or references filename is required in the body'});
+    
+    let opts = {directory: directory};
+    
+    if(events) opts.events = events;
+    if(references) opts.references = references;
+    
+    
+    loader(opts).then(
       (result) => {
         res.json({success:true});
       },
@@ -110,7 +124,7 @@ router.route('/export')
   .get((req,res) => {
 
     // Generate output TSVs
-    let exportEvent = new kbExport('v2.4.3', {output: '/home/bpierce/tmp/run5'});
+    let exportEvent = new kbExport('v2.4.3', {output: '/home/bpierce/tmp/20-11-2017'});
 
     exportEvent.export().then(
       (result) => {

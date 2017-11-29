@@ -47,28 +47,32 @@ let dbInsert = (entry, i) => {
  *
  * @param {object} dir - Directory to locate the KB exports in
  * @param {object} logger - Logging utility instance
+ * @param {object} options
+ *
  * @returns {promise|object} - Resolves with object, Rejects with object
  */
-module.exports = (dir, logger) => {
+module.exports = (dir, logger, options) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
   let log = logger.loader('KB-Import', 'References');
-
+  
+  let file = options.references || '/knowledge_base_references.csv';
+  
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/knowledge_base_references.csv');
+  let output = fs.createReadStream(`${dir}/${file}`);
 
-  log('Reading in the knowledge_base_references.csv file.');
+  log(`Reading in references from: ${dir}/${file}`);
 
   // Parse file!
   let parser = parse({delimiter: ',', columns: true, relax_column_count: true},
     (err, entries) => {
 
       if(err) {
-        console.log('Failed to parse CSV file', err);
-        log('Failed to read CSV file');
+        console.log(`Failed to find: ${dir}/${file}`, err);
+        log(`Failed to read in from file: ${dir}/${file} (not found)`);
         deferred.reject(false);
         return;
       }

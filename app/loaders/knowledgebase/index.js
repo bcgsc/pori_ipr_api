@@ -32,10 +32,13 @@ module.exports = (options={}) => {
   let promises = [];
 
   if(!options.directory) deferred.reject({error: 'directory option was not set and is required.'});
-
+  
+  if(!options.events) loaders.splice(loaders.indexOf('events'), 1);
+  if(!options.references) loaders.splice(loaders.indexOf('references'), 1);
+  
   // Loop over loader files and create promises
   loaders.forEach((file) => {
-    promises.push(require('./' + file)(options.directory, logger));
+    promises.push(require('./' + file)(options.directory, logger, options));
   });
 
   // Wait for all loaders to finish!

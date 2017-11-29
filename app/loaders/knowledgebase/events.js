@@ -39,20 +39,23 @@ let mapUser = (inputUser) => {
  *
  * @param {object} dir - Directory to locate the KB exports in
  * @param {object} logger - Logging utility instance
+ * @param {object} options
+ *
  * @returns {promise|object} - Resolves with object, Rejects with object
  */
-module.exports = (dir, logger) => {
+module.exports = (dir, logger, options) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
   let log = logger.loader('KB-Import', 'Events');
-
-  // First parse in therapeutic
-  //let data = fs.readFileSync(dir + '/knowledge_base_events.tsv');
-
-  let entries = dl.tsv(dir + '/knowledge_base_events.tsv');
+  let file = options.events;
+  
+  if(!file) return reject({message: 'No events filename specified'});
+  
+  // Read in event entries
+  let entries = dl.tsv(`${dir}/${file}`);
 
   _.forEach(entries, (e, i)=> {
 
