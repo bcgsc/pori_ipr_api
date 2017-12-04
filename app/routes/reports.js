@@ -19,17 +19,19 @@ router.route('/')
   .get((req,res,next) => {
 
     let opts = { where: {}};
-
-    let POGWhere= {};
     
-    if(req.query.project) POGWhere.project = req.query.project;
-    
+    // Pagination
+    if(req.query.paginated) {
+      // Setup Pagination
+      opts.limit = req.query.limit || 20;
+      opts.offset = req.query.offset || 0;
+    }
     
     opts.include = [
-      {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+      {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }},
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
       {model: db.models.user.scope('public'), as: 'createdBy'},
-      {model: db.models.POG.scope('public'), as: 'pog', where: POGWhere },
+      {model: db.models.POG.scope('public'), as: 'pog'},
       {model: db.models.pog_analysis.scope('public'), as: 'analysis' },
       {model: db.models.analysis_reports_user, as: 'users', separate: true, include: [
         {model: db.models.user.scope('public'), as: 'user'}
@@ -42,6 +44,15 @@ router.route('/')
     // Check for types
     if(req.query.type === 'probe') opts.where.type = 'probe';
     if(req.query.type === 'genomic') opts.where.type = 'genomic';
+    if(req.query.searchText) opts.where['$or'] = {
+      '$patientInformation.tumourType$': {$ilike: `%${req.query.searchText}%`},
+      '$patientInformation.biopsySite$': {$ilike: `%${req.query.searchText}%`},
+      '$patientInformation.physician$': {$ilike: `%${req.query.searchText}%`},
+      '$patientInformation.caseType$': {$ilike: `%${req.query.searchText}%`},
+      '$tumourAnalysis.diseaseExpressionComparator$': {$ilike: `%${req.query.searchText}%`},
+      '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
+      '$pog.POGID$': {$ilike: `%${req.query.searchText}%`}
+    };
 
 
     // States
@@ -63,11 +74,25 @@ router.route('/')
 
       opts.include.push(userFilter);
     }
-
+    
+    opts.order = [[{model: db.models.POG, as: 'pog'}, 'POGID', 'desc']];
+    
+    let reports;
+    
     // return all reports
-    db.models.analysis_report.scope('public').findAll(opts).then(
-      (reports) => {
-        res.json(reports);
+    db.models.analysis_report.scope('public').findAll(opts)
+      .then((results) => {
+        reports = results;
+        if(!req.query.paginated) return res.json(reports);
+        
+        delete opts.limit;
+        delete opts.offset;
+        
+        return db.models.analysis_report.scope('public').findAll(opts);
+        
+      })
+      .then((total) => {
+        if(req.query.paginated) res.json({total: total.length, reports: reports});
       })
       .catch((err) => {
         console.log('Unable to lookup analysis reports', err);
@@ -127,6 +152,9 @@ router.route('/:report')
 
   });
 
+/**
+ * Report User Binding
+ */
 router.route('/:report/user')
   .post((req, res, next) => {
 
