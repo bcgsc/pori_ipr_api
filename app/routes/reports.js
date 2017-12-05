@@ -44,6 +44,7 @@ router.route('/')
     // Check for types
     if(req.query.type === 'probe') opts.where.type = 'probe';
     if(req.query.type === 'genomic') opts.where.type = 'genomic';
+    if(req.query.project) opts.where['$pog.project$'] = req.query.project;
     if(req.query.searchText) opts.where['$or'] = {
       '$patientInformation.tumourType$': {$ilike: `%${req.query.searchText}%`},
       '$patientInformation.biopsySite$': {$ilike: `%${req.query.searchText}%`},
@@ -51,7 +52,7 @@ router.route('/')
       '$patientInformation.caseType$': {$ilike: `%${req.query.searchText}%`},
       '$tumourAnalysis.diseaseExpressionComparator$': {$ilike: `%${req.query.searchText}%`},
       '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
-      '$pog.POGID$': {$ilike: `%${req.query.searchText}%`}
+      '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
     };
 
 
