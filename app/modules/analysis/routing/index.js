@@ -37,10 +37,9 @@ module.exports = class TrackingRouter extends RoutingInterface {
     
     this.registerResource('/')
       .get((req, res, next) => {
-        
+  
+        let analyses;
         let opts = {
-          limit: req.query.limit || 15,
-          offset: req.query.offset || 0,
           order: [['createdAt', 'DESC']],
           include: [
             {as: 'analysis', model: db.models.analysis_report, separate: true}
@@ -49,15 +48,24 @@ module.exports = class TrackingRouter extends RoutingInterface {
         };
         
         let pog_include = { as: 'pog', model: db.models.POG.scope('public'), where: {} };
-        if(req.query.search) pog_include.where.POGID = {$ilike: `%${req.query.search}%` };
-        if(req.query.project) pog_include.where.project = req.query.project;
+        if(req.query.search) opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%` };
+        if(req.query.project) opts.where['$pog.project$'] = req.query.project;
+        
+        if(req.query.paginated) {
+          opts.limit = req.query.limit || 25;
+          opts.offset = req.query.offset || 0;
+        }
         
         opts.include.push(pog_include);
         
         // Execute Query
-        db.models.pog_analysis.findAll(opts)
+        db.models.pog_analysis.findAndCountAll(opts)
           .then((result) => {
-            res.json(result);
+            
+            if(req.query.paginated) {
+              res.json({total: result.count, analysis: result.rows});
+            }
+            
           })
           .catch((err) => {
             console.log(err);

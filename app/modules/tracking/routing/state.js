@@ -93,7 +93,7 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
       as: 'tasks',
       model: db.models.tracking_state_task,
       attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
-      order: [['ordinal','ASC']],
+      order: [['ordinal','ASC'], [db.models.POG, 'POGID', 'desc']],
       include: [
         {as: 'assignedTo', model: db.models.user.scope('public')},
         {as: 'checkins', model: db.models.tracking_state_task_checkin, include:[{as: 'user', model: db.models.user.scope('public')}], attributes: {exclude: ['id', 'task_id', 'deletedAt', 'user_id']}}
@@ -101,7 +101,7 @@ module.exports = class TrackingStateRoute extends RoutingInterface {
     }; // end state tasks include
   
     if(req.query.unassigned === 'true') taskInclude.where = {assignedTo_id: null};
-  
+    
     opts.include.push(taskInclude);
   
     // Get All Definitions
