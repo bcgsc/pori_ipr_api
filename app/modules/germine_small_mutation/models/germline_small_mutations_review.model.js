@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  return sequelize.define('germline_small_mutation', {
+  return sequelize.define('germline_small_mutation_review', {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,

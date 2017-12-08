@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  return sequelize.define('germline_small_mutation', {
+  return sequelize.define('germline_small_mutation_variant', {
       id: {
         type: Sq.INTEGER,
         autoIncrement: true,
@@ -22,23 +22,23 @@ module.exports = (sequelize, Sq) => {
       },
       flagged: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       clinvar: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       cgl_category: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       gmaf: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       transcript: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       gene: {
         type: Sq.STRING,
@@ -46,127 +46,131 @@ module.exports = (sequelize, Sq) => {
       },
       variant: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       impact: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       chromosome: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       position: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       dbSNP: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       reference: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       alteration: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
-      scopre: {
+      score: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       zygosity_germline: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
+      },
+      preferred_transcript: {
+        type: Sq.BOOLEAN,
+        allowNull: true
       },
       hgvs_cdna: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       hgvs_protein: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       zygosity_tumour: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       genomic_variant_reads: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       rna_variant_reads: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       gene_somatic_abberation: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       notes: {
-        type: Sq.STRING,
-        allowNull: false,
+        type: Sq.TEXT,
+        allowNull: true,
       },
       type: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       patient_history: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       family_history: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       tcga_comp: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       tcga_comp_average_percentile: {
-        type: Sq.STRING,
-        allowNull: false,
+        type: Sq.FLOAT,
+        allowNull: true,
       },
       tcga_comp_average_norm_percentile: {
-        type: Sq.STRING,
-        allowNull: false,
+        type: Sq.FLOAT,
+        allowNull: true,
       },
       tcga_comp_norm_percentile: {
-        type: Sq.STRING,
-        allowNull: false,
+        type: Sq.FLOAT,
+        allowNull: true,
       },
-      tcaga_comp_percentile: {
-        type: Sq.STRING,
-        allowNull: false,
+      tcga_comp_percentile: {
+        type: Sq.FLOAT,
+        allowNull: true,
       },
       gtex_comp: {
         type: Sq.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       gtex_comp_average_percentile: {
-        type: Sq.STRING,
-        allowNull: false,
+        type: Sq.FLOAT,
+        allowNull: true,
       },
       gtex_comp_percentile: {
         type: Sq.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       fc_mean_bodymap: {
         type: Sq.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       fc_liver_bodymap: {
         type: Sq.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       gene_expression_rpkm: {
         type: Sq.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       additional_info: {
-        type: Sq.STRING,
-        allowNull: false,
+        type: Sq.TEXT,
+        allowNull: true,
       },
     },
     {

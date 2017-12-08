@@ -3,10 +3,11 @@
 module.exports = (sequelize) => {
   
   let gsm = {};
-  gsm.report = sequelize.import(__dirname + '/germline_small_mutations.model'); // Order is important
   
   gsm.review = sequelize.import(__dirname + '/germline_small_mutations_review.model');
   gsm.variant = sequelize.import(__dirname + '/germline_small_mutations_variant.model');
+  
+  gsm.report = sequelize.import(__dirname + '/germline_small_mutations.model'); // Order is important
   
   gsm.report.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_analysis_id', sourceKey: 'id', onDelete: 'CASCADE', constraints: true});
   gsm.report.belongsTo(sequelize.models.user, {as: 'biofx_assigned', foreignKey: 'biofx_assigned_id', onDelete: 'SET NULL', constraints: true});

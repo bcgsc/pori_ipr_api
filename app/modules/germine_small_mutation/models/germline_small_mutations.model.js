@@ -38,12 +38,6 @@ module.exports = (sequelize, Sq) => {
       }
     },
     {
-      indexes: [
-        {
-          unique: true,
-          fields: ['pog_analysis_id', 'source_version']
-        }
-      ],
       tableName: 'pog_analysis_germline_small_mutations',
       // Automatically create createdAt, updatedAt, deletedAt
       timestamps: true,
@@ -51,12 +45,17 @@ module.exports = (sequelize, Sq) => {
       paranoid: true,
       scopes: {
         public: {
-          order:  [['ordinal', 'ASC']],
+          order:  [['createdAt', 'desc']],
           attributes: {
-            exclude: ['deletedAt', 'id', 'analysis_id']
+            exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id']
           },
           include: [
-            { as: 'analysis', model: sequelize.models.pog_analysis.scope('public') }
+            { as: 'analysis', model: sequelize.models.pog_analysis.scope('public') },
+            { as: 'biofx_assigned', model: sequelize.models.user.scope('public') },
+            //{ as: 'reviews', model: sequelize.models.germline_small_mutation_review },
+            //{ as: 'variants', model: sequelize.models.germline_small_mutation_variant }
+            { as: 'variants', model: sequelize.models.germline_small_mutation_variant, separate: true },
+            { as: 'reviews', model: sequelize.models.germline_small_mutation_review, separate: true, include: [ {model: sequelize.models.user.scope('public'), as: 'reviewedBy'} ] }
           ]
         }
       }
