@@ -284,7 +284,7 @@ module.exports = class GSMRouter extends RoutingInterface {
         res.json(req.variant);
       })
       // Toggle variant hidden status
-      .patch((req, res) => {
+      .put((req, res) => {
         
         // Update Variant details
         req.variant.patient_history = req.body.patient_history;
