@@ -24,7 +24,7 @@ module.exports = (sequelize, Sq) => {
         type: Sq.INTEGER,
         required: true,
         references: {
-          model: 'pog_analysis',
+          model: 'users',
           key: 'id',
         }
       },

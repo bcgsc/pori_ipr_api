@@ -209,6 +209,9 @@ let recent_report = require('../modules/recentReports/models')(sequelize);
 // Notifications
 let notification = require('../modules/notification/models')(sequelize);
 
+// Germline Small Mutations
+let gsm = require('../modules/germine_small_mutation/models')(sequelize);
+
 
 
 // Syncronize tables to model schemas

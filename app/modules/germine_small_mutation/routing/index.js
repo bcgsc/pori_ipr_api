@@ -8,10 +8,13 @@ const acl                 = require(process.cwd() + '/app/middleware/acl');
 const _                   = require('lodash');
 const db                  = require(process.cwd() + '/app/models');
 const RoutingInterface    = require('../../../routes/routingInterface');
+const logger              = process.logger;
 
 const Patient             = require(process.cwd() + '/app/libs/patient/patient.library');
 const Analysis            = require(process.cwd() + '/app/libs/patient/analysis.library');
 const Variants            = require('../germline_small_mutation_variant');
+const Review              = require('../germline_small_mutation_review');
+const Report              = require('../germline_small_mutation');
 
 /**
  * Create and bind routes for Germline Small Mutations Module
@@ -29,8 +32,8 @@ module.exports = class GSMRouter extends RoutingInterface {
     //this.root = '/tracking/';
     
     // Register Middleware
-    //this.registerMiddleware('analysis', require('../../../middleware/analysis'));
-    //this.registerMiddleware('definition', require('../middleware/definition'));
+    this.registerMiddleware('report', require('../middleware/germline_small_mutation.middleware'));
+    this.registerMiddleware('review', require('../middleware/germline_small_mutation_review.middleware'));
     
     //let States = new StateRoutes(this.io);
     //this.bindRouteObject('/state', States.getRouter());
@@ -41,12 +44,20 @@ module.exports = class GSMRouter extends RoutingInterface {
     //let Ticket_Template = new TicketTemplateRoutes(this.io);
     //this.bindRouteObject('/ticket/template', Ticket_Template.getRouter());
     
+    // Load Report
     this.registerEndpoint('post', '/patient/:patient/biopsy/:analysis', this.loadReport);
-    this.registerEndpoint('get', '/patient/:patient/biopsy/:analysis', this.getAnalysisReport);
+  
+    // All Reports
+    this.registerEndpoint('get', '/', this.getReports); // All reports for all cases
+    this.registerEndpoint('get', '/patient/:patient/biopsy/:analysis', this.getAnalysisReport); // All reports for a biopsy
     
-    this.registerEndpoint('get', '/', this.getReports);
+    // Individual Reports
+    this.reportResource();
     
-    this.registerEndpoint('post', '/patient/:patient/biopsy/:analysis/review', this.addReview);
+    // Reviews
+    this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:report/review', this.addReview); // Add review to report
+    this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:report/review/:review', this.removeReview); // Add review to report
+    
   }
   
   /**
@@ -131,6 +142,12 @@ module.exports = class GSMRouter extends RoutingInterface {
       });
   }
   
+  /**
+   * Get All Germline Reports
+   *
+   * @param {object} req - Express request
+   * @param {object} res - Express response
+   */
   getReports(req, res) {
     
     // get all reports
@@ -154,6 +171,13 @@ module.exports = class GSMRouter extends RoutingInterface {
     
   }
   
+  /**
+   * Get Germline reports for specific biopsy
+   *
+   * @param {object} req - Express request
+   * @param {object} res - Express response
+   *
+   **/
   getAnalysisReport(req, res) {
     
     let opts = {
@@ -180,10 +204,142 @@ module.exports = class GSMRouter extends RoutingInterface {
   }
   
   
+  /**
+   * Add review event for germline report
+   *
+   * @param {object} req - Express request
+   * @param {object} res - Express response
+   *
+   */
   addReview(req, res) {
-  
-  
+    
+    if(!req.body.type) return res.status(400).json({message: 'A review type is required in the body.'});
+    
+    let opts = {
+      reviewedBy_id: req.user.id,
+      type: req.body.type,
+      germline_report_id: req.report.id
+    };
+    
+    // Make sure not already signed
+    db.models.germline_small_mutation_review.scope('public').findOne(opts)
+      .then((review) => {
+        if(review !== null) return res.status(400).json({message: `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`});
+        
+        // Create new review
+        let data = {
+          germline_report_id: req.report.id,
+          reviewedBy_id: req.user.id,
+          type: req.body.type
+        };
+        
+        return db.models.germline_small_mutation_review.create(data);
+      })
+      .then((review) => {
+        if(!res.finished) return Review.public(review.ident);
+      })
+      .then((review) => {
+        res.json(review);
+      })
+      .catch((err) => {
+        res.status(500).json({message: 'Failed to create review entry for this report for internal reasons'});
+        console.log(`Failed to create review entry for germline report ${req.report.ident}`, err);
+      });
   
   }
   
+  /**
+   * Remove a review from a report
+   *
+   * @param {object} req - Express request
+   * @param {object} res - Express response
+   */
+  removeReview(req, res) {
+  
+    req.review.destroy()
+      .then(() => {
+        res.status(204).send();
+      })
+      .catch((e) => {
+        res.status(500).json({message: 'Unable to remove the requested germline report'});
+      });
+    
+  }
+  
+  /**
+   * Individual report resources
+   *
+   */
+  reportResource() {
+  
+    this.registerResource('/patient/:patient/biopsy/:analysis/report/:report')
+
+      /**
+       * Get an existing report
+       *
+       * GET /patient/{patient}/biopsy/{analysis}/report/{report}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       *
+       *
+       */
+      .get((req, res) => {
+        res.json(req.report);
+      })
+
+      /**
+       * Update an existing report
+       *
+       * GET /patient/{patient}/biopsy/{analysis}/report/{report}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       *
+       * @bodyParam {string} biofx_assigned - ident string of user to be assigned
+       * @bodyParam {
+       *
+       */
+      .put((req, res) => {
+      
+        Report.updateReport(req.report, req.body)
+          .then((report) => {
+            return Report.public(report.ident);
+          })
+          .then((report) => {
+            res.json(report);
+          })
+          .catch((e) => {
+            logger.error('Failed to update germline report', e);
+            res.status(500).json({message: 'Failed to update germline report due to an internal error'});
+          });
+      
+      })
+      
+      /**
+       * Remove an existing report
+       *
+       * DELETE /patient/{patient}/biopsy/{analysis}/report/{report}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       *
+       * @param {object} req - Express request
+       * @param {object} res - Express response
+       */
+      .delete((req, res) => {
+        req.report.destroy()
+          .then(() => {
+            res.status(204).send();
+          })
+          .catch((e) => {
+            res.status(500).json({message: 'Unable to remove the requested germline report'});
+          });
+      });
+    
+    
+  }
 };
