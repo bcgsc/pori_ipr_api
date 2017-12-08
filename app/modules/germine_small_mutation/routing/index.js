@@ -34,6 +34,7 @@ module.exports = class GSMRouter extends RoutingInterface {
     // Register Middleware
     this.registerMiddleware('report', require('../middleware/germline_small_mutation.middleware'));
     this.registerMiddleware('review', require('../middleware/germline_small_mutation_review.middleware'));
+    this.registerMiddleware('variant', require('../middleware/germline_small_mutation_variant.middleware'));
     
     //let States = new StateRoutes(this.io);
     //this.bindRouteObject('/state', States.getRouter());
@@ -53,6 +54,9 @@ module.exports = class GSMRouter extends RoutingInterface {
     
     // Individual Reports
     this.reportResource();
+    
+    // Variants
+    this.reportVariants();
     
     // Reviews
     this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:report/review', this.addReview); // Add review to report
@@ -127,6 +131,12 @@ module.exports = class GSMRouter extends RoutingInterface {
         output.analysis = analysis.toJSON();
         output.analysis.pog = patient.toJSON();
         output.variants = rows;
+        output.biofx_assigned = req.user;
+        
+        delete output.id;
+        delete output.pog_analysis_id;
+        delete output.biofx_assigned_id;
+        delete output.deletedAt;
         
         res.json(output);
       })
@@ -262,6 +272,34 @@ module.exports = class GSMRouter extends RoutingInterface {
       })
       .catch((e) => {
         res.status(500).json({message: 'Unable to remove the requested germline report'});
+      });
+    
+  }
+  
+  // Resource endpoints for Variants
+  reportVariants() {
+    
+    this.registerResource('/patient/:patient/biopsy/:analysis/report/:report/variant/:variant')
+      .get((req, res) => {
+        res.json(req.variant);
+      })
+      // Toggle variant hidden status
+      .patch((req, res) => {
+        
+        // Update Variant details
+        req.variant.patient_history = req.body.patient_history;
+        req.variant.family_history = req.body.family_history;
+        req.variant.hidden = req.body.hidden;
+        
+        req.variant.save()
+          .then(() => {
+            res.json(req.variant);
+          })
+          .catch((e) => {
+            res.status(500).json({message: 'Failed to update the variant'});
+            console.log(e);
+          });
+      
       });
     
   }

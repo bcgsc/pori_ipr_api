@@ -20,6 +20,11 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         }
       },
+      hidden: {
+        type: Sq.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+      },
       flagged: {
         type: Sq.STRING,
         allowNull: true,
