@@ -10,7 +10,11 @@ const map = {
   "nan": null,
   "NA": null,
   "na": null,
-  "Na": null
+  "Na": null,
+  "Yes": true,
+  "No": false,
+  "yes": true,
+  "no": false
 };
 
 /**
