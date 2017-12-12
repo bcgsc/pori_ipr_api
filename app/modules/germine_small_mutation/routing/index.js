@@ -83,6 +83,7 @@ module.exports = class GSMRouter extends RoutingInterface {
     if(!req.params.patient) required.patient = 'The patient identifier is required. Eg: POG1234';
     if(!req.body.rows) required.rows = 'Data rows are required for import. Empty arrays are valid.';
     if(!req.body.project) required.project = 'Project name is required to load a report';
+    if(!req.body.normal_library) required.normal_library = 'The germline/normal library name is requried, Eg: P12345';
     
     if(_.keys(required).length > 0) return res.status(400).json({message: 'Required fields were missing.', fields: required});
     
@@ -97,7 +98,7 @@ module.exports = class GSMRouter extends RoutingInterface {
       // Create or retrieve patient object
       .then((p) => {
         patient = p;
-        return Analysis.retrieveOrCreate(p.id, req.params.analysis);
+        return Analysis.retrieveOrCreate(p.id, req.params.analysis, null, {libraries: {normal: req.body.normal_library}});
       })
       
       // Create or Retrieve Biopsy Analysis
@@ -170,9 +171,9 @@ module.exports = class GSMRouter extends RoutingInterface {
       offset: offset
     };
     
-    db.models.germline_small_mutation.scope('public').findAll(opts)
+    db.models.germline_small_mutation.scope('public').findAndCountAll(opts)
       .then((reports) => {
-        res.json(reports);
+        res.json({total: reports.count, reports: reports.rows});
       })
       .catch((err) => {
         res.status(500).json({message: 'Unable to retrieve reports'});
@@ -240,7 +241,8 @@ module.exports = class GSMRouter extends RoutingInterface {
         let data = {
           germline_report_id: req.report.id,
           reviewedBy_id: req.user.id,
-          type: req.body.type
+          type: req.body.type,
+          comment: req.body.comment
         };
         
         return db.models.germline_small_mutation_review.create(data);

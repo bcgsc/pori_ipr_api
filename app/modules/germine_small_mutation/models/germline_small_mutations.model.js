@@ -35,6 +35,10 @@ module.exports = (sequelize, Sq) => {
           model: 'users',
           key: 'id',
         }
+      },
+      exported: {
+        type: Sq.BOOLEAN,
+        default: false
       }
     },
     {
