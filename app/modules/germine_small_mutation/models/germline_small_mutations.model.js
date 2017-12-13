@@ -38,7 +38,7 @@ module.exports = (sequelize, Sq) => {
       },
       exported: {
         type: Sq.BOOLEAN,
-        default: false
+        defaultValue: false
       }
     },
     {
