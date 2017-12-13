@@ -111,6 +111,12 @@ class Routing extends RouterInterface {
   
       this.bindRouteObject('/germline_small_mutation', GermlineReportsRoutes.getRouter());
   
+      // Get Recebt Reports Routes
+      let Germline_Reports_Export = require('../modules/germine_small_mutation/routing/export.route');
+      let GermlineReportsExportRoutes = new Germline_Reports_Export(this.io);
+  
+      this.bindRouteObject('/export/germline_small_mutation', GermlineReportsExportRoutes.getRouter());
+  
   
       // Auto-Build routes
       this.buildRecursiveRoutes().then(

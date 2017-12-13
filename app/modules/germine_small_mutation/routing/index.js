@@ -9,6 +9,8 @@ const _                   = require('lodash');
 const db                  = require(process.cwd() + '/app/models');
 const RoutingInterface    = require('../../../routes/routingInterface');
 const logger              = process.logger;
+const Excel               = require('exceljs');
+const FastCSV             = require('fast-csv');
 
 const Patient             = require(process.cwd() + '/app/libs/patient/patient.library');
 const Analysis            = require(process.cwd() + '/app/libs/patient/analysis.library');
@@ -62,6 +64,9 @@ module.exports = class GSMRouter extends RoutingInterface {
     this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:report/review', this.addReview); // Add review to report
     this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:report/review/:review', this.removeReview); // Add review to report
     
+    // Export
+    this.registerEndpoint('get', '/export/batch/token', this.getExportFlashToken);
+    this.registerEndpoint('get', '/export/batch', this.batchExport);
   }
   
   /**
@@ -166,7 +171,7 @@ module.exports = class GSMRouter extends RoutingInterface {
     let limit = req.query.limit || 25;
     
     let opts = {
-      order: [['createdAt', 'desc']],
+      order: [['id', 'desc']],
       limit: limit,
       offset: offset
     };
@@ -227,9 +232,11 @@ module.exports = class GSMRouter extends RoutingInterface {
     if(!req.body.type) return res.status(400).json({message: 'A review type is required in the body.'});
     
     let opts = {
-      reviewedBy_id: req.user.id,
-      type: req.body.type,
-      germline_report_id: req.report.id
+      where: {
+        reviewedBy_id: req.user.id,
+        type: req.body.type,
+        germline_report_id: req.report.id
+      }
     };
     
     // Make sure not already signed
@@ -349,11 +356,12 @@ module.exports = class GSMRouter extends RoutingInterface {
             return Report.public(report.ident);
           })
           .then((report) => {
-            res.json(report);
+            res.json(report[0]);
           })
           .catch((e) => {
             logger.error('Failed to update germline report', e);
             res.status(500).json({message: 'Failed to update germline report due to an internal error'});
+            console.log(e);
           });
       
       })
@@ -382,4 +390,128 @@ module.exports = class GSMRouter extends RoutingInterface {
     
     
   }
+  
+  
+  /**
+   * Generate Batch Export
+   *
+   * Get a batch export of all report variants that have not been exported yet
+   *
+   * GET /export/batch
+   *
+   * @urlParam optional {string} reviews - Comma separated list of reviews required for export
+   *
+   * @param {object} req - Express request
+   * @param {object} res - Express response
+   */
+  batchExport(req, res) {
+    
+    // Where clauses
+    let opts = {
+      where: {
+        exported: false
+      }
+    };
+    
+    if(!req.query.reviews) req.query.reviews = "";
+    
+    // Build list of reports that have been reviewed by both projects and biofx
+    db.models.germline_small_mutation.scope('public').findAll(opts)
+      .then((exports) => {
+        
+        let variants = [];
+        
+        // Loop through reports, and ensure they have all required reviews
+        _.forEach(exports, (r, i) => {
+          // Ensure all required reviews are present on report
+          
+          if(_.intersection(req.query.reviews.split(','), _.map(r.reviews, (re) => { return re.type})).length > req.query.reviews.split(',').length) return;
+          
+          // Add samples name for each variant
+          let parsed_variants = _.map(r.variants, (v) => {
+            
+            // Watch for hidden rows
+            if(v.hidden) return;
+            
+            let process_variant = _.assign({sample: r.analysis.pog.POGID + '_' + r.analysis.libraries.normal}, v.toJSON());
+            
+            //return Variants.processVariant(Variants.createHeaders(), process_variant);
+            return process_variant;
+          });
+          
+          variants = variants.concat(parsed_variants);
+          
+        });
+        
+        
+        // Prepare export
+        let workbook = new Excel.Workbook();
+        
+        workbook.creator = 'BC Genome Sciences Center - BC Cancer Agency - IPR';
+        workbook.created = new Date();
+        
+        let sheet = workbook.addWorksheet('Exports');
+        
+        sheet.columns = Variants.createHeaders();
+        
+        _.forEach(variants, (v) => {
+          sheet.addRow(v);
+        });
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=${new Date()}.ipr.germline.export.xlsx`);
+        
+        workbook.xlsx.write(res)
+          .then(() => {
+            res.end();
+          })
+          .catch((e) => {
+            res.status(500).json({message: 'Failed to create xlsx export of recent reports'});
+            console.log(e);
+          })
+          
+        
+        
+        //console.log('Variants', variants);
+        /*
+        FastCSV.writeToString(variants, {headers: true}, (err, data) => {
+          res.setHeader('Content-Type', 'application/CSV');
+          res.setHeader('Content-Disposition', 'attachment; filename="test.csv"');
+          res.send(data);
+          res.end();
+        }); */
+        
+      
+      })
+      .catch((err) => {
+        logger.error(`Failed to generate export: ${err.message}`);
+        console.log('Failed to generate export: ', err);
+        res.status(500).json({message: 'Failed to generate export due to internal server error'});
+      });
+  
+  }
+  
+  /**
+   * Generate a flash token for exporting reports
+   *
+   * Get a batch export of all report variants that have not been exported yet
+   *
+   * GET /export/batch/token
+   *
+   * @param {object} req - Express request
+   * @param {object} res - Express response
+   */
+  getExportFlashToken(req, res) {
+    
+    // Generate Token
+    db.models.flash_token.create({user_id: req.user.id, resource: 'gsm_export'})
+      .then((result) => {
+        res.json({token: result.token});
+      })
+      .catch((e) => {
+        res.status(500).json({message:'Failed to generated download request'});
+        console.log(e);
+      });
+  }
+  
 };

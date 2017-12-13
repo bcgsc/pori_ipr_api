@@ -46,6 +46,8 @@ let updateReport =  (report, data) => {
     let updateData = {};
     let resolveUsers = {};
     
+    updateData.exported = data.exported;
+    
     // Supported values to update
     if(data.biofx_assigned) resolveUsers.biofx = data.biofx_assigned;
     
