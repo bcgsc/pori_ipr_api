@@ -129,36 +129,16 @@ module.exports = (sequelize, Sq) => {
         type: Sq.STRING,
         allowNull: true,
       },
-      tcga_comp: {
-        type: Sq.STRING,
-        allowNull: true,
-      },
-      tcga_comp_average_percentile: {
-        type: Sq.FLOAT,
-        allowNull: true,
-      },
-      tcga_comp_average_norm_percentile: {
-        type: Sq.FLOAT,
-        allowNull: true,
-      },
       tcga_comp_norm_percentile: {
         type: Sq.FLOAT,
         allowNull: true,
       },
       tcga_comp_percentile: {
-        type: Sq.FLOAT,
-        allowNull: true,
-      },
-      gtex_comp: {
         type: Sq.STRING,
         allowNull: true,
       },
-      gtex_comp_average_percentile: {
-        type: Sq.FLOAT,
-        allowNull: true,
-      },
       gtex_comp_percentile: {
-        type: Sq.FLOAT,
+        type: Sq.STRING,
         allowNull: true,
       },
       fc_mean_bodymap: {
