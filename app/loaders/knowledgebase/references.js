@@ -116,27 +116,7 @@ module.exports = (dir, logger, options) => {
           deferred.reject('Failed to load KB references into database.');
         }
       );
-      /*
-      let promises = [];
 
-      _.forEach(entries, (e, i) => {
-
-        promises.push(dbInsert(e));
-
-      });
-
-
-      Q.all(promises).then(
-        (success) => {
-          console.log('Succeeded with all inserts', success);
-          deferred.resolve(true);
-        },
-        (err) => {
-          console.log('Failed to insert references', err);
-          deferred.reject(false);
-        }
-      );
-      */
     }
   );
 
