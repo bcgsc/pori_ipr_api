@@ -21,6 +21,8 @@ let fs          = require('fs');            // File System access
 let nconf       = require('nconf').argv().env().file({file: './config/config.json'});
 let cors        = require('cors');          // CORS support
 let morgan      = require('morgan');        // Logging
+let exec        = require('child_process').exec;
+
 
 const logger        = require('./lib/log');       // Load logging library
 
@@ -52,6 +54,14 @@ module.exports = new Promise((resolve, reject) => {
   app.get('/heart', (req,res,next)=> { res.json({beat: (new Date).getTime()}); });
   app.get('/teapot', (req,res,next) => { res.status(418).set({'hi':'mom!'}).send(fs.readFileSync('./lib/teapot.txt')); });
   
+  // DEPENDENCIES CHECK ------------------------------------------------------
+  let check = exec('convert');
+  
+  // Done executing
+  check.on('close', (resp) => {
+    if(resp !== 0) logger.warn('ImageMagick is not installed. Reports will fail to load as a result.');
+  });
+  
   // ROUTING  ----------------------------------------------------------------
   // All API routes will be prefixed with /api/x.x
   
@@ -63,7 +73,7 @@ module.exports = new Promise((resolve, reject) => {
       
       // Expose routing
       app.use('/api/' + API_VERSION, routing.getRouter());
-      console.log('Routing Started!')
+      logger.info('Routing Started!');
       
       resolve(app);
     })
