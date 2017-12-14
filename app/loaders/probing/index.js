@@ -63,7 +63,7 @@ class ProbeLoader {
       this.log('Starting Probe Loader');
 
       // Run default POG Genomic Report loading
-      if(this.options.profile === 'pog_probe') {
+      if(this.options.profile.toLowerCase() === 'pog_probe') {
 
         this.log('Running POG Probe Loader');
 

@@ -24,7 +24,10 @@ let loaderConf = nconf.get('loader');
 const allowProbeStates = ['uploaded', 'nonproduction'];
 const allowGenomicStates = ['ready', 'archived', 'nonproduction'];
 
-
+/**
+ * Load Genomic Report Endpoint
+ *
+ */
 router.route('/:type(genomic|probe)')
   .post((req,res) => {
     
@@ -271,8 +274,6 @@ router.route('/:type(genomic|probe)')
       .then((result) => {
         let report = new reportLib(reportObj);
         
-        console.log('############ Loader Result', result);
-        
         return report.public();
       })
       
@@ -289,206 +290,6 @@ router.route('/:type(genomic|probe)')
     
   
   });
-
-/*
-
-// Handle requests for loading POG into DB
-router.route('/:type(genomic|probe)')
-  .post((req,res,next) => {
-
-    // Pog Options
-    let pogOpts = { create: true };
-    let profile;
-
-    if(!req.body.project) return res.status(400).json({error: {message: "Project type is required in body.", code: "projectTypeNotSpecified"}});
-
-    console.log("## LOAD REQUEST ## Report type: " + req.params.type + ', project ID: ' + req.params.POGID + ', Project: ' + req.body.project);
-
-    // Determine Loading Profile
-    if(req.body.project === "POG") {
-      pogOpts.nonPOG = false;
-      if(req.params.type === 'genomic') profile = "pog_genomic";
-      if(req.params.type === 'probe') profile = "pog_probe";
-    }
-
-    // Check if it's a nonPOG
-    if(req.body.project !== 'POG') {
-      pogOpts.nonPOG = true;
-      pogOpts.project = req.body.project;
-      profile = req.body.project + '_' + req.params.type;
-    }
-    
-    if(!req.body.project) {
-      return res.status(400).json({message: 'Project name must be specified in the body'});
-    }
-
-    // First check if there's a POG entry..
-    let POG = new pogLib(req.params.POGID);
-  
-    // Retrieve/Create POG/Patient Entry First
-    POG.retrieve(pogOpts)
-      .then((POG) => {
-        // Create Report
-        let report = new reportLib();
-        let createReportOpts = {};
-
-        // Check for state detail being set
-        if(req.params.type === 'genomic') {
-          createReportOpts.state = 'ready';
-
-          if(req.body.state && allowGenomicStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
-        }
-
-        // If no state set, and probe, change default start to uploaded
-        if(req.params.type === 'probe') {
-          createReportOpts.state = 'uploaded';
-
-          if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
-        }
-  
-        
-        //Create a new report entry (Also creates new analysis run)
-        
-        report.create(POG, req.user, (req.params.type !== 'genomic' && req.params.type !== 'probe') ? 'genomic' : req.params.type, createReportOpts)
-          .then((report) => {
-
-            // Set POG to report
-            report.pog = POG;
-
-            // Set profile
-            let loaderOptions = { profile: profile };
-            
-            // Check for supplied base directory
-            if(req.body.baseDir) loaderOptions.baseDir = req.body.baseDir;
-
-            // Check for specified loaders
-            if(req.body.loaders) {
-              loaderOptions.load = req.body.loaders;
-            }
-            
-            // Create RunLoader promise object
-            let runLoader;
-
-            // POG Genomic Report
-            if(loaderOptions.profile === 'pog_genomic') {
-              let GenomicLoader = new require(process.cwd() + '/app/loaders');
-              let Loader = new GenomicLoader(POG, report, loaderOptions);
-              runLoader = Loader.load();
-            }
-            
-            // POG Probe Report
-            if(loaderOptions.profile === 'pog_probe') {
-              let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
-              let Loader = new ProbeLoader(POG, report, loaderOptions);
-              runLoader = Loader.load();
-            }
-
-            // Non-POG Probe Report
-            if(req.body.project !== 'POG' && req.params.type === 'probe') {
-              loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
-              loaderOptions.profile = 'nonPOG';
-              let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
-              let Loader = new ProbeLoader(POG, report, loaderOptions);
-              runLoader = Loader.load();
-            }
-
-            // Non-POG Genomic Report
-            if(req.body.project !== 'POG' && req.params.type === 'genomic') {
-              // Non-POG options
-              loaderOptions.nonPOG = true;
-              loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
-              loaderOptions.baseDir = req.body.baseDir;
-              loaderOptions.profile = 'nonPOG';
-              loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
-              loaderOptions.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
-
-              let GenomicLoader = new require(process.cwd() + '/app/loaders');
-
-              let Loader = new GenomicLoader(POG, report, loaderOptions);
-              runLoader = Loader.load();
-            }
-
-            // No Loader Profile could be found
-            if(runLoader === null) {
-              res.status(500).json({error: {message: 'Unable to invoke loading mechanism'}});
-              throw new Error('No Loaders Running');
-            }
-
-            // Loader promise resolution
-            runLoader.then(
-              (result) => {
-
-                db.models.analysis_report.scope('public').findOne({
-                  where: { id: report.id },
-                  include: [
-                    {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
-                    {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
-                    {model: db.models.user.scope('public'), as: 'createdBy'},
-                    {model: db.models.POG.scope('public'), as: 'pog' },
-                    {model: db.models.pog_analysis.scope('public'), as: 'analysis'}
-                  ]
-                }).then(
-                  (reports) => {
-                    res.json(reports);
-                  })
-                  .catch((err) => {
-                    console.log('Unable to lookup analysis reports', err);
-                    res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
-                  });
-
-
-              },
-              (err) => {
-                console.log('Loader Error', err);
-                res.status(400).json({error: {message: 'Unable to load new POG report', code: 'loadersFailed', error: err}});
-              }
-            );
-
-          })
-          .catch((err) => {
-            console.log('Failed to remove POG after loader failed', err);
-            return res.status(error.status || 500).json({error: {message: 'Unable to load new POG data entries', code: 'reportCreateQueryFailed'}});
-          });
-
-      })
-      .catch((err) => {
-        console.log('Failed to remove POG after loader failed', err);
-        return res.status(err.status || 500).json({error: {message: 'Unable to load new POG data entries', code: 'pogObjectQueryFailed'}});
-      });
-
-  })
-  .delete((req,res,next) => {
-    // Are we able to find this POG Report Entry?
-    db.models.POG.findOne({ where: { POGID: req.params.POG} }).then(
-      (pog) => {
-
-        if(pog !== null) {
-          // One was found, remove it!
-          db.models.POG.destroy({ where: { POGID: req.params.POG} }).then(
-            (result) => {
-              // Successfully removed
-              res.json({success: true});
-            },
-            (err) => {
-              // Error
-              res.status(500).json({error: {message: 'An internal error occured', code: 'pogFailedDestroy'}});
-            }
-          );
-        }
-
-        if(pog === null) {
-          res.status(404).json({error: {message: 'Unable to find the requested resource', code: 'pogLookupFailed'}});
-        }
-      },
-      (err) => {
-        // Error
-        res.status(500).json({error: {message: 'An internal error occured', code: 'pogFailedLookup'}});
-      }
-    );
-
-
-  });
-  */
 
 module.exports = router;
 
