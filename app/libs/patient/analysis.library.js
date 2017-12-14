@@ -126,21 +126,67 @@ module.exports = {
   /**
    * Create biopsy analysis record
    *
-   * @param {string} patientID - Patient string identifier, eg: POG1234
-   * @param {string} project - Project name the patient is associated with, eg: POG
+   * @param {int/object} patient - Either patient model object or pog_id
+   * @param {object} options - Patient analysis extended settings
    *
-   * @returns {Promise} - Resolves with created patient entry model object
+   *
+   * Options:
+   *  {
+   *    libraries - json dict of libraries: {normal: A12345, tumour: B12345, transcriptome: C12345}
+   *    analysis_biopsy - string of bioapps biopsy: biop1
+   *    clinical_biopsy - string of clinical biopsy: clinspec1
+   *    notes - General notes
+   *    bioapps_source_id - source row id from BioApps
+   *    onco_panel_submitted - Date of data export for onco panel
+   *    comparator_disease(jsonb) - {}
+   *    comparator_normal(jsonb) - {disease_comparator_for_analysis: str, gtex_comparator_primary_site: str, normal_comparator_biopsy_site: str, normal_comparator_primary_site: str}
+   *    biopsy_site - String of biopsy site
+   *    biopsy_type - Type of biopsy
+   *    date_analysis - Date the BioFX analysis is due
+   *    date_presentation - Date the presentation is due
+   *    biopsy_date - Date of the biopsy
+   *    disease - Disease/Diagnosis
+   *    threeLetterCode - Three letter code: BRC
+   *  }
+   *
+   * @returns {Promise/object} - Resolves with created patient analysis model object
    */
-  create: (patientID, project) => {
+  create: (patient, options) => {
     return new Promise((resolve, reject) => {
       
-      db.models.pog_analysis.create({POGID: patientID, project: project})
-        .then((patient) => {
-          resolve(patient);
+      if(!patient) reject({message: 'Patient pog_id or patient model object reqiured to create new analysis'});
+      
+      if(typeof patient === 'object') patient = patient.id;
+      
+      if(typeof patient !== 'number') reject({message: 'Invalid patient ID provided (not an integer or resolved from object to be integer)'});
+      
+      let data = {};
+      
+      // Building data block for new entries
+      data.pog_id = patient;
+      if(options.analysis_biopsy) data.analysis_biopsy = options.analysis_biopsy;
+      if(options.clinical_biopsy) data.clinical_biopsy = options.clinical_biopsy;
+      if(options.libraries) data.libraries = options.libraries;
+      if(options.notes) data.notes = options.notes;
+      if(options.disease) data.disease = options.disease;
+      if(options.bioapps_source_id) data.bioapps_source_id = options.bioapps_source_id;
+      if(options.onco_panel_submitted) data.onco_panel_submitted = options.onco_panel_submitted;
+      if(options.comparator_disease) data.comparator_disease = options.comparator_disease;
+      if(options.comparator_normal) data.comparator_normal = options.comparator_normal;
+      if(options.biopsy_site) data.biopsy_site = options.biopsy_site;
+      if(options.biopsy_type) data.biopsy_type = options.biopsy_type;
+      if(options.date_analysis) data.date_analysis = options.date_analysis;
+      if(options.date_presentation) data.date_presentation = options.date_presentation;
+      if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
+      if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
+      
+      db.models.pog_analysis.create(data)
+        .then((analysis) => {
+          resolve(analysis);
         })
         .catch((e) => {
-          reject({message: `Failed to create new patient record for internal reasons: ${e.message}`});
-          logger.error('Failed to create new patient/pog record');
+          reject({message: `Failed to create new patient biopsy record for internal reasons: ${e.message}`});
+          logger.error('Failed to create new analysis record');
         });
     });
   },
@@ -148,20 +194,20 @@ module.exports = {
   /**
    * Get public version of record
    *
-   * @param {string} patientID - PatientID string identifier
+   * @param {string} ident - Patient analysis ident
    *
    * @returns {Promise}
    */
-  public: (patientID) => {
+  public: (ident) => {
     return new Promise((resolve, reject) => {
       
-      db.models.pog_analysis.scope('public').findAll({where: {POGID: patientID}})
-        .then((patient) => {
-          resolve(patient);
+      db.models.pog_analysis.scope('public').findAll({where: {ident: ident}})
+        .then((analysis) => {
+          resolve(analysis);
         })
         .catch((e) => {
-          reject({message: `Failed to retrieve public scope of patient record: ${e.message}`});
-          logger.error('Failed to retrieve public version of patient record', e);
+          reject({message: `Failed to retrieve public scope of patient analysis record: ${e.message}`});
+          logger.error('Failed to retrieve public version of patient analysis record', e);
         });
       
     });

@@ -41,6 +41,7 @@ module.exports = class POG {
             if(options.nonPOG) {
               createOpts.nonPOG = true;
               createOpts.type = 'genomic';
+              createOpts.project = options.project;
             }
             
             createOpts.analysis = (options.analysis !== undefined) ? options.analysis : true;
