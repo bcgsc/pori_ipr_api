@@ -130,7 +130,7 @@ module.exports = (sequelize, Sq) => {
         allowNull: true,
       },
       tcga_comp_norm_percentile: {
-        type: Sq.FLOAT,
+        type: Sq.STRING,
         allowNull: true,
       },
       tcga_comp_percentile: {
