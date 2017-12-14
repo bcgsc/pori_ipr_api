@@ -36,11 +36,9 @@ module.exports = (report, dir, logger) => {
   // Setup Logger
   let log = logger.loader(report.ident, 'Images');
   
-  let promises = [];
+  let complete = [];
   
-  // Read in images, process and insert into DB
-  images.forEach((image) => {
-
+  Q.all(_.map(images, (image) => {
     // Check that image exists
     if(!fs.existsSync(imagePath + image.file)) {
       // If it's not optional, hard fail.
@@ -52,25 +50,25 @@ module.exports = (report, dir, logger) => {
       // Optional, soft fail
       if(image.optional) return log('Failed to find optional image file: ' + image.name, logger.WARNING);
     }
-
+  
     // Create Promise
-    promises.push(processImage(report, image, log));
-    
-  });
-  
-  promises.push(loadExpressionDensity(report, log));
-  promises.push(loadSummaryImage(report, log));
-  
-  Q.all(promises)
+    return processImage(report, image, log);
+  }))
     .then((results) => {
+      complete = results;
+      return Q.all([loadExpressionDensity(report, log), loadSummaryImage(report, log)]);
+    })
+    .then((results) => {
+        complete = complete.concat(results);
         
         log('Loaded all images', logger.SUCCESS);
-        deferred.resolve({loader: 'images', result: true});
+        deferred.resolve({loader: 'images', result: true, outcome: complete});
         
       },
       (error) => {
         log('Unable to load images.', logger.ERROR);
         deferred.reject({loader: 'image', message: 'Unable to load image entries: ' + err.message});
+        console.log('Failed to run all image loaders', error);
       }
     );
   
@@ -119,6 +117,7 @@ let processImage = (report, image, log) => {
         },
         (err) => {
           deferred.reject({loader: 'image', message: 'failed to create database entry for: ' + image.file});
+          console.log('Failed to process image', err);
         }
       );
   });
