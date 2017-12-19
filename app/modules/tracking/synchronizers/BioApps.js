@@ -542,8 +542,6 @@ class BioAppsSync {
       $bioapps.targetLanes(_.join(libs, ','))
         .then((tgs) => {
           
-          console.log(tgs);
-        
           // Loop over targets returned
           _.forEach(tgs, (lanes, lib) => {
             // Map target library name to number of rows expected
