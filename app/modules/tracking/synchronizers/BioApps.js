@@ -490,7 +490,7 @@ class BioAppsSync {
         where: {
           slug: 'bioapps_symlinks_created',
           deletedAt: null,
-          status: ['pending', 'failed'],
+          status: ['pending', 'active', 'failed'],
         },
         attributes: {
           include: ['state_id']
@@ -532,25 +532,33 @@ class BioAppsSync {
         // Extract libraries
         libs.push(_.values(t.state.analysis.libraries));
       });
-      
+  
       // Flatten nested arrays
       libs = _.flatten(libs);
+  
+      logger.info(`Starting query for retrieving library lane targets for ${libs.length} libraries`);
       
       // Query BioApps for Target number of lanes
       $bioapps.targetLanes(_.join(libs, ','))
         .then((tgs) => {
-        
-          // Loop over ForEach
-          _.forEach(tgs, (r) => {
-            targets[_.keys(r)[0]] = _.values(r)[0];
-          });
           
-        })
+          console.log(tgs);
         
+          // Loop over targets returned
+          _.forEach(tgs, (lanes, lib) => {
+            // Map target library name to number of rows expected
+            targets[lib] = lanes;
+          });
+  
+          logger.info('Target lanes determined for each library. Querying for aligned libcores');
+          return Promise.resolve();
+        })
         // Query BioApps for Library Aligned Cores
         .then(() => { return $bioapps.libraryAlignedCores(_.join(libs, ',')) })
         .then((result) => {
-          
+  
+          logger.debug('Aligned libcore results returned from BioApps API');
+        
           // Loop over libcore results, and cache into library name object
           _.forEach(result, (l) => {
             
