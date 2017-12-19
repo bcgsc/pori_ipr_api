@@ -256,7 +256,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
         })
         .then(() => {
           
-          if(!bioAppsPatient.source) {
+          if(!bioAppsPatient.sources) {
             res.status(404).json({message: 'Failed to retrieve patient record for BioApps with sources listed.'});
             return;
           }
