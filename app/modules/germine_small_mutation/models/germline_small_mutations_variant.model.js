@@ -145,7 +145,7 @@ module.exports = (sequelize, Sq) => {
         type: Sq.FLOAT,
         allowNull: true,
       },
-      fc_liver_bodymap: {
+      fc_bodymap: {
         type: Sq.FLOAT,
         allowNull: true,
       },
