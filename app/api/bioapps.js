@@ -6,6 +6,7 @@ const nconf     = require('nconf').argv().env().file({file: process.cwd() + '/co
 const _         = require('lodash');
 const request   = require('request-promise-native');
 const gin       = require(process.cwd() + '/lib/ginCredentials');
+const moment    = require('moment');
 
 //const host      = "http://bioappsdev01.bcgsc.ca:8100";
 const host      = "http://sbs.bcgsc.ca:8100";
@@ -33,8 +34,16 @@ $bioapps.loginWrapper = () => {
     
     
     if($bioapps.session.token !== null) {
-      logger.debug('Session already set');
-      return resolve($bioapps.session);
+      
+      // Check if it's expired
+      if($bioapps.session.expires < moment.unix()) {
+        // Reset Token
+        $bioapps.session.token = $bioapps.session.promise = null;
+      } else {
+        // Session is good.
+        logger.debug('Session already set');
+        return resolve($bioapps.session);
+      }
     }
     
     // Check if Session Promise is set
@@ -95,9 +104,13 @@ $bioapps.login = () => {
           json: true
         })
         .then((data) => {
+        
+          let token_b64 = new Buffer(data.token.split('.')[1], 'base64');
+          let token_payload = JSON.parse(token_b64.toString('utf-8'));
           
           // Store token for session use.
           $bioapps.session.token = _TOKEN = data.token;
+          $bioapps.session.expires = token_payload.exp;
           
           logger.info('Logged into BioApps');
           resolve($bioapps.session);
