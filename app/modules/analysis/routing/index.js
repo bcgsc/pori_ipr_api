@@ -212,6 +212,10 @@ module.exports = class TrackingRouter extends RoutingInterface {
         })
         .then(() => { return $bioapps.patient(analysis.pog.POGID) })
         .then((result) => {
+          if(result.length === 0) {
+            res.status(404).json({message: 'Failed to find patient record in BioApps for unknown reasons.'});
+            return;
+          }
           bioAppsPatient = result[0];
         })
         .then(() => { return $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]); })
@@ -251,9 +255,20 @@ module.exports = class TrackingRouter extends RoutingInterface {
           
         })
         .then(() => {
+          
+          if(!bioAppsPatient.source) {
+            res.status(404).json({message: 'Failed to retrieve patient record for BioApps with sources listed.'});
+            return;
+          }
+        
           // Get Source
           let source = _.findLast(bioAppsPatient.sources, {pathology: 'Diseased'});
           let analysis_settings = _.last(source.source_analysis_settings);
+          
+          if(!source) {
+            res.status(404).json({message: 'Failed to find a BioApps record with disease source identified'});
+            return;
+          }
           
           // Map to variables
           let response = {

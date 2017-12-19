@@ -141,6 +141,7 @@ class BioAppsSync {
         let libraries = [];
         let task = null;
         let source = null;
+        let source_analysis_setting = null;
         let update = { data: {comparator_disease: {}, comparator_normal: {}}, where: {} };
         
         // Try to extract the POGID from this patient result and use it to pull the corresponding task entry
@@ -174,37 +175,36 @@ class BioAppsSync {
         if(source.source_analysis_settings.length === 0) return;
         
         try {
-          source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'id');
-  
+          source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'data_version');
+          source_analysis_setting = _.last(source.source_analysis_settings);
+          
           // With a source Found, time to build the update for this case;
-          update.data.analysis_biopsy = 'biop'.concat(_.last(source.source_analysis_settings).biopsy_number);
+          update.data.analysis_biopsy = 'biop'.concat(source_analysis_setting.biopsy_number);
           update.data.bioapps_source_id = source.id;
           update.data.biopsy_site = source.anatomic_site;
   
           // Three Letter Code
-          update.data.threeLetterCode = _.last(source.source_analysis_settings).cancer_group.code;
+          update.data.threeLetterCode = source_analysis_setting.cancer_group.code;
         }
         catch (e) {
           reject({message: 'BioApps source analysis settings missing required details: ' + e.message});
         }
         
-        if(_.last(source.source_analysis_settings).comparator_disease) {
+        if(source_analysis_setting.comparator_disease) {
           // Compile Disease Comparator
           update.data.comparator_disease = {};
   
-          let settings = _.last(source.source_analysis_settings);
-  
-          update.data.comparator_disease.tcga = _.map(_.sortBy(settings.disease_comparators, 'ordinal'), (c) => {
+          update.data.comparator_disease.tcga = _.map(_.sortBy(source_analysis_setting.disease_comparators, 'ordinal'), (c) => {
             return c.disease_code.code;
           });
-          update.data.comparator_disease.gtex_primary_site = settings.gtex_comparator_primary_site.name;
-          update.data.comparator_disease.gtex_bioposy_site = settings.gtex_comparator_biopsy_site.name;
+          update.data.comparator_disease.gtex_primary_site = source_analysis_setting.gtex_comparator_primary_site.name;
+          update.data.comparator_disease.gtex_bioposy_site = source_analysis_setting.gtex_comparator_biopsy_site.name;
         }
   
         if(_.last(source.source_analysis_settings).comparator_normal) {
           // Compile Disease Comparator
-          update.data.comparator_normal.illumina_bodymap_primary_site = settings.normal_comparator_primary_site.name;
-          update.data.comparator_normal.illumina_bodymap_biopsy_site = settings.normal_comparator_biopsy_site.name;
+          update.data.comparator_normal.illumina_bodymap_primary_site = source_analysis_setting.normal_comparator_primary_site.name;
+          update.data.comparator_normal.illumina_bodymap_biopsy_site = source_analysis_setting.normal_comparator_biopsy_site.name;
         }
         
         // Set update where clause.
@@ -490,7 +490,7 @@ class BioAppsSync {
         where: {
           slug: 'bioapps_symlinks_created',
           deletedAt: null,
-          status: ['pending', 'failed'],
+          status: ['pending', 'active', 'failed'],
         },
         attributes: {
           include: ['state_id']
@@ -532,25 +532,33 @@ class BioAppsSync {
         // Extract libraries
         libs.push(_.values(t.state.analysis.libraries));
       });
-      
+  
       // Flatten nested arrays
       libs = _.flatten(libs);
+  
+      logger.info(`Starting query for retrieving library lane targets for ${libs.length} libraries`);
       
       // Query BioApps for Target number of lanes
       $bioapps.targetLanes(_.join(libs, ','))
         .then((tgs) => {
-        
-          // Loop over ForEach
-          _.forEach(tgs, (r) => {
-            targets[_.keys(r)[0]] = _.values(r)[0];
-          });
           
-        })
+          console.log(tgs);
         
+          // Loop over targets returned
+          _.forEach(tgs, (lanes, lib) => {
+            // Map target library name to number of rows expected
+            targets[lib] = lanes;
+          });
+  
+          logger.info('Target lanes determined for each library. Querying for aligned libcores');
+          return Promise.resolve();
+        })
         // Query BioApps for Library Aligned Cores
         .then(() => { return $bioapps.libraryAlignedCores(_.join(libs, ',')) })
         .then((result) => {
-          
+  
+          logger.debug('Aligned libcore results returned from BioApps API');
+        
           // Loop over libcore results, and cache into library name object
           _.forEach(result, (l) => {
             

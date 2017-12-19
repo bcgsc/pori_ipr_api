@@ -203,11 +203,18 @@ let subscription = sequelize.import(__dirname + '/pog_analysis_subscription');
 subscription.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true});
 subscription.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true});
 
+// Flash Tokens
+let flashToken = sequelize.import(__dirname + '/flashtoken.model');
+flashToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true});
+
 // Recent Reports
 let recent_report = require('../modules/recentReports/models')(sequelize);
 
 // Notifications
 let notification = require('../modules/notification/models')(sequelize);
+
+// Germline Small Mutations
+let gsm = require('../modules/germine_small_mutation/models')(sequelize);
 
 
 
