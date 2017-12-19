@@ -11,7 +11,9 @@ const InvalidTaskOperation    = require('./exceptions/InvalidTaskOperation');
 const InvalidCheckInTarget    = require('./exceptions/InvalidCheckInTarget');
 const State                   = require('./state');
 const Checkin                 = require('./checkin');
+const Hook                    = require('./hook');
 const logger                  = require(process.cwd() + '/lib/log');
+
 
 module.exports = class Task {
 
@@ -228,16 +230,17 @@ module.exports = class Task {
           if(checkins.length >= this.instance.checkInsTarget) {
 
             this.instance.status = 'complete';
-
-            this.instance.save().then(
-              (result) => {
+        
+            this.instance.save()
+              // Check if there are any hooks to trigger
+              .then(Hook.check_and_invoke(this.instance.state, 'complete', this.instance))
+              .then(() => {
                 return resolve(this.instance);
-              },
-              (err) => {
+              })
+              .catch((err) => {
                 console.log('Failed to update completed task', err);
                 reject({message: 'Unable to update completed task', code: 'failedTaskUpdate'});
-              }
-            )
+              });
           }
 
           // Target not met yet
@@ -307,7 +310,8 @@ module.exports = class Task {
         
         state.setStatus('active', true)
           .then(this.model.update({status: status}, { where: { ident: this.instance.ident} }))
-          .then((result) => {
+          .then(Hook.check_and_invoke(this.instance.state, status, this.instance))
+          .then(() => {
             resolve(this.instance);
           })
           .catch((err) => {

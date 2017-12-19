@@ -6,6 +6,7 @@ const db                      = require('../../models/');
 const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
 const logger                  = require(process.cwd() + '/lib/log');
+const Hook                    = require('./hook');
 
 module.exports = class State {
 
@@ -99,8 +100,10 @@ module.exports = class State {
       // Save or not to save
       if(save) {
 
-        this.instance.save().then(
-          (result) => {
+        this.instance.save()
+          // Check for hooks
+          .then(Hook.check_and_invoke(this.instance.slug, status))
+          .then(() => {
             resolve(this.instance);
           })
           .catch((e) => {
@@ -111,7 +114,23 @@ module.exports = class State {
 
 
       if(!save) {
-        resolve(this.instance);
+
+      Hook.check_hook(this.instance.slug, status)
+        .then((hooks) => {
+          if(hooks.length > 0) {
+            return Promise.all(_.map(hooks, (h) => {
+              return Hook.invoke_hook(h, this.instance);
+            }));
+          }
+          if(hooks.length === 0) return Promise.resolve([]);
+        })
+        .then(() => {
+          resolve(this.instance);
+        })
+        .catch((e) => {
+          reject({message: 'Failed to check for and execute hooks'});
+          console.log(e);
+        });
       }
 
     });
@@ -162,14 +181,25 @@ module.exports = class State {
                 
                 logger.debug('[state]', 'Marking state as complete');
                 
-                this.findNextState()
-                  .then(this.startNextState)
-                  .then((result) => {
+                // Check For Hooks
+                Hook.check_hook(this.instance.slug, 'complete', null)
+                  .then((hooks) => {
+                    if(hooks.length > 0) {
+                      return Promise.all(_.map(hooks, (h) => {
+                        return Hook.invoke_hook(h, this.instance);
+                      }));
+                    }
+                    if(hooks.length === 0) return Promise.resolve([]);
+                  })
+                  .then(this.findNextState.bind(this))
+                  .then(this.startNextState.bind(this))
+                  .then(() => {
                     // State updated to complete
                     resolve(true);
                   })
                   .catch((err) => {
-                  
+                    console.log('Failed to check hooks or next states');
+                    reject({message: 'Failed to check hooks or invoke next state'});
                   });
                 
               }

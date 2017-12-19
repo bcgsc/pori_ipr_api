@@ -6,6 +6,7 @@ const db                = require('../../models/');
 const nodemailer        = require('nodemailer');
 const util              = require('util');
 const pug               = require('pug');
+const logger            = process.logger;
 
 module.exports = class Email {
 
@@ -85,7 +86,11 @@ module.exports = class Email {
         html: this.htmlBody
       };
 
-      if(process.env.NODE_ENV === 'development' && this.force !== true) return resolve({env: 'development', message: 'success', mock: true});
+      if(process.env.NODE_ENV === 'development' && this.force !== true) {
+        logger.info('Mocked email generated: ');
+        console.log(message);
+        return resolve({env: 'development', message: 'success', mock: true});
+      }
 
       this.transport.sendMail(message, (err, result) => {
         if(!err) return resolve(result);
