@@ -34,7 +34,7 @@ module.exports = class GSMRouter extends RoutingInterface {
     //this.root = '/tracking/';
     
     // Register Middleware
-    this.registerMiddleware('report', require('../middleware/germline_small_mutation.middleware'));
+    this.registerMiddleware('gsm_report', require('../middleware/germline_small_mutation.middleware'));
     this.registerMiddleware('review', require('../middleware/germline_small_mutation_review.middleware'));
     this.registerMiddleware('variant', require('../middleware/germline_small_mutation_variant.middleware'));
     
@@ -61,8 +61,8 @@ module.exports = class GSMRouter extends RoutingInterface {
     this.reportVariants();
     
     // Reviews
-    this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:report/review', this.addReview); // Add review to report
-    this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:report/review/:review', this.removeReview); // Add review to report
+    this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review', this.addReview); // Add review to report
+    this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', this.removeReview); // Add review to report
     
     // Export
     this.registerEndpoint('get', '/export/batch/token', this.getExportFlashToken);
@@ -288,7 +288,7 @@ module.exports = class GSMRouter extends RoutingInterface {
   // Resource endpoints for Variants
   reportVariants() {
     
-    this.registerResource('/patient/:patient/biopsy/:analysis/report/:report/variant/:variant')
+    this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant/:variant')
       .get((req, res) => {
         res.json(req.variant);
       })
@@ -319,7 +319,7 @@ module.exports = class GSMRouter extends RoutingInterface {
    */
   reportResource() {
   
-    this.registerResource('/patient/:patient/biopsy/:analysis/report/:report')
+    this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report')
 
       /**
        * Get an existing report
