@@ -59,7 +59,7 @@ module.exports = class analysis_report {
    * @param {object} analysis - Patient Analysis model instance
    * @param {user} user - Owning user for the report creation event
    * @param {type} type - report type to be created (genomic vs probe)
-   * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived)
+   * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived; expression_matrix: v8, v9)
    *
    * @returns {promise|object} - Promise resolves with new POG Analysis Report. Rejects with error message.
    */
@@ -75,6 +75,7 @@ module.exports = class analysis_report {
       report.type = type;
       report.pog_id = pog.id;
       report.analysis_id = analysis.id;
+      if(options.expression_matrix) report.expression_matrix = options.expression_matrix;
       if(options.state &&  this.allowedStates.indexOf(options.state) !== -1) report.state = options.state;
 
       this.model.create(report)

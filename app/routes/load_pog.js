@@ -124,7 +124,7 @@ router.route('/:type(genomic|probe)')
                 comparator_disease: {},
                 comparator_normal: {},
                 disease: null,
-                biopsy_notes: null
+                biopsy_notes: null,
               };
             
               // Parse libraries
@@ -201,6 +201,9 @@ router.route('/:type(genomic|probe)')
           reportOpts.state = 'uploaded';
           if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
         }
+        
+        // Get Report Matrix Value
+        reportOpts.expression_matrix = reportConfig.ExpressionMatrixVersion.toLowerCase() || 'v8';
         
         return report.create(patientObj, analysisObj, req.user, req.params.type, reportOpts);
         
