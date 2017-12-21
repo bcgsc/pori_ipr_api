@@ -203,7 +203,7 @@ router.route('/:type(genomic|probe)')
         }
         
         // Get Report Matrix Value
-        reportOpts.expression_matrix = reportConfig.ExpressionMatrixVersion.toLowerCase() || 'v8';
+        if(reportConfig.ExpressionMatrixVersion) reportOpts.expression_matrix = reportConfig.ExpressionMatrixVersion.toLowerCase() || 'v8';
         
         return report.create(patientObj, analysisObj, req.user, req.params.type, reportOpts);
         
