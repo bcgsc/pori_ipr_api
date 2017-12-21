@@ -28,8 +28,6 @@ let hook_email = (hook, state, task=null) => {
     
     let data = {state: state, task: task, analysis: analysis, patient: pog};
     
-    console.log("Body String", render(hook.payload.body, data));
-    
     let email = new Email();
     email
       .setRecipient(hook.target)
