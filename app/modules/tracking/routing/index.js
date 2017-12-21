@@ -12,6 +12,7 @@ let DefinitionRoutes      = require('./definition');
 let StateRoutes           = require('./state');
 let TaskRoutes            = require('./task');
 let TicketTemplateRoutes  = require('./ticket_template');
+let HookRoutes            = require('./hook');
 const Generator           = require('./../generate');
 const AnalysisLib         = require('../../../libs/structures/analysis');
 const POGLib              = require('../../../libs/structures/pog');
@@ -52,15 +53,33 @@ module.exports = class TrackingRouter extends RoutingInterface {
     let Ticket_Template = new TicketTemplateRoutes(this.io);
     this.bindRouteObject('/ticket/template', Ticket_Template.getRouter());
 
+    let Hooks = new HookRoutes(this.io);
+    this.bindRouteObject('/hook', Hooks.getRouter());
+
     // Enable Generator
     this.generator();
 
     // Enable Root Racking
     this.tracking(States);
 
+    this.registerEndpoint('get', '/test/hook/:state/:task', (req, res, next) => {
+    
+      const Hook = require('../hook');
+      
+      Hook.check_hook('bioapps', 'complete', 'bioapps_patient_sync', true)
+        .then((hooks) => {
+          return Promise.all(_.map(hooks, (hook) => { return Hook.invoke_hook(hook, req.state, req.task); }));
+        })
+        .then((result) => {
+          res.json({message: 'Sent email', result});
+        })
+        .catch((e) => {
+          res.status(500).json({message: 'Failed to run hooks: '+ e.message});
+        });
+    });
+    
   }
-
-
+  
   /**
    * Generate Tracking from source
    *

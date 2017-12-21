@@ -53,14 +53,10 @@ module.exports = (sequelize, Sq) => {
       paranoid: true,
       scopes: {
         public: {
-          order:  [['ordinal', 'ASC']],
+          order:  [['name', 'ASC']],
           attributes: {
             exclude: ['deletedAt', 'id']
-          },
-          include: [
-            { as: 'task', model: sequelize.models.tracking_state_task.scope('public') },
-            { as: 'state', model: sequelize.models.tracking_state.scope('public') }
-          ]
+          }
         }
       }
     });

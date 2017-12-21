@@ -54,6 +54,10 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       defaultValue: 'ready'
     },
+    expression_matrix: {
+      type: Sq.STRING,
+      defaultValue: 'v8'
+    }
     /*name: {
       type: Sq.STRING,
       defaultValue: 'production'
