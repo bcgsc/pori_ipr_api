@@ -37,6 +37,7 @@ module.exports = {
    *    date_presentation - Date the presentation is due
    *    biopsy_date - Date of the biopsy
    *    threeLetterCode - Three letter code: BRC
+   *    physician - A JSON array of {first_nane: str, last_name: str}
    *  }
    *
    * @returns {Promise/Object} - Resolves with biopsy analysis model object
@@ -107,6 +108,7 @@ module.exports = {
       if(options.date_presentation) data.date_presentation = options.date_presentation;
       if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
       if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
+      if(options.physician) data.physician = options.physician;
       
       
       db.models.pog_analysis.findOrCreate({ where: where, defaults: data})
@@ -147,6 +149,7 @@ module.exports = {
    *    biopsy_date - Date of the biopsy
    *    disease - Disease/Diagnosis
    *    threeLetterCode - Three letter code: BRC
+   *    physician - A JSON array of {first_nane: str, last_name: str}
    *  }
    *
    * @returns {Promise/object} - Resolves with created patient analysis model object
@@ -179,6 +182,7 @@ module.exports = {
       if(options.date_presentation) data.date_presentation = options.date_presentation;
       if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
       if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
+      if(options.physician) data.physician = options.physician;
       
       db.models.pog_analysis.create(data)
         .then((analysis) => {

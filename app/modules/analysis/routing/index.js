@@ -14,6 +14,10 @@ const $bioapps            = require('../../../api/bioapps');
 const $lims               = require('../../../api/lims');
 
 
+const Patient             = require(`${process.cwd()}/app/libs/patient/patient.library`);
+const AnalysisLibrary     = require(`${process.cwd()}/app/libs/patient/analysis.library`);
+
+
 /**
  * Create and bind routes for Tracking
  *
@@ -39,6 +43,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
       .get((req, res, next) => {
   
         let analyses;
+        let POG;
         let opts = {
           order: [['createdAt', 'DESC']],
           include: [
@@ -78,6 +83,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
         
         // Gather and verify information
         let analysis = {};
+        let POG;
         let validition = {
           state: true,
           invalid: []
@@ -102,17 +108,17 @@ module.exports = class TrackingRouter extends RoutingInterface {
           return;
         }
         
-        let POG = new POGLib(req.body.POGID);
-        
-        POG.retrieve({create: true, analysis: false})
+  
+        Patient.retrieveOrCreate(req.body.POGID, req.body.project)
           .then((pog) => {
-            
+            POG = pog;
             analysis.pog_id = pog.id;
             analysis.clinical_biopsy = req.body.clinical_biopsy;
             analysis.disease = req.body.disease;
             analysis.biopsy_notes = req.body.biopsy_notes;
             analysis.biopsy_date = req.body.biopsy_date;
             analysis.notes = req.body.notes;
+            analysis.physician = req.body.physician;
             
             if(req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
               analysis.libraries = req.body.libraries;
@@ -129,10 +135,10 @@ module.exports = class TrackingRouter extends RoutingInterface {
             if(req.body.tracking) {
               
               // Initiate Tracking Generator
-              let generator = new Generator(POG.instance, analysis, req.user)
+              let generator = new Generator(POG, analysis, req.user)
                 .then((results) => {
                   analysis = analysis.toJSON();
-                  analysis.pog = POG.instance;
+                  analysis.pog = POG;
                   res.json(analysis);
                 })
                 .catch((err) => {
@@ -142,7 +148,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
               
             } else {
               analysis = analysis.toJSON();
-              analysis.pog = POG.instance;
+              analysis.pog = POG;
               res.json(analysis);
             }
           })

@@ -101,6 +101,10 @@ module.exports = (sequelize, Sq) => {
       threeLetterCode: {
         type: Sq.STRING,
         defaultValue: null
+      },
+      physician: {
+        type: Sq.JSONB,
+        defaultValue: null
       }
     },
     {

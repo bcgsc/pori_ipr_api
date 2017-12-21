@@ -53,6 +53,7 @@ class Analysis {
       if(options.bioapps_source_id) data.bioapps_source_id = options.bioapps_source_id;
       if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
       if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
+      if(options.physician) data.physician = options.physician;
     
       this.model.create(data)
         .then((analysis) => {
@@ -97,6 +98,8 @@ class Analysis {
       if(data.bioapps_source_id) update.bioapps_source_id = this.instance.bioapps_source_id = data.bioapps_source_id;
       if(data.biopsy_date) update.biopsy_date = this.instance.biopsy_date = data.biopsy_date;
       if(data.threeLetterCode) update.threeLetterCode = this.instance.threeLetterCode = data.threeLetterCode;
+      
+      if(data.physician) update.physician = this.instance.physician = data.physician;
   
       // Return a promise.
       this.model.update(data, {where: {ident: this.instance.ident}})
