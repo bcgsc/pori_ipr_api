@@ -141,16 +141,8 @@ module.exports = (sequelize, Sq) => {
         type: Sq.STRING,
         allowNull: true,
       },
-      fc_mean_bodymap: {
-        type: Sq.FLOAT,
-        allowNull: true,
-      },
-      fc_tissue: {
-        type: Sq.STRING,
-        allowNull: true
-      },
       fc_bodymap: {
-        type: Sq.FLOAT,
+        type: Sq.STRING,
         allowNull: true,
       },
       gene_expression_rpkm: {

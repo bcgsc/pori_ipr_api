@@ -186,15 +186,7 @@ module.exports = {
         key: 'gtex_comp_percentile'
       },
       {
-        header: 'fc_mean_bodymap',
-        key: 'fc_mean_bodymap'
-      },
-      {
-        header: 'fc_tissue',
-        key: 'fc_tissue'
-      },
-      {
-        header: `fc_[tissue]_bodymap`,
+        header: `fc_bodymap`,
         key: 'fc_bodymap'
       },
       {
@@ -216,7 +208,7 @@ module.exports = {
     _.forEach(variant, (c, k) => {
       let i = _.find(headers, {key: k});
       
-      if(c === null) c = 'NA';
+      if(c === null || c === undefined) c = 'NA';
       
       // If a header map value is found, set the mapped key to the cell value;
       if(i) resp[i.header] = c;
