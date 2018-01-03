@@ -9,8 +9,6 @@ let express = require('express'),
 router.route('/tcga')
   .get((req,res,next) => {
     
-    console.log('Using set', req.report.expression_matrix);
-  
     if(req.report.expression_matrix === 'v8') return res.json(tcga_v8);
     if(req.report.expression_matrix === 'v9') return res.json(tcga_v9);
     
