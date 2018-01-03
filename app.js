@@ -22,6 +22,7 @@ let nconf       = require('nconf').argv().env().file({file: './config/config.jso
 let cors        = require('cors');          // CORS support
 let morgan      = require('morgan');        // Logging
 let exec        = require('child_process').exec;
+let fileUplooad = require('express-fileupload'); // File upload support
 
 
 const logger        = require('./lib/log');       // Load logging library
@@ -36,6 +37,7 @@ module.exports = new Promise((resolve, reject) => {
   
   app.use(bodyParser.json());
   app.use(cors());
+  app.use(fileUplooad());
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Expose-Headers", "X-token, X-Requested-With ,Origin, Content-Type, Accept");

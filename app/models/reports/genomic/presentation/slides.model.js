@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, Sq) => {
-  return sequelize.define('presentation_',
+  return sequelize.define('presentation_slides',
     {
       id: {
         type: Sq.INTEGER,
