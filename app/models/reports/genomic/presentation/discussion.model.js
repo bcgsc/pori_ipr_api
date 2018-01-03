@@ -43,7 +43,10 @@ module.exports = (sequelize, Sq) => {
         public: {
           attributes: {
             exclude: ['id', 'deletedAt']
-          }
+          },
+          include: [
+            {model: sequelize.models.user.scope('public'), as: 'user'}
+          ]
         }
       }
     });
