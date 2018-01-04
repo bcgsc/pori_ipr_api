@@ -33,7 +33,8 @@ router.route('/discussion')
     let opts = {
       where: {
         pog_report_id: req.report.id
-      }
+      },
+      order: [['createdAt', 'ASC']]
     };
   
     db.models.presentation_discussion.scope('public').findAll(opts)
@@ -92,6 +93,7 @@ router.route('/discussion/:discussion')
     db.models.presentation_discussion.update(data, {where: { ident: req.discussion.ident}})
       .then((result) => {
         req.discussion.body = req.body.body;
+        req.discussion.updatedAt = result.updatedAt;
         
         res.json(req.discussion);
       })
@@ -124,7 +126,7 @@ router.param('slide', (req,res,next,ident) => {
 });
 
 
-// Handle requests for alterations
+// Handle requests for slides
 router.route('/slide')
   .get((req,res,next) => {
     
@@ -156,7 +158,7 @@ router.route('/slide')
   .post((req, res, next) => {
   
     let data = {
-      object: req.files.file.data.toString('hex'),
+      object: req.files.file.data.toString('base64'),
       user_id: req.user.id,
       pog_report_id: req.report.id,
       name: req.body.name,
@@ -171,7 +173,7 @@ router.route('/slide')
         
         let slide = result.toJSON();
         
-        slide.object = slide.object.toString('base64');
+        slide.object = slide.object;
         res.json(result);
         
       })
