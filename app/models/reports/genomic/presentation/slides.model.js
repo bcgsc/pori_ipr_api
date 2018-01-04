@@ -32,7 +32,7 @@ module.exports = (sequelize, Sq) => {
         allowNull: false
       },
       object: {
-        type: Sq.BLOB,
+        type: Sq.TEXT,
         allowNull: true
       },
       object_type: {
