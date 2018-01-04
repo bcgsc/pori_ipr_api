@@ -105,6 +105,10 @@ module.exports = (sequelize, Sq) => {
       physician: {
         type: Sq.JSONB,
         defaultValue: null
+      },
+      pediatric_id: {
+        type: Sq.STRING,
+        defaultValue: null
       }
     },
     {
