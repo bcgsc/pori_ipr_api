@@ -96,11 +96,8 @@ router.route('/')
       },
       onFileUploadComplete: (file) => {
 
-        console.log('Recieved a file');
-        console.log(file);
-
         // Is there an existing entry?
-        if(req.pathwayAnalysis == null) {
+        if(req.pathwayAnalysis === null) {
 
           req.body.dataVersion = 0;
           req.body.pog_id = req.POG.id;

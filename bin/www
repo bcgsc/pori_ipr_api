@@ -4,7 +4,7 @@
 // Set environment based on config first.
 if(process.env.NODE_ENV === undefined || process.env.NODE_ENV === null) {
   // Get from command line args
-  const args = minimist(process.argv.slice(2));
+  const args = require('minimist')(process.argv.slice(2));
   if (args.env) process.env.NODE_ENV = args.env;
   if (!args.env) process.env.NODE_ENV = 'production';
 }

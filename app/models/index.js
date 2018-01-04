@@ -149,9 +149,17 @@ expressionAnalysis.outlier = sequelize.import(__dirname + '/reports/genomic/expr
 expressionAnalysis.drugTarget = sequelize.import(__dirname + '/reports/genomic/expressionAnalysis/drugTarget');
 
 expressionAnalysis.outlier.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
-//expressionAnalysis.proteinExpression.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
-//expressionAnalysis.proteinExpression.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 expressionAnalysis.drugTarget.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+
+// Presentation Data
+let presentation = {};
+presentation.discussion = sequelize.import(__dirname + '/reports/genomic/presentation/discussion.model');
+presentation.slides = sequelize.import(__dirname + '/reports/genomic/presentation/slides.model');
+presentation.discussion.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+presentation.slides.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+presentation.slides.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+presentation.discussion.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
+
 
 // Data History
 let POGDataHistory = sequelize.import(__dirname + '/POGDataHistory');
