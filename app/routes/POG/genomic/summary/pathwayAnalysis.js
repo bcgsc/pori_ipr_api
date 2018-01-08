@@ -38,21 +38,19 @@ router.route('/')
     res.json(req.pathwayAnalysis);
 
   })
-
-  .put(multer({
-    storage: multer.memoryStorage(),
-  }).single("pathway"), (req,res,next) => {
-
+  
+  .put((req, res, next) => {
+    
     // Updating?
     if(!req.pathwayAnalysis) {
-
+      
       // Create
       let request = {
-        pathway: req.file.buffer.toString(),
+        pathway: req.files.pathway.data.toString(),
         pog_report_id: req.report.id,
         dataversion: 0
       };
-
+    
       // Create entry
       db.models.pathwayAnalysis.create(request).then(
         (resp) => {
@@ -62,18 +60,18 @@ router.route('/')
           console.log('Unable to create Pathway Analysis entry', err);
         }
       );
-
+    
     } else {
       // Updating
       let request = {
-        pathway: req.file.buffer.toString(),
+        pathway: req.files.pathway.data.toString(),
         pog_report_id: req.report.id
       };
-
+    
       // Remove current
       req.pathwayAnalysis.pog_id = req.POG.id;
       req.pathwayAnalysis.pog_report_id = req.report.id;
-
+    
       // Update DB Version for Entry
       versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user).then(
         (resp) => {
@@ -85,6 +83,7 @@ router.route('/')
         }
       );
     }
+  
   })
 
   .post((req,res,next) => {
