@@ -16,6 +16,8 @@ if(process.env.NODE_ENV === undefined || process.env.NODE_ENV === null) {
 
 let debug       = require('debug')('ipr-api:server');
 let http        = require('http');
+let https       = require('https');
+let fs          = require('fs');
 let colors      = require('colors');        // Console colours
 let nconf       = require('nconf').argv().env().file({file: './config/config.json'});
 
@@ -58,6 +60,19 @@ let App = require('../app').then((app) => {
   
   let server = http.createServer(app);
   let admin_server = http.createServer(admin);
+  
+  /**
+   * Create HTTPS server.
+   */
+  
+  let private_key = fs.readFileSync('./../persist/ssl/private.key');
+  let certificate = fs.readFileSync('./../persist/ssl/webserver.cert');
+  
+  // Do not spin up on local
+  if(NODE_ENV !== 'local') {
+    let server_ssl = https.createServer({key: private_key, cert: certificate}, app).listen(4381);
+    let admin_server_ssl = https.createServer({key: private_key, cert: certificate}, admin).listen(4382);
+  }
   
   /**
    * Socket.io
