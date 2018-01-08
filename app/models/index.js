@@ -109,6 +109,7 @@ summary.analystComments.belongsTo(analysis_reports, {as: 'report', foreignKey: '
 summary.pathwayAnalysis.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.probeTarget.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 summary.microbial.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
+summary.tumourAnalysis.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
 summary.mutationSummaryv2.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
