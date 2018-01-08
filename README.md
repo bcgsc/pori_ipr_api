@@ -3,11 +3,12 @@
 
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
-This API will store and serve Genomic and (future) Probe report data pertaining to all BC Cancer Angecy POG cases.
+This API will store and serve Genomic and Probe report data pertaining to all BC Cancer Agency POG cases.
 Currently cases have to be loaded on an as-necessary basis. Future pipeline support will include automated triggering of
 the loading process. The API is designed in conjunction with the POG Report WebApp client to render and display the
 data. The API is backed by a Postgres 9.6 database currently hosted on iprweb01.bcgsc.ca. The API is available at
 http://api-ipr.bcgsc.ca. Detailed endpoint documentation can be found at http://docs-ipr.bcgsc.ca.
+
 
 
 #### Configuration
@@ -16,6 +17,7 @@ http://api-ipr.bcgsc.ca. Detailed endpoint documentation can be found at http://
 This repository contains configuration profiles for production, testing, and development environments. A profile will be
 selected based on the NODE_ENV environment setting, or by explicitly calling --env [testing|production|development] when
 initializing the server.
+
 
 
 #### Install
@@ -41,10 +43,12 @@ If a new database installation is required:
 ```
 npm run migrate --database.migrate --database.hardMigrate
 ```
---
+
 WARNING: Using the `--database.hardMigrate` flag will overwrite any existing data in the database. This flag will not
 execute in production mode.
---
+
+
+
 
 #### Configuration
 ======================================
@@ -113,6 +117,9 @@ The format for the file declares a configuration by environment:
 * `schema` - PGSQL only; The schema the database is namespaced under
 * `database` - Name of the database
 * `prefix` - Not in use.
+
+
+
 
 #### Process Manager
 ======================================
@@ -186,6 +193,9 @@ It is possible to use pm2 to actively monitor the console of the applications by
 In the above screenshot, the syncWorker task is busy running a job against LIMS API.
 
 
+
+
+
 #### Synchronizer tasks
 ======================================
 
@@ -217,6 +227,9 @@ The tracking system seeks to answer four states/questions from BioApps:
 The `/patient` endpoints in BioApps satisfy (1.) - Comparators, biop#, libaries, disease details, and more are pulled from BioApps.
 Symlinking completed requires checking to see if the total number of aligned libcores is equal to the number of target lane for each library.
 Merged BAMs have their own endpoint, and are easy to check via this endpoint. The same is true for Assembly completed.
+
+
+
 
 
 #### Structure
