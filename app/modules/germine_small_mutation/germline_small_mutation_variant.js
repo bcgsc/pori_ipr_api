@@ -66,6 +66,10 @@ module.exports = {
         key: 'cgl_category'
       },
       {
+        header: 'Mutation Landscape',
+        key: 'mutation_landscape'
+      },
+      {
         header: 'GMAF',
         key: 'gmaf'
       },
