@@ -97,6 +97,23 @@ The format for the file declares a configuration by environment:
 
 ```
 
+
+##### Settings
+
+* `database` - Defines the DB settings
+* `engine` - The database engine/driver being used
+* `migrate` - Default state for migration settings - Keep to false! When true, SequelizeJS attempts to create tables according to the loaded schema
+* `hardMigrate` - When true, SequelizeJS will drop all tables and recreate based on the current loaded models.
+
+* `postgres` - Settings for Postgres engine
+* `hostname` - Hostname for the database server
+* `port` - Port to connect to the DB on
+* `username` - The username the application should be connecting with
+* `password` - DB password for the nominated user account
+* `schema` - PGSQL only; The schema the database is namespaced under
+* `database` - Name of the database
+* `prefix` - Not in use.
+
 #### Process Manager
 ======================================
 
@@ -124,7 +141,7 @@ bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
 ```
 
 `IPR-API` is the main, production application server running on 8001
-`IPR-API-dev` is the development API server running on 80801
+`IPR-API-dev` is the development API server running on 8081
 `IPR-API-syncWorker` is the synchronizer task that works to keep the tracking data in sync with LIMS and BioApps.
 Note: It is exepcted for the syncWorker to have restarts - it's mean to fail-safe by crashing and restarting.
 
@@ -201,20 +218,6 @@ The `/patient` endpoints in BioApps satisfy (1.) - Comparators, biop#, libaries,
 Symlinking completed requires checking to see if the total number of aligned libcores is equal to the number of target lane for each library.
 Merged BAMs have their own endpoint, and are easy to check via this endpoint. The same is true for Assembly completed.
 
-##### Settings
-`database` - Defines the DB settings
-`engine` - The database engine/driver being used
-`migrate` - Default state for migration settings - Keep to false! When true, SequelizeJS attempts to create tables according to the loaded schema
-`hardMigrate` - When true, SequelizeJS will drop all tables and recreate based on the current loaded models.
-
-`postgres` - Settings for Postgres engine
-`hostname` - Hostname for the database server
-`port` - Port to connect to the DB on
-`username` - The username the application should be connecting with
-`password` - DB password for the nominated user account
-`schema` - PGSQL only; The schema the database is namespaced under
-`database` - Name of the database
-`prefix` - Not in use.
 
 #### Structure
 ======================================
