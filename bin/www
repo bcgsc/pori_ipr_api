@@ -65,8 +65,8 @@ let App = require('../app').then((app) => {
    * Create HTTPS server.
    */
   
-  let private_key = fs.readFileSync('./../persist/ssl/private.key');
-  let certificate = fs.readFileSync('./../persist/ssl/webserver.cert');
+  let private_key = fs.readFileSync(envConf.web.ssl.private_key);
+  let certificate = fs.readFileSync(envConf.web.ssl.certificate);
   
   // Do not spin up on local
   if(NODE_ENV !== 'local') {

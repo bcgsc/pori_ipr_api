@@ -4,7 +4,11 @@
   "web": {
     "port": 8081,
     "admin_port": 8082,
-    "hostname": "127.0.0.1"
+    "hostname": "127.0.0.1",
+    "ssl": {
+      "private_key": "/var/www/ipr/api/development/persist/ssl/private.key",
+      "certificate": "/var/www/ipr/api/development/persist/ssl/webserver.cert"
+    }
   },
 
   "jira": {
