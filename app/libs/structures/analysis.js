@@ -105,6 +105,8 @@ module.exports = class POG {
       if(options.biopsy_notes) data.biopsy_notes = options.biopsy_notes;
       if(options.libraries) data.libraries = options.libraries;
       if(options.bioapps_source_id) data.bioapps_source_id = options.bioapps_source_id;
+      if(options.physician) data.physician = options.physician;
+      if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
 
       this.model.create(data)
         .then((analysis) => {

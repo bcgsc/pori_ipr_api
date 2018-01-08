@@ -38,6 +38,7 @@ module.exports = {
    *    biopsy_date - Date of the biopsy
    *    threeLetterCode - Three letter code: BRC
    *    physician - A JSON array of {first_nane: str, last_name: str}
+   *    pediatric_id - A string name for pediatric POG cases: P012
    *  }
    *
    * @returns {Promise/Object} - Resolves with biopsy analysis model object
@@ -109,6 +110,7 @@ module.exports = {
       if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
       if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
       if(options.physician) data.physician = options.physician;
+      if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
       
       
       db.models.pog_analysis.findOrCreate({ where: where, defaults: data})
@@ -150,6 +152,7 @@ module.exports = {
    *    disease - Disease/Diagnosis
    *    threeLetterCode - Three letter code: BRC
    *    physician - A JSON array of {first_nane: str, last_name: str}
+   *    pediatric_id - A string name for pediatric POG cases: P012
    *  }
    *
    * @returns {Promise/object} - Resolves with created patient analysis model object
@@ -183,6 +186,7 @@ module.exports = {
       if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
       if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
       if(options.physician) data.physician = options.physician;
+      if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
       
       db.models.pog_analysis.create(data)
         .then((analysis) => {

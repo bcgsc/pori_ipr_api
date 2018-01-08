@@ -54,6 +54,7 @@ class Analysis {
       if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
       if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
       if(options.physician) data.physician = options.physician;
+      if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
     
       this.model.create(data)
         .then((analysis) => {
@@ -100,6 +101,7 @@ class Analysis {
       if(data.threeLetterCode) update.threeLetterCode = this.instance.threeLetterCode = data.threeLetterCode;
       
       if(data.physician) update.physician = this.instance.physician = data.physician;
+      if(data.pediatric_id) update.pediatric_id = this.instance.pediatric_id = data.pediatric_id;
   
       // Return a promise.
       this.model.update(data, {where: {ident: this.instance.ident}})
