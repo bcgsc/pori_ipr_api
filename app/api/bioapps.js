@@ -8,8 +8,8 @@ const request   = require('request-promise-native');
 const gin       = require(process.cwd() + '/lib/ginCredentials');
 const moment    = require('moment');
 
-//const host      = "http://bioappsdev01.bcgsc.ca:8100";
-const host      = "http://sbs.bcgsc.ca:8100";
+const host      = "http://bioappsdev01.bcgsc.ca:8104";
+//const host      = "http://sbs.bcgsc.ca:8100";
 const basePath  = "";
 let logger      = process.logger;
 
@@ -210,6 +210,33 @@ $bioapps.assembly = (library) => {
 };
 
 /**
+ * Get detailed library object for n libraries
+ * @param {string} libraries - Comma separated string of library IDs
+ *
+ * @returns {Promise} - Resolves with array of library(ies)
+ */
+$bioapps.libraryInfo = (libraries) => {
+  return new Promise((resolve, reject) => {
+    
+    $bioapps.query({
+        method: 'GET',
+        uri: host + basePath + '/library/info?library=' + libraries,
+        gzip: true,
+        json: true
+      })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((err) => {
+        reject({message: 'Failed to retrieve library info details'});
+        console.log('Failed to retireve assembly');
+      });
+    
+  });
+};
+
+
+/**
  * Retrieve Target Lanes for a library
  *
  * @param {string} libraries
@@ -242,6 +269,7 @@ $bioapps.targetLanes = (libraries) => {
  * Retrieve lib aligned cores
  *
  * @param {string} libraries - Libraries; Comma separated if more than 1
+ *
  * @returns {Promise} - Resolves with array of libcores aligned
  */
 $bioapps.libraryAlignedCores = (libraries) => {
@@ -276,7 +304,7 @@ $bioapps.patient = (pogid) => {
     
     $bioapps.query({
         method: 'GET',
-        uri: host + basePath + '/patient_analysis/patient/' + pogid,
+        uri: host + basePath + '/patient_analysis?pog_id=' + pogid,
         gzip: true,
         json: true
       })
@@ -294,6 +322,51 @@ $bioapps.patient = (pogid) => {
       });
     
   });
+};
+
+/**
+ * Parse the Source object from BioApps to extract the relevant details
+ *
+ * @param {object} source - The source object returned by BioApps patient entries
+ *
+ * @return {object} - Returns a hashmap of the comparator values
+ */
+$bioapps.parseSourceSettings = (source) => {
+  
+  // Order the source analysis settings
+  let source_analysis_settings = _.orderBy(source.source_analysis_settings, 'data_version');
+  let current_settings = _.last(source_analysis_settings);
+  
+  let details = {
+    disease_comparators: [],
+    normal_biopsy: [],
+    normal_primary: [],
+    gtex_biopsy: [],
+    gtex_primary: [],
+    tumour_type_report: null,
+    tumour_type_kb: null,
+    threeLetterCode: null,
+    disease_comparator_analysis: null,
+    physicians: [],
+  };
+  
+  if(current_settings.disease_comparators && current_settings.disease_comparators.length > 0) details.disease_comparators = _.orderBy(current_settings.disease_comparators, 'ordinal').map((c) => { return c.disease_code.code });
+  if(current_settings.disease_comparator_for_analysis) details.disease_comparator_analysis =  current_settings.disease_comparator_for_analysis.code;
+  
+  if(current_settings.normal_comparator_biopsy_site) details.normal_biopsy.push(current_settings.normal_comparator_biopsy_site.name);
+  if(current_settings.normal_comparator_primary_site) details.normal_primary.push(current_settings.normal_comparator_primary_site.name);
+  if(current_settings.gtex_comparator_biopsy_site) details.gtex_biopsy.push(current_settings.gtex_comparator_biopsy_site.name);
+  if(current_settings.gtex_comparator_primary_site) details.gtex_primary.push(current_settings.gtex_comparator_primary_site.name);
+  
+  if(current_settings.tumour_type_for_report) details.tumour_type_report = current_settings.tumour_type_for_report.name;
+  if(current_settings.tumour_types_for_knowledgebase.length > 0) details.tumour_type_kb = current_settings.tumour_types_for_knowledgebase[0].name;
+  
+  if(current_settings.cancer_group) details.threeLetterCode = current_settings.cancer_group.code;
+  
+  if(current_settings.physicians) details.physicians.push(_.map(current_settings.physicians, (p) => { return {firstName: p.first_name, lastName: p.last_name}}));
+  
+  return details;
+  
 };
 
 module.exports = $bioapps;
