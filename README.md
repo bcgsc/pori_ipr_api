@@ -1,14 +1,15 @@
-### POG Reports API
+### Integrated Pipeline Reports API
 ======================================
 
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
-This API will store and serve Genomic and Probe report data pertaining to all BC Cancer Agency POG cases.
-Currently cases have to be loaded on an as-necessary basis. Future pipeline support will include automated triggering of
-the loading process. The API is designed in conjunction with the POG Report WebApp client to render and display the
-data. The API is backed by a Postgres 9.6 database currently hosted on iprweb01.bcgsc.ca. The API is available at
-http://api-ipr.bcgsc.ca. Detailed endpoint documentation can be found at http://docs-ipr.bcgsc.ca.
+The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
+The API is responsible for providing all data for GSC genomic and probe reports, POG sample tracking, 
+POG Biopsy tracking, Germline Small Mutation reports, and legacy Knowledgebase.
 
+An integrated data synchronization application runs concurrently with the API in a separate process.
+The sync-worker is responsible for regularly checking in with LIMS and BioApps to keep sample tracking
+tasks up to date. 
 
 
 #### Configuration
@@ -23,7 +24,7 @@ initializing the server.
 #### Install
 ======================================
 
-After pulling or cloning down the repository, the server's dependencies need to be installed:
+After cloning the repository, the application's dependencies need to be installed:
 ```
 npm install
 ```
@@ -46,6 +47,9 @@ npm run migrate --database.migrate --database.hardMigrate
 
 WARNING: Using the `--database.hardMigrate` flag will overwrite any existing data in the database. This flag will not
 execute in production mode.
+
+To create *new* tables only, run with the `--database.migrate` flag only or `npm run migrate` with the appropriate
+environment flag set.
 
 
 
@@ -213,7 +217,7 @@ that pathology has passed.
 
 ###### LIMS Sequencing Sync
 This task characterizes the sequencing state of pending POG cases in tracking. First POGs pending sequencing submission are queried against the
-`/illumin_run` endpoint to see which have entries. If _any_ entry is existant, the "sequencing started" task is satisfied.
+`/illumin_run` endpoint to see which have entries. If _any_ entry is existent, the "sequencing started" task is satisfied.
 
 Next, sequencing completed status is checked for at the same endpoint. As are QC passed and Validation.
 
