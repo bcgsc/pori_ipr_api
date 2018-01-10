@@ -54,7 +54,7 @@ class BioAppsSync {
       .then(this.queryAssemblyComplete.bind(this))          // 09. Query BioApps to see which have completed assembly // GET http://bioappsdev01.bcgsc.ca:8104/assembly?library=P02511
       .then(this.parseAssemblyComplete.bind(this))          // 10. Parse response from BioApps and update tracking
       .then(this.getSymlinksRequired.bind(this))            // 11. Get tasks with Symlink required pending  //
-      .then(this.querySymlinksCreated.bind(this))           // 12. Query BioApps to see which tasks have completed symlink creation
+      .then(this.querySymlinksCreated.bind(this))           // 12. Query BioApps to see which tasks have completed symlink creation (check if aligned libcore has file_path and is successful)
       .then(this.parseSymlinksCreated.bind(this))           // 13. Parse response from BioApps and update tracking
       .then((result) => {                                   // 14. Profit.
         
@@ -67,7 +67,7 @@ class BioAppsSync {
         logger.error('Failed to complete BioApps sync: ' + err.message);
         console.log(err);
         this._reset(); // Reset
-        reject({message: 'Failed BioApps Sync: ' + err.message});
+        resolve({message: 'Failed to complete all tasks in BioApps sync: ', result: err.message});
         
       });
       
@@ -117,6 +117,27 @@ class BioAppsSync {
   
   
   /**
+   * Query BioApps Patient Data
+   *
+   * @param {array} tasks - Collection of tasks that need patient info syncing
+   * @returns {Promise}
+   */
+  queryBioAppsPatient (tasks) {
+    return new Promise((resolve, reject) => {
+      Promise.all(_.map(tasks, (t) => { return $bioapps.patient(t.state.analysis.pog.POGID) }))
+        .then(responses => {
+          resolve(responses);
+        })
+        .catch((err) => {
+          reject({message: 'Failed to query BioApps for patient data: ' + err.message});
+          console.log('Failed to query BioApps patient data', err);
+        });
+      
+    });
+  }
+  
+  
+  /**
    * Process patient data from BioApps and save in IPR
    *
    * @param {array} patients - Collection of results from BioApps
@@ -128,6 +149,8 @@ class BioAppsSync {
       // Create POGID Map
       let pogs = {};
       let queries = [];
+      
+      logger.debug(`Patients to be sync'd: ${patients.length}`);
       
       // Create POGID => Task map
       _.forEach(this.cache.tasks.patients, (p) => { pogs[p.state.analysis.pog.POGID] = p });
@@ -174,6 +197,7 @@ class BioAppsSync {
         
         if(source.source_analysis_settings.length === 0) return;
         
+        
         try {
           source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'data_version');
           source_analysis_setting = _.last(source.source_analysis_settings);
@@ -189,23 +213,24 @@ class BioAppsSync {
         catch (e) {
           reject({message: 'BioApps source analysis settings missing required details: ' + e.message});
         }
+  
+        let parsedSettings = $bioapps.parseSourceSettings(source);
         
-        if(source_analysis_setting.comparator_disease) {
-          // Compile Disease Comparator
-          update.data.comparator_disease = {};
-  
-          update.data.comparator_disease.tcga = _.map(_.sortBy(source_analysis_setting.disease_comparators, 'ordinal'), (c) => {
-            return c.disease_code.code;
-          });
-          update.data.comparator_disease.gtex_primary_site = source_analysis_setting.gtex_comparator_primary_site.name;
-          update.data.comparator_disease.gtex_bioposy_site = source_analysis_setting.gtex_comparator_biopsy_site.name;
-        }
-  
-        if(_.last(source.source_analysis_settings).comparator_normal) {
-          // Compile Disease Comparator
-          update.data.comparator_normal.illumina_bodymap_primary_site = source_analysis_setting.normal_comparator_primary_site.name;
-          update.data.comparator_normal.illumina_bodymap_biopsy_site = source_analysis_setting.normal_comparator_biopsy_site.name;
-        }
+        // Compile Disease Comparator
+        update.data.comparator_disease = {
+          analysis: parsedSettings.disease_comparator_analysis,
+          all: parsedSettings.disease_comparators,
+          tumour_type_report: parsedSettings.tumour_type_report,
+          tumour_type_kb: parsedSettings.tumour_type_kb
+        };
+        
+        update.data.comparator_normal = {
+          normal_primary: parsedSettings.normal_primary,
+          normal_biopsy: parsedSettings.normal_biopsy,
+          gtex_primary: parsedSettings.gtex_primary,
+          gtex_biopsy: parsedSettings.gtex_biopsy
+        };
+        
         
         // Set update where clause.
         update.where = { ident: task.state.analysis.ident };
@@ -230,28 +255,6 @@ class BioAppsSync {
         .catch((err) => {
           logger.error('Failed to update analysis table following BioApps patient sync');
           process.exit();
-        });
-      
-    });
-  }
-  
-  
-  /**
-   * Query BioApps Patient Data
-   *
-   * @param {array} tasks - Collection of tasks that need patient info syncing
-   * @returns {Promise}
-   */
-  queryBioAppsPatient (tasks) {
-    return new Promise((resolve, reject) => {
-      
-      Promise.all(_.map(tasks, (t) => { return $bioapps.patient(t.state.analysis.pog.POGID) }))
-        .then(responses => {
-          resolve(responses);
-        })
-        .catch((err) => {
-          reject({message: 'Failed to query BioApps for patient data: ' + err.message});
-          console.log('Failed to query BioApps patient data', err);
         });
       
     });
@@ -525,7 +528,6 @@ class BioAppsSync {
     return new Promise((resolve, reject) => {
       // Get target number of lanes for all libraries
       let libs = [];
-      let targets = {};
       let libcores = {};
       
       _.forEach(this.cache.tasks.symlinks, (t) => {
@@ -539,34 +541,14 @@ class BioAppsSync {
       logger.info(`Starting query for retrieving library lane targets for ${libs.length} libraries`);
       
       // Query BioApps for Target number of lanes
-      $bioapps.targetLanes(_.join(libs, ','))
-        .then((tgs) => {
-          
-          // Loop over targets returned
-          _.forEach(tgs, (lanes, lib) => {
-            // Map target library name to number of rows expected
-            targets[lib] = lanes;
-          });
-  
-          logger.info('Target lanes determined for each library. Querying for aligned libcores');
-          return Promise.resolve();
-        })
-        // Query BioApps for Library Aligned Cores
-        .then(() => { return $bioapps.libraryAlignedCores(_.join(libs, ',')) })
-        .then((result) => {
-  
-          logger.debug('Aligned libcore results returned from BioApps API');
-        
-          // Loop over libcore results, and cache into library name object
-          _.forEach(result, (l) => {
-            
-            // If no entry yet, set to zero
-            if(!libcores[l.libcore.library.name]) libcores[l.libcore.library.name] = 0;
-            libcores[l.libcore.library.name]++;
+      $bioapps.libraryAlignedCores(_.join(libs, ','))
+        .then((query_response) => {
+          _.forEach(query_response, (lib) => {
+            if(!libcores[lib.libcore.library.name]) libcores[lib.libcore.library.name] = [];
+            libcores[lib.libcore.library.name].push(lib);
           });
           
-          resolve({targets: targets, libcores: libcores});
-          
+          resolve(libcores);
         })
         .catch((err) => {
           // Failed
@@ -585,31 +567,45 @@ class BioAppsSync {
    * Determine if the target number of aligned libcores has been hit. If it has, we can infer that symlinks have
    * been created.
    *
-   * @param {object} libs - Object with keys: {targets, libcores}
+   * @param {object} libcores - Hashmap of library names with arrays of aligned libcores
    *
    * @returns {Promise} - Resolves with nothing.
    */
-  parseSymlinksCreated(libs) {
+  parseSymlinksCreated(libcores) {
     return new Promise((resolve, reject) => {
       
       let requireCheckin = [];
       
       // Loop over tasks, and determine which need checkins
       _.forEach(this.cache.tasks.symlinks, (t) => {
-      
+        
+        // Start with false assumption - attempt to prove.
         let targetReached = {
           normal: false,
           tumour: false,
           transcriptome: false
         };
         
-        // Check Libraries for targets
-        if(libs.targets[t.state.analysis.libraries.normal] > 0 && libs.targets[t.state.analysis.libraries.normal] === libs.libcores[t.state.analysis.libraries.normal]) targetReached.normal = true;
-        if(libs.targets[t.state.analysis.libraries.tumour] > 0 && libs.targets[t.state.analysis.libraries.tumour] === libs.libcores[t.state.analysis.libraries.tumour]) targetReached.tumour = true;
-        if(libs.targets[t.state.analysis.libraries.transcriptome] > 0 && libs.targets[t.state.analysis.libraries.transcriptome] === libs.libcores[t.state.analysis.libraries.transcriptome]) targetReached.transcriptome = true;
+        // Function for checking all libcores have files & are successful
+        let checkLibCoreComplete = (library) => {
+          let resp = true; // Assume it's done, and try to disprove.
+          
+          // Loop over cores and check their file & success
+          _.forEach(library, (core) => {
+            if(core.data_path === null) resp = false; // Data path is there?
+            if(core.successful === false) resp = false; // Success flag is present?
+          });
+          return resp;
+        };
         
+        // Pull results for each library
+        if(libcores[t.state.analysis.libraries.normal]) targetReached.normal = checkLibCoreComplete(libcores[t.state.analysis.libraries.normal]); // Normal
+        if(libcores[t.state.analysis.libraries.tumour]) targetReached.tumour = checkLibCoreComplete(libcores[t.state.analysis.libraries.tumour]); // Tumour
+        if(libcores[t.state.analysis.libraries.transcriptome]) targetReached.transcriptome = checkLibCoreComplete(libcores[t.state.analysis.libraries.transcriptome]); // Transcriptome
+        
+        // All goals reached?
         if(targetReached.normal && targetReached.tumour && targetReached.transcriptome) requireCheckin.push(t);
-      
+        
       });
       
       // Map checkins
@@ -623,18 +619,6 @@ class BioAppsSync {
           logger.error('Failed to check in symlinks: ' + err.message);
         });
       
-    });
-  }
-  
-  
-  /**
-   * TODO: Trigger hooks
-   *
-   * @returns {Promise}
-   */
-  triggerHooks() {
-    return new Promise((resolve, reject) => {
-    
     });
   }
   

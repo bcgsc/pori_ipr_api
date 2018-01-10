@@ -35,7 +35,7 @@ class LimsPathologySync {
     this.diseaseLibraries = [];   // Libraries that need resolution from LIMS Library API
     this.user = null;             // Sync User
     //this.maxPathWindow = options.maxPathWindow || (50 * 86400); // (50 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
-    this.maxPathWindow = options.maxPathWindow || (90 * 86400); // (90 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
+    this.maxPathWindow = options.maxPathWindow || (900 * 86400); // (90 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
   }
   
   /**
@@ -65,6 +65,7 @@ class LimsPathologySync {
         
           logger.error('Failed to complete Pathology Passed LIMS sync: ' + err.message);
           console.log(err);
+          resolve({summary: 'Finished running pathology check with errors', result: err});
           this._reset(); // Reset
           
         });
@@ -180,7 +181,14 @@ class LimsPathologySync {
       _.forEach(pogs, (sample) => {
         
         let pogid = sample.participant_study_id;
-        let datestamp = sample.sample_collection_time.substring(0,10);
+        let datestamp;
+        try {
+          datestamp = (sample.sample_collection_time) ? sample.sample_collection_time.substring(0, 10) : moment().format('YYYY-MM-DD');
+        }
+        catch (e) {
+          console.log('Error', e);
+          console.log('POG: ', pogid);
+        }
         
         let library = {
           name: sample.library,

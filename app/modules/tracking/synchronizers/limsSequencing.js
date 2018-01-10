@@ -58,6 +58,7 @@ class LimsSeqSync {
         .catch((err) => {
           logger.debug('Failed to update tasks pending sequencing submission');
           console.log(err);
+          resolve({summary: 'Errors during sequencing checks', result: err});
         });
       
     });
@@ -360,24 +361,40 @@ class LimsSeqSync {
   getTasksPendingSequenceValidation() {
     return new Promise((resolve, reject) => {
       
+      let state_include = {
+        as: 'state',
+        model: db.models.tracking_state,
+        attributes: {
+          exclude: ['deletedAt', 'analysis_id', 'createdBy_id', 'group_id']
+        },
+        include: [
+          {as: 'analysis', model: db.models.pog_analysis.scope('public')},
+        ],
+        order: [
+          ['ordinal', 'ASC']
+        ]
+      };
+      
       let opt = {
         where: {
           slug: 'sequencing_validated',
           status: {$not: 'complete'},
           deletedAt: null
         },
+        order:  [['ordinal', 'ASC']],
         attributes: {
-          include: ['state_id']
+          exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
         },
         include: [
-          {as: 'state', model: db.models.tracking_state.scope('noTasks'), }
+          state_include,
+          { as: 'checkins', model: db.models.tracking_state_task_checkin, separate: true }
         ]
       };
       
       logger.info('Querying DB for all tracking tasks without sequencing validated');
       
-      db.models.tracking_state_task.scope('public').findAll(opt).then(
-        (tasks) => {
+      db.models.tracking_state_task.findAll(opt)
+        .then((tasks) => {
           logger.info('Found ' + tasks.length + ' cases requiring sequence validation');
           this.sequencing_submit = tasks;
           
@@ -396,6 +413,7 @@ class LimsSeqSync {
         })
         .catch((err) => {
           logger.error('Unable to search for tasks that are pending sequencing validation');
+          console.log(err);
         });
       
     });
