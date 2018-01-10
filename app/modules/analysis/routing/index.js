@@ -12,7 +12,8 @@ const POGLib              = require('../../../libs/structures/pog');
 const Generator           = require('../../tracking/generate');
 const $bioapps            = require('../../../api/bioapps');
 const $lims               = require('../../../api/lims');
-
+const comparators         = require(`${process.cwd()}/database/comparators.json`);
+const comparators_v9      = require(`${process.cwd()}/database/comparators.v9.json`);
 
 const Patient             = require(`${process.cwd()}/app/libs/patient/patient.library`);
 const AnalysisLibrary     = require(`${process.cwd()}/app/libs/patient/analysis.library`);
@@ -39,6 +40,10 @@ module.exports = class TrackingRouter extends RoutingInterface {
     // Extended Details
     this.extended();
     
+    // Comparators
+    this.comparators();
+    
+    // Base Biopsy Endpoints
     this.registerResource('/')
       .get((req, res, next) => {
   
@@ -303,13 +308,21 @@ module.exports = class TrackingRouter extends RoutingInterface {
       
         })
         .catch((err) => {
-          res.status(500).json({message: 'Failed to query extended details'});
           console.log('Error', err);
+          res.status(500).json({message: 'Failed to query extended details'});
         });
       
     });
   }
   
-  
+  // Comparator Endpoints
+  comparators() {
+    this.registerEndpoint('get', '/comparators', (req, res, next) => {
+      
+      res.json({v8: comparators, v9: comparators_v9});
+      
+    });
+    
+  }
   
 };
