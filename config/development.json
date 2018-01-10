@@ -7,7 +7,8 @@
     "hostname": "127.0.0.1",
     "ssl": {
       "private_key": "/var/www/ipr/api/development/persist/ssl/private.key",
-      "certificate": "/var/www/ipr/api/development/persist/ssl/webserver.cert"
+      "certificate": "/var/www/ipr/api/development/persist/ssl/webserver.cert",
+      "passphrase": "/var/www/ipr/api/development/persist/ssl/passphrase"
     }
   },
 
