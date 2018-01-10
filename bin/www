@@ -64,19 +64,15 @@ let App = require('../app').then((app) => {
   /**
    * Create HTTPS server.
    */
-  
-  
+  /*
   let private_key = fs.readFileSync(envConf.web.ssl.private_key);
   let certificate = fs.readFileSync(envConf.web.ssl.certificate);
   let passphrase = fs.readFileSync(envConf.web.ssl.passphrase, 'utf8');
-  
-  /*
-  // Do not spin up on local
-  if(process.env.NODE_ENV !== 'local') {
-    let server_ssl = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, app).listen(4381);
-    let admin_server_ssl = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, admin).listen(4382);
-  }
+
+  let server_ssl = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, app).listen(4381);
+  let admin_server_ssl = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, admin).listen(4382);
   */
+  
   
   /**
    * Socket.io
