@@ -348,6 +348,7 @@ $bioapps.parseSourceSettings = (source) => {
     threeLetterCode: null,
     disease_comparator_analysis: null,
     physicians: [],
+    biop: null,
   };
   
   if(current_settings.disease_comparators && current_settings.disease_comparators.length > 0) details.disease_comparators = _.orderBy(current_settings.disease_comparators, 'ordinal').map((c) => { return c.disease_code.code });
@@ -364,6 +365,8 @@ $bioapps.parseSourceSettings = (source) => {
   if(current_settings.cancer_group) details.threeLetterCode = current_settings.cancer_group.code;
   
   if(current_settings.physicians) details.physicians.push(_.map(current_settings.physicians, (p) => { return {firstName: p.first_name, lastName: p.last_name}}));
+  
+  if(current_settings.biopsy_number) details.biop = current_settings.sample_type + current_settings.biopsy_number;
   
   return details;
   
