@@ -8,8 +8,8 @@ const request   = require('request-promise-native');
 const gin       = require(process.cwd() + '/lib/ginCredentials');
 const moment    = require('moment');
 
-const host      = "http://bioappsdev01.bcgsc.ca:8104";
-//const host      = "http://sbs.bcgsc.ca:8100";
+//const host      = "http://bioappsdev01.bcgsc.ca:8104";
+const host      = "http://sbs.bcgsc.ca:8100";
 const basePath  = "";
 let logger      = process.logger;
 
@@ -359,7 +359,7 @@ $bioapps.parseSourceSettings = (source) => {
   if(current_settings.gtex_comparator_primary_site) details.gtex_primary.push(current_settings.gtex_comparator_primary_site.name);
   
   if(current_settings.tumour_type_for_report) details.tumour_type_report = current_settings.tumour_type_for_report.name;
-  if(current_settings.tumour_types_for_knowledgebase.length > 0) details.tumour_type_kb = current_settings.tumour_types_for_knowledgebase[0].name;
+  if(current_settings.tumour_types_for_knowledgebase && current_settings.tumour_types_for_knowledgebase.length > 0) details.tumour_type_kb = current_settings.tumour_types_for_knowledgebase[0].name;
   
   if(current_settings.cancer_group) details.threeLetterCode = current_settings.cancer_group.code;
   
