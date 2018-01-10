@@ -191,6 +191,122 @@ module.exports = class TrackingRouter extends RoutingInterface {
         res.status(420).send();
       });
     
+    this.registerEndpoint('get', '/backfillComparators', (req, res, next) => {
+      
+      let anlys;
+      
+      
+      db.models.pog_analysis.scope('public').findAll({where: { analysis_biopsy: {$not: null}}})
+        .then((analyses) => {
+          anlys = analyses;
+          
+          console.log(`Found ${analyses.length} entries`);
+          
+          // create promise array with request for data
+          return Promise.all(_.map(analyses, (a) => {return $bioapps.patient(a.pog.POGID)}));
+        })
+        .then((bioAppsResults) => {
+        
+          let updates = [];
+          let source;
+        
+          _.forEach(bioAppsResults, (p) => {
+  
+            if(p.length === 0) return;
+  
+            p = p[0]; // Remove array wrapper
+  
+            let source_analysis_setting = null;
+            let update = { data: {comparator_disease: {}, comparator_normal: {}}, where: {} };
+            
+            
+            if(p.sources.length < 1) {
+              console.log('No sources for', p.id);
+              return;
+            }
+            
+            let pogid = p.sources[0].participant_study_identifier;
+            
+            let analysis;
+            
+            _.forEach(anlys, (a) => {
+              if(a.pog.POGID === pogid) analysis = a;
+            });
+  
+            if(!analysis) {
+              console.log('Failed to find an analysis & biosy for', p.id);
+              return;
+            }
+            
+            // Pick the sources we're looking for.
+            _.forEach(p.sources, (s) => {
+              let search = _.find(s.libraries, {name: analysis.libraries.tumour});
+    
+              if(search) source = s;
+            });
+  
+            // Check if source was found. If not, move to next entry.
+            if(!source) {
+              logger.error('Unable to find source for ' + p.id);
+              return;
+            }
+  
+            if(source.source_analysis_settings.length === 0) return;
+  
+            try {
+              source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'data_version');
+              source_analysis_setting = _.last(source.source_analysis_settings);
+    
+              // With a source Found, time to build the update for this case;
+              update.data.analysis_biopsy = 'biop'.concat(source_analysis_setting.biopsy_number);
+              update.data.bioapps_source_id = source.id;
+              update.data.biopsy_site = source.anatomic_site;
+    
+              // Three Letter Code
+              update.data.threeLetterCode = source_analysis_setting.cancer_group.code;
+            }
+            catch (e) {
+              reject({message: 'BioApps source analysis settings missing required details: ' + e.message});
+            }
+  
+            let parsedSettings = $bioapps.parseSourceSettings(source);
+            
+            update.analysis = analysis;
+            
+            // Compile Disease Comparator
+            update.data.comparator_disease = {
+              analysis: parsedSettings.disease_comparator_analysis,
+              all: parsedSettings.disease_comparators,
+              tumour_type_report: parsedSettings.tumour_type_report,
+              tumour_type_kb: parsedSettings.tumour_type_kb
+            };
+  
+            update.data.comparator_normal = {
+              normal_primary: parsedSettings.normal_primary,
+              normal_biopsy: parsedSettings.normal_biopsy,
+              gtex_primary: parsedSettings.gtex_primary,
+              gtex_biopsy: parsedSettings.gtex_biopsy
+            };
+            
+            updates.push(update);
+            
+          });
+          
+          return Promise.all(_.map(updates, (u) => {
+            return db.models.pog_analysis.update(u.data, {where: { ident: u.analysis.ident}});
+          }))
+          
+        })
+        .then((result) => {
+          res.json(result);
+        })
+        .catch((err) => {
+          res.status(500).json({message: 'Failed to backfill biopsy data: ' + err.message});
+          console.log(err);
+        });
+      
+    });
+    
   }
   
   // Extended Details
