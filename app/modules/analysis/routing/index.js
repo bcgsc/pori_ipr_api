@@ -192,6 +192,41 @@ module.exports = class TrackingRouter extends RoutingInterface {
         res.status(420).send();
       });
     
+    
+    this.registerEndpoint('post', '/bioAppsTest', (req, res, next) => {
+      
+      let patient;
+      
+      // Get POG
+      db.models.POG.findOne({where: {id: 252}})
+        .then((result) => {
+          patient = result;
+  
+          console.log('Found patient: ', (patient));
+          
+          return db.models.pog_analysis.findOne({where: {pog_id: patient.id, analysis_biopsy: {$not: null} }});
+          //return db.models.pog_analysis.findOne({where: {pog_id: patient.id}});
+        })
+        .then((analysis) => {
+          console.log('Found analysis: ', (analysis));
+          //return analysis;
+          // Time to call BioApps!
+          return $bioapps.updatePatientAnalysis(patient.POGID, analysis);
+        })
+        .then((response) => {
+          res.json(response);
+        })
+        .catch((e) => {
+          let message = "";
+          if(e.statusCode === 500) message = "BioApps was unable to fulfill the update request sent.";
+          if(e.statusCode === 404) message = `The provided patient (${patient.POGID}) does not exist in BioApps`;
+          
+          res.status(500).json({message: message});
+          console.log('Failed to update BioApps', e);
+        });
+      
+    });
+    
     this.registerEndpoint('get', '/backfillComparators', (req, res, next) => {
       
       let anlys;
