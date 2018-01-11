@@ -324,6 +324,49 @@ $bioapps.patient = (pogid) => {
   });
 };
 
+
+/**
+ * Update BioApps patient record
+ *
+ * @param {stirng} patient - Patient ID / POGID
+ * @param {object} analysis - Analysis object with data attributes to be updated
+ * @returns {Promise}
+ */
+$bioapps.updatePatientAnalysis = (patient, analysis) => {
+  return new Promise((resolve, reject) => {
+    
+    let body = {
+      biopsy_notes: analysis.biopsy_notes,
+      biopsy_date: analysis.biopsy_date,
+      canceer_group: analysis.threeLetterCode, // three letter code
+      diagnosis: analysis.disease,
+      disease_comparator_for_analysis: analysis.comparator_disease.analysis,
+      disease_comparators: _.map(analysis.comparator_disease.all, (c, i) => { return {ordinal: i, disease_code: c} }),
+      gtex_comparator_primary_site: (analysis.comparator_normal.gtex_primary) ? analysis.comparator_normal.gtex_primary[0] : null,
+      gtex_comparator_biopsy_site: (analysis.comparator_normal.gtex_biopsy) ? analysis.comparator_normal.gtex_biopsy[0] : null,
+      normal_comparator_primary_site: (analysis.comparator_normal.normal_primary) ? analysis.comparator_normal.normal_primary[0] : null,
+      normal_comparator_biopsy_site: (analysis.comparator_normal.normal_biopsy) ? analysis.comparator_normal.normal_biopsy[0] : null,
+      physicians: analysis.physician,
+      tumour_type_for_report: analysis.comparator_disease.tumour_type_report,
+      tumour_type_for_knowledgebase: [ {name: analysis.comparator_disease.tumour_type_kb} ]
+    };
+    
+    $bioapps.query({
+        method: 'PATCH',
+        uri: host + basePath + '/patient_analysis/' + patient,
+        json: body
+      }).
+      then((result) => {
+        resolve(result);
+      })
+      .catch((e) => {
+        logger.error("Failed to update BioApps with updated patient source analysis settings");
+        reject(e);
+        console.log('Failed to update BioApps with result', e);
+      })
+  })
+};
+
 /**
  * Parse the Source object from BioApps to extract the relevant details
  *
