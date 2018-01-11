@@ -338,7 +338,7 @@ $bioapps.updatePatientAnalysis = (patient, analysis) => {
     let body = {
       biopsy_notes: analysis.biopsy_notes,
       biopsy_date: analysis.biopsy_date,
-      canceer_group: analysis.threeLetterCode, // three letter code
+      cancer_group: analysis.threeLetterCode, // three letter code
       diagnosis: analysis.disease,
       disease_comparator_for_analysis: analysis.comparator_disease.analysis,
       disease_comparators: _.map(analysis.comparator_disease.all, (c, i) => { return {ordinal: i, disease_code: c} }),
