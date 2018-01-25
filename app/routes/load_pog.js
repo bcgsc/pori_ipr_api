@@ -217,54 +217,54 @@ router.route('/:type(genomic|probe)')
         
         // Setup up loader configuration
         let loaderRun; // Object to contain loader run promise
-        let loaderConf = {
+        let loaderOptions = {
           profile: req.body.project + '_' + req.params.type,
           baseDir: directory
         };
         
         // If loader set is specified by request
-        if(req.body.loaders) loaderConf.load = req.body.loaders;
+        if(req.body.loaders) loaderOptions.load = req.body.loaders;
         
         // -- Possible Loader Scenarios to run -- //
         // -------------------------------------- //
         
         // POG Genomic Report
-        if(loaderConf.profile.toLowerCase() === 'pog_genomic') {
+        if(loaderOptions.profile.toLowerCase() === 'pog_genomic') {
           let GenomicLoader = new require(process.cwd() + '/app/loaders');
-          let Loader = new GenomicLoader(patientObj, reportObj, loaderConf);
+          let Loader = new GenomicLoader(patientObj, reportObj, loaderOptions);
           return Loader.load();
         }
   
   
         // POG Probe Report
-        if(loaderConf.profile.toLowerCase() === 'pog_probe') {
+        if(loaderOptions.profile.toLowerCase() === 'pog_probe') {
           let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
-          let Loader = new ProbeLoader(patientObj, reportObj, loaderConf);
+          let Loader = new ProbeLoader(patientObj, reportObj, loaderOptions);
           return Loader.load();
         }
   
         // Non-POG Probe Report
         if(req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'probe') {
-          loaderConf.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
-          loaderConf.profile = 'nonPOG';
+          loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
+          loaderOptions.profile = 'nonPOG';
           let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
-          let Loader = new ProbeLoader(patientObj, reportObj, loaderConf);
+          let Loader = new ProbeLoader(patientObj, reportObj, loaderOptions);
           return Loader.load();
         }
   
         // Non-POG Genomic Report
         if(req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'genomic') {
           // Non-POG options
-          loaderConf.nonPOG = true;
-          loaderConf.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
-          loaderConf.baseDir = req.body.baseDir;
-          loaderConf.profile = 'nonPOG';
-          loaderConf.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
-          loaderConf.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
+          loaderOptions.nonPOG = true;
+          loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
+          loaderOptions.baseDir = req.body.baseDir;
+          loaderOptions.profile = 'nonPOG';
+          loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
+          loaderOptions.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
     
           let GenomicLoader = new require(process.cwd() + '/app/loaders');
     
-          let Loader = new GenomicLoader(patientObj, reportObj, loaderConf);
+          let Loader = new GenomicLoader(patientObj, reportObj, loaderOptions);
           return Loader.load();
         }
         

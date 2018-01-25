@@ -239,7 +239,7 @@ class LimsSeqSync {
     
     return new Promise((resolve, reject) => {
       
-      if(task === null || task === undefined) return reject({message: 'Empty task object passed to checkTaskSequenceSubmitted'});
+      if(task === null || task === undefined || task.length === 0) return reject({message: 'Empty task object passed to checkTaskSequenceSubmitted'});
       
       
       // Possible run scenarios and their default status
