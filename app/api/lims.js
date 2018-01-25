@@ -8,7 +8,7 @@ const request   = require('request');
 
 
 const host      = "https://lims16.bcgsc.ca";
-const basePath  = "/alpha/limsapi";
+const basePath  = "/prod/limsapi";
 
 let $lims = {};
 
