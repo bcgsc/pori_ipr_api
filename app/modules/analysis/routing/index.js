@@ -383,6 +383,10 @@ module.exports = class TrackingRouter extends RoutingInterface {
         })
         .then(() => { return $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]); })
         .then((result) => {
+        	if(result.length === 0) {
+        		res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons.'});
+            	return;
+        	}
           
           // Loop over lanes
           _.forEach(result.results, (row) => {
@@ -418,6 +422,11 @@ module.exports = class TrackingRouter extends RoutingInterface {
           
         })
         .then(() => {
+
+          if(Object.keys(limsIllumina).length === 0) {
+          	res.status(404).json({message: 'Failed to retrieve LIMS Illumina Run information.'});
+            return;
+          }
           
           if(!bioAppsPatient.sources) {
             res.status(404).json({message: 'Failed to retrieve patient record for BioApps with sources listed.'});
