@@ -1,25 +1,5 @@
 [
   {
-    "name": "subtypePlot.molecular",
-    "file": "/subtype_plot_image/molecular_subtype.png",
-    "compress": true,
-    "dimensions": {
-      "h": 375,
-      "w": 600
-    },
-    "optional": true
-  },
-  {
-    "name": "subtypePlot.receptorStatus",
-    "file": "/subtype_plot_image/receptor_status.png",
-    "compress": false,
-    "dimensions": {
-      "h": 375,
-      "w": 600
-    },
-    "optional": true
-  },
-  {
     "name": "mutSignature.corPcors",
     "file": "/mut_signature_image/msig_cor_pcors.png",
     "compress": true,
