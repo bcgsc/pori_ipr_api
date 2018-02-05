@@ -173,8 +173,13 @@ module.exports = class GSMRouter extends RoutingInterface {
     let opts = {
       order: [['id', 'desc']],
       limit: limit,
-      offset: offset
+      offset: offset,
+      where: {}
     };
+        
+    if(req.query.search) opts.where['$analysis.pog.POGID$'] = {$ilike: `%${req.query.search}%` };
+    if(req.query.project) opts.where['$analysis.pog.project$'] = req.query.project;
+
     
     db.models.germline_small_mutation.scope('public').findAndCountAll(opts)
       .then((reports) => {
