@@ -167,13 +167,13 @@ module.exports = class GSMRouter extends RoutingInterface {
   getReports(req, res) {
     
     // get all reports
-    let offset = req.query.offset || 0;
-    let limit = req.query.limit || 25;
+    //let offset = req.query.offset || 0;
+    //let limit = req.query.limit || 25;
     
     let opts = {
       order: [['id', 'desc']],
-      limit: limit,
-      offset: offset,
+      //limit: limit,    // sequelize applies limit to subquery giving incorrect results - need to limit manually
+      // offset: offset, // sequelize applies offset to subquery giving incorrect results - need to get offset manually
       where: {}
     };
         
