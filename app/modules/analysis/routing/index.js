@@ -90,27 +90,38 @@ module.exports = class TrackingRouter extends RoutingInterface {
         // Gather and verify information
         let analysis = {};
         let POG;
-        let validition = {
+        let validation = {
           state: true,
           invalid: []
         };
         
         // Require Fields
-        if(!req.body.clinical_biopsy) {
-          validition.state = false;
-          validition.invalid.push("A clinical biopsy value is required");
-        }
         if(!req.body.POGID) {
-          validition.state = false;
-          validition.invalid.push("A valid POGID is required");
+          validation.state = false;
+          validation.invalid.push("A valid POGID is required");
+        }
+        if(!req.body.clinical_biopsy) {
+          validation.state = false;
+          validation.invalid.push("A clinical biopsy value is required");
         }
         if(!req.body.disease) {
-          validition.state = false;
-          validition.invalid.push("A valid disease type is required");
+          validation.state = false;
+          validation.invalid.push("A valid disease type is required");
         }
-        
-        if(!validition.state) {
-          res.status(400).json({message: 'Invalid inputs supplied', cause: validition.invalid});
+        if(!req.body.threeLetterCode || req.body.threeLetterCode.trim().length != 3) {
+          validation.state = false;
+          validation.invalid.push("A valid cancer group (three letter code) is required")
+        }
+        if(!req.body.biopsy_date) {
+          validation.state = false;
+          validation.invalid.push("A valid biopsy date is required")
+        }
+        if(req.body.physician.length < 1) {
+          validation.state = false;
+          validation.invalid.push("At least one physician is required")
+        }
+        if(!validation.state) {
+          res.status(400).json({message: 'Invalid inputs supplied', cause: validation.invalid});
           return;
         }
         
@@ -121,6 +132,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
             analysis.pog_id = pog.id;
             analysis.clinical_biopsy = req.body.clinical_biopsy;
             analysis.disease = req.body.disease;
+            analysis.threeLetterCode = req.body.threeLetterCode;
             analysis.biopsy_notes = req.body.biopsy_notes;
             analysis.biopsy_date = req.body.biopsy_date;
             analysis.notes = req.body.notes;
