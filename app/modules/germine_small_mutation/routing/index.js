@@ -171,7 +171,7 @@ module.exports = class GSMRouter extends RoutingInterface {
     //let limit = req.query.limit || 25;
     
     let opts = {
-      order: [['id', 'desc']],
+      order: '"analysis.pog.POGID" DESC', // temporary - go back to [['id', 'desc']] when table sorting is enabled
       //limit: limit,    // sequelize applies limit to subquery giving incorrect results - need to limit manually
       // offset: offset, // sequelize applies offset to subquery giving incorrect results - need to get offset manually
       where: {}
