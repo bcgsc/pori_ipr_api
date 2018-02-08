@@ -51,7 +51,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
         let analyses;
         let POG;
         let opts = {
-          order: [['createdAt', 'DESC']],
+          order: '"pog.POGID" DESC', // temporary - go back to [['createdAt', 'DESC']] when table sorting is enabled
           include: [
             {as: 'analysis', model: db.models.analysis_report, separate: true}
           ],
