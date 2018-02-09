@@ -56,7 +56,7 @@ module.exports = (report, dir, logger) => {
   }))
     .then((results) => {
       complete = results;
-      return Q.all([loadExpressionDensity(report, log), loadSummaryImage(report, log)]);
+      return Q.all([loadExpressionDensity(report, log), loadSummaryImage(report, log), loadSubtypePlot(report, log)]);
     })
     .then((results) => {
         complete = complete.concat(results);
@@ -309,6 +309,88 @@ let processExpDensityImages = (report, img, log) => {
       .then(
         (result) => {
           log('Loaded image: ' + "expDensity."+geneName);
+          deferred.resolve(true);
+        },
+        (err) => {
+          deferred.reject({loader: 'image', reason: 'failed to created database entry for: ' + img});
+        }
+      );
+  });
+
+  return deferred.promise;
+};
+
+// Load in the subtype plot images
+let loadSubtypePlot = (report, log) => {
+
+  let deferred = Q.defer();
+  let subtypeProm = [];
+
+
+  glob(imagePath + '/subtype_plot_image/*.png', (err, files) => {
+
+    _.forEach(files, (file) => {
+      // Read in each file, and put into DB.
+      subtypeProm.push(processSubtypePlotImages(report, file, log));
+    });
+
+    Q.all(subtypeProm).then(
+      (result) => {
+        log('Finished processing Subtype Plot images');
+        deferred.resolve({subtypePlotImages: true});
+      },
+      (err) => {
+        console.log('Failed Subtype Plot Image Processing', err);
+        deferred.reject({loader: 'image', reason: 'failed to load all subtype plot images'});
+      }
+    );
+
+  });
+
+  // Return master promise
+  return deferred.promise;
+};
+
+// Process all Subtype Plot Images
+let processSubtypePlotImages = (report, img, log) => {
+
+  let deferred = Q.defer();
+
+  let imgData = "";
+  let filename = img.split('/')[img.split('/').length-1];
+  let image_string = filename.substring(0,filename.lastIndexOf('.png'));
+
+  // pediatric subtype plots are sized similarly to expression charts - all others are normal subtype plot size
+  let image_size = image_string.toLowerCase().startsWith('ped') ? "1000x900" : "600x375";
+
+  let process = exec('convert "'+img+ '" -resize ' + image_size + ' PNG:- | base64');
+  
+  // On data, chunk
+  process.stdout.on('data', (res) => {
+    imgData = imgData + res;
+  });
+
+  process.stderr.on('data', (err) => {
+    console.log('Imagemagick Processing Error for',img, err);
+    deferred.reject({loader: 'image', message: 'ImageMagick was unable to convert the image: ' + img});
+  });
+  
+  // Done executing
+  process.on('close', (resp) => {
+
+    // Write to DB
+    // Add to database
+    db.models.imageData.create({
+      pog_id: report.pog_id,
+      pog_report_id: report.id,
+      format: 'PNG',
+      filename: _.last(img.split('/')),
+      key: "subtypePlot."+image_string,
+      data: imgData
+    })
+      .then(
+        (result) => {
+          log('Loaded image: ' + "subtypePlot."+image_string);
           deferred.resolve(true);
         },
         (err) => {

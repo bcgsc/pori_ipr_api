@@ -116,4 +116,36 @@ router.route('/mutationSummary')
   
   });
 
+router.route('/subtypePlots')
+  .get((req,res,next) => {
+
+  	db.models.imageData.findAll({
+      where: {
+        pog_id: req.POG.id,
+        pog_report_id: req.report.id,
+        key: {
+          $like: 'subtypePlot.%'
+        }
+      },
+      order: 'key ASC',
+      attributes: {exclude: ['id','deletedAt', 'pog_id']}
+    }).then(
+      (result) => {
+        let output = {};
+
+        _.forEach(result, (v,k) => {
+
+          output[v.key] = v;
+
+        });
+
+        res.json(output);
+      },
+      (error) => {
+        res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});
+      }
+    )
+
+  });
+
 module.exports = router;
