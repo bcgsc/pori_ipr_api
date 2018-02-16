@@ -100,6 +100,24 @@ The format for the file declares a configuration by environment:
         "prefix": ""
       }
     }
+  },
+
+  "local": {
+    "database": {
+      "engine": "postgres",
+      "migrate": false,
+      "hardMigration": false,
+
+      "postgres": {
+        "hostname": "seqdevdb01.bcgsc.ca",
+        "port": 5432,
+        "username": "AzureDiamond",
+        "password": "hunter2",
+        "schema": "public",
+        "database": "ipr-dev",
+        "prefix": ""
+      }
+    }
   }
 }
 

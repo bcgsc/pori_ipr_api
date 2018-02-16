@@ -52,28 +52,31 @@ let App = require('../app').then((app) => {
   let admin = require('../admin');
   app.set('port', port);
   admin.set('port', admin_port);
-  
-  
-  /**
-   * Create HTTP server.
-   */
-   
-  /*
-  let server = http.createServer(app);
-  let admin_server = http.createServer(admin);
-  */
-  
-  /**
-   * Create HTTPS server.
-   */
-  
-  let private_key = fs.readFileSync(envConf.web.ssl.private_key);
-  let certificate = fs.readFileSync(envConf.web.ssl.certificate);
-  let passphrase = fs.readFileSync(envConf.web.ssl.passphrase, 'utf8');
 
-  let server = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, app);
-  let admin_server = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, admin);
+  let server, admin_server;
   
+  
+  // Creating HTTP(S) Server
+  // Don't use HTTPS for local instances
+  if(process.env.NODE_ENV.toLowerCase() === 'local') {
+    /**
+     * Create HTTP server.
+     */
+
+    server = http.createServer(app);
+    admin_server = http.createServer(admin);
+  } else {
+    /**
+     * Create HTTPS server.
+     */
+    
+    let private_key = fs.readFileSync(envConf.web.ssl.private_key);
+    let certificate = fs.readFileSync(envConf.web.ssl.certificate);
+    let passphrase = fs.readFileSync(envConf.web.ssl.passphrase, 'utf8');
+
+    server = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, app);
+    admin_server = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, admin);
+  } 
   
   
   /**
