@@ -8,8 +8,7 @@
     "ssl": {
       "private_key": "/var/www/ipr/api/development/persist/ssl/private.key",
       "certificate": "/var/www/ipr/api/development/persist/ssl/webserver.cert",
-      "passphrase": "/var/www/ipr/api/development/persist/ssl/passphrase",
-      "intermediate": "/var/www/ipr/api/development/persist/ssl/intermediate.cert"
+      "passphrase": "/var/www/ipr/api/development/persist/ssl/passphrase"
     }
   },
 
