@@ -82,7 +82,7 @@ class BioAppsSync {
    * @returns {Promise}
    */
   getBioAppsSyncRequired() {
-    return new Promise((resolve, reject) => {      
+    return new Promise((resolve, reject) => {
       // Query Params
       let opt = {
         where: {
