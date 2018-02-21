@@ -82,8 +82,7 @@ class BioAppsSync {
    * @returns {Promise}
    */
   getBioAppsSyncRequired() {
-    return new Promise((resolve, reject) => {
-      
+    return new Promise((resolve, reject) => {      
       // Query Params
       let opt = {
         where: {
@@ -211,7 +210,8 @@ class BioAppsSync {
           update.data.threeLetterCode = source_analysis_setting.cancer_group.code;
         }
         catch (e) {
-          reject({message: 'BioApps source analysis settings missing required details: ' + e.message});
+          logger.error('BioApps source analysis settings missing required details: ' + e.message);
+          return;
         }
   
         let parsedSettings = $bioapps.parseSourceSettings(source);
@@ -629,7 +629,6 @@ class BioAppsSync {
    * @private
    */
   _getSyncUser () {
-    
     return new Promise((resolve, reject) => {
       
       db.models.user.findOne({where: {username: 'synchro'}}).then(
