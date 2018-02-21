@@ -47,6 +47,7 @@ router.route('/')
         return db.models.user.findOne(opts);
       })
       .then((user) => {
+        console.log('Authenticated: user ' + user.username + ' assigned token ' + token);
         res.set('X-token', token);
         res.json(user);
       })
