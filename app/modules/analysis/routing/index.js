@@ -90,38 +90,29 @@ module.exports = class TrackingRouter extends RoutingInterface {
         // Gather and verify information
         let analysis = {};
         let POG;
-        let validation = {
-          state: true,
-          invalid: []
-        };
+        let validation_err = [];
         
         // Require Fields
         if(!req.body.POGID) {
-          validation.state = false;
-          validation.invalid.push("A valid POGID is required");
+          validation_err.push("A valid POGID is required");
         }
         if(!req.body.clinical_biopsy) {
-          validation.state = false;
-          validation.invalid.push("A clinical biopsy value is required");
+          validation_err.push("A clinical biopsy value is required");
         }
         if(!req.body.disease) {
-          validation.state = false;
-          validation.invalid.push("A valid disease type is required");
+          validation_err.push("A valid disease type is required");
         }
         if(!req.body.threeLetterCode || req.body.threeLetterCode.trim().length != 3) {
-          validation.state = false;
-          validation.invalid.push("A valid cancer group (three letter code) is required")
+          validation_err.push("A valid cancer group (three letter code) is required")
         }
         if(!req.body.biopsy_date) {
-          validation.state = false;
-          validation.invalid.push("A valid biopsy date is required")
+          validation_err.push("A valid biopsy date is required")
         }
         if(req.body.physician.length < 1) {
-          validation.state = false;
-          validation.invalid.push("At least one physician is required")
+          validation_err.push("At least one physician is required")
         }
-        if(!validation.state) {
-          res.status(400).json({message: 'Invalid inputs supplied', cause: validation.invalid});
+        if(validation_err.length > 0) {
+          res.status(400).json({message: 'Invalid inputs supplied', cause: validation_err});
           return;
         }
         
