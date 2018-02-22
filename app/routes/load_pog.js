@@ -199,7 +199,7 @@ router.route('/:type(genomic|probe)')
         
         if(req.params.type === 'probe') {
           reportOpts.state = 'uploaded';
-          if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) createReportOpts.state = req.body.state;
+          if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) reportOpts.state = req.body.state;
         }
         
         // Get Report Matrix Value
