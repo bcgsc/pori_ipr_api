@@ -44,7 +44,7 @@ class SocketAuthentication {
             this.socket.user = result.user;
             this.authenticated = true;
 
-            console.log('Socket', this.socket.id, 'authenticated as', result.user.username + ' with token ' + msg.token);
+            console.log('Socket', this.socket.id, 'authenticated as', result.user.username + ' [' + msg.token + ']');
 
             this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
 
