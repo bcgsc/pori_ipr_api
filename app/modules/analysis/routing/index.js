@@ -128,6 +128,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
             analysis.biopsy_date = req.body.biopsy_date;
             analysis.notes = req.body.notes;
             analysis.physician = req.body.physician;
+            analysis.pediatric_id = req.body.pediatric_id;
             
             if(req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
               analysis.libraries = req.body.libraries;
