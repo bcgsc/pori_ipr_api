@@ -90,27 +90,29 @@ module.exports = class TrackingRouter extends RoutingInterface {
         // Gather and verify information
         let analysis = {};
         let POG;
-        let validition = {
-          state: true,
-          invalid: []
-        };
+        let validation_err = [];
         
         // Require Fields
-        if(!req.body.clinical_biopsy) {
-          validition.state = false;
-          validition.invalid.push("A clinical biopsy value is required");
-        }
         if(!req.body.POGID) {
-          validition.state = false;
-          validition.invalid.push("A valid POGID is required");
+          validation_err.push("A valid POGID is required");
+        }
+        if(!req.body.clinical_biopsy) {
+          validation_err.push("A clinical biopsy value is required");
         }
         if(!req.body.disease) {
-          validition.state = false;
-          validition.invalid.push("A valid disease type is required");
+          validation_err.push("A valid disease type is required");
         }
-        
-        if(!validition.state) {
-          res.status(400).json({message: 'Invalid inputs supplied', cause: validition.invalid});
+        if(!req.body.threeLetterCode || req.body.threeLetterCode.trim().length != 3) {
+          validation_err.push("A valid cancer group (three letter code) is required")
+        }
+        if(!req.body.biopsy_date) {
+          validation_err.push("A valid biopsy date is required")
+        }
+        if(req.body.physician.length < 1) {
+          validation_err.push("At least one physician is required")
+        }
+        if(validation_err.length > 0) {
+          res.status(400).json({message: 'Invalid inputs supplied', cause: validation_err});
           return;
         }
         
@@ -121,10 +123,12 @@ module.exports = class TrackingRouter extends RoutingInterface {
             analysis.pog_id = pog.id;
             analysis.clinical_biopsy = req.body.clinical_biopsy;
             analysis.disease = req.body.disease;
+            analysis.threeLetterCode = req.body.threeLetterCode;
             analysis.biopsy_notes = req.body.biopsy_notes;
             analysis.biopsy_date = req.body.biopsy_date;
             analysis.notes = req.body.notes;
             analysis.physician = req.body.physician;
+            analysis.pediatric_id = req.body.pediatric_id;
             
             if(req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
               analysis.libraries = req.body.libraries;

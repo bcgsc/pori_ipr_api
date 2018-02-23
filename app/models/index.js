@@ -9,7 +9,7 @@ let CONFIG = {};
 if(process.env.NODE_ENV === 'production') {
   CONFIG = require('/var/www/ipr/api/production/persist/.env.json');
 }
-if(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+if(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'local') {
   try {
     // iprweb01 dev
     CONFIG = require('/var/www/ipr/api/development/persist/.env.json')[process.env.NODE_ENV];
