@@ -40,62 +40,59 @@ module.exports = (report, dir, logger, options={}) => {
       console.log('Attempted to load', options.config['mutationSigFolder'] + '/*_msig_combined.txt');
 
       return deferred.promise;
-      //throw new Error('Unable to find Mutation Signature source file')
     }
-    else {
 
-      // Get File
-      let output = fs.createReadStream(files[0]);
+    // Get File
+    let output = fs.createReadStream(files[0]);
 
-      log('Found and read sample_summary.csv file.');
+    log('Found and read sample_summary.csv file.');
 
-      // Parse file!
-      let parser = parse({delimiter: '	', columns: true},
-        (err, result) => {
+    // Parse file!
+    let parser = parse({delimiter: '	', columns: true},
+      (err, result) => {
 
-          // Was there a problem processing the file?
-          if(err) {
-            log('Unable to parse CSV file');
-            console.log(err);
+        // Was there a problem processing the file?
+        if(err) {
+          log('Unable to parse CSV file');
+          console.log(err);
 
-            deferred.reject({loader: 'mutationSignature', message: 'Unable to parse the CSV file :' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
-          }
-
-          let entries = remapKeys(result, nconf.get('somaticMutations:mutationSignature'));
-
-          // Loop over entries
-          _.forEach(entries, (v, k) => {
-            entries[k].pog_id = report.pog_id;
-            entries[k].pog_report_id = report.id;
-            entries[k].signature = v.signature.match(/[0-9]{1,2}/g)[0];
-          });
-
-          // Add to Database
-          db.models.mutationSignature.bulkCreate(entries).then(
-            (result) => {
-              log('Mutation Signatures successfully created.', logger.SUCCESS);
-
-              // Resolve Promise
-              deferred.resolve({result: true, db: result, data: entries, message: 'Successfully loaded mutation signatures', loader: 'MutationSignature'});
-            },
-            (err) => {
-              console.log(err);
-              log('Mutation Signatures failed to insert.',logger.ERROR);
-              deferred.reject({result: false, error: err, message: 'Unable to create database entries', loader: 'MutationSignature'});
-            }
-          );
+          deferred.reject({loader: 'mutationSignature', message: 'Unable to parse the CSV file :' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
         }
-      );
 
-      // Pipe file through parser
-      output.pipe(parser);
+        let entries = remapKeys(result, nconf.get('somaticMutations:mutationSignature'));
 
-      output.on('error', (err) => {
-        log('Unable to find required CSV file', logger.ERROR);
-        console.log(err);
-        deferred.reject({result: false, error: err, message: 'Source txt file not found', loader: 'MutationSignature'});
-      });
-    }
+        // Loop over entries
+        _.forEach(entries, (v, k) => {
+          entries[k].pog_id = report.pog_id;
+          entries[k].pog_report_id = report.id;
+          entries[k].signature = v.signature.match(/[0-9]{1,2}/g)[0];
+        });
+
+        // Add to Database
+        db.models.mutationSignature.bulkCreate(entries).then(
+          (result) => {
+            log('Mutation Signatures successfully created.', logger.SUCCESS);
+
+            // Resolve Promise
+            deferred.resolve({result: true, db: result, data: entries, message: 'Successfully loaded mutation signatures', loader: 'MutationSignature'});
+          },
+          (err) => {
+            console.log(err);
+            log('Mutation Signatures failed to insert.',logger.ERROR);
+            deferred.reject({result: false, error: err, message: 'Unable to create database entries', loader: 'MutationSignature'});
+          }
+        );
+      }
+    );
+
+    // Pipe file through parser
+    output.pipe(parser);
+
+    output.on('error', (err) => {
+      log('Unable to find required CSV file', logger.ERROR);
+      console.log(err);
+      deferred.reject({result: false, error: err, message: 'Source txt file not found', loader: 'MutationSignature'});
+    });
 
   });
 
