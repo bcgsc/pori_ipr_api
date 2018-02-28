@@ -1,10 +1,10 @@
 {
   "env": "development",
-  "version": "1.1.0",
+
   "web": {
     "port": 8081,
     "admin_port": 8082,
-    "hostname": "127.0.0.1",
+    "hostname": "iprdev01.bcgsc.ca",
     "ssl": {
       "private_key": "/var/www/ipr/api/development/persist/ssl/private.key",
       "certificate": "/var/www/ipr/api/development/persist/ssl/webserver.cert",
@@ -33,9 +33,9 @@
       "probeDir": "/P*/jreport_genomic_summary_v*/"
     }
   },
+
   "loader": {
     "defaults": {
-
       "default_genomic": {
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",

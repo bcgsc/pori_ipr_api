@@ -50,6 +50,9 @@ module.exports = {
       },
       env_development: {
         NODE_ENV: 'development'
+      },
+      env_test: {
+        NODE_ENV: 'test'
       }
     }
   ],
