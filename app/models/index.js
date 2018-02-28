@@ -12,7 +12,7 @@ if(process.env.NODE_ENV === 'production') {
 if(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'local') {
   try {
     // iprweb01 dev
-    CONFIG = require('/var/www/ipr/api/development/persist/.env.json')[process.env.NODE_ENV];
+    CONFIG = require('/var/www/ipr/api/' + process.env.NODE_ENV + '/persist/.env.json')[process.env.NODE_ENV];
   }
   catch (e) {
     console.log('!! DB Config not found - attempting to load local dev .env.json file');
