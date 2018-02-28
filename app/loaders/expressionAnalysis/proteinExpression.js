@@ -22,9 +22,9 @@ class proteinExpressionLoader {
     this.logger = logger;
     this.logging = logger.loader(this.report.ident, 'Expression.Protein');
     this.filesToLoad = [
-      {file: 'ptx_biol.csv', type: 'biological', expType: 'protein'},
-      {file: 'ptx_pot_clin_rel.csv', type: 'clinical', expType: 'protein'},
-      {file: 'ptx_prog_diag.csv', type: 'nostic', expType: 'protein'},
+      //{file: 'ptx_biol.csv', type: 'biological', expType: 'protein'},
+      //{file: 'ptx_pot_clin_rel.csv', type: 'clinical', expType: 'protein'},
+      //{file: 'ptx_prog_diag.csv', type: 'nostic', expType: 'protein'},
       {file: 'downregulated_tsg.csv', type: 'downreg_tsg', expType: 'rna'},
       {file: 'upregulated_oncogenes.csv', type: 'upreg_onco', expType: 'rna'}
     ];
