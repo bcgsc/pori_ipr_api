@@ -52,7 +52,7 @@ class Routing extends RouterInterface {
       this.router.param('report', require(process.cwd() + '/app/middleware/analysis_report')); // Analysis report middleware injection
   
       // Add Authentication coverage
-      this.router.use('(/POG|/POG/*|/user/*|/user|/jira|/knowledgebase|/tracking|/reports|/analysis|/analysis_reports|/germline_small_mutation)', require(process.cwd() + '/app/middleware/auth'));
+      this.router.use('(/POG|/POG/*|/user/*|/user|/project|/jira|/knowledgebase|/tracking|/reports|/analysis|/analysis_reports|/germline_small_mutation)', require(process.cwd() + '/app/middleware/auth'));
   
       // Add Single Routes
       // Setup other routes
@@ -105,18 +105,20 @@ class Routing extends RouterInterface {
   
       this.bindRouteObject('/analysis_reports/recent/report/', RecentReportsRoutes.getRouter());
   
-      // Get Recebt Reports Routes
+      // Get Recent Reports Routes
       let Germline_Reports = require('../modules/germine_small_mutation/routing');
       let GermlineReportsRoutes = new Germline_Reports(this.io);
   
       this.bindRouteObject('/germline_small_mutation', GermlineReportsRoutes.getRouter());
   
-      // Get Recebt Reports Routes
+      // Get Recent Reports Routes
       let Germline_Reports_Export = require('../modules/germine_small_mutation/routing/export.route');
       let GermlineReportsExportRoutes = new Germline_Reports_Export(this.io);
   
       this.bindRouteObject('/export/germline_small_mutation', GermlineReportsExportRoutes.getRouter());
-  
+
+      // Get Project Routes
+      this.bindRouteFile('/project', __dirname + '/project');
   
       // Auto-Build routes
       this.buildRecursiveRoutes().then(
@@ -177,7 +179,7 @@ class Routing extends RouterInterface {
    */
   getProjects() {
     
-    this.registerEndpoint('get', '/projects', (req, res) => {
+    this.registerEndpoint('get', '/pogProjects', (req, res) => {
       db.query('SELECT DISTINCT project FROM "POGs"').then(
         (result) => {
           res.json(_.map(result[0], (e) => { return e.project }));
