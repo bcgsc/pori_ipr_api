@@ -38,11 +38,11 @@ router.route('/')
   .get((req,res,next) => {
 
     // Access Control
-    
+    /*
     let access = new acl(req, res);
     access.read('admin', 'superUser');
-    if(access.check() === false) return;
-    
+    if(access.check() === false) return;    
+    */
     let opts = {
       order:  [['createdAt', 'desc']],
       attributes: {
