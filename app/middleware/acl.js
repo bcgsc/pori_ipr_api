@@ -78,7 +78,7 @@ function ACL(request, response) {
 
 
     // Run Check for permission
-    check: () => {
+    check: (skipStatus=false) => {
       // Track if allowed
       let allowed = false;
 
@@ -143,7 +143,7 @@ function ACL(request, response) {
 
       // Access is not allowed
       if (allowed === false) {
-        this._res.status(403).json({status: false, message: 'You are not authorized to view this resource.'});
+        if(!skipStatus) this._res.status(403).json({status: false, message: 'You are not authorized to view this resource.'});
         return false;
       }
 

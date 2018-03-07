@@ -38,20 +38,19 @@ router.route('/')
   .get((req,res,next) => {
 
     // Access Control
-    /*
+    let includeOpts = [{ as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']} }]
     let access = new acl(req, res);
     access.read('admin', 'superUser');
-    if(access.check() === false) return;    
-    */
+    if(access.check(true) === false) {
+      includeOpts.push({ as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken', 'jiraXsrf', 'settings', 'user_project']} });
+    };    
+
     let opts = {
       order:  [['createdAt', 'desc']],
       attributes: {
         exclude: ['deletedAt', 'id']
       },
-      include: [
-        { as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken', 'jiraXsrf', 'settings', 'user_project']} },
-        { as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']} }
-      ]
+      include: includeOpts
     };
     
     db.models.project.findAll(opts)
