@@ -29,7 +29,7 @@ router.route('/')
     let opts = {};
     opts.attributes = {exclude: ['id','deletedAt', 'config', 'seqQC']};
     opts.order = '"POG"."POGID" ASC';
-    opts.include = [];
+    opts.include = [{as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}];
     opts.where = { nonPOG: false};
 
     if(req.query.query ) opts.where.POGID = {$ilike: '%' + req.query.query + '%'};

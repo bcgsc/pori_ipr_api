@@ -25,7 +25,8 @@ router.route('/')
       attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']},
       order: 'username ASC',
       include: [
-        {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}, include: []}
+        {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
+        {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
       ]
     }).then(
       (users) => {
@@ -229,7 +230,14 @@ router.route('/:ident([A-z0-9-]{36})')
           res.json(result);
         } else {
           // Success, get user -- UGH
-          db.models.user.findOne({where: {ident: req.user.ident}, attributes: {exclude: ['id', 'password', 'deletedAt']}}).then(
+          db.models.user.findOne({
+            where: {ident: req.user.ident}, 
+            attributes: {exclude: ['id', 'password', 'deletedAt']},
+            include: [
+              {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
+              {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
+            ]}
+          ).then(
             (user) => {
               res.json(user);
             },
