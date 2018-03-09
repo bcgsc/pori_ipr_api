@@ -59,7 +59,7 @@ router.route('/')
     let access = new acl(req, res);
     access.read('admin', 'superUser');
 
-    if(access.check(true) !== false && req.admin === true) {
+    if(access.check(true) !== false && req.query.admin === 'true') {
       includeOpts.push({ as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']} });
       includeOpts.push({ as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken', 'jiraXsrf', 'settings', 'user_project']} });
     };
