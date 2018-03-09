@@ -162,7 +162,8 @@ router.route('/me')
       lastLogin: req.user.lastLogin,
       createdAt: req.user.createdAt,
       updatedAt: req.user.updatedAt,
-      groups: req.user.groups
+      groups: req.user.groups,
+      projects: req.user.projects
     };
 
     return res.json(me);

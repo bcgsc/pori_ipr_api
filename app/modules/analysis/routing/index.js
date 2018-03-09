@@ -60,7 +60,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
         
         let pog_include = { as: 'pog', model: db.models.POG.scope('public'), where: {} };
         if(req.query.search) opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%` };
-        if(req.query.project) opts.where['$pog.project$'] = req.query.project;
+        if(req.query.project) opts.include.push({as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']}, where: {name: req.query.project}});
         
         if(req.query.paginated) {
           opts.limit = req.query.limit || 25;

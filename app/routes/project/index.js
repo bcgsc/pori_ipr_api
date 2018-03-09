@@ -10,25 +10,42 @@ let validator = require('validator'),
 
 // Middleware for project resolution
 router.param('project', (req,res,next,ident) => {
-  // Lookup project!
-  let opts = {
-    where: {ident: ident},
-    attributes: {exclude: ['deletedAt']},
-    include: [
-      {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
-      {as: 'pogs', model: db.models.POG.scope('public'), }
-    ]
-  };
-  db.models.project.findOne(opts).then(
-    (project) => {
-      req.project = project;
-      next();
+
+  // Check user permission and filter by project
+  let access = new acl(req, res);
+  access.getProjectAccess().then(
+    (projectAccess) => {
+      let projects = _.intersection(_.map(projectAccess, 'ident'), [ident]);
+
+      if(projects.length < 1) {
+        console.log('ProjectAccessError');
+        res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
+      }
+
+      // Lookup project!
+      let opts = {
+        where: {ident: ident},
+        attributes: {exclude: ['deletedAt']},
+        include: [
+          {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
+          {as: 'pogs', model: db.models.POG.scope('public'), }
+        ]
+      };
+      db.models.project.findOne(opts).then(
+        (project) => {
+          req.project = project;
+          next();
+        },
+        (err) => {
+          console.log('SQL Project Lookup Error', err);
+          res.status(404).json({error: {message: 'Unable to find the specified project', code: 'failedProjectIdentLookup'}});
+        }
+      )
     },
     (err) => {
-      console.log('SQL Project Lookup Error', err);
-      res.status(404).json({error: {message: 'Unable to find the specified project', code: 'failedProjectIdentLookup'}});
+      res.status(500).json({error: {message: err.message, code: err.code}});
     }
-  )
+  );
 });
 
 // Route for getting a project
@@ -38,33 +55,48 @@ router.route('/')
   .get((req,res,next) => {
 
     // Access Control
-    let includeOpts = [{ as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']} }]
+    let includeOpts = []
     let access = new acl(req, res);
     access.read('admin', 'superUser');
-    if(access.check(true) === false) {
+
+    if(access.check(true) !== false && req.admin === true) {
+      includeOpts.push({ as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']} });
       includeOpts.push({ as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken', 'jiraXsrf', 'settings', 'user_project']} });
-    };    
-
-    let opts = {
-      order:  [['createdAt', 'desc']],
-      attributes: {
-        exclude: ['deletedAt', 'id']
-      },
-      include: includeOpts
     };
-    
-    db.models.project.findAll(opts)
-      .then((projects) => {
-        res.json(projects);
-      })
-      .catch((err) => {
-        res.status(500).json({message: 'Unable to retrieve projects'});
-        console.log('Unable to retrieve projects', err);
-      });
 
+    // getting project access/filter
+    access.getProjectAccess().then(
+      (projectAccess) => {
+        let opts = {
+        order:  [['createdAt', 'desc']],
+        attributes: {
+          exclude: ['deletedAt', 'id']
+        },
+        include: includeOpts,
+        where: {ident: {$in: _.map(projectAccess, 'ident')}}
+      };
+      
+      db.models.project.findAll(opts)
+        .then((projects) => {
+          res.json(projects);
+        })
+        .catch((err) => {
+          res.status(500).json({message: 'Unable to retrieve projects'});
+          console.log('Unable to retrieve projects', err);
+        });
+      },
+      (err) => {
+        res.status(500).json({error: {message: err.message, code: err.code}});
+      }
+    );
   })
   .post((req,res,next) => {
     // Add new project
+
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
 
     // Validate input
     let required_inputs = ['name'];
@@ -128,10 +160,27 @@ router.route('/')
 router.route('/:ident([A-z0-9-]{36})')
   .get((req,res,next) => {
     // Getting project
-    return res.json(req.project);
+
+    // Check user permission and filter by project
+    let access = new acl(req, res);
+    access.getProjectAccess().then(
+      (projectAccess) => {
+        if(_.includes(_.map(projectAccess, 'ident'), req.project.ident)) return res.json(req.project);
+        res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
+      },
+      (err) => {
+        res.status(500).json({error: {message: err.message, code: err.code}});
+      }
+    );
   })
 
   .put((req,res,next) => {
+
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
+
     // Update project
     let updateBody = {
       name: req.body.name,
@@ -169,6 +218,10 @@ router.route('/:ident([A-z0-9-]{36})')
   })
   // Remove a project
   .delete((req,res,next) => {
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
 
     // Delete project
     db.models.project.destroy({where: {ident: req.params.ident}, limit:1}).then(
@@ -196,7 +249,20 @@ router.route('/search')
 
     db.models.project.findAll({where: where, attributes: {exclude:['deletedAt','id']}}).then(
       (results) => {
-        res.json(results);
+        // Check user permission and filter by project
+        let access = new acl(req, res);
+        access.getProjectAccess().then(
+          (projectAccess) => {
+            let filteredResults = _.map(results, function(p) {
+              if(_.includes(_.map(projectAccess, 'ident'), p.ident)) return p;
+            });
+
+            res.json(filteredResults);
+          },
+          (err) => {
+            res.status(500).json({error: {message: err.message, code: err.code}});
+          }
+        );
       },
       (err) => {
         console.log('Error', err);
@@ -208,11 +274,21 @@ router.route('/search')
 // User Binding Functions
 router.route('/:project([A-z0-9-]{36})/user')
   .get((req,res,next) => {
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
+
     // Get Project Users
     res.json(req.project.users);
   })
   .post((req,res,next) => {
     // Add Project User
+
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
 
     // Lookup User
     db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access','password','jiraToken']}}).then(
@@ -256,6 +332,11 @@ router.route('/:project([A-z0-9-]{36})/user')
   .delete((req,res,next) => {
     // Remove Project User
 
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
+
     // Lookup User
     db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access','password','jiraToken']}}).then(
       (user) => {
@@ -284,11 +365,21 @@ router.route('/:project([A-z0-9-]{36})/user')
 // POG Binding Functions
 router.route('/:project([A-z0-9-]{36})/pog')
   .get((req,res,next) => {
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
+
     // Get Project POGs
     res.json(req.project.pogs);
   })
   .post((req,res,next) => {
     // Add Project POG
+
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
 
     // Lookup POG
     db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt', 'access','password','jiraToken']}}).then(
@@ -326,6 +417,11 @@ router.route('/:project([A-z0-9-]{36})/pog')
   })
   .delete((req,res,next) => {
     // Remove Project POG
+
+    // Access Control
+    let access = new acl(req, res);
+    access.read('admin', 'superUser');
+    if(access.check() === false) return;
 
     // Lookup POG
     db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt']}}).then(

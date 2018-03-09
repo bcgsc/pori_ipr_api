@@ -18,87 +18,103 @@ router.param('report', require(process.cwd() + '/app/middleware/analysis_report'
 router.route('/')
   .get((req,res,next) => {
 
-    let opts = { where: {}};
-    
-    // Pagination
-    if(req.query.paginated) {
-      // Setup Pagination
-      opts.limit = req.query.limit || 20;
-      opts.offset = req.query.offset || 0;
-    }
-    
-    opts.include = [
-      {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }},
-      {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
-      {model: db.models.user.scope('public'), as: 'createdBy'},
-      {model: db.models.POG.scope('public'), as: 'pog'},
-      {model: db.models.pog_analysis.scope('public'), as: 'analysis' },
-      {model: db.models.analysis_reports_user, as: 'users', separate: true, include: [
-        {model: db.models.user.scope('public'), as: 'user'}
-      ]}
-    ];
-    
-    // Where clauses
-    opts.where = {};
-
-    // Check for types
-    if(req.query.type === 'probe') opts.where.type = 'probe';
-    if(req.query.type === 'genomic') opts.where.type = 'genomic';
-    if(req.query.project) opts.where['$pog.project$'] = req.query.project;
-    if(req.query.searchText) opts.where['$or'] = {
-      '$patientInformation.tumourType$': {$ilike: `%${req.query.searchText}%`},
-      '$patientInformation.biopsySite$': {$ilike: `%${req.query.searchText}%`},
-      '$patientInformation.physician$': {$ilike: `%${req.query.searchText}%`},
-      '$patientInformation.caseType$': {$ilike: `%${req.query.searchText}%`},
-      '$tumourAnalysis.diseaseExpressionComparator$': {$ilike: `%${req.query.searchText}%`},
-      '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
-      '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
-    };
-
-
-    // States
-    if(req.query.states) {
-      let states = req.query.states.split(',');
-      opts.where.state = {$in: states};
-    }
-
-    if(!req.query.states) {
-      opts.where.state = { $not: ['archived', 'nonproduction', 'reviewed']};
-    }
-
-    // Are we filtering on POGUser relationship?
-    if(req.query.all !== 'true' || req.query.role) {
-      let userFilter = {model: db.models.analysis_reports_user, as: 'ReportUserFilter', where: {}};
-      // Don't search all if the requestee has also asked for role filtering
-      if(req.query.all !== 'true' || req.query.role) userFilter.where.user_id = req.user.id;
-      if(req.query.role) userFilter.where.role = req.query.role; // Role filtering
-
-      opts.include.push(userFilter);
-    }
-    
-    opts.order = [[{model: db.models.POG, as: 'pog'}, 'POGID', 'desc']];
-    
-    let reports;
-    
-    // return all reports
-    db.models.analysis_report.scope('public').findAll(opts)
-      .then((results) => {
-        reports = results;
-        if(!req.query.paginated) return res.json(reports);
+    // Check user permission and filter by project
+    let access = new acl(req, res);
+    access.getProjectAccess().then(
+      (projectAccess) => {
+        let opts = { where: {}};
         
-        delete opts.limit;
-        delete opts.offset;
+        // Pagination
+        if(req.query.paginated) {
+          // Setup Pagination
+          opts.limit = req.query.limit || 20;
+          opts.offset = req.query.offset || 0;
+        }
         
-        return db.models.analysis_report.scope('public').findAll(opts);
+        opts.include = [
+          {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }},
+          {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
+          {model: db.models.user.scope('public'), as: 'createdBy'},
+          {model: db.models.POG.scope('public'), as: 'pog', include: [
+            {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']}}
+          ]},
+          {model: db.models.pog_analysis.scope('public'), as: 'analysis' },
+          {model: db.models.analysis_reports_user, as: 'users', separate: true, include: [
+            {model: db.models.user.scope('public'), as: 'user'}
+          ]}
+        ];
         
-      })
-      .then((total) => {
-        if(req.query.paginated) res.json({total: total.length, reports: reports});
-      })
-      .catch((err) => {
-        console.log('Unable to lookup analysis reports', err);
-        res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
-      });
+        // Where clauses
+        opts.where = {};
+
+        // Check for types
+        if(req.query.type === 'probe') opts.where.type = 'probe';
+        if(req.query.type === 'genomic') opts.where.type = 'genomic';
+
+        if (req.query.project) { // check access if filtering
+          if(_.includes(_.map(projectAccess, 'ident'), req.query.project)) opts.where['$pog.projects.ident$'] = req.query.project;
+        } else { // otherwise filter by accessible projects
+          opts.where['$pog.projects.ident$'] = {$in: _.map(projectAccess, 'ident')};
+        }
+
+        if(req.query.searchText) opts.where['$or'] = {
+          '$patientInformation.tumourType$': {$ilike: `%${req.query.searchText}%`},
+          '$patientInformation.biopsySite$': {$ilike: `%${req.query.searchText}%`},
+          '$patientInformation.physician$': {$ilike: `%${req.query.searchText}%`},
+          '$patientInformation.caseType$': {$ilike: `%${req.query.searchText}%`},
+          '$tumourAnalysis.diseaseExpressionComparator$': {$ilike: `%${req.query.searchText}%`},
+          '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
+          '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
+        };
+
+        // States
+        if(req.query.states) {
+          let states = req.query.states.split(',');
+          opts.where.state = {$in: states};
+        }
+
+        if(!req.query.states) {
+          opts.where.state = { $not: ['archived', 'nonproduction', 'reviewed']};
+        }
+
+        // Are we filtering on POGUser relationship?
+        if(req.query.all !== 'true' || req.query.role) {
+          let userFilter = {model: db.models.analysis_reports_user, as: 'ReportUserFilter', where: {}};
+          // Don't search all if the requestee has also asked for role filtering
+          if(req.query.all !== 'true' || req.query.role) userFilter.where.user_id = req.user.id;
+          if(req.query.role) userFilter.where.role = req.query.role; // Role filtering
+
+          opts.include.push(userFilter);
+        }
+        
+        opts.order = [[{model: db.models.POG, as: 'pog'}, 'POGID', 'desc']];
+        
+        let reports;
+        
+        // return all reports
+        db.models.analysis_report.scope('public').findAll(opts)
+          .then((results) => {
+            reports = results;
+            if(!req.query.paginated) return res.json(reports);
+            
+            delete opts.limit;
+            delete opts.offset;
+            
+            return db.models.analysis_report.scope('public').findAll(opts);
+            
+          })
+          .then((total) => {
+            if(req.query.paginated) res.json({total: total.length, reports: reports});
+          })
+          .catch((err) => {
+            console.log('Unable to lookup analysis reports', err);
+            res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
+          });
+      },
+      (err) => {
+        res.status(500).json({error: {message: err.message, code: err.code}});
+      }
+    );
 
   });
 

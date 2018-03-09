@@ -1,6 +1,7 @@
 "use strict";
 
 let _ = require('lodash'),
+  Q = require('q'),
   router = require('express').Router({mergeParams: true}),
   extend = require('util')._extend,
   db = require(process.cwd() + '/app/models');
@@ -74,6 +75,32 @@ function ACL(request, response) {
 
     isPog: () => {
       this._isPog = true;
+    },
+
+    // Get Project Access
+    getProjectAccess: () => {
+      let deferred = Q.defer();
+      let projectAccess = [];
+
+      let accessGroups = ['Full Project Access', 'admin', 'superUser'];
+      let userGroups = _.map(this._req.user.groups, 'name');
+      let hasAccess = _.intersection(accessGroups, userGroups);
+
+      if(hasAccess.length > 0) { // user has full project access
+        db.models.project.findAll().then(
+          (projects) => {
+            deferred.resolve(projects);
+          },
+          (err) => {
+            console.log(error);
+            deferred.reject({status: false, message: 'Unable to retrieve project access', code: "failedProjectPermissionQuery"});
+          });
+      } else { // user does not have full project access - filter on user_project relation
+        deferred.resolve(this._req.user.projects);
+      }
+
+      return deferred.promise;
+      
     },
 
 
