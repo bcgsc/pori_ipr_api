@@ -295,32 +295,56 @@ router.route('/:project([A-z0-9-]{36})/user')
       (user) => {
         if(user === null) return res.status(400).json({error: {message: 'Unable to find the supplied user.', code: 'failedUserLookupUserProject'}});
 
-        // Bind User
-        db.models.user_project.create({project_id: req.project.id, user_id: user.id}).then(
-          (user_project) => {
-            let output = {
-              ident: user.ident,
-              username: user.username,
-              type: user.type,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              lastLogin: user.lastLogin,
-              createdAt: user.createdAt,
-              updatedAt: user.updatedAt,
-              user_project: {
-                updatedAt: user_project.updatedAt,
-                createdAt: user_project.createdAt,
-              }
-            };
+        // See if binding already exists
+        db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {$ne: null} }}).then(
+          (hasBinding) => {
+            if(hasBinding) { // exists - set deletedAt to null
+              db.models.user_project.update({deletedAt: null}, {paranoid:false, where:{id: hasBinding.id}, returning: true}).then(
+                (user_project) => {
+                  let response = user; //user_project[1][0];
+                  res.json(response);
+                },
+                (err) => {
+                  console.log('Unable to restore user project binding', err);
+                  res.status(500).json({error: {message: 'Unable to restore existing user project binding', code: 'failedUserProjectRestore'}});
+                }
+              );
+            } else { // doesn't exist - create new binding
+              // Bind User
+              db.models.user_project.create({project_id: req.project.id, user_id: user.id}).then(
+                (user_project) => {
+                  let output = {
+                    ident: user.ident,
+                    username: user.username,
+                    type: user.type,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    lastLogin: user.lastLogin,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                    user_project: {
+                      updatedAt: user_project.updatedAt,
+                      createdAt: user_project.createdAt,
+                    }
+                  };
 
-            res.json(output);
+                  res.json(output);
+                },
+                (err) => {
+                  console.log('Unable to add user to project.', err);
+                  res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectCreate'}});
+                }
+              );
+            }
           },
           (err) => {
-            console.log('Unable to add user to project.', err);
-            res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectCreateQuery'}});
+            console.log('Unable to query for existing user project binding.', err);
+            res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectBindingQuery'}});
           }
-        )
+        );
+
+        
       },
       (err) => {
         console.log('Unable to update project', err);
