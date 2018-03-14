@@ -12,12 +12,6 @@ module.exports = (req,res,next) => {
 
   // Get Authorization Header
   let token = req.header('Authorization');
-  
-  // Test mode?
-  if(process.env.NODE_ENV === 'test') {
-    req.user = 1;
-    return next();
-  }
 
   if(token === undefined) {
     return res.status(401).json({message: 'Authorization failed to validate.'});
