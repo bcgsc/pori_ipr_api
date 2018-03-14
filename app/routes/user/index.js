@@ -210,8 +210,9 @@ router.route('/:ident([A-z0-9-]{36})')
       if(req.body.access && req.body.access !== req.user.access) return res.status(400).json({error: { message: 'You are not able to update your own access', code: 'failUpdateAccess'}});
       if(req.body.username && req.body.username !== req.user.username) return res.status(400).json({error: { message: 'You are not able to update your username', code: 'failUpdateUsername'}});
       if(req.body.type && req.body.type !== req.user.type) return res.status(400).json({error: { message: 'You are not able to update your account type', code: 'failUpdateType'}});
-      if(req.body.password && req.body.password && req.body.password.length < 8) return res.status(400).json({error: { message: 'Password must be 8 characters or more.', code: 'failUpdateType'}});
     }
+
+    if(req.body.password && req.body.password && req.body.password.length < 8) return res.status(400).json({error: { message: 'Password must be 8 characters or more.', code: 'failUpdateType'}});
 
     let updateBody = {
       firstName: req.body.firstName,
@@ -222,7 +223,7 @@ router.route('/:ident([A-z0-9-]{36})')
     if(req.body.settings) updateBody.settings = req.body.settings;
 
     //if(req.body.password && req.body.password.length > 5) updateBody.password = bcrypt.hashSync(req.body.password, 10);
-    if(req.body.password && req.body.password.length > 5) updateBody.password = bcryptjs.hashSync(req.body.password, 10);
+    if(req.body.password && req.body.password.length > 7) updateBody.password = bcrypt.hashSync(req.body.password, 10);
 
     // Attempt user model update
     db.models.user.update(updateBody, { where: {ident: req.user.ident}, limit: 1 }).then(
