@@ -167,13 +167,9 @@ module.exports = class GSMRouter extends RoutingInterface {
   getReports(req, res) {
     
     // get all reports
-    //let offset = req.query.offset || 0;
-    //let limit = req.query.limit || 25;
     
     let opts = {
-      order: '"analysis.pog.POGID" DESC', // temporary - go back to [['id', 'desc']] when table sorting is enabled
-      //limit: limit,    // sequelize applies limit to subquery giving incorrect results - need to limit manually
-      // offset: offset, // sequelize applies offset to subquery giving incorrect results - need to get offset manually
+      order: [['id', 'desc']],
       where: {}
     };
         
@@ -183,7 +179,22 @@ module.exports = class GSMRouter extends RoutingInterface {
     
     db.models.germline_small_mutation.scope('public').findAndCountAll(opts)
       .then((reports) => {
-        res.json({total: reports.count, reports: reports.rows});
+        
+        // Need to take care of limits and offsets outside of query to support natural sorting
+        let limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
+        let offset = parseInt(req.query.offset) || 0;
+
+        let sortedRows = _.sortBy(
+          reports.rows, 
+          [function(report) { return parseInt(report.analysis.pog.POGID.match(/\d+/)[0]) }] // perform natural sorting on POGID
+        ).reverse(); // reverse sort order
+
+        // apply limit and offset to results
+        let start = offset,
+            finish = offset + limit;
+        let rows = sortedRows.slice(start, finish);
+
+        res.json({total: reports.count, reports: rows});
       })
       .catch((err) => {
         res.status(500).json({message: 'Unable to retrieve reports'});
