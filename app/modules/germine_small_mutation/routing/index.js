@@ -174,7 +174,7 @@ module.exports = class GSMRouter extends RoutingInterface {
     };
         
     if(req.query.search) opts.where['$analysis.pog.POGID$'] = {$ilike: `%${req.query.search}%` };
-    if(req.query.project) opts.where['$analysis.pog.project$'] = req.query.project;
+    if(req.query.project) opts.where['$analysis.pog.projects$'] = req.query.project;
 
     
     db.models.germline_small_mutation.scope('public').findAndCountAll(opts)

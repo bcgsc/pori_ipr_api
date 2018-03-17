@@ -24,13 +24,6 @@ router.route('/')
       (projectAccess) => {
         let opts = { where: {}};
         
-        // Pagination
-        if(req.query.paginated) {
-          // Setup Pagination
-          opts.limit = req.query.limit || 20;
-          opts.offset = req.query.offset || 0;
-        }
-        
         opts.include = [
           {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] }},
           {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
@@ -97,14 +90,19 @@ router.route('/')
             reports = results;
             if(!req.query.paginated) return res.json(reports);
             
-            delete opts.limit;
-            delete opts.offset;
+            // limits and offsets are causing the query to break due to the public scope and subqueries
+            // i.e. fields are not available for joining onto subquery selection
+            // dealing w/ applying the pagination here
+            let limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
+            let offset = parseInt(req.query.offset) || 0;
+
+            // apply limit and offset to results
+            let start = offset,
+                finish = offset + limit;
+            let paginatedReports = reports.slice(start, finish);
             
-            return db.models.analysis_report.scope('public').findAll(opts);
+            return res.json({total: reports.length, reports: paginatedReports});
             
-          })
-          .then((total) => {
-            if(req.query.paginated) res.json({total: total.length, reports: reports});
           })
           .catch((err) => {
             console.log('Unable to lookup analysis reports', err);

@@ -191,7 +191,7 @@ router.route('/:POG/reports')
         res.json(reports);
       })
       .catch((err) => {
-        console.log('Unable to lookup analysis reports', err);
+        console.log('Unable to lookup analysis reports for POG', err);
         res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
       });
 
