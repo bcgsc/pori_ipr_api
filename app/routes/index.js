@@ -99,11 +99,11 @@ class Routing extends RouterInterface {
   
       this.bindRouteObject('/analysis', AnalysisRoutes.getRouter());
   
-      // Get Recebt Reports Routes
+      // Get Recent Reports Routes
       let RecentReports = require('../modules/recentReports/routing');
       let RecentReportsRoutes = new RecentReports(this.io);
   
-      this.bindRouteObject('/analysis_reports/recent/report/', RecentReportsRoutes.getRouter());
+      this.bindRouteObject('/analysis_reports/recent/', RecentReportsRoutes.getRouter());
   
       // Get Recent Reports Routes
       let Germline_Reports = require('../modules/germine_small_mutation/routing');
