@@ -45,7 +45,11 @@ router.route('/')
         if(req.query.type === 'genomic') opts.where.type = 'genomic';
 
         if (req.query.project) { // check access if filtering
-          if(_.includes(_.map(projectAccess, 'ident'), req.query.project)) opts.where['$pog.projects.ident$'] = req.query.project;
+          if(_.includes(_.map(projectAccess, 'ident'), req.query.project)) {
+            opts.where['$pog.projects.ident$'] = req.query.project;
+          } else {
+            return res.status(403).json({error: {message: 'You do not have access to the selected project'}});
+          }
         } else { // otherwise filter by accessible projects
           opts.where['$pog.projects.ident$'] = {$in: _.map(projectAccess, 'ident')};
         }
