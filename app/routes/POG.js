@@ -40,6 +40,8 @@ router.route('/')
         let projectOpts = {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {$in: projectAccess}}};
         opts.include.push(projectOpts);
 
+        // TEMPORARY: temp fix until I can figure out why the individual POG query isn't grouping things correctly
+        if(req.query.pogid) opts.where.POGID = req.query.pogid;
 
         if(req.query.query ) opts.where.POGID = {$ilike: '%' + req.query.query + '%'};
         if(req.query.nonPOG === "true") opts.where.nonPOG = true;
