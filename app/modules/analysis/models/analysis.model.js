@@ -120,10 +120,10 @@ module.exports = (sequelize, Sq) => {
       scopes: {
         public: {
           attributes: {
-            exclude: ['id', 'pog_id', 'deletedAt']
+            exclude: ['pog_id', 'deletedAt']
           },
           include: [
-            { as: 'pog', model: sequelize.models.POG.scope('public') }
+            { as: 'pog', model: sequelize.models.POG.scope('public'), include: [{as:'projects', model: sequelize.models.project.scope('public')}] }
           ]
         }
       }
