@@ -46,6 +46,9 @@ module.exports = {
               }
             )
           }
+
+          resolve(patient);
+          
         })
         .catch((e) => {
           logger.error('Failed to retrieve or create patient record', e);
