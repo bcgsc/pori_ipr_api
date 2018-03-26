@@ -84,14 +84,13 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['deletedAt', 'id', 'analysis_id', 'createdBy_id', 'group_id']
+          exclude: ['deletedAt']
         },
         include: [
           {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
           {
             as: 'tasks',
             model: sequelize.models.tracking_state_task,
-            attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
             order: [['ordinal','ASC']],
             include: [
               {as: 'assignedTo', model: sequelize.models.user.scope('public')},
@@ -105,7 +104,7 @@ module.exports = (sequelize, Sq) => {
       },
       noTasks: {
         attributes: {
-          exclude: ['deletedAt', 'analysis_id', 'createdBy_id', 'group_id']
+          exclude: ['deletedAt']
         },
         include: [
           {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
