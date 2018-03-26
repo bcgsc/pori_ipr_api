@@ -41,7 +41,7 @@ module.exports = (sequelize, Sq) => {
         public: {
           order:  [['createdAt', 'ASC']],
           attributes: {
-            exclude: ['deletedAt', 'id', 'task_id', 'user_id']
+            exclude: ['deletedAt']
           },
           include: [
             { as: 'user', model: sequelize.models.user.scope('public') }

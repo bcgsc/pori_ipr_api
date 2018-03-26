@@ -94,7 +94,7 @@ module.exports = (sequelize, Sq) => {
       public: {
         order:  [['ordinal', 'ASC']],
         attributes: {
-          exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
+          exclude: ['deletedAt']
         },
         include: [
           { as: 'assignedTo', model: sequelize.models.user.scope('public') },

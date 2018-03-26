@@ -28,7 +28,6 @@ module.exports = (req,res,next,ident) => {
     {
       as: 'tasks',
       model: db.models.tracking_state_task,
-      attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
       order: [['ordinal', 'ASC']],
       include: [
         {as: 'assignedTo', model: db.models.user.scope('public')},
