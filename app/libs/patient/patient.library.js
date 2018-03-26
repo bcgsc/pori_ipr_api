@@ -23,11 +23,36 @@ module.exports = {
         .then((result) => {
           let patient = result[0];
           let created = result[1];
+          
+          if(created && project) { // new record and project is defined - need to bind POG and project
+            db.models.project.findOrCreate({ where: { name: project }, defaults: { name: project } }) // find project or create if it doesn't exist already
+            .then(
+              (projectResult) => {
+                let bindProject = projectResult[0];
+                // Bind POG to project
+                db.models.pog_project.create({project_id: bindProject.id, pog_id: patient.id}).then(
+                  (pog_project) => {
+                    resolve(patient);
+                  },
+                  (bindErr) => {
+                    logger.error('Failed to bind patient to project', bindErr);
+                    reject({message: 'Failed to bind patient to project'});
+                  }
+                )
+              },
+              (err) => {
+                logger.error('Failed to retrieve or create project record', err);
+                reject({message: 'Failed to retrieve or create project record'});
+              }
+            )
+          }
+
           resolve(patient);
+          
         })
         .catch((e) => {
-          reject({message: `failed to retrieve or create patient record. Reason: ${e.message}`});
           logger.error('Failed to retrieve or create patient record', e);
+          reject({message: `failed to retrieve or create patient record. Reason: ${e.message}`});
         });
     
     })

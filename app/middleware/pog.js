@@ -21,6 +21,7 @@ module.exports = (req,res,next,pogID) => {
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
         {as: 'analysis_reports', model: db.models.analysis_report.scope('public')},
+        {as: 'projects', model: db.models.project}
       ],
     }).then(
     (result) => {

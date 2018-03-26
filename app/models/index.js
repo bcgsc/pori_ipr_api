@@ -44,6 +44,18 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 // POG
 let POG = sequelize.import(__dirname + '/POG');
 
+// Projects
+let project = sequelize.import(__dirname + '/project/project');
+let user_project = sequelize.import(__dirname + '/project/user_project');
+let pog_project = sequelize.import(__dirname + '/project/pog_project');
+
+project.belongsToMany(POG, {as: 'pogs', through: {model: pog_project, unique: false}, foreignKey: 'project_id', otherKey: 'pog_id', onDelete: 'CASCADE'});
+POG.belongsToMany(project, {as: 'projects', through: {model: pog_project, unique: false}, foreignKey: 'pog_id', otherKey: 'project_id', onDelete: 'CASCADE'});
+
+project.belongsToMany(user, {as: 'users', through: {model: user_project, unique: false}, foreignKey: 'project_id', otherKey: 'user_id', onDelete: 'CASCADE'});
+user.belongsToMany(project, {as: 'projects', through: {model: user_project, unique: false}, foreignKey: 'user_id', otherKey: 'project_id', onDelete: 'CASCADE'});
+
+// Analysis
 let analysis = require('../modules/analysis/models')(sequelize);
 POG.hasMany(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 

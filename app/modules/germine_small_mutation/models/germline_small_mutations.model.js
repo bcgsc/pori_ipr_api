@@ -56,8 +56,6 @@ module.exports = (sequelize, Sq) => {
           include: [
             { as: 'analysis', model: sequelize.models.pog_analysis.scope('public') },
             { as: 'biofx_assigned', model: sequelize.models.user.scope('public') },
-            //{ as: 'reviews', model: sequelize.models.germline_small_mutation_review },
-            //{ as: 'variants', model: sequelize.models.germline_small_mutation_variant }
             { as: 'variants', model: sequelize.models.germline_small_mutation_variant, separate: true, order: [['gene', 'asc']] },
             { as: 'reviews', model: sequelize.models.germline_small_mutation_review, separate: true, include: [ {model: sequelize.models.user.scope('public'), as: 'reviewedBy'} ] }
           ]

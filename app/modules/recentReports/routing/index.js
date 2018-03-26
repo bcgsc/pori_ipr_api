@@ -57,6 +57,36 @@ module.exports = class RecentReportsRouting extends RoutingInterface {
             res.status(500).json({message: 'Unable to request recent reports listing.'});
           });
       });
+
+    this.registerResource(`/:recentReport([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})`)
+    
+      // Request to delete specified recent report entry
+      .delete((req,res) => {
+
+        // 1. Find the recent report
+        console.log('RECENT:');
+        console.log(req.params.recentReport);
+        db.models.recent_report.findOne({where: {ident: req.params.recentReport}})
+
+        // 2. Delete recent report entry if exists
+          .then((result) => {
+            if(result === null) {
+              return res.status(404).json({message: 'Failed to find the requested recent report entry'});
+            } else {
+              return result.destroy();
+            }
+          })
+          // 3. Send result to browser
+          .then(() => {
+            res.status(204).send();
+          })
+          .catch((err) => {
+            if(err.message === 'recentReportNotFound') return res.status(404).json({message: 'Unable to find the requested recent report'});
+
+            res.status(500).json({message: 'Unable to remove the recent report entry', cause: err.message});
+          });
+      
+      });
     
   }
   
@@ -65,7 +95,7 @@ module.exports = class RecentReportsRouting extends RoutingInterface {
    */
   resource() {
     
-    this.registerResource(`/:report([A-Z0-9]{5})`)
+    this.registerResource(`/report/:report([A-Z0-9]{5})`)
       
       // Request to retrieve specified recent report entry
       .get((req,res) => {
@@ -118,40 +148,6 @@ module.exports = class RecentReportsRouting extends RoutingInterface {
             
             res.status(500).json({message: 'Unable to update the recent report entry', cause: err.message});
           });
-      })
-      
-      // Request to Delete recent report entry
-      .delete((req,res) => {
-  
-        // 1. Find the report id
-        db.models.analysis_report.findOne({where: {ident: req.params.report}})
-  
-        // 2. Does the recent report entry exist?
-          .then((result) => {
-            if(result === null) throw new Error('reportNotFound');
-            // Get Report ID
-            return db.models.recent_report.findOne({ where: { pog_report_id: result.id, user_id: req.user.id } })
-          })
-    
-          // 3. Create or update depending on previous existance
-          .then((result) => {
-            if(result === null) {
-              return res.status(404).json({message: 'Failed to find the requested recent report entry'});
-            } else {
-              return result.destroy();
-            }
-          })
-          
-          // 4. Send result to browser
-          .then(() => {
-            res.status(204).send();
-          })
-          .catch((err) => {
-            if(err.message === 'reportNotFound') return res.status(404).json({message: 'Unable to find the requested report'});
-  
-            res.status(500).json({message: 'Unable to remove the recent report entry', cause: err.message});
-          });
-      
       });
     
   }

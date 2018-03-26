@@ -35,9 +35,8 @@ module.exports = (report, dir, logger, options={}) => {
     if(err || files.length === 0) {
       log('Unable to find Mutation Signature source file: ' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', logger.WARNING);
       log('Skipping mutationSignature loading', logger.WARNING);
-
-      console.log('Mutation Signature Error', err);
-      console.log('Attempted to load', options.config['mutationSigFolder'] + '/*_msig_combined.txt');
+      
+      deferred.resolve({loader: 'mutationSignature', result: true});
 
       return deferred.promise;
     }
