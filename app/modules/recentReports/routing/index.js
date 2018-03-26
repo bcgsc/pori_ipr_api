@@ -64,8 +64,6 @@ module.exports = class RecentReportsRouting extends RoutingInterface {
       .delete((req,res) => {
 
         // 1. Find the recent report
-        console.log('RECENT:');
-        console.log(req.params.recentReport);
         db.models.recent_report.findOne({where: {ident: req.params.recentReport}})
 
         // 2. Delete recent report entry if exists
