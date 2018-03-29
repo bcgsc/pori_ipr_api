@@ -3,9 +3,6 @@
 const db          = require(process.cwd() + '/app/models');
 const _      = require('lodash');
 const logger      = process.logger;
-const errors = Object.freeze({
-  sequelizeErr: new Error('Sequelize Error')
-})
 
 module.exports = {
   
