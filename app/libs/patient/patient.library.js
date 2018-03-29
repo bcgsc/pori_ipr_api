@@ -1,8 +1,11 @@
 "use strict";
 
 const db          = require(process.cwd() + '/app/models');
-const lodash      = require('lodash');
+const _      = require('lodash');
 const logger      = process.logger;
+const errors = Object.freeze({
+  sequelizeErr: new Error('Sequelize Error')
+})
 
 module.exports = {
   
@@ -19,40 +22,34 @@ module.exports = {
       
       if(!patientID) reject({message: 'Patient ID is required to retrieve or create patient entry'});
       
+      let patient;
       db.models.POG.findOrCreate({ where: { POGID: patientID }, defaults: { POGID: patientID, project: project }})
         .then((result) => {
-          let patient = result[0];
+          patient = result[0];
           let created = result[1];
-          
-          if(created && project) { // new record and project is defined - need to bind POG and project
-            db.models.project.findOrCreate({ where: { name: project }, defaults: { name: project } }) // find project or create if it doesn't exist already
-            .then(
-              (projectResult) => {
-                let bindProject = projectResult[0];
-                // Bind POG to project
-                db.models.pog_project.create({project_id: bindProject.id, pog_id: patient.id}).then(
-                  (pog_project) => {
-                    resolve(patient);
-                  },
-                  (bindErr) => {
-                    logger.error('Failed to bind patient to project', bindErr);
-                    reject({message: 'Failed to bind patient to project'});
-                  }
-                )
-              },
-              (err) => {
-                logger.error('Failed to retrieve or create project record', err);
-                reject({message: 'Failed to retrieve or create project record'});
-              }
-            )
+
+          if(created && project) { // new POG record and project specified - find project or create if it doesn't exist already
+            return db.models.project.findOrCreate({ where: { name: project }, defaults: { name: project } });
           }
 
           resolve(patient);
           
         })
+        .then((projectResult) => {
+          let bindProject = projectResult[0]; // created/retrieved project
+
+          // See if patient and project are already bound
+          if(_.find(bindProject.pogs, {'ident': bindProject.ident})) resolve(patient); // binding already exists - resolve pog
+
+          // Bind POG to project
+          return db.models.pog_project.create({project_id: bindProject.id, pog_id: patient.id});
+        })
+        .then((pog_project) => {
+          resolve(patient);
+        })
         .catch((e) => {
-          logger.error('Failed to retrieve or create patient record', e);
-          reject({message: `failed to retrieve or create patient record. Reason: ${e.message}`});
+          logger.error('Failed to retrieve/create patient record', e);
+          res.status(500).json(e);
         });
     
     })

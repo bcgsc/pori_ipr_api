@@ -8,44 +8,48 @@ let validator = require('validator'),
   _ = require('lodash'),
   db = require(process.cwd() + '/app/models');
 
+const errors = Object.freeze({
+  AccessForbidden: new Error('403 Access denied')
+});
+
 // Middleware for project resolution
 router.param('project', (req,res,next,ident) => {
 
   // Check user permission and filter by project
   let access = new acl(req, res);
-  access.getProjectAccess().then(
-    (projectAccess) => {
-      let projects = _.intersection(_.map(projectAccess, 'ident'), [ident]);
+  access.getProjectAccess().then((projectAccess) => {
+    let projects = _.intersection(_.map(projectAccess, 'ident'), [ident]);
 
-      if(projects.length < 1) {
-        console.log('ProjectAccessError');
-        res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
-      }
-
-      // Lookup project!
-      let opts = {
-        where: {ident: ident},
-        attributes: {exclude: ['deletedAt']},
-        include: [
-          {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
-          {as: 'pogs', model: db.models.POG.scope('public'), }
-        ]
-      };
-      db.models.project.findOne(opts).then(
-        (project) => {
-          req.project = project;
-          next();
-        },
-        (err) => {
-          console.log('SQL Project Lookup Error', err);
-          res.status(404).json({error: {message: 'Unable to find the specified project', code: 'failedProjectIdentLookup'}});
-        }
-      )
-    },
-    (err) => {
-      res.status(500).json({error: {message: err.message, code: err.code}});
+    if(projects.length < 1) {
+      console.log('ProjectAccessError');
+      return reject(errors.AccessForbidden);
     }
-  );
+
+    // Lookup project!
+    let opts = {
+      where: {ident: ident},
+      attributes: {exclude: ['deletedAt']},
+      include: [
+        {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
+        {as: 'pogs', model: db.models.POG.scope('public'), }
+      ]
+    };
+    
+    return db.models.project.findOne(opts);
+
+  }).then((project) => {
+    req.project = project;
+    next();
+  }).catch((e) => {
+    switch(e) {
+      case errors.AccessForbidden:
+        res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
+        break;
+      default:
+        logger.error('Failed to resolve project', e);
+        res.status(500).json(e);
+    }
+  });
 });
 
 // Route for getting a project
