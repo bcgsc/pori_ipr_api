@@ -69,9 +69,8 @@ router.route('/')
     };
 
     // getting project access/filter
-    access.getProjectAccess().then(
-      (projectAccess) => {
-        let opts = {
+    access.getProjectAccess().then((projectAccess) => {
+      let opts = {
         order:  [['createdAt', 'desc']],
         attributes: {
           exclude: ['deletedAt', 'id']
@@ -80,19 +79,15 @@ router.route('/')
         where: {ident: {$in: _.map(projectAccess, 'ident')}}
       };
       
-      db.models.project.findAll(opts)
-        .then((projects) => {
-          res.json(projects);
-        })
-        .catch((err) => {
-          res.status(500).json({message: 'Unable to retrieve projects'});
-          console.log('Unable to retrieve projects', err);
-        });
-      },
-      (err) => {
-        res.status(500).json({error: {message: err.message, code: err.code}});
-      }
-    );
+      return db.models.project.findAll(opts);
+
+    }).then((projects) => {
+      res.json(projects);
+    })
+    .catch((err) => {
+      res.status(500).json({message: 'Unable to retrieve projects'});
+      console.log('Unable to retrieve projects', err);
+    });
   })
   .post((req,res,next) => {
     // Add new project
@@ -117,47 +112,26 @@ router.route('/')
     });
 
     // Check for existing project
-    db.models.project.findOne({where: {name: req.body.name, deletedAt: {$not: null}}, paranoid: false}).then(
-      (existCheck) => {
-        if(existCheck !== null) {
+    let created = false;
+    db.models.project.findOne({where: {name: req.body.name, deletedAt: {$not: null}}, paranoid: false}).then((existingProject) => {
+        if(existingProject) {
           // Restore!
-          db.models.project.update({deletedAt: null}, {paranoid:false,where:{ident: existCheck.ident}, returning: true}).then(
-            (project) => {
+          return db.models.project.update({deletedAt: null}, {paranoid:false,where:{ident: existingProject.ident}, returning: true});
 
-              let response = project[1][0];
-
-              res.json(response);
-            },
-            (err) => {
-              console.log('Unable to restore project', err);
-              res.status(500).json({error: {message: 'Unable to restore existing project', code: 'failedProjectCheckQuery'}});
-            }
-          )
-
-        }
-
-        if(existCheck === null) {
-
+        } else {
+          created = true;
           if(req.body.name.length < 1) input_errors.push({input: 'name', message: 'name must be set'});
-
           // Everything looks good, create the account!
-          db.models.project.create(req.body).then(
-            (resp) => {
-              // Account created, send details
-              res.json(resp);
-            },
-            (err) => {
-              console.log('Unable to create project', err);
-              res.status(500).json({status: false, message: 'Unable to create project.'});
-            }
-          );
+          return db.models.project.create(req.body);
         }
-      },
-      (err) => {
-        console.log('Unable to check for existing project', err);
-        res.status(500).json({error: {message: 'unable to check if this project exists', code: 'failedProjectExistsQuery'}});
       }
-    );
+    ).then((response) => {
+      if(created) res.json(response); // return newly created record
+      res.json(response[1][0]); // return restored record
+    }).catch((err) => {
+      res.status(500).json({message: 'Unable to add project'});
+      console.log('Unable to add project', err);
+    });
 
   });
 
@@ -167,15 +141,22 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Check user permission and filter by project
     let access = new acl(req, res);
-    access.getProjectAccess().then(
-      (projectAccess) => {
-        if(_.includes(_.map(projectAccess, 'ident'), req.project.ident)) return res.json(req.project);
-        res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
-      },
-      (err) => {
-        res.status(500).json({error: {message: err.message, code: err.code}});
+    access.getProjectAccess().then((projectAccess) => {
+      if(_.includes(_.map(projectAccess, 'ident'), req.project.ident)) return res.json(req.project);
+
+      // if we didn't return a value then user doesn't have access to project
+      console.log('ProjectAccessError');
+      return reject(errors.AccessForbidden);
+    }).catch((e) => {
+      switch(e) {
+        case errors.AccessForbidden:
+          res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
+          break;
+        default:
+          logger.error('Failed to resolve project', e);
+          res.status(500).json(e);
       }
-    );
+    });
   })
 
   .put((req,res,next) => {
