@@ -53,7 +53,7 @@ module.exports = (sequelize, Sq) => {
         public: {
           order:  [['ordinal', 'ASC']],
           attributes: {
-            exclude: ['deletedAt', 'id', 'hook_id']
+            exclude: ['deletedAt']
           },
           include: [
             { as: 'hook', model: sequelize.models.tracking_hook.scope('public') }

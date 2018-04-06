@@ -12,12 +12,6 @@ module.exports = (req,res,next) => {
 
   // Get Authorization Header
   let token = req.header('Authorization');
-  
-  // Test mode?
-  if(process.env.NODE_ENV === 'test') {
-    req.user = 1;
-    return next();
-  }
 
   if(token === undefined) {
     return res.status(401).json({message: 'Authorization failed to validate.'});
@@ -66,11 +60,8 @@ module.exports = (req,res,next) => {
       where: {token: token},
       include: [{
         model: db.models.user, as: 'user', attributes: {exclude: ['password', 'deletedAt']}, include: [
-          {
-            model: db.models.userGroup,
-            as: 'groups',
-            attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}
-          }
+          {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
+          {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
         ]
       }]
     }).then(

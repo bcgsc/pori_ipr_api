@@ -9,7 +9,7 @@ module.exports = (req,res,next,lookup) => {
   let opts = { where: {} };
 
   opts.attributes = {
-    exclude: ['deletedAt', 'assignedTo_id', 'state_id']
+    exclude: ['deletedAt']
   };
   if(req.state) opts.where.state_id = req.state.id;
 

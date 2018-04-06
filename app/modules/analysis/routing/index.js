@@ -51,31 +51,47 @@ module.exports = class TrackingRouter extends RoutingInterface {
         let analyses;
         let POG;
         let opts = {
-          order: '"pog.POGID" DESC', // temporary - go back to [['createdAt', 'DESC']] when table sorting is enabled
+          order: [['createdAt', 'DESC']],
           include: [
             {as: 'analysis', model: db.models.analysis_report, separate: true}
           ],
           where: {}
         };
         
-        let pog_include = { as: 'pog', model: db.models.POG.scope('public'), where: {} };
+        let pog_include = { as: 'pog', model: db.models.POG, where: {}, include: [] };
         if(req.query.search) opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%` };
-        if(req.query.project) opts.where['$pog.project$'] = req.query.project;
-        
-        if(req.query.paginated) {
-          opts.limit = req.query.limit || 25;
-          opts.offset = req.query.offset || 0;
+
+        let project_include = {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']}, where: {}};
+        if(req.query.project) {
+          project_include.where = {name: req.query.project};
         }
+        pog_include.include.push(project_include);
         
         opts.include.push(pog_include);
         
         // Execute Query
         db.models.pog_analysis.findAndCountAll(opts)
           .then((result) => {
-            
+
+            let rows = result.rows;
+
+            // Need to take care of limits and offsets outside of query to support natural sorting
             if(req.query.paginated) {
-              res.json({total: result.count, analysis: result.rows});
+              let limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
+              let offset = parseInt(req.query.offset) || 0;
+
+              let sortedRows = _.sortBy(
+                result.rows, 
+                [function(analysis) { return parseInt(analysis.pog.POGID.match(/\d+/)[0]) }] // perform natural sorting on POGID
+              ).reverse(); // reverse sort order
+
+              // apply limit and offset to results
+              let start = offset,
+                  finish = offset + limit;
+              rows = sortedRows.slice(start, finish);
             }
+
+            res.json({total: result.count, analysis: rows});
             
           })
           .catch((err) => {

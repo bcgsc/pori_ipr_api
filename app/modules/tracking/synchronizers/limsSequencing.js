@@ -365,7 +365,7 @@ class LimsSeqSync {
         as: 'state',
         model: db.models.tracking_state,
         attributes: {
-          exclude: ['deletedAt', 'analysis_id', 'createdBy_id', 'group_id']
+          exclude: ['deletedAt']
         },
         include: [
           {as: 'analysis', model: db.models.pog_analysis.scope('public')},
@@ -383,7 +383,7 @@ class LimsSeqSync {
         },
         order:  [['ordinal', 'ASC']],
         attributes: {
-          exclude: ['deletedAt', 'id', 'analysis_id', 'assignedTo_id', 'state_id']
+          exclude: ['deletedAt']
         },
         include: [
           state_include,

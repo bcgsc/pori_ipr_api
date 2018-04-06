@@ -7,9 +7,9 @@ module.exports = {
 
     // First application
     {
-      name              : 'IPR-API-dev',
+      name              : 'IPR-API-test',
       script            : 'bin/www',
-      cwd               : '/var/www/ipr/api/development/current',
+      cwd               : '/var/www/ipr/api/test/current',
       watch             : false,
       log_date_format   : 'YYYY-MM-DD HH:mm Z',
       log_file          : '../persist/logs/combined.outerr.log',
@@ -19,7 +19,7 @@ module.exports = {
       merge_logs        : true,
       env: {
         COMMON_VARIABLE: 'true',
-        NODE_ENV: 'development'
+        NODE_ENV: 'test'
       },
       env_production : {
         NODE_ENV: 'production'

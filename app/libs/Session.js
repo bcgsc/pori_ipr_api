@@ -247,11 +247,8 @@ class Session {
         where: {token: token},
         include: [{
           model: db.models.user, as: 'user', attributes: {exclude: ['password', 'deletedAt']}, include: [
-            {
-              model: db.models.userGroup,
-              as: 'groups',
-              attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}
-            }
+            {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
+            {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
           ]
         }]
       })

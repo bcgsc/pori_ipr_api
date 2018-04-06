@@ -33,13 +33,12 @@ module.exports = (report, dir, logger, options={}) => {
   glob(options.config['mutationSigFolder'] + '/*_msig_combined.txt', (err, files) => {
 
     if(err || files.length === 0) {
-      log('Unable to find Mutation Signature source file', logger.ERROR);
-      console.log('Mutation Signature Error', err);
-      console.log('Attempted to load', options.config['mutationSigFolder'] + '/*_msig_combined.txt');
+      log('Unable to find Mutation Signature source file: ' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', logger.WARNING);
+      log('Skipping mutationSignature loading', logger.WARNING);
+      
+      deferred.resolve({loader: 'mutationSignature', result: true});
 
-      deferred.reject({loader: 'mutationSignature', message: 'Unable to find the mutation signature file: ' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
-
-      //throw new Error('Unable to find Mutation Signature source file')
+      return deferred.promise;
     }
 
     // Get File

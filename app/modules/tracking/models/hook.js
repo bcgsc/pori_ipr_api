@@ -55,7 +55,7 @@ module.exports = (sequelize, Sq) => {
         public: {
           order:  [['name', 'ASC']],
           attributes: {
-            exclude: ['deletedAt', 'id']
+            exclude: ['deletedAt']
           }
         }
       }

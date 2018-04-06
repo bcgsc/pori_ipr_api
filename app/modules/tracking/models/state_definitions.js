@@ -69,7 +69,7 @@ module.exports = (sequelize, Sq) => {
       public: {
         order: [['ordinal', 'ASC']],
         attributes: {
-          exclude: ['deletedAt', 'group_id']
+          exclude: ['deletedAt']
         },
         include: [
           {as: 'group', model: sequelize.models.userGroup.scope('public')}

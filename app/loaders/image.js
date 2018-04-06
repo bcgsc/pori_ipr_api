@@ -41,14 +41,8 @@ module.exports = (report, dir, logger) => {
   Q.all(_.map(images, (image) => {
     // Check that image exists
     if(!fs.existsSync(imagePath + image.file)) {
-      // If it's not optional, hard fail.
-      if(!image.optional) {
-        log('Failed to read in required image file: ' + image.name, logger.ERROR);
-        deferred.reject({loader: 'image', message: 'Failed to find the required image: ' + image.file});
-        return;
-      }
-      // Optional, soft fail
-      if(image.optional) return log('Failed to find optional image file: ' + image.name, logger.WARNING);
+      // Warn image was not found
+      return log('Failed to find image file: ' + image.name, logger.WARNING);
     }
   
     // Create Promise

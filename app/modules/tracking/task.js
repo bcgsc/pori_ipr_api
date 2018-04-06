@@ -391,7 +391,7 @@ module.exports = class Task {
       opts.order = 'ordinal ASC';
 
       opts.attributes = {
-        exclude: ['deletedAt', 'assignedTo_id', 'state_id']
+        exclude: ['deletedAt']
       };
 
       opts.include = [

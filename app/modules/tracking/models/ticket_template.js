@@ -72,7 +72,7 @@ module.exports = (sequelize, Sq) => {
       scopes: {
         public: {
           attributes: {
-            exclude: ['deletedAt', 'id', 'definition_id']
+            exclude: ['deletedAt']
           },
           include: [
             {model: sequelize.models.tracking_state_definition.scope('public'), as: 'definition'}

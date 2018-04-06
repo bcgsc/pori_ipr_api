@@ -30,68 +30,55 @@ router.route('/')
     opts.attributes = {exclude: ['id','deletedAt', 'config', 'seqQC']};
     opts.order = '"POG"."POGID" ASC';
     opts.include = [];
-    opts.where = { nonPOG: false};
+    opts.where = { nonPOG: false };
 
-    if(req.query.query ) opts.where.POGID = {$ilike: '%' + req.query.query + '%'};
-    if(req.query.nonPOG === "true") opts.where.nonPOG = true;
+    // Check user permission and filter by project
+    let access = new acl(req, res);
+    access.getProjectAccess().then(
+      (projects) => {
+        let projectAccess = _.map(projects, 'name');
+        let projectOpts = {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {$in: projectAccess}}};
+        opts.include.push(projectOpts);
 
-    opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
+        if(req.query.query ) opts.where.POGID = {$ilike: '%' + req.query.query + '%'};
+        if(req.query.nonPOG === "true") opts.where.nonPOG = true;
 
-    let reportInclude = {as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: []};
-    reportInclude.include.push({model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'});
-    reportInclude.where = {};
+        opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
 
-    // Check for types
-    if(req.query.report_type === 'probe') reportInclude.where.type = 'probe';
-    if(req.query.report_type === 'genomic') reportInclude.where.type = 'genomic';
+        let reportInclude = {as: 'analysis_reports', model: db.models.analysis_report, separate: true, include: []};
+        reportInclude.include.push({model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'});
+        reportInclude.where = {};
 
+        // Check for types
+        if(req.query.report_type === 'probe') reportInclude.where.type = 'probe';
+        if(req.query.report_type === 'genomic') reportInclude.where.type = 'genomic';
 
-    //if(!req.query.archived) reportInclude.where = { state: {$not: ['archived', 'nonproduction']} };
-
-    // Optional States
-    if(!req.query.archived || !req.query.nonproduction) {
-      reportInclude.where.state = {$not: []};
-      if(!req.query.archived) reportInclude.where.state.$not.push('archived');
-      if(!req.query.nonproduction) reportInclude.where.state.$not.push('nonproduction');
-    }
-    
-    opts.include.push(reportInclude);
-    /*
-    // Are we filtering on POGUser relationship?
-    if(req.query.all !== 'true' || req.query.role) {
-      let userFilter = {model: db.models.POGUser, as: 'POGUserFilter', where: {}};
-      // Don't search all if the requestee has also asked for role filtering
-      if(req.query.all !== 'true' || req.query.role) userFilter.where.user_id = req.user.id;
-      if(req.query.role) userFilter.where.role = req.query.role; // Role filtering
-
-      opts.include.push(userFilter);
-    } */
-
-    // Create the POGUser join object.
-    /*
-    let pogUserInclude = { include: []};
-    pogUserInclude.model = db.models.POGUser;
-    pogUserInclude.as = 'POGUsers';
-    //pogUserInclude.separate = true;
-    pogUserInclude.attributes = {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']};
-    
-    pogUserInclude.include.push({as: 'user', model: db.models.user.scope('public')});
-    pogUserInclude.include.push({as: 'addedBy', model: db.models.user.scope('public')});
-
-    opts.include.push(pogUserInclude);
-    */
-
-    // Get All Pogs
-    db.models.POG.findAll(opts).then(
-        (pogs) => {
-          res.json(pogs);
-        },
-        (error) => {
-          console.log(error);
-          res.status(500).json({error: {message: "Unable to retrieve the requested resources", code: "failedAllPogsQuery"}});
+        // Optional States
+        if(!req.query.archived || !req.query.nonproduction) {
+          reportInclude.where.state = {$not: []};
+          if(!req.query.archived) reportInclude.where.state.$not.push('archived');
+          if(!req.query.nonproduction) reportInclude.where.state.$not.push('nonproduction');
         }
-      );
-    })
+        
+        opts.include.push(reportInclude);
+
+        // Get All Pogs
+        db.models.POG.findAll(opts).then(
+            (pogs) => {
+              res.json(pogs);
+            },
+            (error) => {
+              console.log(error);
+              res.status(500).json({error: {message: "Unable to retrieve the requested resources", code: "failedAllPogsQuery"}});
+            }
+          );
+        })
+      },
+      (err) => {
+        res.status(500).json({error: {message: err.message, code: err.code}});
+      }
+    )
+    
     .put((req,res,next) => {
     // Add a new Potential Clinical Alteration...
   });
@@ -203,7 +190,7 @@ router.route('/:POG/reports')
         res.json(reports);
       })
       .catch((err) => {
-        console.log('Unable to lookup analysis reports', err);
+        console.log('Unable to lookup analysis reports for POG', err);
         res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
       });
 
