@@ -5,6 +5,7 @@ let db = require(process.cwd() + '/app/models'),
   fs = require('fs'),
   parse = require('csv-parse'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
+  mavis = require(process.cwd() + '/app/libs/mavis'),
   _ = require('lodash'),
   Q = require('q'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
@@ -52,6 +53,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
         entries[k].pog_id = report.pog_id;
         entries[k].pog_report_id = report.id;
         entries[k].svVariant = variantType;
+        entries[k].mavis_product_id = entries[k].MAVIS_product_id;
 
         if(v.svg !== 'na' && v.svg !== '') {
           // Load in SVG !! SYNC-Block
@@ -123,7 +125,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
  * @param {object} logger - logging interface
  *
  */
-module.exports = (report, dir, logger) => {
+module.exports = (report, dir, logger, moduleOptions) => {
 
   baseDir = dir;
 
@@ -150,6 +152,7 @@ module.exports = (report, dir, logger) => {
   });
 
   // Wait for all promises to be resolved
+  let svResults;
   Q.all(promises)
     .then((results) => {
       // Log progress
@@ -161,16 +164,32 @@ module.exports = (report, dir, logger) => {
 
           // Successful create into DB
           log('Database entries created.', logger.SUCCESS);
+          svResults = result;
+          let mavisProducts = _.map(result, 'mavis_product_id');
 
-          // Done!
-          deferred.resolve({loader: 'structuralVariants', result: true, data: result});
+          if(mavisProducts) {
+            mavis.addMavisSummary(report, moduleOptions.config.MAVISSummary, mavisProducts).then(
+              (mavisResults) => {
+                // Done!
+                deferred.resolve({loader: 'structuralVariants', result: true, data: svResults});
+              },
+              (mavisErr) => {
+                log('Unable to add MAVIS summary for structural variants');
+                new Error('Unable to add MAVIS summary for structural variants');
+                deferred.reject({loader: 'structuralVariants', message: 'Unable to add MAVIS summary for structural variants'});
+              }
+            )
+          } else {
+            // Done!
+            deferred.resolve({loader: 'structuralVariants', result: true, data: svResults});
+          }
 
         },
         // Problem creating DB entries
         (err) => {
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create structural variants database entries.');
-          deferred.reject({loader: 'structuralVariants', message: 'Unable to create database entries.', result: false});
+          deferred.reject({loader: 'structuralVariants', message: 'Unable to create structural variants database entries.', result: false});
         }
       );
 

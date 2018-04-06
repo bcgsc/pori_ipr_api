@@ -30,6 +30,9 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       }
     },
+    mavis_product_id: {
+      type: Sq.STRING
+    },
     svVariant: {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport')
     },
