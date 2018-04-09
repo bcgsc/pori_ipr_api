@@ -167,7 +167,7 @@ module.exports = (report, dir, logger, moduleOptions) => {
           svResults = result;
           let mavisProducts = _.map(result, 'mavis_product_id');
 
-          if(mavisProducts) {
+          if(mavisProducts && moduleOptions.config.MAVISSummary) {
             mavis.addMavisSummary(report, moduleOptions.config.MAVISSummary, mavisProducts).then(
               (mavisResults) => {
                 // Done!
