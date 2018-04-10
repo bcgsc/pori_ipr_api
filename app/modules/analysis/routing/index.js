@@ -82,7 +82,10 @@ module.exports = class TrackingRouter extends RoutingInterface {
 
               let sortedRows = _.sortBy(
                 result.rows, 
-                [function(analysis) { return parseInt(analysis.pog.POGID.match(/\d+/)[0]) }] // perform natural sorting on POGID
+                [function(analysis) {
+                  if (!!analysis.pog.POGID.match(/\d+/)) return parseInt(analysis.pog.POGID.match(/\d+/)[0]);
+                  return 0; 
+                }] // perform natural sorting on POGID
               ).reverse(); // reverse sort order
 
               // apply limit and offset to results
