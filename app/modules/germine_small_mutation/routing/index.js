@@ -186,7 +186,10 @@ module.exports = class GSMRouter extends RoutingInterface {
 
         let sortedRows = _.sortBy(
           reports.rows, 
-          [function(report) { return parseInt(report.analysis.pog.POGID.match(/\d+/)[0]) }] // perform natural sorting on POGID
+          [function(report) { 
+            if(!!report.analysis.pog.POGID.match(/\d+/)) return parseInt(report.analysis.pog.POGID.match(/\d+/)[0]);
+            return 0;
+          }] // perform natural sorting on POGID
         ).reverse(); // reverse sort order
 
         // apply limit and offset to results
