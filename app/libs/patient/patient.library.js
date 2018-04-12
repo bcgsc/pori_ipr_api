@@ -46,7 +46,7 @@ module.exports = {
         })
         .catch((e) => {
           logger.error('Failed to retrieve/create patient record', e);
-          res.status(500).json(e);
+          reject({message: `Failed to retrieve/create patient record: ${e.message}`});
         });
     
     })
