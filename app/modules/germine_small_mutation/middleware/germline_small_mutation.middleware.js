@@ -9,7 +9,7 @@ module.exports = (req,res,next,ident) => {
   let opts = { where: {} };
   
   opts.attributes = {
-    exclude: ['deletedAt', 'biofx_assigned_id', 'analysis_id']
+    exclude: ['deletedAt']
   };
   
   // Check if it's a UUID

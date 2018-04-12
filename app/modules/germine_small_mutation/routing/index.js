@@ -179,12 +179,22 @@ module.exports = class GSMRouter extends RoutingInterface {
     
     db.models.germline_small_mutation.scope('public').findAndCountAll(opts)
       .then((result) => {
+
+        let reports = result.rows;
+
+        // If user is in projects group, filter for reports that have been reviewed by biofx
+        if(_.find(req.user.groups, {name: 'Projects'})) {
+          reports = _.filter(reports, function(record) {
+            if(_.filter(record.reviews, {type: 'biofx'}).length > 0) return true;
+            return false;
+          });
+          
+          result.count = reports.length;
+        }
         
         // Need to take care of limits and offsets outside of query to support natural sorting
         let limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
         let offset = parseInt(req.query.offset) || 0;
-
-        let reports = result.rows;
 
         // Reverse natural sort by POGID
         reports.sort(function(a,b) {
