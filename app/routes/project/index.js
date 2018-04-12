@@ -163,7 +163,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser');
     if(access.check() === false) return;
 
     // Update project
@@ -205,7 +205,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .delete((req,res,next) => {
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser');
     if(access.check() === false) return;
 
     // Delete project
@@ -272,7 +272,7 @@ router.route('/:project([A-z0-9-]{36})/user')
 
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser');
     if(access.check() === false) return;
 
     // Lookup User
@@ -343,7 +343,7 @@ router.route('/:project([A-z0-9-]{36})/user')
 
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser');
     if(access.check() === false) return;
 
     // Lookup User
@@ -387,7 +387,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
 
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser', 'Full Project Access');
     if(access.check() === false) return;
 
     // Lookup POG
@@ -429,7 +429,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
 
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser', 'Full Project Access');
     if(access.check() === false) return;
 
     // Lookup POG
