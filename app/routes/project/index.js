@@ -94,7 +94,7 @@ router.route('/')
 
     // Access Control
     let access = new acl(req, res);
-    access.read('admin', 'superUser');
+    access.write('admin', 'superUser');
     if(access.check() === false) return;
 
     // Validate input
