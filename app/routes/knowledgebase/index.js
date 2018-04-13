@@ -123,13 +123,34 @@ router.route('/metrics')
 router.route('/export')
   .get((req,res) => {
 
+    let today = new Date();
+    let dd = today.getDate();
+    let mm = today.getMonth()+1; //January is 0!
+    let yyyy = today.getFullYear();
+
+    if(dd<10) dd = '0'+dd;
+
+    if(mm<10) mm = '0'+mm;
+
+    today = yyyy + '-' + mm + '-' + dd;
+
+    // If no specified export path, export to temp folder in current IPR admin's home directory
+    let exportPath = req.query.path || '/home/nmartin/temp/' + today;
+    let version = req.query.version;
+
+    // return error if no version specified
+    if (!version) return res.status(400).json({error: {message: 'Please specify a KB version for export'}});
+    // return error if version format is incorrect (expected 3 numbers delimited by periods e.g. '1.2.3')
+    if (!version.match(/^\d+.\d+.\d+$/)) return res.status(400).json({error: {message: 'KB version must be formatted as 3 numbers delimited by periods e.g. "1.2.3"'}});
+
     // Generate output TSVs
-    let exportEvent = new kbExport('v2.4.3', {output: '/home/bpierce/tmp/20-11-2017'});
+    let exportEvent = new kbExport(version, {output: exportPath});
 
     exportEvent.export().then(
       (result) => {
+        console.log('KB Exported to ' + exportPath);
         console.log('KB Export Result', result);
-        res.json({result: true});
+        res.json({result: 'KB successfully exported to ' + exportPath});
       },
       (err) => {
         res.status(500).json({error: {message: 'Unable to perform export'}});

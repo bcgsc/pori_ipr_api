@@ -180,11 +180,11 @@ class ExportKnowledgeBase {
           .then(
           (result) => {
             console.log('Result: ', result);
-            resolve({success: true});
+            resolve({success: true, log: this.log});
           },
           (err) => {
             console.log('Export error', err);
-            reject({success: false});
+            reject({success: false, log: this.log});
           }
         );
 
