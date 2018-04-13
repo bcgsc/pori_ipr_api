@@ -43,11 +43,11 @@ router.param('project', (req,res,next,ident) => {
   }).catch((e) => {
     switch(e) {
       case errors.AccessForbidden:
-        res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
+        return res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
         break;
       default:
         logger.error('Failed to resolve project', e);
-        res.status(500).json(e);
+        return res.status(500).json(e);
     }
   });
 });
@@ -82,10 +82,10 @@ router.route('/')
       return db.models.project.findAll(opts);
 
     }).then((projects) => {
-      res.json(projects);
+      return res.json(projects);
     })
     .catch((err) => {
-      res.status(500).json({message: 'Unable to retrieve projects'});
+      return res.status(500).json({message: 'Unable to retrieve projects'});
       console.log('Unable to retrieve projects', err);
     });
   })
@@ -126,11 +126,11 @@ router.route('/')
         }
       }
     ).then((response) => {
-      if(created) res.json(response); // return newly created record
-      res.json(response[1][0]); // return restored record
+      if(created) return res.status(201).json(response); // return newly created record
+      return res.status(201).json(response[1][0]); // return restored record
     }).catch((err) => {
-      res.status(500).json({message: 'Unable to add project'});
       console.log('Unable to add project', err);
+      return res.status(500).json({message: 'Unable to add project'});
     });
 
   });
@@ -150,11 +150,11 @@ router.route('/:ident([A-z0-9-]{36})')
     }).catch((e) => {
       switch(e) {
         case errors.AccessForbidden:
-          res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
+          return res.status(403).json({error: {message: 'You do not have access to view this project', code: 'failedProjectAccessLookup'}});
           break;
         default:
           logger.error('Failed to resolve project', e);
-          res.status(500).json(e);
+          return res.status(500).json(e);
       }
     });
   })
@@ -175,7 +175,7 @@ router.route('/:ident([A-z0-9-]{36})')
     db.models.project.update(updateBody, { where: {ident: req.body.ident}, limit: 1 }).then(
       (result) => {
         if(typeof result === 'Object') {
-          res.json(result);
+          return res.json(result);
         } else {
           // Success, get project -- UGH
           let opts = {
@@ -188,16 +188,16 @@ router.route('/:ident([A-z0-9-]{36})')
           }
           db.models.project.findOne(opts).then(
             (project) => {
-              res.json(project);
+              return res.json(project);
             },
             (error) => {
-              res.status(500).json({error: { message: 'Unable to retrieve project. Please try again', code: 'failedProjectLookupQuery'}});
+              return res.status(500).json({error: { message: 'Unable to retrieve project. Please try again', code: 'failedProjectLookupQuery'}});
             }
           );
         }
       },
       (error) => {
-        res.status(500).json({error: { message: 'Unable to update project. Please try again', code: 'failedProjectUpdateQuery'}});
+        return res.status(500).json({error: { message: 'Unable to update project. Please try again', code: 'failedProjectUpdateQuery'}});
       }
     );
   })
@@ -213,11 +213,11 @@ router.route('/:ident([A-z0-9-]{36})')
       (resp) => {
         if(resp === null) res.status(400).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
 
-        res.status(204).send();
+        return res.status(204).send();
       },
       (err) => {
         console.log('SQL Failed Project remove', err);
-        res.status(500).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemoveQuery'}});
+        return res.status(500).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemoveQuery'}});
       }
     )
 
@@ -242,16 +242,16 @@ router.route('/search')
               if(_.includes(_.map(projectAccess, 'ident'), p.ident)) return p;
             });
 
-            res.json(filteredResults);
+            return res.json(filteredResults);
           },
           (err) => {
-            res.status(500).json({error: {message: err.message, code: err.code}});
+            return res.status(500).json({error: {message: err.message, code: err.code}});
           }
         );
       },
       (err) => {
         console.log('Error', err);
-        res.status(500).json({error: {message: 'Unable to query project search'}});
+        return res.status(500).json({error: {message: 'Unable to query project search'}});
       }
     )
   });
@@ -265,7 +265,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     if(access.check() === false) return;
 
     // Get Project Users
-    res.json(req.project.users);
+    return res.json(req.project.users);
   })
   .post((req,res,next) => {
     // Add Project User
@@ -287,11 +287,11 @@ router.route('/:project([A-z0-9-]{36})/user')
               db.models.user_project.update({deletedAt: null}, {paranoid:false, where:{id: hasBinding.id}, returning: true}).then(
                 (user_project) => {
                   let response = user; //user_project[1][0];
-                  res.json(response);
+                  return res.json(response);
                 },
                 (err) => {
                   console.log('Unable to restore user project binding', err);
-                  res.status(500).json({error: {message: 'Unable to restore existing user project binding', code: 'failedUserProjectRestore'}});
+                  return res.status(500).json({error: {message: 'Unable to restore existing user project binding', code: 'failedUserProjectRestore'}});
                 }
               );
             } else { // doesn't exist - create new binding
@@ -314,18 +314,18 @@ router.route('/:project([A-z0-9-]{36})/user')
                     }
                   };
 
-                  res.json(output);
+                  return res.json(output);
                 },
                 (err) => {
                   console.log('Unable to add user to project.', err);
-                  res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectCreate'}});
+                  return res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectCreate'}});
                 }
               );
             }
           },
           (err) => {
             console.log('Unable to query for existing user project binding.', err);
-            res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectBindingQuery'}});
+            return res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectBindingQuery'}});
           }
         );
 
@@ -333,7 +333,7 @@ router.route('/:project([A-z0-9-]{36})/user')
       },
       (err) => {
         console.log('Unable to update project', err);
-        res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedUserLookupUserProject'}});
+        return res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedUserLookupUserProject'}});
       }
     )
 
@@ -355,17 +355,17 @@ router.route('/:project([A-z0-9-]{36})/user')
         db.models.user_project.destroy({where: {project_id: req.project.id, user_id: user.id}}).then(
           (user_project) => {
             if(user_project === null) return res.status(400).json({error: {message: 'Unable to remove user from project', code: 'failedUserProjectDestroy'}});
-            res.status(204).send();
+            return res.status(204).send();
           },
           (err) => {
             console.log('Unable to remove user from project.', err);
-            res.status(400).json({error: {message: 'Unable to remove user from project', code: 'failedGroupMemberRemoveQuery'}});
+            return res.status(400).json({error: {message: 'Unable to remove user from project', code: 'failedGroupMemberRemoveQuery'}});
           }
         )
       },
       (err) => {
         console.log('Unable to update project', err);
-        res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedUserLookupUserProject'}});
+        return res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedUserLookupUserProject'}});
       }
     );
 
@@ -380,7 +380,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
     if(access.check() === false) return;
 
     // Get Project POGs
-    res.json(req.project.pogs);
+    return res.json(req.project.pogs);
   })
   .post((req,res,next) => {
     // Add Project POG
@@ -409,17 +409,17 @@ router.route('/:project([A-z0-9-]{36})/pog')
               }
             };
 
-            res.json(output);
+            return res.json(output);
           },
           (err) => {
             console.log('Unable to add pog to project.', err);
-            res.status(400).json({error: {message: 'Unable to add pog to project', code: 'failedPOGProjectCreateQuery'}});
+            return res.status(400).json({error: {message: 'Unable to add pog to project', code: 'failedPOGProjectCreateQuery'}});
           }
         )
       },
       (err) => {
         console.log('Unable to update project', err);
-        res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedPOGLookupPOGProject'}});
+        return res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedPOGLookupPOGProject'}});
       }
     )
 
@@ -441,17 +441,17 @@ router.route('/:project([A-z0-9-]{36})/pog')
         db.models.pog_project.destroy({where: {project_id: req.project.id, pog_id: pog.id}}).then(
           (pog_project) => {
             if(pog_project === null) return res.status(400).json({error: {message: 'Unable to remove pog from project', code: 'failedPOGProjectDestroy'}});
-            res.status(204).send();
+            return res.status(204).send();
           },
           (err) => {
             console.log('Unable to remove pog from project.', err);
-            res.status(400).json({error: {message: 'Unable to remove pog from project', code: 'failedGroupMemberRemoveQuery'}});
+            return res.status(400).json({error: {message: 'Unable to remove pog from project', code: 'failedGroupMemberRemoveQuery'}});
           }
         )
       },
       (err) => {
         console.log('Unable to update project', err);
-        res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedPOGLookupPOGProject'}});
+        return res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedPOGLookupPOGProject'}});
       }
     );
 
