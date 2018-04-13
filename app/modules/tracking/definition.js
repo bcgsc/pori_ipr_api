@@ -17,7 +17,7 @@ module.exports = class StateDefinition {
     this.instance = null;
     this.model = db.models.tracking_state_definition;
     this.validTasks = [];
-    this.allowedOutcomeType = ['date', 'text', 'location', 'string', 'boolean'];
+    this.allowedOutcomeType = ['date', 'text', 'location', 'string', 'boolean', 'pass/fail/proceed'];
 
     // No existing instance
     if(init === null) this.instance = this.model.build();

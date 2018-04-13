@@ -60,6 +60,7 @@ module.exports = class Checkin {
           if(payload === 'false') outcome = false;
           break;
         case 'text':
+        case 'pass/fail/proceed':
         case 'location':
           outcome = payload;
           break;
