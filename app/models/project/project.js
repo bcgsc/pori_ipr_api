@@ -35,7 +35,11 @@ module.exports = (sequelize, Sq) => {
             // every new project should be associated with control sample COLO829
             sequelize.models.POG.findOne({where: {"POGID": 'COLO829'}})
             .then((pog) => {
-              sequelize.models.pog_project.create({project_id: project.id, pog_id: pog.id});
+              return sequelize.models.pog_project.create({project_id: project.id, pog_id: pog.id});
+            })
+            .catch((err) => {
+              console.log('Unable to bind COLO829 to project');
+              console.log(err);
             });
           }
       }
