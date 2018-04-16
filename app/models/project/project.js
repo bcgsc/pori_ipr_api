@@ -29,6 +29,15 @@ module.exports = (sequelize, Sq) => {
             exclude: ['deletedAt']
           },
         }
+      },
+      hooks: {
+          afterCreate: function(project) {
+            // every new project should be associated with control sample COLO829
+            sequelize.models.POG.findOne({where: {"POGID": 'COLO829'}})
+            .then((pog) => {
+              sequelize.models.pog_project.create({project_id: project.id, pog_id: pog.id});
+            });
+          }
       }
     });
 
