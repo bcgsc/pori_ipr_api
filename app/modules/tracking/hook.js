@@ -65,8 +65,8 @@ let check_hook = (state, status, task=null, enabled=true) => {
         status: status
       }
     };
-    
-    if(task) opts.where.task_name = task;
+
+    opts.where.task_name = task ? task : null;
     
     // Only if enabled?
     if(enabled) opts.where.enabled = true;
