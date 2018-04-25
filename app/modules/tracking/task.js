@@ -233,7 +233,9 @@ module.exports = class Task {
         
             this.instance.save()
               // Check if there are any hooks to trigger
-              .then(Hook.check_and_invoke(this.instance.state, 'complete', this.instance))
+              .then(() => {
+                return Hook.check_and_invoke(this.instance.state, 'complete', this.instance)
+              })
               .then(() => {
                 return resolve(this.instance);
               })
