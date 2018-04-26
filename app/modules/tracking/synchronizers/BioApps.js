@@ -229,8 +229,7 @@ class BioAppsSync {
           normal_biopsy: parsedSettings.normal_biopsy,
           gtex_primary: parsedSettings.gtex_primary,
           gtex_biopsy: parsedSettings.gtex_biopsy
-        };
-        
+        };        
         
         // Set update where clause.
         update.where = { ident: task.state.analysis.ident };
@@ -238,6 +237,8 @@ class BioAppsSync {
         update.task = task;
   
         queries.push(update);
+
+        logger.info('Syncing patient info for ' + source.participant_study_identifier + ' (' + task.state.analysis.clinical_biopsy + ')');
       
       });
       
