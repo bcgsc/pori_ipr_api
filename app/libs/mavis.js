@@ -33,7 +33,7 @@ let parseMavisFile = (report, mavisFile) => {
     
     // Formatting summaries to be inserted into db
     let mavisRecords = _.map(parsedMavisSummary, function(record) {
-      return {product_id: record.product_id, pog_id: report.pog_id, pog_report_id: report.id, summary: JSON.stringify(record)};
+      return {product_id: record.product_id.split(';')[0], pog_id: report.pog_id, pog_report_id: report.id, summary: JSON.stringify(record)};
     }); 
     
     // Send data to
@@ -50,25 +50,44 @@ let parseMavisFile = (report, mavisFile) => {
  * Create DB entries for MAVIS summaries. Parse in CSV values, mutate, insert.
  *
  * @param {object} report - POG report model object
- * @param {string} source - file path to MAVIS summary
+ * @param {list} source - list of file paths to MAVIS summaries
  * @param {list}   productIds - list of MAVIS product ids to add to database
  *
  */
  module.exports = {
 
-  addMavisSummary: (report, source, productIds) => {
+  addMavisSummary: (report, sources, productIds) => {
 
     // Create promise
     let deferred = Q.defer();
 
+    // Parsing MAVIS files
     // Wait for all promises to be resolved
-    parseMavisFile(report, source)
+    Q.all(_.map(sources, (source) => {
+      // Check that MAVIS summary exists
+      if(!fs.existsSync(source)) {
+        // Warn MAVIS summary was not found
+        return log('Failed to find MAVIS summary file: ' + source, logger.WARNING);
+      }
+    
+      // Create Promise
+      return parseMavisFile(report, source);
+
+    }))
     .then(
       (results) => {
-        // filter results by product id
-        let createRecords = _.filter(_.flattenDepth(results,2), function(record) {
+
+        // Union all parsed MAVIS files based on their product ids
+        let mavisSummary;
+        _.each(results, function(summary) {
+          mavisSummary = _.unionBy(mavisSummary, summary, 'product_id');
+        });
+
+        // Filter results for records to insert based on product id
+        let createRecords = _.filter(mavisSummary, function(record) {
           return _.includes(productIds, record.product_id);
         });
+
         // Load into Database
         return db.models.mavis.bulkCreate(createRecords);
       },

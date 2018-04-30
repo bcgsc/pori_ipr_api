@@ -53,7 +53,7 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
         entries[k].pog_id = report.pog_id;
         entries[k].pog_report_id = report.id;
         entries[k].svVariant = variantType;
-        entries[k].mavis_product_id = entries[k].MAVIS_product_id;
+        entries[k].mavis_product_id = entries[k].MAVIS_product_id.split(';')[0];
 
         if(v.svg !== 'na' && v.svg !== '') {
           // Load in SVG !! SYNC-Block
@@ -171,6 +171,7 @@ module.exports = (report, dir, logger, moduleOptions) => {
             mavis.addMavisSummary(report, moduleOptions.config.MAVISSummary, mavisProducts).then(
               (mavisResults) => {
                 // Done!
+                log('MAVIS summaries created.', logger.SUCCESS);
                 deferred.resolve({loader: 'structuralVariants', result: true, data: svResults});
               },
               (mavisErr) => {
