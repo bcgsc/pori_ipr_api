@@ -80,15 +80,17 @@ module.exports = class TrackingRouter extends RoutingInterface {
               let limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
               let offset = parseInt(req.query.offset) || 0;
 
-              let sortedRows = _.sortBy(
-                result.rows, 
-                [function(analysis) { return parseInt(analysis.pog.POGID.match(/\d+/)[0]) }] // perform natural sorting on POGID
-              ).reverse(); // reverse sort order
+              let analysis = result.rows;
+
+              // Reverse natural sort by POGID
+              analysis.sort(function(a,b) {
+                return b.pog.POGID.localeCompare(a.pog.POGID, undefined, {numeric: true, sensitivity: 'base'});
+              });
 
               // apply limit and offset to results
               let start = offset,
                   finish = offset + limit;
-              rows = sortedRows.slice(start, finish);
+              rows = analysis.slice(start, finish);
             }
 
             res.json({total: result.count, analysis: rows});

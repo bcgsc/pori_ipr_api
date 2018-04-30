@@ -50,7 +50,7 @@ module.exports = {
         .catch((e) => {
           console.log(e);
           logger.error('Failed to retrieve/create patient record', e);
-          reject({message: 'Failed to retrieve/create patient record'});
+          reject({message: `Failed to retrieve/create patient record: ${e.message}`});
         });
     
     })

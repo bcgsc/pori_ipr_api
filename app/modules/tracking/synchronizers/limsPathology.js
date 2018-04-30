@@ -35,7 +35,7 @@ class LimsPathologySync {
     this.diseaseLibraries = [];   // Libraries that need resolution from LIMS Library API
     this.user = null;             // Sync User
     //this.maxPathWindow = options.maxPathWindow || (50 * 86400); // (50 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
-    this.maxPathWindow = options.maxPathWindow || (900 * 86400); // (90 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
+    this.maxPathWindow = options.maxPathWindow || (90 * 86400); // (90 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
   }
   
   /**
@@ -327,7 +327,7 @@ class LimsPathologySync {
               
               // Check that the biopsy overlap window is respected
               if(Math.abs(moment(tracking_analysis.createdAt).unix() - moment(lims_biopsy_date).unix()) > this.maxPathWindow) {
-                logger.info('Tracking event ' + pogid + ' ' + tracking_analysis.task.ident + ' has a LIMS biopsy event out of the acceptable max pathology waiting window.');
+                logger.info('Tracking event ' + pogid + ' ' + tracking_analysis.task.name + ' (' + tracking_analysis.clinical_biopsy + ') has a LIMS biopsy event out of the acceptable max pathology waiting window.');
                 return;
               }
               
@@ -347,9 +347,18 @@ class LimsPathologySync {
               
               this.pog_analyses[pogid][track_i].libraries = {};
   
-              if(normal) this.pog_analyses[pogid][track_i].libraries.normal = normal.name;
-              if(tumour) this.pog_analyses[pogid][track_i].libraries.tumour = tumour.name;
-              if(transcriptome) this.pog_analyses[pogid][track_i].libraries.transcriptome = transcriptome.name;
+              if(normal) {
+                this.pog_analyses[pogid][track_i].libraries.normal = normal.name;
+                logger.info('Set normal library ' + normal.name + ' for ' + pogid + ' (' + this.pog_analyses[pogid][track_i].clinical_biopsy + ')');
+              }
+              if(tumour) {
+                this.pog_analyses[pogid][track_i].libraries.tumour = tumour.name;
+                logger.info('Set tumour library ' + tumour.name + ' for ' + pogid + ' (' + this.pog_analyses[pogid][track_i].clinical_biopsy + ')');
+              }
+              if(transcriptome) {
+                this.pog_analyses[pogid][track_i].libraries.transcriptome = transcriptome.name;
+                logger.info('Set transcriptome library ' + transcriptome.name + ' for ' + pogid + ' (' + this.pog_analyses[pogid][track_i].clinical_biopsy + ')');
+              }
               
               // Update Entries
               this.pog_analyses[pogid][track_i].disease = tumour.disease.trim();
@@ -392,7 +401,7 @@ class LimsPathologySync {
         _.forEach(analyses, (analysis) => {
           
           if(!analysis.pathDetected) {
-            logger.info('Pathology not detected for ' + pogid);
+            logger.info('Pathology not detected for ' + pogid + ' (' + analysis.clinical_biopsy + ')');
             return;
           }
           
