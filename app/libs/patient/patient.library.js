@@ -24,27 +24,31 @@ module.exports = {
         .then((result) => {
           patient = result[0];
           let created = result[1];
-
           if(created && project) { // new POG record and project specified - find project or create if it doesn't exist already
             return db.models.project.findOrCreate({ where: { name: project }, defaults: { name: project } });
           }
 
-          resolve(patient);
+          return;
           
         })
         .then((projectResult) => {
-          let bindProject = projectResult[0]; // created/retrieved project
+          if(projectResult) {
+            let bindProject = projectResult[0]; // created/retrieved project
 
-          // See if patient and project are already bound
-          if(_.find(bindProject.pogs, {'ident': bindProject.ident})) resolve(patient); // binding already exists - resolve pog
+            // See if patient and project are already bound
+            if(_.find(bindProject.pogs, {'ident': bindProject.ident})) resolve(patient); // binding already exists - resolve pog
 
-          // Bind POG to project
-          return db.models.pog_project.create({project_id: bindProject.id, pog_id: patient.id});
+            // Bind POG to project
+            return db.models.pog_project.create({project_id: bindProject.id, pog_id: patient.id});
+          }
+
+          return;
         })
         .then((pog_project) => {
           resolve(patient);
         })
         .catch((e) => {
+          console.log(e);
           logger.error('Failed to retrieve/create patient record', e);
           reject({message: `Failed to retrieve/create patient record: ${e.message}`});
         });
