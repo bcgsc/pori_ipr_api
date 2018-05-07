@@ -23,6 +23,12 @@ module.exports = (sequelize, Sq) => {
     project: {
       type: Sq.STRING,
       defaultValue: 'POG'
+    },
+    alternate_identifier: {
+      type: Sq.STRING
+    },
+    age_of_consent: {
+      type: Sq.INTEGER
     }
   },
   {

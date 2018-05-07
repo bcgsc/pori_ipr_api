@@ -14,13 +14,13 @@ module.exports = {
    *
    * @returns {Promise/Object} - Resolves with patient model object
    */
-  retrieveOrCreate: (patientID, project=null) => {
+  retrieveOrCreate: (patientID, project=null, altID=null) => {
     return new Promise((resolve, reject) => {
       
       if(!patientID) reject({message: 'Patient ID is required to retrieve or create patient entry'});
       
       let patient;
-      db.models.POG.findOrCreate({ where: { POGID: patientID }, defaults: { POGID: patientID, project: project }})
+      db.models.POG.findOrCreate({ where: { POGID: patientID }, defaults: { POGID: patientID, project: project, alternate_identifier: altID }})
         .then((result) => {
           patient = result[0];
           let created = result[1];
