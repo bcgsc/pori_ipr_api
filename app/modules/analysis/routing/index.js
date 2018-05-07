@@ -134,8 +134,12 @@ module.exports = class TrackingRouter extends RoutingInterface {
           return;
         }
         
-  
-        Patient.retrieveOrCreate(req.body.POGID, req.body.project, req.body.alternate_identifier)
+        let pog_fields = {
+          alternate_identifier: req.body.alternate_identifier,
+          age_of_consent: req.body.age_of_consent
+        };
+
+        Patient.retrieveOrCreate(req.body.POGID, req.body.project, pog_fields)
           .then((pog) => {
             POG = pog;
             analysis.pog_id = pog.id;
