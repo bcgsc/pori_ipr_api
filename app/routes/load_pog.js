@@ -169,13 +169,13 @@ router.route('/:type(genomic|probe)')
                   resolve({patient: patientObj, analysis: analysisObj});
                 })
                 .catch((e) => {
-                  reject({message: 'Failed to create patient from report config and flatfile: '+ e.message});
+                  reject({message: 'Failed to create patient from report config and flatfile: ' + e.message});
                   console.log('Failed to create patient and analysis from config and flatile', e);
                 });
   
             })
             .catch((err) => {
-              res.json({message: `Failed to load the flatfile: ${reportConfig.flatfile}`});
+              reject({message: 'Failed to load the flatfile for the following reason: ' + err.message});
               console.log('Failed to load flatfile', err);
             });
           
@@ -344,7 +344,7 @@ let getFlatFile = (path) => {
     // Read in TSV file
     fs.readFile(path, (err, data) => {
       
-      if(err) reject({message: `Failed to retrieve flatfile: ${err.message}`});
+      if(err) return reject({message: `Failed to retrieve flatfile: ${err.message}`});
       
       // Parse TSV file
       let parsedFlatFile = d3.tsvParse(data.toString());
