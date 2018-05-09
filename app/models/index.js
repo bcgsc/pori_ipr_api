@@ -149,6 +149,9 @@ let copyNumberAnalyses = {};
 copyNumberAnalyses.cnv = sequelize.import(__dirname + '/reports/genomic/copyNumberAnalysis/cnv');
 copyNumberAnalyses.cnv.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
 
+// MAVIS Summary
+let mavis = sequelize.import(__dirname + '/reports/genomic/mavis/mavis');
+
 // Structural Variation
 let structuralVariation = {};
 structuralVariation.sv = sequelize.import(__dirname + '/reports/genomic/structuralVariation/sv');
