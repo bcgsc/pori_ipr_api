@@ -258,6 +258,7 @@ class ProbeLoader {
             let fail = {};
 
             // TODO: fail better
+            fail.message = error.message;
 
             // Log error
             this.log('Failed onboarding process.', logger.ERROR);

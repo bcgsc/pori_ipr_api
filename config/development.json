@@ -36,23 +36,102 @@
 
   "loader": {
     "defaults": {
+
       "default_genomic": {
         "libraries": [
-          "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
-          "summary_variantCounts", "summary_mutationSummary", "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic", "summary_probeTarget", "detailed_alterations",
-          "detailed_approvedThisCancer", "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
-          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
+          "meta",
+          "image",
+          "summary_patientInformation",
+          "summary_tumourAnalysis",
+          "summary_variantCounts",
+          "summary_mutationSummary",
+          "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
+          "summary_probeTarget",
+          "detailed_alterations",
+          "detailed_approvedThisCancer",
+          "detailed_approvedOtherCancer",
+          "detailed_targetedGenes",
+          "somatic_smallMutations",
+          "somatic_mutationSignature",
+          "copynumber_cnv",
+          "structural_sv",
+          "expression_outlier",
+          "expression_drugTarget"
         ]
       },
-
       "pog_genomic": {
         "libraries": [
-          "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
-          "summary_variantCounts", "summary_mutationSummary", "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic", "summary_probeTarget", "detailed_alterations",
-          "detailed_approvedThisCancer", "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
-          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
+          "meta",
+          "image",
+          "summary_patientInformation",
+          "summary_tumourAnalysis",
+          "summary_variantCounts",
+          "summary_mutationSummary",
+          "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
+          "summary_probeTarget",
+          "detailed_alterations",
+          "detailed_approvedThisCancer",
+          "detailed_approvedOtherCancer",
+          "detailed_targetedGenes",
+          "somatic_smallMutations",
+          "somatic_mutationSignature",
+          "copynumber_cnv",
+          "structural_sv",
+          "expression_outlier",
+          "expression_drugTarget"
+        ]
+      },
+      "GPH_Lymphoma_genomic": {
+        "libraries": ["A*_A*"],
+        "moduleOptions": {
+          "somatic_mutationSignature": {
+            "project": "gph_lymphoma"
+          }
+        },
+        "loaders": [
+          "meta",
+          "image",
+          "summary_patientInformation",
+          "summary_tumourAnalysis",
+          "summary_variantCounts",
+          "summary_mutationSummary",
+          "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
+          "summary_probeTarget",
+          "detailed_alterations",
+          "detailed_approvedThisCancer",
+          "detailed_approvedOtherCancer",
+          "detailed_targetedGenes",
+          "somatic_smallMutations",
+          "somatic_mutationSignature",
+          "copynumber_cnv",
+          "structural_sv",
+          "expression_outlier",
+          "expression_drugTarget"
+        ]
+      },
+      "default_genomic_no_flat": {
+        "libraries": [
+          "meta",
+          "image",
+          "summary_tumourAnalysis",
+          "summary_variantCounts",
+          "summary_mutationSummary",
+          "summary_genomicAlterationsIdentified",
+          "summary_genomicEventsTherapeutic",
+          "summary_probeTarget",
+          "detailed_alterations",
+          "detailed_approvedThisCancer",
+          "detailed_approvedOtherCancer",
+          "detailed_targetedGenes",
+          "somatic_smallMutations",
+          "somatic_mutationSignature",
+          "copynumber_cnv",
+          "structural_sv",
+          "expression_outlier",
+          "expression_drugTarget"
         ]
       },
 
@@ -95,33 +174,16 @@
           "approved_otherCancer"
         ]
       },
-      "GPH_Lymphoma_genomic": {
-        "libraries": ["A*_A*"],
-        "moduleOptions": {
-          "somatic_mutationSignature": {
-            "project": "gph_lymphoma"
-          }
-        },
+      "default_probe_no_flat": {
         "loaders": [
-          "meta",
-          "image",
-          "summary_patientInformation",
-          "summary_tumourAnalysis",
-          "summary_variantCounts",
-          "summary_mutationSummary",
           "summary_genomicAlterationsIdentified",
           "summary_genomicEventsTherapeutic",
-          "summary_probeTarget",
-          "detailed_alterations",
-          "detailed_approvedThisCancer",
-          "detailed_approvedOtherCancer",
-          "detailed_targetedGenes",
-          "somatic_smallMutations",
-          "somatic_mutationSignature",
-          "copynumber_cnv",
-          "structural_sv",
-          "expression_outlier",
-          "expression_drugTarget"
+          "alterations_identified",
+          "alterations",
+          "sample_information",
+          "test_information",
+          "approved_thisCancer",
+          "approved_otherCancer"
         ]
       }
     }

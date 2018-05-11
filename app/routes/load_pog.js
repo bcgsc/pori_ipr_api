@@ -13,6 +13,7 @@ const _                   = require('lodash');
 const d3                  = require('d3-dsv');
 const moment              = require('moment');
 const logger              = process.logger;
+const Q                   = require('q');
 
 const Patient             = require(`${process.cwd()}/app/libs/patient/patient.library`);
 const Analysis            = require(`${process.cwd()}/app/libs/patient/analysis.library`);
@@ -114,70 +115,88 @@ router.route('/:type(genomic|probe)')
             
             return resolve({patient: patientObj, analysis: analysisObj});
           }
-          
-          // Load flatfile and check libraries for type
-          getFlatFile(reportConfig.flatfile)
-            .then((flatfile) => {
-              let analysis = {
-                libraries: {},
-                analysis_biopsy: null,
-                comparator_disease: {},
-                comparator_normal: {},
-                disease: null,
-                biopsy_notes: null,
-              };
+
+          let promises = [];
+
+          // Add flatfile retrieval to promises if flatfile is specified
+          if(reportConfig.flatfile) promises.push(getFlatFile(reportConfig.flatfile)); // Load flatfile and check libraries for type
+
+          // Setting up analysis for creation
+          let createAnalysis = {
+            libraries: {},
+            analysis_biopsy: null,
+            comparator_disease: {},
+            comparator_normal: {},
+            disease: null,
+            biopsy_notes: null,
+          };
+
+          // Wait for all promises to be resolved
+          Q.all(promises)
+          .then(
+            (flatfile) => {
+              if(flatfile) {              
+                // Parse libraries
+                _.forEach(reportConfigLibraries, (l) => {
+                  let row = _.find(flatfile, {library_name: l});
+                  
+                  if(!row) return;
+                  
+                  // If Normal
+                  if(row.diseased_status === 'Normal') createAnalysis.libraries.normal = l;
+                  
+                  // if transcriptome
+                  if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') > -1) createAnalysis.libraries.transcriptome = l;
+                  
+                  // if Tumour
+                  if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') === -1) {
+                    createAnalysis.libraries.tumour = l;
+                    createAnalysis.createAnalysis_biopsy = row.sample_prefix;
+                    createAnalysis.biopsy_site = row.biopsy_site;
+                    createAnalysis.disease = row.diagnosis;
+                    createAnalysis.biopsy_date = moment(row.sample_collection_time).toISOString();
+                    createAnalysis.comparator_disease = {
+                      tcga: _.filter(row.tcga_comp.split(';'), (r) => { return (r); }),
+                      gtex_bioposy_site: row.gtex_comp.split(';')[1],
+                      gtex_primary_site: row.gtex_comp.split(';')[0]
+                    };
+                    createAnalysis.comparator_normal = {
+                      normal_comparator_biopsy_site: row.normal_comp.split(';')[1],
+                      normal_comparator_primary_site: row.normal_comp.split(';')[0]
+                    };
+                  }
+                }); // End looping libraries
+              }
             
-              // Parse libraries
-              _.forEach(reportConfigLibraries, (l) => {
-                let row = _.find(flatfile, {library_name: l});
-                
-                if(!row) return;
-                
-                // If Normal
-                if(row.diseased_status === 'Normal') analysis.libraries.normal = l;
-                
-                // if transcriptome
-                if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') > -1) analysis.libraries.transcriptome = l;
-                
-                // if Tumour
-                if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') === -1) {
-                  analysis.libraries.tumour = l;
-                  analysis.analysis_biopsy = row.sample_prefix;
-                  analysis.biopsy_site = row.biopsy_site;
-                  analysis.disease = row.diagnosis;
-                  analysis.biopsy_date = moment(row.sample_collection_time).toISOString();
-                  analysis.comparator_disease = {
-                    tcga: _.filter(row.tcga_comp.split(';'), (r) => { return (r); }),
-                    gtex_bioposy_site: row.gtex_comp.split(';')[1],
-                    gtex_primary_site: row.gtex_comp.split(';')[0]
-                  };
-                  analysis.comparator_normal = {
-                    normal_comparator_biopsy_site: row.normal_comp.split(';')[1],
-                    normal_comparator_primary_site: row.normal_comp.split(';')[0]
-                  };
-                }
-              }); // End looping libraries
-              
-              return Patient.retrieveOrCreate(patient, project)
-                .then((patient) => {
-                  patientObj = patient;
-                  // Create Analysis
-                  return Analysis.create(patient.id, analysis);
-                })
-                .then((analysis) => {
-                  analysisObj = analysis;
-                  resolve({patient: patientObj, analysis: analysisObj});
-                })
-                .catch((e) => {
-                  reject({message: 'Failed to create patient from report config and flatfile: ' + e.message});
-                  console.log('Failed to create patient and analysis from config and flatile', e);
-                });
-  
-            })
-            .catch((err) => {
-              reject({message: 'Failed to load the flatfile for the following reason: ' + err.message});
-              console.log('Failed to load flatfile', err);
-            });
+              return Patient.retrieveOrCreate(patient, project);
+            },
+            (err) => {
+              throw new Error('Unable to load provided flatfile: ' + err.message);
+            }
+          )
+          .then(
+            (patient) => {
+              patientObj = patient;
+              // Create Analysis
+              return Analysis.create(patient.id, createAnalysis);
+            },
+            (err) => {
+              throw new Error('Unable to create patient from report config: ' + err.message);
+            }
+          )
+          .then(
+            (analysis) => {
+              analysisObj = analysis;
+              resolve({patient: patientObj, analysis: analysisObj});
+            },
+            (err) => {
+              throw new Error('Unable to create analysis from report config: ' + err.message);
+            }
+          )
+          .catch((err) => {
+            reject({message: 'Failed to load report from report config: ' + err.message});
+            console.log('Failed to load report from report config: ' + err.message);
+          });
           
           
         });
@@ -245,7 +264,13 @@ router.route('/:type(genomic|probe)')
   
         // Non-POG Probe Report
         if(req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'probe') {
-          loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
+          if(reportConfig.flatfile) {
+            loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
+          } else {
+            let loaderProfile = req.body.profile + '_no_flat'
+            loaderOptions.load = (loaderConf.defaults[loaderProfile] === undefined) ? loaderConf.defaults['default_probe_no_flat'].loaders :  loaderConf.defaults[loaderProfile].loaders;
+          }
+          
           loaderOptions.profile = 'nonPOG';
           let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
           let Loader = new ProbeLoader(patientObj, reportObj, loaderOptions);
