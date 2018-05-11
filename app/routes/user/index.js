@@ -199,7 +199,7 @@ router.route('/:ident([A-z0-9-]{36})')
     
     
     // Editing someone other than self?
-    if(req.user.ident !== req.params.ident && req.user.access !== 'superUser') {
+    if(req.user.ident !== req.body.ident && req.user.access !== 'superUser') {
       res.status(403).json({status: false, message: 'You are not allowed to perform this action'});
       return;
     }
@@ -226,7 +226,7 @@ router.route('/:ident([A-z0-9-]{36})')
     if(req.body.password && req.body.password.length > 7) updateBody.password = bcrypt.hashSync(req.body.password, 10);
 
     // Attempt user model update
-    db.models.user.update(updateBody, { where: {ident: req.user.ident}, limit: 1 }).then(
+    db.models.user.update(updateBody, { where: {ident: req.body.ident}, limit: 1 }).then(
       (result) => {
         if(typeof result === 'Object') {
           res.json(result);
