@@ -85,9 +85,17 @@ class GenomicLoader {
       this.log('Starting Genomic Loader');
 
       // Run default POG Genomic Report loading
-      if(this.options.profile === 'pog_genomic') {
+      if(this.options.profile === 'pog_genomic' || this.options.profile === 'pog_genomic_no_flat') {
 
-        this.log('Running POG Genomic Loader');
+        if(this.options.profile === 'pog_genomic_no_flat') {
+          this.log('Running POG Genomic Loader without flatfile');
+
+          // Skip tumour analysis and patient info loaders if no flatfile is available
+          _.remove(loaders, {name: 'summary_tumourAnalysis'});
+          _.remove(loaders, {name: 'summary_patientInformation'});
+        } else {
+          this.log('Running POG Genomic Loader');
+        }
 
         // If there is a baseDir, run using that dir
         if(this.baseDir !== null) {

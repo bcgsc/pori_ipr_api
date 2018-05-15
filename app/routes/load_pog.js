@@ -249,6 +249,9 @@ router.route('/:type(genomic|probe)')
         
         // POG Genomic Report
         if(loaderOptions.profile.toLowerCase() === 'pog_genomic') {
+          if(!reportConfig.flatfile) {
+            loaderOptions.profile = 'pog_genomic_no_flat';
+          }
           let GenomicLoader = new require(process.cwd() + '/app/loaders');
           let Loader = new GenomicLoader(patientObj, reportObj, loaderOptions);
           return Loader.load();
@@ -257,6 +260,9 @@ router.route('/:type(genomic|probe)')
   
         // POG Probe Report
         if(loaderOptions.profile.toLowerCase() === 'pog_probe') {
+          if(!reportConfig.flatfile) {
+            loaderOptions.profile = 'pog_probe_no_flat';
+          }
           let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
           let Loader = new ProbeLoader(patientObj, reportObj, loaderOptions);
           return Loader.load();
@@ -281,7 +287,13 @@ router.route('/:type(genomic|probe)')
         if(req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'genomic') {
           // Non-POG options
           loaderOptions.nonPOG = true;
-          loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
+          if(reportConfig.flatfile) {
+            loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
+          } else {
+            let loaderProfile = req.body.profile + '_no_flat'
+            loaderOptions.load = (loaderConf.defaults[loaderProfile] === undefined) ? loaderConf.defaults['default_genomic_no_flat'].loaders :  loaderConf.defaults[loaderProfile].loaders;
+          }
+          
           loaderOptions.baseDir = req.body.baseDir;
           loaderOptions.profile = 'nonPOG';
           loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;

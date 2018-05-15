@@ -110,7 +110,6 @@
         "libraries": [
           "meta",
           "image",
-          "summary_tumourAnalysis",
           "summary_variantCounts",
           "summary_mutationSummary",
           "summary_genomicAlterationsIdentified",
