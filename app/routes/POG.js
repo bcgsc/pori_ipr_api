@@ -102,7 +102,8 @@ router.route('/:POG')
 
     // Access Control
     let access = new acl(req, res);
-    access.write('admin', 'superUser', 'projects');
+    access.isPog();
+    access.pogEdit('analyst','reviewer','admin', 'superUser', 'Projects');
     if(access.check() === false) return;
 
     // Update POG
