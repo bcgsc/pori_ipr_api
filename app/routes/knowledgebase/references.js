@@ -39,6 +39,12 @@ router.param('reference', (req,res,next,ref) => {
 router.route('/')
   .get((req,res) => {
 
+    // Access Control
+    let access = new acl(req, res);
+    access.notGroups('Clinician', 'Collaborator');
+    let externalUser = true;
+    if(access.check(true) === true) externalUser = false;
+
     // Query Options
     let opts = {};
     opts.limit = (req.query.limit && req.query.limit < 1001) ? req.query.limit : 100;
@@ -46,6 +52,22 @@ router.route('/')
 
     let where = referenceQueryFilter(req);
     if(where !== null) opts.where = where;
+
+    // filter references by source (ref_id) if being accessed by external user
+    let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
+
+    if(externalUser) {
+      if(opts.where) {
+        _.each(filterReferenceSources, function(refSource) {
+          opts.where['$and'].push({ref_id: {$notILike: refSource}});
+        });
+      } else {
+        opts.where = {'$and': []};
+        _.each(filterReferenceSources, function(refSource) {
+          opts.where['$and'].push({ref_id: {$notILike: refSource}});
+        });
+      }
+    }
 
     //return res.json(opts.where);
 
@@ -123,10 +145,32 @@ router.route('/')
 router.route('/count')
   .get((req,res) => {
 
+    // Access Control
+    let access = new acl(req, res);
+    access.notGroups('Clinician', 'Collaborator');
+    let externalUser = true;
+    if(access.check(true) === true) externalUser = false;
+
     let opts = {};
 
     let where = referenceQueryFilter(req);
     if(where !== null) opts.where = where;
+
+    // filter references by source (ref_id) if being accessed by external user
+    let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
+
+    if(externalUser) {
+      if(opts.where) {
+        _.each(filterReferenceSources, function(refSource) {
+          opts.where['$and'].push({ref_id: {$notILike: refSource}});
+        });
+      } else {
+        opts.where = {'$and': []};
+        _.each(filterReferenceSources, function(refSource) {
+          opts.where['$and'].push({ref_id: {$notILike: refSource}});
+        });
+      }
+    }
 
     db.models.kb_reference.count(opts).then(
       (result) => {
