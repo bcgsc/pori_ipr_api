@@ -106,35 +106,24 @@ router.route('/')
 
           if(validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) input_errors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
 
-          // Check if account
-          emailInUse(req.body.email).then(
+          if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
+
+          // Hash password
+          if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
+          if(req.body.type === 'ldap') req.body.password = null;
+
+          // Everything looks good, create the account!
+          db.models.user.create(req.body).then(
             (resp) => {
-              if(resp) input_errors.push({input: 'email', message: 'email address is already registered.'});
-
-              if(input_errors.length > 0) return res.status(400).json({errors: input_errors});
-
-              // Hash password
-              if(req.body.type === 'local') req.body.password = bcrypt.hashSync(req.body.password, 10);
-              if(req.body.type === 'ldap') req.body.password = null;
-
-              // Everything looks good, create the account!
-              db.models.user.create(req.body).then(
-                (resp) => {
-                  // Account created, send details
-                  res.json(resp);
-                },
-                (err) => {
-                  console.log('Unable to create user account', err);
-                  res.status(500).json({status: false, message: 'Unable to create user account.'});
-                }
-              );
+              // Account created, send details
+              res.json(resp);
             },
             (err) => {
-              // Unable to lookup email address
-              console.log(err);
-              res.status(500).json({message: 'Unable to register account.'});
+              console.log('Unable to create user account', err);
+              res.status(500).json({status: false, message: 'Unable to create user account.'});
             }
           );
+
         }
       },
       (err) => {
