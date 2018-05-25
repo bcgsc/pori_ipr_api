@@ -60,8 +60,13 @@ router.route('/')
     db.models.user.findOne({where: {username: req.body.username, deletedAt: {$not: null}}, paranoid: false}).then(
       (existCheck) => {
         if(existCheck !== null) {
+
+          // set up user to restore with updated field values
+          let restoreUser = req.body;
+          restoreUser['deletedAt'] = null;
+
           // Restore!
-          db.models.user.update({deletedAt: null}, {paranoid:false,where:{ident: existCheck.ident}, returning: true}).then(
+          db.models.user.update(restoreUser, {paranoid:false,where:{ident: existCheck.ident}, returning: true}).then(
             (user) => {
 
               let response = {
@@ -188,7 +193,7 @@ router.route('/:ident([A-z0-9-]{36})')
     
     
     // Editing someone other than self?
-    if(req.user.ident !== req.params.ident && req.user.access !== 'superUser') {
+    if(req.user.ident !== req.body.ident && req.user.access !== 'superUser') {
       res.status(403).json({status: false, message: 'You are not allowed to perform this action'});
       return;
     }
@@ -215,14 +220,14 @@ router.route('/:ident([A-z0-9-]{36})')
     if(req.body.password && req.body.password.length > 7) updateBody.password = bcrypt.hashSync(req.body.password, 10);
 
     // Attempt user model update
-    db.models.user.update(updateBody, { where: {ident: req.user.ident}, limit: 1 }).then(
+    db.models.user.update(updateBody, { where: {ident: req.body.ident}, returning: true, limit: 1 }).then(
       (result) => {
         if(typeof result === 'Object') {
           res.json(result);
         } else {
           // Success, get user -- UGH
           db.models.user.findOne({
-            where: {ident: req.user.ident}, 
+            where: {ident: result[1][0].ident}, 
             attributes: {exclude: ['id', 'password', 'deletedAt']},
             include: [
               {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
