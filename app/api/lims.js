@@ -7,7 +7,7 @@ const _         = require('lodash');
 const request   = require('request');
 
 
-const host      = "https://lims16.bcgsc.ca";
+const host      = "https://lims13.bcgsc.ca";
 const basePath  = "/prod/limsapi";
 
 let $lims = {};
