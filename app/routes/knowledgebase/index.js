@@ -4,7 +4,8 @@ let _ = require('lodash'),
     router = require('express').Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
     kbExport = require(process.cwd() + '/app/exporters/knowledgebase'),
-    loader = require(process.cwd() + '/app/loaders/knowledgebase');
+    loader = require(process.cwd() + '/app/loaders/knowledgebase'),
+    acl = require(process.cwd() + '/app/middleware/acl');;
 
 router.use('/validate', require('./validate'));
 
@@ -103,6 +104,10 @@ router.route('/history')
 router.route('/metrics')
   .get((req,res) => {
 
+    let access = new acl(req, res);
+    access.notGroups('Clinician', 'Collaborator');
+    let externalMode = !access.check(true);
+
     let query  = "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", ";
         query += "sum(case when kb_references.status = 'NEW' then 1 else 0 end) as \"refNew\", ";
         query += "sum(case when kb_references.status = 'interim' then 1 else 0 end) as \"refInterim\", ";
@@ -114,7 +119,22 @@ router.route('/metrics')
         query += "sum(case when kb_events.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"evRequiresReview\", ";
         query += "sum(case when kb_events.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"evFlaggedIncorrect\"";
         query += " from kb_references full outer join kb_events on (kb_references.ident = kb_events.ident and kb_events.\"deletedAt\" is null) ";
-        query += "where kb_references.\"deletedAt\" is null;";
+        query += "where kb_references.\"deletedAt\" is null ";
+
+    if(externalMode) {
+      // filter references by source (ref_id) if being accessed by external user
+      let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
+
+      let kbFilter = "";
+      for (var i = filterReferenceSources.length - 1; i >= 0; i--) {
+        kbFilter += "kb_references.ref_id not ilike '" + filterReferenceSources[i] + "'";
+        if(i !== 0) kbFilter += " and ";
+      }
+
+      query += "and " + kbFilter;
+    }
+
+    query += ";";
 
     // Get Metrics
     db.query(
