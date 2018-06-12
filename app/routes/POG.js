@@ -176,8 +176,7 @@ router.route('/:POG/user')
 router.route('/:POG/reports')
   .get((req,res,next) => {
 
-    // return all reports
-    db.models.analysis_report.scope('public').findAll({
+    let opts = {
       where: { pog_id: req.POG.id },
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
@@ -185,7 +184,16 @@ router.route('/:POG/reports')
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {model: db.models.POG.scope('public'), as: 'pog' }
       ]
-    }).then(
+    };
+
+    // States
+    if(req.query.state) {
+      let state = req.query.state.split(',');
+      opts.where.state = {$in: state};
+    }
+
+    // return all reports
+    db.models.analysis_report.scope('public').findAll(opts).then(
       (reports) => {
         res.json(reports);
       })
