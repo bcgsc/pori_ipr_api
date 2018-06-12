@@ -54,6 +54,7 @@ router.route('/')
     if(where !== null) opts.where = where;
 
     // filter references by source (ref_id) if being accessed by external user
+    // TODO: to be replaced by another filtering mechanism in the future since this doesn't account for new sources that cannot be shared
     let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
 
     if(externalUser) {
@@ -157,6 +158,7 @@ router.route('/count')
     if(where !== null) opts.where = where;
 
     // filter references by source (ref_id) if being accessed by external user
+    // TODO: to be replaced by another filtering mechanism in the future since this doesn't account for new sources that cannot be shared
     let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
 
     if(externalUser) {
