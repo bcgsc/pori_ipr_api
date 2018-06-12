@@ -43,7 +43,7 @@ router.route('/')
     let access = new acl(req, res);
     access.notGroups('Clinician', 'Collaborator');
     let externalUser = true;
-    if(access.check(true) === true) externalUser = false;
+    if(access.check(true)) externalUser = false;
 
     // Query Options
     let opts = {};
@@ -150,7 +150,7 @@ router.route('/count')
     let access = new acl(req, res);
     access.notGroups('Clinician', 'Collaborator');
     let externalUser = true;
-    if(access.check(true) === true) externalUser = false;
+    if(access.check(true)) externalUser = false;
 
     let opts = {};
 
