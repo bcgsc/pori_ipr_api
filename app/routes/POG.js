@@ -97,6 +97,30 @@ router.route('/:POG')
 
     res.json(req.POG);
 
+  })
+  .put((req,res,next) => {
+
+    // Access Control
+    let access = new acl(req, res);
+    access.isPog();
+    access.pogEdit('analyst','reviewer','admin', 'superUser', 'Projects');
+    if(access.check() === false) return;
+
+    // Update POG
+    let updateBody = {
+      alternate_identifier: req.body.alternate_identifier,
+      age_of_consent: req.body.age_of_consent
+    };
+
+    // Attempt POG model update
+    db.models.POG.update(updateBody, { where: {ident: req.body.ident}, limit: 1, returning: true }).then(
+      (result) => {
+        return res.json(result[1][0]);
+      },
+      (error) => {
+        return res.status(500).json({error: { message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
+      }
+    );
   });
 
 /**

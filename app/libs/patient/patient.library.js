@@ -14,13 +14,21 @@ module.exports = {
    *
    * @returns {Promise/Object} - Resolves with patient model object
    */
-  retrieveOrCreate: (patientID, project=null) => {
+  retrieveOrCreate: (patientID, project=null, additionalFields=null) => {
     return new Promise((resolve, reject) => {
       
       if(!patientID) reject({message: 'Patient ID is required to retrieve or create patient entry'});
       
       let patient;
-      db.models.POG.findOrCreate({ where: { POGID: patientID }, defaults: { POGID: patientID, project: project }})
+
+      // Setting up default fields for insertion if record not found
+      let defaultFields = {
+        POGID: patientID,
+        project: project,
+      };
+      _.extend(defaultFields, additionalFields); // extending default create object to include any additional fields
+
+      db.models.POG.findOrCreate({ where: { POGID: patientID }, defaults: defaultFields})
         .then((result) => {
           patient = result[0];
           let created = result[1];
@@ -49,7 +57,7 @@ module.exports = {
         })
         .catch((e) => {
           console.log(e);
-          logger.error('Failed to retrieve/create patient record', e);
+          logger.error('Failed to retrieve/create patient record: ' + e, e);
           reject({message: `Failed to retrieve/create patient record: ${e.message}`});
         });
     
