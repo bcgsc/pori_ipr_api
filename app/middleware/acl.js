@@ -60,6 +60,16 @@ function ACL(request, response) {
     },
 
     /**
+     * List of groups allowed to write/edit at this POG endpoint
+     *
+     * @param {string} deleters
+     * @returns {{this}}
+     */
+    pogEdit: (...editors) => {
+      this._pogEdit = editors;
+    },
+
+    /**
      * Explicit list of groups NOT allowed to view this endpoint
      *
      * @param nGroups

@@ -97,6 +97,30 @@ router.route('/:POG')
 
     res.json(req.POG);
 
+  })
+  .put((req,res,next) => {
+
+    // Access Control
+    let access = new acl(req, res);
+    access.isPog();
+    access.pogEdit('analyst','reviewer','admin', 'superUser', 'Projects');
+    if(access.check() === false) return;
+
+    // Update POG
+    let updateBody = {
+      alternate_identifier: req.body.alternate_identifier,
+      age_of_consent: req.body.age_of_consent
+    };
+
+    // Attempt POG model update
+    db.models.POG.update(updateBody, { where: {ident: req.body.ident}, limit: 1, returning: true }).then(
+      (result) => {
+        return res.json(result[1][0]);
+      },
+      (error) => {
+        return res.status(500).json({error: { message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
+      }
+    );
   });
 
 /**
@@ -176,8 +200,7 @@ router.route('/:POG/user')
 router.route('/:POG/reports')
   .get((req,res,next) => {
 
-    // return all reports
-    db.models.analysis_report.scope('public').findAll({
+    let opts = {
       where: { pog_id: req.POG.id },
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
@@ -185,7 +208,16 @@ router.route('/:POG/reports')
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {model: db.models.POG.scope('public'), as: 'pog' }
       ]
-    }).then(
+    };
+
+    // States
+    if(req.query.state) {
+      let state = req.query.state.split(',');
+      opts.where.state = {$in: state};
+    }
+
+    // return all reports
+    db.models.analysis_report.scope('public').findAll(opts).then(
       (reports) => {
         res.json(reports);
       })

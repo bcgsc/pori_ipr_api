@@ -123,7 +123,10 @@ class LimsSeqSync {
     
     return new Promise((resolve, reject) => {
       
-      if(task === null || task === undefined) return reject({message: 'Empty task object passed to checkTaskSequenceSubmitted'});
+      if(task === null || task === undefined) {
+        logger.error('Empty task object passed to checkTaskSequenceSubmitted');
+        resolve();
+      }
       
       let allLibrariesStarted = true;  // Assume they're all done, and wait to disprove. (single fail = all fail)
       let libraries = _.invert(task.state.analysis.libraries); // Invert keys & libraries. Doesn't matter which library hasn't started to fail task
@@ -159,7 +162,8 @@ class LimsSeqSync {
                 resolve();
               })
               .catch((err) => {
-                reject({message: 'Failed to check in completed task: ' + err.message, cause: err});
+                logger.error('[SeqSubmit] Failed to check in completed task for ' + task.state.analysis.pog.POGID + ': ' + err.message);
+                resolve();
               });
             
           } else {
@@ -171,7 +175,8 @@ class LimsSeqSync {
         
         })
         .catch((err) => {
-          reject({message: 'Failed to get LIMS Illumina run results: ' + err.message, cause: err});
+          logger.error('Failed to get LIMS Illumina run results: ' + err.message);
+          resolve();
         });
       
     });
@@ -239,7 +244,10 @@ class LimsSeqSync {
     
     return new Promise((resolve, reject) => {
       
-      if(task === null || task === undefined || task.length === 0) return reject({message: 'Empty task object passed to checkTaskSequenceSubmitted'});
+      if(task === null || task === undefined || task.length === 0) {
+        logger.error('Empty task object passed to checkTaskSequenceCompleted');
+        resolve();
+      }
       
       
       // Possible run scenarios and their default status
@@ -328,23 +336,25 @@ class LimsSeqSync {
           if(run_status.complete && !run_status.failed) {
             actionTask.checkIn(this.user, moment().toISOString())
               .then((result) => {
-                logger.info('[SeqComplete] Checked-in task for :' + task.state.analysis.pog.POGID);
+                logger.info('[SeqComplete] Checked-in task for: ' + task.state.analysis.pog.POGID);
                 resolve();
               })
               .catch((err) => {
-                reject({message: 'Failed to check in completed task: ' + err.message, cause: err});
+                logger.error('[SeqComplete] Failed to check in completed task for ' + task.state.analysis.pog.POGID + ': ' + err.message);
+                resolve();
               });
           }
           
           if(!run_status.complete && !run_status.failed) {
-            logger.info('[SeqComplete] Sequencing complete still pending for:' + task.state.analysis.pog.POGID);
+            logger.info('[SeqComplete] Sequencing complete still pending for: ' + task.state.analysis.pog.POGID);
             resolve();
           }
           
           
         })
         .catch((err) => {
-          reject({message: 'Failed to get LIMS Illumina run results: ' + err.message, cause: err});
+          logger.error('Failed to get LIMS Illumina run results: ' + err.message);
+          resolve();
         });
       
     });
@@ -430,7 +440,10 @@ class LimsSeqSync {
     
     return new Promise((resolve, reject) => {
       
-      if(task === null || task === undefined) return reject({message: 'Empty task object passed to checkTaskSequenceSubmitted'});
+      if(task === null || task === undefined) {
+        logger.error('Empty task object passed to checkTaskSequenceValidation');
+        resolve();
+      }
       
       let run_status = {
         passed: true, // Single case false
@@ -506,7 +519,8 @@ class LimsSeqSync {
                 resolve();
               })
               .catch((err) => {
-                reject({message: 'Failed to check in completed task: ' + err.message, cause: err});
+                logger.error('[SeqValid] Failed to check in completed task for ' + task.state.analysis.pog.POGID + ': ' + err.message);
+                resolve();
               });
           }
           
@@ -518,7 +532,8 @@ class LimsSeqSync {
           
         })
         .catch((err) => {
-          reject({message: 'Failed to get LIMS Illumina run results: ' + err.message, cause: err});
+          logger.error('Failed to get LIMS Illumina run results: ' + err.message);
+          resolve();
         });
       
     });
@@ -589,7 +604,10 @@ class LimsSeqSync {
     
     return new Promise((resolve, reject) => {
       
-      if(task === null || task === undefined) return reject({message: 'Empty task object passed to checkTaskSequenceSubmitted'});
+      if(task === null || task === undefined) {
+        logger.error('Empty task object passed to checkTaskSequenceQC0');
+        resolve();
+      }
       
       let run_status = {
         passed: true, // Single case false
@@ -663,7 +681,8 @@ class LimsSeqSync {
                 resolve();
               })
               .catch((err) => {
-                reject({message: 'Failed to check in completed task: ' + err.message, cause: err});
+                logger.error('[SeqQC0] Failed to check in completed task for ' + task.state.analysis.pog.POGID + ': ' + err.message);
+                resolve();
               });
           }
           
@@ -675,7 +694,8 @@ class LimsSeqSync {
           
         })
         .catch((err) => {
-          reject({message: 'Failed to get LIMS Illumina run results: ' + err.message, cause: err});
+          logger.error('Failed to get LIMS Illumina run results: ' + err.message);
+          resolve();
         });
       
     });

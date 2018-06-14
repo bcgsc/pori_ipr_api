@@ -4,7 +4,8 @@ let _ = require('lodash'),
     router = require('express').Router({mergeParams: true}),
     db = require(process.cwd() + '/app/models'),
     kbExport = require(process.cwd() + '/app/exporters/knowledgebase'),
-    loader = require(process.cwd() + '/app/loaders/knowledgebase');
+    loader = require(process.cwd() + '/app/loaders/knowledgebase'),
+    acl = require(process.cwd() + '/app/middleware/acl');;
 
 router.use('/validate', require('./validate'));
 
@@ -103,9 +104,42 @@ router.route('/history')
 router.route('/metrics')
   .get((req,res) => {
 
+    let access = new acl(req, res);
+    access.notGroups('Clinician', 'Collaborator');
+    let externalMode = !access.check(true);
+
+    let query  = "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", ";
+        query += "sum(case when kb_references.status = 'NEW' then 1 else 0 end) as \"refNew\", ";
+        query += "sum(case when kb_references.status = 'interim' then 1 else 0 end) as \"refInterim\", ";
+        query += "sum(case when kb_references.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"refRequiresReview\", ";
+        query += "sum(case when kb_references.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"refFlaggedIncorrect\", ";
+        query += "count(kb_events.id) as \"evTotal\", ";
+        query += "sum(case when kb_events.status = 'APPROVED' then 1 else 0 end) as \"evApproved\", ";
+        query += "sum(case when kb_events.status = 'NEW' then 1 else 0 end) as \"evNew\", ";
+        query += "sum(case when kb_events.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"evRequiresReview\", ";
+        query += "sum(case when kb_events.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"evFlaggedIncorrect\"";
+        query += " from kb_references full outer join kb_events on (kb_references.ident = kb_events.ident and kb_events.\"deletedAt\" is null) ";
+        query += "where kb_references.\"deletedAt\" is null ";
+
+    if(externalMode) {
+      // filter references by source (ref_id) if being accessed by external user
+      // TODO: to be replaced by another filtering mechanism in the future since this doesn't account for new sources that cannot be shared
+      let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
+
+      let kbFilter = "";
+      for (var i = filterReferenceSources.length - 1; i >= 0; i--) {
+        kbFilter += "kb_references.ref_id not ilike '" + filterReferenceSources[i] + "'";
+        if(i !== 0) kbFilter += " and ";
+      }
+
+      query += "and " + kbFilter;
+    }
+
+    query += ";";
+
     // Get Metrics
     db.query(
-      "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", sum(case when kb_references.status = 'NEW' then 1 else 0 end) as \"refNew\", sum(case when kb_references.status = 'interim' then 1 else 0 end) as \"refInterim\", sum(case when kb_references.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"refRequiresReview\", sum(case when kb_references.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"refFlaggedIncorrect\", count(kb_events.id) as \"evTotal\", sum(case when kb_events.status = 'APPROVED' then 1 else 0 end) as \"evApproved\", sum(case when kb_events.status = 'NEW' then 1 else 0 end) as \"evNew\", sum(case when kb_events.status = 'REQUIRES-REVIEW' then 1 else 0 end) as \"evRequiresReview\", sum(case when kb_events.status = 'FLAGGED-INCORRECT' then 1 else 0 end) as \"evFlaggedIncorrect\" from kb_references full outer join kb_events on kb_references.ident = kb_events.ident;",
+      query,
       { type: db.QueryTypes.SELECT }
     )
     .then(
