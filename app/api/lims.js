@@ -59,19 +59,17 @@ $lims.sample = (pogid) => {
         json: true
       },
         (err, res, body) => {
-          
-          if(err) {
-            reject({message: 'Unable to query lims for POG sample data: ' + err.message, cause: err});
-          }
-
-          if(res.statusCode == 504 || res.statusCode == 502) {
-            logger.error('Failed to connect to LIMS API due to Gateway Time-out');
-            let result = {"results": [], "hits": 0};
-            resolve(result)
-          } else {
+          if (res.statusCode == 200 && !err) {
             resolve(body);
+          } else {
+            if(res.statusCode == 504 || res.statusCode == 502) logger.error('Failed to connect to LIMS API due to Gateway Time-out');
+
+            if(err) {
+              reject({message: 'Unable to query LIMS for sample data: ' + err.message, cause: err});
+            } else {
+              reject({message: 'Unable to query LIMS for sample data: returned with status code ' + res.statusCode});
+            }
           }
-          
         })
         .auth(credentials.username, credentials.password);
     }).catch((err) => {
@@ -115,17 +113,15 @@ $lims.library = (libraries) => {
         body: JSON.stringify(body)
       },
         (err, res, body) => {
-          if(err) {
-            reject({message: 'Unable to query lims for library data: ' + err.message, cause: err});
-          }
-    
-          if(!err) {
-            if(res.statusCode == 504 || res.statusCode == 502) {
-              logger.error('Failed to connect to LIMS API due to Gateway Time-out');
-              let result = {"results": [], "hits": 0};
-              resolve(result)
+          if (res.statusCode == 200 && !err) {
+            resolve(JSON.parse(body));
+          } else {
+            if(res.statusCode == 504 || res.statusCode == 502) logger.error('Failed to connect to LIMS API due to Gateway Time-out');
+
+            if(err) {
+              reject({message: 'Unable to query LIMS for library data: ' + err.message, cause: err});
             } else {
-              resolve(JSON.parse(body));
+              reject({message: 'Unable to query LIMS for library data: returned with status code ' + res.statusCode});
             }
           }
         })
@@ -174,17 +170,15 @@ $lims.illuminaRun = (libraries) => {
         body: JSON.stringify(body)
       },
         (err, res, body) => {
-          if(err) {
-            reject({message: 'Unable to query lims for illumina data: ' + err.message, cause: err});
-          }
-    
-          if(!err) {
-            if(res.statusCode == 504 || res.statusCode == 502) {
-              logger.error('Failed to connect to LIMS API due to Gateway Time-out');
-              let result = {"results": [], "hits": 0};
-              resolve(result)
+          if (res.statusCode == 200 && !err) {
+            resolve(JSON.parse(body));
+          } else {
+            if(res.statusCode == 504 || res.statusCode == 502) logger.error('Failed to connect to LIMS API due to Gateway Time-out');
+
+            if(err) {
+              reject({message: 'Unable to query LIMS for Illumina run data: ' + err.message, cause: err});
             } else {
-              resolve(JSON.parse(body));
+              reject({message: 'Unable to query LIMS for Illumina run data: returned with status code ' + res.statusCode});
             }
           }
         })
