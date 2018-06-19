@@ -45,6 +45,8 @@ module.exports = (report, dir, logger) => {
       // Remap results
       let entry = _.head(remapKeys(result, nconf.get('summary:tumourAnalysis')));
 
+      if (!entry) return log('Failed to find tumour analysis information in file', logger.WARNING);
+
       if(parseInt(entry.tumourContent).toString().length !== entry.tumourContent.length) {
         log('Non-integer tumour content detected', logger.ERROR);
         deferred.reject({loader: 'tumourAnalysis', message: 'Tumour content was not an integer'});

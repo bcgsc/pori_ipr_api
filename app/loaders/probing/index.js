@@ -62,10 +62,17 @@ class ProbeLoader {
 
       this.log('Starting Probe Loader');
 
-      // Run default POG Genomic Report loading
-      if(this.options.profile.toLowerCase() === 'pog_probe') {
+      // Run default POG Probe Report loading
+      if(this.options.profile.toLowerCase() === 'pog_probe' || this.options.profile.toLowerCase() === 'pog_probe_no_flat') {
 
-        this.log('Running POG Probe Loader');
+        if(this.options.profile === 'pog_probe_no_flat') {
+          this.log('Running POG Probe Loader without flatfile');
+
+          // Skip patient info loader if no flatfile is available
+          _.remove(loaders, {name: 'summary_patientInformation'});
+        } else {
+          this.log('Running POG Probe Loader');
+        }
 
         // If there is a baseDir, run using that dir
         if(this.baseDir !== null) {
@@ -258,6 +265,7 @@ class ProbeLoader {
             let fail = {};
 
             // TODO: fail better
+            fail.message = error.message;
 
             // Log error
             this.log('Failed onboarding process.', logger.ERROR);
