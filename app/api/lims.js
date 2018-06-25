@@ -5,6 +5,8 @@ const db        = require(process.cwd() + '/app/models');
 const nconf     = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
 const _         = require('lodash');
 const request   = require('request');
+const gin       = require(process.cwd() + '/lib/ginCredentials');
+let logger      = process.logger;
 
 
 const host      = "https://lims13.bcgsc.ca";
@@ -48,24 +50,31 @@ $lims.sample = (pogid) => {
     });
     
     // Make Request
-    request({
-      method: 'POST',
-      uri: host + basePath + '/sample',
-      gzip: true,
-      body: body,
-      json: true
-    },
-      (err, res, body) => {
-        
-        if(err) {
-          reject({message: 'Unable to query lims for POG sample data: ' + err.message, cause: err});
-        }
-        
-        resolve(body);
-        
-      
-      })
-      .auth('bpierce', 'k4tYp3Rry~', true);
+    $lims.getAuthCredentials().then((credentials) => {
+      request({
+        method: 'POST',
+        uri: host + basePath + '/sample',
+        gzip: true,
+        body: body,
+        json: true
+      },
+        (err, res, body) => {
+          if (res.statusCode == 200 && !err) {
+            resolve(body);
+          } else {
+            if(res.statusCode == 504 || res.statusCode == 502) logger.error('Failed to connect to LIMS API due to Gateway Time-out');
+
+            if(err) {
+              reject({message: 'Unable to query LIMS for sample data: ' + err.message, cause: err});
+            } else {
+              reject({message: 'Unable to query LIMS for sample data: returned with status code ' + res.statusCode});
+            }
+          }
+        })
+        .auth(credentials.username, credentials.password);
+    }).catch((err) => {
+      reject({message: 'Unable to retrieve credentials to access LIMS API: ' + err.message, cause: err});
+    });
     
   });
 };
@@ -96,23 +105,30 @@ $lims.library = (libraries) => {
       }
     };
     
-    
-    request({
-      method: 'POST',
-      uri: host + basePath + '/library',
-      gzip: true,
-      body: JSON.stringify(body)
-    },
-      (err, res, body) => {
-        if(err) {
-          reject({message: 'Unable to query lims for library data: ' + err.message, cause: err});
-        }
-  
-        if(!err) {
-          resolve(JSON.parse(body));
-        }
-      })
-      .auth('bpierce', 'k4tYp3Rry~');
+    $lims.getAuthCredentials().then((credentials) => {
+      request({
+        method: 'POST',
+        uri: host + basePath + '/library',
+        gzip: true,
+        body: JSON.stringify(body)
+      },
+        (err, res, body) => {
+          if (res.statusCode == 200 && !err) {
+            resolve(JSON.parse(body));
+          } else {
+            if(res.statusCode == 504 || res.statusCode == 502) logger.error('Failed to connect to LIMS API due to Gateway Time-out');
+
+            if(err) {
+              reject({message: 'Unable to query LIMS for library data: ' + err.message, cause: err});
+            } else {
+              reject({message: 'Unable to query LIMS for library data: returned with status code ' + res.statusCode});
+            }
+          }
+        })
+        .auth(credentials.username, credentials.password);
+    }).catch((err) => {
+      reject({message: 'Unable to retrieve credentials to access LIMS API: ' + err.message, cause: err});
+    });
     
   });
   
@@ -145,24 +161,56 @@ $lims.illuminaRun = (libraries) => {
         ]
       }
     }
+
+    $lims.getAuthCredentials().then((credentials) => {
+      request({
+        method: 'POST',
+        uri: host + basePath + '/illumina_run',
+        gzip: true,
+        body: JSON.stringify(body)
+      },
+        (err, res, body) => {
+          if (res.statusCode == 200 && !err) {
+            resolve(JSON.parse(body));
+          } else {
+            if(res.statusCode == 504 || res.statusCode == 502) logger.error('Failed to connect to LIMS API due to Gateway Time-out');
+
+            if(err) {
+              reject({message: 'Unable to query LIMS for Illumina run data: ' + err.message, cause: err});
+            } else {
+              reject({message: 'Unable to query LIMS for Illumina run data: returned with status code ' + res.statusCode});
+            }
+          }
+        })
+        .auth(credentials.username, credentials.password);
+    }).catch((err) => {
+      reject({message: 'Unable to retrieve credentials to access LIMS API: ' + err.message, cause: err});
+    });
     
-    request({
-      method: 'POST',
-      uri: host + basePath + '/illumina_run',
-      gzip: true,
-      body: JSON.stringify(body)
-    },
-      (err, res, body) => {
-        if(err) {
-          reject({message: 'Unable to query lims for illumina data: ' + err.message, cause: err});
-        }
+    
   
-        if(!err) {
-          resolve(JSON.parse(body));
-        }
-      })
-      .auth('bpierce', 'k4tYp3Rry~');
+  });
+};
+
+/**
+ * Login to LIMS API
+ *
+ * @returns {Promise}
+ */
+$lims.getAuthCredentials = () => {
+  return new Promise((resolve, reject) => {
   
+    gin.retrieve().then((credentials) => {
+    
+      logger.debug('Credentials retrieved');
+
+      resolve(credentials);
+    })
+    .catch((err) => {
+      logger.error('Failed to retrieve credentials');
+      console.log(err);
+    });
+    
   });
 };
 

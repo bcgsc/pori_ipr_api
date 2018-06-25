@@ -139,14 +139,14 @@ class patientLoader {
               (err) => {
                 console.log(err);
                 this.logging('Patient Information was not able to complete.', this.logger.ERROR);
-                resolve({name: 'patientInformation', result: false});
+                reject({name: 'patientInformation', result: false, message: 'Patient Information was not able to complete: ' + err.message});
               }
             )
           }
 
         },
         (err) => {
-          resolve({name: 'patientInformation', result: false});
+          reject({name: 'patientInformation', result: false, message: err.message});
         }
       );
 
