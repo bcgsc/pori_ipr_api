@@ -24,6 +24,8 @@
     "commonly amplified oncogene",
     "conditional loss-of-function",
     "cooperative-events",
+    "decreased efficacy",
+    "decreased metabolism PK",
     "diagnostic",
     "disruptive fusion",
     "dominant gain-of-function",
@@ -33,7 +35,10 @@
     "favourable",
     "gain-of-function",
     "haploinsufficient",
+    "higher dosage",
+    "increased efficacy",
     "increased-function",
+    "increased metabolism PK",
     "inferred FDA-approve",
     "inferred gain-of-function",
     "inferred loss-of-function",
@@ -42,6 +47,7 @@
     "inhibits-pathway",
     "less-effective-than",
     "loss-of-function",
+    "lower dosage",
     "minimal resistance",
     "minimal sensitivity",
     "more-effective-than",
@@ -71,6 +77,7 @@
     "switch-of-function",
     "targetable",
     "test target",
+    "toxicity",
     "tumour suppressor",
     "unfavourable",
     "weakly-increased-function",
@@ -79,9 +86,11 @@
   "type": [
     "biological",
     "diagnostic",
+    "pharmacogenomic",
     "prognostic",
-    "therapeutic",
-    "occurrence"
+    "occurrence",
+    "therapeutic"
+
   ],
   "reference_type": [
     "ClinicalTrials.gov id",
