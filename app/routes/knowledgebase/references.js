@@ -162,16 +162,11 @@ router.route('/count')
     let filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
 
     if(externalUser) {
-      if(opts.where) {
-        _.each(filterReferenceSources, function(refSource) {
-          opts.where['$and'].push({ref_id: {$notILike: refSource}});
-        });
-      } else {
-        opts.where = {'$and': []};
-        _.each(filterReferenceSources, function(refSource) {
-          opts.where['$and'].push({ref_id: {$notILike: refSource}});
-        });
-      }
+      if(!opts.where) opts.where = {'$and': []};
+
+      _.each(filterReferenceSources, function(refSource) {
+        opts.where['$and'].push({ref_id: {$notILike: refSource}});
+      });
     }
 
     db.models.kb_reference.count(opts).then(
@@ -283,6 +278,7 @@ let referenceQueryFilter = (req) => {
     'evidence': {operator: "$in", each: null, wrap: false},
     'status': {operator: "$in", each: null, wrap: false},
     'events_expression': {operator: '$or', each: '$ilike', wrap: true},
+    'ref_id': {operator: '$or', each: '$ilike', wrap: true}
   };
 
   // Are we building a where clause?
