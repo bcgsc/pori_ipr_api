@@ -37,7 +37,7 @@ module.exports = (sequelize, Sq) => {
       allowNull: true
     },
     type: {
-      type: Sq.ENUM('therapeutic','prognostic','biological','occurrence','diagnostic'),
+      type: Sq.ENUM('therapeutic','prognostic','biological','occurrence','diagnostic', 'pharmacogenomic'),
       allowNull: true
     },
     relevance: {
