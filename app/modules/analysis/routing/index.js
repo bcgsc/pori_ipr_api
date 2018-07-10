@@ -58,7 +58,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
           where: {}
         };
         
-        let pog_include = { as: 'pog', model: db.models.POG, where: {}, include: [ { as: 'patientInformation', model: db.models.patientInformation, where: {} } ] };
+        let pog_include = { as: 'pog', model: db.models.POG, where: {}, include: [ { as: 'patientInformation', model: db.models.patientInformation, where: {}, required: false } ] };
         if(req.query.search) opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%` };
 
         let project_include = {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']}, where: {}};
