@@ -1,14 +1,15 @@
 "use strict";
 
 // app/routes/genomic/detailedGenomicAnalysis.js
-let db = require(process.cwd() + '/app/models'),
-    lodash = require('lodash');
+const db     = require(process.cwd() + '/app/models');
+const lodash = require('lodash');
+const Q      = require('q');
 
 module.exports = {
 
   eventCheck: (event, user) => {
 
-    let deferred = Promise.defer();
+    let deferred = Q.defer();
 
     // Check if there's an event with this event_expression value
     db.models.kb_event.findOne({where: {key: {$ilike: event}}}).then(
