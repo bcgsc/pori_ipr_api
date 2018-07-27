@@ -96,7 +96,8 @@ router.route('/:type(genomic|probe)')
               "libraries.transcriptome": {
                 $in: libraries
               }
-            }
+            },
+            '$pog.POGID$': patient
           },
           include: [
             {model: db.models.POG, as: 'pog'}
@@ -138,10 +139,10 @@ router.route('/:type(genomic|probe)')
               if(flatfile) {              
                 // Parse libraries
                 _.forEach(reportConfigLibraries, (l) => {
-                  let row = _.find(flatfile, {library_name: l});
-                  
+                  let row = _.find(_.flattenDepth(flatfile, 2), {library_name: l});
+
                   if(!row) return;
-                  
+
                   // If Normal
                   if(row.diseased_status === 'Normal') createAnalysis.libraries.normal = l;
                   
