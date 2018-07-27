@@ -15,6 +15,7 @@ module.exports = (req,res,next,ident) => {
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis' },
       {model: db.models.POG.scope('public'), as: 'pog' },
       {model: db.models.user.scope('public'), as: 'createdBy'},
+      {model: db.models.pog_analysis.scope('public'), as: 'analysis' },
       {model: db.models.analysis_reports_user, as: 'users', separate: true, include: [
         {model: db.models.user.scope('public'), as: 'user'}
       ]}
