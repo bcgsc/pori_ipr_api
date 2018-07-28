@@ -152,7 +152,7 @@ router.route('/:type(genomic|probe)')
                   // if Tumour
                   if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') === -1) {
                     createAnalysis.libraries.tumour = l;
-                    createAnalysis.createAnalysis_biopsy = row.sample_prefix;
+                    createAnalysis.analysis_biopsy = row.sample_prefix;
                     createAnalysis.biopsy_site = row.biopsy_site;
                     createAnalysis.disease = row.diagnosis;
                     createAnalysis.biopsy_date = moment(row.sample_collection_time).toISOString();
