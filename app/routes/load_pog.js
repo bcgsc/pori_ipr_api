@@ -86,7 +86,7 @@ router.route('/:type(genomic|probe)')
       .then((libraries) => {
         let opts = {
           where: {
-            $or: {
+            $and: {
               "libraries.normal": {
                 $in: libraries
               },
