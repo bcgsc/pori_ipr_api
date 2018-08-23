@@ -70,12 +70,10 @@ let App = require('../app').then((app) => {
      * Create HTTPS server.
      */
     
-    let private_key = fs.readFileSync(envConf.web.ssl.private_key);
-    let certificate = fs.readFileSync(envConf.web.ssl.certificate);
-    let passphrase = fs.readFileSync(envConf.web.ssl.passphrase, 'utf8');
+    let cert = fs.readFileSync(envConf.web.ssl);
 
-    server = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, app);
-    admin_server = https.createServer({key: private_key, cert: certificate, passphrase: passphrase}, admin);
+    server = https.createServer({key: cert, cert: cert}, app);
+    admin_server = https.createServer({key: cert, cert: cert}, admin);
   } 
   
   
