@@ -89,6 +89,10 @@ class BioAppsSync {
           slug: 'bioapps_patient_sync',
           deletedAt: null,
           status: ['pending', 'failed'],
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']
@@ -277,6 +281,10 @@ class BioAppsSync {
           slug: 'bioapps_merged_bams',
           deletedAt: null,
           status: ['pending', 'failed'],
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']
@@ -388,6 +396,10 @@ class BioAppsSync {
           slug: 'bioapps_assembly',
           deletedAt: null,
           status: ['pending', 'failed'],
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']
@@ -495,6 +507,10 @@ class BioAppsSync {
           slug: 'bioapps_symlinks_created',
           deletedAt: null,
           status: ['pending', 'active', 'failed'],
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']

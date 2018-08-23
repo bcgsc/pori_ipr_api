@@ -87,6 +87,10 @@ class LimsPathologySync {
           slug: 'pathology_passed',
           deletedAt: null,
           status: 'pending',
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']
