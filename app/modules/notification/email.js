@@ -86,10 +86,10 @@ module.exports = class Email {
         html: this.htmlBody
       };
 
-      if(process.env.NODE_ENV === 'development' && this.force !== true) {
+      if(process.env.NODE_ENV !== 'production' && this.force !== true) {
         logger.info('Mocked email generated: ');
         console.log(message);
-        return resolve({env: 'development', message: 'success', mock: true});
+        return resolve({env: process.env.NODE_ENV, message: 'success', mock: true});
       }
 
       this.transport.sendMail(message, (err, result) => {
