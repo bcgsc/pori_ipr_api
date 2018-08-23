@@ -76,7 +76,11 @@ class LimsSeqSync {
         where: {
           slug: 'sequencing_submit',
           status: {$not: 'complete'},
-          deletedAt: null
+          deletedAt: null,
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']
@@ -195,7 +199,11 @@ class LimsSeqSync {
         where: {
           slug: 'sequencing',
           status: {$not: 'complete'},
-          deletedAt: null
+          deletedAt: null,
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']
@@ -389,7 +397,11 @@ class LimsSeqSync {
         where: {
           slug: 'sequencing_validated',
           status: {$not: 'complete'},
-          deletedAt: null
+          deletedAt: null,
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         order:  [['ordinal', 'ASC']],
         attributes: {
@@ -554,7 +566,11 @@ class LimsSeqSync {
         where: {
           slug: 'sequencing_qc0',
           status: {$not: 'complete'},
-          deletedAt: null
+          deletedAt: null,
+          '$state.status$': {$in: [
+            'active',
+            'pending',
+          ]},
         },
         attributes: {
           include: ['state_id']

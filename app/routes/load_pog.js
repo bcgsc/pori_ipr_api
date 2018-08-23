@@ -86,7 +86,7 @@ router.route('/:type(genomic|probe)')
       .then((libraries) => {
         let opts = {
           where: {
-            $or: {
+            $and: {
               "libraries.normal": {
                 $in: libraries
               },
@@ -96,7 +96,8 @@ router.route('/:type(genomic|probe)')
               "libraries.transcriptome": {
                 $in: libraries
               }
-            }
+            },
+            '$pog.POGID$': patient
           },
           include: [
             {model: db.models.POG, as: 'pog'}
@@ -138,10 +139,10 @@ router.route('/:type(genomic|probe)')
               if(flatfile) {              
                 // Parse libraries
                 _.forEach(reportConfigLibraries, (l) => {
-                  let row = _.find(flatfile, {library_name: l});
-                  
+                  let row = _.find(_.flattenDepth(flatfile, 2), {library_name: l});
+
                   if(!row) return;
-                  
+
                   // If Normal
                   if(row.diseased_status === 'Normal') createAnalysis.libraries.normal = l;
                   
@@ -151,7 +152,7 @@ router.route('/:type(genomic|probe)')
                   // if Tumour
                   if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') === -1) {
                     createAnalysis.libraries.tumour = l;
-                    createAnalysis.createAnalysis_biopsy = row.sample_prefix;
+                    createAnalysis.analysis_biopsy = row.sample_prefix;
                     createAnalysis.biopsy_site = row.biopsy_site;
                     createAnalysis.disease = row.diagnosis;
                     createAnalysis.biopsy_date = moment(row.sample_collection_time).toISOString();
