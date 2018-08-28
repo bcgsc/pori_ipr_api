@@ -5,3 +5,5 @@ npm-debug.log
 .env.json
 _tmp/*
 ._.DS_Store
+coverage
+.nyc_output
