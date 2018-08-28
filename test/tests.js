@@ -6,6 +6,7 @@ process.env.NODE_ENV = 'local';
 const assert      = require('assert');
 const http        = require('http');
 const colors      = require('colors');        // Console colours
+const testData    = require("./setupTestData.js");
 
 const port        = '8081'; // Data Access
 const admin_port  = '8082'; // Admin Functions
@@ -27,7 +28,6 @@ describe('IPR API', () => {
   
   // Start API servers before running tests
   before(function(done) {
-    
     this.timeout(30000);
     
     let App = require('../app').then((app) => {
@@ -60,21 +60,32 @@ describe('IPR API', () => {
       admin_server.listen(admin_port);
       
       console.log('Server listening');
+
+    /**
+     * Initialize testing data
+     */
+           
+      testData.createTestAccounts();
       
       done();
-      
     });
-    
   });
 
   // Close API server connections after running tests
   after(function() {
+    // Delete testing data
+    testData.deleteTestAccounts();
+
+    // Close server connections
     server.close();
     admin_server.close();
   });
   
+  // Session Tests
+  require('./session/session');
+
   // Reports Tests
-  require('./reports/reports');
+  //require('./reports/reports');
   
   // Utilities
   require('./utilities/pyToSql');
