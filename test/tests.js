@@ -1,6 +1,6 @@
 "use strict";
 // Set Env
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = 'local';
 
 // Dependencies
 const assert      = require('assert');
@@ -21,7 +21,11 @@ console.log(('Application API Port: ').green,  port.toString().white);
 console.log(('Admin API Port: ').green, admin_port.toString().white, '\n');
 
 describe('IPR API', () => {
+  let server;
+  let admin_server;
+  let io;
   
+  // Start API servers before running tests
   before(function(done) {
     
     this.timeout(30000);
@@ -38,14 +42,14 @@ describe('IPR API', () => {
        * Create HTTP server.
        */
       
-      let server = http.createServer(app);
-      let admin_server = http.createServer(admin);
+      server = http.createServer(app);
+      admin_server = http.createServer(admin);
       
       /**
        * Socket.io
        */
       
-      let io     = app.io;
+      io     = app.io;
       io.attach(server);
       
       /**
@@ -61,6 +65,12 @@ describe('IPR API', () => {
       
     });
     
+  });
+
+  // Close API server connections after running tests
+  after(function() {
+    server.close();
+    admin_server.close();
   });
   
   // Reports Tests
