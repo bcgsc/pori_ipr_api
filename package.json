@@ -8,7 +8,7 @@
     "start": "node ./bin/www",
     "migrate": "node ./bin/www --database.migrate",
     "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
-    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha --timeout 10000"
+    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha --reporter-options configFile=config/coverage.json --timeout 10000"
   },
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
   "license": "GPL-3.0",
