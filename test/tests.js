@@ -29,44 +29,32 @@ describe('IPR API', () => {
   // Start API servers before running tests
   before(function(done) {
     this.timeout(30000);
-    
+
     let App = require('../app').then((app) => {
-    
+
       let admin = require('../admin');
-    
+
       app.set('port', port);
       admin.set('port', admin_port);
-      
-      
-      /**
-       * Create HTTP server.
-       */
-      
+
+
+      // Create HTTP server.
       server = http.createServer(app);
       admin_server = http.createServer(admin);
-      
-      /**
-       * Socket.io
-       */
-      
+
+      // Socket.io
       io     = app.io;
       io.attach(server);
-      
-      /**
-       * Listen on provided port, on all network interfaces.
-       */
-      
+
+      // Listen on provided port, on all network interfaces.
       server.listen(port);
       admin_server.listen(admin_port);
-      
+
       console.log('Server listening');
 
-    /**
-     * Initialize testing data
-     */
-           
+      //Initialize testing data
       testData.createTestAccounts();
-      
+
       done();
     });
   });
