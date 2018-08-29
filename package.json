@@ -61,6 +61,7 @@
     "eslint": "^3.19.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
+    "mocha-bamboo-reporter": "^1.1.1",
     "nyc": "^13.0.1",
     "supertest": "^3.0.0"
   }
