@@ -48,6 +48,7 @@ Please note that database migration will not execute alter statements (e.g. addi
 
 #### Configuration
 ======================================
+
 This repository contains configuration profiles for production, testing, and development environments. A profile will be
 selected based on the NODE_ENV environment setting, or by explicitly calling --env [test|production|development] when
 initializing the server.
