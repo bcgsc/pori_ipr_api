@@ -8,7 +8,7 @@
     "start": "node ./bin/www",
     "migrate": "node ./bin/www --database.migrate",
     "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
-    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha --reporter-options configFile=config/coverage.json --timeout 10000"
+    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha -R mocha-multi-reporters --reporter-options configFile=config/coverage.json --timeout 10000"
   },
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
   "license": "GPL-3.0",
@@ -62,6 +62,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "mocha-bamboo-reporter": "^1.1.1",
+    "mocha-multi-reporters": "^1.1.7",
     "nyc": "^13.0.1",
     "supertest": "^3.0.0"
   }
