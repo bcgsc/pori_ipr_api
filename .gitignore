@@ -7,3 +7,5 @@ _tmp/*
 ._.DS_Store
 coverage
 .nyc_output
+xunit.xml
+mocha.json
