@@ -11,17 +11,7 @@ An integrated data synchronization application runs concurrently with the API in
 The sync-worker is responsible for regularly checking in with LIMS and BioApps to keep sample tracking
 tasks up to date. 
 
-
-#### Configuration
-======================================
-
-This repository contains configuration profiles for production, testing, and development environments. A profile will be
-selected based on the NODE_ENV environment setting, or by explicitly calling --env [testing|production|development] when
-initializing the server.
-
-
-
-#### Install
+#### Installation
 ======================================
 
 After cloning the repository, the application's dependencies need to be installed:
@@ -58,6 +48,9 @@ Please note that database migration will not execute alter statements (e.g. addi
 
 #### Configuration
 ======================================
+This repository contains configuration profiles for production, testing, and development environments. A profile will be
+selected based on the NODE_ENV environment setting, or by explicitly calling --env [test|production|development] when
+initializing the server.
 
 The application server expects to find a `.env.json` file in one of two places:
 
@@ -143,6 +136,11 @@ The format for the file declares a configuration by environment:
 * `prefix` - Not in use.
 
 
+#### Running Tests with Mocha
+======================================
+Unit and Integration tests are run and written using Mocha + Chai with code coverage reports generated using Istanbul/NYC and Clover. Tests are configured to run using a local environment variable - this currently cannot be overridden.
+
+To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage.
 
 
 #### Process Manager
