@@ -78,7 +78,11 @@ class Session {
     return new Promise((resolve, reject) => {
 
       let opts = {
-        where: {username: this.username}
+        where: {username: this.username},
+        include: [
+          {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
+          {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
+        ]
       };
       // Include soft-deleted items?
       if(this.softDeletes) opts.paranoid = true;

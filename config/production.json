@@ -5,11 +5,7 @@
     "port": 8001,
     "admin_port": 8002,
     "hostname": "iprweb01.bcgsc.ca",
-    "ssl": {
-      "private_key": "/var/www/ipr/api/production/persist/ssl/private.key",
-      "certificate": "/var/www/ipr/api/production/persist/ssl/webserver.cert",
-      "passphrase": "/var/www/ipr/api/production/persist/ssl/passphrase"
-    }
+    "ssl": "/etc/ssl/certs/current/combinedcert.cert"
   },
 
   "jira": {
