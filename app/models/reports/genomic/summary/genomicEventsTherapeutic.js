@@ -35,15 +35,15 @@ module.exports = (sequelize, Sq) => {
       defaultValue: 'genomic'
     },
     genomicEvent: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false
     },
     approvedThisCancerType: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true
     },
     approvedOtherCancerType: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true
     },
     emergingPreclinicalEvidence: {

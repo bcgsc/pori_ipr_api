@@ -40,16 +40,16 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
     },
     associations: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     features: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     numCancerTypes: {
       type: Sq.INTEGER,
     },
     cancerTypes: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
   }, {
     // Table Name

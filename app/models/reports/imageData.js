@@ -31,11 +31,11 @@ module.exports = (sequelize, Sq) => {
       defaultValue: "PNG"
     },
     filename: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
     key: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
     data: {

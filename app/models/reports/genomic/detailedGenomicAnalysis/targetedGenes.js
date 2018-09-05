@@ -31,13 +31,13 @@ module.exports = (sequelize, Sq) => {
       }
     },
     gene: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     variant: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     sample: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
   }, {
     // Table Name

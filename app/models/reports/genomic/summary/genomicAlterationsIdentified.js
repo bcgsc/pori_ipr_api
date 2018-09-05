@@ -31,7 +31,7 @@ module.exports = (sequelize, Sq) => {
       }
     },
     geneVariant: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
   }, {

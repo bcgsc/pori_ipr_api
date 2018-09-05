@@ -35,49 +35,49 @@ module.exports = (sequelize, Sq) => {
       defaultValue: [],
     },
     totalSNV: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     totalIndel: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     totalSV: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     snvPercentileTCGA: {
       type: Sq.INTEGER
     },
     snvPercentileDisease: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     indelPercentileTCGA: {
       type: Sq.INTEGER
     },
     indelPercentileDisease: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     svPercentilePOG: {
       type: Sq.INTEGER
     },
     snvPercentileTCGACategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     snvPercentileDiseaseCategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     indelPercentileTCGACategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     indelPercentileDiseaseCategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     svPercentilePOGCategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     snvReportCategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     indelReportCategory: {
-      type: Sq.STRING
+      type: Sq.TEXT
     }
   }, {
     // Table Name
