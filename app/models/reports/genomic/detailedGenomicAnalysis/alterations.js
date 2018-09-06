@@ -108,13 +108,13 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
     },
     kb_entry_type: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_event_key: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_entry_key: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_data: {
       type: Sq.JSONB
