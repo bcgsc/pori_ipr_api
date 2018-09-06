@@ -7,6 +7,7 @@ const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
 const logger                  = require(process.cwd() + '/lib/log');
 const Hook                    = require('./hook');
+const Generator               = require('./generate');
 
 module.exports = class State {
 
@@ -55,6 +56,7 @@ module.exports = class State {
             .then(() => {
               return this.instance.save();
             })
+            .then(this.createNextState()) // create cards for next tracking state(s)
             .then(this.getPublic.bind(this))
             .then((pub) => {
               resolve(pub);
@@ -101,6 +103,7 @@ module.exports = class State {
       if(save) {
 
         this.instance.save()
+          .then(this.createNextState()) // create cards for next tracking state(s)
           // Check for hooks
           .then(Hook.check_and_invoke(this.instance.slug, status))
           .then(() => {
@@ -225,6 +228,52 @@ module.exports = class State {
     );
 
   }
+
+  /**
+   * Create next State
+   * 
+   * Takes in the current state model object and status and creates new tracking cards
+   * 
+   * @returns {Promise} - resolves with state model objects that have been created
+   */
+  createNextState() {
+    return new Promise((resolve, reject) => {
+      let nextStates = [];
+      
+      // retrieve next_state_on_status info for state definition
+      db.models.tracking_state_definition.findOne({
+        where: {
+          slug: this.instance.slug
+        }
+      }).then((stateDefinition) => {
+        if(!stateDefinition) return resolve();
+        nextStates = stateDefinition.next_state_on_status[this.instance.status]; // get next state(s) to create based on current status
+
+        // Check if states have already been created for this analysis
+        let nextStateSlugs = _.map(nextStates, 'slug');
+        return db.models.tracking_state.findAll({
+          where: {
+            analysis_id: this.instance.analysis_id,
+            slug: {
+              $in: nextStateSlugs
+            }
+          }
+        });
+      }).then((existingStates) => {
+        let createNewStates = _.differenceBy(nextStates, existingStates, 'slug'), // filter for states that don't yet exist for this analysis
+            analysis = {id: this.instance.analysis_id},
+            user = {id: this.instance.createdBy_id};
+        
+        return new Generator(analysis, user, createNewStates); // generate new tracking state cards
+      }).then((results) => {
+        resolve();
+      }).catch((err) => {
+        console.log(err);
+        reject({message: 'Unable to create next state after ' + this.instance.state_name + ' (' + this.instance.status + '): ' + err.message});
+      });
+    });
+  }
+
   
   /**
    * Find the next state in line
