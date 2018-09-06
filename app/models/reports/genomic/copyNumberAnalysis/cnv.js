@@ -34,19 +34,19 @@ module.exports = (sequelize, Sq) => {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss')
     },
     gene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     ploidyCorrCpChange: {
       type: Sq.INTEGER,
     },
     lohState: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     cnvState: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     chromosomeBand: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     start: {
       type: Sq.INTEGER,

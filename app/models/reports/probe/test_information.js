@@ -27,31 +27,31 @@ module.exports = (sequelize, Sq) => {
         }
       },
       kbVersion: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       snpProbe: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       snpGenes: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       snpVars: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       fusionProbe: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       fusionGenes: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       fusionVars: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       }
     },

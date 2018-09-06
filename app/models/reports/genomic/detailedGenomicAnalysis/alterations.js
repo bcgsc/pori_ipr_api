@@ -43,75 +43,75 @@ module.exports = (sequelize, Sq) => {
       defaultValue: true,
     },
     approvedTherapy: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     },
     gene: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     variant: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kbVariant: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     disease: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     effect: {
       type: Sq.TEXT,
     },
     association: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     therapeuticContext: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     status: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     reference: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     expression_tissue_fc: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     expression_cancer_percentile: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     copyNumber: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     sample: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     LOHRegion: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     zygosity: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     evidence: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     matched_cancer: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     pmid_ref: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     variant_type: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_type: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_entry_type: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_event_key: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kb_entry_key: {
       type: Sq.TEXT,

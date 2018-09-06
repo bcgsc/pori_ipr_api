@@ -24,10 +24,10 @@ module.exports = (sequelize, Sq) => {
       }
     },
     species: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     integrationSite: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     }
   }, {
     // Table Name

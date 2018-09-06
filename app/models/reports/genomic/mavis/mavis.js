@@ -13,7 +13,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: Sq.UUIDV4
     },
     product_id: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false
     },
     pog_id: {

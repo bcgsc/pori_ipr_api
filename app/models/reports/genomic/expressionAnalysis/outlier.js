@@ -31,29 +31,29 @@ module.exports = (sequelize, Sq) => {
       }
     },
     expType: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: 'rna'
     },
     outlierType: {
       type: Sq.STRING,
     },
     gene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     location: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     copyChange: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     lohState: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     cnvState: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     rnaReads: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     rpkm: {
       type: Sq.FLOAT,
@@ -62,7 +62,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
     },
     expression_class: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null,
     },
     
@@ -70,7 +70,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.INTEGER,
     },
     tcgaPercCol: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null
     },
     tcgakIQR: {
@@ -82,7 +82,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
     },
     tcgaQCCol: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null,
     },
     tcgaAvgPerc: {
@@ -98,7 +98,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
     },
     tcgaAvgQCCol: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null,
     },
     
@@ -125,7 +125,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
     },
     ptxPercCol: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null,
     },
     ptxTotSampObs: {
@@ -139,7 +139,7 @@ module.exports = (sequelize, Sq) => {
     
     
     gtexComp: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null,
     },
     gtexPerc: {

@@ -42,11 +42,11 @@ module.exports = (sequelize, Sq) => {
       allowNull: true
     },
     targetContext: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true
     },
     resistance: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true
     },
     biomarker: {

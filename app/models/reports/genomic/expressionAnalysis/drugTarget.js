@@ -31,13 +31,13 @@ module.exports = (sequelize, Sq) => {
       }
     },
     gene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     copy: {
       type: Sq.INTEGER,
     },
     lohRegion: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     foldChange: {
       type: Sq.FLOAT,
@@ -49,16 +49,16 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT
     },
     kIQR: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kIQRColumn: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kIQRNormal: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     kIQRNormalColumn: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
   }, {
     // Table Name

@@ -34,34 +34,34 @@ module.exports = (sequelize, Sq) => {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'unknown')
     },
     gene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     transcript: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     proteinChange: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     location: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     refAlt: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     zygosity: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     ploidyCorrCpChange: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     lohState: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     tumourReads: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     RNAReads: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     expressionRpkm: {
       type: Sq.FLOAT,
