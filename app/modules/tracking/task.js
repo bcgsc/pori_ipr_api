@@ -50,7 +50,7 @@ module.exports = class Task {
    * @param {object} user - The user model instance
    * @param {string|int|boolean} payload - The payload to be placed with the checkin
    * @param {boolean} limitOverride - Over ride the check-in limit?
-   * @param {boolean} checkStateComplete - Check if parent state is complete after task is checked in
+   * @param {boolean} checkStateComplete - Check if parent state is complete after task is checked in (optional, default: false)
    * @returns {Promise} - Resolves with updated task. Rejects with error object
    */
   checkIn(user, payload=null, limitOverride=false, checkStateComplete=false) {

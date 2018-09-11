@@ -118,19 +118,20 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
     // Create object
     let existing = new Task(req.task);
-    let oldStatus = existing.instance.status;
-    let newStatus = req.body.status;
+    let oldStatus = existing.instance.status; // current status of task
+    let newStatus = req.body.status; // status to set task to
 
     // Update values
     existing.setUnprotected(req.body);
 
-    let returnResult;
+    let returnResult; // variable for result to return to caller
 
     // Update Tasks & save
     existing.instance.save()
       .then(existing.getPublic.bind(existing))
       .then((result) => {
         returnResult = result;
+        // if the new task status is different than the old one, check if state is complete
         if (oldStatus !== newStatus) {
           let state = new State(existing.instance.state);
           return state.checkCompleted();
