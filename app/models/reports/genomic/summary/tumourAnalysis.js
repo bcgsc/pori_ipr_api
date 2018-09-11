@@ -35,22 +35,22 @@ module.exports = (sequelize, Sq) => {
       allowNull: false,
     },
     ploidy: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
     normalExpressionComparator: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     diseaseExpressionComparator: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     subtyping: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null,
     },
     tcgaColor: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     mutationSignature: {
       type: Sq.JSONB,

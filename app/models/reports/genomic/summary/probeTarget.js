@@ -31,15 +31,15 @@ module.exports = (sequelize, Sq) => {
       }
     },
     gene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
     variant: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
     sample: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     }
   }, {

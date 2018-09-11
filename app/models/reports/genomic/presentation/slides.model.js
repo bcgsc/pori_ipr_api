@@ -28,7 +28,7 @@ module.exports = (sequelize, Sq) => {
         }
       },
       name: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       },
       object: {
@@ -36,7 +36,7 @@ module.exports = (sequelize, Sq) => {
         allowNull: true
       },
       object_type: {
-        type: Sq.STRING,
+        type: Sq.TEXT,
         allowNull: false
       }
     },
