@@ -90,6 +90,8 @@ module.exports = class TrackingGenerator {
    */
   createState(definition, status=null) {
     return new Promise((resolve, reject) => {
+      const ordinalStatus = (definition.ordinal === 1) ? 'active' : 'pending';
+      const setStatus = status ? status : ordinalStatus;
 
       // Create new state
       let newState = {
@@ -99,7 +101,7 @@ module.exports = class TrackingGenerator {
         slug:         definition.slug,
         description:  definition.description,
         ordinal:      definition.ordinal,
-        status:       status || (definition.ordinal === 1) ? 'active' : 'pending',  // unless explicitly specified, default to start as pending if not ordinal=0
+        status:       setStatus,  // unless explicitly specified, default to start as pending if not ordinal=0
         startedAt:    null,
         createdBy_id: this.user.id,
       };
