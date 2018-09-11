@@ -147,11 +147,10 @@ module.exports = class State {
   checkCompleted() {
 
     return new Promise((resolve, reject) => {
-      
       let stateComplete = true;
       this.instance.status = 'active';
     
-      logger.debug('[state]', 'Starting Check Completed');
+      logger.debug('[state]', `Starting Check Completed for state id ${this.instance.id}`);
   
       // get Tasks
       db.models.tracking_state_task.findAll({where: {state_id: this.instance.id}}).then(
@@ -194,8 +193,7 @@ module.exports = class State {
                     }
                     if(hooks.length === 0) return Promise.resolve([]);
                   })
-                  .then(this.findNextState.bind(this))
-                  .then(this.startNextState.bind(this))
+                  .then(this.createNextState.bind(this))
                   .then(() => {
                     // State updated to complete
                     resolve(true);
@@ -238,7 +236,9 @@ module.exports = class State {
    */
   createNextState() {
     return new Promise((resolve, reject) => {
+      logger.debug(`Starting next state check from state ${this.instance.name} (id: ${this.instance.id}, status: ${this.instance.status})`);
       let nextStates = [];
+      let createNewStates = [];
       
       // retrieve next_state_on_status info for state definition
       db.models.tracking_state_definition.findOne({
@@ -246,7 +246,7 @@ module.exports = class State {
           slug: this.instance.slug
         }
       }).then((stateDefinition) => {
-        if(!stateDefinition) return resolve();
+        if(!stateDefinition || !_.has(stateDefinition.next_state_on_status, this.instance.status)) return resolve(); // resolve if no definition specified for state or for status
         nextStates = stateDefinition.next_state_on_status[this.instance.status]; // get next state(s) to create based on current status
 
         // Check if states have already been created for this analysis
@@ -260,64 +260,31 @@ module.exports = class State {
           }
         });
       }).then((existingStates) => {
-        let createNewStates = _.differenceBy(nextStates, existingStates, 'slug'), // filter for states that don't yet exist for this analysis
-            analysis = {id: this.instance.analysis_id},
-            user = {id: this.instance.createdBy_id};
+        createNewStates = _.differenceBy(nextStates, existingStates, 'slug'); // filter for states that don't yet exist for this analysis
         
-        return new Generator(analysis, user, createNewStates); // generate new tracking state cards
-      }).then((results) => {
+        // create promises to start states that already exist
+        let startStates = [];
+        _.forEach(existingStates, function(state) {
+          const setStatusTo = _.find(nextStates, {'slug': state.slug}).status; // get status to set next states to from state definition
+          logger.debug(`Next state ${state.name} already exists - setting status to ${setStatusTo}`);
+          const s = new State(state);
+          startStates.push(s.setStatus(setStatusTo, true));
+        });
+
+        return Promise.all(startStates); // start existing states
+      }).then(() => {
+        let analysis = {id: this.instance.analysis_id},
+            user = {id: this.instance.createdBy_id};
+
+        logger.debug(`Creating new states: ${JSON.stringify(createNewStates)}`);
+
+        return new Generator(analysis, user, createNewStates); // generate new tracking state cards for states that don't exist yet
+      }).then(() => {
         resolve();
       }).catch((err) => {
         console.log(err);
         reject({message: 'Unable to create next state after ' + this.instance.state_name + ' (' + this.instance.status + '): ' + err.message});
       });
-    });
-  }
-
-  
-  /**
-   * Find the next state in line
-   *
-   * @returns {Promise|object|null} - Resolves with state model object
-   */
-  findNextState() {
-    return this.model.findOne({
-      where: {
-        analysis_id: this.instance.analysis_id,
-        ordinal: { $gt: this.instance.ordinal }
-      },
-      order: 'ordinal ASC'
-    });
-  }
-  
-  /**
-   * Start next State in Line
-   *
-   * Takes in the next state model object and triggers the "active" status on it.
-   *
-   * @param {object} state
-   * @returns {Promise}
-   */
-  startNextState(state) {
-    return new Promise((resolve, reject) => {
-      if(state === null) return resolve(); // Not a state/none found
-  
-      // Adjacent state already started or held
-      if(state.status === 'complete' || state.status === 'hold') return resolve(null);
-  
-      state.status = 'active';
-      state.startedAt = moment().toISOString();
-  
-      // Started next stage, save change to DB
-      state.save().then(
-        (result) => {
-          resolve(state);
-        },
-        (err) => {
-          console.log(err);
-          reject({message: 'Unable to set next stage to active due to sql error: ' + err.message});
-        })
-      
     });
   }
 
