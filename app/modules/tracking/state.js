@@ -279,8 +279,8 @@ module.exports = class State {
         logger.debug(`Creating new states: ${JSON.stringify(createNewStates)}`);
 
         return new Generator(analysis, user, createNewStates); // generate new tracking state cards for states that don't exist yet
-      }).then(() => {
-        resolve();
+      }).then((createdStates) => {
+        resolve(createdStates);
       }).catch((err) => {
         console.log(err);
         reject({message: 'Unable to create next state after ' + this.instance.state_name + ' (' + this.instance.status + '): ' + err.message});
