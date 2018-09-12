@@ -14,9 +14,21 @@ const expect        = chai.expect;
 const api           = supertest('http://localhost:8081');
 
 const Session       = require(`${process.cwd()}/app/libs/Session`);
+const testData    = require("../setupTestData.js");
 
 
 describe('Session Creation and Authentication', function() {
+    before(function(done) {
+        //Initialize testing data
+        testData.createTestAccounts();
+
+        done();
+    });
+
+    after(function() {
+        // Delete testing data
+        testData.deleteTestAccounts();
+    });
   
     const fakeUser      = 'fakeUser';
     const fakePassword  = 'fakePassword';
