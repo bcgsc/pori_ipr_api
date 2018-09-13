@@ -68,9 +68,10 @@ describe('Create next state(s) from old state status change', () => {
     });
 
     afterEach(async () => {
-        await testData.deleteTestTrackingStates()
-        .catch((err) => {
+        try {
+            await testData.deleteTestTrackingStates();
+        } catch (err) {
             console.log(`Error running after in State tests: ${err}`);
-        });
+        }
     });
 });
