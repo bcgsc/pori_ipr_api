@@ -282,8 +282,9 @@ module.exports = class State {
       }).then((createdStates) => {
         resolve(createdStates);
       }).catch((err) => {
-        console.log(err);
-        reject({message: 'Unable to create next state after ' + this.instance.state_name + ' (' + this.instance.status + '): ' + err.message});
+        let errMessage = `Unable to create next state after ${this.instance.state_name} (${this.instance.status}): ${err.message}`
+        logger.error(errMessage);
+        reject({message: errMessage});
       });
     });
   }
