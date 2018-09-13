@@ -33,18 +33,7 @@ function deleteTestAccounts() {
 }
 
 function deleteTestTrackingStates() {
-    return new Promise((resolve, reject) => {
-        db.models.tracking_state.destroy({where: {analysis_id: null}, force: true})
-        .then(() => {
-            console.log(`Deleted tracking states for testing`);
-            resolve();
-        })
-        .catch((err) => {
-            console.log(`Error deleting tracking states for testing: ${err}`);
-            reject();
-        });
-    });
-    
+    return db.models.tracking_state.destroy({where: {analysis_id: null}, force: true});    
 }
 
 module.exports = {
