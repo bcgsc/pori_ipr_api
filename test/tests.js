@@ -36,7 +36,6 @@ describe('IPR API', () => {
       app.set('port', port);
       admin.set('port', admin_port);
 
-
       // Create HTTP server.
       server = http.createServer(app);
       admin_server = http.createServer(admin);
