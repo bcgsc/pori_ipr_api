@@ -1,7 +1,76 @@
 {
-  "env": {
-    "mocha": true,
-    "node": true,
-    "es6": true
-  }
+    "env": {
+        "es6": true,
+        "node": true,
+        "mocha": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "airbnb"
+    ],
+    "rules": {
+        "indent": ["error", 4, {
+            "SwitchCase": 1
+        }],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-console": 0,
+        "object-curly-spacing": ["error", "never"],
+        "array-bracket-spacing": ["error", "never"],
+        "computed-property-spacing": ["error", "never"],
+        "no-whitespace-before-property": "error",
+        "space-in-parens": ["error", "never"],
+        "no-mixed-spaces-and-tabs": "error",
+        "no-cond-assign": "off",
+        "prefer-destructuring": ["warn", {
+            "VariableDeclarator": {
+                "array": true,
+                "object": true
+            },
+            "AssignmentExpression": {
+                "array": false,
+                "object": true
+            }
+        }, {
+            "enforceForRenamedProperties": false
+        }],
+        "comma-dangle": ["warn", "always-multiline"],
+        "prefer-const": ["error", {
+            "destructuring": "all"
+        }],
+        "no-restricted-syntax": "off",
+        "no-continue": "off",
+        "no-bitwise": "off",
+        "no-use-before-define": "warn",
+        "no-param-reassign": ["warn", {
+            "props": true,
+            "ignorePropertyModificationsFor": ["opt"]
+        }],
+        "no-multi-assign": "off",
+        "one-var": ["error", {
+            "let": "consecutive"
+        }],
+        "no-plusplus": "off",
+        "max-len": "warn",
+        "multiline-ternary": ["error", "always"],
+        "no-underscore-dangle": "off",
+        "no-empty": ["error", {
+            "allowEmptyCatch": true
+        }],
+        "react/destructuring-assignment": "off",
+        "no-await-in-loop": "off",
+        "no-unused-expressions": "off",
+        "valid-jsdoc": "warn",
+        "require-jsdoc": "warn"
+    }
 }
