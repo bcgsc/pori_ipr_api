@@ -450,12 +450,11 @@ class LimsPathologySync {
           .catch((err) => {
             logger.error('Failed to update tracking ' + err.message);
             reject({message: 'Failed to update tracking ' + err.message, cause: err});
-            console.log(err);
           });
         })
         .catch((err) => {
-          logger.warn('Failed to retrieve tasks for updating tracking: ' + err.message);
-          console.log(err);
+          logger.error('Failed to retrieve tasks for updating tracking: ' + err.message);
+          reject({message: err.message});
         });
       
       
@@ -470,7 +469,6 @@ class LimsPathologySync {
    */
   retrieveTrackingTasks(state_ids) {
     return new Promise((resolve, reject) => {
-      
       logger.debug('Retrieving tasks for states: ', state_ids.join(','));
       
       let opts = {
