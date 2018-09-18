@@ -315,7 +315,7 @@ module.exports = class Task {
         state.setStatus('active', true)
           .then(this.model.update({status: status}, { where: { ident: this.instance.ident} }))
           .then(Hook.check_and_invoke(this.instance.state, status, this.instance))
-          .then(state.checkCompleted.bind(this))
+          .then(state.checkCompleted())
           .then(() => {
             resolve(this.instance);
           })
