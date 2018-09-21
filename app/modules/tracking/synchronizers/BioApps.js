@@ -91,7 +91,6 @@ class BioAppsSync {
           status: ['pending', 'failed'],
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -251,7 +250,7 @@ class BioAppsSync {
         .then(() => {
           return Promise.all(_.map(queries, (q) => {
             let task = new Task(q.task);
-            return task.checkIn(this.user, true);
+            return task.checkIn(this.user, true, false, true);
           }))
         })
         .then((results) => {
@@ -283,7 +282,6 @@ class BioAppsSync {
           status: ['pending', 'failed'],
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -370,7 +368,7 @@ class BioAppsSync {
       });
       
       // For each completed task, check-in!
-      Promise.all(_.map(completedTasks, (t) => { let task = new Task(t); return task.checkIn(this.user, true); }))
+      Promise.all(_.map(completedTasks, (t) => { let task = new Task(t); return task.checkIn(this.user, true, false, true); }))
         .then((results) => {
           logger.info('Checked in merged bams for ' + results.length + ' tasks.');
           resolve(true);
@@ -398,7 +396,6 @@ class BioAppsSync {
           status: ['pending', 'failed'],
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -480,7 +477,7 @@ class BioAppsSync {
       });
       
       // For each completed task, check-in!
-      Promise.all(_.map(completedTasks, (t) => { let task = new Task(t); return task.checkIn(this.user, true); }))
+      Promise.all(_.map(completedTasks, (t) => { let task = new Task(t); return task.checkIn(this.user, true, false, true); }))
         .then((results) => {
           logger.info('Checked in assembly for ' + results.length + ' tasks.');
           resolve(true);
@@ -509,7 +506,6 @@ class BioAppsSync {
           status: ['pending', 'active', 'failed'],
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -627,7 +623,7 @@ class BioAppsSync {
       
       // Map checkins
       // For each completed task, check-in!
-      Promise.all(_.map(requireCheckin, (t) => { let task = new Task(t); return task.checkIn(this.user, true); }))
+      Promise.all(_.map(requireCheckin, (t) => { let task = new Task(t); return task.checkIn(this.user, true, false, true); }))
         .then((results) => {
           logger.info('Checked in symlinks for ' + results.length + ' tasks.');
           resolve(true);
