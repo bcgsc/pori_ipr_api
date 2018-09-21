@@ -57,6 +57,9 @@ module.exports = (sequelize, Sq) => {
     hidden: {
       type: Sq.BOOLEAN,
       defaultValue: false
+    },
+    next_state_on_status: {
+      type: Sq.JSON
     }
   },
   {

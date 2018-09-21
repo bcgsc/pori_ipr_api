@@ -165,18 +165,25 @@ module.exports = class TrackingRouter extends RoutingInterface {
             
             // Generate Tracking if selected.
             if(req.body.tracking) {
-              
-              // Initiate Tracking Generator
-              let generator = new Generator(POG, analysis, req.user)
-                .then((results) => {
-                  analysis = analysis.toJSON();
-                  analysis.pog = POG;
-                  res.json(analysis);
-                })
-                .catch((err) => {
-                  console.log(err);
-                  res.status(400).json(err);
-                });
+              // Get initial tracking state to generate card for
+              db.models.tracking_state_definition.findOne({where: {ordinal: 1}})
+              .then((stateDefinition) => {
+                // Initiate Tracking Generator
+                let initState = [{
+                  slug: stateDefinition.slug,
+                  status: 'active'
+                }];
+                return new Generator(analysis, req.user, initState)
+              })
+              .then((results) => {
+                analysis = analysis.toJSON();
+                analysis.pog = POG;
+                res.json(analysis);
+              })
+              .catch((err) => {
+                console.log(err);
+                res.status(400).json(err);
+              });
               
             } else {
               analysis = analysis.toJSON();
