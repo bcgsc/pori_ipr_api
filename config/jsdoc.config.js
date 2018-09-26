@@ -16,7 +16,7 @@ module.exports = {
     templates: {
         default: {
             staticFiles: {
-                include: ['doc', 'config/docdash.jsdoc.css']
+                include: ['config/docdash.jsdoc.css']
             }
         }
     }
