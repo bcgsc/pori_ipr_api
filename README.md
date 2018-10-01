@@ -144,6 +144,11 @@ Unit and Integration tests are run and written using Mocha + Chai with code cove
 
 To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage.
 
+#### Generating JSDocs
+======================================
+
+Developer documentation is generated using the JSDoc library. To generate a local copy of the documentation, cd into the root of the project directory and run the command `npm run jsdoc`. This should automatically create documentation within folder named 'jsdoc' that can be viewed in a web browser.
+
 
 #### Process Manager
 ======================================
