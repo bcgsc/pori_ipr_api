@@ -11,7 +11,7 @@ module.exports = {
    *
    * @param user - Username (cn)
    * @param pass - Password (secret)
-   * @returns {promise.response, promise.status, promise.message}
+   * @returns {Promise} - {promise.response, promise.status, promise.message}
    */
   authenticate: (user, pass) => {
 

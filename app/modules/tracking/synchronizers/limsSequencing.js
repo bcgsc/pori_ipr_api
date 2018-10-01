@@ -79,7 +79,6 @@ class LimsSeqSync {
           deletedAt: null,
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -160,7 +159,7 @@ class LimsSeqSync {
           
           if(allLibrariesStarted) {
             let actionTask = new Task(task);
-            actionTask.checkIn(this.user, moment().toISOString())
+            actionTask.checkIn(this.user, moment().toISOString(), false, true)
               .then((result) => {
                 logger.info('[SeqSubmit] Checked-in task for :' + task.state.analysis.pog.POGID);
                 resolve();
@@ -202,7 +201,6 @@ class LimsSeqSync {
           deletedAt: null,
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -342,7 +340,7 @@ class LimsSeqSync {
           
           // If they're all complete, lets blow this popsicle joint!
           if(run_status.complete && !run_status.failed) {
-            actionTask.checkIn(this.user, moment().toISOString())
+            actionTask.checkIn(this.user, moment().toISOString(), false, true)
               .then((result) => {
                 logger.info('[SeqComplete] Checked-in task for: ' + task.state.analysis.pog.POGID);
                 resolve();
@@ -400,7 +398,6 @@ class LimsSeqSync {
           deletedAt: null,
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         order:  [['ordinal', 'ASC']],
@@ -525,7 +522,7 @@ class LimsSeqSync {
           
           // If they're all complete, lets blow this popsicle joint!
           if(run_status.passed && !run_status.failed) {
-            actionTask.checkIn(this.user, true)
+            actionTask.checkIn(this.user, true, false, true)
               .then((result) => {
                 logger.info('[SeqValid] Checked-in task for: ' + task.state.analysis.pog.POGID);
                 resolve();
@@ -569,7 +566,6 @@ class LimsSeqSync {
           deletedAt: null,
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -691,7 +687,7 @@ class LimsSeqSync {
           
           // If they're all complete, lets blow this popsicle joint!
           if(run_status.passed && !run_status.failed) {
-            actionTask.checkIn(this.user, true)
+            actionTask.checkIn(this.user, true, false, true)
               .then((result) => {
                 logger.info('[SeqQC0] Checked-in task for: ' + task.state.analysis.pog.POGID);
                 resolve();

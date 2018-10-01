@@ -19,6 +19,7 @@ const $lims       = require(process.cwd() + '/app/api/lims');
 const _           = require('lodash');
 const moment      = require('moment');
 const Task        = require('../task');
+const State       = require('../state');
 
 //let logger        = require('winston'); // Load logging library
 let logger        = process.logger;
@@ -89,7 +90,6 @@ class LimsPathologySync {
           status: 'pending',
           '$state.status$': {$in: [
             'active',
-            'pending',
           ]},
         },
         attributes: {
@@ -436,32 +436,25 @@ class LimsPathologySync {
           
           let task_promises = [];
           
-          //Promise.all(task_promises).then(
-          Promise.all(_.map(tasks, (t) => { let e = new Task(t); e.checkIn(this.user, moment().toISOString())})).then(
-            (result) => {
-              
-              Promise.all(_.map(report_opts, (r) => { return db.models.pog_analysis.update(r.data, r.opts) })).then(
-                (result) => {
-                  // Update Analysis
-                  logger.info('Checked in all ready tasks');
-                  resolve();
-                  
-                })
-                .catch((err) => {
-                  reject({message: 'Unable to update analysis_reports: ' + err.message, cause: err});
-                });
-              
-            })
-            .catch((err) => {
-              logger.error('Failed to update tracking ' + err.message);
-              reject({message: 'Failed to update tracking ' + err.message, cause: err});
-              console.log(err);
-            });
-          
+          Promise.all(_.map(tasks, (t) => { let e = new Task(t); return e.checkIn(this.user, moment().toISOString())})).then( // Check in tasks
+          (result) => {
+            let checkStatesForCompletion = _.uniqBy(_.map(tasks, 'state'), 'state_id'); // Get set of states that had tasks updated
+            logger.debug(`Checking ${checkStatesForCompletion.length} state(s) for completion`);
+            return Promise.all(_.map(checkStatesForCompletion, (s) => {let state = new State(s); return state.checkCompleted();})) // Check if states are complete
+          }).then(() => {
+            return Promise.all(_.map(report_opts, (r) => { return db.models.pog_analysis.update(r.data, r.opts) })); // Update fields in analysis
+          }).then((result) => {
+            logger.info('Checked in all ready tasks');
+            resolve();
+          })
+          .catch((err) => {
+            logger.error('Failed to update tracking ' + err.message);
+            reject({message: 'Failed to update tracking ' + err.message, cause: err});
+          });
         })
         .catch((err) => {
-          logger.warn('Failed to retrieve tasks for updating tracking: ' + err.message);
-          console.log(err);
+          logger.error('Failed to retrieve tasks for updating tracking: ' + err.message);
+          reject({message: err.message});
         });
       
       
@@ -476,7 +469,6 @@ class LimsPathologySync {
    */
   retrieveTrackingTasks(state_ids) {
     return new Promise((resolve, reject) => {
-      
       logger.debug('Retrieving tasks for states: ', state_ids.join(','));
       
       let opts = {

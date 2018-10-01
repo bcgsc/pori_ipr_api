@@ -12,7 +12,7 @@ let users = [
 ];
 
 
-function createTestAccounts(){
+function createTestAccounts() {
     db.models.user.bulkCreate(users, {returning:true})
     .then(console.log(`Created users for testing`))
     .catch((err) => {
@@ -21,7 +21,7 @@ function createTestAccounts(){
 
 }
 
-function deleteTestAccounts(){
+function deleteTestAccounts() {
     const deleteUsers = ["aUserForTesting"];
 
     db.models.user.destroy({where: {username: deleteUsers}, returning:true, force: true}) // need to set force to true since user table uses paranoid mode
@@ -32,7 +32,12 @@ function deleteTestAccounts(){
 
 }
 
+function deleteTestTrackingStates() {
+    return db.models.tracking_state.destroy({where: {analysis_id: null}, force: true});    
+}
+
 module.exports = {
     createTestAccounts : createTestAccounts,
-    deleteTestAccounts : deleteTestAccounts
+    deleteTestAccounts : deleteTestAccounts,
+    deleteTestTrackingStates: deleteTestTrackingStates,
 };

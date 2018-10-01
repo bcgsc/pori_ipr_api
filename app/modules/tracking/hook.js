@@ -90,7 +90,7 @@ let check_hook = (state, status, task=null, enabled=true) => {
  *
  * @param {object} hook - Model instance object for specified hook
  * @param {object} state - Model instance object for specified state
- * @param {object=null} task - Model instance object for specified task
+ * @param {object} task - Model instance object for specified task
  *
  * @returns {Promise} - Resolves with status
  */
@@ -125,7 +125,7 @@ module.exports = {
    *
    * @param {object} hook - Model instance object for specified hook
    * @param {object} state - Model instance object for specified state
-   * @param {object=null} task - Model instance object for specified task
+   * @param {object} task - Model instance object for specified task
    *
    * @returns {Promise} - Resolves with status
    */

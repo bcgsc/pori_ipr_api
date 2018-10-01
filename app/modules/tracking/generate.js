@@ -12,26 +12,40 @@ module.exports = class TrackingGenerator {
   /**
    * Initialize tracking entries for a biopsy
    *
-   * @param {object} pog - POG object
    * @param {object} analysis - analysis object
    * @param {object} user - Current user instance
+   * @param {array} states - states to generate tracking for in the format [{slug: <state slug>, status: <status to initialize>}, ...]
+   * 
    */
-  constructor(pog, analysis, user) {
+  constructor(analysis, user, states) {
 
     this.user         = user;
     this.analysis     = analysis;
-    this.pog          = pog;
 
     return new Promise((resolve, reject) => {
 
       // Retrieve current set of definitions
-      db.models.tracking_state_definition.findAll({where: {hidden: false}}).then(
+      db.models.tracking_state_definition.findAll({
+        where: {
+          hidden: false,
+          slug: {
+            $in: _.map(states, 'slug')
+          }
+        }
+      }).then(
         (definitions) => {
-
+          
           let promises = [];
 
           _.forEach(definitions, (d) => {
-            promises.push(this.createState(d));
+
+            // get status to set based off of state definition slug
+            let state = _.find(states, function(state) {
+              return state.slug == d.slug
+            });
+            let status = state.status;
+
+            promises.push(this.createState(d, status));
           });
 
           Promise.all(promises).then(
@@ -70,11 +84,14 @@ module.exports = class TrackingGenerator {
    * Generate a state entry with a definition
    *
    * @param {object} definition - the definition/template to use
+   * @param {string} status - the status to initialize the state to (optional)
    *
    * @returns {Promise} - Resolves with the model instance
    */
-  createState(definition) {
+  createState(definition, status=null) {
     return new Promise((resolve, reject) => {
+      const ordinalStatus = (definition.ordinal === 1) ? 'active' : 'pending';
+      const setStatus = status ? status : ordinalStatus; // unless explicitly specified, default to start as pending if not ordinal=0
 
       // Create new state
       let newState = {
@@ -84,7 +101,7 @@ module.exports = class TrackingGenerator {
         slug:         definition.slug,
         description:  definition.description,
         ordinal:      definition.ordinal,
-        status:       (definition.ordinal === 1) ? 'active' : 'pending',  // Default to start as pending if not ordinal=0
+        status:       setStatus,
         startedAt:    null,
         createdBy_id: this.user.id,
       };
