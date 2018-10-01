@@ -6,6 +6,7 @@ const db                  = require(process.cwd() + '/app/models');
 const _                   = require('lodash');
 const RoutingInterface    = require('../../../routes/routingInterface');
 const Task                = require('../task');
+const State               = require('../state');
 
 module.exports = class TrackingTaskRoute extends RoutingInterface {
 
@@ -117,19 +118,30 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
     // Create object
     let existing = new Task(req.task);
+    let oldStatus = existing.instance.status; // current status of task
+    let newStatus = req.body.status; // status to set task to
 
     // Update values
     existing.setUnprotected(req.body);
 
+    let returnResult; // variable for result to return to caller
+
     // Update Tasks & save
     existing.instance.save()
       .then(existing.getPublic.bind(existing))
-      .then(
-      (result) => {
-        res.json(result);
-        this.io.emit('taskStatusChange', result);
-      },
-      (err) => {
+      .then((result) => {
+        returnResult = result;
+        // if the new task status is different than the old one, check if state is complete
+        if (oldStatus !== newStatus) {
+          let state = new State(existing.instance.state);
+          return state.checkCompleted();
+        }        
+      })
+      .then(() => {
+        this.io.emit('taskStatusChange', returnResult);
+        return res.json(returnResult);
+      })
+      .catch((err) => {
         console.log(err);
         res.status(500).json({error: {message: 'Failed query to update task'}});
       }
@@ -147,9 +159,8 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
 
       // Instantiate the object
       let entry = new Task(req.task);
-
       // Update
-      entry.checkIn(req.user, req.body.outcome).then(
+      entry.checkIn(req.user, req.body.outcome, false, true).then(
         (result) => {
           let response = result.toJSON();
           delete response.id;
@@ -178,7 +189,7 @@ module.exports = class TrackingTaskRoute extends RoutingInterface {
       let entry = new Task(req.task);
 
       // Update
-      entry.checkIn(req.user, req.body.outcome).then(
+      entry.checkIn(req.user, req.body.outcome, false, true).then(
         (result) => {
           let response = result.toJSON();
           delete response.id;

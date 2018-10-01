@@ -50,9 +50,10 @@ module.exports = class Task {
    * @param {object} user - The user model instance
    * @param {string|int|boolean} payload - The payload to be placed with the checkin
    * @param {boolean} limitOverride - Over ride the check-in limit?
+   * @param {boolean} checkStateComplete - Check if parent state is complete after task is checked in (optional, default: false)
    * @returns {Promise} - Resolves with updated task. Rejects with error object
    */
-  checkIn(user, payload=null, limitOverride=false) {
+  checkIn(user, payload=null, limitOverride=false, checkStateComplete=false) {
     return new Promise((resolve, reject) => {
 
       // Init State wrapper
@@ -67,10 +68,11 @@ module.exports = class Task {
       // Start chain
       this.createCheckin(user, payload)
         .then(this.checkCompletion.bind(this))
-        .then(state.checkCompleted.bind(state))
+        .then(() => {if(checkStateComplete) return state.checkCompleted();})
         .then(this.getPublic.bind(this))
         .then(
           (result) => {
+            logger.debug(`Checked in task ${this.instance.name}`);
             resolve(result);
           },
           (err) => {
@@ -313,6 +315,7 @@ module.exports = class Task {
         state.setStatus('active', true)
           .then(this.model.update({status: status}, { where: { ident: this.instance.ident} }))
           .then(Hook.check_and_invoke(this.instance.state, status, this.instance))
+          .then(state.checkCompleted())
           .then(() => {
             resolve(this.instance);
           })

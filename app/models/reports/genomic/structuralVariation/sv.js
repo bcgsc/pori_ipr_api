@@ -31,37 +31,37 @@ module.exports = (sequelize, Sq) => {
       }
     },
     mavis_product_id: {
-      type: Sq.STRING
+      type: Sq.TEXT
     },
     svVariant: {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport')
     },
     genes: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     exons: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     breakpoint: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     eventType: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     detectedIn: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     conventionalName: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     rpkm: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     foldChange: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     tcgaPerc: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
     },
     svg: {
       type: Sq.TEXT,
@@ -74,32 +74,32 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null
     },
     name: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     },
     frame: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     },
     ctermGene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     },
     ntermGene: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     },
     ctermTranscript: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     },
     ntermTranscript: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: true,
       defaultValue: null
     }

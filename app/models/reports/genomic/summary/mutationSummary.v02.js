@@ -31,7 +31,7 @@ module.exports = (sequelize, Sq) => {
       }
     },
     comparator: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       defaultValue: null
     },
     snv: {
