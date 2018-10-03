@@ -69,18 +69,15 @@ module.exports = (req,res,next) => {
         {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
         {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
       ],
-    }).then(
-      (result) => {
-        if(result === null) return res.status(400).json({message: 'Invalid authorization token'});
+    }).then((result) => {
+        if(result === null) return res.status(400).json({message: 'User does not exist'});
         // All good
-        req.user = result.user;
+        req.user = result;
         next();
-      },
-      (error) => {
+      }).catch((error) => {
         console.log('Bad authorization token: ', error);
         return res.status(400).json({message: 'Invalid authorization token'});
-      }
-    );
+      });
   }
   
 };
