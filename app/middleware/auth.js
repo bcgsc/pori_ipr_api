@@ -3,6 +3,8 @@
 const moment      = require('moment');
 const crypto      = require('crypto');
 const _           = require('lodash');
+const jwt         = require('jsonwebtoken');
+const fs          = require('fs');
 
 const Session     = require(process.cwd() + '/app/libs/Session');
 const db          = require(process.cwd() + '/app/models');
@@ -12,6 +14,7 @@ module.exports = (req,res,next) => {
 
   // Get Authorization Header
   let token = req.header('Authorization');
+  let username;
 
   if(token === undefined) {
     return res.status(401).json({message: 'Authorization failed to validate.'});
@@ -50,20 +53,22 @@ module.exports = (req,res,next) => {
       });
 
   } else {
-
     // Check for header token
     if(token === null || token === undefined) return res.status(403).json({ message: 'Invalid authorization token'});
-    if(!token.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/)) return res.status(400).json({message: 'Invalid authorization token'});
-
+    let pubKey = fs.readFileSync(process.cwd() + '/pubkey.pem');
+    jwt.verify(token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: 'Invalid authorization token'});
+      }
+      username = decoded.preferred_username;
+    })
     // Lookup token
-    db.models.userToken.findOne({
-      where: {token: token},
-      include: [{
-        model: db.models.user, as: 'user', attributes: {exclude: ['password', 'deletedAt']}, include: [
-          {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
-          {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
-        ]
-      }]
+    db.models.user.findOne({
+      where: {username: username},
+      include: [
+        {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
+        {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
+      ],
     }).then(
       (result) => {
         if(result === null) return res.status(400).json({message: 'Invalid authorization token'});

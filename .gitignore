@@ -10,3 +10,4 @@ coverage
 xunit.xml
 mocha.json
 jsdoc
+.vscode/
