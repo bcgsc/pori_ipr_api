@@ -63,6 +63,7 @@ class Routing extends RouterInterface {
       this.bindRouteFile('/user/group', __dirname + '/user/group');
       this.bindRouteFile('/jira', __dirname + '/jira');
   
+      this.bindRouteFile('/POG/:POGID/load', __dirname + '/load_pog.js');
       this.bindRouteFile('/POG/:POG/report/:report/history', __dirname + '/dataHistory');
       this.bindRouteFile('/POG/:POG/report/:report/export', __dirname + '/POG/export');
       this.bindRouteFile('/POG/:POG/patientInformation', __dirname + '/patientInformation');
