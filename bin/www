@@ -59,24 +59,15 @@ App.then((app) => {
     app.set('port', port);
     let server;
 
-    /**
-     * Event listener for HTTP server "listening" event.
-     * @returns {void}
-     */
-    function onListening() {
+    const onListening = () => {
         const addr = server.address();
         const bind = typeof addr === 'string'
             ? `pipe ${addr}`
             : `port ${addr.port}`;
         debug(`Listening on ${bind}`);
-    }
+    };
 
-    /**
-     * Event listener for HTTP server "error" event.
-     * @param {error} error error to be thrown
-     * @returns {void}
-     */
-    function onError(error) {
+    const onError = (error) => {
         if (error.syscall !== 'listen') {
             throw error;
         }
@@ -98,7 +89,7 @@ App.then((app) => {
             default:
                 throw error;
         }
-    }
+    };
 
     // Creating HTTP(S) Server
     // Don't use HTTPS for local instances
