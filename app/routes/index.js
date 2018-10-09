@@ -9,12 +9,11 @@ const Analysis = require('../modules/analysis/routing');
 const RecentReports = require('../modules/recentReports/routing');
 const GermlineReports = require('../modules/germine_small_mutation/routing');
 const GermlineReportsExport = require('../modules/germine_small_mutation/routing/export.route');
-
-const SocketAuth = require(`${process.cwd()}/app/middleware/socketAuth`);
-const db = require(`${process.cwd()}/app/models/`);
-const pogMiddleware = require(`${process.cwd()}/app/middleware/pog`);
-const reportMiddleware = require(`${process.cwd()}/app/middleware/analysis_report`);
-const authMiddleware = require(`${process.cwd()}/app/middleware/auth`);
+const SocketAuth = require('../middleware/socketAuth');
+const db = require('../models/');
+const pogMiddleware = require('../middleware/pog');
+const reportMiddleware = require('../middleware/analysis_report');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router({mergeParams: true});
 
