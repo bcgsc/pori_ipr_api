@@ -33,8 +33,8 @@ class Routing extends RouterInterface {
     init() {
         return new Promise((resolve, reject) => {
             this.ignored = {
-                files: ['POG.js', 'session.js', 'user.js', '.svn', 'user'],
-                routes: ['loadPog', '.svn'],
+                files: ['POG.js', 'session.js', 'user.js', 'user'],
+                routes: ['loadPog'],
             };
 
 
@@ -143,7 +143,6 @@ class Routing extends RouterInterface {
                     // Remove index file
                     if (route === 'app/routes/index.js') return;
                     if (route.indexOf('/user/') !== -1) return;
-                    if (route.indexOf('.svn') !== -1) return; // Must SVN make so many directories?!
                     if (this.ignored.files.indexOf(_.last(route.split('/'))) !== -1) return;
 
                     // Remove first two directories of path
