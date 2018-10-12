@@ -8,6 +8,7 @@ const fs          = require('fs');
 
 const Session     = require(process.cwd() + '/app/libs/Session');
 const db          = require(process.cwd() + '/app/models');
+const pubKey      = fs.readFileSync(process.cwd() + '/pubkey.pem');
 
 // Require Active Session Middleware
 module.exports = (req,res,next) => {
@@ -55,7 +56,6 @@ module.exports = (req,res,next) => {
   } else {
     // Check for header token
     if(token === null || token === undefined) return res.status(403).json({ message: 'Invalid authorization token'});
-    let pubKey = fs.readFileSync(process.cwd() + '/pubkey.pem');
     jwt.verify(token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
       if (err) {
         return res.status(403).json({ message: 'Invalid authorization token'});
