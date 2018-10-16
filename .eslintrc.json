@@ -9,7 +9,7 @@
         "airbnb"
     ],
     "rules": {
-        "indent": ["error", 4, {
+        "indent": ["error", 2, {
             "SwitchCase": 1
         }],
         "linebreak-style": [

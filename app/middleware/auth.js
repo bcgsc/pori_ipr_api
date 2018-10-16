@@ -1,38 +1,30 @@
-"use strict";
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const Session = require('../../app/libs/Session');
+const db = require('../../app/models');
 
-const moment      = require('moment');
-const crypto      = require('crypto');
-const _           = require('lodash');
-const jwt         = require('jsonwebtoken');
-const fs          = require('fs');
-
-const Session     = require(process.cwd() + '/app/libs/Session');
-const db          = require(process.cwd() + '/app/models');
-const pubKey      = fs.readFileSync(process.cwd() + '/pubkey.pem');
+const pubKey = fs.readFileSync('pubkey.pem');
 
 // Require Active Session Middleware
-module.exports = (req,res,next) => {
-
+module.exports = (req, res, next) => {
   // Get Authorization Header
-  let token = req.header('Authorization');
+  const token = req.header('Authorization');
   let username;
 
-  if(token === undefined) {
+  if (token === undefined) {
     return res.status(401).json({message: 'Authorization failed to validate.'});
   }
 
   // Check for basic authorization header
-  if(token.indexOf('Basic') > -1) {
-
+  if (token.indexOf('Basic') > -1) {
     let credentials;
     try {
       credentials = new Buffer(token.split(' ')[1], 'base64').toString('utf-8').split(':');
-    }
-    catch(e) {
+    } catch (e) {
       return res.status(400).json({message: 'The authentication header you provided was not properly formatted.'});
     }
 
-    let session = new Session(credentials[0], credentials[1], req, {noToken: true});
+    const session = new Session(credentials[0], credentials[1], req, {noToken: true});
 
     session.authenticate().then(
       (result) => {
@@ -52,32 +44,37 @@ module.exports = (req,res,next) => {
         console.log('Error validation basic authorization header', e);
         return res.status(400).json({message: 'Authorization failed to validate'});
       });
-
   } else {
     // Check for header token
-    if(token === null || token === undefined) return res.status(403).json({ message: 'Invalid authorization token'});
+    if (token === null || token === undefined) {
+      return res.status(403).json({message: 'Invalid authorization token'});
+    }
     jwt.verify(token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
       if (err) {
-        return res.status(403).json({ message: 'Invalid authorization token'});
+        return res.status(403).json({message: 'Invalid authorization token'});
       }
       username = decoded.preferred_username;
-    })
+      return null;
+    });
     // Lookup token
     db.models.user.findOne({
-      where: {username: username},
+      where: {username},
       include: [
         {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
         {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
       ],
-    }).then((result) => {
-        if(result === null) return res.status(400).json({message: 'User does not exist'});
+    })
+      .then((result) => {
+        if (result === null) {
+          return res.status(400).json({message: 'User does not exist'});
+        }
         // All good
         req.user = result;
-        next();
-      }).catch((error) => {
+        return next();
+      })
+      .catch((error) => {
         console.log('Bad authorization token: ', error);
         return res.status(400).json({message: 'Invalid authorization token'});
       });
   }
-  
 };
