@@ -53,6 +53,9 @@ module.exports = (req, res, next) => {
       if (err) {
         return res.status(403).json({message: 'Invalid authorization token'});
       }
+      if (decoded.realm_access.roles.indexOf('IPR') === -1) {
+        return res.status(403).json({message: 'IPR Access Error'});
+      }
       username = decoded.preferred_username;
       return null;
     });
@@ -61,7 +64,7 @@ module.exports = (req, res, next) => {
       where: {username},
       include: [
         {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
-        {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}
+        {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}},
       ],
     })
       .then((result) => {
