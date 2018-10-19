@@ -57,7 +57,6 @@ class Routing extends RouterInterface {
       // Add Single Routes
       // Setup other routes
       this.bindRouteFile('/POG', __dirname + '/POG');
-      this.bindRouteFile('/session', __dirname + '/session');
   
       this.bindRouteFile('/user', __dirname + '/user');
       this.bindRouteFile('/user/group', __dirname + '/user/group');

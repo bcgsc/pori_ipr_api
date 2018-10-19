@@ -57,9 +57,7 @@
             "ignorePropertyModificationsFor": ["opt"]
         }],
         "no-multi-assign": "off",
-        "one-var": ["error", {
-            "let": "consecutive"
-        }],
+        "one-var": ["warn", "never"],
         "no-plusplus": "off",
         "max-len": "warn",
         "multiline-ternary": ["error", "always"],
