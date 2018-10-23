@@ -35,7 +35,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: 'genomic'
     },
     alterationType: {
-      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown'),
+      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel'),
       allowNull: false
     },
     newEntry: {

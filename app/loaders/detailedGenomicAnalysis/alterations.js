@@ -90,6 +90,7 @@ let parseAlterationsFile = (report, alterationFile, alterationType, log, options
  *  - clin_rel_known_diag_detailed.csv  -Diagnostic
  *  - clin_rel_known_prog_detailed.csv  -Prognostic
  *  - clin_rel_unknown_alt_detailed.csv -Unknown
+ *  - novel_events.csv                  -Novel
  * 
  * Create DB entries for Alterations. Parse in CSV values, mutate, insert.
  * 
@@ -117,7 +118,8 @@ module.exports = (report, dir, logger, options) => {
     {file: 'clin_rel_known_biol_detailed.csv', type: 'biological'},
     {file: 'clin_rel_known_diag_detailed.csv', type: 'diagnostic'},
     {file: 'clin_rel_known_prog_detailed.csv', type: 'prognostic'},
-    {file: 'clin_rel_unknown_alt_detailed.csv', type: 'unknown'}
+    {file: 'clin_rel_unknown_alt_detailed.csv', type: 'unknown'},
+    {file: 'novel_events.csv', type: 'novel'},
   ];
   
   // Promises Array
