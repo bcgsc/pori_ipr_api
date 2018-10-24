@@ -3,7 +3,6 @@
 
   "web": {
     "port": 8081,
-    "admin_port": 8082,
     "hostname": "iprdev01.bcgsc.ca",
     "ssl": "/etc/ssl/certs/current/combinedcert.cert"
   },
