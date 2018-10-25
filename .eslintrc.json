@@ -60,7 +60,6 @@
         "one-var": ["warn", "never"],
         "no-plusplus": "off",
         "max-len": "warn",
-        "multiline-ternary": ["error", "always"],
         "no-underscore-dangle": "off",
         "no-empty": ["error", {
             "allowEmptyCatch": true
@@ -69,6 +68,7 @@
         "no-await-in-loop": "off",
         "no-unused-expressions": "off",
         "valid-jsdoc": "warn",
-        "require-jsdoc": "warn"
+        "require-jsdoc": "warn",
+        "import/no-dynamic-require": "warn"
     }
 }
