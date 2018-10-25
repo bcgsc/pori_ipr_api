@@ -35,9 +35,6 @@ class Routing extends RouterInterface {
       this.io.on('connect', (socket) => {
         let auth = new SocketAuth(socket, this.io);
         auth.challenge();
-    
-        console.log('Socket connected', socket.id);
-    
       });
       
       this.io.on('disconnect', (socket) => {

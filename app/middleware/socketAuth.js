@@ -1,12 +1,10 @@
-"use strict";
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
-const fs            = require('fs');
-const jwt           = require('jsonwebtoken');
-
-const pubKey        = fs.readFileSync(process.cwd() + '/pubkey.pem');
+const {logger} = process;
+const pubKey = fs.readFileSync('pubkey.pem');
 
 class SocketAuthentication {
-
   /**
    * Take in Socket connection
    *
@@ -31,19 +29,19 @@ class SocketAuthentication {
     return new Promise((resolve, reject) => {
       this.socket.on('authenticate', (msg) => {
         jwt.verify(msg.token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
-          if(decoded === null || err !== null) {
+          if (!decoded || err) {
             return reject({message: 'failed socket authentication'});
           }
           // All good
           this.socket.user = decoded;
           this.authenticated = true;
-          console.log('Socket', this.socket.id, 'authenticated as', decoded.preferred_username + ' [' + msg.token + ']');
+          logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
 
           this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
           return resolve(this.socket);
         });
       });
-    })
+    });
   }
 
 
@@ -56,7 +54,7 @@ class SocketAuthentication {
    */
   challengeTimeout() {
     setTimeout(() => {
-      if(this.authenticated !== true) {
+      if (this.authenticated !== true) {
         this.socket.disconnect();
         console.log('Dropping authentication');
       }
