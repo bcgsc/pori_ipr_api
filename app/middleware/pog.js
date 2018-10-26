@@ -4,7 +4,7 @@ let _ = require('lodash'),
     
     
 let ignored = {
-  files: ['index.js', 'POG.js', 'session.js'],
+  files: ['index.js', 'POG.js'],
   routes: ['loadPog'],
 }
 

@@ -52,9 +52,6 @@ describe('IPR API', () => {
         server.close();
     });
 
-    // Session Tests
-    require('./session/session');
-
     // Utilities
     require('./utilities/pyToSql');
     require('./utilities/remapKeys');

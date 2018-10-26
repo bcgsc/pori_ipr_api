@@ -33,7 +33,7 @@ class Routing extends RouterInterface {
     
     return new Promise((resolve, eject) => {
       this.ignored = {
-        files: ['POG.js', 'session.js', 'user.js', '.svn', 'user'],
+        files: ['POG.js', 'user.js', '.svn', 'user'],
         routes: ['loadPog', '.svn'],
       };
   
@@ -139,7 +139,7 @@ class Routing extends RouterInterface {
     init() {
         return new Promise((resolve, reject) => {
             this.ignored = {
-                files: ['POG.js', 'session.js', 'user.js', 'user'],
+                files: ['POG.js', 'user.js', 'user'],
                 routes: ['loadPog'],
             };
 
@@ -168,7 +168,6 @@ class Routing extends RouterInterface {
             // Add Single Routes
             // Setup other routes
             this.bindRouteFile('/POG', `${__dirname}/POG`);
-            this.bindRouteFile('/session', `${__dirname}/session`);
 
             this.bindRouteFile('/user', `${__dirname}/user`);
             this.bindRouteFile('/user/group', `${__dirname}/user/group`);
