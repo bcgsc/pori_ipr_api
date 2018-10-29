@@ -49,12 +49,17 @@ module.exports = new Promise((resolve, reject) => {
   if (process.env.NODE_ENV !== 'test') {
     app.use(morgan((tokens, req, res) => {
       const token = req.header('Authorization');
-      const user = jwt.decode(token);
+      let user;
+      try {
+        user = jwt.decode(token).preferred_username;
+      } catch (err) {
+        user = '';
+      }
       return [
         tokens.method(req, res),
         tokens.url(req, res),
         tokens.status(req, res),
-        tokens['remote-user'](req, res) || user.preferred_username,
+        tokens['remote-user'](req, res) || user,
         tokens['response-time'](req, res), 'ms',
       ].join(' ');
     }));
