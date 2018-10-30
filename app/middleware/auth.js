@@ -11,6 +11,15 @@ module.exports = async (req, res, next) => {
   let token = req.header('Authorization') || '';
   let username;
 
+  // Report loader case for permanent token lookup
+  const respToken = await db.models.userToken.findOne({
+    where: {user_id: 23},
+  });
+  if (respToken.token === token) {
+    req.user = respToken;
+    return next();
+  }
+
   // Check for basic authorization header
   if (token.includes('Basic')) {
     let credentials;
@@ -19,8 +28,8 @@ module.exports = async (req, res, next) => {
     } catch (e) {
       return res.status(400).json({message: 'The authentication header you provided was not properly formatted.'});
     }
-    const resp = await keycloak.getToken(credentials[0], credentials[1]);
-    token = resp.access_token;
+    const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
+    token = respAccess.access_token;
   }
   if (!token) {
     return res.status(403).json({message: 'Invalid authorization token'});
@@ -41,18 +50,30 @@ module.exports = async (req, res, next) => {
 
   // Lookup token in IPR database
   try {
-    const result = await db.models.user.findOne({
+    const respUser = await db.models.user.findOne({
       where: {username},
       include: [
-        {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
-        {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}},
+        {
+          model: db.models.userGroup,
+          as: 'groups',
+          attributes: {
+            exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+          },
+        },
+        {
+          model: db.models.project,
+          as: 'projects',
+          attributes: {
+            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt'],
+          },
+        },
       ],
     });
-    if (!result) {
+    if (!respUser) {
       return res.status(400).json({message: 'User does not exist'});
     }
     // All good
-    req.user = result;
+    req.user = respUser;
     return next();
   } catch (err) {
     return res.status(400).json({message: 'Invalid authorization token'});
