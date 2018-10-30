@@ -2,7 +2,9 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const {logger} = process;
-const pubKey = fs.readFileSync('pubkey.pem');
+const pubKey = process.env.NODE_ENV === 'production'
+  ? fs.readFileSync('keys/prodkey.pem')
+  : fs.readFileSync('keys/devkey.pem');
 
 class SocketAuthentication {
   /**

@@ -3,7 +3,9 @@ const fs = require('fs');
 const db = require('../../app/models');
 const keycloak = require('../../app/api/keycloak');
 
-const pubKey = fs.readFileSync('pubkey.pem');
+const pubKey = process.env.NODE_ENV === 'production'
+  ? fs.readFileSync('keys/prodkey.pem')
+  : fs.readFileSync('keys/devkey.pem');
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
@@ -52,6 +54,9 @@ module.exports = async (req, res, next) => {
   try {
     const respUser = await db.models.user.findOne({
       where: {username},
+      attributes: {
+        exclude: ['id', 'ident', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf'],
+      },
       include: [
         {
           model: db.models.userGroup,

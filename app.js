@@ -53,7 +53,7 @@ module.exports = new Promise((resolve, reject) => {
       try {
         user = jwt.decode(token).preferred_username;
       } catch (err) {
-        user = '';
+        user = token;
       }
       return [
         tokens.method(req, res),

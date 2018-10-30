@@ -140,28 +140,7 @@ router.route('/')
   });
 
 router.route('/me')
-  .get((req,res,next) => {
-    // Getting self
-    let me = {
-      ident: req.user.ident,
-      username: req.user.username,
-      type: req.user.type,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      email: req.user.email,
-      jiraToken: req.user.jiraToken,
-      jiraXsrf: req.user.jiraXsrf,
-      access: req.user.access,
-      settings: req.user.settings,
-      lastLogin: req.user.lastLogin,
-      createdAt: req.user.createdAt,
-      updatedAt: req.user.updatedAt,
-      groups: req.user.groups,
-      projects: req.user.projects
-    };
-
-    return res.json(me);
-  });
+  .get((req, res) => res.json(req.user));
 
 router.route('/settings')
   .get((req,res,next) => {
