@@ -16,6 +16,10 @@ module.exports = async (req, res, next) => {
   // Report loader case for permanent token lookup
   const respToken = await db.models.userToken.findOne({
     where: {user_id: 23},
+    attributes: {
+      exclude: ['id'],
+      include: [['user_id', 'id']],
+    },
   });
   if (respToken.token === token) {
     req.user = respToken;
@@ -40,7 +44,7 @@ module.exports = async (req, res, next) => {
   // Verify token using public key
   jwt.verify(token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
     if (err) {
-      return res.status(403).json({message: 'Invalid authorization token'});
+      return res.status(403).json({message: 'Invalid or expired authorization token'});
     }
     // Check for IPR access
     if (!decoded.realm_access.roles.includes('IPR')) {
