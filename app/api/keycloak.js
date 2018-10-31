@@ -6,7 +6,9 @@ const $keycloak = {};
 $keycloak.getToken = async (username, password) => {
   const options = {
     method: 'POST',
-    uri: 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
+    uri: process.env.NODE_ENV === 'production'
+      ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
+      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
     body: form({
       client_id: 'IPR',
       grant_type: 'password',

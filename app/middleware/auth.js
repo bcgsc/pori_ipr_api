@@ -34,8 +34,10 @@ module.exports = async (req, res, next) => {
     } catch (e) {
       return res.status(400).json({message: 'The authentication header you provided was not properly formatted.'});
     }
-    const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
-    token = respAccess.access_token;
+    try {
+      const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
+      token = respAccess.access_token;
+    } catch (err) {}
   }
   if (!token) {
     return res.status(403).json({message: 'Invalid authorization token'});
