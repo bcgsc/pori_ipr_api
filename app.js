@@ -21,6 +21,7 @@ let fs          = require('fs');            // File System access
 let nconf       = require('nconf').argv().env().file({file: './config/config.json'});
 let cors        = require('cors');          // CORS support
 let morgan      = require('morgan');        // Logging
+let jwt         = require('jsonwebtoken');
 let exec        = require('child_process').exec;
 let fileUplooad = require('express-fileupload'); // File upload support
 
@@ -43,12 +44,27 @@ module.exports = new Promise((resolve, reject) => {
     res.header("Access-Control-Expose-Headers", "X-token, X-Requested-With ,Origin, Content-Type, Accept");
     next();
   });
-  
+
   // Suppress Console messages when testing...
   if (process.env.NODE_ENV !== 'test') {
-    app.use(morgan(':method :url :status [:req[Authorization]] :res[content-length] - :response-time ms', {stream: null}));
+    app.use(morgan((tokens, req, res) => {
+      const token = req.header('Authorization');
+      let user;
+      try {
+        user = jwt.decode(token).preferred_username;
+      } catch (err) {
+        user = token;
+      }
+      return [
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens['remote-user'](req, res) || user,
+        tokens['response-time'](req, res), 'ms',
+      ].join(' ');
+    }));
   }
-  
+
   // Create router instance
   let router = express.Router();
   

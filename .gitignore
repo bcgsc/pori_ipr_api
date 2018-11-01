@@ -4,8 +4,10 @@ node_modules/*
 npm-debug.log
 .env.json
 _tmp/*
-._.DS_Store
+*.DS_Store
 coverage
 .nyc_output
 xunit.xml
 mocha.json
+jsdoc
+.vscode/

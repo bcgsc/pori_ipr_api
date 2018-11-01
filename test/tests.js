@@ -1,77 +1,64 @@
-"use strict";
 // Set Env
 process.env.NODE_ENV = 'local';
 
 // Dependencies
-const assert      = require('assert');
-const http        = require('http');
-const colors      = require('colors');        // Console colours
+const http = require('http');
+require('colors'); // Console colours
 
-const port        = '8081'; // Data Access
-const admin_port  = '8082'; // Admin Functions
+const port = '8081'; // Data Access
 const API_VERSION = '1.0';
 
 
 // Start Server
-console.log(('  BCGSC - IPR-API Server '+ API_VERSION +' | Testing ').blue.bold.bgWhite);
-console.log("=".repeat(50).dim);
-console.log(("Node Version: " + process.version).yellow);
-console.log(('Running Environment: '+ process.env.NODE_ENV).green, '\n');
-console.log(('Application API Port: ').green,  port.toString().white);
-console.log(('Admin API Port: ').green, admin_port.toString().white, '\n');
+console.log((`BCGSC - IPR-API Server ${API_VERSION} | Testing`).blue.bold.bgWhite);
+console.log('='.repeat(50).dim);
+console.log((`Node Version: ${process.version}`).yellow);
+console.log((`Running Environment: ${process.env.NODE_ENV}`).green, '\n');
+console.log(('Application API Port: ').green, port.toString().white);
+
+const App = require('../app');
 
 describe('IPR API', () => {
-  let server;
-  let admin_server;
-  let io;
-  
-  // Start API servers before running tests
-  before(function(done) {
-    this.timeout(30000);
+    let server,
+        io;
 
-    let App = require('../app').then((app) => {
+    // Start API servers before running tests
+    before(function (done) {
+        this.timeout(30000);
 
-      let admin = require('../admin');
 
-      app.set('port', port);
-      admin.set('port', admin_port);
+        App.then((app) => {
+            app.set('port', port);
 
-      // Create HTTP server.
-      server = http.createServer(app);
-      admin_server = http.createServer(admin);
+            // Create HTTP server.
+            server = http.createServer(app);
 
-      // Socket.io
-      io     = app.io;
-      io.attach(server);
+            // Socket.io
+            io = app.io;
+            io.attach(server);
 
-      // Listen on provided port, on all network interfaces.
-      server.listen(port);
-      admin_server.listen(admin_port);
+            // Listen on provided port, on all network interfaces.
+            server.listen(port);
 
-      console.log('Server listening');
+            console.log('Server listening');
 
-      done();
+            done();
+        });
     });
-  });
 
-  // Close API server connections after running tests
-  after(function() {
+    // Close API server connections after running tests
+    after(() => {
     // Close server connections
-    server.close();
-    admin_server.close();
-  });
-  
-  // Session Tests
-  require('./session/session');
-  
-  // Utilities
-  require('./utilities/pyToSql');
-  require('./utilities/remapKeys');
+        server.close();
+    });
 
-  // Reports Tests
-  //require('./reports/reports');
+    // Utilities
+    require('./utilities/pyToSql');
+    require('./utilities/remapKeys');
 
-  // Tracking Tests
-  require('./tracking/state');
-  
+    // Reports Tests
+    // require('./reports/reports');
+
+    // Tracking Tests
+    require('./tracking/state');
 });
