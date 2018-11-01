@@ -12,6 +12,7 @@ module.exports = async (req, res, next) => {
   // Get Authorization Header
   let token = req.header('Authorization') || '';
   let username;
+  let expiry;
 
   // Report loader case for permanent token lookup
   const respToken = await db.models.userToken.findOne({
@@ -53,6 +54,7 @@ module.exports = async (req, res, next) => {
       return res.status(403).json({message: 'IPR Access Error'});
     }
     username = decoded.preferred_username;
+    expiry = decoded.exp;
     return null;
   });
 
@@ -83,7 +85,7 @@ module.exports = async (req, res, next) => {
     if (!respUser) {
       return res.status(400).json({message: 'User does not exist'});
     }
-    // All good
+    respUser.dataValues.expiry = expiry;
     req.user = respUser;
     return next();
   } catch (err) {
