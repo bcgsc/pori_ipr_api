@@ -3,7 +3,7 @@ const fs = require('fs');
 const db = require('../../app/models');
 const keycloak = require('../../app/api/keycloak');
 
-const pubKey = process.env.NODE_ENV === 'production'
+const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
   : fs.readFileSync('keys/devkey.pem');
 
