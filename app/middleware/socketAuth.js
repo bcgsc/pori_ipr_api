@@ -2,7 +2,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const {logger} = process;
-const pubKey = process.env.NODE_ENV === 'production'
+const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
   : fs.readFileSync('keys/devkey.pem');
 
