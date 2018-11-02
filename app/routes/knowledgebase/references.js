@@ -8,6 +8,7 @@ let express = require('express'),
   acl = require(process.cwd() + '/app/middleware/acl'),
   kbEvent = require(process.cwd() + '/app/libs/kbEvent'),
   kbVersion = require(process.cwd() +  '/app/libs/kbVersionDatum.js');
+  const jwt         = require('jsonwebtoken');
 
 
 router.param('reference', (req,res,next,ref) => {
@@ -216,17 +217,19 @@ router.route('/:reference([A-z0-9-]{36})')
 
 // Update Route Status
 router.route('/:reference([A-z0-9-]{36})/status/:status(REVIEWED|FLAGGED-INCORRECT|REQUIRES-REVIEW)')
-  .put((req,res) => {
+  .put(async (req, res) => {
+    const token = jwt.decode(req.header('Authorization'));
+    const user = await db.models.user.findOne({where: {username: token.preferred_username}});
 
     let previousStatus = req.reference.status;
 
     // Check updatability
-    if(req.reference.createdBy_id === req.user.id) res.status(400).json({error:{message:'The writer of a reference may not be the reviewer.'}});
+    if(req.reference.createdBy_id === user.id) res.status(400).json({error:{message:'The writer of a reference may not be the reviewer.'}});
 
     // Write update
     req.reference.status = req.params.status;
 
-    if(req.params.status === 'REVIEWED') req.reference.reviewedBy_id = req.user.id;
+    if(req.params.status === 'REVIEWED') req.reference.reviewedBy_id = user.id;
 
     // Send Update to DB
     db.models.kb_reference.update(req.reference.get(), { where: { ident: req.reference.ident, deletedAt: null } }).then(
@@ -240,7 +243,7 @@ router.route('/:reference([A-z0-9-]{36})/status/:status(REVIEWED|FLAGGED-INCORRE
           entry: req.reference.ident,
           previous: previousStatus,
           new: req.reference.status,
-          user_id: req.user.id,
+          user_id: user.id,
           comment: req.body.comments
         };
 
