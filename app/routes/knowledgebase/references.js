@@ -269,12 +269,16 @@ router.route('/:reference([A-z0-9-]{36})/status/:status(REVIEWED|FLAGGED-INCORRE
       const token = jwt.decode(req.header('Authorization'));
       const user = await db.models.user.findOne({where: {username: token.preferred_username}});
 
-      const reference = req.reference;
+      let reference = req.reference;
       const previousStatus = reference.status;
       const comments = req.body.comments;
 
+      if (!_.has(reference, 'createdBy_id')) {
+        reference = await db.models.kb_reference.findOne({where: {ident: reference.ident}});
+      }
+
       // Check updatability
-      if (reference.createdBy_id === user.id) res.status(400).json({error: {message: 'The writer of a reference may not be the reviewer.'}});
+      if (reference.createdBy_id === user.id) return res.status(400).json({error: {message: 'The writer of a reference may not be the reviewer.'}});
 
       // Write update
       reference.status = req.params.status;
