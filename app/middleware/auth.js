@@ -63,21 +63,21 @@ module.exports = async (req, res, next) => {
     const respUser = await db.models.user.findOne({
       where: {username},
       attributes: {
-        exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf'],
+        exclude: ['deletedAt', 'password', 'jiraToken', 'jiraXsrf'],
       },
       include: [
         {
           model: db.models.userGroup,
           as: 'groups',
           attributes: {
-            exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+            exclude: ['owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
           },
         },
         {
           model: db.models.project,
           as: 'projects',
           attributes: {
-            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt'],
+            exclude: ['deletedAt', 'updatedAt', 'createdAt'],
           },
         },
       ],
