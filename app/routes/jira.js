@@ -109,28 +109,3 @@ router.route('/subtask')
   });
 
 module.exports = router;
-
-/**
- * Create authentication token
- *
- * @param user
- * @returns {*|promise|string}
- */
-let createToken = (user, req) => {
-
-  let deferred = Q.defer();
-
-  // Good auth, create token.
-  db.models.userToken.create({ user_id: user.id, userAgent: req.header('user-agent'), expiresAt: moment().add(24, 'hours').format('YYYY-MM-DD HH:mm:ss.SSS Z')}).then(
-    (result) => {
-      deferred.resolve(result.token);
-    },
-    (error) => {
-      console.log('Unable to create token', error);
-      deferred.reject(false);
-    }
-  );
-
-  return deferred.promise;
-
-};
