@@ -41,6 +41,10 @@ let userToken = sequelize.import(__dirname + '/user/userToken');
 user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
 userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 
+// Change History
+let change_history = sequelize.import(__dirname + '/change_history');
+user.hasMany(change_history, {as: 'user', foreignKey: 'user_id'});
+
 // POG
 let POG = sequelize.import(__dirname + '/POG');
 
@@ -176,6 +180,15 @@ presentation.slides.belongsTo(analysis_reports, {as: 'report', foreignKey: 'pog_
 presentation.slides.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 presentation.discussion.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
+
+// Report Change History
+
+let report_change_history = sequelize.import(__dirname + '/reports/report_change_history');
+
+// this is set up as a many-to-many relationship due to sequelize constraints but it should be noted that each change history item can only belong to one report
+// this is enforced by making the FK reference to the change_history table in report_change_history a unique key.
+analysis_reports.belongsToMany(change_history, {as: 'change_history', through: {model: report_change_history}, foreignKey: 'report_id', otherKey: 'change_history_id', onDelete: 'CASCADE'});
+change_history.belongsToMany(analysis_reports, {as: 'report', through: {model: report_change_history}, foreignKey: 'change_history_id', otherKey: 'report_id', onDelete: 'CASCADE'});
 
 // Data History
 let POGDataHistory = sequelize.import(__dirname + '/POGDataHistory');
