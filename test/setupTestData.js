@@ -3,8 +3,8 @@ process.env.NODE_ENV = 'local';
 
 // Dependencies
 const db = require(`${process.cwd()}/app/models`);
-const logger = require('../lib/log');
 const bcrypt = require('bcryptjs');
+const logger = require('../lib/log');
 
 const users = [
   {

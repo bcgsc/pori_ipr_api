@@ -165,7 +165,6 @@ module.exports = {
       const reportChangeHistoryEvent = await db.models.report_change_history.findOne({where: {change_history_id: changeHistoryId}});
 
       if (!changeHistoryEvent) throw new Error(`No change history event with id ${changeHistoryId} was found`);
-      console.log('EVENT TYPE: ', changeHistoryEvent.type);
       switch (changeHistoryEvent.type) {
         case 'update': {
           // set value of field field_name in model model_name w/ ident entry_ident to the value previous_value

@@ -53,7 +53,7 @@ describe('Record change history events', () => {
     delete deletedContent.updatedAt;
     delete deletedContent.deletedAt;
 
-    const deletedAlteration = await db.models.genomicAlterationsIdentified.destroy({where: {id: newAlteration.id}, force: true});
+    await db.models.genomicAlterationsIdentified.destroy({where: {id: newAlteration.id}, force: true});
     const recordDeleteSuccess = await reportChangeHistory.recordDelete(
       deletedContent.ident,
       'genomicAlterationsIdentified',
