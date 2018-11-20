@@ -44,7 +44,7 @@
         }, {
             "enforceForRenamedProperties": false
         }],
-        "comma-dangle": ["warn", "always-multiline"],
+        "comma-dangle": ["error", "always-multiline"],
         "prefer-const": ["error", {
             "destructuring": "all"
         }],
