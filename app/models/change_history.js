@@ -16,6 +16,10 @@ module.exports = (sequelize, Sq) => sequelize.define('change_history', {
     type: Sq.UUID,
     defaultValue: Sq.UUIDV4,
   },
+  model_name: {
+    type: Sq.TEXT,
+    allowNull: false,
+  },
   table_name: {
     type: Sq.TEXT,
     allowNull: false,
