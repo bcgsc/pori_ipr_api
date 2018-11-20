@@ -19,46 +19,47 @@ console.log(('Application API Port: ').green, port.toString().white);
 const App = require('../app');
 
 describe('IPR API', () => {
-    let server,
-        io;
+  let server;
+  let io;
 
-    // Start API servers before running tests
-    before(function (done) {
-        this.timeout(30000);
+  // Start API servers before running tests
+  before(function (done) {
+    this.timeout(30000);
 
 
-        App.then((app) => {
-            app.set('port', port);
+    App.then((app) => {
+      app.set('port', port);
 
-            // Create HTTP server.
-            server = http.createServer(app);
+      // Create HTTP server.
+      server = http.createServer(app);
 
-            // Socket.io
-            io = app.io;
-            io.attach(server);
+      // Socket.io
+      io = app.io;
+      io.attach(server);
 
-            // Listen on provided port, on all network interfaces.
-            server.listen(port);
+      // Listen on provided port, on all network interfaces.
+      server.listen(port);
 
-            console.log('Server listening');
+      console.log('Server listening');
 
-            done();
-        });
+      done();
     });
+  });
 
-    // Close API server connections after running tests
-    after(() => {
+  // Close API server connections after running tests
+  after(() => {
     // Close server connections
-        server.close();
-    });
+    server.close();
+  });
 
-    // Utilities
-    require('./utilities/pyToSql');
-    require('./utilities/remapKeys');
+  // Utilities
+  require('./utilities/pyToSql');
+  require('./utilities/remapKeys');
 
-    // Reports Tests
-    // require('./reports/reports');
+  // Reports Tests
+  // require('./reports/reports');
+  require('./reports/reportChangeHistory');
 
-    // Tracking Tests
-    require('./tracking/state');
+  // Tracking Tests
+  require('./tracking/state');
 });
