@@ -180,6 +180,24 @@ describe('Record change history events', () => {
     expect(revertDeleteSuccess).to.equal(false);
   });
 
+  it('should not revert a create event', async () => {
+    await reportChangeHistory.recordCreate(
+      newAlteration.ident,
+      'genomicAlterationsIdentified',
+      testUser.id,
+      testReport.id,
+      'genomic alteration identified'
+    );
+
+    // get change history record we want to attempt to revert
+    const maxCreateChangeHistoryId = await db.models.change_history.max('id', {where: {entry_ident: newAlteration.ident, type: 'create'}});
+    const createChangeHistory = await db.models.change_history.findOne({where: {id: maxCreateChangeHistoryId}});
+
+    const revertCreateSuccess = await reportChangeHistory.revert(createChangeHistory.id, testUser.id, 'testing revert create change history');
+
+    expect(revertCreateSuccess).to.equal(false);
+  });
+
   before(async () => {
     await testData.createTestAccounts();
     testUser = await db.models.user.find({where: {username: 'aUserForTesting'}});
