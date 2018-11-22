@@ -99,8 +99,8 @@ describe('Record change history events', () => {
     delete deletedContent.updatedAt;
     delete deletedContent.deletedAt;
 
-    await db.models.genomicAlterationsIdentified.destroy({where: {id: newAlteration.id}, force: true});
-    await reportChangeHistory.recordDelete(
+    await db.models.genomicAlterationsIdentified.destroy({where: {id: newAlteration.id}, force: true}); // delete alteration
+    await reportChangeHistory.recordDelete( // record deletion in change history
       deletedContent.ident,
       'genomicAlterationsIdentified',
       deletedContent,
@@ -115,6 +115,69 @@ describe('Record change history events', () => {
 
     const revertDeleteSuccess = await reportChangeHistory.revert(deleteChangeHistory.id, testUser.id, 'testing revert delete change history');
     expect(revertDeleteSuccess).to.equal(true);
+  });
+
+  it('should not revert a delete event for a record that already exists', async () => {
+    // set up deleted content JSON - remove id and timestamps
+    const deletedContent = newAlteration;
+    delete deletedContent.id;
+    delete deletedContent.createdAt;
+    delete deletedContent.updatedAt;
+    delete deletedContent.deletedAt;
+
+    await reportChangeHistory.recordDelete(
+      deletedContent.ident,
+      'genomicAlterationsIdentified',
+      deletedContent,
+      testUser.id,
+      testReport.id,
+      'genomic alteration identified',
+      'testing delete change history'
+    );
+
+    const maxDeleteChangeHistoryId = await db.models.change_history.max('id', {where: {entry_ident: deletedContent.ident, type: 'delete'}});
+    const deleteChangeHistory = await db.models.change_history.findOne({where: {id: maxDeleteChangeHistoryId}});
+
+    const revertDeleteSuccess = await reportChangeHistory.revert(deleteChangeHistory.id, testUser.id, 'testing revert delete change history');
+    expect(revertDeleteSuccess).to.equal(false);
+  });
+
+  it('should not revert a delete event that is not the most recent one', async () => {
+    // set up deleted content JSON - remove id and timestamps
+    const deletedContent = newAlteration;
+    delete deletedContent.id;
+    delete deletedContent.createdAt;
+    delete deletedContent.updatedAt;
+    delete deletedContent.deletedAt;
+
+    await db.models.genomicAlterationsIdentified.destroy({where: {id: newAlteration.id}, force: true}); // delete alteration
+
+    await reportChangeHistory.recordDelete( // record initial deletion
+      deletedContent.ident,
+      'genomicAlterationsIdentified',
+      deletedContent,
+      testUser.id,
+      testReport.id,
+      'genomic alteration identified',
+      'testing delete change history'
+    );
+
+    // get change history record we want to attempt to revert
+    const maxDeleteChangeHistoryId = await db.models.change_history.max('id', {where: {entry_ident: deletedContent.ident, type: 'delete'}});
+    const deleteChangeHistory = await db.models.change_history.findOne({where: {id: maxDeleteChangeHistoryId}});
+
+    await reportChangeHistory.recordDelete( // record another deletion
+      deletedContent.ident,
+      'genomicAlterationsIdentified',
+      deletedContent,
+      testUser.id,
+      testReport.id,
+      'genomic alteration identified',
+      'testing delete change history'
+    );
+
+    const revertDeleteSuccess = await reportChangeHistory.revert(deleteChangeHistory.id, testUser.id, 'testing revert delete change history');
+    expect(revertDeleteSuccess).to.equal(false);
   });
 
   before(async () => {

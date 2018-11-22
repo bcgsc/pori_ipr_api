@@ -1,6 +1,8 @@
+const _ = require('lodash');
+
 const db = require('../models');
 
-const logger = process.logger;
+const {logger} = process;
 
 module.exports = {
 
@@ -163,8 +165,10 @@ module.exports = {
     try {
       const changeHistoryEvent = await db.models.change_history.findOne({where: {id: changeHistoryId}});
       const reportChangeHistoryEvent = await db.models.report_change_history.findOne({where: {change_history_id: changeHistoryId}});
+      const errorMessages = [];
 
       if (!changeHistoryEvent) throw new Error(`No change history event with id ${changeHistoryId} was found`);
+
       switch (changeHistoryEvent.type) {
         case 'update': {
           // set value of field field_name in model model_name w/ ident entry_ident to the value previous_value
@@ -185,47 +189,69 @@ module.exports = {
             comment
           );
 
-          const errorMessages = [];
-          if (updatedRecord[changeHistoryEvent.field_name] !== changeHistoryEvent.previous_value) errorMessages.push(`Field ${changeHistoryEvent.field_name} did not have its value updated properly`);
+          if (updatedRecord[1][0][changeHistoryEvent.field_name] !== changeHistoryEvent.previous_value) errorMessages.push(`Field ${changeHistoryEvent.field_name} did not have its value updated properly`);
           if (!recordUpdateSuccess) errorMessages.push(`Failed to record change history event for updating field ${changeHistoryEvent.field_name}`);
 
-          if (errorMessages.length > 1) {
-            const errMessage = errorMessages.join(',');
-            throw new Error(errMessage);
-          }
           break;
         }
         case 'delete': {
-          // recreate record using info stored in deleted_content field
-          const insertedRecord = await db.models[changeHistoryEvent.model_name].create(changeHistoryEvent.deleted_content);
+          // check that record doesn't already exist
+          const recordExists = await db.models[changeHistoryEvent.model_name].findOne({where: {ident: changeHistoryEvent.deleted_content.ident}});
 
-          // record revert event as a create event
-          const recordCreateSuccess = await this.recordCreate(
-            insertedRecord.ident,
-            changeHistoryEvent.model_name,
-            userId,
-            reportChangeHistoryEvent.report_id,
-            changeHistoryEvent.display_name
-          );
+          // check that delete change history is the most recent to exist
+          const opts = {
+            where: {
+              id: reportChangeHistoryEvent.report_id,
+              '$change_history.type$': 'delete',
+            },
+            include: [
+              {as: 'change_history', model: db.models.change_history},
+            ],
+          };
 
-          const errorMessages = [];
-          // all records should have an ident, something went wrong if this field doesn't match
-          if (insertedRecord.ident !== changeHistoryEvent.deleted_content.ident) errorMessages.push(`Record with id ${insertedRecord.id} in table ${changeHistoryEvent.table_name} was not recreated properly`);
-          if (!recordCreateSuccess) errorMessages.push(`Failed to record change history event for creating record with id ${insertedRecord.id} in table ${changeHistoryEvent.table_name}`);
+          const report = await db.models.analysis_report.find(opts);
 
-          if (errorMessages.length > 1) {
-            const errMessage = errorMessages.join(',');
-            throw new Error(errMessage);
+          let isMostRecentDelete = false;
+          const mostRecentDelete = _.orderBy(report.change_history, ['created_at'], ['desc'])[0]; // get most recent deletion
+          if (mostRecentDelete.id === changeHistoryEvent.id) isMostRecentDelete = true;
+
+          // if record doesn't exist and is the most recent deletion, restore record
+          if (!recordExists && isMostRecentDelete) {
+            // recreate record using info stored in deleted_content field
+            const insertedRecord = await db.models[changeHistoryEvent.model_name].create(changeHistoryEvent.deleted_content);
+
+            // record revert event as a create event
+            const recordCreateSuccess = await this.recordCreate(
+              insertedRecord.ident,
+              changeHistoryEvent.model_name,
+              userId,
+              reportChangeHistoryEvent.report_id,
+              changeHistoryEvent.display_name
+            );
+
+            
+            // all records should have an ident, something went wrong if this field doesn't match
+            if (insertedRecord.ident !== changeHistoryEvent.deleted_content.ident) errorMessages.push(`Record with ident ${insertedRecord.ident} in table ${changeHistoryEvent.table_name} was not recreated properly`);
+            if (!recordCreateSuccess) errorMessages.push(`Failed to record change history event for creating record with ident ${insertedRecord.ident} in table ${changeHistoryEvent.table_name}`);
+          } else {
+            if (recordExists) errorMessages.push(`Record with ident ${recordExists.ident} already exists`);
+            if (!isMostRecentDelete) errorMessages.push('The record you are attempting to restore is outdated - only the most recent deleted version may be restored');
           }
+
           break;
         }
         default:
           throw new Error(`Change history events of type ${changeHistoryEvent.type} cannot be reverted`);
       }
 
+      if (errorMessages.length > 0) {
+        const errMessage = errorMessages.join(',');
+        throw new Error(errMessage);
+      }
+
       return true; // Revert was a success if we reach this line without errors
     } catch (err) {
-      logger.error(`An error occurred while attempting to revert a change history event: ${err}`);
+      logger.error(`An error occurred while attempting to revert a change history event: ${err.message}`);
       return false;
     }
   },
