@@ -1,6 +1,6 @@
 let _ = require('lodash'),
-    router = require('express').Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models');
+  router = require('express').Router({mergeParams: true}),
+  db = require(process.cwd() + '/app/models');
     
     
 let ignored = {
@@ -16,14 +16,19 @@ module.exports = (req,res,next,pogID) => {
   
   // Lookup POG first
   db.models.POG.findOne({ 
-      where: {POGID: pogID},
-      attributes: {exclude: ['deletedAt']},
-      include: [
-        {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
-        {as: 'analysis_reports', model: db.models.analysis_report.scope('public')},
-        {as: 'projects', model: db.models.project}
-      ],
-    }).then(
+    where: {
+      $or: {
+        POGID: pogID,
+        alternate_identifier: pogID,
+      },
+    },
+    attributes: {exclude: ['deletedAt']},
+    include: [
+      {model: db.models.patientInformation, as: 'patientInformation', attributes: { exclude: ['id', 'deletedAt', 'pog_id'] } },
+      {as: 'analysis_reports', model: db.models.analysis_report.scope('public')},
+      {as: 'projects', model: db.models.project}
+    ],
+  }).then(
     (result) => {
       // Nothing found?
       if(result === null) return res.status(404).json({error: {message: 'Unable to find the requested POG', code: 'pogMiddlewareLookupFail'}});
