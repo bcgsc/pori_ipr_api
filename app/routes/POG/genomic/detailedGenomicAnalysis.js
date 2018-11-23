@@ -66,7 +66,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCancer|otherCancer)?')
+router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get((req,res,next) => {
     
     // Setup where clause
@@ -84,7 +84,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       } 
     } else {
       where.approvedTherapy = null;
-      where.alterationType = {$ne: 'unknown'};
+      where.alterationType = {$notIn: ['unknown', 'novel']};
     }
 
     let options = {
