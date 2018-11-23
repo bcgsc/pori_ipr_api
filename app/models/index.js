@@ -244,9 +244,6 @@ subscription.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASC
 let flashToken = sequelize.import(__dirname + '/flashtoken.model');
 flashToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true});
 
-// Recent Reports
-let recent_report = require('../modules/recentReports/models')(sequelize);
-
 // Notifications
 let notification = require('../modules/notification/models')(sequelize);
 
