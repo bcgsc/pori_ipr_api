@@ -1,67 +1,43 @@
-// app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-    router = express.Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models'),
-    logger = require(process.cwd() + '/app/libs/logger'),
-    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
+const express = require('express');
+const db = require('../../app/models');
+
+const router = express.Router({mergeParams: true});
 
 // Middleware for Patient Information
-router.use('/', (req,res,next) => {
-  
-  // Get Patient Information for this POG
-  db.models.patientInformation.scope('public').findOne({ where: {pog_id: req.POG.id}}).then(
-    (result) => {
+router.use('/', async (req, res, next) => {
+  try {
+    // Get Patient Information for this POG
+    const patientInfo = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id}});
 
-      // Not found
-      if(result === null) res.status(404).json({error: {message: 'Unable to find the patient information for ' + req.POG.POGID + '.', code: 'failedPatientInformationLookup'}});
-      
-      // Found the patient information
-      req.patientInformation = result;
-      next();
-      
-    },
-    (error) => {
-      new Error('Unable to query Patient Information');
-      res.status(500).json({error: {message: 'Unable to lookup the patient information for ' + req.POG.POGID + '.', code: 'failedPatientInformationQuery'}});
+    if (!patientInfo) throw new Error('notFoundError'); // no patient info found
+
+    // patient info found, set request param
+    req.patientInformation = patientInfo;
+    return next();
+  } catch (err) {
+    // set default return status and message
+    let returnStatus = 500;
+    let returnMessage = err.message;
+
+    if (err.message === 'notFoundError') { // return 404 error - patient info could not be found
+      returnStatus = 404;
+      returnMessage = 'patient information could not be found';
     }
-  );
-  
+
+    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find patient information for patient ${req.POG.POGID}: ${returnMessage}`}});
+  }
 });
 
 // Handle requests for alterations
 router.route('/')
-  .get((req,res,next) => {
-    // Get Patient History
-    res.json(req.patientInformation);
-    
-  })
-  .put((req,res,next) => {
-
-    /**
-     *
-     * !!!!
-     * Bypass versioning for temporary patient information storage
-     * !!!!
-     *
-     */
-
-    db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id}}).then(
-      (resp) => {
-
-        db.models.patientInformation.findOne({where: {pog_id: req.POG.id}}).then(
-          (resp) => {
-            res.json(resp);
-          }
-        );
-
-      },
-      (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPatientInformationVersion'}});
-      }
-    );
-
-
+  .get((req, res) => res.json(req.patientInformation))
+  .put(async (req, res) => {
+    try {
+      const updatedPatientInfo = await db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id}, returning: true});
+      return res.json(updatedPatientInfo[1][0]);
+    } catch (err) {
+      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPatientInformationVersion'}});
+    }
   });
-  
+
 module.exports = router;

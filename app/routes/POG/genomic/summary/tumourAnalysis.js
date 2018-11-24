@@ -1,52 +1,45 @@
-// app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-    router = express.Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models'),
-    logger = require(process.cwd() + '/app/libs/logger'),
-    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
+const express = require('express');
+const db = require('../../../../../app/models');
+const versionDatum = require('../../../../../app/libs/VersionDatum');
+
+const router = express.Router({mergeParams: true});
 
 // Middleware for Tumour Analysis
-router.use('/', (req,res,next) => {
-  
-  // Get Mutation Summary for this POG
-  db.models.tumourAnalysis.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
-    (result) => {
-      // Not found
-      if(result == null) res.status(404).json({error: {message: 'Unable to find the tumour analysis for ' + req.POG.POGID + '.', code: 'failedTumourAnalysisLookup'}});
-      
-      // Found the patient information
-      req.tumourAnalysis = result;
-      next();
-      
-    },
-    (error) => {
-      res.status(500).json({error: {message: 'Unable to lookup the tumour analysis for ' + req.POG.POGID + '.', code: 'failedTumourAnalysisQuery'}});
-      return new Error('Unable to query Tumour Analysis');
+router.use('/', async (req, res, next) => {
+  try {
+    // Get tumour analysis for this report
+    const tumourAnalysis = await db.models.tumourAnalysis.scope('public').findOne({where: {pog_report_id: req.report.id}});
+
+    if (!tumourAnalysis) throw new Error('notFoundError'); // no tumour analysis found
+
+    // tumour analysis found, set request param
+    req.tumourAnalysis = tumourAnalysis;
+    return next();
+  } catch (err) {
+    // set default return status and message
+    let returnStatus = 500;
+    let returnMessage = err.message;
+
+    if (err.message === 'notFoundError') { // return 404 error - tumour analysis could not be found
+      returnStatus = 404;
+      returnMessage = 'tumour analysis could not be found';
     }
-  );
-  
+
+    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find tumour analysis for patient ${req.POG.POGID}: ${returnMessage}`}});
+  }
 });
 
 // Handle requests for Tumour Analysis
 router.route('/')
-  .get((req,res,next) => {
-    // Get Patient History
-    res.json(req.tumourAnalysis);
-    
-  })
-  .put((req,res,next) => {
-
-    // Update DB Version for Entry
-    versionDatum(db.models.tumourAnalysis, req.tumourAnalysis, req.body, req.user, req.body.comment).then(
-      (resp) => {
-        res.json(resp.data.create);
-      },
-      (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedTumourAnalysisVersion'}});
-      }
-    );
-
+  .get((req, res) => res.json(req.tumourAnalysis))
+  .put(async (req, res) => {
+    try {
+      // Update DB Version for Entry
+      const version = await versionDatum(db.models.tumourAnalysis, req.tumourAnalysis, req.body, req.user, req.body.comment);
+      return res.json(version.data.create);
+    } catch (err) {
+      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedTumourAnalysisVersion'}});
+    }
   });
-  
+
 module.exports = router;
