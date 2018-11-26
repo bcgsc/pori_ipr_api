@@ -25,6 +25,11 @@ all required dependencies, the server can be started with the following command:
 NODE_ENV=[local|development|test|production] npm start
 ```
 
+To start the synchronizer server, run the following command:
+```
+NODE_ENV=[local|development|test|production] npm run sync
+```
+
 If NPM is not available, the application server can be booted by executing through node directly:
 ```
 NODE_ENV=[local|development|test|production] node bin/www
