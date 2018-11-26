@@ -2,14 +2,15 @@
   "private": true,
   "name": "ipr-api",
   "version": "1.1.3",
-  "description": "Placeholder Interactive POG Report API",
-  "main": "server.js",
+  "description": "Integrated Pipeline Reports API",
+  "main": "app.js",
   "scripts": {
     "start": "node ./bin/www",
     "migrate": "node ./bin/www --database.migrate",
     "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
     "test": "nyc --reporter=html --reporter=text --reporter=clover mocha -R mocha-multi-reporters --reporter-options configFile=config/coverage.json --timeout 10000",
-    "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
+    "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js",
+    "sync": "node ./bin/syncWorker"
   },
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
   "license": "GPL-3.0",
