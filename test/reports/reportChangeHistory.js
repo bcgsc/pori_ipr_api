@@ -201,7 +201,7 @@ describe('Record change history events', () => {
   before(async () => {
     await testData.createTestAccounts();
     testUser = await db.models.user.find({where: {username: 'aUserForTesting'}});
-    testReport = await testData.createTestReport();
+    testReport = await testData.createTestGenomicReport();
   });
 
   after(async () => {

@@ -59,6 +59,7 @@ describe('IPR API', () => {
   // Reports Tests
   // require('./reports/reports');
   require('./reports/reportChangeHistory');
+  require('./reports/probe/alterations');
 
   // Tracking Tests
   require('./tracking/state');

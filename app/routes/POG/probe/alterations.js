@@ -1,7 +1,8 @@
 const express = require('express');
 const db = require('../../../../app/models');
-const versionDatum = require('../../../../app/libs/VersionDatum');
+const reportChangeHistory = require('../../../../app/libs/reportChangeHistory');
 
+const {logger} = process;
 const router = express.Router({mergeParams: true});
 
 router.param('alteration', async (req, res, next, altIdent) => {
@@ -32,27 +33,79 @@ router.param('alteration', async (req, res, next, altIdent) => {
 router.route('/:alteration([A-z0-9-]{36})')
   .get((req, res) => res.json(req.alteration))
   .put(async (req, res) => {
+    // specify editable fields
+    const editable = ['alterationType', 'newEntry', 'approvedTherapy', 'gene', 'variant',
+      'kbVariant', 'disease', 'effect', 'association', 'therapeuticContext', 'status',
+      'reference', 'expression_tissue_fc', 'expression_cancer_percentile', 'copyNumber',
+      'sample', 'LOHRegion', 'zygosity', 'evidence', 'matched_cancer', 'pmid_ref', 'variant_type',
+      'kb_type', 'kb_entry_type', 'kb_event_key', 'kb_entry_key', 'kb_data'];
+    const editableErr = [];
+
+    const updateAlteration = {}; // set up object for updating fields
+    const oldAlteration = req.alteration;
+    const newAlteration = req.body;
+
+    for (const field in newAlteration) {
+      if (newAlteration[field]) {
+        const fieldValue = newAlteration[field];
+        if (fieldValue !== oldAlteration[field] && field !== 'comment') {
+          if (!editable.includes(field)) editableErr.push(field); // check if user is editing a non-editable field
+          updateAlteration[field] = fieldValue;
+        }
+      }
+    }
+
+    if (editableErr.length > 0) return res.status(400).json({error: {message: `The following alteration fields are not editable: ${editableErr.join(', ')}`}});
+
     // Promoting from unknown to another state.
-    if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
-      db.models.genomicAlterationsIdentified.scope('public').create({
+    if (oldAlteration.alterationType === 'unknown' && newAlteration.alterationType !== 'unknown') {
+      const newGenomicAltIdentified = {
         pog_report_id: req.report.id,
         geneVariant: `${req.alteration.gene} (${req.alteration.variant})`,
-      });
+      };
+
+      db.models.genomicAlterationsIdentified.scope('public').create(newGenomicAltIdentified);
     }
 
     try {
-      // Update DB Version for Entry
-      const versionDatumResp = await versionDatum(db.models.alterations, req.alteration, req.body, req.user, req.body.comment);
-      return res.json(versionDatumResp.data.create);
+      // Update entry
+      const update = await db.models.alterations.update(updateAlteration, {where: {ident: oldAlteration.ident}, returning: true});
+      const updatedAlt = update[1][0];
+
+      // Record change history for each field updated
+      for (const field in updateAlteration) {
+        if (updateAlteration[field]) {
+          const changeHistorySuccess = await reportChangeHistory.recordUpdate(updatedAlt.ident, 'alterations', field, oldAlteration[field], updateAlteration[field], req.user.id, updatedAlt.pog_report_id, 'alteration', req.body.comment);
+
+          if (!changeHistorySuccess) {
+            logger.error(`Failed to record report change history for updating alteration with ident ${updatedAlt.ident}.`);
+          }
+        }
+      }
+
+      return res.json(updatedAlt);
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'}});
+      const errMessage = `An error occurred while updating alteration: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   })
   .delete(async (req, res) => {
     try {
-      // Soft delete the entry
-      // Update result
-      await db.models.alterations.destroy({where: {ident: req.alteration.ident}});
+      // get alteration record to store in change history
+      const deletedAlt = await db.models.alterations.findOne({where: {ident: req.alteration.ident}});
+      delete deletedAlt.id;
+
+      // force delete entry
+      await db.models.alterations.destroy({where: {ident: req.alteration.ident}, force: true});
+
+      // record change history
+      const changeHistorySuccess = await reportChangeHistory.recordDelete(deletedAlt.ident, 'alterations', deletedAlt, req.user.id, deletedAlt.pog_report_id, 'alteration', req.body.comment);
+
+      if (!changeHistorySuccess) {
+        logger.error(`Failed to record report change history for deleting alteration with ident ${deletedAlt.ident}.`);
+      }
+
       return res.json({success: true});
     } catch (err) {
       return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
@@ -93,36 +146,29 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
       return res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
     }
   })
-
   .post(async (req, res) => {
-    // Setup new data entry from vanilla
-    req.body.dataVersion = 0;
-    req.body.pog_id = req.POG.id;
-    req.body.pog_report_id = req.report.id;
+    // set up record to insert
+    const alteration = req.body;
+    alteration.pog_id = req.POG.id;
+    alteration.pog_report_id = req.report.id;
 
     try {
-      // Update result
-      const createdAlterations = await db.models.alterations.create(req.body);
+      // create record
+      const createdAlt = await db.models.alterations.create(alteration);
 
-      // Create DataHistory entry
-      const dh = {
-        type: 'create',
-        pog_id: createdAlterations.pog_id,
-        table: db.models.alterations.getTableName(),
-        model: db.models.alterations.name,
-        entry: createdAlterations.ident,
-        previous: null,
-        new: 0,
-        user_id: req.user.id,
-        comment: req.body.comment,
-      };
+      // record create change history
+      const changeHistorySuccess = await reportChangeHistory.recordCreate(createdAlt.ident, 'alterations', req.user.id, req.report.id, 'alteration');
 
-      await db.models.POGDataHistory.create(dh);
+      if (!changeHistorySuccess) {
+        logger.error(`Failed to record report change history for creation of alteration with ident ${createdAlt.ident}.`);
+      }
 
-      // Send back newly created/updated result.
-      return res.json(createdAlterations);
+      // send back created record
+      return res.json(createdAlt);
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'}});
+      const errMessage = `An error occurred while creating alteration: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   });
 
