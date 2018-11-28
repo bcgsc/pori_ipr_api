@@ -1,4 +1,4 @@
-// Set Env
+// Environment should always be set to local so bamboo can execute tests during builds
 process.env.NODE_ENV = 'local';
 
 // Dependencies
@@ -52,15 +52,16 @@ describe('IPR API', () => {
     server.close();
   });
 
-  // Utilities
+  /* Utilities Tests */
   require('./utilities/pyToSql');
   require('./utilities/remapKeys');
 
-  // Reports Tests
-  // require('./reports/reports');
+  /* Reports Tests */
   require('./reports/reportChangeHistory');
+  // Probe (Targeted Gene) Report Tests
   require('./reports/probe/alterations');
+  // Genomic Report Tests
 
-  // Tracking Tests
+  /* Tracking Tests */
   require('./tracking/state');
 });

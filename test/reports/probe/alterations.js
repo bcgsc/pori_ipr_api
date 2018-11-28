@@ -8,7 +8,7 @@ const api = supertest('http://localhost:8081');
 
 let testReport;
 
-describe('Load Genomic Report', () => {
+describe('Test alteration endpoints', () => {
   let alteration = {};
 
   it('Should successfully create a new alteration and record change history', async () => {
