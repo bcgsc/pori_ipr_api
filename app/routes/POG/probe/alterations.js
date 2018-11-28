@@ -108,7 +108,9 @@ router.route('/:alteration([A-z0-9-]{36})')
 
       return res.json({success: true});
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
+      const errMessage = `An error occurred while deleting alteration: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   });
 
