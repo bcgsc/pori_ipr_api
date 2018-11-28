@@ -44,7 +44,9 @@ module.exports = {
       await db.models.report_change_history.create(reportChangeHistory);
       return true;
     } catch (err) {
+      // change history wasn't generated properly, log fields needed to backfill if necessary
       logger.error(`An error occurred while generating change history records: ${err}`);
+      logger.error(`Backfill information: ${JSON.stringify(changeHistory)}`);
       return false;
     }
   },
@@ -95,7 +97,9 @@ module.exports = {
       await db.models.report_change_history.create(reportChangeHistory);
       return true;
     } catch (err) {
+      // change history wasn't generated properly, log fields needed to backfill if necessary
       logger.error(`An error occurred while generating change history records: ${err}`);
+      logger.error(`Backfill information: ${JSON.stringify(changeHistory)}`);
       return false;
     }
   },
@@ -142,7 +146,9 @@ module.exports = {
       await db.models.report_change_history.create(reportChangeHistory);
       return true;
     } catch (err) {
+      // change history wasn't generated properly, log fields needed to backfill if necessary
       logger.error(`An error occurred while generating change history records: ${err}`);
+      logger.error(`Backfill information: ${JSON.stringify(changeHistory)}`);
       return false;
     }
   },
