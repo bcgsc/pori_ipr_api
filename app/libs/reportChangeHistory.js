@@ -235,7 +235,6 @@ module.exports = {
               changeHistoryEvent.display_name
             );
 
-            
             // all records should have an ident, something went wrong if this field doesn't match
             if (insertedRecord.ident !== changeHistoryEvent.deleted_content.ident) errorMessages.push(`Record with ident ${insertedRecord.ident} in table ${changeHistoryEvent.table_name} was not recreated properly`);
             if (!recordCreateSuccess) errorMessages.push(`Failed to record change history event for creating record with ident ${insertedRecord.ident} in table ${changeHistoryEvent.table_name}`);

@@ -56,7 +56,8 @@ const createTestAnalysis = async () => {
   return testAnalysis;
 };
 
-const createTestGenomicReport = async () => {
+const createTestReport = async (reportType) => {
+  if (!['genomic', 'probe'].includes(reportType)) throw new Error('reportType must be one of \'genomic\' or \'probe\'');
   const testAnalysis = await createTestAnalysis();
 
   let reportIdent = '';
@@ -70,28 +71,7 @@ const createTestGenomicReport = async () => {
     ident: reportIdent,
     analysis_id: testAnalysis.id,
     pog_id: testAnalysis.pog_id,
-    type: 'genomic',
-  };
-
-  const testReport = await db.models.analysis_report.create(report);
-  return testReport;
-};
-
-const createTestTargetedGeneReport = async () => {
-  const testAnalysis = await createTestAnalysis();
-
-  let reportIdent = '';
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVQXYZ0123456789';
-
-  for (let i = 0; i < 5; i++) {
-    reportIdent += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-
-  const report = {
-    ident: reportIdent,
-    analysis_id: testAnalysis.id,
-    pog_id: testAnalysis.pog_id,
-    type: 'probe',
+    type: reportType,
   };
 
   const testReport = await db.models.analysis_report.create(report);
@@ -104,6 +84,5 @@ module.exports = {
   deleteTestTrackingStates,
   createTestPatient,
   createTestAnalysis,
-  createTestGenomicReport,
-  createTestTargetedGeneReport,
+  createTestReport,
 };

@@ -11,7 +11,7 @@ let testReport;
 describe('Test alteration endpoints', () => {
   let alteration = {};
 
-  it('Should successfully create a new alteration and record change history', async () => {
+  it('Should successfully create a new targeted gene alteration and record change history', async () => {
     const newAlt = {
       alterationType: 'novel',
       gene: 'testingAlterationCreate',
@@ -46,7 +46,7 @@ describe('Test alteration endpoints', () => {
     expect(changeHistory.entry_ident).to.equal(alteration.ident);
   });
 
-  it('Should successfully update an alteration and record change history', async () => {
+  it('Should successfully update a targeted gene alteration and record change history', async () => {
     const patient = await db.models.POG.findOne({where: {id: testReport.pog_id}});
 
     const updateAlt = {
@@ -81,7 +81,7 @@ describe('Test alteration endpoints', () => {
     expect(changeHistory.comment).to.equal(updateAlt.comment);
   });
 
-  it('Should successfully delete an alteration and record change history', async () => {
+  it('Should successfully delete a targeted gene alteration and record change history', async () => {
     const patient = await db.models.POG.findOne({where: {id: testReport.pog_id}});
 
     const deleteAlt = {
@@ -120,7 +120,7 @@ describe('Test alteration endpoints', () => {
 
   before(async () => {
     // create test report
-    testReport = await testData.createTestTargetedGeneReport();
+    testReport = await testData.createTestReport('probe');
   });
 
   after(async () => {
