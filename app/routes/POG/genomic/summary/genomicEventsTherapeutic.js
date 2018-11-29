@@ -5,10 +5,10 @@ const reportChangeHistory = require('../../../../../app/libs/reportChangeHistory
 const router = express.Router({mergeParams: true});
 const {logger} = process;
 
-router.param('gene', async (req, res, next, altIdent) => {
+router.param('gene', async (req, res, next, geneIdent) => {
   try {
     // Look for gene w/ matching ident
-    const event = await db.models.genomicEventsTherapeutic.scope('public').findOne({where: {ident: altIdent}});
+    const event = await db.models.genomicEventsTherapeutic.scope('public').findOne({where: {ident: geneIdent}});
 
     if (!event) throw new Error('notFoundError'); // no event found
 
@@ -25,7 +25,7 @@ router.param('gene', async (req, res, next, altIdent) => {
       returnMessage = 'therapeutic event could not be found';
     }
 
-    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find therapeutic event with ident ${altIdent}: ${returnMessage}`}});
+    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find therapeutic event with ident ${geneIdent}: ${returnMessage}`}});
   }
 });
 

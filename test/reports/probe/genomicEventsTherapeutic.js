@@ -1,7 +1,7 @@
 const chai = require('chai');
 const supertest = require('supertest');
-const testData = require('../../../setupTestData.js');
-const db = require('../../../../app/models');
+const testData = require('../../setupTestData.js');
+const db = require('../../../app/models');
 
 const {expect} = chai;
 const api = supertest('http://localhost:8081');
@@ -9,7 +9,7 @@ const api = supertest('http://localhost:8081');
 let testReport;
 let event = {};
 
-describe('Test genomic events therapeutic in genomic report endpoints', () => {
+describe('Test genomic events therapeutic in targeted gene report endpoints', () => {
   it('Should successfully update a genomic therapeutic event and record change history', async () => {
     const patient = await db.models.POG.findOne({where: {id: testReport.pog_id}});
 
@@ -18,7 +18,7 @@ describe('Test genomic events therapeutic in genomic report endpoints', () => {
       comment: 'testing genomic events therapeutic update',
     };
 
-    const res = await api.put(`/api/1.0/POG/${patient.POGID}/report/${testReport.ident}/genomic/summary/genomicEventsTherapeutic/${event.ident}`)
+    const res = await api.put(`/api/1.0/POG/${patient.POGID}/report/${testReport.ident}/probe/genomicEventsTherapeutic/${event.ident}`)
       .set('Authorization', 'Basic bm1hcnRpbjooe31vKzBjTmY=')
       .send(updateEvent);
 
@@ -53,7 +53,7 @@ describe('Test genomic events therapeutic in genomic report endpoints', () => {
       comment: 'testing genomic events therapeutic delete',
     };
 
-    const res = await api.delete(`/api/1.0/POG/${patient.POGID}/report/${testReport.ident}/genomic/summary/genomicEventsTherapeutic/${event.ident}`)
+    const res = await api.delete(`/api/1.0/POG/${patient.POGID}/report/${testReport.ident}/probe/genomicEventsTherapeutic/${event.ident}`)
       .set('Authorization', 'Basic bm1hcnRpbjooe31vKzBjTmY=')
       .send(deleteEvent);
 
@@ -93,6 +93,7 @@ describe('Test genomic events therapeutic in genomic report endpoints', () => {
       genomicEvent: 'aTestGenomicTherapeuticEvent',
       pog_report_id: testReport.id,
       pog_id: testReport.pog_id,
+      reportType: 'probe',
     };
     event = await db.models.genomicEventsTherapeutic.create(newEvent);
   });

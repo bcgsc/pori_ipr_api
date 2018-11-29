@@ -1,13 +1,14 @@
 const express = require('express');
 const db = require('../../../../app/models');
-const versionDatum = require('../../../../app/libs/VersionDatum');
+const reportChangeHistory = require('../../../../app/libs/reportChangeHistory');
 
+const {logger} = process;
 const router = express.Router({mergeParams: true});
 
-router.param('gene', async (req, res, next, altIdent) => {
+router.param('gene', async (req, res, next, geneIdent) => {
   try {
     // Get events for this report
-    const event = await db.models.genomicEventsTherapeutic.scope('public').findOne({where: {ident: altIdent, reportType: 'probe'}});
+    const event = await db.models.genomicEventsTherapeutic.scope('public').findOne({where: {ident: geneIdent, reportType: 'probe'}});
 
     if (!event) throw new Error('notFoundError'); // no event found
 
@@ -24,7 +25,7 @@ router.param('gene', async (req, res, next, altIdent) => {
       returnMessage = 'event could not be found';
     }
 
-    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find events with ident ${altIdent}: ${returnMessage}`}});
+    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find events with ident ${geneIdent}: ${returnMessage}`}});
   }
 });
 
@@ -32,24 +33,70 @@ router.param('gene', async (req, res, next, altIdent) => {
 router.route('/:gene([A-z0-9-]{36})')
   .get((req, res) => res.json(req.event))
   .put(async (req, res) => {
+    // specify editable fields
+    const editable = ['genomicEvent', 'approvedThisCancerType', 'approvedOtherCancerType', 'emergingPreclinicalEvidence', 'comments'];
+    const editableErr = [];
+
+    const updateEvent = {}; // set up object for updating fields
+    const oldEvent = req.event;
+    const newEvent = req.body;
+
+    for (const field in newEvent) {
+      if (newEvent[field]) {
+        const fieldValue = newEvent[field];
+        if (fieldValue !== oldEvent[field] && field !== 'comment') {
+          if (!editable.includes(field)) editableErr.push(field); // check if user is editing a non-editable field
+          updateEvent[field] = fieldValue;
+        }
+      }
+    }
+
+    if (editableErr.length > 0) return res.status(400).json({error: {message: `The following alteration fields are not editable: ${editableErr.join(', ')}`}});
+
     try {
-      // Update DB Version for Entry
-      const version = await versionDatum(db.models.genomicEventsTherapeutic, req.event, req.body, req.user);
-      return res.json(version.data.create);
+      // Update entry
+      const update = await db.models.genomicEventsTherapeutic.update(updateEvent, {where: {ident: oldEvent.ident}, returning: true});
+      const updatedEvent = update[1][0];
+
+      // Record change history for each field updated
+      for (const field in updateEvent) {
+        if (updateEvent[field]) {
+          const changeHistorySuccess = await reportChangeHistory.recordUpdate(updatedEvent.ident, 'genomicEventsTherapeutic', field, oldEvent[field], updateEvent[field], req.user.id, updatedEvent.pog_report_id, 'genomic events therapeutic', req.body.comment);
+
+          if (!changeHistorySuccess) {
+            logger.error(`Failed to record report change history for updating alteration with ident ${updatedEvent.ident}.`);
+          }
+        }
+      }
+
+      return res.json(updatedEvent);
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedGenomicEventsTherapeuticVersion'}});
+      const errMessage = `An error occurred while updating alteration: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   })
   .delete(async (req, res) => {
     try {
-      // Soft delete the entry
-      // Update result
-      await db.models.genomicEventsTherapeutic.destroy({where: {ident: req.event.ident}});
+      // get alteration record to store in change history
+      const deletedEvent = await db.models.genomicEventsTherapeutic.findOne({where: {ident: req.event.ident}});
+      delete deletedEvent.id;
 
-      // Return success
-      return res.status(204);
+      // force delete entry
+      await db.models.genomicEventsTherapeutic.destroy({where: {ident: req.event.ident}, force: true});
+
+      // record change history
+      const changeHistorySuccess = await reportChangeHistory.recordDelete(deletedEvent.ident, 'genomicEventsTherapeutic', deletedEvent, req.user.id, deletedEvent.pog_report_id, 'genomic events therapeutic', req.body.comment);
+
+      if (!changeHistorySuccess) {
+        logger.error(`Failed to record report change history for deleting therapeutic event with ident ${deletedEvent.ident}.`);
+      }
+
+      return res.json({success: true});
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedGenomicEventsTherapeuticRemove'}});
+      const errMessage = `An error occurred while deleting therapeutic event: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   });
 
