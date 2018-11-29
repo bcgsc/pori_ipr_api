@@ -6,7 +6,6 @@ const Tracking = require('../modules/tracking/routing');
 const Notification = require('../modules/notification/routing');
 const GeneViewer = require('../modules/geneViewer/routing');
 const Analysis = require('../modules/analysis/routing');
-const RecentReports = require('../modules/recentReports/routing');
 const GermlineReports = require('../modules/germine_small_mutation/routing');
 const GermlineReportsExport = require('../modules/germine_small_mutation/routing/export.route');
 const SocketAuth = require('../middleware/socketAuth');
@@ -101,19 +100,13 @@ class Routing extends RouterInterface {
   
       this.bindRouteObject('/analysis', AnalysisRoutes.getRouter());
   
-      // Get Recent Reports Routes
-      let RecentReports = require('../modules/recentReports/routing');
-      let RecentReportsRoutes = new RecentReports(this.io);
-  
-      this.bindRouteObject('/analysis_reports/recent/', RecentReportsRoutes.getRouter());
-  
-      // Get Recent Reports Routes
+      // Get Germline Reports Routes
       let Germline_Reports = require('../modules/germine_small_mutation/routing');
       let GermlineReportsRoutes = new Germline_Reports(this.io);
   
       this.bindRouteObject('/germline_small_mutation', GermlineReportsRoutes.getRouter());
   
-      // Get Recent Reports Routes
+      // Get Export Germline Reports Routes
       let Germline_Reports_Export = require('../modules/germine_small_mutation/routing/export.route');
       let GermlineReportsExportRoutes = new Germline_Reports_Export(this.io);
   
@@ -206,17 +199,12 @@ class Routing extends RouterInterface {
 
             this.bindRouteObject('/analysis', AnalysisRoutes.getRouter());
 
-            // Get Recent Reports Routes
-            const RecentReportsRoutes = new RecentReports(this.io);
-
-            this.bindRouteObject('/analysis_reports/recent/', RecentReportsRoutes.getRouter());
-
-            // Get Recent Reports Routes
+            // Get Germline Reports Routes
             const GermlineReportsRoutes = new GermlineReports(this.io);
 
             this.bindRouteObject('/germline_small_mutation', GermlineReportsRoutes.getRouter());
 
-            // Get Recent Reports Routes
+            // Get Export Germline Reports Routes
             const GermlineReportsExportRoutes = new GermlineReportsExport(this.io);
 
             this.bindRouteObject('/export/germline_small_mutation', GermlineReportsExportRoutes.getRouter());

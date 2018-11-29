@@ -1,125 +1,122 @@
-"use strict";
-
-module.exports = (sequelize, Sq) => {
-  return sequelize.define('alterations', {
+module.exports = (sequelize, Sq) => sequelize.define('alterations', {
     id: {
-      type: Sq.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
+        type: Sq.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
     },
     ident: {
-      type: Sq.UUID,
-      unique: false,
-      defaultValue: Sq.UUIDV4
+        type: Sq.UUID,
+        unique: false,
+        defaultValue: Sq.UUIDV4,
     },
     dataVersion: {
-      type: Sq.INTEGER,
-      defaultValue: 0,
+        type: Sq.INTEGER,
+        defaultValue: 0,
     },
     pog_id: {
-      type: Sq.INTEGER,
-      references: {
-        model: 'POGs',
-        key: 'id',
-      }
+        type: Sq.INTEGER,
+        references: {
+            model: 'POGs',
+            key: 'id',
+        },
     },
     pog_report_id: {
-      type: Sq.INTEGER,
-      references: {
-        model: 'pog_analysis_reports',
-        key: 'id',
-      }
+        type: Sq.INTEGER,
+        references: {
+            model: 'pog_analysis_reports',
+            key: 'id',
+        },
     },
     reportType: {
-      type: Sq.ENUM('genomic', 'probe'),
-      defaultValue: 'genomic'
+        type: Sq.ENUM('genomic', 'probe'),
+        defaultValue: 'genomic',
     },
     alterationType: {
-      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown'),
-      allowNull: false
+        type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel'),
+        allowNull: false,
     },
     newEntry: {
-      type: Sq.BOOLEAN,
-      defaultValue: true,
+        type: Sq.BOOLEAN,
+        defaultValue: true,
     },
     approvedTherapy: {
-      type: Sq.TEXT,
-      allowNull: true,
-      defaultValue: null
+        type: Sq.TEXT,
+        allowNull: true,
+        defaultValue: null,
     },
     gene: {
-      type: Sq.TEXT
+        type: Sq.TEXT,
     },
     variant: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     kbVariant: {
-      type: Sq.TEXT
+        type: Sq.TEXT,
     },
     disease: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     effect: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     association: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     therapeuticContext: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     status: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     reference: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     expression_tissue_fc: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     expression_cancer_percentile: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     copyNumber: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     sample: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     LOHRegion: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     zygosity: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     evidence: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     matched_cancer: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     pmid_ref: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     variant_type: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     kb_type: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     kb_entry_type: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     kb_event_key: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     kb_entry_key: {
-      type: Sq.TEXT,
+        type: Sq.TEXT,
     },
     kb_data: {
-      type: Sq.JSONB
-    }
-  }, {
+        type: Sq.JSONB,
+    },
+}, {
     // Table Name
     tableName: 'pog_analysis_reports_dga_alterations',
     // Automatically create createdAt, updatedAt, deletedAt
@@ -127,10 +124,8 @@ module.exports = (sequelize, Sq) => {
     // Use soft-deletes!
     paranoid: true,
     scopes: {
-      public: {
-        attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']}
-      }
-    }
-  });
-};
-
+        public: {
+            attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']},
+        },
+    },
+});
