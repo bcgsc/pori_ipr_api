@@ -62,6 +62,7 @@ describe('IPR API', () => {
   require('./reports/probe/alterations');
   // Genomic Report Tests
   require('./reports/genomic/detailedGenomicAnalysis');
+  require('./reports/genomic/summary/genomicAlterationsIdentified');
 
   /* Tracking Tests */
   require('./tracking/state');
