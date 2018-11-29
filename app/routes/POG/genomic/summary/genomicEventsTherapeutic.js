@@ -1,84 +1,83 @@
-// app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-    router = express.Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models'),
-    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
-    
-let model = db.models.genomicEventsTherapeutic;
+const express = require('express');
+const db = require('../../../../../app/models');
+const versionDatum = require('../../../../../app/libs/VersionDatum');
 
-router.param('gene', (req,res,next,altIdent) => {
-   model.scope('public').findOne({ where: {ident: altIdent},}).then(
-      (result) => {
-        if(result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedGenomicEventsTherapeuticLookup'} });
-        
-        req.event = result;
-        next();
-        
-      },
-      (error) => {
-        return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedGenomicEventsTherapeuticQuery'} });
-      }
-    );
+const router = express.Router({mergeParams: true});
+const {logger} = process;
+const model = db.models.genomicEventsTherapeutic;
+
+router.param('gene', async (req, res, next, altIdent) => {
+  try {
+    // Look for gene w/ matching ident
+    const event = await db.models.genomicEventsTherapeutic.scope('public').findOne({where: {ident: altIdent}});
+
+    if (!event) throw new Error('notFoundError'); // no event found
+
+    // event found, set request param
+    req.event = event;
+    return next();
+  } catch (err) {
+    // set default return status and message
+    let returnStatus = 500;
+    let returnMessage = err.message;
+
+    if (err.message === 'notFoundError') { // return 404 error - event could not be found
+      returnStatus = 404;
+      returnMessage = 'therapeutic event could not be found';
+    }
+
+    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find therapeutic event with ident ${altIdent}: ${returnMessage}`}});
+  }
 });
 
 // Handle requests for events
 router.route('/:gene([A-z0-9-]{36})')
-  .get((req,res,next) => {
-    
-    res.json(req.event);
-    
-  })
-  .put((req,res,next) => {
-
+  .get((req, res) => res.json(req.event))
+  .put((req, res) => {
     // Update DB Version for Entry
     versionDatum(model, req.event, req.body, req.user).then(
       (resp) => {
         res.json(resp.data.create);
       },
       (error) => {
-        console.log(error);
+        logger.error(error);
         res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedMutationSummaryVersion'}});
       }
     );
-    
   })
-  .delete((req,res,next) => {
+  .delete((req, res) => {
     // Soft delete the entry
     // Update result
-    model.destroy({ where: {ident: req.event.ident}}).then(
-      (result) => {
+    model.destroy({where: {ident: req.event.ident}}).then(
+      () => {
         // Return success
         res.status(204);
       },
-      (error) => {
-        res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedGenomicEventsTherapeuticRemove'} });
+      () => {
+        res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedGenomicEventsTherapeuticRemove'}});
       }
     );
-      
-          
   });
 
 // Routing for event
 router.route('/')
-  .get((req,res,next) => {
-    
-    let options = {
+  .get((req, res) => {
+    const options = {
       where: {
-        pog_report_id: req.report.id
+        pog_report_id: req.report.id,
       },
     };
-    
+
     // Get all rows for this POG
     model.scope('public').findAll(options).then(
       (result) => {
         res.json(result);
       },
       (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedGenomicEventsTherapeuticQuery'} });
+        logger.error(error);
+        res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedGenomicEventsTherapeuticQuery'}});
       }
     );
-      
   });
-  
+
 module.exports = router;
