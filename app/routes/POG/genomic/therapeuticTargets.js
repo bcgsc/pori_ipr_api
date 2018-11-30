@@ -119,7 +119,6 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // TODO: Track change history for creating therapeutic targets
     // Create new entry
     req.body.pog_id = req.POG.id;
     req.body.pog_report_id = req.report.id;
