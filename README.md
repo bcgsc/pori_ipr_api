@@ -145,7 +145,7 @@ The production installation of IPR is run & managed by a [pm2](http://pm2.keymet
 
 As of this writing, pm2 is instantiated by bpierce, and as a result, the processes it manages execute as bpierce.
 
-To interact with pm2, ssh to iprweb03 and cd to `/var/www/ipr/api/[production]`. From here, running pm2 will list the running instances:
+To interact with pm2, ssh to iprweb03 and cd to `/var/www/ipr/api/production`. From here, running pm2 will list the running instances:
 
 ```
 bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
