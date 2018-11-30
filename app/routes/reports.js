@@ -126,6 +126,7 @@ router.route('/:report')
     res.json(req.report);
   })
   .put(async (req, res) => {
+    // TODO: Track change history for updating report status
     const pastState = req.report.state;
 
     // Update Report

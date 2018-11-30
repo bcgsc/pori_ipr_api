@@ -12,6 +12,7 @@ router.use('/', async (req, res, next) => {
     // Get analyst comments for this report
     const analystComments = await db.models.analystComments.findOne({where: {pog_report_id: req.report.id}});
 
+    // TODO: Once PUT and POST requests have been correctly separated from each other - this should return a 404 if not found
     if (!analystComments) return next(); // don't throw error if none found
 
     // analyst comments found, set request param
@@ -30,6 +31,7 @@ router.use('/', async (req, res, next) => {
 router.route('/')
   .get((req, res) => res.json(req.analystComments))
   .put(async (req, res) => {
+    // TODO: PUT requests should not handle both creation and updates - move creation to POST request.
     const oldComments = req.analystComments;
     const newComments = req.body;
     newComments.pog_id = req.POG.id;

@@ -32,6 +32,7 @@ router.param('target', async (req, res, next, targetIdent) => {
 router.route('/:target([A-z0-9-]{36})')
   .get((req, res) => res.json(req.target))
   .put(async (req, res) => {
+    // TODO: Track change history for updating therapeutic targets
     req.body.ident = req.target.ident;
 
     try {
@@ -43,6 +44,7 @@ router.route('/:target([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
+    // TODO: Track change history for deleting therapeutic targets
     try {
       // Soft delete the entry
       // Update result
@@ -82,6 +84,7 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
+    // TODO: Track change history for creating therapeutic targets
     // Create new entry
     req.body.pog_id = req.POG.id;
     req.body.pog_report_id = req.report.id;

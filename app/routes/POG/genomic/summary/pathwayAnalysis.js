@@ -12,6 +12,8 @@ router.use('/', async (req, res, next) => {
     // Get pathway analysis for this report
     const pathwayAnalysis = await db.models.pathwayAnalysis.findOne({where: {pog_report_id: req.report.id}, order: '"dataVersion" DESC', attributes: {exclude: ['id', 'deletedAt']}});
 
+    // TODO: Once PUT and POST requests have been correctly separated from each other - this should return a 404 if not found
+    // Note that client will likely need to be updated to handle the 404 error
     if (!pathwayAnalysis) {
       req.pathwayAnalysis = null;
       return next(); // don't throw error if none found
@@ -33,6 +35,7 @@ router.use('/', async (req, res, next) => {
 router.route('/')
   .get((req, res) => res.json(req.pathwayAnalysis))
   .put(async (req, res) => {
+    // TODO: PUT requests should not handle both creation and updates - move creation to POST request.
     const oldPathway = req.pathwayAnalysis;
     const newPathway = {
       pathway: req.files.pathway.data.toString(),
