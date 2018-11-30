@@ -42,6 +42,7 @@ router.route('/:target([A-z0-9-]{36})')
       const oldTarget = await db.models.therapeuticTarget.findOne({where: {ident: req.target.ident}});
       const newTarget = req.body;
       newTarget.ident = req.target.ident;
+      // TODO: Fix client to not pass in the fields below in request (should not be editable)
       delete newTarget.createdAt;
       delete newTarget.updatedAt;
 

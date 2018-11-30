@@ -1,8 +1,9 @@
 const express = require('express');
 const db = require('../../../../../app/models');
-const versionDatum = require('../../../../../app/libs/VersionDatum');
+const reportChangeHistory = require('../../../../../app/libs/reportChangeHistory');
 
 const router = express.Router({mergeParams: true});
+const {logger} = process;
 
 // Middleware for Tumour Analysis
 router.use('/', async (req, res, next) => {
@@ -33,13 +34,55 @@ router.use('/', async (req, res, next) => {
 router.route('/')
   .get((req, res) => res.json(req.tumourAnalysis))
   .put(async (req, res) => {
-    // TODO: Track change history for updating tumour analysis records
+    // specify editable fields
+    const editable = ['tumourContent', 'ploidy', 'normalExpressionComparator', 'diseaseExpressionComparator', 'subtyping', 'tcgaColor', 'mutationSignature'];
+    const editableErr = [];
+
+    const updateTumourAnalysis = {}; // set up object for updating fields
+    const oldTumourAnalysis = req.tumourAnalysis;
+    const newTumourAnalysis = req.body;
+    // TODO: Fix client to not pass in the fields below in request (should not be editable)
+    delete newTumourAnalysis.createdAt;
+    delete newTumourAnalysis.updatedAt;
+
     try {
-      // Update DB Version for Entry
-      const version = await versionDatum(db.models.tumourAnalysis, req.tumourAnalysis, req.body, req.user, req.body.comment);
-      return res.json(version.data.create);
+      for (const field in newTumourAnalysis) {
+        if (newTumourAnalysis[field]) {
+          const fieldValue = newTumourAnalysis[field];
+          if (fieldValue !== oldTumourAnalysis[field] && field !== 'comment') {
+            if (!editable.includes(field)) editableErr.push(field); // check if user is editing a non-editable field
+            updateTumourAnalysis[field] = fieldValue;
+          }
+        }
+      }
+
+      if (editableErr.length > 0) return res.status(400).json({error: {message: `The following tumour analysis fields are not editable: ${editableErr.join(', ')}`}});
+
+      // Update entry
+      const update = await db.models.tumourAnalysis.update(updateTumourAnalysis, {where: {ident: oldTumourAnalysis.ident}, returning: true});
+      const updatedTumourAnalysis = update[1][0];
+
+      // Record change history for each field updated
+      for (const field in updateTumourAnalysis) {
+        if (updateTumourAnalysis[field]) {
+          // setup JSON objects to be stored in text field if necessary
+          let oldTumourAnalysisValue = oldTumourAnalysis[field];
+          let newTumourAnalysisValue = updateTumourAnalysis[field];
+          if (typeof oldTumourAnalysisValue === 'object') oldTumourAnalysisValue = JSON.stringify(oldTumourAnalysisValue);
+          if (typeof newTumourAnalysisValue === 'object') newTumourAnalysisValue = JSON.stringify(newTumourAnalysisValue);
+          const changeHistorySuccess = await reportChangeHistory.recordUpdate(updatedTumourAnalysis.ident, 'tumourAnalysis', field, oldTumourAnalysisValue, newTumourAnalysisValue, req.user.id, updatedTumourAnalysis.pog_report_id, 'tumour analysis', req.body.comment);
+
+          if (!changeHistorySuccess) {
+            logger.error(`Failed to record report change history for updating tumour analysis with ident ${updatedTumourAnalysis.ident}.`);
+          }
+        }
+      }
+
+      return res.json(updatedTumourAnalysis);
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedTumourAnalysisVersion'}});
+      const errMessage = `An error occurred while updating tumour analysis: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   });
 
