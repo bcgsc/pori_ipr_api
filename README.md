@@ -37,14 +37,8 @@ NODE_ENV=[local|development|test|production] node bin/www
 
 If a new database installation is required:
 ```
-npm run migrate --database.migrate --database.hardMigrate
+NODE_ENV=[local|development|test|production] npm run migrate
 ```
-
-WARNING: Using the `--database.hardMigrate` flag will overwrite any existing data in the database. This flag will not
-execute in production mode.
-
-To create *new* tables only, run with the `--database.migrate` flag only or `npm run migrate` with the appropriate
-environment flag set.
 
 Please note that database migration will not execute alter statements (e.g. adding/editing columns on an existing table). These changes will need to be applied in the sequelize model as well as directly in the database itself to take effect.
 
@@ -130,8 +124,6 @@ The format for the file declares a configuration by environment:
 * `database` - Defines the DB settings
 * `engine` - The database engine/driver being used
 * `migrate` - Default state for migration settings - Keep to false! When true, SequelizeJS attempts to create tables according to the loaded schema
-* `hardMigrate` - When true, SequelizeJS will drop all tables and recreate based on the current loaded models.
-
 * `postgres` - Settings for Postgres engine
 * `hostname` - Hostname for the database server
 * `port` - Port to connect to the DB on
@@ -310,8 +302,7 @@ Merged BAMs have their own endpoint, and are easy to check via this endpoint. Th
 │   │                                   Location for all globally required middleware definitions.
 │   │
 │   ├── models                          # Models
-│   │                                   Application DB models. Sequelizejs models describe table schemas. On load, system reads in schemas
-│   │                                    and if --database.hardMigrate is defined on init, all current tables are dropped and redefined.
+│   │                                   Application DB models. Sequelizejs models describe table schemas. On load, system reads in schemas.
 │   │
 │   ├── migrations                      # Migrations
 │   │                                   Special one-use functions used to migrate data, and models to updated schemas.
