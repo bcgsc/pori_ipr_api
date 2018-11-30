@@ -58,6 +58,7 @@ describe('IPR API', () => {
 
   /* Reports Tests */
   require('./reports/reportChangeHistory');
+  require('./reports/reports');
   // Probe (Targeted Gene) Report Tests
   require('./reports/probe/alterations');
   require('./reports/probe/genomicEventsTherapeutic');

@@ -3,8 +3,10 @@ const _ = require('lodash');
 const db = require('../../app/models');
 const ACL = require('../../app/middleware/acl');
 const Report = require('../../app/libs/structures/analysis_report');
+const reportChangeHistory = require('../../app/libs/reportChangeHistory');
 
 const router = express.Router({mergeParams: true});
+const {logger} = process;
 
 // Register middleware
 router.param('POG', require('../../app/middleware/pog'));
@@ -126,7 +128,6 @@ router.route('/:report')
     res.json(req.report);
   })
   .put(async (req, res) => {
-    // TODO: Track change history for updating report status
     const pastState = req.report.state;
 
     // Update Report
@@ -138,21 +139,11 @@ router.route('/:report')
     try {
       await req.report.save();
 
-      // Add history record
-      // Create DataHistory entry
-      const dh = {
-        type: 'change',
-        pog_id: req.report.pog_id,
-        pog_report_id: req.report.id,
-        table: 'pog_analysis_reports',
-        model: 'analysis_report',
-        entry: req.report.ident,
-        previous: pastState,
-        new: req.report.state,
-        user_id: req.user.id,
-        comment: 'N/A',
-      };
-      db.models.pog_analysis_reports_history.create(dh);
+      // record change history if state has changed
+      if (pastState !== req.report.state) {
+        const changeHistorySuccess = await reportChangeHistory.recordUpdate(req.report.ident, 'analysis_report', 'state', pastState, req.report.state, req.user.id, req.report.id, 'state');
+        if (!changeHistorySuccess) logger.error(`Failed to record report change history for updating report with ident ${req.report.ident}.`);
+      }
 
       return res.json(req.report);
     } catch (err) {

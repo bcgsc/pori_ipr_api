@@ -13,8 +13,8 @@ module.exports = (sequelize, Sq) => sequelize.define('change_history', {
     type: Sq.ENUM('create', 'update', 'delete'),
   },
   entry_ident: {
-    type: Sq.UUID,
-    defaultValue: Sq.UUIDV4,
+    type: Sq.TEXT,
+    allowNull: false,
   },
   model_name: {
     type: Sq.TEXT,
