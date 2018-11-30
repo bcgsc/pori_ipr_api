@@ -1,9 +1,10 @@
 const express = require('express');
 const multer = require('multer');
 const db = require('../../../../../app/models');
-const versionDatum = require('../../../../../app/libs/VersionDatum');
+const reportChangeHistory = require('../../../../../app/libs/reportChangeHistory');
 
 const router = express.Router({mergeParams: true});
+const {logger} = process;
 
 // Middleware for pathway analysis
 router.use('/', async (req, res, next) => {
@@ -11,20 +12,18 @@ router.use('/', async (req, res, next) => {
     // Get pathway analysis for this report
     const pathwayAnalysis = await db.models.pathwayAnalysis.findOne({where: {pog_report_id: req.report.id}, order: '"dataVersion" DESC', attributes: {exclude: ['id', 'deletedAt']}});
 
-    if (!pathwayAnalysis) throw new Error('notFoundError'); // no pathway analysis found
+    if (!pathwayAnalysis) {
+      req.pathwayAnalysis = null;
+      return next(); // don't throw error if none found
+    }
 
     // pathway analysis found, set request param
     req.pathwayAnalysis = pathwayAnalysis;
     return next();
   } catch (err) {
     // set default return status and message
-    let returnStatus = 500;
-    let returnMessage = err.message;
-
-    if (err.message === 'notFoundError') { // return 404 error - pathway analysis could not be found
-      returnStatus = 404;
-      returnMessage = 'pathway analysis could not be found';
-    }
+    const returnStatus = 500;
+    const returnMessage = err.message;
 
     return res.status(returnStatus).json({error: {message: `An error occurred while trying to find pathway analysis for patient ${req.POG.POGID}: ${returnMessage}`}});
   }
@@ -34,68 +33,51 @@ router.use('/', async (req, res, next) => {
 router.route('/')
   .get((req, res) => res.json(req.pathwayAnalysis))
   .put(async (req, res) => {
-    // Updating?
-    if (!req.pathwayAnalysis) {
-      // Create
-      const request = {
-        pathway: req.files.pathway.data.toString(),
-        pog_report_id: req.report.id,
-        dataversion: 0,
-      };
+    const oldPathway = req.pathwayAnalysis;
+    const newPathway = {
+      pathway: req.files.pathway.data.toString(),
+    };
 
+    // If pathway analysis doesn't already exist, create new record
+    if (!oldPathway) {
       try {
+        newPathway.pog_report_id = req.report.id;
+        newPathway.pog_id = req.POG.id;
+
         // Create entry
-        const pathwayAnalysis = await db.models.pathwayAnalysis.create(request);
+        const pathwayAnalysis = await db.models.pathwayAnalysis.create(newPathway);
+
+        // record change history
+        const changeHistorySuccess = await reportChangeHistory.recordCreate(pathwayAnalysis.ident, 'pathwayAnalysis', req.user.id, pathwayAnalysis.pog_report_id, 'pathway analysis');
+
+        if (!changeHistorySuccess) {
+          logger.error(`Failed to record report change history for creating pathway analysis with ident ${pathwayAnalysis.ident}.`);
+        }
+
         return res.json(pathwayAnalysis);
       } catch (err) {
         return res.status(500).json({error: {message: 'Unable to createPathwayAnalysis', code: 'failedCreatePathwayAnalysis'}});
       }
     } else {
-      // Updating
-      const request = {
-        pathway: req.files.pathway.data.toString(),
-        pog_report_id: req.report.id,
-      };
-
-      // Remove current
-      req.pathwayAnalysis.pog_id = req.POG.id;
-      req.pathwayAnalysis.pog_report_id = req.report.id;
-
       try {
-        const version = await versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user);
-        return res.json(version.data.create);
+        // Update entry
+        const update = await db.models.pathwayAnalysis.update(newPathway, {where: {ident: oldPathway.ident}, returning: true});
+        const updatedPathway = update[1][0];
+
+        // Record change history for field updated
+        const changeHistorySuccess = await reportChangeHistory.recordUpdate(updatedPathway.ident, 'analystComments', 'pathway', oldPathway.pathway, updatedPathway.pathway, req.user.id, updatedPathway.pog_report_id, 'pathway analysis', req.body.comment);
+
+        if (!changeHistorySuccess) {
+          logger.error(`Failed to record report change history for updating pathway analysis with ident ${updatedPathway.ident}.`);
+        }
+
+        return res.json(updatedPathway);
       } catch (err) {
-        return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAnalystCommentVersion'}});
+        const errMessage = `An error occurred while updating pathway analysis: ${err.message}`; // set up error message
+        logger.error(errMessage); // log error
+        return res.status(500).json({error: {message: errMessage}}); // return error to client
       }
     }
-  })
-  .post((req, res) => {
-    // Accept file upload
-    multer({
-      limits: {
-        files: 1,
-      },
-      onFileUploadComplete: async (file) => {
-        // Is there an existing entry?
-        if (req.pathwayAnalysis === null) {
-          req.body.dataVersion = 0;
-          req.body.pog_id = req.POG.id;
-          req.body.pog_report_id = req.report.id;
-          req.body.pathway = file;
-
-          try {
-            // Create new entry
-            const pathwayAnalysis = await db.models.pathwayAnalysis.create(req.body);
-            return res.json(pathwayAnalysis);
-          } catch (err) {
-            return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPathwayAnaylsisCreate'}});
-          }
-        } else {
-          //
-          return res.json();
-        }
-      },
-    });
   });
 
 module.exports = router;
