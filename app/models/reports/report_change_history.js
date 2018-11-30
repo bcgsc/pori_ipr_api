@@ -1,4 +1,6 @@
-module.exports = (sequelize, Sq) => sequelize.define('report_change_history', {
+const Sq = require('sequelize');
+
+module.exports = sequelize => sequelize.define('report_change_history', {
   report_id: {
     type: Sq.INTEGER,
     allowNull: false,

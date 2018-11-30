@@ -1,4 +1,6 @@
-module.exports = (sequelize, Sq) => sequelize.define('change_history', {
+const Sq = require('sequelize');
+
+module.exports = sequelize => sequelize.define('change_history', {
   id: {
     type: Sq.INTEGER,
     autoIncrement: true,
