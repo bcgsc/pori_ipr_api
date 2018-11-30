@@ -1,4 +1,6 @@
-module.exports = (sequelize, Sq) => sequelize.define('userToken', {
+const Sq = require('sequelize');
+
+module.exports = sequelize => sequelize.define('userToken', {
   id: {
     type: Sq.INTEGER,
     autoIncrement: true,
