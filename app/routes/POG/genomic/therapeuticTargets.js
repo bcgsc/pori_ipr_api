@@ -1,8 +1,9 @@
 const express = require('express');
 const db = require('../../../../app/models');
-const versionDatum = require('../../../../app/libs/VersionDatum');
+const reportChangeHistory = require('../../../../app/libs/reportChangeHistory');
 
 const router = express.Router({mergeParams: true});
+const {logger} = process;
 
 router.param('target', async (req, res, next, targetIdent) => {
   try {
@@ -32,33 +33,67 @@ router.param('target', async (req, res, next, targetIdent) => {
 router.route('/:target([A-z0-9-]{36})')
   .get((req, res) => res.json(req.target))
   .put(async (req, res) => {
-    // TODO: Track change history for updating therapeutic targets
-    req.body.ident = req.target.ident;
-
     try {
-      // Update DB Version for Entry
-      const version = await versionDatum(db.models.therapeuticTarget, req.target, req.body, req.user, req.body.comment);
-      return res.json(version.data.create);
+      // specify editable fields
+      const editable = ['type', 'rank', 'target', 'targetContext', 'resistance', 'biomarker', 'notes'];
+      const editableErr = [];
+
+      const updateTarget = {}; // set up object for updating fields
+      const oldTarget = await db.models.therapeuticTarget.findOne({where: {ident: req.target.ident}});
+      const newTarget = req.body;
+      newTarget.ident = req.target.ident;
+      delete newTarget.createdAt;
+      delete newTarget.updatedAt;
+
+      for (const field in newTarget) {
+        if (newTarget[field]) {
+          const fieldValue = newTarget[field];
+          if (fieldValue !== oldTarget[field] && field !== 'comment') {
+            if (!editable.includes(field)) editableErr.push(field); // check if user is editing a non-editable field
+            updateTarget[field] = fieldValue;
+          }
+        }
+      }
+
+      if (editableErr.length > 0) return res.status(400).json({error: {message: `The following therapeutic target fields are not editable: ${editableErr.join(', ')}`}});
+
+      // Update entry
+      const update = await db.models.therapeuticTarget.update(updateTarget, {where: {ident: oldTarget.ident}, returning: true});
+      const updatedTarget = update[1][0];
+
+      // Record change history for each field updated
+      for (const field in updateTarget) {
+        if (updateTarget[field]) {
+          // setup JSON objects to be stored in text field if necessary
+          let oldTargetValue = oldTarget[field];
+          let newTargetValue = updateTarget[field];
+          if (typeof oldTargetValue === 'object') oldTargetValue = JSON.stringify(oldTargetValue);
+          if (typeof newTargetValue === 'object') newTargetValue = JSON.stringify(newTargetValue);
+          const changeHistorySuccess = await reportChangeHistory.recordUpdate(updatedTarget.ident, 'therapeuticTarget', field, oldTargetValue, newTargetValue, req.user.id, updatedTarget.pog_report_id, 'therapeutic target', req.body.comment);
+
+          if (!changeHistorySuccess) {
+            logger.error(`Failed to record report change history for updating therapeutic target with ident ${updatedTarget.ident}.`);
+          }
+        }
+      }
+
+      return res.json(updatedTarget);
     } catch (err) {
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedTherapeuticTargetVersion'}});
+      const errMessage = `An error occurred while updating therapeutic target: ${err.message}`; // set up error message
+      logger.error(errMessage); // log error
+      return res.status(500).json({error: {message: errMessage}}); // return error to client
     }
   })
   .delete(async (req, res) => {
-    // TODO: Track change history for deleting therapeutic targets
     try {
-      // Soft delete the entry
-      // Update result
-      await db.models.therapeuticTarget.destroy({where: {ident: req.target.ident}});
-      await db.models.POGDataHistory.create({
-        pog_id: req.POG.id,
-        type: 'remove',
-        table: db.models.therapeuticTarget.getTableName(),
-        model: db.models.therapeuticTarget.name,
-        entry: req.target.ident,
-        previous: req.target.dataVersion,
-        user_id: req.user.id,
-        comment: req.body.comment,
-      });
+      const deletedContent = req.target; // get record to be deleted for change history
+      // force delete therapeutic target
+      await db.models.therapeuticTarget.destroy({where: {ident: req.target.ident}, force: true});
+
+      // record change history
+      const changeHistorySuccess = await reportChangeHistory.recordDelete(deletedContent.ident, 'therapeuticTarget', deletedContent, req.user.id, req.report.id, 'therapeutic target', req.body.comment);
+
+      if (!changeHistorySuccess) logger.error(`Failed to record report change history for deleting therapeutic target with ident ${deletedContent.ident}.`);
 
       return res.json({success: true});
     } catch (err) {
@@ -91,19 +126,10 @@ router.route('/')
 
     try {
       const therapeuticTarget = await db.models.therapeuticTarget.create(req.body);
-      // Create DataHistory entry
-      const dh = {
-        type: 'create',
-        pog_id: therapeuticTarget.pog_id,
-        table: db.models.therapeuticTarget.getTableName(),
-        model: db.models.therapeuticTarget.name,
-        entry: therapeuticTarget.ident,
-        previous: null,
-        new: 0,
-        user_id: req.user.id,
-        comment: req.body.comment,
-      };
-      await db.models.POGDataHistory.create(dh);
+
+      // track change history
+      const changeHistorySuccess = await reportChangeHistory.recordCreate(therapeuticTarget.ident, 'therapeuticTarget', req.user.id, therapeuticTarget.pog_report_id, 'therapeutic target');
+      if (!changeHistorySuccess) logger.error(`Failed to record report change history for updating therapeutic target with ident ${therapeuticTarget.ident}.`);
 
       return res.json(therapeuticTarget);
     } catch (err) {
