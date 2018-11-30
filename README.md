@@ -3,7 +3,7 @@
 
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
-The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
+The Integrated pipeline reports API manages data access to the IPR databases on seqdevdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic and probe reports, POG sample tracking, 
 POG Biopsy tracking, Germline Small Mutation reports, and legacy Knowledgebase.
 
@@ -11,46 +11,15 @@ An integrated data synchronization application runs concurrently with the API in
 The sync-worker is responsible for regularly checking in with LIMS and BioApps to keep sample tracking
 tasks up to date. 
 
-#### Installation
+#### Getting Started
 ======================================
 
-After cloning the repository, the application's dependencies need to be installed:
+After cloning the repository, the application's dependecies need to be installed. cd into the root of the project and run the following command:
 ```
 npm install
 ```
 
-This process can take between 1-5 minutes depending on caches, and connection speed. Once NPM has finished installing
-all required dependencies, the server can be started with the following command:
-```
-NODE_ENV=[local|development|test|production] npm start
-```
-
-To start the synchronizer server, run the following command:
-```
-NODE_ENV=[local|development|test|production] npm run sync
-```
-
-If NPM is not available, the application server can be booted by executing through node directly:
-```
-NODE_ENV=[local|development|test|production] node bin/www
-```
-
-If a new database installation is required:
-```
-NODE_ENV=[local|development|test|production] npm run migrate
-```
-
-Please note that database migration will not execute alter statements (e.g. adding/editing columns on an existing table). These changes will need to be applied in the sequelize model as well as directly in the database itself to take effect.
-
-
-
-
-#### Configuration
-======================================
-
-This repository contains configuration profiles for production, testing, and development environments. A profile will be
-selected based on the NODE_ENV environment setting, or by explicitly calling --env [test|production|development] when
-initializing the server.
+This process can take between 1-5 minutes depending on caches, and connection speed. Once NPM has finished installing all required dependencies, you should create a `.env.json` file.
 
 The application server expects to find a `.env.json` file in one of two places:
 
@@ -115,11 +84,10 @@ The format for the file declares a configuration by environment:
     }
   }
 }
-
 ```
+The usernames and passwords in the `.env.json` file should be updated with credentials to connect to the IPR databases.
 
-
-##### Settings
+The fields in each environment of your `.env.json` correspond to the following:
 
 * `database` - Defines the DB settings
 * `engine` - The database engine/driver being used
@@ -132,6 +100,29 @@ The format for the file declares a configuration by environment:
 * `schema` - PGSQL only; The schema the database is namespaced under
 * `database` - Name of the database
 * `prefix` - Not in use.
+
+
+Once the npm dependencies are installed and your `.env.json` file is set up, the server can be started with the following command:
+```
+NODE_ENV=[local|development|test|production] npm start
+```
+
+To start the synchronizer server, run the following command:
+```
+NODE_ENV=[local|development|test|production] npm run sync
+```
+
+If NPM is not available, the application server can be booted by executing through node directly:
+```
+NODE_ENV=[local|development|test|production] node bin/www
+```
+
+If a new database installation is required:
+```
+NODE_ENV=[local|development|test|production] npm run migrate
+```
+
+Please note that database migration will not execute alter statements (e.g. adding/editing columns on an existing table). These changes will need to be applied in the sequelize model as well as directly in the database itself to take effect.
 
 
 #### Running Tests with Mocha
