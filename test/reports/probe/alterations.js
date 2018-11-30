@@ -124,6 +124,8 @@ describe('Test alteration endpoints', () => {
   });
 
   after(async () => {
+    // delete change history created in testing
+    await db.models.change_history.destroy({where: {entry_ident: alteration.ident}});
     // delete test patient (should cascade and delete all associations)
     await db.models.POG.destroy({where: {id: testReport.pog_id}, force: true});
   });
