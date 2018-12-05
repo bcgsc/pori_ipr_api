@@ -25,63 +25,63 @@ module.exports = sequelize => sequelize.define('germline_small_mutation_variant'
     allowNull: false,
   },
   flagged: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   clinvar: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   cgl_category: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   gmaf: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   transcript: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   gene: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: false,
   },
   variant: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   impact: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   chromosome: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   position: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   dbSNP: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   reference: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   alteration: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   score: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   zygosity_germline: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   preferred_transcript: {
@@ -89,27 +89,27 @@ module.exports = sequelize => sequelize.define('germline_small_mutation_variant'
     allowNull: true,
   },
   hgvs_cdna: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   hgvs_protein: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   zygosity_tumour: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   genomic_variant_reads: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   rna_variant_reads: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   gene_somatic_abberation: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   notes: {
@@ -117,31 +117,31 @@ module.exports = sequelize => sequelize.define('germline_small_mutation_variant'
     allowNull: true,
   },
   type: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   patient_history: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   family_history: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   tcga_comp_norm_percentile: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   tcga_comp_percentile: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   gtex_comp_percentile: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   fc_bodymap: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: true,
   },
   gene_expression_rpkm: {

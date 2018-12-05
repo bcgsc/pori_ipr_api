@@ -28,7 +28,7 @@ module.exports = sequelize => sequelize.define('germline_small_mutation_review',
     },
   },
   type: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: false,
   },
   comment: {

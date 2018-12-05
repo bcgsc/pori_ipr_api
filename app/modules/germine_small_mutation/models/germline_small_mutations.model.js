@@ -20,11 +20,11 @@ module.exports = sequelize => sequelize.define('germline_small_mutation', {
     },
   },
   source_version: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: false,
   },
   source_path: {
-    type: Sq.STRING,
+    type: Sq.TEXT,
     allowNull: false,
   },
   biofx_assigned_id: {
