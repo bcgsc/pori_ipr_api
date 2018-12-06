@@ -1,53 +1,47 @@
-"use strict";
-
+const Sq = require('sequelize');
 const moment = require('moment');
 
-module.exports = (sequelize, Sq) => {
-  return sequelize.define('POGDataExport', {
-    id: {
-      type: Sq.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
+module.exports = sequelize => sequelize.define('POGDataExport', {
+  id: {
+    type: Sq.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  ident: {
+    type: Sq.UUID,
+    unique: true,
+    defaultValue: Sq.UUIDV4,
+  },
+  pog_id: {
+    type: Sq.INTEGER,
+    unique: false,
+    references: {
+      model: 'POGs',
+      key: 'id',
     },
-    ident: {
-      type: Sq.UUID,
-      unique: true,
-      defaultValue: Sq.UUIDV4
+  },
+  user_id: {
+    type: Sq.INTEGER,
+    unique: false,
+    references: {
+      model: 'users',
+      key: 'id',
     },
-    pog_id: {
-      type: Sq.INTEGER,
-      unique: false,
-      references: {
-        model: 'POGs',
-        key: 'id',
-      }
-    },
-    user_id: {
-      type: Sq.INTEGER,
-      unique: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      }
-    },
-    key: {
-      type: Sq.STRING,
-      unique: true,
-      defaultValue: () => {
-        return moment().format('YYYYMMDD-HmmssSS');
-      }
-    },
-    log: {
-      type: Sq.TEXT
-    },
-    result: {
-      type: Sq.BOOLEAN,
-      defaultValue: false
-    }
-  }, {
-    // Automatically create createdAt
-    createdAt: 'createdAt',
-    updatedAt: false,
-  });
-};
-
+  },
+  key: {
+    type: Sq.STRING,
+    unique: true,
+    defaultValue: () => moment().format('YYYYMMDD-HmmssSS'),
+  },
+  log: {
+    type: Sq.TEXT,
+  },
+  result: {
+    type: Sq.BOOLEAN,
+    defaultValue: false,
+  },
+}, {
+  // Automatically create createdAt
+  createdAt: 'createdAt',
+  updatedAt: false,
+});
