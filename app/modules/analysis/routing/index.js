@@ -488,7 +488,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
             });
             if (sourceCheck) {
               source = biospySource;
-              return null; // break loop if source is found
+              return false; // must be false to exit Lodash forEach
             }
           });
 
