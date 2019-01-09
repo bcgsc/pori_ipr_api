@@ -76,20 +76,20 @@ router.route('/disease-ontology')
 // select user_id, COUNT(distinct kb_histories.ident) AS "numberOfEntries" from kb_histories GROUP BY user_id;
 
 router.route('/history')
-  .get((req,res) => {
-
-  let model;
-
+  .get((req, res) => {
+    let model;
     // set model from type
-    if(req.query.type === 'reference') model = 'kb_references';
-    if(req.query.type === 'event') model = 'kb_events';
+    if (req.query.type === 'reference') model = 'kb_references';
+    if (req.query.type === 'event') model = 'kb_events';
 
     // Get Events by ident
     db.models.kb_history.findAll({
-      where: { table: model, entry: req.query.entry}, attributes: {exclude: ['id', 'user_id']}, order: '"createdAt" DESC',
+      where: {table: model, entry: req.query.entry},
+      attributes: {exclude: ['id', 'user_id']},
+      order: [['createdAt', 'DESC']],
       include: [
         {model: db.models.user, as: 'user', attributes: {exclude:['id', 'password', 'jiraXsrf']}}
-      ]
+      ],
     }).then(
       (result) => {
         res.json(result);
@@ -98,8 +98,7 @@ router.route('/history')
         console.log('Unable to retrieve history entries', err);
         res.status(500).json({error: {message: "Unable to retrieve entry's history."}});
       }
-    )
-
+    );
   });
 router.route('/metrics')
   .get((req,res) => {

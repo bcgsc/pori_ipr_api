@@ -34,7 +34,7 @@ router.route('/discussion')
       where: {
         pog_report_id: req.report.id
       },
-      order: [['createdAt', 'ASC']]
+      order: [['createdAt', 'ASC']],
     };
   
     db.models.presentation_discussion.scope('public').findAll(opts)

@@ -15,7 +15,7 @@ module.exports = (pog, directory) => {
 
   let opts = {
     where: {
-      pog_id: pog.id
+      pog_id: pog.id,
     },
     attributes: {
       exclude: [
@@ -28,10 +28,10 @@ module.exports = (pog, directory) => {
         'createdAt',
         'updatedAt',
         'deletedAt',
-        'kb_newEntry'
-      ]
+        'kb_newEntry',
+      ],
     },
-    order: 'gene ASC'
+    order: [['gene', 'ASC']],
   };
 
   // Get First Table

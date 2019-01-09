@@ -62,7 +62,7 @@ router.route('/expressionDensityGraphs')
           $like: 'expDensity.%'
         }
       },
-      order: 'key ASC',
+      order: [['key', 'ASC']],
       attributes: {exclude: ['id','deletedAt', 'pog_id']}
     }).then(
       (result) => {
@@ -96,7 +96,7 @@ router.route('/mutationSummary')
           ]
         }
       },
-      order: 'key ASC',
+      order: [['key', 'ASC']],
       attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'pog_report_id']}
     };
     
@@ -127,7 +127,7 @@ router.route('/subtypePlots')
           $like: 'subtypePlot.%'
         }
       },
-      order: 'key ASC',
+      order: [['key', 'ASC']],
       attributes: {exclude: ['id','deletedAt', 'pog_id']}
     }).then(
       (result) => {

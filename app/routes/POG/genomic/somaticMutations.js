@@ -70,7 +70,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
 
     let options = {
       where: where,
-      order: 'gene ASC',
+      order: [['gene', 'ASC']],
     };
 
     // Get all rows for this POG
@@ -92,7 +92,7 @@ router.route('/mutationSignature')
 
     let options = {
       where: {pog_report_id: req.report.id},
-      order: 'signature ASC',
+      order: [['signature', 'ASC']],
     };
 
     // Get all rows for this POG

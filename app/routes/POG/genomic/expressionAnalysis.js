@@ -150,7 +150,7 @@ router.route('/drugTarget')
 
     let options = {
       where: {pog_report_id: req.report.id},
-      order: 'gene ASC'
+      order: [['gene', 'ASC']],
     };
 
     // Get all rows for this POG

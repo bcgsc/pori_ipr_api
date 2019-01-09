@@ -52,7 +52,7 @@ router.route('/')
   .get((req,res,next) => {
     let opts = {
       attributes: {exclude: ['id', 'deletedAt']},
-      order: 'name ASC',
+      order: [['name', 'ASC']],
       include: [
         {as:'users', model: db.models.user, attributes: {exclude: ['id','deletedAt','password','access','jiraToken']}},
         {as: 'owner', model: db.models.user.scope('public'), }

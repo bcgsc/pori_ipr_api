@@ -393,7 +393,7 @@ module.exports = class Task {
       let opts = {};
       opts.where = {ident: this.instance.ident};
       opts.limit = 1;
-      opts.order = 'ordinal ASC';
+      opts.order = [['ordinal', 'ASC']];
 
       opts.attributes = {
         exclude: ['deletedAt']

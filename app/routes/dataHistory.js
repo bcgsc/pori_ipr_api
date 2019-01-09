@@ -15,11 +15,16 @@ router.param('POG', require(process.cwd() + '/app/middleware/pog'));
 
 router.route('/')
   // Get All POG History Entries
-  .get((req,res,next) => {
-    db.models.pog_analysis_reports_history.findAll({where: {pog_id: req.POG.id, pog_report_id: req.report.id}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include: [
-      {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
-      {as: 'tags', model: db.models.history_tag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
-    ]}).then(
+  .get((req, res, next) => {
+    db.models.pog_analysis_reports_history.findAll({
+      where: {pog_id: req.POG.id, pog_report_id: req.report.id},
+      attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']},
+      order: [['createdAt', 'DESC']],
+      include: [
+        {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
+        {as: 'tags', model: db.models.history_tag, attributes: {exclude: ['id', 'pog_id', 'history_id', 'user_id']}},
+      ],
+    }).then(
       (histories) => {
         res.json(histories);
       },
@@ -27,7 +32,7 @@ router.route('/')
         console.log('SQL ERROR', err);
         res.status(500).json({error: {message: 'Unable to query the data history entries for this POG', code: 'failedGetPOGDataHistoryquery'}});
       }
-    )
+    );
   });
 
 router.route('/detail/:history([A-z0-9-]{36})')
@@ -54,12 +59,17 @@ router.route('/revert/:history([A-z0-9-]{36})')
     // Revert
     history.revert(req.user, req.body.comment).then(
       (result) => {
-
         // Make nice
-        db.models.pog_analysis_reports_history.findAll({where: {ident: result.data.ident}, attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']}, order: '"createdAt" DESC', include:[
-          {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
-          {as: 'tags', model: db.models.history_tag, attributes: {exclude: ['id','pog_id','history_id','user_id']}}
-        ]}).then(
+        db.models.pog_analysis_reports_history.findAll({
+          where: {ident: result.data.ident},
+          attributes: {exclude: ['id', 'pog_id', 'user_id', 'table']},
+          order: [['createdAt', 'DESC']],
+          include:
+          [
+            {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'deletedAt']}},
+            {as: 'tags', model: db.models.history_tag, attributes: {exclude: ['id', 'pog_id', 'history_id', 'user_id']}},
+          ],
+        }).then(
           (history) => {
             res.json(history[0]);
           },
@@ -95,12 +105,11 @@ router.route('/restore/:history([A-z0-9-]{36})')
 
 router.route('/tag/:ident([A-z0-9-]{36})?')
   // Add tag to history
-  .post((req,res,next) => {
-
+  .post((req, res, next) => {
     let opts;
     // Create a tag on the latest change or on a specific entry
-    if(!req.params.ident) opts = {where: {pog_id: req.POG.id, pog_report_id: req.report.id}, order: '"createdAt" DESC'};
-    if(req.params.ident) opts = {where: {pog_id: req.POG.id, ident: req.params.ident}};
+    if (!req.params.ident) opts = {where: {pog_id: req.POG.id, pog_report_id: req.report.id}, order: [['createdAt', 'DESC']]};
+    if (req.params.ident) opts = {where: {pog_id: req.POG.id, ident: req.params.ident}};
 
     db.models.pog_analysis_reports_history.findOne(opts).then(
       (history) => {
@@ -146,7 +155,7 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
   // Get All Tags (or one)
   .get((req,res,next) => {
 
-    let opts = {where: {pog_id: req.POG.id}, order: '"tag" DESC', attributes: {exclude: ['id', 'user_id', 'history_id', 'pog_id']}};
+    let opts = {where: {pog_id: req.POG.id}, order: [['tag', 'DESC']], attributes: {exclude: ['id', 'user_id', 'history_id', 'pog_id']}};
     // Create a tag on the latest change or on a specific entry
     if(req.params.ident) opts.where.ident = req.params.ident;
 

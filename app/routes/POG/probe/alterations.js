@@ -88,7 +88,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
 
     let options = {
       where: where,
-      order: 'gene ASC',
+      order: [['gene', 'ASC']],
     };
 
     // Get all rows for this POG

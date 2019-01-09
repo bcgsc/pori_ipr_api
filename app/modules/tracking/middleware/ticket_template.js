@@ -17,7 +17,7 @@ module.exports = (req,res,next,lookup) => {
   opts.where.ident = lookup;
   
   opts.limit = 1;
-  opts.order = 'ordinal ASC';
+  opts.order = [['ordinal', 'ASC']];
   
   opts.include = [
     {model: db.models.tracking_state_definition.scope('public'), as: 'definition'}

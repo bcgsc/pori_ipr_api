@@ -16,11 +16,15 @@ let express = require('express'),
 
 router.route('/all')
   // Get all export entries
-  .get((req,res,next) => {
-
-    db.models.POGDataExport.findAll({where: {pog_id: req.POG.id}, attributes: {exclude: ['id', 'user_id', 'pog_id']}, order: '"createdAt" DESC', include: [
-      {as: 'user', model: db.models.user, attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']}}
-    ]}).then(
+  .get((req, res, next) => {
+    db.models.POGDataExport.findAll({
+      where: {pog_id: req.POG.id},
+      attributes: {exclude: ['id', 'user_id', 'pog_id']},
+      order: [['createdAt', 'DESC']],
+      include: [
+        {as: 'user', model: db.models.user, attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']}}
+      ],
+    }).then(
       (entries) => {
         res.json(entries);
       },

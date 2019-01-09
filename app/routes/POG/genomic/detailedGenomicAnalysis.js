@@ -89,7 +89,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
 
     let options = {
       where: where,
-      order: 'gene ASC',
+      order: [['gene', 'ASC']],
     };
     
     // Get all rows for this POG
@@ -216,7 +216,7 @@ router.route('/targetedGenes')
 
     let options = {
       where: where,
-      order: 'gene ASC',
+      order: [['gene', 'ASC']],
     };
 
     // Get all rows for this POG

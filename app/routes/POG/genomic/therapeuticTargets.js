@@ -75,7 +75,7 @@ router.route('/')
     let where = {pog_report_id: req.report.id};
     let options = {
       where: where,
-      order: 'rank ASC',
+      order: [['rank', 'ASC']],
     };
 
     // Get all rows for this POG

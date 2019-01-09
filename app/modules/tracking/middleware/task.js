@@ -21,7 +21,7 @@ module.exports = (req,res,next,lookup) => {
   }
 
   opts.limit = 1;
-  opts.order = 'ordinal ASC';
+  opts.order = [['ordinal', 'ASC']];
 
   opts.include = [
     {as: 'state', model: db.models.tracking_state.scope('noTasks'), },

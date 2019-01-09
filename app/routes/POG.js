@@ -28,7 +28,7 @@ router.route('/')
     // Create the getAllPogs query
     let opts = {};
     opts.attributes = {exclude: ['id','deletedAt', 'config', 'seqQC']};
-    opts.order = '"POG"."POGID" ASC';
+    opts.order = [['POGID', 'ASC']];
     opts.include = [];
     opts.where = { nonPOG: false };
 

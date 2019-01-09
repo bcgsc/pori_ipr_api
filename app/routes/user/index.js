@@ -23,7 +23,7 @@ router.route('/')
 
     db.models.user.all({
       attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']},
-      order: 'username ASC',
+      order: [['username', 'ASC']],
       include: [
         {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
         {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}}

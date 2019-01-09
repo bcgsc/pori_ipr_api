@@ -13,7 +13,7 @@ let express = require('express'),
 router.use('/', (req,res,next) => {
 
   // Get Patient Information for this POG
-  db.models.pathwayAnalysis.findOne({ where: {pog_report_id: req.report.id}, order: '"dataVersion" DESC', attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.pathwayAnalysis.findOne({ where: {pog_report_id: req.report.id}, order: [['dataVersion', 'DESC']], attributes: {exclude: ['id', 'deletedAt']}}).then(
     (result) => {
 
       // Not found is allowed!
