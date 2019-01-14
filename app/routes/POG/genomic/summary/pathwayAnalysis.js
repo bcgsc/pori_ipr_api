@@ -1,30 +1,28 @@
-"use strict";
+'use strict';
 
 // app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  logger = require(process.cwd() + '/app/libs/logger'),
-  multer = require('multer'),
-  versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
+const express = require('express');
+
+const router = express.Router({mergeParams: true});
+const db = require(`${process.cwd()}/app/models`);
+const multer = require('multer');
+
+const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
 
 
 // Middleware for Analyst Comments
-router.use('/', (req,res,next) => {
-
+router.use('/', (req, res, next) => {
   // Get Patient Information for this POG
-  db.models.pathwayAnalysis.findOne({ where: {pog_report_id: req.report.id}, order: [['dataVersion', 'DESC']], attributes: {exclude: ['id', 'deletedAt']}}).then(
+  db.models.pathwayAnalysis.findOne({where: {pog_report_id: req.report.id}, order: [['dataVersion', 'DESC']], attributes: {exclude: ['id', 'deletedAt']}}).then(
     (result) => {
-
       // Not found is allowed!
       // Found the patient information
       req.pathwayAnalysis = result;
       next();
-
     },
     (error) => {
       console.log('Unable to query pathway analysis', error);
-      res.status(500).json({error: {message: 'Unable to lookup the pathway analysis for ' + req.POG.POGID + '.', code: 'failedPathwayAnaylsisQuery'}});
+      res.status(500).json({error: {message: `Unable to lookup the pathway analysis for ${req.POG.POGID}.`, code: 'failedPathwayAnaylsisQuery'}});
       res.end();
     }
   );
@@ -33,24 +31,19 @@ router.use('/', (req,res,next) => {
 
 // Handle requests for alterations
 router.route('/')
-  .get((req,res,next) => {
+  .get((req, res) => {
     // Get Patient History
     res.json(req.pathwayAnalysis);
-
   })
-  
-  .put((req, res, next) => {
-    
+  .put((req, res) => {
     // Updating?
-    if(!req.pathwayAnalysis) {
-      
+    if (!req.pathwayAnalysis) {
       // Create
-      let request = {
+      const request = {
         pathway: req.files.pathway.data.toString(),
         pog_report_id: req.report.id,
-        dataversion: 0
+        dataversion: 0,
       };
-    
       // Create entry
       db.models.pathwayAnalysis.create(request).then(
         (resp) => {
@@ -60,18 +53,15 @@ router.route('/')
           console.log('Unable to create Pathway Analysis entry', err);
         }
       );
-    
     } else {
       // Updating
-      let request = {
+      const request = {
         pathway: req.files.pathway.data.toString(),
-        pog_report_id: req.report.id
+        pog_report_id: req.report.id,
       };
-    
       // Remove current
       req.pathwayAnalysis.pog_id = req.POG.id;
       req.pathwayAnalysis.pog_report_id = req.report.id;
-    
       // Update DB Version for Entry
       versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user).then(
         (resp) => {
@@ -83,21 +73,17 @@ router.route('/')
         }
       );
     }
-  
   })
 
-  .post((req,res,next) => {
-
+  .post((req, res) => {
   // Accept file upload
     multer({
       limits: {
-        files: 1
+        files: 1,
       },
       onFileUploadComplete: (file) => {
-
         // Is there an existing entry?
-        if(req.pathwayAnalysis === null) {
-
+        if (req.pathwayAnalysis === null) {
           req.body.dataVersion = 0;
           req.body.pog_id = req.POG.id;
           req.body.pog_report_id = req.report.id;
@@ -113,12 +99,8 @@ router.route('/')
               res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPathwayAnaylsisCreate'}});
             }
           );
-
-        } else {
-          //
-
         }
-      }
+      },
     });
   });
 

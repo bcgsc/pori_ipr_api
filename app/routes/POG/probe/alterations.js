@@ -1,39 +1,38 @@
-"use strict";
+'use strict';
 
 // app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
+const express = require('express');
 
-router.param('alteration', (req,res,next,altIdent) => {
-  db.models.alterations.scope('public').findOne({ where: {ident: altIdent}}).then(
+const router = express.Router({mergeParams: true});
+const db = require(`${process.cwd()}/app/models`);
+const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
+
+router.param('alteration', (req, res, next, altIdent) => {
+  db.models.alterations.scope('public').findOne({where: {ident: altIdent}}).then(
     (result) => {
-      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'} });
+      if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'}});
 
       req.alteration = result;
-      next();
-
+      return next();
     },
     (error) => {
       console.log(error);
-      return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareAlterationQuery'} });
+      return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareAlterationQuery'}});
     }
   );
 });
 
 // Handle requests for alterations
 router.route('/:alteration([A-z0-9-]{36})')
-  .get((req,res,next) => {
+  .get((req, res) => {
     res.json(req.alteration);
   })
-  .put((req,res,next) => {
-
+  .put((req, res) => {
     // Promoting from unknown to another state.
-    if(req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
+    if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
       db.models.genomicAlterationsIdentified.scope('public').create({
         pog_report_id: req.report.id,
-        geneVariant: req.alteration.gene + ' (' + req.alteration.variant + ')'
+        geneVariant: `${req.alteration.gene} (${req.alteration.variant})`,
       });
     }
 
@@ -47,35 +46,31 @@ router.route('/:alteration([A-z0-9-]{36})')
         res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'} });
       }
     );
-
   })
-  .delete((req,res,next) => {
+  .delete((req, res) => {
     // Soft delete the entry
     // Update result
-    db.models.alterations.destroy({ where: {ident: req.alteration.ident}}).then(
+    db.models.alterations.destroy({where: {ident: req.alteration.ident}}).then(
       (result) => {
         res.json({success: true});
       },
       (error) => {
-        res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'} });
+        res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
       }
     );
-
-
   });
 
 // Routing for Alteration
 router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCancer|otherCancer)?')
-  .get((req,res,next) => {
-
+  .get((req, res) => {
     // Setup where clause
-    let where = {pog_report_id: req.report.id};
+    const where = {pog_report_id: req.report.id};
     where.reportType = 'probe';
 
     // Searching for specific type of alterations
-    if(req.params.type) {
+    if (req.params.type) {
       // Are we looking for approved types?
-      if(req.params.type.indexOf('Cancer') !== -1) {
+      if (req.params.type.indexOf('Cancer') !== -1) {
         where.approvedTherapy = req.params.type;
       } else {
         where.alterationType = req.params.type;
@@ -86,7 +81,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
       where.alterationType = {$ne: 'unknown'};
     }
 
-    let options = {
+    const options = {
       where: where,
       order: [['gene', 'ASC']],
     };
@@ -101,14 +96,12 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
         res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'} });
       }
     );
-
   })
-
-  .post((req,res,next) => {
+  .post((req, res) => {
     // Setup new data entry from vanilla
     req.body.dataVersion = 0;
     req.body.pog_id = req.POG.id;
-    req.body.pog_report_id= req.report.id;
+    req.body.pog_report_id = req.report.id;
 
     // Update result
     db.models.alterations.create(req.body).then(
@@ -117,7 +110,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
         res.json(result);
 
         // Create DataHistory entry
-        let dh = {
+        const dh = {
           type: 'create',
           pog_id: result.pog_id,
           table: db.models.alterations.getTableName(),
@@ -126,17 +119,15 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
           previous: null,
           new: 0,
           user_id: req.user.id,
-          comment: req.body.comment
+          comment: req.body.comment,
         };
         db.models.POGDataHistory.create(dh);
-
       },
       (error) => {
         console.log('SQL insert error', error);
-        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'} });
+        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'}});
       }
     );
-
   });
 
 
