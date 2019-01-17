@@ -7,19 +7,17 @@ const router = express.Router({mergeParams: true});
 const db = require(`${process.cwd()}/app/models`);
 const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
 
-router.param('alteration', (req, res, next, altIdent) => {
-  db.models.alterations.scope('public').findOne({where: {ident: altIdent}}).then(
-    (result) => {
-      if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'}});
+router.param('alteration', async (req, res, next, altIdent) => {
+  try {
+    const result = await db.models.alterations.scope('public').findOne({where: {ident: altIdent}});
+    if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'}});
 
-      req.alteration = result;
-      return next();
-    },
-    (error) => {
-      console.log(error);
-      return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareAlterationQuery'}});
-    }
-  );
+    req.alteration = result;
+    return next();
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareAlterationQuery'}});
+  }
 });
 
 // Handle requests for alterations
@@ -27,7 +25,7 @@ router.route('/:alteration([A-z0-9-]{36})')
   .get((req, res) => {
     res.json(req.alteration);
   })
-  .put((req, res) => {
+  .put(async (req, res) => {
     // Promoting from unknown to another state.
     if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
       db.models.genomicAlterationsIdentified.scope('public').create({
@@ -36,33 +34,29 @@ router.route('/:alteration([A-z0-9-]{36})')
       });
     }
 
-    // Update DB Version for Entry
-    versionDatum(db.models.alterations, req.alteration, req.body, req.user, req.body.comment).then(
-      (resp) => {
-        res.json(resp.data.create);
-      },
-      (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'} });
-      }
-    );
+    try {
+      // Update DB Version for Entry
+      const result = await versionDatum(db.models.alterations, req.alteration, req.body, req.user, req.body.comment);
+      res.json(result.data.create);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'}});
+    }
   })
-  .delete((req, res) => {
-    // Soft delete the entry
-    // Update result
-    db.models.alterations.destroy({where: {ident: req.alteration.ident}}).then(
-      (result) => {
-        res.json({success: true});
-      },
-      (error) => {
-        res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
-      }
-    );
+  .delete(async (req, res) => {
+    try {
+      // Soft delete the entry
+      // Update result
+      await db.models.alterations.destroy({where: {ident: req.alteration.ident}});
+      res.json({success: true});
+    } catch (error) {
+      res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
+    }
   });
 
 // Routing for Alteration
 router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCancer|otherCancer)?')
-  .get((req, res) => {
+  .get(async (req, res) => {
     // Setup where clause
     const where = {pog_report_id: req.report.id};
     where.reportType = 'probe';
@@ -82,52 +76,49 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
     }
 
     const options = {
-      where: where,
+      where,
       order: [['gene', 'ASC']],
     };
 
-    // Get all rows for this POG
-    db.models.alterations.scope('public').findAll(options).then(
-      (result) => {
-        res.json(result);
-      },
-      (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'} });
-      }
-    );
+    try {
+      // Get all rows for this POG
+      const result = await db.models.alterations.scope('public').findAll(options);
+      res.json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
+    }
   })
-  .post((req, res) => {
+  .post(async (req, res) => {
     // Setup new data entry from vanilla
     req.body.dataVersion = 0;
     req.body.pog_id = req.POG.id;
     req.body.pog_report_id = req.report.id;
 
-    // Update result
-    db.models.alterations.create(req.body).then(
-      (result) => {
-        // Send back newly created/updated result.
-        res.json(result);
+    try {
+      // Update result
+      const result = await db.models.alterations.create(req.body);
 
-        // Create DataHistory entry
-        const dh = {
-          type: 'create',
-          pog_id: result.pog_id,
-          table: db.models.alterations.getTableName(),
-          model: db.models.alterations.name,
-          entry: result.ident,
-          previous: null,
-          new: 0,
-          user_id: req.user.id,
-          comment: req.body.comment,
-        };
-        db.models.POGDataHistory.create(dh);
-      },
-      (error) => {
-        console.log('SQL insert error', error);
-        return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'}});
-      }
-    );
+      // Send back newly created/updated result.
+      res.json(result);
+
+      // Create DataHistory entry
+      const dh = {
+        type: 'create',
+        pog_id: result.pog_id,
+        table: db.models.alterations.getTableName(),
+        model: db.models.alterations.name,
+        entry: result.ident,
+        previous: null,
+        new: 0,
+        user_id: req.user.id,
+        comment: req.body.comment,
+      };
+      db.models.POGDataHistory.create(dh);
+    } catch (error) {
+      console.log('SQL insert error', error);
+      res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'}});
+    }
   });
 
 

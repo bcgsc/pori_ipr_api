@@ -11,23 +11,21 @@ const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
 
 
 // Middleware for Analyst Comments
-router.use('/', (req, res, next) => {
-  // Get Patient Information for this POG
-  db.models.pathwayAnalysis.findOne({where: {pog_report_id: req.report.id}, order: [['dataVersion', 'DESC']], attributes: {exclude: ['id', 'deletedAt']}}).then(
-    (result) => {
-      // Not found is allowed!
-      // Found the patient information
-      req.pathwayAnalysis = result;
-      next();
-    },
-    (error) => {
-      console.log('Unable to query pathway analysis', error);
-      res.status(500).json({error: {message: `Unable to lookup the pathway analysis for ${req.POG.POGID}.`, code: 'failedPathwayAnaylsisQuery'}});
-      res.end();
-    }
-  );
-});
+router.use('/', async (req, res, next) => {
 
+  try {
+    // Get Patient Information for this POG
+    const result = await db.models.pathwayAnalysis.findOne({where: {pog_report_id: req.report.id}, order: [['dataVersion', 'DESC']], attributes: {exclude: ['id', 'deletedAt']}});
+    // Not found is allowed!
+    // Found the patient information
+    req.pathwayAnalysis = result;
+    next();
+  } catch (error) {
+    console.log('Unable to query pathway analysis', error);
+    res.status(500).json({error: {message: `Unable to lookup the pathway analysis for ${req.POG.POGID}.`, code: 'failedPathwayAnaylsisQuery'}});
+    res.end();
+  }
+});
 
 // Handle requests for alterations
 router.route('/')
@@ -35,7 +33,7 @@ router.route('/')
     // Get Patient History
     res.json(req.pathwayAnalysis);
   })
-  .put((req, res) => {
+  .put(async (req, res) => {
     // Updating?
     if (!req.pathwayAnalysis) {
       // Create
@@ -44,15 +42,13 @@ router.route('/')
         pog_report_id: req.report.id,
         dataversion: 0,
       };
-      // Create entry
-      db.models.pathwayAnalysis.create(request).then(
-        (resp) => {
-          res.json(resp);
-        },
-        (err) => {
-          console.log('Unable to create Pathway Analysis entry', err);
-        }
-      );
+      try {
+        // Create entry
+        const result = await db.models.pathwayAnalysis.create(request);
+        res.json(result);
+      } catch (error) {
+        console.log('Unable to create Pathway Analysis entry', error);
+      }
     } else {
       // Updating
       const request = {
@@ -62,16 +58,15 @@ router.route('/')
       // Remove current
       req.pathwayAnalysis.pog_id = req.POG.id;
       req.pathwayAnalysis.pog_report_id = req.report.id;
-      // Update DB Version for Entry
-      versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user).then(
-        (resp) => {
-          res.json(resp.data.create);
-        },
-        (error) => {
-          console.log(error);
-          res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAnalystCommentVersion'}});
-        }
-      );
+
+      try {
+        // Update DB Version for Entry
+        const result = await versionDatum(db.models.pathwayAnalysis, req.pathwayAnalysis, request, req.user);
+        res.json(result.data.create);
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAnalystCommentVersion'}});
+      }
     }
   })
 
@@ -81,7 +76,7 @@ router.route('/')
       limits: {
         files: 1,
       },
-      onFileUploadComplete: (file) => {
+      onFileUploadComplete: async (file) => {
         // Is there an existing entry?
         if (req.pathwayAnalysis === null) {
           req.body.dataVersion = 0;
@@ -89,16 +84,14 @@ router.route('/')
           req.body.pog_report_id = req.report.id;
           req.body.pathway = file;
 
-          // Create new entry
-          db.models.pathwayAnalysis.create(req.body).then(
-            (resp) => {
-              res.json(resp);
-            },
-            (error) => {
-              console.log(error);
-              res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPathwayAnaylsisCreate'}});
-            }
-          );
+          try {
+            // Create new entry
+            const result = await db.models.pathwayAnalysis.create(req.body);
+            res.json(result);
+          } catch (error) {
+            console.log(error);
+            res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPathwayAnaylsisCreate'}});
+          }
         }
       },
     });

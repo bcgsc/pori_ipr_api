@@ -40,7 +40,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
         const opts = {
           order: [['createdAt', 'DESC']],
           include: [
-            {as: 'analysis', model: db.models.analysis_report, separate: true}
+            {as: 'analysis', model: db.models.analysis_report, separate: true},
           ],
           where: {},
         };
@@ -129,7 +129,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
           res.status(400).json({message: 'Invalid inputs supplied', cause: validation_err});
           return;
         }
-        const pog_fields = {
+        const pogFields = {
           alternate_identifier: req.body.alternate_identifier,
           age_of_consent: req.body.age_of_consent,
         };
@@ -230,7 +230,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
           let message = '';
           if (e.statusCode === 500) message = 'BioApps was unable to fulfill the update request sent.';
           if (e.statusCode === 404) message = `The provided patient (${patient.POGID}) does not exist in BioApps`;
-          res.status(500).json({message: message});
+          res.status(500).json({message});
           console.log('Failed to update BioApps', e);
         });
     });
@@ -346,9 +346,9 @@ module.exports = class TrackingRouter extends RoutingInterface {
         offset: req.query.offset || 0,
         order: [['createdAt', 'DESC']],
         include: [
-          {as: 'analysis', model: db.models.analysis_report, separate: true}
+          {as: 'analysis', model: db.models.analysis_report, separate: true},
         ],
-        where: {ident: req.params.analysisIdent}
+        where: {ident: req.params.analysisIdent},
       };
   
       const pog_include = {as: 'pog', model: db.models.POG.scope('public'), where: {}};

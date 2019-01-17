@@ -4,7 +4,7 @@ const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNot
 const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
 
 // Lookup POG middleware
-module.exports = (req, res, next, lookup) => {
+module.exports = async (req, res, next, lookup) => {
   const opts = {where: {}};
 
   opts.attributes = {
@@ -28,21 +28,19 @@ module.exports = (req, res, next, lookup) => {
     {as: 'checkins', model: db.models.tracking_state_task_checkin, include: [{as: 'user', model: db.models.user.scope('public')}], separate: true},
   ];
 
-  // Lookup POG first
-  db.models.tracking_state_task.findOne(opts).then(
-    (result) => {
-      // Nothing found?
-      if (result === null) throw new MiddlewareNotFound('Unable to find the tracking state task', req, res, 'trackingStateTask');
+  try {
+    // Lookup POG first
+    const result = await db.models.tracking_state_task.findOne(opts);
+    // Nothing found?
+    if (result === null) throw new MiddlewareNotFound('Unable to find the tracking state task', req, res, 'trackingStateTask');
 
-      // POG found, next()
-      if (result !== null) {
-        req.task = result;
-        next();
-      }
-    },
-    (error) => {
-      console.log(error);
-      throw new MiddlewareQueryFailed('Unable to looking the requested state task.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+    // POG found, next()
+    if (result !== null) {
+      req.task = result;
+      next();
     }
-  );
+  } catch (error) {
+    console.log(error);
+    throw new MiddlewareQueryFailed('Unable to looking the requested state task.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+  }
 };
