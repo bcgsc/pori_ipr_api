@@ -36,7 +36,6 @@ module.exports = async (pog, directory) => {
 
   try {
     const preMapped = [];
-    console.log('reached');
     // Get First Table
     const results = await db.models.alterations.findAll(opts);
 
