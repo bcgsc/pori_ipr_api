@@ -14,9 +14,7 @@ router.use('/genevar', require('./genevar'));
 
 router.route('/import')
   .post(async (req, res) => {
-    const {directory} = req.body.directory;
-    const {references} = req.body.references;
-    const {events} = req.body.events;
+    const {directory, references, events} = req.body;
     
     if (!directory) return res.status(400).json({message: 'A directory value is required to be sent in the body'});
     
