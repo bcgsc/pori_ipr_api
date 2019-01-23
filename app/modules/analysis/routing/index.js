@@ -475,20 +475,28 @@ module.exports = class TrackingRouter extends RoutingInterface {
           }
 
           // Filter for source that has a matching analysis biopsy
-          let biopsy_regex = '([a-z]+)([0-9]+)';
-          let analysis_biopsy = analysis.analysis_biopsy.match(biopsy_regex); // splitting analysis biopsy into sample type and biopsy number
+          const biopsyRegex = '([a-z]+)([0-9]+)';
+          // splitting analysis biopsy into sample type and biopsy number
+          const analysisBiopsy = analysis.analysis_biopsy.match(biopsyRegex);
           let source = null;
-          _.forEach(sources, function(biopsy_source) { // checking each source for matching biopsy
-            let source_analysis_settings = biopsy_source.source_analysis_settings;
-            let source_check = _.find(source_analysis_settings, {sample_type: analysis_biopsy[1], biopsy_number: parseInt(analysis_biopsy[2])});
-            if(source_check) {
-              source = biopsy_source;
-              return false; // break loop if source is found
+          let bioappsSources = '';
+          _.forEach(sources, (biospySource) => { // checking each source for matching biopsy
+            const sourceAnalysisSettings = biospySource.source_analysis_settings;
+            bioappsSources += `${sourceAnalysisSettings.sample_type} and ${sourceAnalysisSettings.biopsy_number}, `;
+            const sourceCheck = _.find(sourceAnalysisSettings, {
+              sample_type: analysisBiopsy[1], biopsy_number: parseInt(analysisBiopsy[2], 10),
+            });
+            if (sourceCheck) {
+              source = biospySource;
+              return false; // must be false to exit Lodash forEach
             }
           });
 
-          if(!source) {
-            res.status(404).json({message: 'Failed to find a BioApps record with matching analysis biopsy'});
+          if (!source) {
+            res.status(404).json({
+              message: `Searched Bioapps for sample_type: ${analysisBiopsy[1]} and biopsy_number:
+${parseInt(analysisBiopsy[2], 10)} but found ${bioappsSources}`,
+            });
             return;
           }
 
