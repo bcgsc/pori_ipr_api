@@ -1,4 +1,10 @@
 const glob = require('glob');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+const readFile = util.promisify(require('pyconf').readFile);
+const fs = require('fs');
+const j2p = require('json2plain');
+const nconf = require('nconf').file({file: `../../config/${process.env.NODE_ENV}.json`});
 
 const
   _ = require('lodash'),
