@@ -23,7 +23,6 @@ const validExporters = {
 };
 
 class ExportDataTables {
-
   /**
    * Constructor
    *
@@ -69,15 +68,15 @@ class ExportDataTables {
   async duplicateDependencies() {
     try {
       const base = this.directory.sourceReportBase;
-    // Duplicate folder
+      // Duplicate folder
       await exec(`cp -r ${base}/images ${base}/POG684_genomic_report_creation.sh ${base}/POG684.tab ${base}/expr_dens_gene_list.txt ${this.directory.exportReportBase}`);
-        // All good!
-        // Copy & rename CSV files
+      // All good!
+      // Copy & rename CSV files
       await exec(`cp -r ${this.directory.source} ${this.directory.export}`);
       return Promise.resolve({stage: 'duplicateCSVFolder', status: true});
     } catch (error) {
       return Promise.reject(error);
-  }
+    }
   }
 
   /**
@@ -89,12 +88,12 @@ class ExportDataTables {
     try {
       // Read in config file
       const conf = await readFile(files[0]);
-        this.config.original = conf;
-        this.config.export = JSON.parse(JSON.stringify(this.config.original));
+      this.config.original = conf;
+      this.config.export = JSON.parse(JSON.stringify(this.config.original));
       return Promise.resolve({status: true});
     } catch (error) {
       return Promise.reject(error);
-  }
+    }
   }
 
   /**
@@ -122,7 +121,7 @@ class ExportDataTables {
       return Promise.resolve({stage: 'config.write', status: true});
     } catch (error) {
       return Promise.reject(error);
-  }
+    }
   }
 
   /**
@@ -137,14 +136,14 @@ class ExportDataTables {
     // Determine location to report base folder
     const folder = glob.sync(`${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:reportRoot')}`);
 
-      // Check for detection
+    // Check for detection
     if (folder.length === 0) {
       this.logLine('Unable to find the required existing POG folder.');
       return Promise.reject(new Error(`Unable to find POG source folder in: ${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:dataDir')}`));
-      }
+    }
 
-      // Set Directory
-      this.directory.base = folder[0]; // Base Directory in which all /report* folders are located
+    // Set Directory
+    this.directory.base = folder[0]; // Base Directory in which all /report* folders are located
 
     this.directory.sourceReportBase = `${folder[0]}report`; // Source Report Base, in which tracking config, tab file, sh file etc. are located
     this.directory.source = `${this.directory.sourceReportBase}/JReport_CSV_ODF`; // Source CSV folder
@@ -154,41 +153,40 @@ class ExportDataTables {
 
     this.directory.exportFolderName = `IPR_CSV_export_${this.exportEvent.key}`; // Folder name
 
-      fs.mkdirSync(this.directory.exportReportBase);
+    fs.mkdirSync(this.directory.exportReportBase);
 
-      this.logLine('Export folder created');
+    this.logLine('Export folder created');
 
     try {
       await this.readConfigFile();
-          this.logLine('Finished reading config file', 1);
-          // Copy CSV
+      this.logLine('Finished reading config file', 1);
+      // Copy CSV
       await this.duplicateDependencies();
-              // All good!
-              this.logLine('Copied existing data entries successfully.', 1);
+      // All good!
+      this.logLine('Copied existing data entries successfully.', 1);
 
       const promises = [];
-              // Loop over exporters and gather promises
+      // Loop over exporters and gather promises
       // validExporters is an object
       Object.entries(validExporters).forEach(([k, v]) => {
         this.logLine(`> Loaded exporter: ${k}`);
         promises.push(v(this.pog, this.directory));
-              });
+      });
 
       const result = await Promise.all(promises);
-                    this.logLine('');
-                    this.logLine('Finished running all exporters:');
-                    this.logLine(result, 1);
+      this.logLine('');
+      this.logLine('Finished running all exporters:');
+      this.logLine(result, 1);
 
       await this.createConfigFile();
-                        this.logLine('Wrote new config file');
+      this.logLine('Wrote new config file');
 
       const command = `/projects/tumour_char/analysis_scripts/SVIA/jreport_genomic_summary/tags/production/genomicReport.py -c ${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg --rebuild-pdf-only`;
       return Promise.resolve({status: true, log: this.log, command});
     } catch (error) {
       return Promise.reject(error);
-        }
+    }
   }
-
 }
 
 module.exports = ExportDataTables;
