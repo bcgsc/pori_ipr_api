@@ -1,4 +1,4 @@
-"use strict";
+const glob = require('glob');
 
 const
   _ = require('lodash'),
