@@ -101,32 +101,28 @@ class ExportDataTables {
    * Write new Config File
    *
    */
-  createConfigFile() {
-    let deferred = Q.defer();
-
+  async createConfigFile() {
     // get line to update.
-    let folderLine = this.config.original.__keys['Report Tables Folder'];
-    let pdfLine = this.config.original.__keys['Report Filename'];
-    let reportLine = this.config.original.__keys['Report_Folder'];
+    const folderLine = this.config.original.__keys['Report Tables Folder'];
+    const pdfLine = this.config.original.__keys['Report Filename'];
+    const reportLine = this.config.original.__keys.Report_Folder;
 
     // Update Line
-    this.config.export.__lines[folderLine] = 'Report Tables Folder            = ${Report_Folder}/' + this.directory.exportFolderName;
-    this.config.export.__lines[pdfLine] = 'Report Filename                 = ${Report_Folder}/POG684_genomic_report_IPR_export_' + this.exportEvent.key+'.pdf';
-    this.config.export.__lines[reportLine] = 'Report_Folder                   = ' + this.config.original['Report_Folder'].replace(/(\/report)$/, '/report_IPR_export_'+this.exportEvent.key);
+    const reportFolder = '${Report_Folder}';
+    this.config.export.__lines[folderLine] = `Report Tables Folder = ${reportFolder}/${this.directory.exportFolderName}`;
+    this.config.export.__lines[pdfLine] = `Report Filename = ${reportFolder}/POG684_genomic_report_IPR_export_${this.exportEvent.key}.pdf`;
+    this.config.export.__lines[reportLine] = `Report_Folder = ${this.config.original.Report_Folder.replace(/(\/report)$/, `/report_IPR_export_${this.exportEvent.key}`)}`;
 
     // Create File
-    let data = "## This config file was generated as the result of an export from the Interactive POG Report API\n";
-    data += "## Export ident: \n"; // TODO: Place Export Ident
-    data += _.join(this.config.export.__lines, "\n");
+    const data = `## This config file was generated as the result of an export from the Interactive POG Report API\n## Export ident: \n${this.config.export.__lines.join('\n')}`;
 
-    let writeConfig = fs.writeFile(this.directory.exportReportBase + '/IPR_Report_export_' + this.exportEvent.key + '.cfg', data, (err) => {
-      if(err) console.log('Error write config file: ', err);
-      this.logLine('Successfully export config file: IPR_Report_export_' + this.exportEvent.key + '.cfg');
-
-      deferred.resolve({stage: 'config.write', status: true});
-    });
-
-    return deferred.promise;
+    try {
+      fs.writeFileSync(`${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg`, data);
+      this.logLine(`Successfully export config file: IPR_Report_export_${this.exportEvent.key}.cfg`);
+      return Promise.resolve({stage: 'config.write', status: true});
+    } catch (error) {
+      return Promise.reject(error);
+  }
   }
 
   /**
