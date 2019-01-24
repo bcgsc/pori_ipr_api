@@ -15,12 +15,11 @@ const genomicEventsEheraAssoc = require('./summary/genomicEventsTherapeutic');
 
 
 const validExporters = {
-  'clin_rel': './detailedGenomicAnalysis/alterations',                  // PASSES!
-  'patient_info': './summary/patientInformation',                       // PASSES!
-  'patient_tumour_analysis': './summary/tumourAnalysis',                // PASSES!
-  'genomic_alt_identified': './summary/genomicAlterationsIdentified',   // PASSES!
-  'genomic_events_thera_assoc': './summary/genomicEventsTherapeutic',   // PASSES!
-  //'variant_counts': './summary/variantCount'                          // ??
+  clin_rel: clinRel, // PASSES!
+  patient_info: patientInfo, // PASSES!
+  patient_tumour_analysis: patientTumourAnalysis, // PASSES!
+  genomic_alt_identified: genomicAltIdentified, // PASSES!
+  genomic_events_thera_assoc: genomicEventsEheraAssoc, // PASSES!
 };
 
 class ExportDataTables {
