@@ -6,17 +6,12 @@ const fs = require('fs');
 const j2p = require('json2plain');
 const nconf = require('nconf').file({file: `../../config/${process.env.NODE_ENV}.json`});
 
-const
-  _ = require('lodash'),
-  db = require(process.cwd() + '/app/models'),
-  Q = require('q'),
-  exec = require('child_process').exec,
-  glob = require('glob'),
-  writeCSV = require(process.cwd() + '/lib/writeCSV'),
-  pyconf = require('pyconf'),
-  fs = require('fs'),
-  j2p = require('json2plain'),
-  nconf = require('nconf').file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
+// Valid Exporters
+const clinRel = require('./detailedGenomicAnalysis/alterations');
+const patientInfo = require('./summary/patientInformation');
+const patientTumourAnalysis = require('./summary/tumourAnalysis');
+const genomicAltIdentified = require('./summary/genomicAlterationsIdentified');
+const genomicEventsEheraAssoc = require('./summary/genomicEventsTherapeutic');
 
 
 const validExporters = {
