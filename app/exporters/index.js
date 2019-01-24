@@ -84,19 +84,17 @@ class ExportDataTables {
    * Read config file
    *
    */
-  readConfigFile() {
-    let deferred = Q.defer();
-
-    glob(this.directory.base + '*.auto_generated.cfg', (err, file) => {
+  async readConfigFile() {
+    const files = glob.sync(`${this.directory.base}*.auto_generated.cfg`);
+    try {
       // Read in config file
-      pyconf.readFile(file[0], (err, conf) => {
+      const conf = await readFile(files[0]);
         this.config.original = conf;
         this.config.export = JSON.parse(JSON.stringify(this.config.original));
-        deferred.resolve({status: true});
-      });
-    });
-
-    return deferred.promise;
+      return Promise.resolve({status: true});
+    } catch (error) {
+      return Promise.reject(error);
+  }
   }
 
   /**
