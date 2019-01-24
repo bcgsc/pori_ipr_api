@@ -66,32 +66,18 @@ class ExportDataTables {
    * Duplicate the current CSV folder
    *
    */
-  duplicateDependencies() {
-    let deferred = Q.defer();
-
+  async duplicateDependencies() {
+    try {
+      const base = this.directory.sourceReportBase;
     // Duplicate folder
-    let child = exec(
-      "cp -r " +
-      this.directory.sourceReportBase + '/images ' +
-      this.directory.sourceReportBase + '/POG684_genomic_report_creation.sh ' +
-      this.directory.sourceReportBase + '/POG684.tab ' +
-      this.directory.sourceReportBase + '/expr_dens_gene_list.txt ' +
-
-      this.directory.exportReportBase,
-      (error, stderr, stdout) => {
-
-        if(stderr) deferred.reject({status: false, message: 'Unable to duplicate existing JReport_CSV_ODF directory', data: stderr});
-        if(error) deferred.reject({status: false, message: 'Unable to duplicate existing JReport_CSV_ODF directory', data: error});
-
+      await exec(`cp -r ${base}/images ${base}/POG684_genomic_report_creation.sh ${base}/POG684.tab ${base}/expr_dens_gene_list.txt ${this.directory.exportReportBase}`);
         // All good!
         // Copy & rename CSV files
-        exec("cp -r " + this.directory.source + ' ' + this.directory.export, (error, stderr, stdout) => {
-          deferred.resolve({stage: 'duplicateCSVFolder', status: true});
-        });
-
-    });
-
-    return deferred.promise;
+      await exec(`cp -r ${this.directory.source} ${this.directory.export}`);
+      return Promise.resolve({stage: 'duplicateCSVFolder', status: true});
+    } catch (error) {
+      return Promise.reject(error);
+  }
   }
 
   /**
