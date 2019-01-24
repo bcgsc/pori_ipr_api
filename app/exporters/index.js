@@ -129,114 +129,64 @@ class ExportDataTables {
    * Run Exporters
    *
    */
-  export() {
-    let deferred = Q.defer();
-
-    this.logLine("## Starting export for "+ this.pog.POGID );
-    this.logLine("## Key slug used for this export: "+ this.exportEvent.key);
-    this.logLine("## DB Entry detailing this export: "+ this.exportEvent.ident, 2);
+  async export() {
+    this.logLine(`## Starting export for ${this.pog.POGID}`);
+    this.logLine(`## Key slug used for this export: ${this.exportEvent.key}`);
+    this.logLine(`## DB Entry detailing this export: ${this.exportEvent.ident}`, 2);
 
     // Determine location to report base folder
-    glob(nconf.get('paths:data:POGdata') + '/' + this.pog.POGID + nconf.get('paths:data:reportRoot'), (err, folder) => {
+    const folder = glob.sync(`${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:reportRoot')}`);
 
       // Check for detection
-      if(folder.length === 0) {
-        this.logLine("Unable to find the required existing POG folder.");
-        deferred.reject({status: false, message: 'Unable to find POG source folder in: '+nconf.get('paths:data:POGdata') + '/' + this.pog.POGID + nconf.get('paths:data:dataDir'), log: this.log});
+    if (folder.length === 0) {
+      this.logLine('Unable to find the required existing POG folder.');
+      return Promise.reject(new Error(`Unable to find POG source folder in: ${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:dataDir')}`));
       }
 
       // Set Directory
       this.directory.base = folder[0]; // Base Directory in which all /report* folders are located
 
-      this.directory.sourceReportBase = folder[0] + 'report'; // Source Report Base, in which tracking config, tab file, sh file etc. are located
-      this.directory.source = this.directory.sourceReportBase + '/JReport_CSV_ODF'; // Source CSV folder
+    this.directory.sourceReportBase = `${folder[0]}report`; // Source Report Base, in which tracking config, tab file, sh file etc. are located
+    this.directory.source = `${this.directory.sourceReportBase}/JReport_CSV_ODF`; // Source CSV folder
 
-      this.directory.exportReportBase = folder[0] + 'report_IPR_export_'+this.exportEvent.key; // Target Report Base
-      this.directory.export = this.directory.exportReportBase +'/IPR_CSV_export_' + this.exportEvent.key; // Target CSV folder
+    this.directory.exportReportBase = `${folder[0]}report_IPR_export_${this.exportEvent.key}`; // Target Report Base
+    this.directory.export = `${this.directory.exportReportBase}/IPR_CSV_export_${this.exportEvent.key}`; // Target CSV folder
 
-      this.directory.exportFolderName = 'IPR_CSV_export_' + this.exportEvent.key; // Folder name
+    this.directory.exportFolderName = `IPR_CSV_export_${this.exportEvent.key}`; // Folder name
 
       fs.mkdirSync(this.directory.exportReportBase);
 
       this.logLine('Export folder created');
 
-      this.readConfigFile().then(
-        (result) => {
-
+    try {
+      await this.readConfigFile();
           this.logLine('Finished reading config file', 1);
-
           // Copy CSV
-          this.duplicateDependencies().then(
-            (success) => {
+      await this.duplicateDependencies();
               // All good!
               this.logLine('Copied existing data entries successfully.', 1);
 
-              let promises = [];
-
+      const promises = [];
               // Loop over exporters and gather promises
-              _.forEach(validExporters, (v, k) => {
-                this.logLine('> Loaded exporter: '+ v);
-                promises.push(require(v)(this.pog, this.directory));
+      // validExporters is an object
+      Object.entries(validExporters).forEach(([k, v]) => {
+        this.logLine(`> Loaded exporter: ${k}`);
+        promises.push(v(this.pog, this.directory));
               });
 
-              // Run promises sequentially
-              Q.all(promises)
-                .done(
-                  (result) => {
+      const result = await Promise.all(promises);
                     this.logLine('');
                     this.logLine('Finished running all exporters:');
                     this.logLine(result, 1);
-                    // Successfully ran all exporters
 
-                    this.createConfigFile().then(
-                      (res) => {
+      await this.createConfigFile();
                         this.logLine('Wrote new config file');
 
-                        let command = '/projects/tumour_char/analysis_scripts/SVIA/jreport_genomic_summary/tags/production/genomicReport.py ' +
-                          '-c ' + this.directory.exportReportBase + '/IPR_Report_export_' + this.exportEvent.key + '.cfg ' +
-                          '--rebuild-pdf-only';
-
-                        deferred.resolve({status: true, log: this.log, command: command});
-                      },
-                      (err) => {
-                        this.logLine('Failed to write config file');
-                        this.logLine(err);
-                        deferred.reject({status: false, log: this.log});
-                      }
-                    );
-
-                    // Return command to run
-                    // genomicReport.py --rebuild-pdf-only -c [name of config file]
-
-                  },
-                  (err) => {
-                    // Exporters failed to finish
-                    // TODO: Cleanup! Remove export folder
-
-                    this.logLine('Failed to complete all exporters');
-                    this.logLine(err);
-
-                    deferred.reject({status: false, message: 'Failed to complete all exporters.', data: err, log: this.log});
-                  }
-                );
-
-            },
-            (err) => {
-              this.logLine('Failed to duplicate existing source folder');
-              this.logLine(err);
-              deferred.reject({status: false, message: 'Failed to duplicate existing source folder.', data: err, log: this.log});
-            }
-          );
-
-        },
-        (err) => {
-          this.logLine('Failed to write config file');
-          this.logLine(err);
-          deferred.reject({status: false, log: this.log});
+      const command = `/projects/tumour_char/analysis_scripts/SVIA/jreport_genomic_summary/tags/production/genomicReport.py -c ${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg --rebuild-pdf-only`;
+      return Promise.resolve({status: true, log: this.log, command});
+    } catch (error) {
+      return Promise.reject(error);
         }
-      );
-    });
-    return deferred.promise;
   }
 
 }
