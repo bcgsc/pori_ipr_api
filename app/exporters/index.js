@@ -31,11 +31,12 @@ class ExportDataTables {
    * @param exportEvent - The data export slug
    */
   constructor(pog, exportEvent) {
+    this.log = '';
     this.pog = pog;
     this.exportEvent = exportEvent;
     this.config = {
       original: null,
-      'export': null
+      export: null,
     };
     this.directory = {
       base: null,
@@ -43,12 +44,8 @@ class ExportDataTables {
       source: null,
       sourceReportBase: null,
       exportReportBase: null,
-      exportFolderName: null
+      exportFolderName: null,
     };
-    this.log = "";
-
-    // Load Config
-    nconf.file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
   }
 
   /**
