@@ -54,12 +54,12 @@ class ExportDataTables {
    * @param {string} line
    * @param {integer} spacing
    */
-  logLine(line, spacing=0) {
+  logLine(line, spacing = 0) {
     // Parse
-    if(typeof line === 'object') line = j2p(line);
+    if (typeof line === 'object') line = j2p(line);
 
-    this.log += line + "\n";
-    if(spacing > 0) this.log += "\n".repeat(spacing);
+    this.log += `${line}\n`;
+    if (spacing > 0) this.log += '\n'.repeat(spacing);
   }
 
   /**
