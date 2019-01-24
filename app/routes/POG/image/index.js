@@ -1,151 +1,128 @@
-"use strict";
+'use strict';
 
-let express = require('express'),
-    _ = require('lodash'),
-    router = express.Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models'),
-    loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations');
-  
+const express = require('express');
+const _ = require('lodash');
+
+const router = express.Router({mergeParams: true});
+const db = require(`${process.cwd()}/app/models`);
 
 // Register middleware
 
 // Route for getting an image
 router.route('/retrieve/:key')
-  .get((req,res,next) => {
-
+  .get(async (req, res) => {
     let keys = [];
     // Get All Pogs
-    if(req.params.key.indexOf(',') === -1) keys.push(req.params.key);
-    if(req.params.key.indexOf(',') > -1) {
+    if (req.params.key.indexOf(',') === -1) keys.push(req.params.key);
+    if (req.params.key.indexOf(',') > -1) {
       keys = req.params.key.split(',');
     }
 
-    let opts = {
+    const opts = {
       where: {
         key: {
-          in: keys
+          in: keys,
         },
         pog_report_id: req.report.id,
       },
-      attributes: {exclude: ['id','deletedAt', 'pog_id', 'pog_report_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'pog_report_id']},
     };
 
-    db.models.imageData.findAll(opts).then(
-      (result) => {
-        let output = {};
+    try {
+      const result = await db.models.imageData.findAll(opts);
+      const output = {};
 
-        _.forEach(result, (v,k) => {
+      _.forEach(result, (v, k) => {
+        output[v.key] = v;
+      });
 
-          output[v.key] = v;
-
-        });
-
-        res.json(output);
-      },
-      (error) => {
-        res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});
-      }
-    );
-    
-    })
-    .put((req,res,next) => {
+      res.json(output);
+    } catch (error) {
+      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+    }
+  })
+  .put((req, res) => {
     // Add a new Potential Clinical Alteration...
   });
+
 router.route('/expressionDensityGraphs')
-  .get((req,res,next) => {
+  .get(async (req, res) => {
+    try {
+      const output = {};
+      const result = await db.models.imageData.findAll({
+        where: {
+          pog_id: req.POG.id,
+          pog_report_id: req.report.id,
+          key: {
+            $like: 'expDensity.%',
+          },
+        },
+        order: [['key', 'ASC']],
+        attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
+      });
 
-    db.models.imageData.findAll({
-      where: {
-        pog_id: req.POG.id,
-        pog_report_id: req.report.id,
-        key: {
-          $like: 'expDensity.%'
-        }
-      },
-      order: 'key ASC',
-      attributes: {exclude: ['id','deletedAt', 'pog_id']}
-    }).then(
-      (result) => {
-        let output = {};
+      _.forEach(result, (v, k) => {
+        output[v.key] = v;
+      });
 
-        _.forEach(result, (v,k) => {
-
-          output[v.key] = v;
-
-        });
-
-        res.json(output);
-      },
-      (error) => {
-        res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});
-      }
-    )
-
+      res.json(output);
+    } catch (error) {
+      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+    }
   });
 
 router.route('/mutationSummary')
-  .get((req,res,next) => {
-    
-    let opts = {
+  .get(async (req, res) => {
+    const opts = {
       where: {
         pog_report_id: req.report.id,
         key: {
-            $or: [
-            { $like: 'mutation_summary.%' },
-            { $like: 'mutSummary.%' }
-          ]
-        }
+          $or: [
+            {$like: 'mutation_summary.%'},
+            {$like: 'mutSummary.%'},
+          ],
+        },
       },
-      order: 'key ASC',
-      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'pog_report_id']}
+      order: [['key', 'ASC']],
+      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'pog_report_id']},
     };
-    
-    db.models.imageData.findAll(opts)
-      .then((result) => {
-        let output = {};
-        
-        _.forEach(result, (v) => {
-          output[v.key] = v;
-        });
-        
-        res.json(output);
-      })
-      .catch((err) => {
-      
+
+    try {
+      const output = {};
+      const result = await db.models.imageData.findAll(opts);
+      _.forEach(result, (v) => {
+        output[v.key] = v;
       });
-  
+      res.json(output);
+    } catch (error) {
+      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+    }
   });
 
 router.route('/subtypePlots')
-  .get((req,res,next) => {
+  .get(async (req, res) => {
+    try {
+      const output = {};
+      const result = await db.models.imageData.findAll({
+        where: {
+          pog_id: req.POG.id,
+          pog_report_id: req.report.id,
+          key: {
+            $like: 'subtypePlot.%',
+          },
+        },
+        order: [['key', 'ASC']],
+        attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
+      });
 
-  	db.models.imageData.findAll({
-      where: {
-        pog_id: req.POG.id,
-        pog_report_id: req.report.id,
-        key: {
-          $like: 'subtypePlot.%'
-        }
-      },
-      order: 'key ASC',
-      attributes: {exclude: ['id','deletedAt', 'pog_id']}
-    }).then(
-      (result) => {
-        let output = {};
+      _.forEach(result, (v, k) => {
+        output[v.key] = v;
+      });
 
-        _.forEach(result, (v,k) => {
-
-          output[v.key] = v;
-
-        });
-
-        res.json(output);
-      },
-      (error) => {
-        res.status(500).json({error: {message: "Unable to query image data", code: "imageQueryFailed"}});
-      }
-    )
-
+      res.json(output);
+    } catch (error) {
+      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+    }
   });
 
 module.exports = router;
