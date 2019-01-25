@@ -144,7 +144,7 @@ class ExportDataTables {
     // Check for detection
     if (folder.length === 0) {
       this.logLine('Unable to find the required existing POG folder.');
-      return Promise.reject(new Error(`Unable to find POG source folder in: ${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:dataDir')}`));
+      throw new Error(`Unable to find POG source folder in: ${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:dataDir')}`);
     }
 
     // Set Directory
