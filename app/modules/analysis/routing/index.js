@@ -427,7 +427,6 @@ module.exports = class TrackingRouter extends RoutingInterface {
           }
 
           // Filter for source that has a matching analysis biopsy
-          
           const biopsyRegex = '([a-z]+)([0-9]+)';
           // splitting analysis biopsy into sample type and biopsy number
           const analysisBiopsy = analysis.analysis_biopsy.match(biopsyRegex);
