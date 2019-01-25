@@ -50,8 +50,9 @@ class ExportDataTables {
   /**
    * Utility to add lines to log
    *
-   * @param {string} line
-   * @param {integer} spacing
+   * @param {string} line a message to log
+   * @param {integer} spacing number of blank lines to add to end of message
+   * @returns {undefined}
    */
   logLine(line, spacing = 0) {
     // Parse
