@@ -165,6 +165,7 @@ class ExportDataTables {
     try {
       await this.readConfigFile();
       this.logLine('Finished reading config file', 1);
+
       // Copy CSV
       await this.duplicateDependencies();
       // All good!
@@ -173,9 +174,9 @@ class ExportDataTables {
       const promises = [];
       // Loop over exporters and gather promises
       // validExporters is an object
-      Object.entries(validExporters).forEach(([k, v]) => {
-        this.logLine(`> Loaded exporter: ${k}`);
-        promises.push(v(this.pog, this.directory));
+    Object.entries(validExporters).forEach(([expLabel, expFunc]) => {
+      this.logLine(`> Loaded exporter: ${expLabel}`);
+      promises.push(expFunc(this.pog, this.directory));
       });
 
       const result = await Promise.all(promises);
