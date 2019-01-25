@@ -63,7 +63,7 @@ class ExportDataTables {
     this.log += `${line}\n`;
     if (spacing > 0) {
       this.log += '\n'.repeat(spacing);
-  }
+    }
   }
 
   /**
@@ -71,39 +71,33 @@ class ExportDataTables {
    *@returns {Promise.<Object.<String, Boolean>>} returns the stage and status
    */
   async duplicateDependencies() {
-    try {
-      const base = this.directory.sourceReportBase;
-      // Duplicate folder
-      await exec(`cp -r ${base}/images ${base}/POG684_genomic_report_creation.sh ${base}/POG684.tab ${base}/expr_dens_gene_list.txt ${this.directory.exportReportBase}`);
-      // All good!
-      // Copy & rename CSV files
-      await exec(`cp -r ${this.directory.source} ${this.directory.export}`);
-      return Promise.resolve({stage: 'duplicateCSVFolder', status: true});
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    const base = this.directory.sourceReportBase;
+    // Duplicate folder
+    await exec(`cp -r ${base}/images ${base}/POG684_genomic_report_creation.sh ${base}/POG684.tab ${base}/expr_dens_gene_list.txt ${this.directory.exportReportBase}`);
+    // All good!
+    // Copy & rename CSV files
+    await exec(`cp -r ${this.directory.source} ${this.directory.export}`);
+    return {stage: 'duplicateCSVFolder', status: true};
   }
 
   /**
    * Read config file
    *
+   * @returns {Promise.<Object.<Boolean>>} returns the status
    */
   async readConfigFile() {
     const files = glob.sync(`${this.directory.base}*.auto_generated.cfg`);
-    try {
-      // Read in config file
-      const conf = await readFile(files[0]);
-      this.config.original = conf;
-      this.config.export = JSON.parse(JSON.stringify(this.config.original));
-      return Promise.resolve({status: true});
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    // Read in config file
+    const conf = await readFile(files[0]);
+    this.config.original = conf;
+    this.config.export = JSON.parse(JSON.stringify(this.config.original));
+    return {status: true};
   }
 
   /**
    * Write new Config File
    *
+   * @returns {Promise.<Object.<String, Boolean>>} returns the stage and the status
    */
   async createConfigFile() {
     // get line to update.
@@ -120,18 +114,14 @@ class ExportDataTables {
     // Create File
     const data = `## This config file was generated as the result of an export from the Interactive POG Report API\n## Export ident: \n${this.config.export.__lines.join('\n')}`;
 
-    try {
-      fs.writeFileSync(`${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg`, data);
-      this.logLine(`Successfully export config file: IPR_Report_export_${this.exportEvent.key}.cfg`);
-      return Promise.resolve({stage: 'config.write', status: true});
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    fs.writeFileSync(`${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg`, data);
+    this.logLine(`Successfully export config file: IPR_Report_export_${this.exportEvent.key}.cfg`);
+    return {stage: 'config.write', status: true};
   }
 
   /**
    * Run Exporters
-   *
+   * @returns {Promise.<Object.<Boolean, String, String>>} returns status, the log file, and the command
    */
   async export() {
     this.logLine(`## Starting export for ${this.pog.POGID}`);
@@ -162,36 +152,32 @@ class ExportDataTables {
 
     this.logLine('Export folder created');
 
-    try {
-      await this.readConfigFile();
-      this.logLine('Finished reading config file', 1);
+    await this.readConfigFile();
+    this.logLine('Finished reading config file', 1);
 
-      // Copy CSV
-      await this.duplicateDependencies();
-      // All good!
-      this.logLine('Copied existing data entries successfully.', 1);
+    // Copy CSV
+    await this.duplicateDependencies();
+    // All good!
+    this.logLine('Copied existing data entries successfully.', 1);
 
-      const promises = [];
-      // Loop over exporters and gather promises
-      // validExporters is an object
+    const promises = [];
+    // Loop over exporters and gather promises
+    // validExporters is an object
     Object.entries(validExporters).forEach(([expLabel, expFunc]) => {
       this.logLine(`> Loaded exporter: ${expLabel}`);
       promises.push(expFunc(this.pog, this.directory));
-      });
+    });
 
-      const result = await Promise.all(promises);
-      this.logLine('');
-      this.logLine('Finished running all exporters:');
-      this.logLine(result, 1);
+    const result = await Promise.all(promises);
+    this.logLine('');
+    this.logLine('Finished running all exporters:');
+    this.logLine(result, 1);
 
-      await this.createConfigFile();
-      this.logLine('Wrote new config file');
+    await this.createConfigFile();
+    this.logLine('Wrote new config file');
 
-      const command = `/projects/tumour_char/analysis_scripts/SVIA/jreport_genomic_summary/tags/production/genomicReport.py -c ${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg --rebuild-pdf-only`;
-      return Promise.resolve({status: true, log: this.log, command});
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    const command = `/projects/tumour_char/analysis_scripts/SVIA/jreport_genomic_summary/tags/production/genomicReport.py -c ${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg --rebuild-pdf-only`;
+    return {status: true, log: this.log, command};
   }
 }
 
