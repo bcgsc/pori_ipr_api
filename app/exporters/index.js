@@ -68,7 +68,7 @@ class ExportDataTables {
 
   /**
    * Duplicate the current CSV folder
-   *
+   *@returns {Promise.<Object.<String, Boolean>>} returns the stage and status
    */
   async duplicateDependencies() {
     try {
