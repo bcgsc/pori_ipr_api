@@ -26,8 +26,8 @@ class ExportDataTables {
   /**
    * Constructor
    *
-   * @param POGID - Pog ID
-   * @param exportEvent - The data export slug
+   * @param {Object.<String>} pog - Pog ID
+   * @param {Object.<String, String>} exportEvent  - The data export slug
    */
   constructor(pog, exportEvent) {
     this.log = '';
