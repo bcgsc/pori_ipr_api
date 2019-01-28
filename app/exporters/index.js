@@ -15,11 +15,11 @@ const genomicEventsEheraAssoc = require('./summary/genomicEventsTherapeutic');
 
 
 const validExporters = {
-  clin_rel: clinRel, // PASSES!
-  patient_info: patientInfo, // PASSES!
-  patient_tumour_analysis: patientTumourAnalysis, // PASSES!
-  genomic_alt_identified: genomicAltIdentified, // PASSES!
-  genomic_events_thera_assoc: genomicEventsEheraAssoc, // PASSES!
+  clin_rel: clinRel,
+  patient_info: patientInfo,
+  patient_tumour_analysis: patientTumourAnalysis,
+  genomic_alt_identified: genomicAltIdentified,
+  genomic_events_thera_assoc: genomicEventsEheraAssoc,
 };
 
 class ExportDataTables {
