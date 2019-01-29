@@ -26,8 +26,8 @@ class ExportDataTables {
   /**
    * Constructor
    *
-   * @param {Object.<String>} pog - Pog ID
-   * @param {Object.<String, String>} exportEvent  - The data export slug
+   * @param {Object.<string>} pog - Pog ID
+   * @param {Object.<string, string>} exportEvent  - The data export slug
    */
   constructor(pog, exportEvent) {
     this.log = '';
@@ -68,7 +68,7 @@ class ExportDataTables {
 
   /**
    * Duplicate the current CSV folder
-   *@returns {Promise.<Object.<String, Boolean>>} returns the stage and status
+   *@returns {Promise.<Object.<string, boolean>>} returns the stage and status
    */
   async duplicateDependencies() {
     const base = this.directory.sourceReportBase;
@@ -83,7 +83,7 @@ class ExportDataTables {
   /**
    * Read config file
    *
-   * @returns {Promise.<Object.<Boolean>>} returns the status
+   * @returns {Promise.<Object.<boolean>>} returns the status
    */
   async readConfigFile() {
     const files = glob.sync(`${this.directory.base}*.auto_generated.cfg`);
@@ -97,7 +97,7 @@ class ExportDataTables {
   /**
    * Write new Config File
    *
-   * @returns {Promise.<Object.<String, Boolean>>} returns the stage and the status
+   * @returns {Promise.<Object.<string, boolean>>} returns the stage and the status
    */
   async createConfigFile() {
     // get line to update.
@@ -121,7 +121,7 @@ class ExportDataTables {
 
   /**
    * Run Exporters
-   * @returns {Promise.<Object.<Boolean, String, String>>} returns status, the log file, and the command
+   * @returns {Promise.<Object.<boolean, string, string>>} returns status, the log file, and the command
    */
   async export() {
     this.logLine(`## Starting export for ${this.pog.POGID}`);
