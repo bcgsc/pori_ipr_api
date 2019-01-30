@@ -21,17 +21,12 @@ module.exports = async (pog, directory) => {
 
   const results = await db.models.genomicAlterationsIdentified.findAll(opts);
 
-  const entries = [];
-  // Extract raw values into preMapped
-  results.forEach((value) => {
-    entries.push(value.get().geneVariant);
-  });
-
   const filename = `${directory.export}/genomic_alt_identified.csv`;
   // Construct data
   let data = 'gene_variant_1,gene_variant_2,gene_variant_3,gene_variant_4,gene_variant_5\n';
-  while (entries.length > 0) {
-    data += `${entries.splice(0, 5).join(',')}\n`;
+  // Add variants to data string
+  while (results.length > 0) {
+    data += `${results.splice(0, 5).map(value => value.get().geneVariant).join(',')}\n`;
   }
   unlinkAndWrite(filename, data);
 
