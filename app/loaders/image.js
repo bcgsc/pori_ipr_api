@@ -7,6 +7,7 @@ let db = require(process.cwd() + '/app/models'),
     Q = require('q'),
     im = require('imagemagick'),
     exec = require('child_process').exec,
+    { spawn } = require('child_process'),
     glob = require('glob'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
@@ -75,25 +76,26 @@ let processImage = (report, image, log) => {
   
   let deferred = Q.defer();
 
-  let imgData = "";
+  let imgData = '';
 
   // Call Resize
-  let format = image.format || 'PNG';
-  let process = exec('convert "'+imagePath + image.file+ '" -resize ' + image.dimensions.w+'x'+image.dimensions.h + ' ' + format + ':- | base64');
+  const format = image.format || 'PNG';
+  const process = spawn('convert', [`${imagePath}${image.file}`, '-resize', `${image.dimensions.w}x${image.dimensions.h}`, `${format}:-`]);
+  const base = spawn('base64');
+  process.stdout.pipe(base.stdin);
 
   // On data, chunk
-  process.stdout.on('data', (res) => {
-    imgData = imgData + res;
+  base.stdout.on('data', (res) => {
+    imgData += res;
   });
 
-  process.stderr.on('data', (err) => {
+  base.stderr.on('data', (err) => {
     console.log('Imagemagick Processing Error', err);
     deferred.reject({loader: 'image', message: 'ImageMagick failed to convert: ' + image.file});
   });
 
   // Done executing
-  process.on('close', (resp) => {
-
+  base.on('close', (resp) => {
     // Write to DB
     // Add to database
     db.models.imageData.create({
