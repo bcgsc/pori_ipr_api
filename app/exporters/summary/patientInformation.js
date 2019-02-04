@@ -1,21 +1,13 @@
-"use strict";
+const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const db = require('../../../app/models');
+const reverseMapKeys = require('../../../app/libs/reverseMapKeys');
+const WriteCSV = require('../../../lib/writeCSV');
+const {unlinkAndWrite} = require('../utils');
 
-let db = require(process.cwd() + '/app/models'),
-  Q = require('q'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  reverseMapKeys = require(process.cwd() + '/app/libs/reverseMapKeys'),
-  _ = require('lodash'),
-  writeCSV = require(process.cwd() + '/lib/writeCSV'),
-  fs = require('fs'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
-
-module.exports = (pog, directory) => {
-
-  let deferred = Q.defer();
-
-  let opts = {
+module.exports = async (pog, directory) => {
+  const opts = {
     where: {
-      pog_id: pog.id
+      pog_id: pog.id,
     },
     attributes: {
       exclude: [
@@ -29,44 +21,21 @@ module.exports = (pog, directory) => {
         'constitutionalProtocol',
         'createdAt',
         'updatedAt',
-        'deletedAt'
-      ]
+        'deletedAt',
+      ],
     },
-    limit: 1
+    limit: 1,
   };
 
-  db.models.patientInformation.findOne(opts).then(
-    (result) => {
+  const result = await db.models.patientInformation.findOne(opts);
+  const preMapped = [result.get()];
 
-      let preMapped = [result.get()];
+  // Reverse Remap keys
+  const mapped = reverseMapKeys(preMapped, nconf.get('summary:patientInformation'));
+  const data = new WriteCSV(mapped).raw();
 
-      // Reverse Remap keys
-      let mapped = reverseMapKeys(preMapped, nconf.get('summary:patientInformation'));
+  const filename = `${directory.export}/patient_info.csv`;
+  unlinkAndWrite(filename, data);
 
-      let file = 'patient_info';
-
-      // Remove file, then write
-      fs.unlink(directory.export + '/' + file + '.csv' ,(err) => {
-        // Did unlink fail?
-        if(err) return deferred.reject({stage: 'summary.patientInformation', status: false, data: err});
-
-        let data = new writeCSV(mapped).raw();
-
-        let writer_detail = fs.writeFile(directory.export + '/' + file + '.csv', data, (err) => {
-          if(err) console.log('Error in: ', file, err);
-
-          deferred.resolve({stage: 'summary.patientInformation', status: true});
-        });
-      });
-
-
-    },
-    (err) => {
-      console.log('Failed to query');
-      deferred.reject({stage: 'summary.patientInformation', status: false, data: err});
-    }
-  );
-
-  return deferred.promise;
-
+  return {stage: 'summary.patientInformation', status: true};
 };
