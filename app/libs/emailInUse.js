@@ -1,25 +1,15 @@
-"use strict";
-
-let db = require('../models/'),
-    Q = require('q');
+let db = require('../models/');
 
 /**
  * Check if an email address is in use.
  *
  * @param email
- * @returns {*|promise|boolean}
+ * @returns {Promise.<Boolean>}
  */
-module.exports = (email) => {
-  let deferred = Q.defer();
-  db.models.user.findAll({where: {email: email}}).then(
-    (res) => {
-      if(res.length > 0) deferred.resolve(true);
-      if(res.length < 1) deferred.resolve(false);
-    },
-    (err) => {
-      console.log('EmaiLInUse Failed', err);
-      deferred.reject({status: false, message: 'Unable to lookup email in use status of: ' + email});
-    }
-  );
-  return deferred.promise;
+module.exports = async (email) => {
+  const result = await db.models.user.findAll({where: {email: email}});
+  if(result.length > 0){
+    return true;
+  }
+  return false;
 };

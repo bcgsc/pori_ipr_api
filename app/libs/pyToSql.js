@@ -1,7 +1,3 @@
-"use strict";
-
-let _ = require('lodash');
-
 const map = {
   "inf": "+infinity",
   "-inf": "-infinity",
@@ -30,9 +26,11 @@ module.exports = (input, cols) => {
   if(cols !== undefined && cols.length > 0) {
 
     // Loop over columns to be converted
-    _.forEach(cols, (v) => {
+    cols.forEach((val) => {
       // Confirm column is in input hashmap, and in map hashmap.
-      if(v in input && input[v] in map) input[v] = map[input[v]]; // Remap value
+      if(val in input && input[val] in map) {
+        input[val] = map[input[val]]; // Remap value
+      }
     });
 
     // Return back object
@@ -41,8 +39,11 @@ module.exports = (input, cols) => {
 
   // Single input value
   if(cols === undefined && (typeof input !== 'object')) {
-    if (input in map) return map[input];
-    if (!(input in map)) return input;
+    if (input in map) {
+      return map[input];
+    } else {
+      return input;
+    }
   }
 
   throw new Error('PythonToSQL conversion given incorrect input type');

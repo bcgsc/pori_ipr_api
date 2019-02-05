@@ -1,8 +1,4 @@
-"use strict";
-
-const db = require(process.cwd() + '/app/models'),
-  _ = require('lodash'),
-  Q = require('q');
+const db = require('../../../app/models');
 
 
 /*
@@ -23,98 +19,56 @@ const db = require(process.cwd() + '/app/models'),
  * @rejects object - {status: bool, message: string}
  *
  */
-module.exports = (model, currentEntry, newEntry, user, comment="", destroyIndex='ident', colsToMap=['ident']) => {
-
-  let deferred = Q.defer();
+module.exports = async (model, currentEntry, newEntry, user, comment = '', destroyIndex = 'ident', colsToMap = ['ident']) => {
 
   // Update newEntry values
-  _.forEach(colsToMap, (col) => {
+  colsToMap.forEach((col) => {
     if(!(col in currentEntry)) {
-      deferred.reject('The column: ' + col + ' does not exist on the current Entry.');
-      throw Error('The column: ' + col + ' does not exist on the current Entry.');
+      throw new Error('The column: ' + col + ' does not exist on the current Entry.');
     }
     newEntry[col] = currentEntry[col]; // Map from old to new
   });
 
   // Get the max for the current dataVersion in the table
-  model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false}).then(
-    (maxCurrentVersion) => {
-      if(!typeof maxCurrentVersion === 'number') return deferred.reject({status: false, message: 'Unable to find current max version of data entry'});
+  const maxCurrentVersion = await model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false});
 
-      newEntry.dataVersion = maxCurrentVersion + 1;
+  if(!typeof maxCurrentVersion === 'number') {
+    throw new Error('Unable to find current max version of data entry');
+  }
 
-      // Create new entry
-      model.create(newEntry).then(
-        (createResponse) => {
+  newEntry.dataVersion = maxCurrentVersion + 1;
 
-          // Are we not destroying?
-          if(!destroyIndex) {
+  // Create new entry
+  const createResponse = model.create(newEntry);
 
-            deferred.resolve({status: true, data: {create: createResponse}});
+  // Are we not destroying?
+  if(!destroyIndex) {
+    return {status: true, data: {create: createResponse}};
+  } else {
+    // Set version to be destroyed
+    const destroyWhere = {
+      dataVersion: currentEntry.dataVersion
+    };
+    // Set destroy index
+    destroyWhere[destroyIndex] = currentEntry[destroyIndex];
 
-          } else {
+    // Delete existing version
+    const destroyResponse = await model.destroy({where: destroyWhere, limit: 1});
 
-            // Set version to be destroyed
-            let destroyWhere = {
-              dataVersion: currentEntry.dataVersion
-            };
-            // Set destroy index
-            destroyWhere[destroyIndex] = currentEntry[destroyIndex];
+    // Create DataHistory entry
+    const dh = {
+      type: 'change',
+      table: model.getTableName(),
+      model: model.name,
+      entry: newEntry.ident,
+      previous: currentEntry.dataVersion,
+      new: newEntry.dataVersion,
+      user_id: user.id,
+      comment: comment
+    };
 
-            // Delete existing version
-            model.destroy({where: destroyWhere, limit: 1}).then(
-              (destroyResponse) => {
-
-                // Create DataHistory entry
-                let dh = {
-                  type: 'change',
-                  table: model.getTableName(),
-                  model: model.name,
-                  entry: newEntry.ident,
-                  previous: currentEntry.dataVersion,
-                  new: newEntry.dataVersion,
-                  user_id: user.id,
-                  comment: comment
-                };
-
-                // Create History
-                db.models.kb_history.create(dh).then(
-                  (createdHistory) => {
-
-                    // Resolve promise
-                    deferred.resolve({status: true, data: {create: createResponse, history: createdHistory, destroy: destroyResponse}});
-                  },
-                  (historyErr) => {
-                    consolelog('SQL Error', historyErr);
-                    deferred.reject({status: false, message: "Unable to create history entry. Data has been updated."});
-                  }
-                );
-
-
-              },
-              (destroyError) => {
-                deferred.reject({status: false, message: 'Unable to destroy old data version entry'});
-                throw Error('Unable to destroy old data version entry');
-              }
-            )
-          }
-
-        },
-        (createError) => {
-          console.log(createError);
-          deferred.reject({status: false, message: 'Unable to create new data version entry'});
-          throw Error('Unable to create new data version entry');
-        }
-      );
-
-    },
-    (err) => {
-      console.log('SQL Error, unable to get current max version number of data for versioning');
-      console.log(err);
-      deferred.reject({status: false, message: 'SQL Error, unable to get max version number'});
-    }
-  );
-
-  return deferred.promise;
-
+    // Create History
+    const createdHistory = db.models.kb_history.create(dh);
+    return {status: true, data: {create: createResponse, history: createdHistory, destroy: destroyResponse}};
+  }
 };

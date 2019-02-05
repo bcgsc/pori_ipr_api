@@ -11,17 +11,24 @@ module.exports = (input, keyMap) => {
     output[k] = _.mapKeys(input[k], (v, key) => {
 
       // Unhandled colons - Check to see if double or single colons exists and are not yet handled!
-      if(key.indexOf(':') !== -1 && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
+      if(key.includes(':') && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
         console.log(colors.bgRed(colors.white("INCOMPATIBLE CHARACTER FOUND")));
       }
 
       // Replace double colons with tilde
-      if(key.indexOf('::') !== -1) key = key.replace('::', '~');
-      if(key.indexOf(':') !== -1) key = key.replace(':', '~');
+      if(key.includes('::')) {
+        key = key.replace('::', '~');
+      }
+      if(key.includes(':')) {
+        key = key.replace(':', '~');
+      }
 
       // Remap Keys
-      if(key in keyMap) return keyMap[key];
-      if(!(key in keyMap)) return key;
+      if(key in keyMap) {
+        return keyMap[key];
+      } else {
+        return key;
+      }
     });
   }
   

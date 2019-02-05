@@ -1,13 +1,6 @@
-"use strict";
-
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-  fs = require('fs'),
-  d3 = require('d3-dsv'),
-  _ = require('lodash'),
-  Q = require('q');
-
-let baseDir;
+const fs = require('fs');
+const d3 = require('d3-dsv');
+const db = require('../../../app/models');
 
 /*
  * Parse MAVIS Summary File
@@ -15,33 +8,20 @@ let baseDir;
  * @param string mavisFile - name of TSV file for given MAVIS summary
  *
  */
-let parseMavisFile = (report, mavisFile) => {
-
-  // Create promise
-  let deferred = Q.defer();
+const parseMavisFile = async (report, mavisFile) => {
 
   // Read in TSV file
-  fs.readFile(mavisFile, (err, data) => {
+  const data = fs.readFileSync(mavisFile);
     
-    if(err) {
-      console.log('Unable to find MAVIS TSV file', err);
-      deferred.reject({loader: 'MAVISSummary', message: 'Unable to find the MAVIS summary file: ' + mavisFile, result: false});
-    }
+  // Parse TSV file
+  const parsedMavisSummary = d3.tsvParse(data.toString());
     
-    // Parse TSV file
-    let parsedMavisSummary = d3.tsvParse(data.toString());
-    
-    // Formatting summaries to be inserted into db
-    let mavisRecords = _.map(parsedMavisSummary, function(record) {
+  // Formatting summaries to be inserted into db
+  const mavisRecords = parsedMavisSummary.map(record => {
       return {product_id: record.product_id.split(';')[0], pog_id: report.pog_id, pog_report_id: report.id, summary: JSON.stringify(record)};
     }); 
-    
-    // Send data to
-    deferred.resolve(mavisRecords);
-  });
 
-  return deferred.promise;
-
+  return mavisRecords;
 };
 
 /**
@@ -54,15 +34,12 @@ let parseMavisFile = (report, mavisFile) => {
  * @param {list}   productIds - list of MAVIS product ids to add to database
  *
  */
- module.exports = {
 
-  addMavisSummary: (report, sources, productIds) => {
-
-    // Create promise
-    let deferred = Q.defer();
-
+const addMavisSummary = async (report, sources, productIds) => {
     // Parsing MAVIS files
     // Wait for all promises to be resolved
+    Promise.all([]);
+    //??? Here I am
     Q.all(_.map(sources, (source) => {
       // Check that MAVIS summary exists
       if(!fs.existsSync(source)) {
@@ -109,4 +86,7 @@ let parseMavisFile = (report, mavisFile) => {
     
     return deferred.promise;
   }
+
+module.exports = {
+  addMavisSummary,
 };

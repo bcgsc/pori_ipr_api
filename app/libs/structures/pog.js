@@ -1,22 +1,16 @@
-"use strict";
+const db = require('../../../app/models');
 
-const db = require(process.cwd() + "/app/models");
-const _  = require('lodash');
-
-module.exports = class POG {
-
+class POG {
   /**
    * Construct POG
    *
    * @param POGID
-   * @param newPOG
    */
-  constructor(POGID, newPOG=false) {
+  constructor(POGID) {
     this.POGID = POGID; // Store POGID
     this.instance = null;
     this.model = db.models.POG;
   }
-
   /**
    * Retrieve entry from database
    *
@@ -24,70 +18,39 @@ module.exports = class POG {
    *
    * @returns {promise|object} - Resolves with database instance of model
    */
-  retrieve(options={}) {
-    return new Promise((resolve, reject) => {
+  async retrieve(options = {}) {
+    // Return cached object
+    if (this.instance) {
+      return this.instance;
+    }
 
-      // Return cached object
-      if(this.instance) resolve(this.instance);
+    // Lookup in Database
+    const POG = await this.model.findOne({ where: {POGID: this.POGID }, include: {as: 'analysis', model: db.models.pog_analysis }});
 
-      // Lookup in Database
-      this.model.findOne({ where: {POGID: this.POGID }, include: {as: 'analysis', model: db.models.pog_analysis }})
-        .then((POG) => {
+    // Not found, and asked to create
+    if(POG === null && options.create) {
 
-          // Not found, and asked to create
-          if(POG === null && options.create) {
-
-            let createOpts = {};
-            if(options.nonPOG) {
-              createOpts.nonPOG = true;
-              createOpts.type = 'genomic';
-              createOpts.project = options.project;
-            }
+      const createOpts = {};
+      if(options.nonPOG) {
+        createOpts.nonPOG = true;
+        createOpts.type = 'genomic';
+        createOpts.project = options.project;
+      }
             
-            createOpts.analysis = (options.analysis !== undefined) ? options.analysis : true;
+      createOpts.analysis = (options.analysis !== undefined) ? options.analysis : true;
             
-            // Run create
-            return this.create(createOpts)
-              .then((created) => {
-                this.instance = created;
-                resolve(this.instance);
-              })
-              .catch((err) => {
-                // Unable to find POG
-                console.log('Unable to create POG entry', err);
-                reject({message: 'Unable to query database.', status: 500, error: err});
-              });
-          }
+      // Run create
+      this.instance = await this.create(createOpts);
+      return this.instance;
+    }
 
-          // POG not found
-          if(POG === null) {
-            return resolve(null);
-          }
-
-          // POG found
-          if(POG !== null) {
-            /*
-            // Check if there's any existing analysis:
-            if(POG.analysis.length > 0) {
-              // Check if we have a match
-              if(_.find(POG.analysis, {clinical_biopsy: options.analysis.clinical_biopsy})) {
-                // Found by clinical
-              }
-              if(_.find(POG.analysis, {analysis_biopsy: options.analysis.analysis_biopsy})) {
-                // Found by analysis
-              }
-            }
-            */
-
-            this.instance = POG;
-            resolve(this.instance);
-          }
-        })
-        .catch((err) => {
-          // Unable to find POG
-          reject({message: 'Unable to query database.', status: 500, error: err});
-        });
-    });
+    // POG not found
+    if(POG === null) {
+      return null;
+    } else {
+      this.instance = POG;
+      return this.instance;
+    }
   }
 
   /**
@@ -97,96 +60,52 @@ module.exports = class POG {
    *
    * @returns {promise|object} - Promise resolves with new POG. Rejects with error message.
    */
-  create(options={}) {
-    return new Promise((resolve, reject) => {
+  async create(options = {}) {
 
-      let data = { POGID: this.POGID };
+      const data = { POGID: this.POGID };
 
       // Check for nonPOG flag
-      if(options.nonPOG) data.nonPOG = true;
-      
-      this.model.create(data)
-        .then((POG) => {
-          this.instance = POG;
+      if(options.nonPOG) {
+        data.nonPOG = true;
+      }
+      const POG = await this.model.create(data);
+      this.instance = POG;
 
-          let analysis = { pog_id: POG.id };
+      const analysis = { pog_id: POG.id };
 
-          // Optional Analysis settings that can be passed in
-          if(options.analysis && options.analysis.clinical_biopsy) analysis.clinical_biopsy = options.analysis.clinical_biopsy;
-          if(options.analysis && options.analysis.analysis_biopsy) analysis.analysis_biopsy = options.analysis.analysis_biopsy;
-          if(options.analysis && options.analysis.priority) analysis.priority = options.analysis.priority;
-          if(options.analysis && options.analysis.disease) analysis.disease = options.analysis.disease;
-          if(options.analysis && options.analysis.biopsy_notes) analysis.biopsy_notes = options.analysis.biopsy_notes;
-          if(options.analysis && options.analysis.libraries) analysis.libraries = options.analysis.libraries;
-          if(options.analysis && options.analysis.bioapps_source_id) analysis.bioapps_source_id = options.analysis.bioapps_source_id;
+      // Optional Analysis settings that can be passed in
+      if (options.analysis){
+        if (options.analysis.clinical_biopsy) {
+          analysis.clinical_biopsy = options.analysis.clinical_biopsy;
+        }
+        if (options.analysis.analysis_biopsy) {
+          analysis.analysis_biopsy = options.analysis.analysis_biopsy;
+        }
+        if (options.analysis.priority) {
+          analysis.priority = options.analysis.priority;
+        }
+        if (options.analysis.disease) {
+          analysis.disease = options.analysis.disease;
+        }
+        if (options.analysis.biopsy_notes) {
+          analysis.biopsy_notes = options.analysis.biopsy_notes;
+        }
+        if (options.analysis.libraries) {
+          analysis.libraries = options.analysis.libraries;
+        }
+        if (options.analysis.bioapps_source_id) {
+          analysis.bioapps_source_id = options.analysis.bioapps_source_id;
+        }
+        analysis.name = (options.analysis && options.analysis.name) ? options.analysis.name : 'N/A';
 
-          analysis.name = (options.analysis && options.analysis.name) ? options.analysis.name : 'N/A';
-          
-          if(options.analysis) {
-  
-            // Create analysis entry
-            return db.models.pog_analysis.create(analysis)
-              .then((analysis) => {
-        
-                  POG.analysis = [analysis]; // Nest analysis inside POG
-                  resolve(POG);
-                },
-                (error) => {
-                  console.log('Unable to create pog analysis entry', error);
-                  reject({message: 'Unable to create pog analysis entry'});
-                  POG.destroy();
-                });
-          } else {
-            return resolve(POG);
-          }
-        })
-        .catch((err) => {
-          // Unable to create POG
-          console.log('Failed to create the POG', err);
-          reject({message: 'Unable to create POG', status: 500, error: err});
-        });
-    });
-  }
-
-  /**
-   * Bind a user to this POG
-   *
-   * @params {object} user - User DB instance
-   * @params {string} role - Role to bind user with
-   * @returns {promise|object} - Resolves with binding DB instance
-   */
-  bindUser(user, role) {
-    return new Promise((resolve, reject) => {
-
-    });
-  }
-
-  /**
-   * Unbind a user from this POG
-   *
-   * @params {object} user - User DB Instance
-   * @param {string} role - Role
-   * @returns {promise|boolean} - Resolves with true for success
-   */
-  unbindUser(user, role) {
-    return new Promise((resolve, reject) => {
-
-    });
-  }
-
-  /**
-   * Get public facing instance
-   *
-   * @returns {promise|object} - Resolves with a public-safe object
-   */
-  public() {
-    return new Promise((resolve, reject) => {
-
-      if(!this.instance) {
-
+        const pogAnalysis = await db.models.pog_analysis.create(analysis);
+        POG.analysis = [pogAnalysis]; // Nest analysis inside POG
       }
 
-    });
+      return POG;
   }
+}
 
+module.exports = {
+  POG,
 };
