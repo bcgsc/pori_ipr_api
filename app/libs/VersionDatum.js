@@ -1,4 +1,4 @@
-const db = require('../../../app/models');
+const db = require('../../app/models');
 
 
 /**
@@ -13,31 +13,26 @@ const db = require('../../../app/models');
  * @param {string=} comment - Comment to be associated with the history event
  * @param {string=} destroyIndex - The column used to identify the entry to be destroyed (can be unique wrt dataVersion)
  * @param {array=} colsToMap - The columns to map from old to new entries
- *
- * @returns promise
- *
- * @resolves object - {status: bool, create: Sequelize.create.response, destroy: Sequelize.destroy.response}
- *
- * @rejects object - {status: bool, message: string}
+ * @returns {Promise.<Object.<boolean, Sequelize.create.response, Sequelize.destroy.response>>}
+ * - Returns an object with the status and the create and destroy response
  *
  */
-module.exports = async (model, currentEntry, newEntry, user, comment='', destroyIndex='ident', colsToMap=['ident','pog_id','pog_report_id']) => {
+module.exports = async (model, currentEntry, newEntry, user, comment = '', destroyIndex = 'ident', colsToMap = ['ident', 'pog_id', 'pog_report_id']) => {
 
   const fullCurrentEntry = await model.findOne({where: {ident: currentEntry.ident}});
 
   // Update newEntry values
   colsToMap.forEach((col) => {
-    if(!(col in currentEntry)){
+    if (!(col in currentEntry)) {
       throw new Error(`The column: ${col} does not exist on the current Entry.`);
     }
+    newEntry[col] = fullCurrentEntry[col]; // Map from old to new
   });
-
-  newEntry[col] = fullCurrentEntry[col]; // Map from old to new
 
   // Get the max for the current dataVersion in the table
   const maxCurrentVersion = await model.max('dataVersion', {where: {ident: currentEntry.ident}, paranoid: false});
 
-  if(typeof maxCurrentVersion !== 'number'){
+  if (typeof maxCurrentVersion !== 'number') {
     throw new Error('Unable to find current max version of data entry');
   }
 
@@ -48,42 +43,42 @@ module.exports = async (model, currentEntry, newEntry, user, comment='', destroy
   const createResponse = await model.create(newEntry);
 
   // Are we not destroying?
-  if(!destroyIndex) {
+  if (!destroyIndex) {
     return {status: true, data: {create: createResponse}};
-  } else {
-    // Set version to be destroyed
-    let destroyWhere = {
-      dataVersion: currentEntry.dataVersion
-    };
-    // Set destroy index
-    destroyWhere[destroyIndex] = currentEntry[destroyIndex];
-
-    // Delete existing version
-    const destroyResponse = await model.destroy({where: destroyWhere, limit: 1});
-
-    let report_id = null;
-    if(newEntry.pog_report_id) {
-      report_id = newEntry.pog_report_id;
-    }
-    if(newEntry.report_id) {
-      report_id = newEntry.report_id;
-    }
-
-    // Create DataHistory entry
-    const dh = {
-      type: 'change',
-      pog_id: newEntry.pog_id,
-      pog_report_id: report_id,
-      table: model.getTableName(),
-      model: model.name,
-      entry: newEntry.ident,
-      previous: currentEntry.dataVersion,
-      new: newEntry.dataVersion,
-      user_id: user.id,
-      comment: comment
-    };
-    db.models.pog_analysis_reports_history.create(dh);
-
-    return {status: true, data: {create: createResponse, destroy: destroyResponse}};
   }
+
+  // Set version to be destroyed
+  const destroyWhere = {
+    dataVersion: currentEntry.dataVersion,
+  };
+  // Set destroy index
+  destroyWhere[destroyIndex] = currentEntry[destroyIndex];
+
+  // Delete existing version
+  const destroyResponse = await model.destroy({where: destroyWhere, limit: 1});
+
+  let reportId = null;
+  if (newEntry.pog_report_id) {
+    reportId = newEntry.pog_report_id;
+  }
+  if (newEntry.report_id) {
+    reportId = newEntry.report_id;
+  }
+
+  // Create DataHistory entry
+  const dh = {
+    type: 'change',
+    pog_id: newEntry.pog_id,
+    pog_report_id: reportId,
+    table: model.getTableName(),
+    model: model.name,
+    entry: newEntry.ident,
+    previous: currentEntry.dataVersion,
+    new: newEntry.dataVersion,
+    user_id: user.id,
+    comment,
+  };
+
+  await db.models.pog_analysis_reports_history.create(dh);
+  return {status: true, data: {create: createResponse, destroy: destroyResponse}};
 };
