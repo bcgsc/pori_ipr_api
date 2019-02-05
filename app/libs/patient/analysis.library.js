@@ -1,8 +1,5 @@
-"use strict";
-
-const db          = require(process.cwd() + '/app/models');
-const lodash      = require('lodash');
-const logger      = process.logger;
+const db = require('../../../../app/models');
+//const logger = process.logger;
 
 /**
  * Patient Biopsy Analysis library
@@ -157,16 +154,18 @@ module.exports = {
    *
    * @returns {Promise/object} - Resolves with created patient analysis model object
    */
-  create: (patient, options) => {
-    return new Promise((resolve, reject) => {
-      
-      if(!patient) reject({message: 'Patient pog_id or patient model object reqiured to create new analysis'});
-      
-      if(typeof patient === 'object') patient = patient.id;
-      
-      if(typeof patient !== 'number') reject({message: 'Invalid patient ID provided (not an integer or resolved from object to be integer)'});
-      
-      let data = {};
+  create: async (patient, options) => {      
+      if(!patient) {
+        throw new Error('Patient pog_id or patient model object reqiured to create new analysis');
+      }
+      if(typeof patient === 'object') {
+        patient = patient.id;
+      }
+      if(typeof patient !== 'number') {
+        throw new Error('Invalid patient ID provided (not an integer or resolved from object to be integer)');
+      }
+
+      const data = {};
       
       // Building data block for new entries
       data.pog_id = patient;
@@ -188,15 +187,14 @@ module.exports = {
       if(options.physician) data.physician = options.physician;
       if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
       
-      db.models.pog_analysis.create(data)
-        .then((analysis) => {
-          resolve(analysis);
-        })
-        .catch((e) => {
-          reject({message: `Failed to create new patient biopsy record for internal reasons: ${e.message}`});
-          logger.error('Failed to create new analysis record');
-        });
-    });
+      return db.models.pog_analysis.create(data);
+        // .then((analysis) => {
+        //   resolve(analysis);
+        // })
+        // .catch((e) => {
+        //   reject({message: `Failed to create new patient biopsy record for internal reasons: ${e.message}`});
+        //   logger.error('Failed to create new analysis record');
+        // });
   },
   
   /**
@@ -206,19 +204,10 @@ module.exports = {
    *
    * @returns {Promise}
    */
-  public: (ident) => {
-    return new Promise((resolve, reject) => {
+  public: async (ident) => {
       
-      db.models.pog_analysis.scope('public').findAll({where: {ident: ident}})
-        .then((analysis) => {
-          resolve(analysis);
-        })
-        .catch((e) => {
-          reject({message: `Failed to retrieve public scope of patient analysis record: ${e.message}`});
-          logger.error('Failed to retrieve public version of patient analysis record', e);
-        });
-      
-    });
+      return db.models.pog_analysis.scope('public').findAll({where: {ident: ident}});   // ?? Do you have to await this??
+      //logger.error('Failed to retrieve public version of patient analysis record', e);
   },
   
   /**
@@ -230,15 +219,11 @@ module.exports = {
    *
    * @returns {Promise}
    */
-  syncBiopApps: (anaylsis) => {
-    return new Promise((resolve, reject) => {
+  syncBiopApps: async (anaylsis) => {
+      const Model = db.define('Model', {}, {db});
       
-      let Model = db.define('Model', {},{db});
-      
-      if(!(analysis instanceof Model)) reject({message: 'The provided analysis object is not a valid model instance'});
-      
-      
-    })
+      if(!(analysis instanceof Model)) {
+        throw new Error('The provided analysis object is not a valid model instance');
+      }
   }
-  
 };
