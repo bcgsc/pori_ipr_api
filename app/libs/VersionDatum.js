@@ -1,5 +1,4 @@
-const db = require('../../app/models');
-
+const db = require('../models');
 
 /**
  * Update a version of a given datum

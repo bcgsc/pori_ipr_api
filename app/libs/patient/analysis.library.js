@@ -1,4 +1,4 @@
-const db = require('../../../app/models');
+const db = require('../../models');
 
 /**
  * Patient Biopsy Analysis library
