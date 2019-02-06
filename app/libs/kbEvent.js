@@ -1,16 +1,19 @@
-// app/routes/genomic/detailedGenomicAnalysis.js
-const db = require('../../../app/models');
+const db = require('../models');
 
 module.exports = {
-
+  /**
+   * Checks if there's an event with this event_expression value and
+   * if there isn't it creates a new event.
+   *
+   * @param {string} event - name of event
+   * @param {object} user - event creator
+   * @returns {Promise.<Object.<boolean, string>>} - Returns status and if the event exists or was created
+   */
   eventCheck: async (event, user) => {
-
-    // Check if there's an event with this event_expression value
     const result = await db.models.kb_event.findOne({where: {key: {$ilike: event}}});
 
     // Create new event entry
-    if(result === null) {
-
+    if (result === null) {
       // Create new event
       await db.models.kb_event.create({
         key: event,
@@ -20,8 +23,7 @@ module.exports = {
       });
 
       return {status: true, event: 'created'};
-    } else {
-      return {status: true, event: 'exists'};
     }
-  }
+    return {status: true, event: 'exists'};
+  },
 };
