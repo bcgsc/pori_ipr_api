@@ -1,16 +1,16 @@
 const map = {
-  "inf": "+infinity",
-  "-inf": "-infinity",
-  "NaN": null,
-  "NAN": null,
-  "nan": null,
-  "NA": null,
-  "na": null,
-  "Na": null,
-  "Yes": true,
-  "No": false,
-  "yes": true,
-  "no": false
+  inf: '+infinity',
+  '-inf': '-infinity',
+  NaN: null,
+  NAN: null,
+  nan: null,
+  NA: null,
+  na: null,
+  Na: null,
+  Yes: true,
+  No: false,
+  yes: true,
+  no: false,
 };
 
 /**
@@ -21,14 +21,12 @@ const map = {
  * @returns {string|object} - remapped text or input if not found
  */
 module.exports = (input, cols) => {
-
   // Object with multiple columns to be mapped
-  if(cols !== undefined && cols.length > 0) {
-
+  if (cols !== undefined && cols.length > 0) {
     // Loop over columns to be converted
     cols.forEach((val) => {
       // Confirm column is in input hashmap, and in map hashmap.
-      if(val in input && input[val] in map) {
+      if (val in input && input[val] in map) {
         input[val] = map[input[val]]; // Remap value
       }
     });
@@ -38,12 +36,11 @@ module.exports = (input, cols) => {
   }
 
   // Single input value
-  if(cols === undefined && (typeof input !== 'object')) {
+  if (cols === undefined && (typeof input !== 'object')) {
     if (input in map) {
       return map[input];
-    } else {
-      return input;
     }
+    return input;
   }
 
   throw new Error('PythonToSQL conversion given incorrect input type');
