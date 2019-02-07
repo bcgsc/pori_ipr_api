@@ -10,9 +10,9 @@ const reverseMap = (input, keyMap) => {
 
   // swap keys and values
   keyMap = swap(keyMap);
+  let newObj = {};
 
   Object.entries(input).forEach(([k, v]) => {
-    let newObj = {};
     Object.entries(v).forEach(([key, value]) => {
       // Unhandled colons - Check to see if double or single colons exists and are not yet handled!
       if (key.includes(':') && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
