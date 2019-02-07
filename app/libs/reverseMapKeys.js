@@ -1,40 +1,55 @@
-"use strict";
-let _ = require('lodash'),
-  colors = require('colors');
-
-module.exports = (input, keyMap) => {
-
-  let output = [];
+/**
+ * Reverse map keys of an object
+ *
+ * @param {object} input - An object to have its keys reverse mapped
+ * @param {object} keyMap - A keyMap object
+ * @returns {Array.<object>} - Returns an array of reverse key mapped objects
+ */
+const reverseMap = (input, keyMap) => {
+  const output = [];
 
   // swap keys and values
   keyMap = swap(keyMap);
 
-  for(let k in input) {
-    // Get values
-    output[k] = _.mapKeys(input[k], (v, key) => {
-
+  Object.entries(input).forEach(([k, v]) => {
+    let newObj = {};
+    Object.entries(v).forEach(([key, value]) => {
       // Unhandled colons - Check to see if double or single colons exists and are not yet handled!
-      if(key.indexOf(':') !== -1 && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
-        console.log(colors.bgRed(colors.white("INCOMPATIBLE CHARACTER FOUND")));
+      if (key.includes(':') && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
+        throw new Error('Incompatible character found');
       }
 
       // Replace double colons with tilde
-      if(key.indexOf('~') !== -1) key = key.replace('~', '::');
+      if (key.includes('~')) {
+        key = key.replace('~', '::');
+      }
 
       // Remap Keys
-      if(key in keyMap) return keyMap[key];
-      if(!(key in keyMap)) return key;
-
+      if (key in keyMap) {
+        newObj[keyMap[key]] = value;
+      } else {
+        newObj[key] = value;
+      }
     });
-  }
+    output[k] = newObj;
+    newObj = {};
+  });
 
   return output;
 };
 
-function swap(input){
-  let ret = {};
-  for(let key in input){
-    ret[input[key]] = key;
-  }
+/**
+ * Swaps the keys and values of an object
+ *
+ * @param {object} input - An object to swap keys and values
+ * @returns {object} - Returns an object with the keys and values swapped
+ */
+function swap(input) {
+  const ret = {};
+  Object.entries(input).forEach(([key, value]) => {
+    ret[value] = key;
+  });
   return ret;
 }
+
+module.exports = reverseMap;
