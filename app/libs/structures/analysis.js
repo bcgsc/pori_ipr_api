@@ -46,14 +46,14 @@ class POG {
     const analysis = await this.model.findOne(opts);
 
     // Not found, and asked to create
-    if (analysis === null) {
+    if (!analysis) {
       if (options.create) {
         // Run create
         this.instance = await this.create(options);
         return this.instance;
       }
       // POG not found
-      return null;
+      throw new Error('POG not found');
     }
 
     this.pog = analysis.pog;
