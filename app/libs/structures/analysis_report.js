@@ -22,11 +22,10 @@ const getUser = async (user) => {
     if (user.id) {
       return user;
     }
-    if (user.ident) {
-      user = user.ident;
-    } else {
+    if (!user.ident) {
       throw new Error('User provided is not valid');
     }
+    user = user.ident;
   }
 
   const opts = {where: {}};
