@@ -1,4 +1,4 @@
-const db = require('../models/');
+const db = require('../models');
 
 /**
  * Check if an email address is in use.
