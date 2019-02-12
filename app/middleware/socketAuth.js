@@ -25,24 +25,21 @@ class SocketAuthentication {
   /**
    * Wait for Socket Authentication Message
    *
-   * @returns {Promise}
+   * @returns {Promise.<object>} - Returns the current authenticated socket connection
    */
-  challenge() {
-    return new Promise((resolve, reject) => {
-      this.socket.on('authenticate', (msg) => {
-        jwt.verify(msg.token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
-          if (!decoded || err) {
-            return reject({message: 'failed socket authentication'});
-          }
-          // All good
-          this.socket.user = decoded;
-          this.authenticated = true;
-          logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
+  async challenge() {
+    this.socket.on('authenticate', (msg) => {
+      const decoded = jwt.verify(msg.token, pubKey, {algorithms: ['RS256']});
+      if (!decoded) {
+        throw new Error('Failed socket authentication');
+      }
+      // All good
+      this.socket.user = decoded;
+      this.authenticated = true;
+      logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
 
-          this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
-          return resolve(this.socket);
-        });
-      });
+      this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
+      return this.socket;
     });
   }
 
@@ -52,13 +49,13 @@ class SocketAuthentication {
    *
    * Wait 2000 milliseconds for authentication message. Kill connection if it takes longer.
    *
-   * @returns {Promise}
+   * @returns {undefined}
    */
   challengeTimeout() {
     setTimeout(() => {
-      if (this.authenticated !== true) {
+      if (!this.authenticated) {
         this.socket.disconnect();
-        console.log('Dropping authentication');
+        logger.info('Dropping authentication');
       }
     }, 2000);
   }
