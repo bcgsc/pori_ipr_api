@@ -62,159 +62,158 @@ class AnalysisReport {
       this.instance = ident;
     }
   }
-}
 
-/**
- * Retrieve entry from database
- *
- * @returns {Promise.<object>} - Returns a database instance of model
- */
-AnalysisReport.prototype.retrieve = async () => {
-  // Return cached object
-  if (this.instance) {
+  /**
+   * Retrieve entry from database
+   *
+   * @returns {Promise.<object>} - Returns a database instance of model
+   */
+  async retrieve() {
+    // Return cached object
+    if (this.instance) {
+      return this.instance;
+    }
+
+    // Lookup in Database
+    const report = await this.model.findOne({where: {ident: this.ident}, include: {model: db.models.pog, as: 'pog'}});
+
+    // POG not found
+    if (!report) {
+      return null;
+    }
+
+    // POG found
+    this.instance = report;
     return this.instance;
   }
 
-  // Lookup in Database
-  const report = await this.model.findOne({where: {ident: this.ident}, include: {model: db.models.pog, as: 'pog'}});
+  /**
+   * Create new entry in database
+   *
+   * @param {object} pog - POG model instance
+   * @param {object} analysis - Patient Analysis model instance
+   * @param {user} user - Owning user for the report creation event
+   * @param {type} type - report type to be created (genomic vs probe)
+   * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived; expression_matrix: v8, v9)
+   *
+   * @returns {Promise.<object>} - Returns a new POG Analysis Report
+   */
+  async create(pog, analysis, user, type, options) {
+    if (!options.analysis && !analysis.id) {
+      throw new Error('No analysis entry on pog object or analysis object passed');
+    }
 
-  // POG not found
-  if (!report) {
-    return null;
+    const report = {
+      ident: makeReportIdent(),
+      createdBy_id: user.id,
+      pog_id: pog.id,
+      analysis_id: analysis.id,
+      type,
+    };
+
+    if (options.expression_matrix) {
+      report.expression_matrix = options.expression_matrix;
+    }
+    if (options.state && this.allowedStates.includes(options.state)) {
+      report.state = options.state;
+    }
+
+    const result = await this.model.create(report);
+    this.instance = result;
+    this.ident = result.ident;
+    return result;
   }
 
-  // POG found
-  this.instance = report;
-  return this.instance;
-};
+  /**
+   * Get public facing instance
+   *
+   * @returns {Promise.<object>} - Returns a public-safe object
+   */
+  async public() {
+    const result = await this.model.scope('public').findOne({
+      where: {ident: this.instance.ident},
+      attributes: {exclude: ['deletedAt']},
+      include: [
+        {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}},
+        {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
+        {model: db.models.POG.scope('public'), as: 'pog'},
+        {model: db.models.user.scope('public'), as: 'createdBy'},
+        {
+          model: db.models.analysis_reports_user,
+          as: 'users',
+          attributes: {exclude: ['id', 'pog_id', 'report_id', 'user_id', 'addedBy_id', 'deletedAt']},
+          include: [{
+            model: db.models.user.scope('public'),
+            as: 'user',
+          }],
+        },
+      ],
+    });
 
-/**
- * Create new entry in database
- *
- * @param {object} pog - POG model instance
- * @param {object} analysis - Patient Analysis model instance
- * @param {user} user - Owning user for the report creation event
- * @param {type} type - report type to be created (genomic vs probe)
- * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived; expression_matrix: v8, v9)
- *
- * @returns {Promise.<object>} - Returns a new POG Analysis Report
- */
-AnalysisReport.prototype.create = async (pog, analysis, user, type, options) => {
-  if (!options.analysis && !analysis.id) {
-    throw new Error('No analysis entry on pog object or analysis object passed');
+    if (!result) {
+      throw new Error('Instance not found.');
+    }
+    return result;
   }
 
-  const report = {
-    ident: makeReportIdent(),
-    createdBy_id: user.id,
-    pog_id: pog.id,
-    analysis_id: analysis.id,
-    type,
-  };
+  /**
+   * Bind a user to this report
+   *
+   * @param {object|string} user - User object or ident
+   * @param {string} role - User role wrt this report
+   * @param {object} addedBy - User model instance of user performing the binding
+   *
+   * @returns {Promise.<object>} - Returns an updated instance
+   */
+  async bindUser(user, role, addedBy) {
+    const report = this.instance;
+    // Get user if string
+    const boundUser = await getUser(user);
 
-  if (options.expression_matrix) {
-    report.expression_matrix = options.expression_matrix;
-  }
-  if (options.state && this.allowedStates.includes(options.state)) {
-    report.state = options.state;
-  }
+    // Check if the attempting user is already bound in this role
+    const bound = await db.models.analysis_reports_user.findAll({where: {user_id: boundUser.id, report_id: report.id, role}});
+    // Check if the user is already bound in this role
+    if (bound.length > 0) {
+      throw new Error('The user is already bound in this role');
+    }
 
-  const result = await this.model.create(report);
-  this.instance = result;
-  this.ident = result.ident;
-  return result;
-};
+    // Perform user binding
+    // Create analysis reports user
+    const result = await db.models.analysis_reports_user.create({
+      user_id: boundUser.id,
+      report_id: report.id,
+      role,
+      addedBy_id: addedBy.id,
+    });
 
-/**
- * Get public facing instance
- *
- * @returns {Promise.<object>} - Returns a public-safe object
- */
-AnalysisReport.prototype.public = async () => {
-  const result = await this.model.scope('public').findOne({
-    where: {ident: this.instance.ident},
-    attributes: {exclude: ['deletedAt']},
-    include: [
-      {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}},
-      {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
-      {model: db.models.POG.scope('public'), as: 'pog'},
-      {model: db.models.user.scope('public'), as: 'createdBy'},
-      {
-        model: db.models.analysis_reports_user,
-        as: 'users',
-        attributes: {exclude: ['id', 'pog_id', 'report_id', 'user_id', 'addedBy_id', 'deletedAt']},
-        include: [{
-          model: db.models.user.scope('public'),
-          as: 'user',
-        }],
-      },
-    ],
-  });
+    result.user = {
+      firstName: boundUser.firstName,
+      lastName: boundUser.lastName,
+      email: boundUser.email,
+      ident: boundUser.ident,
+      username: boundUser.username,
+    };
 
-  if (!result) {
-    throw new Error('Instance not found.');
-  }
-  return result;
-};
-
-
-/**
- * Bind a user to this report
- *
- * @param {object|string} user - User object or ident
- * @param {string} role - User role wrt this report
- * @param {object} addedBy - User model instance of user performing the binding
- *
- * @returns {Promise.<object>} - Returns an updated instance
- */
-AnalysisReport.prototype.bindUser = async (user, role, addedBy) => {
-  const report = this.instance;
-  // Get user if string
-  const boundUser = await getUser(user);
-
-  // Check if the attempting user is already bound in this role
-  const bound = await db.models.analysis_reports_user.findAll({where: {user_id: boundUser.id, report_id: report.id, role}});
-  // Check if the user is already bound in this role
-  if (bound.length > 0) {
-    throw new Error('The user is already bound in this role');
+    return this.public.bind(this);
   }
 
-  // Perform user binding
-  // Create analysis reports user
-  const result = await db.models.analysis_reports_user.create({
-    user_id: boundUser.id,
-    report_id: report.id,
-    role,
-    addedBy_id: addedBy.id,
-  });
-
-  result.user = {
-    firstName: boundUser.firstName,
-    lastName: boundUser.lastName,
-    email: boundUser.email,
-    ident: boundUser.ident,
-    username: boundUser.username,
-  };
-
-  return this.public.bind(this);
-};
-
-/**
- * Unbind a user from an association with the report
- *
- * @param {object|string} user - User object or ident
- * @param {string} role - User role wrt this report
- *
- * @returns {Promise.<object>} - Returns an updated instance
- */
-AnalysisReport.prototype.unbindUser = async (user, role) => {
-  const unbindUser = await getUser(user);
-  // Remove binding from DB (soft-delete)
-  const result = await db.models.analysis_reports_user.destroy({where: {report_id: this.instance.id, user_id: unbindUser.id, role}});
-  if (result === 0) {
-    throw new Error('No binding found');
+  /**
+   * Unbind a user from an association with the report
+   *
+   * @param {object|string} user - User object or ident
+   * @param {string} role - User role wrt this report
+   *
+   * @returns {Promise.<object>} - Returns an updated instance
+   */
+  async unbindUser(user, role) {
+    const unbindUser = await getUser(user);
+    // Remove binding from DB (soft-delete)
+    const result = await db.models.analysis_reports_user.destroy({where: {report_id: this.instance.id, user_id: unbindUser.id, role}});
+    if (result === 0) {
+      throw new Error('No binding found');
+    }
+    return this.public.bind(this);
   }
-  return this.public.bind(this);
-};
+}
 
 module.exports = AnalysisReport;
