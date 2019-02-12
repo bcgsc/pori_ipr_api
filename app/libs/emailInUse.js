@@ -9,8 +9,5 @@ const db = require('../models');
 
 module.exports = async (email) => {
   const results = await db.models.user.findAll({where: {email}});
-  if (results.length > 0) {
-    return true;
-  }
-  return false;
+  return results.length > 0;
 };
