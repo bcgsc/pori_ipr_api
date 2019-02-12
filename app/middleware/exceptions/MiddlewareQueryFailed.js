@@ -1,10 +1,9 @@
-"use strict";
-
-module.exports = class MiddlewareQueryFailed extends Error {
-  constructor(m, req, res, code="") {
-
-    let response = {error: {message: m, exception: 'MiddlewareQueryFailed'}};
-    if(code !== "") response.error.code = code;
+class MiddlewareQueryFailed extends Error {
+  constructor(m, req, res, code = '') {
+    const response = {error: {message: m, exception: 'MiddlewareQueryFailed'}};
+    if (code !== '') {
+      response.error.code = code;
+    }
 
     // Send Response Message
     res.status(500).json(response);
@@ -12,5 +11,6 @@ module.exports = class MiddlewareQueryFailed extends Error {
     // Invoke stderr response
     super(m);
   }
+}
 
-};
+module.exports = MiddlewareQueryFailed;
