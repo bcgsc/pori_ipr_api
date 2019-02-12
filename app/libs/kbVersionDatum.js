@@ -39,12 +39,11 @@ module.exports = async (model, currentEntry, newEntry, user, comment = '', destr
   if (!destroyIndex) {
     return {status: true, data: {create: createResponse}};
   }
-  // Set version to be destroyed
+  // Set version and index to be destroyed
   const destroyWhere = {
     dataVersion: currentEntry.dataVersion,
+    [destroyIndex]: currentEntry[destroyIndex],
   };
-  // Set destroy index
-  destroyWhere[destroyIndex] = currentEntry[destroyIndex];
 
   // Delete existing version
   const destroyResponse = await model.destroy({where: destroyWhere, limit: 1});
