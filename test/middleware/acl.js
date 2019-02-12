@@ -1,6 +1,6 @@
 "use strict";
 
-let acl = require('../../app/middleware/oldAcl'),
+let acl = require('../../app/middleware/acl'),
   assert = require('assert');
 
 // Pseudo response object
@@ -30,7 +30,7 @@ describe('ACL - Check standard GET', () => {
     req.user = {ident: 'testcase'};
 
     // Check Standard POG GET endpoint
-    check = acl().construct(req,res).check();
+    check = acl(req,res).check();
 
     assert.equal(check, true);
 
@@ -62,7 +62,7 @@ describe('ACL - Check standard GET request for POG', () => {
     };
 
     // Check Standard POG GET endpoint
-    check = acl().construct(req,res).isPog().check();
+    check = acl(req,res).isPog().check();
 
     assert.equal(check, true);
 
