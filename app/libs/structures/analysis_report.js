@@ -50,7 +50,7 @@ class AnalysisReport {
   /**
    * Construct Report
    *
-   * @param {string} ident - identification string
+   * @param {string|object} ident - identification string or instance of AnalysisReport
    */
   constructor(ident = null) {
     this.ident = ident; // Store POGID
@@ -79,7 +79,7 @@ class AnalysisReport {
 
     // POG not found
     if (!report) {
-      return null;
+      throw new Error(`Report not found for ident: ${this.ident}`);
     }
 
     // POG found
