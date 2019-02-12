@@ -15,7 +15,7 @@ const remapKeys = (input, keyMap) => {
     Object.entries(v).forEach(([key, value]) => {
       // Unhandled colons - Check to see if double or single colons exists and are not yet handled!
       if (key.includes(':') && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
-        throw new Error('Incompatible character found');
+        throw new Error(`Incompatible character found (${key})`);
       }
       // Replace double colons with tilde
       if (key.includes('::')) {
