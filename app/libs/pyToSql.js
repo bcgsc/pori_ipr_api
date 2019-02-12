@@ -43,5 +43,5 @@ module.exports = (input, cols) => {
     return input;
   }
 
-  throw new Error('PythonToSQL conversion given incorrect input type');
+  throw new Error(`PythonToSQL conversion given incorrect input type (Input: ${input}, Type: ${typeof input})`);
 };
