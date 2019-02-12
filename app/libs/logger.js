@@ -1,27 +1,20 @@
-const colors = require('colors');
+"use strict";
+
+let colors = require('colors');
 
 // Returned Logger
-const logger = (prefix) => {
+let logger = (prefix) => {
   
-  // return (content, type = null) => {
-  //   switch(type) {
-  //     case 'error':
-  //       console.log();
-  //       break;
-  //     case 'warning':
-  //       console.log();
-  //       break;
-  //   }
-    if(type == 'error') {
-      console.log(colors.bgRed(colors.stripColors(prefix) + ' ' + content));
-    }
+  return (content, type=null) => {
+
+    if(type == 'error') console.log(colors.bgRed(colors.stripColors(prefix) + ' ' + content));
     
     if(type == null) console.log(prefix + ' ' + content);
     
     if(type == true || type == 'success') console.log(prefix + ' ' + colors.bgGreen(content));
     
     if(type == 'warning') console.log(prefix + ' ' + colors.bgYellow(content));
-  //}
+  }
   
 }
 
