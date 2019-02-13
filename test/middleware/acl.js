@@ -1,36 +1,31 @@
-"use strict";
-
-let acl = require('../../app/middleware/acl'),
-  assert = require('assert');
+const assert = require('assert');
+const Acl = require('../../app/middleware/acl');
 
 // Pseudo response object
-let res = {
-  status : (status) => {
+const res = {
+  status: (status) => {
     return status;
   },
   json: (val) => {
     return val;
-  }
+  },
 };
 
 // Pseudo request object
-let req = {
+const req = {
   method: '',
   user: {},
-  POG: {}
+  POG: {},
 };
-
-
 
 describe('ACL - Check standard GET', () => {
   it('Will determine if by default a user can READ a GET endpoint', (done) => {
-
     // Setup Request & Response pseudo objects
     req.method = 'GET';
     req.user = {ident: 'testcase'};
 
     // Check Standard POG GET endpoint
-    check = acl(req,res).check();
+    const check = new Acl(req, res).check();
 
     assert.equal(check, true);
 
@@ -40,32 +35,30 @@ describe('ACL - Check standard GET', () => {
 
 describe('ACL - Check standard GET request for POG', () => {
   it('Will determine if by default a user can READ a GET endpoint', (done) => {
-
     // Setup Request & Response pseudo objects
     req.method = 'GET';
     req.user = {ident: 'testcase'};
     req.pog = {
       POGUsers: [
         {
-          role: "bioinformatician",
+          role: 'bioinformatician',
           user: {
-            ident: 'testcase'
-          }
+            ident: 'testcase',
+          },
         },
         {
-          role: "analyst",
+          role: 'analyst',
           user: {
-            ident: 'testcase'
-          }
-        }
-      ]
+            ident: 'testcase',
+          },
+        },
+      ],
     };
 
     // Check Standard POG GET endpoint
-    check = acl(req,res).isPog().check();
+    const check = new Acl(req, res).isPog().check();
 
     assert.equal(check, true);
-
     done();
   });
 });
