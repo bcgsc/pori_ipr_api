@@ -2,6 +2,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const {logger} = process;
+const AUTH_TIMEOUT = 2000;
 const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
   : fs.readFileSync('keys/devkey.pem');
@@ -47,7 +48,7 @@ class SocketAuthentication {
   /**
    * Wait for timeout and kill connection.
    *
-   * Wait 2000 milliseconds for authentication message. Kill connection if it takes longer.
+   * Wait AUTH_TIMOUT (2000) milliseconds for authentication message. Kill connection if it takes longer.
    *
    * @returns {undefined}
    */
@@ -57,7 +58,7 @@ class SocketAuthentication {
         this.socket.disconnect();
         logger.info('Dropping authentication');
       }
-    }, 2000);
+    }, AUTH_TIMEOUT);
   }
 }
 
