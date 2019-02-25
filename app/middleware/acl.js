@@ -29,64 +29,6 @@ class ACL {
     this.pogEdit = ['analyst', 'reviewer', 'admin'];
   }
 
-  /**
-   * Sets the list of groups allowed to view this endpoint
-   *
-   * @param  {Array.<string>} readers - List of groups allowed to view this endpoint
-   * @returns {undefined}
-   */
-  set read(readers) {
-    this.read = readers;
-  }
-
-  /**
-   * Sets the list of groups allowed to write at this endpoint
-   *
-   * @param  {Array.<string>} writers - List of groups allowed to write at this endpoint
-   * @returns {undefined}
-   */
-  set write(writers) {
-    this.write = writers;
-  }
-
-  /**
-   * Sets the list of groups allowed to delete at this endpoint
-   *
-   * @param  {Array.<string>} deleters - List of groups allowed to delete at this endpoint
-   * @returns {undefined}
-   */
-  set delete(deleters) {
-    this.delete = deleters;
-  }
-
-  /**
-   * Sets the list of groups allowed to write/edit at this POG endpoint
-   *
-   * @param  {Array.<string>} editors - List of groups allowed to write/edit at this POG endpoint
-   * @returns {undefined}
-   */
-  set pogEdit(editors) {
-    this.pogEdit = editors;
-  }
-
-  /**
-   * Set the list of groups NOT allowed to view this endpoint
-   *
-   * @param  {Array.<string>} nGroups - Explicit list of groups NOT allowed to view this endpoint
-   * @returns {undefined}
-   */
-  set notGroups(nGroups) {
-    this.nGroups = nGroups;
-  }
-
-  authReq() {
-    this.authReq = true;
-  }
-
-  isPog() {
-    this.isPog = true;
-  }
-
   // Get project access
   async getProjectAccess() {
     const accessGroups = ['Full Project Access', 'admin', 'superUser'];
