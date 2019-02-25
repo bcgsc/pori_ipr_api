@@ -1,8 +1,4 @@
-"use strict";
-
-const db          = require(process.cwd() + '/app/models');
-const lodash      = require('lodash');
-const logger      = process.logger;
+const db = require('../../models');
 
 /**
  * Patient Biopsy Analysis library
@@ -12,11 +8,11 @@ const logger      = process.logger;
  * @type {{retrieveOrCreate: (function(integer, string=, string=, Object=)), create: (function(string, string)), public: (function(string))}}
  */
 module.exports = {
-  
+
   /**
    * Retrieve or create biopsy analysis record
    *
-   * @param {integer} pog_id - Internal pog_id identifier
+   * @param {integer} pogId - Internal pog_id identifier
    * @param {string} biop - Analysis biopsy identifier
    * @param {string} clinspec - Clinical biopsy identifier
    * @param {object} options - Data to insert into new POG Analysis row
@@ -41,96 +37,125 @@ module.exports = {
    *    pediatric_id - A string name for pediatric POG cases: P012
    *  }
    *
-   * @returns {Promise/Object} - Resolves with biopsy analysis model object
+   * @returns {Promise.<object>} - Resolves with biopsy analysis model object
    */
-  retrieveOrCreate: (pog_id, biop=null, clinspec=null, options={}) => {
-    return new Promise((resolve, reject) => {
-      
-      if(!pog_id) reject({message: 'pog_id is required'});
-      
-      // Create data object
-      let data = {};
-      
-      // Find existing object
-      let where = {
-        $or: []
-      };
-      
-      // If Biopsy is specified
-      if(biop !== null) {
-        where.$or.push({
-          pog_id: pog_id,
-          analysis_biopsy: biop
-        });
+  retrieveOrCreate: async (pogId, biop = null, clinspec = null, options = {}) => {
+
+    if (!pogId) {
+      throw new Error('pogId is required');
+    }
+    // Create data object
+    const data = {};
+
+    // Find existing object
+    const where = {
+      $or: [],
+    };
+
+    // If Biopsy is specified
+    if (biop !== null) {
+      where.$or.push({
+        pog_id: pogId,
+        analysis_biopsy: biop,
+      });
+    }
+
+    // If clinspec is specified
+    if (clinspec !== null) {
+      where.$or.push({
+        pog_id: pogId,
+        clinical_biopsy: clinspec,
+      });
+    }
+
+    // If a library is specified
+    if (options.library) {
+      const libwhere = {};
+      libwhere.pog_id = pogId;
+
+      if (options.libraries.normal) {
+        libwhere.libraries = {$contains: {normal: options.libraries.normal}};
       }
-      
-      // If clinspec is specified
-      if(clinspec !== null) {
-        where.$or.push({
-          pog_id: pog_id,
-          clinical_biopsy: clinspec
-        });
+      if (options.libraries.tumour) {
+        libwhere.libraries = {$contains: {tumour: options.libraries.tumour}};
       }
-      
-      // If a library is specified
-      if(options.library) {
-        let libwhere = {};
-        
-        libwhere.pog_id = pog_id;
-        
-        if(options.libraries.normal) libwhere.libraries = {$contains: {normal: options.libraries.normal}};
-        if(options.libraries.tumour) libwhere.libraries = {$contains: {tumour: options.libraries.tumour}};
-        if(options.libraries.transcriptome) libwhere.libraries = {$contains: {transcriptome: options.libraries.transcriptome}};
-        
-        if(_.keys(libwhere).length > 1 ) where.$or.push(libwhere);
+      if (options.libraries.transcriptome) {
+        libwhere.libraries = {$contains: {transcriptome: options.libraries.transcriptome}};
       }
-      
-      // If the ident string is set
-      if(options.ident) {
-        where.$or.ident = options.ident;
+
+      if (Object.keys(libwhere).length > 1) {
+        where.$or.push(libwhere);
       }
-      
-      if(where.$or.length === 0) reject({message: 'Insufficient indexes to find or create new analysis entry'});
-      
-      
-      // Building data block for new entries
-      data.pog_id = pog_id;
-      if(biop) data.analysis_biopsy = biop;
-      if(clinspec) data.clinical_biopsy = clinspec;
-      if(options.libraries) data.libraries = options.libraries;
-      if(options.notes) data.notes = options.notes;
-      if(options.bioapps_source_id) data.bioapps_source_id = options.bioapps_source_id;
-      if(options.onco_panel_submitted) data.onco_panel_submitted = options.onco_panel_submitted;
-      if(options.comparator_disease) data.comparator_disease = options.comparator_disease;
-      if(options.comparator_normal) data.comparator_normal = options.comparator_normal;
-      if(options.biopsy_site) data.biopsy_site = options.biopsy_site;
-      if(options.biopsy_type) data.biopsy_type = options.biopsy_type;
-      if(options.date_analysis) data.date_analysis = options.date_analysis;
-      if(options.date_presentation) data.date_presentation = options.date_presentation;
-      if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
-      if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
-      if(options.physician) data.physician = options.physician;
-      if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
-      
-      
-      db.models.pog_analysis.findOrCreate({ where: where, defaults: data})
-        .then((result) => {
-          let analysis = result[0];
-          let created = result[1];
-          resolve(analysis);
-        })
-        .catch((e) => {
-          reject({message: `failed to retrieve or biopsy analysis record. Reason: ${e.message}`});
-          logger.error('Failed to retrieve or create biopsy analysis record', e);
-        });
-      
-    })
+    }
+
+    // If the ident string is set
+    if (options.ident) {
+      where.$or.ident = options.ident;
+    }
+
+    if (where.$or.length === 0) {
+      throw new Error('Insufficient indexes to find or create new analysis entry');
+    }
+
+    // Building data block for new entries
+    data.pog_id = pogId;
+    if (biop) {
+      data.analysis_biopsy = biop;
+    }
+    if (clinspec) {
+      data.clinical_biopsy = clinspec;
+    }
+    if (options.libraries) {
+      data.libraries = options.libraries;
+    }
+    if (options.notes) {
+      data.notes = options.notes;
+    }
+    if (options.bioapps_source_id) {
+      data.bioapps_source_id = options.bioapps_source_id;
+    }
+    if (options.onco_panel_submitted) {
+      data.onco_panel_submitted = options.onco_panel_submitted;
+    }
+    if (options.comparator_disease) {
+      data.comparator_disease = options.comparator_disease;
+    }
+    if (options.comparator_normal) {
+      data.comparator_normal = options.comparator_normal;
+    }
+    if (options.biopsy_site) {
+      data.biopsy_site = options.biopsy_site;
+    }
+    if (options.biopsy_type) {
+      data.biopsy_type = options.biopsy_type;
+    }
+    if (options.date_analysis) {
+      data.date_analysis = options.date_analysis;
+    }
+    if (options.date_presentation) {
+      data.date_presentation = options.date_presentation;
+    }
+    if (options.biopsy_date) {
+      data.biopsy_date = options.biopsy_date;
+    }
+    if (options.threeLetterCode) {
+      data.threeLetterCode = options.threeLetterCode;
+    }
+    if (options.physician) {
+      data.physician = options.physician;
+    }
+    if (options.pediatric_id) {
+      data.pediatric_id = options.pediatric_id;
+    }
+
+    const [result] = await db.models.pog_analysis.findOrCreate({where, defaults: data});
+    return result;
   },
-  
+
   /**
    * Create biopsy analysis record
    *
-   * @param {int/object} patient - Either patient model object or pog_id
+   * @param {object|int} patient - Either patient model object or pog_id
    * @param {object} options - Patient analysis extended settings
    *
    *
@@ -155,90 +180,103 @@ module.exports = {
    *    pediatric_id - A string name for pediatric POG cases: P012
    *  }
    *
-   * @returns {Promise/object} - Resolves with created patient analysis model object
+   * @returns {Promise.<object>} - Resolves with created patient analysis model object
    */
-  create: (patient, options) => {
-    return new Promise((resolve, reject) => {
-      
-      if(!patient) reject({message: 'Patient pog_id or patient model object reqiured to create new analysis'});
-      
-      if(typeof patient === 'object') patient = patient.id;
-      
-      if(typeof patient !== 'number') reject({message: 'Invalid patient ID provided (not an integer or resolved from object to be integer)'});
-      
-      let data = {};
-      
-      // Building data block for new entries
-      data.pog_id = patient;
-      if(options.analysis_biopsy) data.analysis_biopsy = options.analysis_biopsy;
-      if(options.clinical_biopsy) data.clinical_biopsy = options.clinical_biopsy;
-      if(options.libraries) data.libraries = options.libraries;
-      if(options.notes) data.notes = options.notes;
-      if(options.disease) data.disease = options.disease;
-      if(options.bioapps_source_id) data.bioapps_source_id = options.bioapps_source_id;
-      if(options.onco_panel_submitted) data.onco_panel_submitted = options.onco_panel_submitted;
-      if(options.comparator_disease) data.comparator_disease = options.comparator_disease;
-      if(options.comparator_normal) data.comparator_normal = options.comparator_normal;
-      if(options.biopsy_site) data.biopsy_site = options.biopsy_site;
-      if(options.biopsy_type) data.biopsy_type = options.biopsy_type;
-      if(options.date_analysis) data.date_analysis = options.date_analysis;
-      if(options.date_presentation) data.date_presentation = options.date_presentation;
-      if(options.biopsy_date) data.biopsy_date = options.biopsy_date;
-      if(options.threeLetterCode) data.threeLetterCode = options.threeLetterCode;
-      if(options.physician) data.physician = options.physician;
-      if(options.pediatric_id) data.pediatric_id = options.pediatric_id;
-      
-      db.models.pog_analysis.create(data)
-        .then((analysis) => {
-          resolve(analysis);
-        })
-        .catch((e) => {
-          reject({message: `Failed to create new patient biopsy record for internal reasons: ${e.message}`});
-          logger.error('Failed to create new analysis record');
-        });
-    });
+  create: async (patient, options) => {     
+    if (!patient) {
+      throw new Error('Patient pog_id or patient model object reqiured to create new analysis');
+    }
+    if (typeof patient === 'object') {
+      patient = patient.id;
+    }
+    if (typeof patient !== 'number') {
+      throw new Error('Invalid patient ID provided (not an integer or resolved from object to be integer)');
+    }
+
+    const data = {};
+
+    // Building data block for new entries
+    data.pog_id = patient;
+    if (options.analysis_biopsy) {
+      data.analysis_biopsy = options.analysis_biopsy;
+    }
+    if (options.clinical_biopsy) {
+      data.clinical_biopsy = options.clinical_biopsy;
+    }
+    if (options.libraries) {
+      data.libraries = options.libraries;
+    }
+    if (options.notes) {
+      data.notes = options.notes;
+    }
+    if (options.disease) {
+      data.disease = options.disease;
+    }
+    if (options.bioapps_source_id) {
+      data.bioapps_source_id = options.bioapps_source_id;
+    }
+    if (options.onco_panel_submitted) {
+      data.onco_panel_submitted = options.onco_panel_submitted;
+    }
+    if (options.comparator_disease) {
+      data.comparator_disease = options.comparator_disease;
+    }
+    if (options.comparator_normal) {
+      data.comparator_normal = options.comparator_normal;
+    }
+    if (options.biopsy_site) {
+      data.biopsy_site = options.biopsy_site;
+    }
+    if (options.biopsy_type) {
+      data.biopsy_type = options.biopsy_type;
+    }
+    if (options.date_analysis) {
+      data.date_analysis = options.date_analysis;
+    }
+    if (options.date_presentation) {
+      data.date_presentation = options.date_presentation;
+    }
+    if (options.biopsy_date) {
+      data.biopsy_date = options.biopsy_date;
+    }
+    if (options.threeLetterCode) {
+      data.threeLetterCode = options.threeLetterCode;
+    }
+    if (options.physician) {
+      data.physician = options.physician;
+    }
+    if (options.pediatric_id) {
+      data.pediatric_id = options.pediatric_id;
+    }
+
+    return db.models.pog_analysis.create(data);
   },
-  
+
   /**
    * Get public version of record
    *
    * @param {string} ident - Patient analysis ident
    *
-   * @returns {Promise}
+   * @returns {Promise.<Array.<Model>>} - Returns all public pog analysis that match the given ident
    */
-  public: (ident) => {
-    return new Promise((resolve, reject) => {
-      
-      db.models.pog_analysis.scope('public').findAll({where: {ident: ident}})
-        .then((analysis) => {
-          resolve(analysis);
-        })
-        .catch((e) => {
-          reject({message: `Failed to retrieve public scope of patient analysis record: ${e.message}`});
-          logger.error('Failed to retrieve public version of patient analysis record', e);
-        });
-      
-    });
+  public: async (ident) => {    
+    return db.models.pog_analysis.scope('public').findAll({where: {ident}});
   },
-  
+
   /**
    * Synchronize Analysis record with BioApps
    *
    * TODO: Build BioApps sync chain
    *
-   * @param {object} anaylsis - DB Model Object
-   *
-   * @returns {Promise}
+   * @param {object} analysis - DB Model Object
+   * @returns {Promise.<boolean>} - Returns true if sync was successful
    */
-  syncBiopApps: (anaylsis) => {
-    return new Promise((resolve, reject) => {
-      
-      let Model = db.define('Model', {},{db});
-      
-      if(!(analysis instanceof Model)) reject({message: 'The provided analysis object is not a valid model instance'});
-      
-      
-    })
-  }
-  
+  syncBiopApps: async (analysis) => {
+    const model = db.define('Model', {}, {db});
+
+    if (!(analysis instanceof model)) {
+      throw new Error('The provided analysis object is not a valid model instance');
+    }
+    return true;
+  },
 };
