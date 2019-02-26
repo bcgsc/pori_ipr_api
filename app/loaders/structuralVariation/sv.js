@@ -1,111 +1,69 @@
-"use strict";
+const fs = require('fs');
+const _ = require('lodash');
+const parse = require('csv-parse/lib/sync');
+const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const db = require('../../models');
+const remapKeys = require('../../libs/remapKeys');
+const mavis = require('../../libs/mavis');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-  fs = require('fs'),
-  parse = require('csv-parse'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  mavis = require(process.cwd() + '/app/libs/mavis'),
-  _ = require('lodash'),
-  Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
-
+const {logger} = process;
 let baseDir;
 
-/*
+/**
  * Parse Structural Variations Mutations File
  *
+ * @param {object} report - POG model object
+ * @param {string} structuralVariationFile - Name of CSV file for given small mutation type
+ * @param {string} variantType - variantType of these entries (clinical, nostic, biological, fusionOmicSupport)
  *
- * @param object POG - POG model object
- * @param string structuralVariationFile - name of CSV file for given small mutation type
- * @param string variantType - variantType of these entries (clinical, nostic, biological, fusionOmicSupport)
- * @param object log - /app/libs/logger instance
- *
+ * @returns {Promise.<Array.<object>>} - Returns structural variations from parsed file
  */
-let parseStructuralVariantFile = (report, structuralVariationFile, variantType, log) => {
-
-  // Create promise
-  let deferred = Q.defer();
-
+const parseStructuralVariantFile = async (report, structuralVariationFile, variantType) => {
   // Check that the provided alterationType is valid according to the schema
-  if(db.models.sv.rawAttributes.svVariant.values.indexOf(variantType) === -1) deferred.reject('Invalid variantType. Given: ' + variantType) && new Error('Invalid variantType. Given: ' + variantType);
+  if (!db.models.sv.rawAttributes.svVariant.values.includes(variantType)) {
+    throw new Error(`Invalid variantType. Given: ${variantType}`);
+  }
 
   // First parse in therapeutic
-  let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + structuralVariationFile, {'delimiter': ','});
+  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${structuralVariationFile}`, {delimiter: ','});
 
   // Parse file!
-  let parser = parse({delimiter: ',', columns: true},
-    (err, result) => {
+  const result = parse(output, {delimiter: ',', columns: true});
 
-      // Was there a problem processing the file?
-      if(err) {
-        log('Unable to parse CSV file');
-        console.log(err);
-        deferred.reject({loader: 'structuralVariants', message: 'Unable to parse the structural variants file: ' + baseDir + '/JReport_CSV_ODF/' + structuralVariationFile, result: false});
-      }
+  // Remap results
+  const entries = remapKeys(result, nconf.get('structuralVariation:sv'));
 
-      // Remap results
-      let entries = remapKeys(result, nconf.get('structuralVariation:sv'));
+  // Add new values for DB
+  entries.forEach((entry) => {
+    // Map needed DB column values
+    entry.pog_id = report.pog_id;
+    entry.pog_report_id = report.id;
+    entry.svVariant = variantType;
+    entry.mavis_product_id = entry.MAVIS_product_id.split(';')[0];
 
-      // Add new values for DB
-      entries.forEach((v, k) => {
-        // Map needed DB column values
-        entries[k].pog_id = report.pog_id;
-        entries[k].pog_report_id = report.id;
-        entries[k].svVariant = variantType;
-        entries[k].mavis_product_id = entries[k].MAVIS_product_id.split(';')[0];
+    if (entry.svg !== 'na' && entry.svg !== '') {
+      // Load in SVG !! SYNC-Block
+      entry.svg = fs.readFileSync(entry.svg, {encoding: 'utf-8'});
 
-        if(v.svg !== 'na' && v.svg !== '') {
-          // Load in SVG !! SYNC-Block
-          try {
-            entries[k].svg = fs.readFileSync(v.svg, "utf-8");
-          }
-          catch (e) {
-            deferred.reject({message: 'Failed to read SVG file: ' + e.message, cause: e});
-            console.log('Failed to load SV SVG file', e);
-          }
-          
-          try {
-            // Load in Text File !! SYNC-Block
-            entries[k].svgTitle = fs.readFileSync(v.svgTitle, "utf-8");
-          }
-          catch (e) {
-            deferred.reject({message: 'Failed to read SVG title file: ' + e.message, cause: e});
-            console.log('Failed to load SV SVG title file', e);
-          }
-        }
-
-        // Set null values
-        if(v.svg === 'na' || v.svg === '') {
-          entries[k].svg =
-          entries[k].svgTitle =
-          entries[k].name =
-          entries[k].frame =
-          entries[k].ctermGene =
-          entries[k].ntermGene =
-          entries[k].ctermTranscript =
-          entries[k].ntermTranscript = null;
-        }
-      });
-
-      // Log progress
-      log('Parsed .csv for: ' + variantType);
-
-      // Resolve Promise
-      deferred.resolve(entries);
+      // Load in Text File !! SYNC-Block
+      entry.svgTitle = fs.readFileSync(entry.svgTitle, {encoding: 'utf-8'});
+    } else {
+      // Set null values
+      entry.svg = null;
+      entry.svgTitle = null;
+      entry.name = null;
+      entry.frame = null;
+      entry.ctermGene = null;
+      entry.ntermGene = null;
+      entry.ctermTranscript = null;
+      entry.ntermTranscript = null;
     }
-  );
-
-  // Pipe file through parser
-  output.pipe(parser);
-
-  output.on('error', (err) => {
-    log('Unable to find required CSV file: ' + structuralVariationFile);
-    deferred.reject({loader: 'structuralVariants', message: 'Unable to find the structural variants file: ' + baseDir + '/JReport_CSV_ODF/' + structuralVariationFile, result: false});
   });
 
-  return deferred.promise;
+  // Log progress
+  logger.info(`Parsed .csv for: ${variantType}`);
 
+  return entries;
 };
 
 /**
@@ -113,95 +71,53 @@ let parseStructuralVariantFile = (report, structuralVariationFile, variantType, 
  *
  * Load values for "Structural Variation: Genomic Details"
  * sources:
- *  - sv_fusion_biol.csv   -Biological
- *  - sv_fusion_clin_rel.csv  -Clinical
- *  - sv_fusion_prog_diag.csv  -Nostic
- *  - sv_fusion_transcribed.csv  -fusionOmicSupport
+ *  - sv_fusion_biol.csv          -Biological
+ *  - sv_fusion_clin_rel.csv      -Clinical
+ *  - sv_fusion_prog_diag.csv     -Nostic
+ *  - sv_fusion_transcribed.csv   -fusionOmicSupport
  *
  * Create DB entries for Small Mutations. Parse in CSV values, mutate, insert.
  *
  * @param {object} report - POG report model object
  * @param {string} dir - Root directory
- * @param {object} logger - logging interface
+ * @param {object} moduleOptions - Options to configure mavis summary
  *
+ * @returns {Promise.<object>} - Returns result of loading structural variants into db
  */
-module.exports = (report, dir, logger, moduleOptions) => {
-
+module.exports = async (report, dir, moduleOptions) => {
   baseDir = dir;
 
-  // Create promise
-  let deferred = Q.defer();
-
-  // Setup Logger
-  let log = logger.loader(report.ident, 'SV.StructuralVariants');
-
   // Small Mutations to be processed
-  let sources = [
+  const sources = [
     {file: 'sv_fusion_biol.csv', type: 'biological'},
     {file: 'sv_fusion_clin_rel.csv', type: 'clinical'},
     {file: 'sv_fusion_prog_diag.csv', type: 'nostic'},
-    {file: 'sv_fusion_transcribed.csv', type: 'fusionOmicSupport'}
+    {file: 'sv_fusion_transcribed.csv', type: 'fusionOmicSupport'},
   ];
 
-  // Promises Array
-  let promises = [];
-
   // Loop over sources and collect promises
-  sources.forEach((input) => {
-    promises.push(parseStructuralVariantFile(report, input.file, input.type, log));
+  const promises = sources.map((input) => {
+    return parseStructuralVariantFile(report, input.file, input.type);
   });
 
   // Wait for all promises to be resolved
-  let svResults;
-  Q.all(promises)
-    .then((results) => {
-      // Log progress
-      log('Structural Variations: ' + _.flattenDepth(results, 2).length);
+  const results = await Promise.all(promises);
+  const flatResults = _.flattenDepth(results, 2);
 
-      // Load into Database
-      db.models.sv.bulkCreate(_.flattenDepth(results, 2)).then(
-        (result) => {
+  // Log progress
+  logger.info(`Structural Variations: ${flatResults.length}`);
 
-          // Successful create into DB
-          log('Database entries created.', logger.SUCCESS);
-          svResults = result;
-          let mavisProducts = _.map(result, 'mavis_product_id');
+  // Load into Database
+  const svLoadResult = await db.models.sv.bulkCreate(flatResults);
 
-          if(mavisProducts && moduleOptions.config.MAVISSummary) {
-            mavis.addMavisSummary(report, moduleOptions.config.MAVISSummary, mavisProducts).then(
-              (mavisResults) => {
-                // Done!
-                log('MAVIS summaries created.', logger.SUCCESS);
-                deferred.resolve({loader: 'structuralVariants', result: true, data: svResults});
-              },
-              (mavisErr) => {
-                log('Unable to add MAVIS summary for structural variants');
-                new Error('Unable to add MAVIS summary for structural variants');
-                deferred.reject({loader: 'structuralVariants', message: 'Unable to add MAVIS summary for structural variants'});
-              }
-            )
-          } else {
-            // Done!
-            deferred.resolve({loader: 'structuralVariants', result: true, data: svResults});
-          }
+  // Successful create into DB
+  logger.info('Database entries created.');
 
-        },
-        // Problem creating DB entries
-        (err) => {
-          log('Unable to create database entries.', logger.ERROR);
-          new Error('Unable to create structural variants database entries.');
-          deferred.reject({loader: 'structuralVariants', message: 'Unable to create structural variants database entries.', result: false});
-        }
-      );
+  const mavisProducts = _.map(svLoadResult, 'mavis_product_id');
 
-    },
-    (error) => {
-
-      console.log(error);
-      log('Unable to process structrual variant file', logger.ERROR);
-      deferred.reject({loader: 'structuralVariants', message: 'Unable to process a structural variants file: ' + error.message, result: false});
-
-    });
-
-  return deferred.promise;
+  if (mavisProducts && moduleOptions.config.MAVISSummary) {
+    await mavis.addMavisSummary(report, moduleOptions.config.MAVISSummary, mavisProducts);
+    logger.info('MAVIS summaries created.');
+  }
+  return {loader: 'structuralVariants', result: true, data: svLoadResult};
 };
