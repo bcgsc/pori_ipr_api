@@ -1,90 +1,44 @@
-"use strict";
+const fs = require('fs');
+const _ = require('lodash');
+const parse = require('csv-parse/lib/sync');
+const db = require('../../models');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-    fs = require('fs'),
-    parse = require('csv-parse'),
-    remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-    _ = require('lodash'),
-    Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+const {logger} = process;
 
-/*
+/**
  * Parse Genomic Alterations Identified File
  *
- * 
- * @param object POG - POG model object
- *
+ * @param {object} report - POG model object
+ * @param {string} dir - Base directory
+ * @returns {Promise.<Array.<object>>} - Returns the results of loading the genomic alterations into the db
  */
-module.exports = (report, dir, logger) => {
-  
-  // Create promise
-  let deferred = Q.defer();
-  
-  // Setup Logger
-  let log = logger.loader(report.ident, 'Summary.GenomicAlterationsIdentified');
-  
+module.exports = async (report, dir) => {
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/genomic_alt_identified.csv');
-  
-  log('Found and read genomic_alt_identified.csv file.');
-  
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/genomic_alt_identified.csv`);
+
+  logger.info('Found and read genomic_alt_identified.csv file.');
+
   // Parse file!
-  let parser = parse({delimiter: ','},
-    (err, result) => {
-      
-      // Was there a problem processing the file?
-      if(err) {
-        log('Unable to parse CSV file');
-        console.log(err);
-        deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to parse the genomic alterations identified file: ' + dir + '/JReport_CSV_ODF/genomic_alt_identified.csv', result: false});
-      }
-    
-      // Create Entries Array
-      let entries = [];
-      
-      // Remove First Row
-      _.pullAt(result, 0);
-      
-      // Loop over returned rows, and read in each column value
-      _.flatten(result).forEach((value) => {
-        
-        // Check for empty value
-        if(value !== '') {
-          entries.push({
-            pog_id: report.pog_id,
-            pog_report_id: report.id,
-            geneVariant: value
-          });
-        }
-        
+  const results = parse(output, {delimiter: ','});
+  results.shift();
+
+  const entries = [];
+
+  // Loop over returned rows, and read in each column value
+  _.flatten(results).forEach((value) => {
+    // Check for empty value
+    if (value !== '') {
+      entries.push({
+        pog_id: report.pog_id,
+        pog_report_id: report.id,
+        geneVariant: value,
       });
-      
-      // Add to Database
-      db.models.genomicAlterationsIdentified.bulkCreate(entries).then(
-        (result) => {
-          log('Finished Genomic Alterations Identified.', logger.SUCCESS);
-         
-          // Resolve Promise
-          deferred.resolve(result);
-        },
-        (err) => {
-          console.log(err);
-          log('Failed to load patient tumour analysis.', logger.ERROR);
-          deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to create database entries', result: false});
-        }
-      );
     }
-  );
-  
-  // Pipe file through parser
-  output.pipe(parser);
-  
-  output.on('error', (err) => {
-    log('Unable to find required CSV file');
-    deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to find the genomic alterations identified file: ' + dir + '/JReport_CSV_ODF/genomic_alt_identified.csv', result: false});
   });
-  
-  return deferred.promise;
-  
-}
+
+  // Add to Database
+  const createResult = await db.models.genomicAlterationsIdentified.bulkCreate(entries);
+  logger.info('Finished Genomic Alterations Identified.');
+
+  return createResult;
+};
