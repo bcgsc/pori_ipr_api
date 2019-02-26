@@ -1,138 +1,65 @@
-"use strict";
+const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
+const db = require('../../models');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-  fs = require('fs'),
-  dl = require('datalib'),
-  parse = require('csv-parse'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  _ = require('lodash'),
-  Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/kbColumns.json'});
+const {logger} = process;
 
+const mapUser = (inputUser) => {
+  if (!inputUser) {
+    return null;
+  }
 
-let mapUser = (inputUser) => {
-  if(inputUser === null) return null;
-
-  if(inputUser.indexOf('+') !== -1) {
+  if (inputUser.includes('+')) {
     inputUser = inputUser.split('+')[0].trim();
   }
-
-  switch(inputUser) {
-    default:
-      return null;
-      break;
-  }
-};
-
-
-let dbInsert = (entry, i) => {
-  let deferred = Q.defer();
-
-  db.models.kb_reference.create(entry).then(
-    (result) => {
-      deferred.resolve(true);
-    },
-    (err) => {
-      console.log('SQL Error', err);
-      deferred.reject(false);
-    }
-  );
-
-  return deferred.promise;
+  return inputUser;
 };
 
 /**
  * Parse KB Entries file
  *
- * @param {object} dir - Directory to locate the KB exports in
- * @param {object} logger - Logging utility instance
- * @param {object} options
+ * @param {string} dir - Directory to locate the KB exports in
+ * @param {object} options - Contains name of file
  *
- * @returns {promise|object} - Resolves with object, Rejects with object
+ * @returns {Promise.<object>} - Returns the result of adding KB entries to db
  */
-module.exports = (dir, logger, options) => {
+module.exports = async (dir, options) => {
+  const file = options.references || '/knowledge_base_references.csv';
 
-  // Create promise
-  let deferred = Q.defer();
-
-  // Setup Logger
-  let log = logger.loader('KB-Import', 'References');
-  
-  let file = options.references || '/knowledge_base_references.csv';
-  
   // First parse in therapeutic
-  let output = fs.createReadStream(`${dir}/${file}`);
-
-  log(`Reading in references from: ${dir}/${file}`);
+  const output = fs.readFileSync(`${dir}/${file}`);
+  logger.info(`Reading in references from: ${dir}/${file}`);
 
   // Parse file!
-  let parser = parse({delimiter: ',', columns: true, relax_column_count: true},
-    (err, entries) => {
+  const entries = parse(output, {delimiter: ',', columns: true, relax_column_count: true});
 
-      if(err) {
-        console.log(`Failed to find: ${dir}/${file}`, err);
-        log(`Failed to read in from file: ${dir}/${file} (not found)`);
-        deferred.reject(false);
-        return;
-      }
+  logger.info(`Entries to be processed: ${entries.length}`);
 
-      log('Entries to be processed: '+entries.length);
-
-      _.forEach(entries, (e, i)=> {
-
-        // Ignore deleted entries.
-        if(e.status === 'RESOLVED-CAN-DELETE') return delete entries[i];
-
-        // Do some remapping
-        e.reviewedBy_id = mapUser(e.last_modified_by);
-        if(e.status === null) e.status = 'REQUIRES-REVIEW';
-        e.ref_id = e.id; // Move id to ref_id;
-        e.sample_size = (typeof e.sample_size === 'string') ? null : e.sample_size;
-        e.type = (e.type === '') ? null : e.type;
-
-        delete entries[i].id; // delete id entry
-        delete entries[i].update_comments;
-        delete entries[i].last_modified_by;
-        delete entries[i].last_reviewed_at;
-
-        // Write updated entry to array
-        entries[i] = e;
-      });
-
-      log('Processed entries, starting database insert');
-
-      // Add to Database
-      db.models.kb_reference.bulkCreate(entries).then(
-        (result) => {
-          log('Finished loading KB references table.', logger.SUCCESS)
-
-          // Resolve Promise
-          deferred.resolve(result);
-        },
-        (err) => {
-          console.log(err.message);
-          log('Failed to load KB references into DB', logger.ERROR)
-          deferred.reject('Failed to load KB references into database.');
-        }
-      );
-
+  entries.forEach((entry, index) => {
+    // Ignore deleted entries.
+    if (entry.status === 'RESOLVED-CAN-DELETE') {
+      return delete entries[index];
     }
-  );
 
-  // Pipe file through parser
-  output.pipe(parser);
+    // Do some remapping
+    entry.reviewedBy_id = mapUser(entry.last_modified_by);
+    if (!entry.status) {
+      entry.status = 'REQUIRES-REVIEW';
+    }
+    entry.ref_id = entry.id; // Move id to ref_id;
+    entry.sample_size = (typeof entry.sample_size === 'string') ? null : entry.sample_size;
+    entry.type = (entry.type === '') ? null : entry.type;
 
-  output.on('error', (err) => {
-    log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    delete entry.id;
+    delete entry.update_comments;
+    delete entry.last_modified_by;
+    delete entry.last_reviewed_at;
   });
 
+  logger.info('Processed entries, starting database insert');
+  // Add to Database
+  const result = await db.models.kb_reference.bulkCreate(entries);
+  logger.info('Finished loading KB references table.');
 
-  /*
-
-  */
-
-  return deferred.promise;
-
+  return result;
 };
