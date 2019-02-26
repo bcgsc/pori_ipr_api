@@ -1,78 +1,42 @@
-"use strict";
+const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
+const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const db = require('../../models');
+const remapKeys = require('../../libs/remapKeys');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-    fs = require('fs'),
-    parse = require('csv-parse'),
-    remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-    _ = require('lodash'),
-    Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+const {logger} = process;
 
-/*
+/**
  * Parse Variant Counts File
  *
- * 
- * @param object POG - POG model object
+ * @param {object} report - POG model object
+ * @param {string} dir - Base directory
  *
+ * @returns {Promise.<object>} - Returns created variant counts entry
  */
-module.exports = (report, dir, logger) => {
-  
-  // Create promise
-  let deferred = Q.defer();
-  
-  // Setup Logger
-  let log = logger.loader(report.ident, 'Summary.VariantCounts');
-  
+module.exports = async (report, dir) => {
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/variant_counts.csv');
-  
-  log('Found and read variant_counts.csv file.');
-  
-  // Parse file!
-  let parser = parse({delimiter: ',', columns: true},
-    (err, result) => {
-      
-      // Was there a problem processing the file?
-      if(err) {
-        log('Unable to parse CSV file');
-        console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
-      }
-      
-      if(result.length > 1) return deferred.reject('More than one patient tumour analysis entry found.') && new Error('['+report.ident+'][Loader][Summary.VariantCounts] More than one patient variants count entry found.');
-    
-      // Remap results
-      let entry = _.head(remapKeys(result, nconf.get('summary:variantCounts')));
-      
-      // Map needed DB column values
-      entry.pog_id = report.pog_id;
-      entry.pog_report_id = report.id;
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/variant_counts.csv`);
 
-      // Add to Database
-      db.models.variantCounts.create(entry).then(
-        (result) => {
-          log('Finished Variant Counts.', logger.SUCCESS);
-         
-          // Resolve Promise
-          deferred.resolve(entry);
-        },
-        (err) => {
-          log('Failed to write variant counts to db.', logger.ERROR);
-          deferred.reject('Failed to write variant counts to db.');
-        }
-      );
-    }
-  );
-  
-  // Pipe file through parser
-  output.pipe(parser);
-  
-  output.on('error', (err) => {
-    log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
-  });
-  
-  return deferred.promise;
-  
-}
+  logger.info('Found and read variant_counts.csv file.');
+
+  // Parse file!
+  const result = parse(output, {delimiter: ',', columns: true});
+
+  if (result.length > 1) {
+    throw new Error(`[${report.ident}][Loader][Summary.VariantCounts] More than one patient variants count entry found.`);
+  }
+
+  // Remap results
+  const entry = remapKeys(result, nconf.get('summary:variantCounts')).shift();
+
+  // Map needed DB column values
+  entry.pog_id = report.pog_id;
+  entry.pog_report_id = report.id;
+
+  // Add to Database
+  await db.models.variantCounts.create(entry);
+  logger.info('Finished Variant Counts.');
+
+  return entry;
+};
