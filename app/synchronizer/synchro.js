@@ -33,13 +33,18 @@ class Synchro {
    *
    * @param {integer} interval - Interval in milliseconds
    * @param {string} mode - The operation mode
+   * @property {object} hooks - Hooks registry { uuid: {name: str, frequency: int, fn: fn() } }
+   * @property {object} hookMap - Map of hook UUIDs to Names - used to prevent naming collisions { name: uuid, ... }
+   * @property {string} runMode - Run mode for the synchronizer. Default is dryrun
+   * @property {object} invocationRegistry - Time since last invocation for each hook { uuid: {time: int, result: str/text} }
+   * @property {number} interval - Default iteration time
    */
   constructor(interval = null, mode = null) {
-    this.hooks = {}; // Hooks registry { uuid: {name: str, frequency: int, fn: fn() } }
-    this.hookMap = {}; // Map of hook UUIDs to Names - used to prevent naming collisions { name: uuid, ... }
-    this.runMode = mode || 'dryrun'; // Run mode for the synchronizer. Default is dryrun
-    this.invocationRegistry = {}; // Time since last invocation for each hook { uuid: {time: int, result: str/text} }
-    this.interval = (interval * 1000) || 1000; // Default iteration time
+    this.hooks = {};
+    this.hookMap = {};
+    this.runMode = mode || 'dryrun';
+    this.invocationRegistry = {};
+    this.interval = (interval * 1000) || 1000;
 
     logger.info(`Syncro set up to run every ${this.interval / 1000}s`);
   }
