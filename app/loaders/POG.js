@@ -14,15 +14,14 @@ const getInfo = async (dir, file) => {
   logger.info(`Found and read ${file} file.`);
 
   // Parse file!
-  const result = parse(output, {delimiter: ',', columns: true});
-  return result;
+  return parse(output, {delimiter: ',', columns: true});
 };
 
 /**
  * Parse Patient Information File
  *
  * @param {object} report - POG report model object
- * @param {string} dir - base directory
+ * @param {string} dir - Base directory
  *
  * @returns {Promise.<object>} - Returns an object with property pogSampleQC set to true
  */
@@ -35,7 +34,7 @@ module.exports = async (report, dir) => {
     getInfo(dir, 'qc_summary.csv'),
   ]);
 
-  logger.info('Finished reading Sample, QC & Config File', logger.SUCCESS);
+  logger.info('Finished reading Sample, QC & Config File');
 
   // Pull and process results
   pogInfo.sampleInfo = results[0];
