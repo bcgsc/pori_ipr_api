@@ -33,7 +33,7 @@ module.exports = sequelize => sequelize.define('sv', {
     type: Sq.TEXT,
   },
   svVariant: {
-    type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport'),
+    type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
   },
   genes: {
     type: Sq.TEXT,
