@@ -70,7 +70,6 @@ class TestClass {
     } catch (error) {
       logger.error(`Failed to complete Task Test sync: ${error.message}`);
       console.error(error);
-      this._reset(); // Reset
       return {summary: 'Failed to complete Test Task Runner', result: error};
     }
   }
