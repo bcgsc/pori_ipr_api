@@ -93,6 +93,7 @@ module.exports = async (report, dir, moduleOptions) => {
     {file: 'sv_fusion_clin_rel.csv', type: 'clinical'},
     {file: 'sv_fusion_prog_diag.csv', type: 'nostic'},
     {file: 'sv_fusion_transcribed.csv', type: 'fusionOmicSupport'},
+    {file: 'sv_unchar.csv', type: 'uncharacterized'},
   ];
 
   // Loop over sources and collect promises
