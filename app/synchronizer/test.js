@@ -16,6 +16,15 @@ const Syncro = require('./synchro'); // Import syncronizer Object
 const {logger} = process;
 logger.info('Starting Test Sync class');
 
+// Create Synchronizer
+const TestSyncro = new Syncro(10);
+
+// Start Syncronizer
+TestSyncro.start();
+
+const run = new TestClass({});
+TestSyncro.registerHook('TestSyncroClass', 30, run);
+
 /**
  * Lookup tasks pending pathology results
  *
@@ -74,14 +83,5 @@ class TestClass {
     }
   }
 }
-
-// Create Synchronizer
-const TestSyncro = new Syncro(10);
-
-// Start Syncronizer
-TestSyncro.start();
-
-const run = new TestClass({});
-TestSyncro.registerHook('TestSyncroClass', 30, run);
 
 module.exports = TestSyncro;
