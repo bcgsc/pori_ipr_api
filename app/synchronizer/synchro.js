@@ -31,7 +31,7 @@ class Synchro {
   /**
    * Constructor
    *
-   * @param {integer} interval - Interval in milliseconds
+   * @param {integer} interval - Interval in seconds
    * @param {string} mode - The operation mode
    * @property {object} hooks - Hooks registry { uuid: {name: str, frequency: int, fn: fn() } }
    * @property {object} hookMap - Map of hook UUIDs to Names - used to prevent naming collisions { name: uuid, ... }
