@@ -18,7 +18,7 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read('admin', 'superUser');
+    access.read = ['admin', 'superUser'];
     if (access.check() === false) return;
 
     try {
@@ -137,7 +137,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Access Control
     const access = new Acl(req, res);
-    access.write('*'); // Anyone is allowed to edit their account details. Controller later protects non-self edits.
+    access.write = ['*']; // Anyone is allowed to edit their account details. Controller later protects non-self edits.
     if (access.check() === false) return;
     
     // Editing someone other than self?
@@ -192,7 +192,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Remove a user
     const access = new Acl(req, res);
-    access.write('admin', 'superUser');
+    access.write = ['admin', 'superUser'];
     if (access.check() === false) return res.status(403).send();
 
     try {
