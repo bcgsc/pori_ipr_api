@@ -58,9 +58,8 @@ describe('ACL - Check standard GET request for POG', () => {
     // Check Standard POG GET endpoint
     const check = new Acl(req, res);
     check.isPog = true;
-    check.check();
 
-    assert.equal(check, true);
+    assert.equal(check.check(), true);
     done();
   });
 });
