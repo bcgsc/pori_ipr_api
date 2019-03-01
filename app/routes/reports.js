@@ -84,7 +84,10 @@ router.route('/')
           opts.include.push(userFilter);
         }
         
-        opts.order = [[{model: db.models.POG, as: 'pog'}, 'POGID', 'desc']];
+        opts.order = [
+          ['state', 'desc'],
+          [{model: db.models.POG, as: 'pog'}, 'POGID', 'desc'],
+        ];
         
         let reports;
         
