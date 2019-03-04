@@ -21,7 +21,7 @@ module.exports = async (report, dir) => {
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});
   if (result.length === 0) {
-    throw new Error('Unable to find test information');
+    throw new Error(`Unable to find test file ${dir}/JReport_CSV_ODF/probe_test_info.csv`);
   }
 
   if (result.length > 1) {
