@@ -114,7 +114,7 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const access = new ACL(req, res);
-    access.notGroups = ['Clinician', 'Collaborator'];
+    access.nGroups = ['Clinician', 'Collaborator'];
     let externalUser = true;
     if (access.check(true)) externalUser = false;
 
@@ -202,7 +202,7 @@ router.route('/count')
   .get(async (req, res) => {
     // Access Control
     const access = new ACL(req, res);
-    access.notGroups = ['Clinician', 'Collaborator'];
+    access.nGroups = ['Clinician', 'Collaborator'];
     let externalUser = true;
     if (access.check(true)) externalUser = false;
 

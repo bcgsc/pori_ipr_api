@@ -97,7 +97,7 @@ router.route('/metrics')
   .get(async (req, res) => {
 
     const access = new Acl(req, res);
-    access.notGroups = ['Clinician', 'Collaborator'];
+    access.nGroups = ['Clinician', 'Collaborator'];
     const externalMode = !access.check(true);
 
     let query  = "select count(kb_references.id) as \"refTotal\", sum(case when kb_references.status = 'REVIEWED' then 1 else 0 end) as \"refReviewed\", ";
