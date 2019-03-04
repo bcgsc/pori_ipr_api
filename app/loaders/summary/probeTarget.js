@@ -67,19 +67,19 @@ module.exports = async (report, basedir, options) => {
 
   // Alterations to be processed
   const sources = [
-    {file: 'clin_rel_known_alt_detailed.csv'},
-    {file: 'clin_rel_known_biol_detailed.csv'},
-    {file: 'clin_rel_known_diag_detailed.csv'},
-    {file: 'clin_rel_known_prog_detailed.csv'},
-    {file: 'clin_rel_unknown_alt_detailed.csv'},
+    'clin_rel_known_alt_detailed.csv',
+    'clin_rel_known_biol_detailed.csv',
+    'clin_rel_known_diag_detailed.csv',
+    'clin_rel_known_prog_detailed.csv',
+    'clin_rel_unknown_alt_detailed.csv',
   ];
 
   const promises = sources.map((input) => {
-    if (!fs.existsSync(`${probeDir}/JReport_CSV_ODF/${input.file}`)) {
-      logger.error(`Unable to find probe report data. Missing input file(s): ${input.file}`);
-      throw new Error(`Failed to find the file for probe targeting: ${probeDir}/JReport_CSV_ODF/${input.file}`);
+    if (!fs.existsSync(`${probeDir}/JReport_CSV_ODF/${input}`)) {
+      logger.error(`Unable to find probe report data. Missing input file(s): ${input}`);
+      throw new Error(`Failed to find the file for probe targeting: ${probeDir}/JReport_CSV_ODF/${input}`);
     }
-    return parseAlterationsFile(report, input.file, probeDir);
+    return parseAlterationsFile(report, input, probeDir);
   });
 
   if (promises.length === 0) {
