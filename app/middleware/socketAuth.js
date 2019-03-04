@@ -29,7 +29,7 @@ class SocketAuthentication {
    * @returns {Promise.<object>} - Returns the current authenticated socket connection
    */
   async challenge() {
-    this.socket.on('authenticate', (msg) => {
+    return this.socket.on('authenticate', (msg) => {
       const decoded = jwt.verify(msg.token, pubKey, {algorithms: ['RS256']});
       if (!decoded) {
         throw new Error('Failed socket authentication');
