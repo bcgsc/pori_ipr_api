@@ -2,7 +2,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const {logger} = process;
-const AUTH_TIMEOUT = 2000;
+const AUTH_TIMEOUT = 5000;
 const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
   : fs.readFileSync('keys/devkey.pem');
