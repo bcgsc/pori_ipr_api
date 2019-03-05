@@ -134,7 +134,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
           age_of_consent: req.body.age_of_consent,
         };
 
-        Patient.retrieveOrCreate(req.body.POGID, req.body.project, pog_fields)
+        Patient.retrieveOrCreate(req.body.POGID, req.body.project, pogFields)
           .then((pog) => {
             POG = pog;
             analysis.pog_id = pog.id;
