@@ -88,7 +88,7 @@ module.exports = async (report, basedir, options) => {
   }
 
   // Wait for all promises to be resolved
-  const results = Promise.all(promises);
+  const results = await Promise.all(promises);
   const flatResults = _.flattenDepth(results, 2);
   // Log progress
   logger.info(`Variations collected: ${flatResults.length}`);
