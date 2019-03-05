@@ -16,7 +16,7 @@ const {logger} = process;
  */
 module.exports = async (report, dir) => {
   // First parse in therapeutic
-  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv`, {delimiter: ','});
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv`);
 
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});

@@ -24,7 +24,7 @@ const parseCnvFile = async (report, cnvFile, cnvVariant) => {
   }
 
   // First parse in therapeutic
-  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${cnvFile}`, {delimiter: ','});
+  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${cnvFile}`);
 
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});

@@ -25,7 +25,7 @@ const parseStructuralVariantFile = async (report, structuralVariationFile, varia
   }
 
   // First parse in therapeutic
-  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${structuralVariationFile}`, {delimiter: ','});
+  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${structuralVariationFile}`);
 
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});

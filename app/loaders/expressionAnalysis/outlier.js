@@ -21,7 +21,7 @@ let baseDir;
  */
 const parseExpressionOutlierFile = async (report, expressionOutlierFile, outlierType) => {
   // First parse in therapeutic
-  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${expressionOutlierFile}`, {delimiter: ','});
+  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${expressionOutlierFile}`);
 
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});

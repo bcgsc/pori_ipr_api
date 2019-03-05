@@ -14,7 +14,7 @@ const {logger} = process;
  */
 module.exports = async (report, dir) => {
   // First parse in therapeutic
-  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_summary.csv`, {encoding: 'utf-8'});
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_summary.csv`);
   logger.info('Found and read probe_summary.csv file.');
 
   // Parse file!

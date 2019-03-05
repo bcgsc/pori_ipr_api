@@ -26,7 +26,7 @@ const parseSmallMutationFile = async (report, smallMutationFile, mutationType) =
   }
 
   // First parse in therapeutic
-  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${smallMutationFile}`, {encoding: 'utf8'});
+  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${smallMutationFile}`);
 
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});

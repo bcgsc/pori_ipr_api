@@ -14,7 +14,7 @@ const {logger} = process;
  */
 module.exports = async (report, dir) => {
   // Parse input file
-  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_test_info.csv`, {encoding: 'utf-8'});
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_test_info.csv`);
 
   logger.info('Found and read probe_test_info.csv file.');
 

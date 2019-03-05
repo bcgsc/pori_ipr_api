@@ -24,7 +24,7 @@ module.exports = async (report, options = {}) => {
   }
 
   // Get File
-  const output = fs.readFileSync(files[0], {encoding: 'utf-8'});
+  const output = fs.readFileSync(files[0]);
 
   logger.info('Found and read sample_summary.csv file.');
 
