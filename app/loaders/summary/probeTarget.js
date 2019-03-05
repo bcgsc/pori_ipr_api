@@ -18,7 +18,7 @@ const {logger} = process;
  */
 const parseAlterationsFile = async (report, probeFile, probeDir) => {
   // First parse in therapeutic
-  const output = fs.readFileSync(`${probeDir}/JReport_CSV_ODF/${probeFile}`, {delimiter: ','});
+  const output = fs.readFileSync(`${probeDir}/JReport_CSV_ODF/${probeFile}`);
 
   // Parse file!
   const result = parse(output, {delimiter: ',', columns: true});
