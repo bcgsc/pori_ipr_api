@@ -14,13 +14,13 @@ const {logger} = process;
 
 // Map of loaders
 let loaders = [
-  {name: 'summary_patientInformation', required: true, Location: summaryPatientInformation, loaderType: 'class'},
-  {name: 'summary_genomicEventsTherapeutic', required: true, Location: summaryGenomicEventsTherapeutic},
-  {name: 'sample_information', required: true, Location: sampleInformation},
-  {name: 'test_information', required: true, Location: testInformation},
-  {name: 'alterations', required: true, Location: alterations},
-  {name: 'approved_thisCancer', required: true, Location: approvedThisCancer},
-  {name: 'approved_otherCancer', required: true, Location: approvedOtherCancer},
+  {name: 'summary_patientInformation', required: true, location: summaryPatientInformation, loaderType: 'class'},
+  {name: 'summary_genomicEventsTherapeutic', required: true, location: summaryGenomicEventsTherapeutic},
+  {name: 'sample_information', required: true, location: sampleInformation},
+  {name: 'test_information', required: true, location: testInformation},
+  {name: 'alterations', required: true, location: alterations},
+  {name: 'approved_thisCancer', required: true, location: approvedThisCancer},
+  {name: 'approved_otherCancer', required: true, location: approvedOtherCancer},
 ];
 
 class ProbeLoader {
@@ -168,7 +168,7 @@ class ProbeLoader {
 
     const promises = toLoad.map((loader) => {
       let loaderPromise = null;
-      const {name, Location, loaderType} = loader;
+      const {name, location, loaderType} = loader;
 
       // Check for Module Options
       const moduleOptions = this.moduleOptions[name] || {};
@@ -176,9 +176,9 @@ class ProbeLoader {
 
       // Check for new class designed loader
       if (loaderType === 'class') {
-        loaderPromise = new Location(this.report, this.baseDir, moduleOptions).load();
+        loaderPromise = new location(this.report, this.baseDir, moduleOptions).load();
       } else {
-        loaderPromise = Location(this.report, this.baseDir, moduleOptions);
+        loaderPromise = location(this.report, this.baseDir, moduleOptions);
       }
 
       return loaderPromise;
