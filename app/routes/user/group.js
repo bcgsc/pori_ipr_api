@@ -12,7 +12,7 @@ const db = require(`${process.cwd()}/app/models`);
 router.use('/', (req, res, next) => {
   // Access Control
   const access = new Acl(req, res);
-  access.read('*');
+  access.read = ['*'];
   if (access.check() === false) return res.status(403).send();
 
   // All good!
