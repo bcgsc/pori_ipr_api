@@ -49,39 +49,39 @@ const config = nconf.get('paths:data');
 // Map of Available Loaders
 const loaders = [
   // Meta
-  {name: 'meta', required: true, Location: meta},
-  {name: 'image', required: true, Location: image},
+  {name: 'meta', required: true, location: meta},
+  {name: 'image', required: true, location: image},
 
   // Summary
-  {name: 'summary_patientInformation', required: true, Location: summaryPatientInformation, loaderType: 'class'},
-  {name: 'summary_tumourAnalysis', required: true, Location: summaryTumourAnalysis},
-  {name: 'summary_mutationSummary', required: true, Location: summaryMutationSummary, loaderType: 'class'},
-  {name: 'summary_variantCounts', required: false, Location: summaryVariantCounts},
-  {name: 'summary_genomicAlterationsIdentified', required: true, Location: summaryGenomicAlterationsIdentified},
-  {name: 'summary_genomicEventsTherapeutic', required: true, Location: summaryGenomicEventsTherapeutic},
-  {name: 'summary_probeTarget', required: false, Location: summaryProbeTarget},
-  {name: 'summary_microbial', required: false, Location: summaryMicrobial, loaderType: 'class'},
+  {name: 'summary_patientInformation', required: true, location: summaryPatientInformation, loaderType: 'class'},
+  {name: 'summary_tumourAnalysis', required: true, location: summaryTumourAnalysis},
+  {name: 'summary_mutationSummary', required: true, location: summaryMutationSummary, loaderType: 'class'},
+  {name: 'summary_variantCounts', required: false, location: summaryVariantCounts},
+  {name: 'summary_genomicAlterationsIdentified', required: true, location: summaryGenomicAlterationsIdentified},
+  {name: 'summary_genomicEventsTherapeutic', required: true, location: summaryGenomicEventsTherapeutic},
+  {name: 'summary_probeTarget', required: false, location: summaryProbeTarget},
+  {name: 'summary_microbial', required: false, location: summaryMicrobial, loaderType: 'class'},
 
   // Detailed Genomic Analysis
-  {name: 'detailed_alterations', required: false, Location: detailedAlterations},
-  {name: 'detailed_approvedThisCancer', required: false, Location: detailedApprovedThisCancer},
-  {name: 'detailed_approvedOtherCancer', required: false, Location: detailedApprovedOtherCancer},
-  {name: 'detailed_targetedGenes', required: false, Location: detailedTargetedGenes},
+  {name: 'detailed_alterations', required: false, location: detailedAlterations},
+  {name: 'detailed_approvedThisCancer', required: false, location: detailedApprovedThisCancer},
+  {name: 'detailed_approvedOtherCancer', required: false, location: detailedApprovedOtherCancer},
+  {name: 'detailed_targetedGenes', required: false, location: detailedTargetedGenes},
 
   // Somatic Mutations
-  {name: 'somatic_smallMutations', required: false, Location: somaticSmallMutations},
-  {name: 'somatic_mutationSignature', required: false, Location: somaticMutationSignature},
+  {name: 'somatic_smallMutations', required: false, location: somaticSmallMutations},
+  {name: 'somatic_mutationSignature', required: false, location: somaticMutationSignature},
 
   // Copy Number Analyses
-  {name: 'copynumber_cnv', required: false, Location: copyNumberCNV},
+  {name: 'copynumber_cnv', required: false, location: copyNumberCNV},
 
   // Structural Variation
-  {name: 'structural_sv', required: false, Location: structuralSV},
+  {name: 'structural_sv', required: false, location: structuralSV},
 
   // Expression Analysis
-  {name: 'expression_outlier', required: false, Location: expressionOutlier},
-  {name: 'protein_expression', required: false, Location: expressionProtein, loaderType: 'class'},
-  {name: 'expression_drugTarget', required: false, Location: expressionDrugTarget},
+  {name: 'expression_outlier', required: false, location: expressionOutlier},
+  {name: 'protein_expression', required: false, location: expressionProtein, loaderType: 'class'},
+  {name: 'expression_drugTarget', required: false, location: expressionDrugTarget},
 ];
 
 class GenomicLoader {
@@ -111,8 +111,9 @@ class GenomicLoader {
     logger.info('Starting Genomic Loader');
 
     // Run default POG Genomic Report loading
-    if (this.options.profile === 'pog_genomic' || this.options.profile === 'pog_genomic_no_flat') {
-
+    if (this.options.profile === 'pog_genomic'
+    || this.options.profile === 'pog_genomic_no_flat'
+    ) {
       if (this.options.profile === 'pog_genomic_no_flat') {
         logger.info('Running POG Genomic Loader without flatfile');
 
@@ -224,7 +225,7 @@ class GenomicLoader {
 
     // Loop over loader files and create promises
     toLoad.forEach((loader) => {
-      const {Location, loaderType, name} = loader;
+      const {location, loaderType, name} = loader;
       let loaderPromise = null;
 
       // Check for Module Options
@@ -236,11 +237,10 @@ class GenomicLoader {
 
       // Check for new class designed loader
       if (loaderType === 'class') {
-        const classLoader = new Location(this.report, this.baseDir, moduleOptions);
-        loaderPromise = classLoader.load();
+        loaderPromise = new location(this.report, this.baseDir, moduleOptions).load();
       } else {
         // Standard function designed loader
-        loaderPromise = Location(this.report, this.baseDir, moduleOptions);
+        loaderPromise = location(this.report, this.baseDir, moduleOptions);
       }
       promises.push(loaderPromise);
     });
