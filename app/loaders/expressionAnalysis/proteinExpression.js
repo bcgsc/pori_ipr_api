@@ -8,7 +8,7 @@ const p2s = require('../../libs/pyToSql');
 const {logger} = process;
 
 
-class proteinExpressionLoader {
+class ProteinExpressionLoader {
   /**
    * Protein Expression Data Loader
    *
@@ -89,4 +89,4 @@ class proteinExpressionLoader {
   }
 }
 
-module.exports = proteinExpressionLoader;
+module.exports = ProteinExpressionLoader;
