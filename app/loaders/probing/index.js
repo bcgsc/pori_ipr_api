@@ -1,11 +1,5 @@
-/*
- * Loaders - Onboards CSV data into SQL databases
- *
- * Recursively works back g
- *
- */
 const glob = require('glob');
-const nconf = require('nconf').file({file: `${__dirname}/../../../config/${process.env.NODE_ENV}.json`});
+const nconf = require('nconf').file({file: `../../../config/${process.env.NODE_ENV}.json`});
 
 const summaryPatientInformation = require('../summary/patientInformation');
 const summaryGenomicEventsTherapeutic = require('../summary/genomicEventsTherapeutic');
@@ -19,17 +13,24 @@ const config = nconf.get('paths:data');
 const {logger} = process;
 
 // Map of loaders
-const LOADERS = [
-  {name: 'summary_patientInformation', required: true, location: '/../summary/patientInformation', loaderType: 'class'},
-  {name: 'summary_genomicEventsTherapeutic', required: true, location: '/../summary/genomicEventsTherapeutic'},
-  {name: 'sample_information', required: true, location: '/../POG'},
-  {name: 'test_information', required: true, location: '/test_information'},
-  {name: 'alterations', required: true, location: '/../detailedGenomicAnalysis/alterations'},
-  {name: 'approved_thisCancer', required: true, location: '/../detailedGenomicAnalysis/approvedThisCancer'},
-  {name: 'approved_otherCancer', required: true, location: '/../detailedGenomicAnalysis/approvedOtherCancer'},
+let loaders = [
+  {name: 'summary_patientInformation', required: true, Location: summaryPatientInformation, loaderType: 'class'},
+  {name: 'summary_genomicEventsTherapeutic', required: true, Location: summaryGenomicEventsTherapeutic},
+  {name: 'sample_information', required: true, Location: sampleInformation},
+  {name: 'test_information', required: true, Location: testInformation},
+  {name: 'alterations', required: true, Location: alterations},
+  {name: 'approved_thisCancer', required: true, Location: approvedThisCancer},
+  {name: 'approved_otherCancer', required: true, Location: approvedOtherCancer},
 ];
 
 class ProbeLoader {
+  /**
+   * Loads Probe Data - Onboards CSV data into SQL databases
+   *
+   * @param {object} POG - POG object model
+   * @param {object} report - Report object model
+   * @param {object} options - Loader options
+   */
   constructor(POG, report, options) {
     this.POG = POG;
     this.report = report;
@@ -42,90 +43,54 @@ class ProbeLoader {
   /**
    * Run loaders
    *
-   * @returns {Promise|array} - Returns collection of loader results
+   * @returns {Promise.<Array.<object>>} - Returns collection of loader results
    */
   async load() {
-    //this.log('Starting Probe Loader');
+    logger.info('Starting Probe Loader');
 
     // Run default POG Probe Report loading
-    if (this.options.profile.toLowerCase() === 'pog_probe' || this.options.profile.toLowerCase() === 'pog_probe_no_flat') {
-
+    if (this.options.profile.toLowerCase() === 'pog_probe'
+      || this.options.profile.toLowerCase() === 'pog_probe_no_flat'
+    ) {
       if (this.options.profile === 'pog_probe_no_flat') {
-        this.log('Running POG Probe Loader without flatfile');
+        logger.info('Running POG Probe Loader without flatfile');
 
         // Skip patient info loader if no flatfile is available
-        _.remove(loaders, { name: 'summary_patientInformation' });
+        loaders = loaders.filter((loader) => {
+          return loader.name !== 'summary_patientInformation';
+        });
       } else {
-        this.log('Running POG Probe Loader');
+        logger.info('Running POG Probe Loader');
       }
 
       // If there is a baseDir, run using that dir
-      if (this.baseDir !== null) {
+      if (this.baseDir) {
+        logger.info(`Base directory provided: ${this.baseDir}`);
+      } else {
+        logger.info('Running default POG Probe loader profile');
 
-        this.log('Base directory provided: ' + this.baseDir, logger.SUCCESS);
-
-        // Run Loaders
-        this.runLoaders().then(
-          (successLoaders) => {
-            resolve(successLoaders);
-          },
-          // Rejects with load-ending failures.
-          (err) => {
-            console.log('Unable to finish loaders', err);
-            reject(err);
-          }
-        );
-        return;
+        // Run Default Loader Scenario
+        const libFolder = await this.getLibraryFolder();
+        await this.getReportFolder(libFolder);
       }
 
-
-      this.log('Running default POG Probe loader profile');
-
-      // Run Default Loader Scenario
-      this.getLibraryFolder()
-        .then(this.getReportFolder.bind(this))
-        .then(this.runLoaders.bind(this))
-        .then(
-          // Resolves with status of loaders
-          (successLoaders) => {
-            resolve(successLoaders);
-          },
-          // Rejects with load-ending failures.
-          (err) => {
-            console.log('Unable to finish loaders', err);
-            reject(err);
-          }
-        )
-        .catch((e) => {
-          reject({ error: { message: 'A required loader failed: ' + e.message } });
-        });
-      return;
+      return this.runLoaders();
     }
 
     // Loader NonPOG Report
     if (this.options.profile === 'nonPOG') {
-
-      // Run Loaders
-      this.runLoaders().then(
-        (successLoaders) => {
-          resolve(successLoaders);
-        },
-        // Rejects with load-ending failures.
-        (err) => {
-          reject(err);
-        }
-      );
-      return;
+      return this.runLoaders();
     }
 
-    reject({ error: { message: 'Unable to find loader profile to run' } });
+    throw new Error(`Unable to find loader profile to run ${this.options.profile}`);
   }
 
   /**
    * Get the report folder for a POG
    *
    * @throws DirectoryNotFound - If the directory is not found by globbing
-   * @returns {Promise} - Resolves with the directory to the latest libraries available
+   *
+   * @returns {Promise.<string>} - Returns the directory to the latest libraries available
    */
   async getLibraryFolder() {
     logger.info('Attempting to find library directory');
@@ -134,7 +99,7 @@ class ProbeLoader {
     const files = glob.sync(`${config.probeData}/${this.POG.POGID}/P*`);
 
     if (files.length === 0) {
-      throw new Error('Unable to find the report library folder(s)');
+      throw new Error(`Unable to find the report library folder(s) in ${config.probeData}/${this.POG.POGID}`);
     }
 
     // Explode out and get biggest
@@ -155,7 +120,8 @@ class ProbeLoader {
    *
    * @throws DirectoryNotFound - If the report folder is not found
    * @param {string} libraryDirectory - The library directory to search for a report directory in
-   * @returns {Promise|string} - Resolves with the base string to the report directory
+   *
+   * @returns {Promise.<string>} - Returns the base report directory
    */
   async getReportFolder(libraryDirectory) {
     logger.info('Attempting to find report directory');
@@ -166,7 +132,7 @@ class ProbeLoader {
     logger.info(`Attempting to find: ${libraryDirectory}/probing_v*/jreport_genomic_summary_v*`);
 
     if (files.length === 0) {
-      throw new Error('Unable to find the probe report directory');
+      throw new Error(`Unable to find the probe reports in the directory ${libraryDirectory}`);
     }
 
     // Explode out and get biggest
@@ -192,58 +158,31 @@ class ProbeLoader {
   /**
    * Execute the loaders
    *
-   * @returns {Promise} - TODO: design this object
+   * @returns {Promise.<object>} - Returns all the created loaders
    */
   async runLoaders() {
     logger.info('Starting loader execution');
 
-    let promises = []; // Collection of module promises
-
     // Set loaders to run - if none are specified, load them all.
-    const toLoad = (this.options.load) ? this.loaderFilter() : LOADERS;
+    const toLoad = (this.options.load) ? this.loaderFilter() : loaders;
 
-    toLoad.forEach((loader) => {
+    const promises = toLoad.map((loader) => {
       let loaderPromise = null;
+      const {name, Location, loaderType} = loader;
 
       // Check for Module Options
-      const moduleOptions = this.moduleOptions[loader.name] || {};
+      const moduleOptions = this.moduleOptions[name] || {};
       moduleOptions.library = this.libraries[0];
 
-      const l = loader.location;
-
       // Check for new class designed loader
-      if (loader.loaderType === 'class') {
-        let classLoader = new loader.location(this.report, this.baseDir, moduleOptions);
-        loaderPromise = classLoader.load();
+      if (loaderType === 'class') {
+        loaderPromise = new Location(this.report, this.baseDir, moduleOptions).load();
       } else {
-        // Standard function designed loader
-        loaderPromise = l(this.report, this.baseDir, moduleOptions);
+        loaderPromise = Location(this.report, this.baseDir, moduleOptions);
       }
 
-      promises.push(loaderPromise);
+      return loaderPromise;
     });
-
-    // // Loop over loader files and create promises
-    // _.forEach(toLoad, (loader) => {
-    //   // If the looped loader exists in the toLoad intersection, queue the promise!
-    //   let loaderPromise = null;
-    //   let l = require(__dirname + loader.location);
-
-    //   // Check for Module Options
-    //   let moduleOptions = this.moduleOptions[loader.name] || {};
-    //   moduleOptions.library = this.libraries[0];
-
-    //   // Check for new class designed loader
-    //   if (loader.loaderType === 'class') {
-    //     let classLoader = new l(this.report, this.baseDir, logger, moduleOptions);
-    //     loaderPromise = classLoader.load();
-    //   } else {
-    //     // Standard function designed loader
-    //     loaderPromise = l(this.report, this.baseDir, logger, moduleOptions);
-    //   }
-
-    //   promises.push(loaderPromise);
-    // });
 
     const result = Promise.all(promises);
     logger.info('All loaders have completed.');
@@ -257,7 +196,7 @@ class ProbeLoader {
    * @returns {array} - Returns a collection of loaders
    */
   loaderFilter() {
-    return LOADERS.filter((loader) => {
+    return loaders.filter((loader) => {
       return this.options.load.includes(loader.name);
     });
   }
