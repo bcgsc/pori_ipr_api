@@ -101,7 +101,7 @@ router.route('/history')
 router.route('/metrics')
   .get(async (req, res) => {
     const access = new Acl(req, res);
-    access.notGroups = ['Clinician', 'Collaborator'];
+    access.nGroups = ['Clinician', 'Collaborator'];
     const externalMode = !access.check(true);
 
     let query = `select count(kb_references.id) as "refTotal", \
