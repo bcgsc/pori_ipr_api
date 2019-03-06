@@ -3,31 +3,38 @@ const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
 const router = express.Router({mergeParams: true});
+const {logger} = process;
 
-const db = require('../../../app/models');
-const ACL = require('../../../app/middleware/acl');
-const kbEvent = require('../../../app/libs/kbEvent');
-const kbVersion = require('../../../app/libs/kbVersionDatum.js');
+const db = require('../../models');
+const ACL = require('../../middleware/acl');
+const kbEvent = require('../../libs/kbEvent');
+const kbVersion = require('../../libs/kbVersionDatum.js');
 
 router.param('reference', async (req, res, next, ref) => {
-  const opts = {};
-  opts.attributes = {
-    exclude: ['id', 'deletedAt', 'createdBy_id', 'reviewedBy_id'],
+  const opts = {
+    attributes: {
+      exclude: ['id', 'deletedAt', 'createdBy_id', 'reviewedBy_id'],
+    },
+    include: [
+      {model: db.models.user, as: 'createdBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
+      {model: db.models.user, as: 'reviewedBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
+    ],
+    where: {
+      ident: ref,
+    },
   };
-  opts.include = [
-    {model: db.models.user, as: 'createdBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
-    {model: db.models.user, as: 'reviewedBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
-  ];
-  opts.where = {ident: ref};
 
   try {
     const reference = await db.models.kb_reference.findOne(opts);
 
-    if (reference === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'}});
+    if (!reference) {
+      return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'}});
+    }
 
     req.reference = reference;
     return next();
-  } catch (err) {
+  } catch (error) {
+    logger.error(error);
     return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareReferenceQuery'}});
   }
 });
@@ -36,6 +43,7 @@ router.param('reference', async (req, res, next, ref) => {
  * Build where clause for searching references
  *
  * @param {object} req - Request object
+ *
  * @returns {object} - Returns where object ready to be parsed by SequelizeJS ORM
  */
 const referenceQueryFilter = (req) => {
@@ -54,7 +62,7 @@ const referenceQueryFilter = (req) => {
   };
 
   // Are we building a where clause?
-  if (_.intersection(_.keysIn(req.query), _.keysIn(allowedFilters)).length > 0) {
+  if (_.intersection(Object.keys(req.query), Object.keys(allowedFilters)).length > 0) {
     where = {$and: []};
 
     // Which filters, from the allowed list, have been sent?
@@ -62,7 +70,7 @@ const referenceQueryFilter = (req) => {
 
 
     // Loop over filters and build them into the ORM clause
-    _.forEach(filters, (filter) => {
+    filters.forEach((filter) => {
       // Split the filter values into arrays
       const values = req.query[filter].split(',');
 
@@ -87,7 +95,9 @@ const referenceQueryFilter = (req) => {
   // Search clause sent?
   if (req.query.search) {
     // Make a search query
-    if (where === null) where = {$and: []};
+    if (!where) {
+      where = {$and: []};
+    }
 
     const query = req.query.search;
 
@@ -114,48 +124,49 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const access = new ACL(req, res);
-    access.notGroups('Clinician', 'Collaborator');
+    access.notGroups = ['Clinician', 'Collaborator'];
     let externalUser = true;
-    if (access.check(true)) externalUser = false;
+    if (access.check(true)) {
+      externalUser = false;
+    }
 
     // Query Options
-    const opts = {};
-    opts.limit = (req.query.limit && req.query.limit < 1001) ? req.query.limit : 100;
-    opts.offset = (req.query.offset) ? req.query.offset : 0;
+    const opts = {
+      limit: (req.query.limit && req.query.limit < 1001) ? req.query.limit : 100,
+      offset: (req.query.offset) ? req.query.offset : 0,
+      attributes: {
+        exclude: ['deletedAt', 'createdBy_id', 'reviewedBy_id'],
+      },
+      include: [
+        {model: db.models.user, as: 'createdBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
+        {model: db.models.user, as: 'reviewedBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
+      ],
+    };
 
     const where = referenceQueryFilter(req);
-    if (where !== null) opts.where = where;
+    if (where) {
+      opts.where = where;
+    }
 
     // filter references by source (ref_id) if being accessed by external user
     // TODO: to be replaced by another filtering mechanism in the future since this doesn't account for new sources that cannot be shared
     const filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
 
     if (externalUser) {
-      if (opts.where) {
-        _.each(filterReferenceSources, (refSource) => {
-          opts.where.$and.push({ref_id: {$notILike: refSource}});
-        });
-      } else {
+      if (!opts.where) {
         opts.where = {$and: []};
-        _.each(filterReferenceSources, (refSource) => {
-          opts.where.$and.push({ref_id: {$notILike: refSource}});
-        });
       }
+      filterReferenceSources.forEach((refSource) => {
+        opts.where.$and.push({ref_id: {$notILike: refSource}});
+      });
     }
-
-    opts.attributes = {
-      exclude: ['deletedAt', 'createdBy_id', 'reviewedBy_id'],
-    };
-    opts.include = [
-      {model: db.models.user, as: 'createdBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
-      {model: db.models.user, as: 'reviewedBy', attributes: {exclude: ['id', 'password', 'jiraToken', 'jiraXsrf', 'access', 'settings', 'deletedAt', 'updatedAt', 'createdAt']}},
-    ];
 
     try {
       const references = await db.models.kb_reference.findAll(opts);
       return res.json(references);
-    } catch (err) {
-      return res.status(500).json({error: {message: `An error occurred while retrieving references from knowledgebase: ${err}`}});
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({error: {message: `An error occurred while retrieving references from knowledgebase: ${error}`}});
     }
   })
   .post(async (req, res) => {
@@ -181,7 +192,7 @@ router.route('/')
       };
 
       // Start Event Creation loop
-      _.forEach(_.split(newReference.events_expression, /\||&/g), (item) => {
+      newReference.events_expression.split(/\||&/g).forEach((item) => {
         kbEvent.eventCheck(item, req.user);
       });
 
@@ -192,9 +203,10 @@ router.route('/')
       newReference.createdBy = {firstName: user.firstName, lastName: user.lastName, ident: user.ident};
 
       // Return new object
-      res.status(201).json(newReference);
-    } catch (err) {
-      res.status(500).json({error: {message: `An error occurred while creating the reference to knowledgebase: ${err}`, code: 'failedReferenceCreateQuery'}});
+      return res.status(201).json(newReference);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({error: {message: `An error occurred while creating the reference to knowledgebase: ${error}`, code: 'failedReferenceCreateQuery'}});
     }
   });
 
@@ -202,32 +214,39 @@ router.route('/count')
   .get(async (req, res) => {
     // Access Control
     const access = new ACL(req, res);
-    access.notGroups('Clinician', 'Collaborator');
+    access.notGroups = ['Clinician', 'Collaborator'];
     let externalUser = true;
-    if (access.check(true)) externalUser = false;
+    if (access.check(true)) {
+      externalUser = false;
+    }
 
     const opts = {};
 
     const where = referenceQueryFilter(req);
-    if (where !== null) opts.where = where;
+    if (where) {
+      opts.where = where;
+    }
 
     // filter references by source (ref_id) if being accessed by external user
     // TODO: to be replaced by another filtering mechanism in the future since this doesn't account for new sources that cannot be shared
     const filterReferenceSources = ['%archerdx%', '%quiver.archer%', '%foundationone%', '%clearityfoundation%', '%mycancergenome%', '%thermofisher%', 'IBM', '%pct.mdanderson%', '%nccn%'];
 
     if (externalUser) {
-      if (!opts.where) opts.where = {$and: []};
+      if (!opts.where) {
+        opts.where = {$and: []};
+      }
 
-      _.each(filterReferenceSources, (refSource) => {
+      filterReferenceSources.forEach((refSource) => {
         opts.where.$and.push({ref_id: {$notILike: refSource}});
       });
     }
 
     try {
       const count = await db.models.kb_reference.count(opts);
-      res.json({references: count});
-    } catch (err) {
-      res.status(500).json({error: {message: `An error occurred while counting references in knowledgbase: ${err}`}});
+      return res.json({references: count});
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({error: {message: `An error occurred while counting references in knowledgbase: ${error}`}});
     }
   });
 
@@ -254,8 +273,9 @@ router.route('/:reference([A-z0-9-]{36})')
 
       // Return new object
       return res.status(200).json(reference);
-    } catch (err) {
-      return res.status(500).json(`An error occurred while retrieving the data version of the reference: ${err}`);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json(`An error occurred while retrieving the data version of the reference: ${error}`);
     }
   })
   .get((req, res) => {
@@ -269,21 +289,25 @@ router.route('/:reference([A-z0-9-]{36})/status/:status(REVIEWED|FLAGGED-INCORRE
       const token = jwt.decode(req.header('Authorization'));
       const user = await db.models.user.findOne({where: {username: token.preferred_username}});
 
-      let reference = req.reference;
+      let {reference} = req;
       const previousStatus = reference.status;
-      const comments = req.body.comments;
+      const {comments} = req.body;
 
       if (!_.has(reference, 'createdBy_id')) {
         reference = await db.models.kb_reference.findOne({where: {ident: reference.ident}});
       }
 
       // Check updatability
-      if (reference.createdBy_id === user.id) return res.status(400).json({error: {message: 'The writer of a reference may not be the reviewer.'}});
+      if (reference.createdBy_id === user.id) {
+        return res.status(400).json({error: {message: 'The writer of a reference may not be the reviewer.'}});
+      }
 
       // Write update
       reference.status = req.params.status;
 
-      if (req.params.status === 'REVIEWED') reference.reviewedBy_id = user.id;
+      if (req.params.status === 'REVIEWED') {
+        reference.reviewedBy_id = user.id;
+      }
 
       await db.models.kb_reference.update(reference.get(), {where: {ident: reference.ident, deletedAt: null}});
 
@@ -304,8 +328,9 @@ router.route('/:reference([A-z0-9-]{36})/status/:status(REVIEWED|FLAGGED-INCORRE
 
       // Send response
       return res.json(reference);
-    } catch (err) {
-      return res.status(500).json({error: {message: `An error occurred while updating the reference status: ${err}`}});
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({error: {message: `An error occurred while updating the reference status: ${error}`}});
     }
   });
 
