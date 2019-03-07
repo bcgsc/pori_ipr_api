@@ -69,7 +69,7 @@ module.exports = async (model, currentEntry, newEntry, user, comment = '', destr
     type: 'change',
     pog_id: newEntry.pog_id,
     pog_report_id: reportId,
-    table: model.getTableName(),
+    table: model.tableName,
     model: model.name,
     entry: newEntry.ident,
     previous: currentEntry.dataVersion,
