@@ -1,17 +1,16 @@
-'use strict';
-
-// app/routes/genomic/detailedGenomicAnalysis.js
 const express = require('express');
+const db = require('../models');
+const Acl = require('../middleware/acl');
+
+const pogMiddleware = require('../middleware/pog');
+const reportMiddleware = require('../middleware/analysis_report');
 
 const router = express.Router({mergeParams: true});
-const db = require(`${process.cwd()}/app/models`);
-const _ = require('lodash');
-
-const Acl = require(`${process.cwd()}/app/middleware/acl`);
+const {logger} = process;
 
 // Register middleware
-router.param('POG', require(`${process.cwd()}/app/middleware/pog`));
-router.param('report', require(`${process.cwd()}/app/middleware/analysis_report`));
+router.param('POG', pogMiddleware);
+router.param('report', reportMiddleware);
 
 /**
  * Retrieve all POGs available
@@ -25,24 +24,32 @@ router.param('report', require(`${process.cwd()}/app/middleware/analysis_report`
 router.route('/')
   .get(async (req, res) => {
     // Create the getAllPogs query
-    const opts = {};
-    opts.attributes = {exclude: ['id', 'deletedAt', 'config', 'seqQC']};
-    opts.order = [['POGID', 'ASC']];
-    opts.include = [];
-    opts.where = {nonPOG: false};
+    const opts = {
+      attributes: {exclude: ['id', 'deletedAt', 'config', 'seqQC']},
+      order: [['POGID', 'ASC']],
+      include: [],
+      where: {nonPOG: false},
+    };
 
     // Check user permission and filter by project
     const access = new Acl(req, res);
+
     try {
       const results = await access.getProjectAccess();
-      const projectAccess = _.map(results, 'name');
+      const projectAccess = results.map((value) => {
+        return value.name;
+      });
       const projectOpts = {
         as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {$in: projectAccess}},
       };
       opts.include.push(projectOpts);
 
-      if (req.query.query) opts.where.POGID = {$ilike: `%${req.query.query}%`};
-      if (req.query.nonPOG === 'true') opts.where.nonPOG = true;
+      if (req.query.query) {
+        opts.where.POGID = {$ilike: `%${req.query.query}%`};
+      }
+      if (req.query.nonPOG === 'true') {
+        opts.where.nonPOG = true;
+      }
 
       opts.include.push({model: db.models.patientInformation, as: 'patientInformation'});
 
@@ -53,24 +60,32 @@ router.route('/')
       reportInclude.where = {};
 
       // Check for types
-      if (req.query.report_type === 'probe') reportInclude.where.type = 'probe';
-      if (req.query.report_type === 'genomic') reportInclude.where.type = 'genomic';
+      if (req.query.report_type === 'probe') {
+        reportInclude.where.type = 'probe';
+      } else if (req.query.report_type === 'genomic') {
+        reportInclude.where.type = 'genomic';
+      }
 
       // Optional States
       if (!req.query.archived || !req.query.nonproduction) {
         reportInclude.where.state = {$not: []};
-        if (!req.query.archived) reportInclude.where.state.$not.push('archived');
-        if (!req.query.nonproduction) reportInclude.where.state.$not.push('nonproduction');
+        if (!req.query.archived) {
+          reportInclude.where.state.$not.push('archived');
+        }
+        if (!req.query.nonproduction) {
+          reportInclude.where.state.$not.push('nonproduction');
+        }
       }
       opts.include.push(reportInclude);
 
       const pogs = await db.models.POG.findAll(opts);
-      res.json(pogs);
+      return res.json(pogs);
     } catch (error) {
-      res.status(500).json({error: {message: error.message, code: error.code}});
+      logger.error(error);
+      return res.status(500).json({error: {message: error.message, code: error.code}});
     }
   })
-  .put((req,res) => {
+  .put(() => {
     // Add a new Potential Clinical Alteration...
   });
 
@@ -83,16 +98,22 @@ router.route('/:POG')
     // Access Control
     const access = new Acl(req, res);
     access.isPog = true;
-    if (access.check() === false) return;
+    if (!access.check()) {
+      logger.error('You don\'t have the required permissions to access this/these file(s)');
+      return res.status(401).json({error: {message: 'You don\'t have the required permissions to access this/these file(s)'}});
+    }
 
-    res.json(req.POG);
+    return res.json(req.POG);
   })
   .put(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
     access.isPog = true;
     access.pogEdit = ['analyst', 'reviewer', 'admin', 'superUser', 'Projects'];
-    if (access.check() === false) return;
+    if (!access.check()) {
+      logger.error('You don\'t have the required permissions to alter this/these file(s)');
+      return res.status(401).json({error: {message: 'You don\'t have the required permissions to alter this/these file(s)'}});
+    }
 
     // Update POG
     const updateBody = {
@@ -103,9 +124,10 @@ router.route('/:POG')
     try {
       // Attempt POG model update
       const result = await db.models.POG.update(updateBody, {where: {ident: req.body.ident}, limit: 1, returning: true});
-      res.json(result[1][0]);
+      return res.json(result[1][0]);
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
+      logger.error(error);
+      return res.status(500).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
     }
   });
 
@@ -119,9 +141,8 @@ router.route('/:POG/user')
     try {
       // Convert user to ID
       const user = await db.models.user.findOne({where: {ident: req.body.user}});
-      if (user === null) {
-        res.status(400).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
-        return;
+      if (!user) {
+        return res.status(400).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
       }
       // Create POGUser entry
       const pogUser = await db.models.POGUser.create(
@@ -139,26 +160,28 @@ router.route('/:POG/user')
         ],
       });
 
-      res.json(POGUser);
+      return res.json(POGUser);
     } catch (error) {
-      console.log('SQL Error', error);
-      res.status(500).json({error: {message: error.message, code: error.message}});
+      logger.error(`SQL Error ${error}`);
+      return res.status(500).json({error: {message: error.message, code: error.message}});
     }
   })
   .delete(async (req, res) => {
     try {
       // Convert user to ID
       const user = await db.models.user.findOne({where: {ident: req.body.user}});
-      if (user === null) {
+      if (!user) {
         return res.status(400).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
       }
       // Create POGUser entry
       const poguser = await db.models.POGUser.destroy({where: {user_id: user.id, pog_id: req.POG.id, role: req.body.role}});
-      if (poguser > 0) return res.status(204).send();
+      if (poguser > 0) {
+        return res.status(204).send();
+      }
 
-      if (poguser === 0) return res.status(400).json({error: {message: 'Unable to find a user to remove that fits the provided criteria'}});
+      return res.status(400).json({error: {message: 'Unable to find a user to remove that fits the provided criteria'}});
     } catch (error) {
-      console.log('SQL Error', error);
+      logger.error(`SQL Error ${error}`);
       return res.status(500).json({error: {message: error.message, code: error.code}});
     }
   });
@@ -185,10 +208,10 @@ router.route('/:POG/reports')
     try {
       // return all reports
       const reports = await db.models.analysis_report.scope('public').findAll(opts);
-      res.json(reports);
+      return res.json(reports);
     } catch (error) {
-      console.log('Unable to lookup analysis reports for POG', error);
-      res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
+      logger.error(`Unable to lookup analysis reports for POG ${error}`);
+      return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
     }
   });
 
@@ -201,8 +224,7 @@ router.route('/:POG/reports/:report')
     delete report.createdBy_id;
     delete report.deletedAt;
 
-    res.json(req.report);
+    return res.json(req.report);
   });
 
-// NodeJS Module Return
 module.exports = router;
