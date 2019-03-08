@@ -1,9 +1,3 @@
-"use strict";
+class FailedCreateQuery extends Error {}
 
-module.exports = class FailedCreateQuery extends Error {
-  constructor(m) {
-    // Invoke stderr response
-    super(m);
-  }
-
-};
+module.exports = FailedCreateQuery;
