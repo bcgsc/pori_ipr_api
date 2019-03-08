@@ -1,7 +1,7 @@
 const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
 const db = require('../../models');
-const p2s = require('../../libs/pyToSql');
+const pyToSql = require('../../libs/pyToSql');
 
 const {logger} = process;
 
@@ -97,7 +97,7 @@ class MutationSummaryLoader {
 
     // Add new values for DB
     const mappedResults = results.map((value) => {
-      const newValue = p2s(value, ['snv', 'snv_truncating', 'indels', 'indels_frameshift', 'sv', 'sv_expressed', 'snv_percentile', 'indel_percentile', 'sv_percentile']); // Clean out Python Na/NaN/None values
+      const newValue = pyToSql(value, ['snv', 'snv_truncating', 'indels', 'indels_frameshift', 'sv', 'sv_expressed', 'snv_percentile', 'indel_percentile', 'sv_percentile']); // Clean out Python Na/NaN/None values
       newValue.pog_id = this.report.pog_id;
       newValue.pog_report_id = this.report.id;
       return newValue;
@@ -136,29 +136,29 @@ class MutationSummaryLoader {
     const result = {
       comparator: {
         comparator: null,
-        snv: p2s(nsSNVTruncating[0]),
-        snv_truncating: p2s(nsSNVTruncating[1].replace(/(\[|\])/g, '')),
-        indels: p2s(indelsFrameshift[0]),
-        indels_frameshift: p2s(indelsFrameshift[1].replace(/(\[|\])/g, '')),
-        sv: p2s(svExpressed[0]),
-        sv_expressed: p2s(svExpressed[1].replace(/(\[|\])/g, '')),
-        snv_percentile: p2s(row.SNV_percentile_amongst_specificDisease),
-        indel_percentile: p2s(row.INDEL_percentile_amongst_specificDisease),
+        snv: pyToSql(nsSNVTruncating[0]),
+        snv_truncating: pyToSql(nsSNVTruncating[1].replace(/(\[|\])/g, '')),
+        indels: pyToSql(indelsFrameshift[0]),
+        indels_frameshift: pyToSql(indelsFrameshift[1].replace(/(\[|\])/g, '')),
+        sv: pyToSql(svExpressed[0]),
+        sv_expressed: pyToSql(svExpressed[1].replace(/(\[|\])/g, '')),
+        snv_percentile: pyToSql(row.SNV_percentile_amongst_specificDisease),
+        indel_percentile: pyToSql(row.INDEL_percentile_amongst_specificDisease),
         sv_percentile: null,
         pog_id: this.report.pog_id,
         pog_report_id: this.report.id,
       },
       average: {
         comparator: 'average',
-        snv: p2s(nsSNVTruncating[0]),
-        snv_truncating: p2s(nsSNVTruncating[1].replace(/(\[|\])/g, '')),
-        indels: p2s(indelsFrameshift[0]),
-        indels_frameshift: p2s(indelsFrameshift[1].replace(/(\[|\])/g, '')),
-        sv: p2s(svExpressed[0]),
-        sv_expressed: p2s(svExpressed[1].replace(/(\[|\])/g, '')),
-        snv_percentile: p2s(row.SNV_percentile_amongst_allTCGA),
-        indel_percentile: p2s(row.INDEL_percentile_amongst_allTCGA),
-        sv_percentile: p2s(row.SV_percentile_amongst_allPOG),
+        snv: pyToSql(nsSNVTruncating[0]),
+        snv_truncating: pyToSql(nsSNVTruncating[1].replace(/(\[|\])/g, '')),
+        indels: pyToSql(indelsFrameshift[0]),
+        indels_frameshift: pyToSql(indelsFrameshift[1].replace(/(\[|\])/g, '')),
+        sv: pyToSql(svExpressed[0]),
+        sv_expressed: pyToSql(svExpressed[1].replace(/(\[|\])/g, '')),
+        snv_percentile: pyToSql(row.SNV_percentile_amongst_allTCGA),
+        indel_percentile: pyToSql(row.INDEL_percentile_amongst_allTCGA),
+        sv_percentile: pyToSql(row.SV_percentile_amongst_allPOG),
         pog_id: this.report.pog_id,
         pog_report_id: this.report.id,
       },
