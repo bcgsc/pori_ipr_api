@@ -119,7 +119,7 @@ class GenomicLoader {
 
         // Skip tumour analysis and patient info loaders if no flatfile is available
         loaders.forEach((val, index) => {
-          if (val.name === 'summary_tumourAnalysis' || val.name === 'summary_patientInformation') {
+          if (['summary_tumourAnalysis', 'summary_patientInformation'].includes(val.name)) {
             delete loaders[index];
           }
         });
