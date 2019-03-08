@@ -45,6 +45,7 @@ class MutationSummaryLoader {
    * Determine if spectrum or mutation
    *
    * @returns {Promise.<string>} - Returns the name of the csv file that exists + able to read
+   * @throws {Error} - If neither expected file is found
    */
   async findFile() {
     try {
