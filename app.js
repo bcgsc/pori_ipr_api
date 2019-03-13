@@ -1,47 +1,37 @@
-"use strict";
 // server.js
 
 // BASE SETUP
 // =========================================================================
 
-
 // API Version
 const API_VERSION = '1.0';
-let minimist = require('minimist');
-
-const CONFIG = require('./config/'+process.env.NODE_ENV+'.json');
 
 // Call packages required
-let express	    = require('express');		    // Call express
-let app         = express();			          // define app using express
-let socket_io   = require("socket.io");     // Ready the socket server
-let bodyParser  = require('body-parser');   // Body parsing lib
-let colors      = require('colors');        // Console colours
-let fs          = require('fs');            // File System access
-let nconf       = require('nconf').argv().env().file({file: './config/config.json'});
-let cors        = require('cors');          // CORS support
-let morgan      = require('morgan');        // Logging
-let jwt         = require('jsonwebtoken');
-let exec        = require('child_process').exec;
-let fileUplooad = require('express-fileupload'); // File upload support
+const express = require('express'); // Call express
+const socketIO = require('socket.io'); // Ready the socket server
+const bodyParser = require('body-parser'); // Body parsing lib
+const fs = require('fs'); // File System access
+const cors = require('cors'); // CORS support
+const morgan = require('morgan'); // Logging
+const jwt = require('jsonwebtoken');
+const {exec} = require('child_process');
+const fileUpload = require('express-fileupload'); // File upload support
+const Routing = require('./app/routes');
+const logger = require('./lib/log'); // Load logging library
 
-
-const logger        = require('./lib/log');       // Load logging library
-
+const app = express(); // define app using express
 process.logger = logger;
 
-module.exports = new Promise((resolve, reject) => {
-  
+module.exports = async () => {
   // Setup and store Socket IO in app
-  let io          = socket_io();
-  app.io          = io;
-  
+  app.io = socketIO();
+
   app.use(bodyParser.json());
   app.use(cors());
-  app.use(fileUplooad());
+  app.use(fileUpload());
   app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Expose-Headers", "X-token, X-Requested-With ,Origin, Content-Type, Accept");
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Expose-Headers', 'X-token, X-Requested-With ,Origin, Content-Type, Accept');
     next();
   });
 
@@ -65,39 +55,38 @@ module.exports = new Promise((resolve, reject) => {
     }));
   }
 
-  // Create router instance
-  let router = express.Router();
-  
   // Utility and Teapot
-  app.get('/heart', (req,res,next)=> { res.json({beat: (new Date).getTime()}); });
-  app.get('/teapot', (req,res,next) => { res.status(418).set({'hi':'mom!'}).send(fs.readFileSync('./lib/teapot.txt')); });
-  
+  app.get('/heart', (req, res) => { 
+    return res.json({beat: (new Date()).getTime()});
+  });
+  app.get('/teapot', (req, res) => {
+    return res.status(418).set({hi: 'mom!'}).send(fs.readFileSync('./lib/teapot.txt'));
+  });
+
   // DEPENDENCIES CHECK ------------------------------------------------------
-  let check = exec('convert');
-  
+  const check = exec('convert');
+
   // Done executing
   check.on('close', (resp) => {
-    if(resp !== 0) logger.warn('ImageMagick is not installed. Reports will fail to load as a result.');
+    if (resp !== 0) {
+      logger.warn('ImageMagick is not installed. Reports will fail to load as a result.');
+    }
   });
-  
+
   // ROUTING  ----------------------------------------------------------------
   // All API routes will be prefixed with /api/x.x
-  
-  let Routing = require(__dirname + '/app/routes');
-  let routing = new Routing(app.io);
-  
-  routing.init().then(
-    (result) => {
-      
-      // Expose routing
-      app.use('/api/' + API_VERSION, routing.getRouter());
-      logger.info('Routing Started!');
-      
-      resolve(app);
-    })
-    .catch((err) => {
-      console.log('Unable to initialize routing.', err);
-      process.exit();
-    });
-  
-});
+
+  const routing = new Routing(app.io);
+  try {
+    await routing.init();
+
+    // Expose routing
+    app.use(`/api/${API_VERSION}`, routing.getRouter());
+    logger.info('Routing Started!');
+
+    return app;
+  } catch (error) {
+    logger.error(`Unable to initialize routing ${error}`);
+    return process.exit();
+  }
+};
