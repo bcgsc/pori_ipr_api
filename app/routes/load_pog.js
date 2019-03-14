@@ -8,9 +8,12 @@ const d3 = require('d3-dsv');
 const nconf = require('nconf').file(`../../config/${process.env.NODE_ENV}.json`);
 
 const db = require('../models');
-const reportLib = require('../libs/structures/analysis_report');
+const ReportLib = require('../libs/structures/analysis_report');
 const Patient = require('../libs/patient/patient.library');
 const Analysis = require('../libs/patient/analysis.library');
+
+const GenomicLoader = require('../loaders');
+const ProbeLoader = require('../loaders/probing');
 
 const router = express.Router({mergeParams: true});
 const {logger} = process;
@@ -86,9 +89,11 @@ router.route('/:type(genomic|probe)')
   .post(async (req, res) => {
     // Check for required fields
     if (!req.body.project) {
+      logger.error('Project name is required in POST body');
       return res.status(400).json({message: 'Project name is required in POST body.'});
     }
     if (!req.body.directory && !req.body.baseDir) {
+      logger.error('Report root folder is required in POST body');
       return res.status(400).json({message: 'Report root folder is required in POST body.'});
     }
 
@@ -102,22 +107,28 @@ router.route('/:type(genomic|probe)')
     const directory = req.body.directory || req.body.baseDir;
     const loaderConfig = req.body.loader_config || `${project}_${reportType}`; // Build standard form loader config
 
-    let reportConfig;
-    let reportConfigLibraries = [];
-
-    let reportObj;
-
     logger.info(`Load report request: ${reportType} report for ${project}, patient ${patient} from ${directory} using ${loaderConfig} loader config`);
 
-    // Read in Config File
-    const conf = await getConfig(directory);
+    let conf;
+    try {
+      // Read in Config File
+      conf = await getConfig(directory);
+    } catch (error) {
+      logger.error(`Unable to get config ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get config'}});
+    }
 
     // Save Config
-    reportConfig = conf;
+    const reportConfig = conf;
 
-    const libraries = await getLibraries(conf);
-    // Store libraries in parent namespace
-    reportConfigLibraries = libraries; // ???Not sure I need to do this
+    let libraries;
+    try {
+      // Get libraries from config
+      libraries = await getLibraries(conf);
+    } catch (error) {
+      logger.error(`Unable to get libraries ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get libraries'}});
+    }
 
     const opts = {
       where: {
@@ -129,258 +140,222 @@ router.route('/:type(genomic|probe)')
       include: [{model: db.models.POG, as: 'pog'}],
     };
 
-    const result = await db.models.pog_analysis.findOne(opts);
+    let pogAnalysis;
+    try {
+      pogAnalysis = await db.models.pog_analysis.findOne(opts);
+    } catch (error) {
+      logger.error(`SQL Error unable to get POG analysis ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get POG analysis'}});
+    }
 
     // If a result is found, set to analysis and pog
-    if (result) {
-      analysisObj = result;
+    if (pogAnalysis) {
+      analysisObj = pogAnalysis;
       patientObj = analysisObj.pog;
+    } else {
+      const promises = [];
 
-      patientObj = {patient: patientObj, analysis: analysisObj}; // ??Not sure about this
+      // Add flatfile retrieval to promises if flatfile is specified
+      if (reportConfig.flatfile) {
+        promises.push(getFlatFile(reportConfig.flatfile)); // Load flatfile and check libraries for type
+      }
+
+      // Setting up analysis for creation
+      const createAnalysis = {
+        libraries: {},
+        analysis_biopsy: null,
+        comparator_disease: {},
+        comparator_normal: {},
+        disease: null,
+        biopsy_notes: null,
+      };
+
+      let flatFile;
+      try {
+        // Wait for all promises to be resolved
+        flatFile = await Promise.all(promises);
+      } catch (error) {
+        logger.error(`Error resolving array of flatline files ${error}`);
+        return res.status(500).json({error: {message: 'Unable to resolve all flatline files'}});
+      }
+
+      if (flatFile) {
+        // Parse libraries
+        libraries.forEach((library) => {
+          const row = _.find(_.flattenDepth(flatFile, 2), {library_name: library});
+
+          if (!row) {
+            return;
+          }
+
+          // If Normal
+          if (row.diseased_status === 'Normal') {
+            createAnalysis.libraries.normal = library;
+          } else if (row.diseased_status === 'Diseased') {
+            // if transcriptome
+            if (row.protocol.includes('RNA')) {
+              createAnalysis.libraries.transcriptome = library;
+            } else {
+              // if Tumour
+              createAnalysis.libraries.tumour = library;
+              createAnalysis.analysis_biopsy = row.sample_prefix;
+              createAnalysis.biopsy_site = row.biopsy_site;
+              createAnalysis.disease = row.diagnosis;
+              createAnalysis.biopsy_date = moment(row.sample_collection_time).toISOString();
+              createAnalysis.comparator_disease = {
+                tcga: _.filter(row.tcga_comp.split(';'), (r) => { return (r); }),
+                gtex_bioposy_site: row.gtex_comp.split(';')[1],
+                gtex_primary_site: row.gtex_comp.split(';')[0],
+              };
+              createAnalysis.comparator_normal = {
+                normal_comparator_biopsy_site: row.normal_comp.split(';')[1],
+                normal_comparator_primary_site: row.normal_comp.split(';')[0],
+              };
+            }
+          }
+        }); // End looping libraries
+      }
+
+      try {
+        patientObj = await Patient.retrieveOrCreate(patient, project);
+      } catch (error) {
+        logger.error(`SQL Error unable to retrieve or create patient ${patient} in project ${project} ${error}`);
+        return res.status(500).json({error: {message: 'Unable to retrieve or create a patient'}});
+      }
+
+      try {
+        analysisObj = await Analysis.create(patient.id, createAnalysis);
+      } catch (error) {
+        logger.error(`SQL Error unable to create analysis. Patient id ${patient.id} analysis ${createAnalysis} ${error}`);
+        return res.status(500).json({error: {message: 'Unable to create analysis'}});
+      }
     }
 
-    const promises = [];
+    // Create report
+    // Prepare Loaders
+    const report = new ReportLib();
 
-    // Add flatfile retrieval to promises if flatfile is specified
-    if (reportConfig.flatfile) {
-      promises.push(getFlatFile(reportConfig.flatfile)); // Load flatfile and check libraries for type
+    const reportOpts = {};
+
+    // Default starting state for a report based on type
+    if (req.params.type === 'genomic') {
+      reportOpts.state = 'ready';
+      if (req.body.state && allowGenomicStates.includes(req.body.state)) {
+        reportOpts.state = req.body.state;
+      }
+    } else if (req.params.type === 'probe') {
+      reportOpts.state = 'uploaded';
+      if (req.body.state && allowProbeStates.includes(req.body.state)) {
+        reportOpts.state = req.body.state;
+      }
     }
 
-    // Setting up analysis for creation
-    const createAnalysis = {
-      libraries: {},
-      analysis_biopsy: null,
-      comparator_disease: {},
-      comparator_normal: {},
-      disease: null,
-      biopsy_notes: null,
+    // Get Report Matrix Value
+    if (reportConfig.ExpressionMatrixVersion) {
+      reportOpts.expression_matrix = reportConfig.ExpressionMatrixVersion.toLowerCase() || 'v8';
+    }
+
+    let newReport;
+    try {
+      newReport = await report.create(patientObj, analysisObj, req.user, req.params.type, reportOpts);
+    } catch (error) {
+      logger.error(`SQL Error unable to create report ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create report'}});
+    }
+
+    const reportObj = newReport;
+    newReport.pog = patientObj;
+
+    // Setup up loader configuration
+    const loaderOptions = {
+      profile: `${req.body.project}_${req.params.type}`,
+      baseDir: directory,
     };
 
-    // Wait for all promises to be resolved
-    const flatFile = await Promise.all(promises);
+    // If loader set is specified by request
+    if (req.body.loaders) {
+      loaderOptions.load = req.body.loaders;
+    }
 
-      // .then((result) => {
-      //   return new Promise((resolve, reject) => {
-  
-      //     // If a result is found, set to analysis and pog
-      //     if(result) {
-      //       analysisObj = result;
-      //       patientObj = analysisObj.pog;
-            
-      //       return resolve({patient: patientObj, analysis: analysisObj});
-      //     }
+    // -- Possible Loader Scenarios to run -- //
+    // -------------------------------------- //
+    const Loader = () => {
+      // POG Genomic Report
+      if (loaderOptions.profile.toLowerCase() === 'pog_genomic') {
+        if (!reportConfig.flatfile) {
+          loaderOptions.profile = 'pog_genomic_no_flat';
+        }
 
-      //     let promises = [];
+        return new GenomicLoader(patientObj, reportObj, loaderOptions);
+      }
 
-      //     // Add flatfile retrieval to promises if flatfile is specified
-      //     if(reportConfig.flatfile) promises.push(getFlatFile(reportConfig.flatfile)); // Load flatfile and check libraries for type
+      // POG Probe Report
+      if (loaderOptions.profile.toLowerCase() === 'pog_probe') {
+        if (!reportConfig.flatfile) {
+          loaderOptions.profile = 'pog_probe_no_flat';
+        }
+        return new ProbeLoader(patientObj, reportObj, loaderOptions);
+      }
 
-      //     // Setting up analysis for creation
-      //     let createAnalysis = {
-      //       libraries: {},
-      //       analysis_biopsy: null,
-      //       comparator_disease: {},
-      //       comparator_normal: {},
-      //       disease: null,
-      //       biopsy_notes: null,
-      //     };
+      // Non-POG Probe Report
+      if (req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'probe') {
+        if (reportConfig.flatfile) {
+          loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults.default_probe.loaders : loaderConf.defaults[req.body.profile].loaders;
+        } else {
+          const loaderProfile = `${req.body.profile}_no_flat`;
+          loaderOptions.load = (loaderConf.defaults[loaderProfile] === undefined) ? loaderConf.defaults.default_probe_no_flat.loaders : loaderConf.defaults[loaderProfile].loaders;
+        }
 
-      //     // Wait for all promises to be resolved
-      //     Q.all(promises)
-      //     .then(
-      //       (flatfile) => {
-      //         if(flatfile) {              
-      //           // Parse libraries
-      //           _.forEach(reportConfigLibraries, (l) => {
-      //             let row = _.find(_.flattenDepth(flatfile, 2), {library_name: l});
+        loaderOptions.profile = 'nonPOG';
+        return new ProbeLoader(patientObj, reportObj, loaderOptions);
+      }
 
-      //             if(!row) return;
+      // Non-POG Genomic Report
+      if (req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'genomic') {
+        // Non-POG options
+        loaderOptions.nonPOG = true;
+        if (reportConfig.flatfile) {
+          loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults.default_genomic.loaders : loaderConf.defaults[req.body.profile].loaders;
+        } else {
+          const loaderProfile = `${req.body.profile}_no_flat`;
+          loaderOptions.load = (loaderConf.defaults[loaderProfile] === undefined) ? loaderConf.defaults.default_genomic_no_flat.loaders : loaderConf.defaults[loaderProfile].loaders;
+        }
 
-      //             // If Normal
-      //             if(row.diseased_status === 'Normal') createAnalysis.libraries.normal = l;
-                  
-      //             // if transcriptome
-      //             if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') > -1) createAnalysis.libraries.transcriptome = l;
-                  
-      //             // if Tumour
-      //             if(row.diseased_status === 'Diseased' && row.protocol.indexOf('RNA') === -1) {
-      //               createAnalysis.libraries.tumour = l;
-      //               createAnalysis.analysis_biopsy = row.sample_prefix;
-      //               createAnalysis.biopsy_site = row.biopsy_site;
-      //               createAnalysis.disease = row.diagnosis;
-      //               createAnalysis.biopsy_date = moment(row.sample_collection_time).toISOString();
-      //               createAnalysis.comparator_disease = {
-      //                 tcga: _.filter(row.tcga_comp.split(';'), (r) => { return (r); }),
-      //                 gtex_bioposy_site: row.gtex_comp.split(';')[1],
-      //                 gtex_primary_site: row.gtex_comp.split(';')[0]
-      //               };
-      //               createAnalysis.comparator_normal = {
-      //                 normal_comparator_biopsy_site: row.normal_comp.split(';')[1],
-      //                 normal_comparator_primary_site: row.normal_comp.split(';')[0]
-      //               };
-      //             }
-      //           }); // End looping libraries
-      //         }
-            
-      //         return Patient.retrieveOrCreate(patient, project);
-      //       },
-      //       (err) => {
-      //         throw new Error('Unable to load provided flatfile: ' + err.message);
-      //       }
-      //     )
-      //     .then(
-      //       (patient) => {
-      //         patientObj = patient;
-      //         // Create Analysis
-      //         return Analysis.create(patient.id, createAnalysis);
-      //       },
-      //       (err) => {
-      //         throw new Error('Unable to create patient from report config: ' + err.message);
-      //       }
-      //     )
-      //     .then(
-      //       (analysis) => {
-      //         analysisObj = analysis;
-      //         resolve({patient: patientObj, analysis: analysisObj});
-      //       },
-      //       (err) => {
-      //         throw new Error('Unable to create analysis from report config: ' + err.message);
-      //       }
-      //     )
-      //     .catch((err) => {
-      //       reject({message: 'Failed to load report from report config: ' + err.message});
-      //       console.log('Failed to load report from report config: ' + err.message);
-      //     });
-          
-          
-      //   });
-      // })
-      
-      // // Create Report
-      // .then((result) => {
-      
-      //   // Prepare Loaders
-      //   let report = new reportLib();
-        
-      //   let reportOpts = {};
-        
-      //   // Default starting state for a report based on type
-      //   if(req.params.type === 'genomic') {
-      //     reportOpts.state = 'ready';
-      //     if(req.body.state && allowGenomicStates.indexOf(req.body.state) !== -1) reportOpts.state = req.body.state;
-      //   }
-        
-      //   if(req.params.type === 'probe') {
-      //     reportOpts.state = 'uploaded';
-      //     if(req.body.state && allowProbeStates.indexOf(req.body.state) !== -1) reportOpts.state = req.body.state;
-      //   }
-        
-      //   // Get Report Matrix Value
-      //   if(reportConfig.ExpressionMatrixVersion) reportOpts.expression_matrix = reportConfig.ExpressionMatrixVersion.toLowerCase() || 'v8';
-        
-      //   return report.create(patientObj, analysisObj, req.user, req.params.type, reportOpts);
-        
-      // })
-      
-      // .then((report) => {
-        
-      //   reportObj = report;
-      
-      //   report.pog = patientObj;
-        
-      //   // Setup up loader configuration
-      //   let loaderRun; // Object to contain loader run promise
-      //   let loaderOptions = {
-      //     profile: req.body.project + '_' + req.params.type,
-      //     baseDir: directory
-      //   };
-        
-      //   // If loader set is specified by request
-      //   if(req.body.loaders) loaderOptions.load = req.body.loaders;
-        
-      //   // -- Possible Loader Scenarios to run -- //
-      //   // -------------------------------------- //
-        
-      //   // POG Genomic Report
-      //   if(loaderOptions.profile.toLowerCase() === 'pog_genomic') {
-      //     if(!reportConfig.flatfile) {
-      //       loaderOptions.profile = 'pog_genomic_no_flat';
-      //     }
-      //     let GenomicLoader = new require(process.cwd() + '/app/loaders');
-      //     let Loader = new GenomicLoader(patientObj, reportObj, loaderOptions);
-      //     return Loader.load();
-      //   }
-  
-  
-      //   // POG Probe Report
-      //   if(loaderOptions.profile.toLowerCase() === 'pog_probe') {
-      //     if(!reportConfig.flatfile) {
-      //       loaderOptions.profile = 'pog_probe_no_flat';
-      //     }
-      //     let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
-      //     let Loader = new ProbeLoader(patientObj, reportObj, loaderOptions);
-      //     return Loader.load();
-      //   }
-  
-      //   // Non-POG Probe Report
-      //   if(req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'probe') {
-      //     if(reportConfig.flatfile) {
-      //       loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_probe'].loaders :  loaderConf.defaults[req.body.profile].loaders;
-      //     } else {
-      //       let loaderProfile = req.body.profile + '_no_flat'
-      //       loaderOptions.load = (loaderConf.defaults[loaderProfile] === undefined) ? loaderConf.defaults['default_probe_no_flat'].loaders :  loaderConf.defaults[loaderProfile].loaders;
-      //     }
-          
-      //     loaderOptions.profile = 'nonPOG';
-      //     let ProbeLoader = new require(process.cwd() + '/app/loaders/probing');
-      //     let Loader = new ProbeLoader(patientObj, reportObj, loaderOptions);
-      //     return Loader.load();
-      //   }
-  
-      //   // Non-POG Genomic Report
-      //   if(req.body.project.toLowerCase() !== 'pog' && req.params.type.toLowerCase() === 'genomic') {
-      //     // Non-POG options
-      //     loaderOptions.nonPOG = true;
-      //     if(reportConfig.flatfile) {
-      //       loaderOptions.load = (loaderConf.defaults[req.body.profile] === undefined) ? loaderConf.defaults['default_genomic'].loaders :  loaderConf.defaults[req.body.profile].loaders;
-      //     } else {
-      //       let loaderProfile = req.body.profile + '_no_flat'
-      //       loaderOptions.load = (loaderConf.defaults[loaderProfile] === undefined) ? loaderConf.defaults['default_genomic_no_flat'].loaders :  loaderConf.defaults[loaderProfile].loaders;
-      //     }
-          
-      //     loaderOptions.baseDir = req.body.baseDir;
-      //     loaderOptions.profile = 'nonPOG';
-      //     loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
-      //     loaderOptions.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
-    
-      //     let GenomicLoader = new require(process.cwd() + '/app/loaders');
-    
-      //     let Loader = new GenomicLoader(patientObj, reportObj, loaderOptions);
-      //     return Loader.load();
-      //   }
-        
-      //   // No matching loader scenario found
-      //   res.status(400).json({error: {message: 'Unable to invoke loading mechanism - no loader configuration matched request'}});
-        
-      // })
-      
-      // // Retrieve results from loaders, and ask for public report object
-      // .then((result) => {
-      //   let report = new reportLib(reportObj);
-        
-      //   return report.public();
-      // })
-      
-      // // Send public copy of report object
-      // .then((report) => {
-      //   res.json(report);
-      // })
-      
-      // // Handle load failures
-      // .catch((e) => {
-      //   res.status(400).json({message: 'Failed to load report: ' + (e.message || e.reason), reason: e.reason, file: e.file});
-      //   logger.error(e.message, e);
-      // });
+        loaderOptions.baseDir = req.body.baseDir;
+        loaderOptions.profile = 'nonPOG';
+        loaderOptions.libraries = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].libraries;
+        loaderOptions.moduleOptions = (loaderConf.defaults[req.body.profile] === undefined) ? {} : loaderConf.defaults[req.body.profile].moduleOptions;
+
+        return new GenomicLoader(patientObj, reportObj, loaderOptions);
+      }
+      return null;
+    };
+
+    const loader = Loader();
+
+    if (!loader) {
+      // No matching loader scenario found
+      logger.error('No loader configuration matched request');
+      return res.status(400).json({error: {message: 'Unable to invoke loading mechanism - no loader configuration matched request'}});
+    }
+
+    try {
+      await loader.load();
+    } catch (error) {
+      logger.error(`Error unable to load loader ${error}`);
+      return res.status(500).json({error: {message: 'Unable to load loader'}});
+    }
+
+    // Retrieve results from loaders, and ask for public report object
+    const reportLibrary = new ReportLib(reportObj);
+    try {
+      // Send public copy of report object
+      const publicReport = await reportLibrary.public();
+      return res.json(publicReport);
+    } catch (error) {
+      logger.error(`Error unable to get public interface of report library ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get public interface of report library'}});
+    }
   });
 
 module.exports = router;
