@@ -1,21 +1,10 @@
-"use strict";
+const db = require('../../../app/models');
+const {unlinkAndWrite} = require('../utils');
 
-let db = require(process.cwd() + '/app/models'),
-  Q = require('q'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  reverseMapKeys = require(process.cwd() + '/app/libs/reverseMapKeys'),
-  _ = require('lodash'),
-  writeCSV = require(process.cwd() + '/lib/writeCSV'),
-  fs = require('fs'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
-
-module.exports = (pog, directory) => {
-
-  let deferred = Q.defer();
-
-  let opts = {
+module.exports = async (pog, directory) => {
+  const opts = {
     where: {
-      pog_id: pog.id
+      pog_id: pog.id,
     },
     attributes: {
       exclude: [
@@ -25,52 +14,22 @@ module.exports = (pog, directory) => {
         'pog_id',
         'createdAt',
         'updatedAt',
-        'deletedAt'
-      ]
-    }
+        'deletedAt',
+      ],
+    },
   };
 
-  db.models.genomicAlterationsIdentified.findAll(opts).then(
-    (results) => {
+  const results = await db.models.genomicAlterationsIdentified.findAll(opts);
 
-      let entries = [];
+  const filename = `${directory.export}/genomic_alt_identified.csv`;
+  // Construct data
+  let data = 'gene_variant_1,gene_variant_2,gene_variant_3,gene_variant_4,gene_variant_5\n';
+  // Add variants to data string
+  while (results.length > 0) {
+    data += `${results.splice(0, 5).map(value => value.get().geneVariant).join(',')}\n`;
+  }
 
-      // Extract raw values into preMapped
-      _.forEach(results, (v) => {
-        entries.push(v.get().geneVariant);
-      });
+  unlinkAndWrite(filename, data);
 
-      let file = 'genomic_alt_identified';
-
-      // Construct data
-      let data = "gene_variant_1,gene_variant_2,gene_variant_3,gene_variant_4,gene_variant_5\n";
-      let chunked = _.chunk(entries, 5);
-      _.forEach(chunked, (v) => {
-        data += _.join(v, ',')+"\n";
-      });
-
-      // Remove file, then write
-      fs.unlink(directory.export + '/' + file + '.csv' ,(err) => {
-        // Did unlink fail?
-        if(err) return deferred.reject({stage: 'summary.genomicAlterationsIdentified', status: false, data: err});
-        console.log('Unlinked', directory.export + '/' + file + '.csv');
-
-        let writer_detail = fs.writeFile(directory.export + '/' + file + '.csv', data, (err) => {
-          if(err) console.log('Error in: ', file, err);
-          if(!err) console.log('Successfully wrote: ', file);
-
-          deferred.resolve({stage: 'summary.genomicAlterationsIdentified', status: true});
-        });
-      });
-
-
-    },
-    (err) => {
-      console.log('Failed to query');
-      deferred.reject({stage: 'summary.genomicAlterationsIdentified', status: false, data: err});
-    }
-  );
-
-  return deferred.promise;
-
+  return {stage: 'summary.genomicAlterationsIdentified', status: true};
 };
