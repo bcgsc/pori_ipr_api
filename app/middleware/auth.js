@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const db = require('../../app/models');
-const keycloak = require('../../app/api/keycloak');
+const db = require('../models');
+const keycloak = require('../api/keycloak');
 
 const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
@@ -32,13 +32,15 @@ module.exports = async (req, res, next) => {
     let credentials;
     try {
       credentials = Buffer.from(token.split(' ')[1], 'base64').toString('utf-8').split(':');
-    } catch (e) {
+    } catch (err) {
       return res.status(400).json({message: 'The authentication header you provided was not properly formatted.'});
     }
     try {
       const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
       token = respAccess.access_token;
-    } catch (err) {}
+    } catch (err) {
+      return res.status(400).json(err);
+    }
   }
   if (!token) {
     return res.status(403).json({message: 'Invalid authorization token'});

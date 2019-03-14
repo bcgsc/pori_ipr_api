@@ -1,5 +1,4 @@
-const _ = require('lodash');
-const db = require('../../app/models');
+const db = require('../models');
 
 const ignored = {
   files: ['index.js', 'POG.js'],
@@ -9,7 +8,9 @@ const ignored = {
 // Lookup POG middleware
 module.exports = async (req, res, next, pogID) => {
   // Don't resolve for loading routes
-  if (ignored.routes.indexOf(_.last(req.url.split('/'))) !== -1) return next();
+  if (ignored.routes.includes(req.url.split('/').pop())) {
+    return next();
+  }
 
   try {
     // Look for patient w/ a matching POGID or alternate_identifier
@@ -28,21 +29,14 @@ module.exports = async (req, res, next, pogID) => {
       ],
     });
 
-    if (!patient) throw new Error('notFoundError'); // no patient found
+    if (!patient) { // no patient found
+      return res.status(404).json({error: {message: `Cannot find patient: ${pogID}`}});
+    }
 
     // patient found, set request param
     req.POG = patient;
     return next();
   } catch (err) {
-    // set default return status and message
-    let returnStatus = 500;
-    let returnMessage = err.message;
-
-    if (err.message === 'notFoundError') { // return 404 error - patient could not be found
-      returnStatus = 404;
-      returnMessage = 'patient could not be found';
-    }
-
-    return res.status(returnStatus).json({error: {message: `An error occurred while trying to find patient ${pogID}: ${returnMessage}`}});
+    return res.status(500).json(err);
   }
 };

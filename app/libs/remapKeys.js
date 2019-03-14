@@ -1,29 +1,42 @@
-"use strict";
-let _ = require('lodash'),
-    colors = require('colors');
+/**
+ *
+ * Remaps the keys of an object
+ *
+ * @param {object} input - An object to remap keys for
+ * @param {object} keyMap - A keyMap object
+ * @returns {Array.<object>} - Returns an array of objects with remapped keys
+ */
 
-module.exports = (input, keyMap) => {
+const remapKeys = (input, keyMap) => {
+  const output = [];
+  let newObj = {};
 
-  let output = [];
-
-  for(let k in input) {
-    // Get values
-    output[k] = _.mapKeys(input[k], (v, key) => {
-
+  Object.entries(input).forEach(([k, v]) => {
+    Object.entries(v).forEach(([key, value]) => {
       // Unhandled colons - Check to see if double or single colons exists and are not yet handled!
-      if(key.indexOf(':') !== -1 && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
-        console.log(colors.bgRed(colors.white("INCOMPATIBLE CHARACTER FOUND")));
+      if (key.includes(':') && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
+        throw new Error(`Incompatible character found (${key})`);
+      }
+      // Replace double colons with tilde
+      if (key.includes('::')) {
+        key = key.replace('::', '~');
+      }
+      if (key.includes(':')) {
+        key = key.replace(':', '~');
       }
 
-      // Replace double colons with tilde
-      if(key.indexOf('::') !== -1) key = key.replace('::', '~');
-      if(key.indexOf(':') !== -1) key = key.replace(':', '~');
-
       // Remap Keys
-      if(key in keyMap) return keyMap[key];
-      if(!(key in keyMap)) return key;
+      if (key in keyMap) {
+        newObj[keyMap[key]] = value;
+      } else {
+        newObj[key] = value;
+      }
     });
-  }
-  
+    output[k] = newObj;
+    newObj = {};
+  });
+
   return output;
 };
+
+module.exports = remapKeys;

@@ -54,7 +54,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport)?')
+router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
   .get((req,res,next) => {
 
     // Setup where clause

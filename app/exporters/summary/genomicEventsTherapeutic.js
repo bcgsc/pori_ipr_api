@@ -1,21 +1,13 @@
-"use strict";
+const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const db = require('../../../app/models');
+const reverseMapKeys = require('../../../app/libs/reverseMapKeys');
+const WriteCSV = require('../../../lib/writeCSV');
+const {unlinkAndWrite} = require('../utils');
 
-let db = require(process.cwd() + '/app/models'),
-  Q = require('q'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  reverseMapKeys = require(process.cwd() + '/app/libs/reverseMapKeys'),
-  _ = require('lodash'),
-  writeCSV = require(process.cwd() + '/lib/writeCSV'),
-  fs = require('fs'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
-
-module.exports = (pog, directory) => {
-
-  let deferred = Q.defer();
-
-  let opts = {
+module.exports = async (pog, directory) => {
+  const opts = {
     where: {
-      pog_id: pog.id
+      pog_id: pog.id,
     },
     attributes: {
       exclude: [
@@ -25,47 +17,20 @@ module.exports = (pog, directory) => {
         'pog_id',
         'createdAt',
         'updatedAt',
-        'deletedAt'
-      ]
-    }
+        'deletedAt',
+      ],
+    },
   };
 
-  db.models.genomicEventsTherapeutic.findAll(opts).then(
-    (results) => {
+  const results = await db.models.genomicEventsTherapeutic.findAll(opts);
+  const preMapped = results.map(value => value.get());
 
-      let preMapped = [];
+  const filename = `${directory.export}/genomic_events_thera_assoc.csv`;
 
-      // Extract raw values into preMapped
-      _.forEach(results, (v) => {
-        preMapped.push(v.get());
-      });
+  // Reverse Remap keys
+  const mapped = reverseMapKeys(preMapped, nconf.get('summary:genomicEventsTherapeutic'));
+  const data = new WriteCSV(mapped).raw();
+  unlinkAndWrite(filename, data);
 
-      let file = 'genomic_events_thera_assoc';
-
-      // Reverse Remap keys
-      let mapped = reverseMapKeys(preMapped, nconf.get('summary:genomicEventsTherapeutic'));
-
-      // Remove file, then write
-      fs.unlink(directory.export + '/' + file + '.csv' ,(err) => {
-        // Did unlink fail?
-        if(err) return deferred.reject({stage: 'summary.genomicEventsTherapeutic', status: false, data: err});
-
-        let data = new writeCSV(mapped).raw();
-
-        let writer_detail = fs.writeFile(directory.export + '/' + file + '.csv', data, (err) => {
-          if(err) console.log('Error in: ', file, err);
-
-          deferred.resolve({stage: 'summary.genomicEventsTherapeutic', status: true});
-        });
-      });
-
-    },
-    (err) => {
-      console.log('Failed to query');
-      deferred.reject({stage: 'summary.genomicEventsTherapeutic', status: false, data: err});
-    }
-  );
-
-  return deferred.promise;
-
+  return {stage: 'summary.genomicEventsTherapeutic', status: true};
 };

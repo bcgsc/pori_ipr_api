@@ -1,10 +1,9 @@
-"use strict";
-
-module.exports = class MiddlewareNotFound extends Error {
-  constructor(m, req, res, code="") {
-
-    let response = {error: {message: m, exception: 'MiddlewareNotFound'}};
-    if(code !== "") response.error.code = code;
+class MiddlewareNotFound extends Error {
+  constructor(m, req, res, code = '') {
+    const response = {error: {message: m, exception: 'MiddlewareNotFound'}};
+    if (code !== '') {
+      response.error.code = code;
+    }
 
     // Send Response Message
     res.status(404).json(response);
@@ -12,5 +11,6 @@ module.exports = class MiddlewareNotFound extends Error {
     // Invoke stderr response
     super(m);
   }
+}
 
-};
+module.exports = MiddlewareNotFound;

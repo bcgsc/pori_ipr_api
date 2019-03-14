@@ -1,23 +1,17 @@
-"use strict";
+const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
 
-let fs = require('fs'),
-    csv = require('csv-parse'),
-    Q = require('q');
+/**
+ * Reads a csv file and returns the contents of the files as JSON objects
+ *
+ * @param {string} file - The path + the name of a csv file
+ * @returns {Array.<object>} - Returns parsed csv file as an array of JSON objects
+ */
+const readFromCSV = async (file) => {
+  const input = fs.readFileSync(file);
+  return parse(input, {delimiter: ',', columns: true});
+};
 
 module.exports = {
-  readFromCSV: (file) => {
-  
-    let deferred = Q.defer();
-    
-    let parser = csv({delimiter: ',', columns: true}, (err,data) => {
-      
-      deferred.resolve(data);
-      
-    });
-    
-    fs.createReadStream(file).pipe(parser);
-    
-    return deferred.promise;
-    
-  }
-}
+  readFromCSV,
+};

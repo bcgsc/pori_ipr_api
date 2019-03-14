@@ -17,50 +17,32 @@ class SocketAuthentication {
     this.socket = socket;
     this.io = io;
     this.authenticated = false;
-
-    this.challengeTimeout();
   }
 
 
   /**
    * Wait for Socket Authentication Message
    *
-   * @returns {Promise}
+   * @returns {Promise.<object>} - Returns the current authenticated socket connection
    */
   challenge() {
+    logger.info(`Trying to connect socket: ${this.socket.id}`);
     return new Promise((resolve, reject) => {
       this.socket.on('authenticate', (msg) => {
-        jwt.verify(msg.token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
-          if (!decoded || err) {
-            return reject({message: 'failed socket authentication'});
-          }
-          // All good
-          this.socket.user = decoded;
-          this.authenticated = true;
-          logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
+        const decoded = jwt.verify(msg.token, pubKey, {algorithms: ['RS256']});
+        if (!decoded) {
+          this.socket.disconnect();
+          return reject(new Error('Failed socket authentication'));
+        }
+        // All good
+        this.socket.user = decoded;
+        this.authenticated = true;
+        logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
 
-          this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
-          return resolve(this.socket);
-        });
+        this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
+        return resolve(this.socket);
       });
     });
-  }
-
-
-  /**
-   * Wait for timeout and kill connection.
-   *
-   * Wait 2000 milliseconds for authentication message. Kill connection if it takes longer.
-   *
-   * @returns {Promise}
-   */
-  challengeTimeout() {
-    setTimeout(() => {
-      if (this.authenticated !== true) {
-        this.socket.disconnect();
-        console.log('Dropping authentication');
-      }
-    }, 2000);
   }
 }
 
