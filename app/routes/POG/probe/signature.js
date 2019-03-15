@@ -31,9 +31,7 @@ router.route('/:role(ready|reviewer)')
       role = 'readySigned';
     } else if (req.params.role === 'reviewer') {
       role = 'reviewerSigned';
-    }
-
-    if (!role) {
+    } else {
       logger.error('A valid signing role must be specified');
       return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidSignRole'}});
     }
