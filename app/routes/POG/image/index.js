@@ -40,12 +40,6 @@ router.route('/retrieve/:key')
       logger.error(`There was an error finding image data ${error}`);
       return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
-  })
-  .put(() => {
-    // Add a new Potential Clinical Alteration...
-    const error = new Error('The put call isn\'t implemented for this route');
-    logger.error(error);
-    throw error;
   });
 
 router.route('/expressionDensityGraphs')
