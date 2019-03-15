@@ -78,7 +78,7 @@ class RoutingInterface {
    *
    * @param {string} path - Route to use
    *
-   * @returns {IRouter} - Returns the instance of the route
+   * @returns {IRoute} - Returns the instance of the route
    */
   registerResource(path) {
     logger.info(`Route Registered: ${path}`);
