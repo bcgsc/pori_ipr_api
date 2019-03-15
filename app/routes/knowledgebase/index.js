@@ -49,20 +49,12 @@ router.route('/controlled-vocabulary')
 
 router.route('/disease-ontology')
   .get((req, res) => {
-    const data = {};
-
-    // Get Json DB
-    data.entries = diseaseJSON;
-
     // Add to GenVar list
-    data.found = data.entries.filter((entry) => {
+    const dataFound = diseaseJSON.filter((entry) => {
       return entry.toLowerCase().includes(req.query.query.toLowerCase());
     });
 
-    res.json(data.found);
-
-    delete data.entries;
-    delete data.found;
+    return res.json(dataFound);
   });
 
 // History Metrics Query
