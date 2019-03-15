@@ -94,27 +94,27 @@ App.then((app) => {
     // Creating HTTP(S) Server
     // Don't use HTTPS for local instances
     if (process.env.NODE_ENV.toLowerCase() === 'local') {
-        /**
-        * Create HTTP server if local instance
-        */
+    /**
+     * Create HTTP server if local instance
+     */
         server = http.createServer(app);
     } else {
-        /**
-        * Create HTTPS server if not local instance
-        */
+    /**
+     * Create HTTPS server if not local instance
+     */
         const certificate = fs.readFileSync(envConf.web.ssl);
         server = https.createServer({key: certificate, cert: certificate}, app);
     }
 
     /**
-    * Socket.io
-    */
+   * Socket.io
+   */
     const io = app.io;
     io.attach(server);
 
     /**
-    * Listen on provided port, on all network interfaces.
-    */
+   * Listen on provided port, on all network interfaces.
+   */
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);
