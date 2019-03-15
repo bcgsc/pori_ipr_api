@@ -38,7 +38,7 @@ class RoutingInterface {
    */
   bindRouteObject(path, middleware) {
     logger.info(`Route Registered: ${path}`);
-    return this.router.use((this.root) ? this.root : `${path}`, middleware);
+    return this.router.use((this.root) ? this.root : path, middleware);
   }
 
   /**
