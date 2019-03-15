@@ -34,11 +34,11 @@ class RoutingInterface {
    * @param {string} path - Route to use specified middleware
    * @param {object} middleware - Middleware function to use
    *
-   * @returns {undefined}
+   * @returns {Router} - Returns the instance of the express router
    */
   bindRouteObject(path, middleware) {
     logger.info(`Route Registered: ${path}`);
-    this.router.use((this.root) ? this.root : `${path}`, middleware);
+    return this.router.use((this.root) ? this.root : `${path}`, middleware);
   }
 
   /**
@@ -59,7 +59,7 @@ class RoutingInterface {
    * @param {string} path - Route to use
    * @param {function} callback - Callback function
    *
-   * @returns {undefined}
+   * @returns {Router} - Returns the instance of the express router
    */
   registerEndpoint(method, path, callback) {
     if (!this.allowedMethods.includes(method)) {
@@ -67,7 +67,7 @@ class RoutingInterface {
     }
 
     logger.info(`Route Registered: ${path}`);
-    this.router[method](path, callback);
+    return this.router[method](path, callback);
   }
 
 
@@ -78,11 +78,11 @@ class RoutingInterface {
    *
    * @param {string} path - Route to use
    *
-   * @returns {undefined}
+   * @returns {IRouter} - Returns the instance of the route
    */
   registerResource(path) {
     logger.info(`Route Registered: ${path}`);
-    this.router.route(path);
+    return this.router.route(path);
   }
 
   /**
@@ -91,10 +91,10 @@ class RoutingInterface {
    * @param {string} name - Name of route parameter
    * @param {function} callback - The callback function that will handle the middleware
    *
-   * @returns {undefined}
+   * @returns {Router} - Returns the instance of the express router
    */
   registerMiddleware(name, callback) {
-    this.router.param(name, callback);
+    return this.router.param(name, callback);
   }
 }
 
