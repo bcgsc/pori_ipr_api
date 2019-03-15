@@ -44,11 +44,7 @@ router.route('/import')
 
 router.route('/controlled-vocabulary')
   .get((req, res) => {
-    const vocab = {controlled: kbControlled};
-
-    // Send JSON values
-    res.json(vocab.controlled);
-    delete vocab.controlled;
+    return res.json(kbControlled);
   });
 
 router.route('/disease-ontology')
