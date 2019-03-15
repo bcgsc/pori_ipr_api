@@ -55,7 +55,7 @@ console.log(('Application API Port: ').green, port.toString().white);
 // Import Namespaces
 const App = require('../app');
 
-App().then((app) => {
+App.then((app) => {
     app.set('port', port);
     let server;
 

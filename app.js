@@ -22,7 +22,7 @@ const logger = require('./lib/log'); // Load logging library
 const app = express(); // define app using express
 process.logger = logger;
 
-module.exports = async () => {
+module.exports = (async () => {
   // Setup and store Socket IO in app
   app.io = socketIO();
 
@@ -89,4 +89,4 @@ module.exports = async () => {
     logger.error(`Unable to initialize routing ${error}`);
     return process.exit();
   }
-};
+})();
