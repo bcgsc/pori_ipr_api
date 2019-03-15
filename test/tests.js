@@ -5,60 +5,60 @@ process.env.NODE_ENV = 'local';
 const http = require('http');
 require('colors'); // Console colours
 
+const pyToSql = require('./utilities/pyToSql');
+const remapKeys = require('./utilities/remapKeys');
+const state = require('./tracking/state');
+
 const port = '8081'; // Data Access
 const API_VERSION = '1.0';
+const {logger} = process;
 
 
 // Start Server
-console.log((`BCGSC - IPR-API Server ${API_VERSION} | Testing`).blue.bold.bgWhite);
-console.log('='.repeat(50).dim);
-console.log((`Node Version: ${process.version}`).yellow);
-console.log((`Running Environment: ${process.env.NODE_ENV}`).green, '\n');
-console.log(('Application API Port: ').green, port.toString().white);
+logger.info((`BCGSC - IPR-API Server ${API_VERSION} | Testing`).blue.bold.bgWhite);
+logger.info('='.repeat(50).dim);
+logger.info((`Node Version: ${process.version}`).yellow);
+logger.info((`Running Environment: ${process.env.NODE_ENV}`).green, '\n');
+logger.info(('Application API Port: ').green, port.toString().white);
 
 const App = require('../app');
 
 describe('IPR API', () => {
-    let server,
-        io;
+  let server;
 
-    // Start API servers before running tests
-    before(function (done) {
-        this.timeout(30000);
+  // Start API servers before running tests
+  before(async (done) => {
+    this.timeout(30000);
 
+    const app = await App();
 
-        App.then((app) => {
-            app.set('port', port);
+    app.set('port', port);
 
-            // Create HTTP server.
-            server = http.createServer(app);
+    // Create HTTP server.
+    server = http.createServer(app);
 
-            // Socket.io
-            io = app.io;
-            io.attach(server);
+    // Socket.io
+    const {io} = app;
+    io.attach(server);
 
-            // Listen on provided port, on all network interfaces.
-            server.listen(port);
+    // Listen on provided port, on all network interfaces.
+    server.listen(port);
 
-            console.log('Server listening');
+    logger.info('Server listening');
 
-            done();
-        });
-    });
+    done();
+  });
 
-    // Close API server connections after running tests
-    after(() => {
+  // Close API server connections after running tests
+  after(() => {
     // Close server connections
-        server.close();
-    });
+    server.close();
+  });
 
-    // Utilities
-    require('./utilities/pyToSql');
-    require('./utilities/remapKeys');
+  // Utilities
+  pyToSql;
+  remapKeys;
 
-    // Reports Tests
-    // require('./reports/reports');
-
-    // Tracking Tests
-    require('./tracking/state');
+  // Tracking Tests
+  state;
 });
