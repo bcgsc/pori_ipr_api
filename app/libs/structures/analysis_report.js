@@ -193,7 +193,7 @@ class AnalysisReport {
       username: boundUser.username,
     };
 
-    return this.public.bind(this);
+    return this.public();
   }
 
   /**
@@ -211,7 +211,8 @@ class AnalysisReport {
     if (result === 0) {
       throw new Error('No binding found');
     }
-    return this.public.bind(this);
+
+    return this.public();
   }
 }
 
