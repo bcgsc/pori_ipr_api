@@ -74,7 +74,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
 router.route('/mutationSignature')
   .get(async (req, res) => {
     const options = {
-      where: {id: req.report.analysis_id},
+      where: {pog_report_id: req.report.id},
       order: [['signature', 'ASC']],
     };
 
