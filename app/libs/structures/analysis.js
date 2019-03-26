@@ -113,6 +113,4 @@ class POG {
   }
 }
 
-module.exports = {
-  POG,
-};
+module.exports = POG;
