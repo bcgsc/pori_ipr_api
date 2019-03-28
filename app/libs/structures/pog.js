@@ -28,7 +28,7 @@ class POG {
     const pog = await this.model.findOne({where: {POGID: this.POGID}, include: {as: 'analysis', model: db.models.pog_analysis}});
 
     // Not found, and asked to create
-    if (pog === null) {
+    if (!pog) {
       if (options.create) {
         const createOpts = {};
         if (options.nonPOG) {
@@ -101,6 +101,4 @@ class POG {
   }
 }
 
-module.exports = {
-  POG,
-};
+module.exports = POG;
