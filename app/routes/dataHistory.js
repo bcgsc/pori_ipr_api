@@ -122,7 +122,7 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
       return res.status(404).json({error: {message: 'Unable to find the tag to remove.', code: 'failedDestroyHistoryTagQuery'}});
     } catch (error) {
       logger.error(`Unable to destroy history tag ${error}`);
-      return res.status(404).json({error: {message: 'Unable to remove the tag.', code: 'failedDestroyHistoryTagQuery'}});
+      return res.status(500).json({error: {message: 'Unable to remove the tag.', code: 'failedDestroyHistoryTagQuery'}});
     }
   })
   // Get All Tags (or one)
