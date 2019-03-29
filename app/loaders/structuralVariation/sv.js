@@ -41,7 +41,7 @@ const parseStructuralVariantFile = async (report, structuralVariationFile, varia
     entry.svVariant = variantType;
     entry.mavis_product_id = entry.MAVIS_product_id.split(';')[0];
 
-    if (entry.svg !== 'na' && entry.svg !== '') {
+    if (entry.svg && entry.svg !== 'na') {
       // Load in SVG !! SYNC-Block
       entry.svg = fs.readFileSync(entry.svg, {encoding: 'utf-8'});
 
