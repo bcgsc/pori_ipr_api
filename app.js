@@ -55,14 +55,6 @@ module.exports = (async () => {
     }));
   }
 
-  // Utility and Teapot
-  app.get('/heart', (req, res) => { 
-    return res.json({beat: (new Date()).getTime()});
-  });
-  app.get('/teapot', (req, res) => {
-    return res.status(418).set({hi: 'mom!'}).send(fs.readFileSync('./lib/teapot.txt'));
-  });
-
   // DEPENDENCIES CHECK ------------------------------------------------------
   const check = exec('convert');
 
