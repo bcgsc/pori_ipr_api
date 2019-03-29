@@ -1,11 +1,9 @@
-'use strict';
-
-// app/routes/loadPog.js
 const express = require('express');
+const db = require('../../models');
+const ExportDataTables = require('../../exporters/index');
 
 const router = express.Router({mergeParams: true});
-const db = require(`${process.cwd()}/app/models`);
-const ExportDataTables = require(`${process.cwd()}/app/exporters/index`);
+const {logger} = process;
 
 
 router.route('/all')
@@ -20,35 +18,54 @@ router.route('/all')
           {as: 'user', model: db.models.user, attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']}},
         ],
       });
-      res.json(results);
+      return res.json(results);
     } catch (error) {
-      console.log('Failed to get pog exports', error);
-      res.status(500).json({error: {message: 'Unable to get the list of export entries for this POG.', code: 'failedGetPOGDataExportsQuery'}});
+      logger.error(`Failed to get pog exports ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get the list of export entries for this POG.', code: 'failedGetPOGDataExportsQuery'}});
     }
   });
 
 // Handle requests for loading POG into DB
 router.route('/csv')
   .get(async (req, res) => {
+    let pogExportData;
+    let expResult;
+
     try {
-      const exportEntry = await db.models.POGDataExport.create({pog_id: req.POG.id, user_id: req.user.id});
-      const exporter = new ExportDataTables(req.POG, exportEntry);
-      const exportResult = await exporter.export();
+      pogExportData = await db.models.POGDataExport.create({pog_id: req.POG.id, user_id: req.user.id});
+    } catch (error) {
+      logger.error(`Failed to create POG Data Export ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create new data export entry.', code: 'failedPOGDataExportCreate'}});
+    }
+
+    const exporter = new ExportDataTables(req.POG, pogExportData);
+    try {
+      expResult = await exporter.export();
+    } catch (error) {
       // Save Log entry
-      exportEntry.log = exportResult.log;
-      exportEntry.result = true;
-      const result = await exportEntry.save();
+      pogExportData.log = expResult.log;
+      pogExportData.result = false;
+      pogExportData.save();
+
+      logger.error(`Failed to run exporters ${error}`);
+      return res.status(500).json({error: {message: 'Failed to run exporters.', code: 'failedPOGDataExport'}});
+    }
+
+    // Save Log entry
+    pogExportData.log = expResult.log;
+    pogExportData.result = true;
+    try {
+      const result = await pogExportData.save();
       const entry = result.get();
       delete entry.id;
       delete entry.pog_id;
       delete entry.user_id;
-      // Send command back
-      res.json({command: exportResult.command, export: exportEntry});
+
+      return res.json({command: expResult.command, export: pogExportData});
     } catch (error) {
-      console.log(error);
-      res.status(500).json({error: {message: error.message, code: error.code}});
+      logger.error(`There was an error while trying to save exportEntry ${error}`);
+      return res.status(500).json({error: {message: 'Unable to save export results.', code: 'failedUpdatePOGExportEntry'}});
     }
   });
-
 
 module.exports = router;
