@@ -255,16 +255,14 @@ router.route('/:type(genomic|probe)')
       reportOpts.expression_matrix = reportConfig.ExpressionMatrixVersion.toLowerCase() || 'v8';
     }
 
-    let newReport;
+    let reportObj;
     try {
-      newReport = await report.create(patientObj, analysisObj, req.user, req.params.type, reportOpts);
+      reportObj = await report.create(patientObj, analysisObj, req.user, req.params.type, reportOpts);
+      reportObj.pog = patientObj;
     } catch (error) {
       logger.error(`SQL Error unable to create report ${error}`);
       return res.status(500).json({error: {message: 'Unable to create report'}});
     }
-
-    const reportObj = newReport;
-    newReport.pog = patientObj;
 
     // Setup up loader configuration
     const loaderOptions = {
