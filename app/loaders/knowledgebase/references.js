@@ -47,8 +47,10 @@ module.exports = async (dir, options) => {
       entry.status = 'REQUIRES-REVIEW';
     }
     entry.ref_id = entry.id; // Move id to ref_id;
-    entry.sample_size = (typeof entry.sample_size === 'string') ? null : entry.sample_size;
-    entry.type = (entry.type === '') ? null : entry.type;
+    entry.type = (!entry.type) ? null : entry.type;
+    if (typeof entry.sample_size === 'string') {
+      entry.sample_size = (parseInt(entry.sample_size, 10)) ? parseInt(entry.sample_size, 10) : null;
+    }
 
     delete entry.id;
     delete entry.update_comments;
