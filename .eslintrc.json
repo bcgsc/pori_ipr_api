@@ -58,7 +58,7 @@
         "no-multi-assign": "off",
         "one-var": ["warn", "never"],
         "no-plusplus": "off",
-        "max-len": [2, {
+        "max-len": ["warn", {
             "code": 100,
             "ignoreUrls": true,
             "ignorePattern": true
