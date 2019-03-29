@@ -29,14 +29,6 @@ router.route('/')
     return res.json(req.patientInformation);
   })
   .put(async (req, res) => {
-    /**
-     *
-     * !!!!
-     * Bypass versioning for temporary patient information storage
-     * !!!!
-     *
-     */
-
     try {
       await db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id}});
       const result = await db.models.patientInformation.findOne({where: {pog_id: req.POG.id}});
