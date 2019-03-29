@@ -10,7 +10,7 @@ router.route('/events')
   .post((req, res) => {
     try {
       // Take input and call child
-      execSync(`/projects/tumour_char/analysis_scripts/python/centos06/anaconda3_v4.3.0/envs/python3.4/bin/python${process.cwd()}/app/libs/kbSanitationWrapper.py --input "${req.body.events_expression}"`);
+      execSync(`/projects/tumour_char/analysis_scripts/python/centos06/anaconda3_v4.3.0/envs/python3.4/bin/python ${process.cwd()}/app/libs/kbSanitationWrapper.py --input "${req.body.events_expression}"`);
       return res.json({valid: req.body.events_expression});
     } catch (error) {
       logger.error(error);
