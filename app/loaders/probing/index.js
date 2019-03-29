@@ -49,9 +49,7 @@ class ProbeLoader {
     logger.info('Starting Probe Loader');
 
     // Run default POG Probe Report loading
-    if (this.options.profile.toLowerCase() === 'pog_probe'
-      || this.options.profile.toLowerCase() === 'pog_probe_no_flat'
-    ) {
+    if (['pog_probe', 'pog_probe_no_flat'].includes(this.options.profile.toLowerCase())) {
       if (this.options.profile === 'pog_probe_no_flat') {
         logger.info('Running POG Probe Loader without flatfile');
 
