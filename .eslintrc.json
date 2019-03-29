@@ -60,8 +60,7 @@
         "no-plusplus": "off",
         "max-len": ["warn", {
             "code": 100,
-            "ignoreUrls": true,
-            "ignorePattern": true
+            "ignoreUrls": true
         }],
         "no-underscore-dangle": "off",
         "no-empty": ["error", {
