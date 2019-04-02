@@ -215,16 +215,16 @@ router.route('/:POG/reports')
     }
   });
 
-// Get Reports for this pog
+/**
+ * Get Reports for this pog
+ *
+ * @param {object} req.report - POG report model instance
+ */
 router.route('/:POG/reports/:report')
   .get((req, res) => {
-    const report = req.report.get();
-    delete report.id;
-    delete report.pog_id;
-    delete report.createdBy_id;
-    delete report.deletedAt;
+    const {id, pog_id, createdBy_id, deletedAt, ...report} = req.report.get();
 
-    return res.json(req.report);
+    return res.json(report);
   });
 
 module.exports = router;
