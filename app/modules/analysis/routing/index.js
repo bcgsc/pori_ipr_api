@@ -1,20 +1,18 @@
-'use strict';
-
-// app/routes/genomic/detailedGenomicAnalysis.js
 const _ = require('lodash');
-
-const db = require(`${process.cwd()}/app/models`);
+const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Analysis = require('../analysis.object');
 const Generator = require('../../tracking/generate');
 const $bioapps = require('../../../api/bioapps');
 const $lims = require('../../../api/lims');
 
-const comparators = require(`${process.cwd()}/database/comparators.json`);
-const comparators_v9 = require(`${process.cwd()}/database/comparators.v9.json`);
-const logger = process.logger;
+const comparators = require('../../../../database/comparators.json');
+const comparatorsV9 = require('../../../../database/comparators.v9.json');
 
-const Patient = require(`${process.cwd()}/app/libs/patient/patient.library`);
+const {logger} = process;
+
+const Patient = require('../../../libs/patient/patient.library');
+const analysisMiddleware = require('../../../middleware/analysis');
 
 
 /**
@@ -22,12 +20,12 @@ const Patient = require(`${process.cwd()}/app/libs/patient/patient.library`);
  *
  * @type {TrackingRouter}
  */
-module.exports = class TrackingRouter extends RoutingInterface {
+class TrackingRouter extends RoutingInterface {
   constructor(io) {
     super();
     this.io = io;
     // Register Middleware
-    this.registerMiddleware('analysis', require('../../../middleware/analysis'));
+    this.registerMiddleware('analysis', analysisMiddleware);
     // Setup analysis endpoint
     this.analysis();
     // Extended Details
@@ -77,8 +75,8 @@ module.exports = class TrackingRouter extends RoutingInterface {
 
             // Need to take care of limits and offsets outside of query to support natural sorting
             if (req.query.paginated) {
-              const limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
-              const offset = parseInt(req.query.offset) || 0;
+              const limit = parseInt(req.query.limit, 10) || 25;
+              const offset = parseInt(req.query.offset, 10) || 0;
 
               const analysis = result.rows;
 
@@ -336,11 +334,11 @@ module.exports = class TrackingRouter extends RoutingInterface {
   
   // Extended Details
   extended() {
-    this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, (req, res) => {
+    this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
       let bioAppsPatient = null;
       const limsIllumina = {};
       let analysis = null;
-  
+
       const opts = {
         limit: req.query.limit || 15,
         offset: req.query.offset || 0,
@@ -350,11 +348,28 @@ module.exports = class TrackingRouter extends RoutingInterface {
         ],
         where: {ident: req.params.analysisIdent},
       };
-  
-      const pog_include = {as: 'pog', model: db.models.POG.scope('public'), where: {}};
-  
-      opts.include.push(pog_include);
-      
+
+      const pogInclude = {as: 'pog', model: db.models.POG.scope('public'), where: {}};
+
+      opts.include.push(pogInclude);
+
+      let pogAnalysis;
+      let patient;
+      try {
+        pogAnalysis = await db.models.pog_analysis.findOne(opts);
+        patient = await $bioapps.patient(analysis.pog.POGID);
+        if (patient.length === 0) {
+          return res.status(404).json({message: 'Failed to find patient record in BioApps for unknown reasons.'});
+        }
+        bioAppsPatient = patient[0];
+        const result = await $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
+        if (result.length === 0) {
+          return res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons.'});
+        }
+      } catch (error) {
+        //
+      }
+      //Working though below query!!!
       // Execute Query
       db.models.pog_analysis.findOne(opts)
         .then((result) => {
@@ -404,7 +419,7 @@ module.exports = class TrackingRouter extends RoutingInterface {
             if (rna) {
               if (analysis.libraries.transcriptome in limsIllumina) limsIllumina[analysis.libraries.transcriptome].lanes++;
               if (!(analysis.libraries.transcriptome in limsIllumina)) limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
-            } 
+            }
           });
         })
         .then(() => {
@@ -494,7 +509,9 @@ module.exports = class TrackingRouter extends RoutingInterface {
   // Comparator Endpoints
   comparators() {
     this.registerEndpoint('get', '/comparators', (req, res) => {
-      res.json({v8: comparators, v9: comparators_v9});
+      return res.json({v8: comparators, v9: comparatorsV9});
     });
   }
-};
+}
+
+module.exports = TrackingRouter;
