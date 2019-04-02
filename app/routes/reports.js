@@ -127,7 +127,7 @@ router.route('/')
 
       return res.json({total: reports.length, reports: paginatedReports});
     } catch (error) {
-      logger.info(`Unable to lookup analysis reports ${error}`);
+      logger.error(`Unable to lookup analysis reports ${error}`);
       return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
     }
   });
