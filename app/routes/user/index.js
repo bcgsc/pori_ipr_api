@@ -227,7 +227,6 @@ router.route('/:ident([A-z0-9-]{36})')
     }
 
     try {
-      // Success, get user -- UGH
       const user = await db.models.user.findOne({
         where: {ident: userUpdate[1][0].ident},
         attributes: {exclude: ['id', 'password', 'deletedAt']},
