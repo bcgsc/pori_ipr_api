@@ -57,17 +57,17 @@ class RoutingInterface {
    *
    * @param {string} method - HTTP method such as GET, PUT, POST, and so on, in lowercase
    * @param {string} path - Route to use
-   * @param {function} callback - Callback function
+   * @param {function} handler - Handler function for endpoint
    *
    * @returns {Router} - Returns the instance of the express router
    */
-  registerEndpoint(method, path, callback) {
+  registerEndpoint(method, path, handler) {
     if (!this.allowedMethods.includes(method)) {
       throw new MethodNotAllowed(`The requested method: ${method} is not allowed. Allowable methods: ${this.allowedMethods.join(',')}`);
     }
 
     logger.info(`Route Registered: ${path}`);
-    return this.router[method](path, callback);
+    return this.router[method](path, handler);
   }
 
 
@@ -89,12 +89,12 @@ class RoutingInterface {
    * Register Middleware
    *
    * @param {string} name - Name of route parameter
-   * @param {function} callback - The callback function that will handle the middleware
+   * @param {function} handler - Handler function that will handle the middleware
    *
    * @returns {Router} - Returns the instance of the express router
    */
-  registerMiddleware(name, callback) {
-    return this.router.param(name, callback);
+  registerMiddleware(name, handler) {
+    return this.router.param(name, handler);
   }
 }
 
