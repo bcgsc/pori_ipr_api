@@ -106,7 +106,7 @@ router.route('/tag/:ident([A-z0-9-]{36})?')
         user_id: req.user.id,
         tag: req.body.tag,
       });
-      return res.json({tag: tag.tag, ident: tag.ident, createdAt: tag.createdAt});
+      return res.status(201).json({tag: tag.tag, ident: tag.ident, createdAt: tag.createdAt});
     } catch (error) {
       logger.error(error);
       return res.status(500).json(error);
