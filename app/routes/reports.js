@@ -117,8 +117,8 @@ router.route('/')
       // limits and offsets are causing the query to break due to the public scope and subqueries
       // i.e. fields are not available for joining onto subquery selection
       // dealing w/ applying the pagination here
-      const limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
-      const offset = parseInt(req.query.offset) || 0;
+      const limit = parseInt(req.query.limit, 10) || 25; // Gotta parse those ints because javascript is javascript!
+      const offset = parseInt(req.query.offset, 10) || 0;
 
       // apply limit and offset to results
       const start = offset;
