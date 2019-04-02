@@ -154,8 +154,8 @@ router.route('/:ident([A-z0-9-]{36})')
     try {
       projectAccess = await access.getProjectAccess();
     } catch (error) {
-      logger.error(`User doesn't have access to project ${error}`);
-      return res.status(403).json(ERRORS.AccessForbidden);
+      logger.error(`Error while checking if user has access to project ${error}`);
+      return res.status(500).json({error: {message: 'Error while checking if user has access to project'}});
     }
 
     if (_.includes(_.map(projectAccess, 'ident'), req.project.ident)) {
