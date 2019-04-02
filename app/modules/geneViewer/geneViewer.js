@@ -35,20 +35,20 @@ class GeneViewer {
     ];
 
     try {
-      const results = await Promise.all(promises);
+      const [kbMatches, smallMutations, copyNumber,
+        structuralVariants, expRNA, expProtein,
+        expDrugTarget, expDensityGraph] = await Promise.all(promises);
 
-      const resultsObj = {
-        kbMatches: results[0],
-        smallMutations: results[1],
-        copyNumber: results[2],
-        structuralVariants: results[3],
-        expRNA: results[4],
-        expProtein: results[5],
-        expDrugTarget: results[6],
-        expDensityGraph: results[7],
+      return {
+        kbMatches,
+        smallMutations,
+        copyNumber,
+        structuralVariants,
+        expRNA,
+        expProtein,
+        expDrugTarget,
+        expDensityGraph,
       };
-
-      return resultsObj;
     } catch (error) {
       logger.error(`Unable to get gene viewer data ${error}`);
       throw new Error('Unable to get gene viewer data');
