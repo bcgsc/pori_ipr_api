@@ -18,8 +18,8 @@ router.param('project', async (req, res, next, ident) => {
   try {
     projectAccess = await access.getProjectAccess();
   } catch (error) {
-    logger.error(`User doesn't have access to project ${error}`);
-    return res.status(403).json(ERRORS.AccessForbidden);
+    logger.error(`Error while geting user's access to projects ${error}`);
+    return res.status(500).json({error: {message: 'Error while geting user\'s access to projects'}});
   }
 
   const projects = _.intersection(_.map(projectAccess, 'ident'), [ident]);
@@ -43,8 +43,8 @@ router.param('project', async (req, res, next, ident) => {
     req.project = await db.models.project.findOne(opts);
     return next();
   } catch (error) {
-    logger.error(`Failed to find project ${error}`);
-    return res.status(500).json(error);
+    logger.error(`Error while trying to find a project ${error}`);
+    return res.status(500).json({error: {message: 'Error while trying to find a project'}});
   }
 });
 
@@ -67,8 +67,8 @@ router.route('/')
       // getting project access/filter
       projectAccess = await access.getProjectAccess();
     } catch (error) {
-      logger.error(`User doesn't have access to project ${error}`);
-      return res.status(403).json(ERRORS.AccessForbidden);
+      logger.error(`Error while geting user's access to projects ${error}`);
+      return res.status(500).json({error: {message: 'Error while geting user\'s access to projects'}});
     }
     // getting project access/filter
     const opts = {
@@ -84,8 +84,8 @@ router.route('/')
       const projects = await db.models.project.findAll(opts);
       return res.json(projects);
     } catch (error) {
-      logger.error(`Unable to retrieve projects ${error}`);
-      return res.status(500).json({message: 'Unable to retrieve projects'});
+      logger.error(`Error while trying to retrieve projects${error}`);
+      return res.status(500).json({error: {message: 'Unable to retrieve projects'}});
     }
   })
   .post(async (req, res) => {
@@ -117,8 +117,8 @@ router.route('/')
     try {
       existingProject = await db.models.project.findOne({where: {name: req.body.name, deletedAt: {$not: null}}, paranoid: false});
     } catch (error) {
-      logger.error(`Unable to find project ${error}`);
-      return res.status(500).json({error: {message: 'Unable to find project'}});
+      logger.error(`Error while trying to find project ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to find project'}});
     }
 
     if (existingProject) {
@@ -127,8 +127,8 @@ router.route('/')
         const restored = await db.models.project.update({deletedAt: null}, {paranoid: false, where: {ident: existingProject.ident}, returning: true});
         return res.status(201).json(restored);
       } catch (error) {
-        logger.error(`Unable to restore project ${error}`);
-        return res.status(500).json({error: {message: 'Unable to restore project'}});
+        logger.error(`Error while trying to restore project ${error}`);
+        return res.status(500).json({error: {message: 'Error while trying to restore project'}});
       }
     } else {
       if (req.body.name.length < 1) {
@@ -139,8 +139,8 @@ router.route('/')
         const created = await db.models.project.create(req.body);
         return res.status(201).json(created);
       } catch (error) {
-        logger.error(`Unable to create project ${error}`);
-        return res.status(500).json({error: {message: 'Unable to create project'}});
+        logger.error(`Error while trying to create project ${error}`);
+        return res.status(500).json({error: {message: 'Error while trying to create project'}});
       }
     }
   });
@@ -185,8 +185,8 @@ router.route('/:ident([A-z0-9-]{36})')
       // Attempt project model update
       modelUpdate = await db.models.project.update(updateBody, {where: {ident: req.body.ident}, limit: 1});
     } catch (error) {
-      logger.error(`Unable to update project ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update project', code: 'failedProjectUpdateQuery'}});
+      logger.error(`Error while trying to update project ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
     }
 
     if (modelUpdate) {
@@ -207,8 +207,8 @@ router.route('/:ident([A-z0-9-]{36})')
       const project = await db.models.project.findOne(opts);
       return res.json(project);
     } catch (error) {
-      logger.error(`Unable to retrieve project ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve project', code: 'failedProjectLookupQuery'}});
+      logger.error(`Error while trying to retrieve a project ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to retrieve a project', code: 'failedProjectLookupQuery'}});
     }
   })
   // Remove a project
@@ -229,8 +229,8 @@ router.route('/:ident([A-z0-9-]{36})')
       }
       return res.status(204).send();
     } catch (error) {
-      logger.error(`Failed to remove project ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemoveQuery'}});
+      logger.error(`Error while trying to remove project ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to remove project', code: 'failedProjectRemoveQuery'}});
     }
   });
 
@@ -247,8 +247,8 @@ router.route('/search')
     try {
       projects = await db.models.project.findAll({where, attributes: {exclude: ['deletedAt', 'id']}});
     } catch (error) {
-      logger.error(`Unable to find projects ${error}`);
-      return res.status(500).json({error: {message: 'Unable to query project search'}});
+      logger.error(`Error while trying to find projects ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to find projects'}});
     }
 
     // Check user permission and filter by project
@@ -262,8 +262,8 @@ router.route('/search')
       });
       return res.json(filteredResults);
     } catch (error) {
-      logger.error(`User doesn't have access to project ${error}`);
-      return res.status(403).json(ERRORS.AccessForbidden);
+      logger.error(`Error while geting user's access to projects ${error}`);
+      return res.status(403).json({error: {message: 'Error while geting user\'s access to projects'}});
     }
   });
 
@@ -295,12 +295,12 @@ router.route('/:project([A-z0-9-]{36})/user')
       // Lookup User
       user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
     } catch (error) {
-      logger.error(`Unable to find user ${error}`);
-      return res.status(400).json({error: {message: 'Unable to find user', code: 'failedUserLookupUserProject'}});
+      logger.error(`Error while trying to find user ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
     }
 
     if (!user) {
-      return res.status(400).json({error: {message: 'Unable to find the supplied user.', code: 'failedUserLookupUserProject'}});
+      return res.status(404).json({error: {message: 'Unable to find the supplied user.', code: 'failedUserLookupUserProject'}});
     }
 
     let hasBinding;
@@ -308,8 +308,8 @@ router.route('/:project([A-z0-9-]{36})/user')
       // See if binding already exists
       hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {$ne: null}}});
     } catch (error) {
-      logger.error(`Unable to find user binding ${error}`);
-      return res.status(400).json({error: {message: 'Unable to find user', code: 'failedUserBindingLookupUserProject'}});
+      logger.error(`Error while trying to find user ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserBindingLookupUserProject'}});
     }
 
     // exists - set deletedAt to null
@@ -318,8 +318,8 @@ router.route('/:project([A-z0-9-]{36})/user')
         await db.models.user_project.update({deletedAt: null}, {paranoid: false, where: {id: hasBinding.id}, returning: true});
         return res.json(user);
       } catch (error) {
-        logger.error(`Unable to restore user project binding ${error}`);
-        return res.status(500).json({error: {message: 'Unable to restore existing user project binding', code: 'failedUserProjectRestore'}});
+        logger.error(`Error while restoring user project binding ${error}`);
+        return res.status(500).json({error: {message: 'Error while restoring existing user project binding', code: 'failedUserProjectRestore'}});
       }
     }
     // doesn't exist - create new binding
@@ -344,8 +344,8 @@ router.route('/:project([A-z0-9-]{36})/user')
 
       return res.json(output);
     } catch (error) {
-      logger.error(`Unable to add user to project ${error}`);
-      return res.status(400).json({error: {message: 'Unable to add user to project', code: 'failedUserProjectCreate'}});
+      logger.error(`Error while adding user to project ${error}`);
+      return res.status(500).json({error: {message: 'Error while adding user to project', code: 'failedUserProjectCreate'}});
     }
   })
   .delete(async (req, res) => {
@@ -363,8 +363,8 @@ router.route('/:project([A-z0-9-]{36})/user')
       // Lookup User
       user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
     } catch (error) {
-      logger.error(`Unable to update project ${error}`);
-      return res.status(400).json({error: {message: 'Unable to update the specified project', code: 'failedUserLookupUserProject'}});
+      logger.error(`Error while trying to find user ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
     }
 
     if (!user) {
@@ -381,8 +381,8 @@ router.route('/:project([A-z0-9-]{36})/user')
       }
       return res.status(204).send();
     } catch (error) {
-      logger.error(`Unable to remove user from project ${error}`);
-      return res.status(400).json({error: {message: 'Unable to remove user from project', code: 'failedGroupMemberRemoveQuery'}});
+      logger.error(`Error while removing user from project ${error}`);
+      return res.status(500).json({error: {message: 'Error while removing user from project', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 
@@ -419,8 +419,8 @@ router.route('/:project([A-z0-9-]{36})/pog')
         return res.status(400).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
       }
     } catch (error) {
-      logger.error('There was an error while trying to find the POG file');
-      return res.status(400).json({error: {message: 'There was an error while trying to find the POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find the POG file ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to find the POG file', code: 'failedPOGLookupPOGProject'}});
     }
 
     try {
@@ -439,8 +439,8 @@ router.route('/:project([A-z0-9-]{36})/pog')
 
       return res.json(output);
     } catch (error) {
-      logger.error(`Unable to add pog to project ${error}`);
-      return res.status(400).json({error: {message: 'Unable to add pog to project', code: 'failedPOGProjectCreateQuery'}});
+      logger.error(`Error while adding pog to project ${error}`);
+      return res.status(500).json({error: {message: 'Error while adding pog to project', code: 'failedPOGProjectCreateQuery'}});
     }
   })
   .delete(async (req, res) => {
@@ -459,11 +459,11 @@ router.route('/:project([A-z0-9-]{36})/pog')
       pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt']}});
       if (!pog) {
         logger.error('Unable to find the supplied pog');
-        return res.status(400).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+        return res.status(404).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
       }
     } catch (error) {
       logger.error(`Error while trying to find supplied POG ${error}`);
-      return res.status(400).json({error: {message: 'Error while trying to find POG file', code: 'failedPOGLookupPOGProject'}});
+      return res.status(500).json({error: {message: 'Error while trying to find POG file', code: 'failedPOGLookupPOGProject'}});
     }
 
     try {
@@ -474,8 +474,8 @@ router.route('/:project([A-z0-9-]{36})/pog')
       }
       return res.status(204).send();
     } catch (error) {
-      logger.error(`Unable to remove pog from project ${error}`);
-      return res.status(400).json({error: {message: 'Unable to remove pog from project', code: 'failedGroupMemberRemoveQuery'}});
+      logger.error(`Error while trying to remove POG from project ${error}`);
+      return res.status(500).json({error: {message: 'Error while trying to remove POG from project', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 
