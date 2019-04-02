@@ -1,35 +1,29 @@
-const _                       = require('lodash');
-const db                      = require(process.cwd() + '/app/models');
-const MiddlewareNotFound      = require('../../../middleware/exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed   = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+const db = require('../../../models');
+const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNotFound');
+const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+
+const {logger} = process;
 
 // Lookup POG middleware
-module.exports = (req,res,next,ident) => {
-  
-  let opts = { where: {} };
-  
-  opts.attributes = {
-    exclude: ['deletedAt', 'germline_report_id']
-  };
-  
-  // Check if it's a UUID
-  opts.where.ident = ident;
-  
-  // Lookup POG first
-  db.models.germline_small_mutation_variant.scope('public').findOne(opts).then(
-    (result) => {
-      // Nothing found?
-      if(result === null) throw new MiddlewareNotFound("Unable to find the germline report variant", req, res, "germlineReportVariant");
-      
-      // POG found, next()
-      if(result !== null) {
-        req.variant = result;
-        next();
-      }
+module.exports = async (req, res, next, ident) => {
+  const opts = {
+    where: {
+      ident,
     },
-    (error) => {
-      console.log(error);
-      throw new MiddlewareQueryFailed("Unable to find the requested germline report variant.", req, res, "failedTrackingStateTaskMiddlewareQuery");
+    attributes: {
+      exclude: ['deletedAt', 'germline_report_id'],
+    },
+  };
+
+  try {
+    const result = await db.models.germline_small_mutation_variant.scope('public').findOne(opts);
+    if (!result) {
+      throw new MiddlewareNotFound('Unable to find the germline report variant', req, res, 'germlineReportVariant');
     }
-  );
+    req.variant = result;
+    return next();
+  } catch (error) {
+    logger.error(error);
+    throw new MiddlewareQueryFailed('Unable to find the requested germline report variant.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+  }
 };
