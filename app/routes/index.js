@@ -76,7 +76,21 @@ class Routing extends RouterInterface {
     this.router.param('report', reportMiddleware);
 
     // Add Authentication coverage
-    this.router.use('(/POG|/POG/*|/user/*|/user|/project|/jira|/knowledgebase|/tracking|/reports|/analysis|/analysis_reports|/germline_small_mutation)', authMiddleware);
+    this.router.use(`(${
+      [
+        '/POG',
+        '/POG/*',
+        '/user/*',
+        '/user',
+        '/project',
+        '/jira',
+        '/knowledgebase',
+        '/tracking',
+        '/reports',
+        '/analysis',
+        '/analysis_reports',
+        '/germline_small_mutation',
+      ].join('|')})`, authMiddleware);
 
     // Add Single Routes
     // Setup other routes
