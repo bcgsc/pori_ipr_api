@@ -68,6 +68,7 @@
         "no-unused-expressions": "off",
         "valid-jsdoc": "warn",
         "require-jsdoc": "warn",
-        "import/no-dynamic-require": "warn"
+        "import/no-dynamic-require": "warn",
+        "class-methods-use-this": "off"
     }
 }
