@@ -16,18 +16,18 @@ let db = require(process.cwd() + '/app/models'),
  * @param object POG - POG model object
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Summary.GenomicAlterationsIdentified');
+  let log = logger.loader(report.ident, 'Summary.GenomicAlterationsIdentified');
   
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/genomic_alt_identified.csv')
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/genomic_alt_identified.csv');
   
-  log('Found and read genomic_alt_identified.csv file.')
+  log('Found and read genomic_alt_identified.csv file.');
   
   // Parse file!
   let parser = parse({delimiter: ','},
@@ -37,7 +37,7 @@ module.exports = (POG, dir, logger) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to parse the genomic alterations identified file: ' + dir + '/JReport_CSV_ODF/genomic_alt_identified.csv', result: false});
       }
     
       // Create Entries Array
@@ -52,7 +52,8 @@ module.exports = (POG, dir, logger) => {
         // Check for empty value
         if(value !== '') {
           entries.push({
-            pog_id: POG.id,
+            pog_id: report.pog_id,
+            pog_report_id: report.id,
             geneVariant: value
           });
         }
@@ -62,15 +63,15 @@ module.exports = (POG, dir, logger) => {
       // Add to Database
       db.models.genomicAlterationsIdentified.bulkCreate(entries).then(
         (result) => {
-          log('Finished Genomic Alterations Identified.', logger.SUCCESS)
+          log('Finished Genomic Alterations Identified.', logger.SUCCESS);
          
           // Resolve Promise
           deferred.resolve(result);
         },
         (err) => {
           console.log(err);
-          log('Failed to load patient tumour analysis.', logger.ERROR)
-          deferred.reject('Failed to load Genomic Alterations Identified.');
+          log('Failed to load patient tumour analysis.', logger.ERROR);
+          deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to create database entries', result: false});
         }
       );
     }
@@ -81,7 +82,7 @@ module.exports = (POG, dir, logger) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'genomicAlterationsIdentified', message: 'Unable to find the genomic alterations identified file: ' + dir + '/JReport_CSV_ODF/genomic_alt_identified.csv', result: false});
   });
   
   return deferred.promise;

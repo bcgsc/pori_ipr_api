@@ -1,50 +1,64 @@
-"use strict";
 // Set Env
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = 'local';
 
 // Dependencies
-let recursive = require('recursive-readdir');
-let _ = require('lodash');
+const http = require('http');
+require('colors'); // Console colours
+
+const port = '8081'; // Data Access
+const API_VERSION = '1.0';
 
 
-let chai = require('chai'),
-  chaiHttp = require('chai-http'),
-  server = require(process.cwd() + '/server.js'),
-  should = chai.should(),
-  Q = require('q');
+// Start Server
+console.log((`BCGSC - IPR-API Server ${API_VERSION} | Testing`).blue.bold.bgWhite);
+console.log('='.repeat(50).dim);
+console.log((`Node Version: ${process.version}`).yellow);
+console.log((`Running Environment: ${process.env.NODE_ENV}`).green, '\n');
+console.log(('Application API Port: ').green, port.toString().white);
 
-chai.use(chaiHttp);
+const App = require('../app');
+
+describe('IPR API', () => {
+    let server,
+        io;
+
+    // Start API servers before running tests
+    before(function (done) {
+        this.timeout(30000);
 
 
-// Index for orderly execution of unit tests
-require('./exclude/loadPog.js').then(
-  (success) => {
+        App.then((app) => {
+            app.set('port', port);
 
-    console.log('Successfully loaded the pog.', success);
+            // Create HTTP server.
+            server = http.createServer(app);
 
-    require('./exclude/pog.js'); // Must be first
-    require('./exclude/session.js');
+            // Socket.io
+            io = app.io;
+            io.attach(server);
 
-    // All Others
+            // Listen on provided port, on all network interfaces.
+            server.listen(port);
 
-    // Retrieve test files
-    recursive(process.cwd() +'/test', (err, files) => {
+            console.log('Server listening');
 
-      files.forEach((file) => {
-
-        if(file.indexOf('exclude') !== -1) return;
-        if(file.indexOf('tests.js') !== -1) return;
-        if(file.indexOf('.svn') !== -1) return;
-
-        // Require in additional tests
-        require(file);
-      });
-
+            done();
+        });
     });
 
+    // Close API server connections after running tests
+    after(() => {
+    // Close server connections
+        server.close();
+    });
 
-  },
-  (err) => {
-    console.log('Unable to load POG.');
-  }
-);
+    // Utilities
+    require('./utilities/pyToSql');
+    require('./utilities/remapKeys');
+
+    // Reports Tests
+    // require('./reports/reports');
+
+    // Tracking Tests
+    require('./tracking/state');
+});

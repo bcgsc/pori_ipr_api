@@ -2,18 +2,14 @@
 
 // app/routes/genomic/detailedGenomicAnalysis.js
 let express = require('express'),
-  ldapAuth = require(process.cwd() + '/app/libs/ldapAuth'),
   router = express.Router({mergeParams: true}),
   db = require(process.cwd() + '/app/models'),
-  bcrypt = require('bcrypt'),
   moment = require('moment'),
   _ = require('lodash'),
-  validator = require('validator'),
   Q = require('q'),
   $jira = require(process.cwd() + '/app/api/jira'),
   crypto = require('crypto'),
-  $https = require('https'),
-  emailInUse = require(process.cwd() + '/app/libs/emailInUse');
+  $https = require('https');
 
 // Route for authentication actions
 router.route('/subtask')
@@ -33,13 +29,12 @@ router.route('/subtask')
           id: 5, // type 5 is subtask
           subtask: true
         },
-        assignee: {
-          key: "bpierce",
-          name: "bpierce"
-        },
         reporter: {
           key: req.user.username,
           name: req.user.username
+        },
+        assignee: {
+          name: ""
         },
         priority: {
           id: "6" // Medium priority
@@ -47,12 +42,15 @@ router.route('/subtask')
         labels: [
           "IPR-Client"
         ],
-        description: req.body.description,
+        description: req.body.description + "\n\n---- Automated Notification ----\n Notifying: [~bpierce]",
         components: [
           { id: "15950" }
         ]
       }
     };
+
+    //res.status(400).json({error: {message: "The JIRA authtoken is stale and needs to be refreshed.", code: "JiraAuthStale"}});
+    //return;
 
     // Request options & settings
     let opts = {
@@ -79,7 +77,18 @@ router.route('/subtask')
       });
 
       jResult.on('end', () => {
-        res.set({'Content-Type': 'application/json'}).send(data);
+
+        if(jResult.statusCode === 401) {
+          return res.status(400).json({error: {message: "The JIRA authtoken is stale and needs to be refreshed.", code: "JiraAuthStale"}});
+        }
+        if(jResult.statusCode === 201) {
+          return res.set({'Content-Type': 'application/json'}).send(data);
+        }
+
+        console.log('=================== UNHANDLED ==============');
+        console.log('JIRA Response has no handler');
+        console.log(jResult, data);
+        return res.status(500).json({error: {message: "Something went wrong, and we're not sure what.", code: "UnhandledJiraResponse"}});
       });
 
     });
@@ -100,28 +109,3 @@ router.route('/subtask')
   });
 
 module.exports = router;
-
-/**
- * Create authentication token
- *
- * @param user
- * @returns {*|promise|string}
- */
-let createToken = (user, req) => {
-
-  let deferred = Q.defer();
-
-  // Good auth, create token.
-  db.models.userToken.create({ user_id: user.id, userAgent: req.header('user-agent'), expiresAt: moment().add(24, 'hours').format('YYYY-MM-DD HH:mm:ss.SSS Z')}).then(
-    (result) => {
-      deferred.resolve(result.token);
-    },
-    (error) => {
-      console.log('Unable to create token', error);
-      deferred.reject(false);
-    }
-  );
-
-  return deferred.promise;
-
-};

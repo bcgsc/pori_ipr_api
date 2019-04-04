@@ -1,79 +1,44 @@
-"use strict";
-
-let https = require('https'),
-    db = require(process.cwd() + '/app/models'),
-    Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/config.json'});
-
+const request = require('request-promise-native');
+const nconf = require('nconf').argv().env().file({file: '../../config/config.json'});
 
 const host = nconf.get('jira:hostname');
-const base = nconf.get("jira:api");
-const version = nconf.get("jira:version");
+const base = nconf.get('jira:api');
 
 // Base Request options object
-let opts = {
+const opts = {
   hostname: host,
   port: 443,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 };
 
-let $jira = {
-
+const $jira = {
   /**
    * Authenticate a user against the JIRA API
    *
-   * @param {string} username
-   * @param {string} password
+   * @param {string} username a username to authenticate
+   * @param {string} password a password to authenticate
    *
-   * @return {*|promise|string}
+   * @return {Promise.<Object.<string, object>>} returns an object containing the raw body info.
+   *                                             and the JSON parsed body info.
    */
-  authenticate: (username, password) => {
+  authenticate: async (username, password) => {
 
-    return new Promise((resolve, reject) => {
-
-      // Define JIRA body
-      let body = JSON.stringify({
-        "username": username,
-        "password": password
-      });
-
-      // Endpoint
-      opts.path = base + '/auth/1/session';
-      opts.method = 'POST';
-      opts.headers['Content-Length'] = Buffer.byteLength(body);
-
-      // Open request to API
-      let req = https.request(opts, (res) => {
-        let data = "";
-
-        // On data
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-
-        // On end
-        res.on('end', (resp) => {
-          resolve({raw: res, data: JSON.parse(data)});
-        });
-
-      });
-
-      // Write POST data to API
-      req.write(body);
-      req.end();
-
-      // Error Handling
-      req.on('error', (error) => {
-        console.log('[JIRA][API] Error', error);
-        reject({status: false, message: 'Unable to complete JIRA API request'});
-      });
-
-
+    // Define JIRA body
+    const body = JSON.stringify({
+      username,
+      password,
     });
-  }
 
+    // Endpoint
+    opts.path = `${base}/auth/1/session`;
+    opts.method = 'POST';
+    opts.headers['Content-Length'] = Buffer.byteLength(body);
+
+    const resp = await request(opts);
+    return {raw: resp, data: JSON.parse(resp)};
+  },
 };
 
 module.exports = $jira;

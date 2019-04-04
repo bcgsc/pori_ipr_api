@@ -1,0 +1,13 @@
+.idea/*
+node_modules/*
+*.sqlite
+npm-debug.log
+.env.json
+_tmp/*
+*.DS_Store
+coverage
+.nyc_output
+xunit.xml
+mocha.json
+jsdoc
+.vscode/

@@ -9,25 +9,28 @@ let db = require(process.cwd() + '/app/models'),
   Q = require('q'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Targeted Gene Report File
  *
  *
- * @param object POG - POG model object
+ * @param {object} report - POG report model object
+ * @param {string} dir - base directory
+ * @param {object} logger - logging interface
  *
+ * @returns {promise|object} - Resolves with boolean
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'DetailedGenomicAnalysis.TargetedGenes');
+  let log = logger.loader(report.ident, 'DetailedGenomicAnalysis.TargetedGenes');
 
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/probe_summary.csv')
+  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/probe_summary.csv');
 
-  log('Found and read probe_summary.csv file.')
+  log('Found and read probe_summary.csv file.');
 
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},
@@ -49,11 +52,12 @@ module.exports = (POG, dir, logger) => {
         if(v.Gene + '-' + v.Variant in entriesMap) return;
 
         let entry = {
-          pog_id: POG.id,
+          pog_id: report.pog_id,
+          pog_report_id: report.id,
           gene: v.Gene,
           variant: v.Variant,
           sample: v.Sample
-        }
+        };
 
         entries.push(entry); // Add entry
         entriesMap[v.Gene + '-' + v.Variant] = true; // Add entry to map to prevent multiple identical entries
@@ -86,4 +90,4 @@ module.exports = (POG, dir, logger) => {
 
   return deferred.promise;
 
-}
+};

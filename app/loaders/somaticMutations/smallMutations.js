@@ -12,17 +12,17 @@ let db = require(process.cwd() + '/app/models'),
 
 let baseDir;
 
-/*
+/**
  * Parse Small Mutations File
  *
  *
- * @param object POG - POG model object
- * @param string smallMutationFile - name of CSV file for given small mutation type
- * @param string mutationType - mutationType of these entries (clinical, nostic, biological, unknown)
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG report model object
+ * @param {string} smallMutationFile - name of CSV file for given small mutation type
+ * @param {string} mutationType - mutationType of these entries (clinical, nostic, biological, unknown)
+ * @param {object} log - /app/libs/logger instance
  *
  */
-let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
+let parseSmallMutationFile = (report, smallMutationFile, mutationType, log) => {
 
   // Create promise
   let deferred = Q.defer();
@@ -41,7 +41,7 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'smallMutations', message: 'Unable to parse the small mutation file: ' + baseDir + '/JReport_CSV_ODF/' + smallMutationFile, result: false});
       }
 
       // Remap results
@@ -50,7 +50,8 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].mutationType = mutationType;
         entries[k].TCGAPerc = p2s(v.TCGAPerc);
 
@@ -69,7 +70,7 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
 
   output.on('error', (err) => {
     log('Unable to find required CSV file: ' + smallMutationFile);
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'smallMutations', message: 'Unable to find the small mutation file: ' + baseDir + '/JReport_CSV_ODF/' + smallMutationFile, result: false});
   });
 
   return deferred.promise;
@@ -92,7 +93,7 @@ let parseSmallMutationFile = (POG, smallMutationFile, mutationType, log) => {
  * @param object options - Currently no options defined on this import
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   baseDir = dir;
 
@@ -100,7 +101,7 @@ module.exports = (POG, dir, logger) => {
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'SM.SmallMutations');
+  let log = logger.loader(report.ident, 'SM.SmallMutations');
 
   // Small Mutations to be processed
   let sources = [
@@ -115,7 +116,7 @@ module.exports = (POG, dir, logger) => {
 
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    promises.push(parseSmallMutationFile(POG, input.file, input.type, log));
+    promises.push(parseSmallMutationFile(report, input.file, input.type, log));
   });
 
   // Wait for all promises to be resolved
@@ -132,7 +133,7 @@ module.exports = (POG, dir, logger) => {
           log('Database entries created.', logger.SUCCESS);
 
           // Done!
-          deferred.resolve({smallMutations: true});
+          deferred.resolve({loader: 'smallMutations', result: true, data: result});
 
         },
         // Problem creating DB entries
@@ -140,10 +141,15 @@ module.exports = (POG, dir, logger) => {
           console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create small mutations database entries.');
-          deferred.reject('Unable to create small mutations database entries.');
+          deferred.reject({loader: 'smallMutations', message: 'Unable to create database entries.', result: false});
         }
       );
 
+    },
+    (error) => {
+      console.log(error);
+      log('Unable to process a small mutation file', logger.ERROR);
+      deferred.reject({loader: 'smallMutations', message: 'Unable to process a small mutation file: ' + error.message, result: false});
     });
 
   return deferred.promise;

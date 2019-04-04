@@ -13,26 +13,32 @@ let db = require(process.cwd() + '/app/models'),
 /**
  * Load Mutation Signature file and parse into database
  *
- * @param POG
- * @param dir
- * @param logger
+ * @param {object} report
+ * @param {string} dir
+ * @param {object} logger
+ * @param {object} options
  * @returns {*|promise}
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger, options={}) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'SomaticMutations.MutationSignature');
+  let log = logger.loader(report.ident, 'SomaticMutations.MutationSignature');
+
+  let project = options.project || 'pog';
 
   // Find File
-  glob('/projects/tumour_char/pog/somatic/signature/' + POG.POGID + '/P*/v*/*_msig_combined.txt', (err, files) => {
+  glob(options.config['mutationSigFolder'] + '/*_msig_combined.txt', (err, files) => {
 
-    if(err) {
-      log('Unable to find Mutation Signature source file', logger.ERROR);
-      console.log('Mutation Signature Error', err);
-      throw new Error('Unable to find Mutation Signature source file')
+    if(err || files.length === 0) {
+      log('Unable to find Mutation Signature source file: ' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', logger.WARNING);
+      log('Skipping mutationSignature loading', logger.WARNING);
+      
+      deferred.resolve({loader: 'mutationSignature', result: true});
+
+      return deferred.promise;
     }
 
     // Get File
@@ -48,14 +54,16 @@ module.exports = (POG, dir, logger) => {
         if(err) {
           log('Unable to parse CSV file');
           console.log(err);
-          deferred.reject({reason: 'parseCSVFail', message: 'Unable to find CSV file for Mutation Signature'});
+
+          deferred.reject({loader: 'mutationSignature', message: 'Unable to parse the CSV file :' + options.config['mutationSigFolder'] + '/*_msig_combined.txt', result: false});
         }
 
         let entries = remapKeys(result, nconf.get('somaticMutations:mutationSignature'));
 
         // Loop over entries
         _.forEach(entries, (v, k) => {
-          entries[k].pog_id = POG.id;
+          entries[k].pog_id = report.pog_id;
+          entries[k].pog_report_id = report.id;
           entries[k].signature = v.signature.match(/[0-9]{1,2}/g)[0];
         });
 
@@ -65,12 +73,12 @@ module.exports = (POG, dir, logger) => {
             log('Mutation Signatures successfully created.', logger.SUCCESS);
 
             // Resolve Promise
-            deferred.resolve({status: true, db: result, data: entries, message: 'Successfully loaded mutation signatures', loader: 'SomaticMutations.MutationSignature'});
+            deferred.resolve({result: true, db: result, data: entries, message: 'Successfully loaded mutation signatures', loader: 'MutationSignature'});
           },
           (err) => {
             console.log(err);
             log('Mutation Signatures failed to insert.',logger.ERROR);
-            deferred.reject({status: false, error: err, message: 'Failed to load Mutation Signatures', loader: 'SomaticMutations.MutationSignature'});
+            deferred.reject({result: false, error: err, message: 'Unable to create database entries', loader: 'MutationSignature'});
           }
         );
       }
@@ -82,7 +90,7 @@ module.exports = (POG, dir, logger) => {
     output.on('error', (err) => {
       log('Unable to find required CSV file', logger.ERROR);
       console.log(err);
-      deferred.reject({status: false, error: err, message: 'Source txt file not found', loader: 'SomaticMutations.MutationSignature'});
+      deferred.reject({result: false, error: err, message: 'Source txt file not found', loader: 'MutationSignature'});
     });
 
   });

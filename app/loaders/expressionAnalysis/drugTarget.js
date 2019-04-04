@@ -10,22 +10,22 @@ let db = require(process.cwd() + '/app/models'),
   p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Expression Drug Target Analysis File
  *
  *
- * @param object POG - POG model object
- * @param string dir - Base directory for loading sources
- * @param object logger - Logging object reference
+ * @param {object} report - POG Report model object
+ * @param {string} dir - Base directory for loading sources
+ * @param {object} logger - Logging object reference
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Exp.DrugTarget');
+  let log = logger.loader(report.ident, 'Exp.DrugTarget');
 
   // First parse in therapeutic
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/therapeutic_targets.csv');
@@ -40,7 +40,7 @@ module.exports = (POG, dir, logger) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'drugTarget', message: 'Unable to parse the CSV: ' + dir + '/JReport_CSV_ODF/therapeutic_targets.csv', result: false});
       }
 
       // Create Entries Array
@@ -48,22 +48,23 @@ module.exports = (POG, dir, logger) => {
 
       // Loop over returned rows, append row with POGid
       _.forEach(entries, (v, k) => {
-        entries[k].pog_id = POG.id;
         entries[k] = p2s(v, ['kIQR', 'kIQRNormal', 'copy']);
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
       });
 
       // Add to Database
       db.models.drugTarget.bulkCreate(entries).then(
         (result) => {
-          log('Finished Expression Drug Target Analysis.', logger.SUCCESS)
+          log('Finished Expression Drug Target Analysis.', logger.SUCCESS);
 
           // Resolve Promise
-          deferred.resolve(result);
+          deferred.resolve({module: 'drugTarget', result: true, data: result});
         },
         (err) => {
           console.log('SQL ERROR', err);
-          log('Failed to load Expression Drug Target Analysis.', logger.ERROR)
-          deferred.reject('Failed to load Expression Drug Target Analysis.');
+          log('Failed to load Expression Drug Target Analysis.', logger.ERROR);
+          deferred.reject({loader: 'drugTarget', message: 'Unable to create database entries.', result: false});
         }
       );
     }
@@ -74,7 +75,7 @@ module.exports = (POG, dir, logger) => {
 
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'drugTarget', message: 'Unable to find the CSV: ' + dir + '/JReport_CSV_ODF/therapeutic_targets.csv', result: false});
   });
 
   return deferred.promise;

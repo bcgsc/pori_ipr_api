@@ -7,28 +7,28 @@ let db = require(process.cwd() + '/app/models'),
     remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
     _ = require('lodash'),
     Q = require('q'),
+    pyconf = require('pyconf'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'}),
     colMap = require('nconf').file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Alterations File
  *
  * 
- * @param object POG - POG model object
- * @param string alterationFile - name of CSV file for given alteration type
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG report model object
+ * @param {string} probeFile - name of CSV file for given alteration type
+ * @param {string} probeDir - /app/libs/logger instance
+ * @param {object} log - /app/libs/logger instance
  *
  */
-let parseAlterationsFile = (POG, alterationFile, log) => {
+let parseAlterationsFile = (report, probeFile, probeDir, log) => {
   
   // Create promise
   let deferred = Q.defer();
-  
-  // Check that the provided alterationType is valid according to the schema
-  
+
   // First parse in therapeutic
-  let output = fs.createReadStream(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Probing/JReport_CSV_ODF/' + alterationFile, {'delimiter': ','})
-  
+  let output = fs.createReadStream(probeDir + '/JReport_CSV_ODF/' + probeFile, {'delimiter': ','});
+
   // Parse file!
   let parser = parse({delimiter: ',', columns: true},
     (err, result) => {
@@ -46,12 +46,13 @@ let parseAlterationsFile = (POG, alterationFile, log) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].newEntry = false;
       });
       
       // Log progress
-      log('Parsed .csv');
+      log('Parsed '+probeFile+'.csv');
       
       // Resolve Promise
       deferred.resolve(entries);
@@ -68,9 +69,9 @@ let parseAlterationsFile = (POG, alterationFile, log) => {
   
   return deferred.promise;
   
-}
+};
 
-/* 
+/**
  * Alterations Loader
  * 
  * Load values for "Alterations with potential clinical relevance"
@@ -83,19 +84,30 @@ let parseAlterationsFile = (POG, alterationFile, log) => {
  * 
  * Create DB entries for Alterations. Parse in CSV values, mutate, insert.
  * 
- * @param object POG - POG model object
- * @param object options - Currently no options defined on this import
+ * @param {object} report - POG report model object
+ * @param {string} basedir - base working directory
+ * @param {object} logger - Logging interface
+ * @param {object} options - Module options
+ *
+ * @returns {Promise|object} - Returns a promise, resolves with loader success object
  *
  */
-module.exports = (POG, logger) => {
-  
+module.exports = (report, basedir, logger, options) => {
+
   // Create promise
   let deferred = Q.defer();
   let alterations = [];
-  
+
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'summary.ProbeTarget');
-  
+  let log = logger.loader(report.ident, 'summary.ProbeTarget');
+
+  // Read in config file.
+  let config = options.config;
+  let probeDir;
+
+  // Set probe directory from Python config
+  probeDir = config.Probe_Report_Folder;
+
   // Alterations to be processed
   let sources = [
     {file: 'clin_rel_known_alt_detailed.csv'},
@@ -104,76 +116,80 @@ module.exports = (POG, logger) => {
     {file: 'clin_rel_known_prog_detailed.csv'},
     {file: 'clin_rel_unknown_alt_detailed.csv'}
   ];
-  
+
   // Check for sources first.
-  
+
   // Promises Array
   let promises = [];
-  
+
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    if(!fs.existsSync(nconf.get('paths:data:POGdata') + '/' + POG.POGID + '/JReport/Probing/JReport_CSV_ODF/' + input.file)) {
-      deferred.resolve({probeTarget: false});
+    if(!fs.existsSync(probeDir + '/JReport_CSV_ODF/' + input.file)) {
+      deferred.resolve({loader: 'probeTarget', message: 'Failed to find the file for probe targeting: ' + probeDir + '/JReport_CSV_ODF/' + input.file, result: false});
       log('Unable to find probe report data. Missing input file(s): '+input.file, logger.WARNING);
       return;
     }
-    promises.push(parseAlterationsFile(POG, input.file, log));
+    promises.push(parseAlterationsFile(report, input.file, probeDir, log));
   });
-  
-  if(promises.length == 0) {
+
+  if(promises.length === 0) {
     log('Probe Target Gene data not available.', logger.WARNING);
     return;
   }
-  
+
   // Wait for all promises to be resolved
   Q.all(promises)
-  .then((results) => {
-    // Log progress
-    log('Variations collected: ' + _.flattenDepth(results, 2).length);
-    
-    let entries = [];
-    
-    // Process Results
-    results = _.flattenDepth(results, 2);
-    results.forEach((val) => {
-      
-      // Look for an entry
-      if(!_.find(entries, (e) => {
-          
-          if(e.gene === val.gene && e.variant === val.variant && e.sample === val.sample) return true;
-          return false;
-          
-        })) {
-        entries.push({gene: val.gene, variant: val.variant, sample: val.sample, pog_id: POG.id});
-      }
-      
-    });
-    
-    db.models.probeTarget.bulkCreate(entries).then(
-      (result) => {
-        
-        // Successfull create into DB
-        log('Database entries created.', logger.SUCCESS);
-        
-        // Done!
-        deferred.resolve({probeTarget: true});
-        
+    .then((results) => {
+        // Log progress
+        log('Variations collected: ' + _.flattenDepth(results, 2).length);
+
+        let entries = [];
+
+        // Process Results
+        results = _.flattenDepth(results, 2);
+        results.forEach((val) => {
+
+          // Look for an entry
+          if (!_.find(entries, (e) => {
+
+              if (e.gene === val.gene && e.variant === val.variant && e.sample === val.sample) return true;
+              return false;
+
+            })) {
+            entries.push({
+              gene: val.gene,
+              variant: val.variant,
+              sample: val.sample,
+              pog_id: report.pog_id,
+              pog_report_id: report.id
+            });
+          }
+
+        });
+
+        db.models.probeTarget.bulkCreate(entries).then(
+          (result) => {
+
+            // Successfull create into DB
+            log('Database entries created.', logger.SUCCESS);
+
+            // Done!
+            deferred.resolve({module: 'probeTarget', result: true});
+
+          },
+          // Problem creating DB entries
+          (err) => {
+            log('Unable to create database entries.', logger.ERROR);
+            new Error('Unable to create probe target database entries.');
+            deferred.reject({loader: 'probeTarget', message:'Unable to create probe target database entries.'});
+          }
+        );
+
       },
-      // Problem creating DB entries
-      (err) => {
-        log('Unable to create database entries.', logger.ERROR);
-        new Error('Unable to create probe target database entries.');
-        deferred.reject('Unable to create probe target database entries.');
+      (error) => {
+        log('Unable to create probe report data.', logger.WARNING);
+        deferred.resolve({loader: 'probeTarget', result: false, message: 'Unable to find the required probe target file(s): ' + error.message});
       }
     );
-    
-  },
-  (error) => {
-    log('Unable to create probe report data.', logger.WARNING);
-    deferred.resolve({probeTarget: false});
-  }
-    
-  );
-      
   return deferred.promise;
-}
+};

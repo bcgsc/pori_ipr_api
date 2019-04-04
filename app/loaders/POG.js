@@ -8,22 +8,28 @@ let db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
   Q = require('q'),
   glob = require('glob'),
+  pyconf = require('pyconf'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Patient Information File
  *
  *
- * @param object POG - POG model object
+ * @param {object} report - POG report model object
+ * @param {string} dir - base directory
+ * @param {object} logger - logging interface
+ * @param {object} options
+ *
+ * @returns {promise|object} - Resolves with boolean
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger, options={}) => {
 
   // Create promise
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'POG.SampleInfo');
+  let log = logger.loader(report.ident, 'POG.SampleInfo');
 
   let pogInfo = {};
 
@@ -43,13 +49,13 @@ module.exports = (POG, dir, logger) => {
       glob(dir + '/Report_tracking.c*', (err, files) => {
 
         // Did we find it?
-        if(err || files.length == 0) {
+        if(err || files.length === 0) {
           log('Unable to find report config file.', logger.ERROR);
           deferred.reject('Unable to find report config file');
           throw new Error('Unable to find report config file');
         }
 
-        fs.readFile(files[0], {encoding: 'utf8'}, (err, data) => {
+        pyconf.readFile(files[0], (err, conf) => {
 
           if(err) {
             console.log(err);
@@ -59,10 +65,15 @@ module.exports = (POG, dir, logger) => {
 
           // Read config file
           log('Read in config file', log.SUCCESS);
-          pogInfo.config = data;
+          pogInfo.config = _.join(conf.__lines, "\r\n");
+
+
+          // Get Version Numbers
+          pogInfo.kbVersion = conf.KnowledgebaseModuleVersion;
+          pogInfo.reportVersion = conf.programVersion;
 
           // Add to Database
-          db.models.POG.update(pogInfo, {where: { id: POG.id }, limit: 1})
+          db.models.analysis_report.update(pogInfo, {where: {id: report.id}})
             .then(
               (result) => {
                 log('POG Sample & QC information loaded.', logger.SUCCESS);
@@ -70,10 +81,11 @@ module.exports = (POG, dir, logger) => {
               },
               (err) => {
                 console.log('SQL Error', err);
-                log('Failed to load patient history.',logger.ERROR)
+                log('Failed to load patient history.', logger.ERROR)
                 deferred.reject('Unable to load POG sample & QC info');
               }
             );
+
         }); // End Read File
 
       }); // end Glob

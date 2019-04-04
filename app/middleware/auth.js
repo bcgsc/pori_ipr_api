@@ -1,65 +1,96 @@
-"use strict";
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const db = require('../models');
+const keycloak = require('../api/keycloak');
 
-let _ = require('lodash'),
-    router = require('express').Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models');
-
-let ignored = {
-  files: ['index.js', 'POG.js', 'session.js'],
-  routes: ['loadPog'],
-};
+const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
+  ? fs.readFileSync('keys/prodkey.pem')
+  : fs.readFileSync('keys/devkey.pem');
 
 // Require Active Session Middleware
-module.exports = (req,res,next) => {
-  
+module.exports = async (req, res, next) => {
   // Get Authorization Header
-  let token = req.header('Authorization');
-  
-  // Test mode?
-  if(process.env.NODE_ENV === 'test') {
-    req.user = 1;
+  let token = req.header('Authorization') || '';
+  let username;
+  let expiry;
+
+  // Report loader case for permanent token lookup
+  const respToken = await db.models.userToken.findOne({
+    where: {user_id: 23},
+    attributes: {
+      exclude: ['id'],
+      include: [['user_id', 'id']],
+    },
+  });
+  if (respToken.token === token) {
+    req.user = respToken;
     return next();
   }
-  // Send Admin Account
-  if(token === "apitest0-e4af-437c-be95-1e3451d0c619" && process.env.NODE_ENV === 'development') {
-    db.models.user.findOne({where: {username: 'admin'}, attributes: {exclude: ['id', 'password', 'deletedAt']}}).then(
-      (user) => {
-        req.user = user;
-        next();
-        return;
-      },
-      (error) => {
-        console.log(error);
-        return res.status(403).json({error: { message: 'Failed to validate development token', code: 'failedDevelopmentToken'}});
-      }
-    );
-  } else {
-    // Check for header token
-    if(token === null || token === undefined) return res.status(403).json({error: { message: 'Invalid authorization token', code: 'invalidAuthorizationToken'}});
-    
-    // Lookup token
-    db.models.userToken.findOne({
-      where: {token: token},
-      include: [{model: db.models.user, as: 'user', attributes: {exclude:['password', 'deletedAt']}, include: [
-        {model: db.models.userGroup, as: 'groups', attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}}
-      ]}]
-    }).then(
-      (result) => {
-        if(result === null) return res.status(403).json({error: { message: 'Invalid authorization token', code: 'invalidAuthorizationToken'}});
 
-        if(result.token) {
-          req.user = result.user;
-
-          db.models.user.update({lastLogin: db.fn('NOW')}, {where: {ident: result.user.ident}});
-          next();
-
-        }
-      },
-      (error) => {
-        console.log(error);
-        return res.status(403).json({error: { message: 'Invalid authorization token', code: 'invalidAuthorizationToken'}});
-      }
-    );
+  // Check for basic authorization header
+  if (token.includes('Basic')) {
+    let credentials;
+    try {
+      credentials = Buffer.from(token.split(' ')[1], 'base64').toString('utf-8').split(':');
+    } catch (err) {
+      return res.status(400).json({message: 'The authentication header you provided was not properly formatted.'});
+    }
+    try {
+      const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
+      token = respAccess.access_token;
+    } catch (err) {
+      return res.status(400).json(err);
+    }
   }
-  
+  if (!token) {
+    return res.status(403).json({message: 'Invalid authorization token'});
+  }
+
+  // Verify token using public key
+  jwt.verify(token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({message: 'Invalid or expired authorization token'});
+    }
+    // Check for IPR access
+    if (!decoded.realm_access.roles.includes('IPR')) {
+      return res.status(403).json({message: 'IPR Access Error'});
+    }
+    username = decoded.preferred_username;
+    expiry = decoded.exp;
+    return null;
+  });
+
+  // Lookup token in IPR database
+  try {
+    const respUser = await db.models.user.findOne({
+      where: {username},
+      attributes: {
+        exclude: ['deletedAt', 'password', 'jiraToken', 'jiraXsrf'],
+      },
+      include: [
+        {
+          model: db.models.userGroup,
+          as: 'groups',
+          attributes: {
+            exclude: ['owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+          },
+        },
+        {
+          model: db.models.project,
+          as: 'projects',
+          attributes: {
+            exclude: ['deletedAt', 'updatedAt', 'createdAt'],
+          },
+        },
+      ],
+    });
+    if (!respUser) {
+      return res.status(400).json({message: 'User does not exist'});
+    }
+    respUser.dataValues.expiry = expiry;
+    req.user = respUser;
+    return next();
+  } catch (err) {
+    return res.status(400).json({message: 'Invalid authorization token'});
+  }
 };

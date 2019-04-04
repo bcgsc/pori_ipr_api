@@ -9,21 +9,22 @@ let db = require(process.cwd() + '/app/models'),
     Q = require('q'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
-/*
+/**
  * Parse Approved Therapries in Other Cancer File
- *
  * 
- * @param object POG - POG model object
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG model object
+ * @param {string} dir - POG model object
+ * @param {object} logger - /app/libs/logger instance
+ * @param {object} options
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger, options) => {
   
   // Create promise
   let deferred = Q.defer();
   
   // Create Logger
-  let log = logger.loader(POG.POGID, 'DGA.ApprovedOtherCancer');
+  let log = logger.loader(report.ident, 'DGA.ApprovedOtherCancer');
   
   // First parse in therapeutic
   let output = fs.createReadStream(dir + '/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv', {'delimiter': ','});
@@ -36,7 +37,7 @@ module.exports = (POG, dir, logger) => {
       if(err) {
         log('Unable to parse CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'approvedOtherCancer', message: 'unable to parse CSV file: ' + dir + '/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv', result: false});
       }
     
       // Remap results
@@ -45,10 +46,13 @@ module.exports = (POG, dir, logger) => {
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].alterationType = 'therapeutic';
         entries[k].approvedTherapy = 'otherCancer';
         entries[k].newEntry = false;
+        if(report.type === 'probe') entries[k].reportType = 'probe';
+        if(report.type === 'probe') entries[k].report = 'probe';
       });
       
       // Log progress
@@ -61,14 +65,15 @@ module.exports = (POG, dir, logger) => {
           log('Database entries created.', logger.SUCCESS);
           
           // Done!
-          deferred.resolve({approvedThisCancer: true});
+          deferred.resolve({module: 'approvedOtherCancer', result: true});
           
         },
         // Problem creating DB entries
         (err) => {
+          console.log(err);
           log('Unable to create database entries.', logger.ERROR);
           new Error('Unable to create approved other cancer type detailed database entries.');
-          deferred.reject('Unable to create approved other cancer type detailed database entries.');
+          deferred.reject({module: 'approvedOtherCancer', result: false, message: 'Unable to create approved other cancer type detailed database entries.'});
         }
       );
       
@@ -80,7 +85,7 @@ module.exports = (POG, dir, logger) => {
   
   output.on('error', (err) => {
     log('Unable to find required CSV file');
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({module: 'approvedOtherCancer', message: 'Unable to find the CSV file: ' + dir + '/JReport_CSV_ODF/approved_other_cancer_type_detailed.csv'});
   });
   
   return deferred.promise;

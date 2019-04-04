@@ -6,7 +6,7 @@ let colors = require('colors');
 let logger = (prefix) => {
   
   return (content, type=null) => {
-    
+
     if(type == 'error') console.log(colors.bgRed(colors.stripColors(prefix) + ' ' + content));
     
     if(type == null) console.log(prefix + ' ' + content);

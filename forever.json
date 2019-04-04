@@ -1,0 +1,7 @@
+{
+  "uid": "ipr-api",
+  "append": true,
+  "script": "server.js",
+  "sourceDir": "./",
+  "logFile": "/var/www/ipr/logs/api/"
+}

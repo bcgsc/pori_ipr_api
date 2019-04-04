@@ -7,28 +7,26 @@ let db = require(process.cwd() + '/app/models'),
   remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
   _ = require('lodash'),
   Q = require('q'),
+  p2s = require(process.cwd() + '/app/libs/pyToSql'),
   nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
 
 let baseDir;
 
-/*
+/**
  * Parse Expression Outliers File
  *
  *
- * @param object POG - POG model object
- * @param string expressionOutlierFile - name of CSV file for given small mutation type
- * @param string outlierType - outlierType of these entries (clinical, nostic, biological)
- * @param object log - /app/libs/logger instance
+ * @param {object} report - POG report model object
+ * @param {string} expressionOutlierFile - name of CSV file for given small mutation type
+ * @param {string} outlierType - outlierType of these entries (clinical, nostic, biological)
+ * @param {object} log - /app/libs/logger instance
  *
  */
-let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) => {
+let parseExpressionOutlierFile = (report, expressionOutlierFile, outlierType, log) => {
 
   // Create promise
   let deferred = Q.defer();
-
-  // Check that the provided alterationType is valid according to the schema
-  if(db.models.outlier.rawAttributes.outlierType.values.indexOf(outlierType) === -1) deferred.reject('Invalid outlierType. Given: ' + outlierType) && new Error('Invalid outlierType. Given: ' + outlierType);
-
+  
   // First parse in therapeutic
   let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, {'delimiter': ','});
 
@@ -40,7 +38,7 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
       if(err) {
         log('Unable to parse Expression Outlier CSV file');
         console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
+        deferred.reject({loader: 'expressionOutlier', message: 'Unable to parse the CSV: ' + baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, result: false});
       }
 
       // Remap results
@@ -49,8 +47,11 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
       // Add new values for DB
       entries.forEach((v, k) => {
         // Map needed DB column values
-        entries[k].pog_id = POG.id;
+        entries[k] = p2s(v, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
+        entries[k].pog_id = report.pog_id;
+        entries[k].pog_report_id = report.id;
         entries[k].outlierType = outlierType;
+        entries[k].expType = 'rna';
       });
 
       // Log progress
@@ -66,14 +67,14 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
 
   output.on('error', (err) => {
     log('Unable to find required CSV file: ' + expressionOutlierFile);
-    deferred.reject({reason: 'sourceFileNotFound'});
+    deferred.reject({loader: 'expressionOutlier', message: 'Unable to find the CSV: ' + baseDir + '/JReport_CSV_ODF/' + expressionOutlierFile, result: false});
   });
 
   return deferred.promise;
 
 };
 
-/*
+/**
  * Expression - Outliers Loader
  *
  * Load values for "Expression Analysis"
@@ -84,12 +85,12 @@ let parseExpressionOutlierFile = (POG, expressionOutlierFile, outlierType, log) 
  *
  * Create DB entries for Expression Outliers. Parse in CSV values, mutate, insert.
  *
- * @param object POG - POG model object
- * @param string dir - Base directory to load from
- * @param object logger - Logging utility
+ * @param {object} report - POG report model object
+ * @param {string} dir - Base directory to load from
+ * @param {object} logger - Logging utility
  *
  */
-module.exports = (POG, dir, logger) => {
+module.exports = (report, dir, logger) => {
 
   baseDir = dir;
 
@@ -97,7 +98,7 @@ module.exports = (POG, dir, logger) => {
   let deferred = Q.defer();
 
   // Setup Logger
-  let log = logger.loader(POG.POGID, 'Exp.Outlier');
+  let log = logger.loader(report.ident, 'Exp.Outlier');
 
   // Small Mutations to be processed
   let sources = [
@@ -111,7 +112,7 @@ module.exports = (POG, dir, logger) => {
 
   // Loop over sources and collect promises
   sources.forEach((input) => {
-    promises.push(parseExpressionOutlierFile(POG, input.file, input.type, log));
+    promises.push(parseExpressionOutlierFile(report, input.file, input.type, log));
   });
 
   // Wait for all promises to be resolved
@@ -128,18 +129,22 @@ module.exports = (POG, dir, logger) => {
           log('Database entries created.', logger.SUCCESS);
 
           // Done!
-          deferred.resolve({expressionOutliers: true});
-
+          deferred.resolve({loader: 'expressionOutliers', result: true, data: result});
         },
         // Problem creating DB entries
         (err) => {
-          log('Unable to create database entries.', logger.ERROR);
-          deferred.reject('Unable to create expression outliers database entries.');
           console.log(err);
+          log('Unable to create database entries.', logger.ERROR);
+          deferred.reject({loader: 'expressionOutlier', message: 'Unable to create the database entries.', result: false});
           new Error('Unable to create expression outliers database entries.');
         }
       );
 
+    },
+    (err) => {
+      console.log(err);
+      log('Unable to load a CSV file', logger.ERROR);
+      deferred.reject({loader: 'expressionOutlier', message: 'Unable to load a CSV file: ' + err.message, result: false});
     });
 
   return deferred.promise;
