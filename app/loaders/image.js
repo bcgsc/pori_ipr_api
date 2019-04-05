@@ -14,6 +14,8 @@ let db = require(process.cwd() + '/app/models'),
 
 const imageIdentify = promisfy(im.identify);
 
+const DEFAULT_SUBPLOT_IMAGE_WIDTH = 600;
+
 // Image Path
 let imagePath;
 
@@ -366,7 +368,14 @@ let processSubtypePlotImages = async (report, img, log) => {
   } else {
     // Get height and width of image and store at 25% of those values
     const {height, width} = await imageIdentify(img);
-    image_size = `${width / 4}x${height / 4}`;
+
+    if (width > DEFAULT_SUBPLOT_IMAGE_WIDTH) {
+      const ratio = width / DEFAULT_SUBPLOT_IMAGE_WIDTH;
+      const newHeight = Math.round(height / ratio);
+      image_size = `${DEFAULT_SUBPLOT_IMAGE_WIDTH}x${newHeight}`;
+    } else {
+      image_size = `${width}x${height}`;
+    }
   }
 
   let process = exec('convert "'+img+ '" -resize ' + image_size + ' PNG:- | base64');
