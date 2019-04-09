@@ -112,7 +112,7 @@ router.route('/')
     req.body.access = 'clinician';
 
     if (validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) {
-      inputErrors.push({input: 'access', message: 'user type must be one of: clinician, bioinformatician, analyst, administration, superuser'});
+      inputErrors.push({input: 'type', message: 'user type must be one of: bcgsc, local'});
     }
 
     if (inputErrors.length > 0) {
@@ -158,10 +158,6 @@ router.route('/settings')
   });
 
 router.route('/:ident([A-z0-9-]{36})')
-  .get((req, res) => {
-    // Getting self
-    return res.json(req.user);
-  })
   .put(async (req, res) => {
     // Update current user
     // Access Control
