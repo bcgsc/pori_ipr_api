@@ -158,6 +158,10 @@ router.route('/settings')
   });
 
 router.route('/:ident([A-z0-9-]{36})')
+  .get((req, res) => {
+    // Getting self
+    return res.json(req.user);
+  })
   .put(async (req, res) => {
     // Update current user
     // Access Control
