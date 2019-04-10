@@ -30,23 +30,19 @@ class SocketAuthentication {
     logger.info(`Trying to connect socket: ${this.socket.id}`);
     return new Promise((resolve, reject) => {
       this.socket.on('authenticate', (msg) => {
-        try {
-          jwt.verify(msg.token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
-            if (!decoded || err) {
-              this.socket.disconnect();
-              return reject(new Error('Failed socket authentication'));
-            }
-            // All good
-            this.socket.user = decoded;
-            this.authenticated = true;
-            logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
+        jwt.verify(msg.token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
+          if (!decoded || err) {
+            this.socket.disconnect();
+            return reject(new Error('Failed socket authentication'));
+          }
+          // All good
+          this.socket.user = decoded;
+          this.authenticated = true;
+          logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
 
-            this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
-            return resolve(this.socket);
-          });
-        } catch (err) {
-          return reject(new Error('Failed socked authentication in jwt library call'));
-        }
+          this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
+          return resolve(this.socket);
+        });
       });
     });
   }
