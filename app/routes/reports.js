@@ -7,7 +7,10 @@ let express = require('express'),
   _ = require('lodash'),
   acl = require(process.cwd() + '/app/middleware/acl'),
   loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations'),
-  Report = require(process.cwd() + '/app/libs/structures/analysis_report');
+  Report = require(process.cwd() + '/app/libs/structures/analysis_report'),
+  Acl = require('../middleware/acl');
+
+const {logger} = process;
 
 
 // Register middleware
@@ -180,6 +183,12 @@ router.route('/:report')
 router.route('/:report/user')
   .post((req, res, next) => {
 
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error(`User doesn/t have correct permissions to add a user binding ${req.user.username}`);
+      return res.status(403).json({error: {message: 'User doesn\t have correct permissions to add a user binding'}});
+    }
+
     if(!req.body.user) return res.status(400).json({error: {message: 'No user provided for binding'}});
     if(!req.body.role) return res.status(400).json({error: {message: 'No role provided for binding'}});
 
@@ -201,7 +210,11 @@ router.route('/:report/user')
   })
   .delete((req, res, next) => {
 
-    console.log(req);
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error(`User doesn/t have correct permissions to remove a user binding ${req.user.username}`);
+      return res.status(403).json({error: {message: 'User doesn\t have correct permissions to remove a user binding'}});
+    }
 
     if(!req.body.user) return res.status(400).json({error: {message: 'No user provided for binding'}});
     if(!req.body.role) return res.status(400).json({error: {message: 'No role provided for binding'}});
