@@ -24,9 +24,11 @@ class ACL {
     this.isPog = false;
     this.authReq = true;
     this.read = ['*'];
-    this.write = ['superUser', 'admin'];
-    this.delete = ['superUser', 'admin'];
-    this.pogEdit = ['analyst', 'reviewer', 'admin'];
+    this.write = ['manager', 'superUser', 'admin'];
+    this.delete = ['manager', 'superUser', 'admin'];
+    this.restrictedPogEdit = ['analyst', 'reviewer', 'bioinformatician'];
+    this.masterPogEdit = ['manager', 'superUser', 'admin'];
+    this.pogEdit = this.restrictedPogEdit.concat(this.masterPogEdit);
   }
 
   // Get project access
