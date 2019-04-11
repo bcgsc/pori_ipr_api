@@ -72,12 +72,23 @@ class ACL {
         }
       });
 
+      // Get bound user ids from analysis report
+      // *Note: both report user id and request user id need to be of type number
+      const [analysisReport] = this.req.POG.analysis_reports;
+      const boundUserIds = analysisReport.users.reduce((accum, user) => {
+        if (user.user_id) {
+          return accum.add(user.user_id);
+        }
+        return accum;
+      }, new Set());
+
       // Check if this is a write endpoint
       if (['POST', 'PUT', 'DELETE'].includes(this.req.method)
         && (_.intersection(pogRole, this.pogEdit).length > 0
-        || _.intersection(userGroups, this.pogEdit).length > 0)
+          || _.intersection(userGroups, this.pogEdit).length > 0)
+        && (boundUserIds.has(this.req.user.id)
+          || _.intersection(userGroups, this.masterPogEdit).length > 0)
       ) {
-        // Does this user have at least 1 pogRole that is allowed to edit?
         allowed = true;
       }
 
