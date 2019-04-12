@@ -129,12 +129,8 @@ const batchExport = async (req, res) => {
     const parsedVariants = _.map(report.variants, (variant) => {
 
       // Find mutation landscape
-      let find = false;
-
-      landscapes.forEach((landscape) => {
-        if (landscape.report.analysis_id === report.pog_analysis_id) {
-          find = landscape;
-        }
+      const matchingLandscape = landscapes.find((landscape) => {
+        return landscape.report.analysis_id === report.pog_analysis_id;
       });
 
       // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
@@ -142,7 +138,7 @@ const batchExport = async (req, res) => {
         return _.join(_.map(arr, (ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }), '; ');
       };
 
-      const ml = (find) ? parseMl(find.mutationSignature) : 'N/A';
+      const ml = (matchingLandscape) ? parseMl(matchingLandscape.mutationSignature) : 'N/A';
 
       // Watch for hidden rows
       if (!variant.hidden) {
