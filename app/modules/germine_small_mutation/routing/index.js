@@ -404,8 +404,8 @@ class GSMRouter extends RoutingInterface {
         }
 
         try {
-          const publicReport = await Report.public(report.ident);
-          return res.json(publicReport[0]);
+          const [publicReport] = await Report.public(report.ident);
+          return res.json(publicReport);
         } catch (error) {
           logger.error(`There was an error while updating the germline report ${error}`);
           return res.status(500).json({message: 'There was an error while updating the germline report'});
