@@ -19,7 +19,7 @@ class NotificationRouter extends RoutingInterface {
       const email = new Email({force: true});
 
       try {
-        await email.setRecipient('bpierce@bcgsc.ca').setSubject('This is a test message')
+        await email.setRecipient('ipr@bcgsc.ca').setSubject('This is a test message')
           .setBody('Hello World.\nThis is a multiline text body.').send();
         return res.json({result: 'Message sent.'});
       } catch (error) {
