@@ -185,7 +185,7 @@ const batchExport = async (req, res) => {
       return !(_.intersection(req.query.reviews.split(','), _.map(report.reviews, (review) => { return review.type; })).length !== req.query.reviews.split(',').length);
     });
     // Mark all exported reports in DB
-    await Promise.all(_.map(reports, (report) => {
+    await Promise.all(reports.map(async (report) => {
       report.exported = true;
       return report.save();
     }));
