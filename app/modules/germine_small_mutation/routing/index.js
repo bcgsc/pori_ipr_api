@@ -64,6 +64,14 @@ class GSMRouter extends RoutingInterface {
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
+   * @property {string} req.params.analysis - Bioapps biopsy/analysis value Eg: biop1
+   * @property {string} req.params.patient - Patient identifier Eg: POG1234
+   * @property {string} req.body.source - Source file path
+   * @property {string} req.body.version - Source file version Eg: v0.0.1
+   * @property {Array.<object>} req.body.rows - Data rows
+   * @property {string} req.body.project - Project name
+   * @property {string} req.body.normal_library - The germline/normal library name Eg: P12345
+   *
    * @returns {Promise.<object>} - Returns the created report
    */
   async loadReport(req, res) {
@@ -168,6 +176,13 @@ class GSMRouter extends RoutingInterface {
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
+   * @property {object} req.query - Contains query options
+   * @property {string} req.query.search - Search option for POGID
+   * @property {string} req.query.project - Search option for project
+   * @property {number} req.query.limit - Query page limit
+   * @property {number} req.query.offset - Query page offset
+   * @property {Array.<string>} req.user.groups - Array of groups user belongs to
+   *
    * @returns {Promise.<object>} - Returns the reports and number of reports
    */
   async getReports(req, res) {
@@ -225,6 +240,9 @@ class GSMRouter extends RoutingInterface {
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
+   * @property {string} req.params.analysis - Analysis biopsy
+   * @property {string} req.params.patient - POGID
+   *
    * @returns {Promise.<object>} - Returns the germline analysis reports
    */
   async getAnalysisReport(req, res) {
@@ -260,6 +278,10 @@ class GSMRouter extends RoutingInterface {
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {number} req.user.id - Current users id
+   * @property {string} req.body.type - Type of request
+   * @property {number} req.report.id - Germline report id
    *
    * @returns {Promise.<object>} - Returns new review for germline report
    */
@@ -449,6 +471,8 @@ class GSMRouter extends RoutingInterface {
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
+   * @property {string} req.query.reviews - Report reviews
+   *
    * @returns {Promise.<object>} - Returns the finished response
    */
   async batchExport(req, res) {
@@ -525,6 +549,8 @@ class GSMRouter extends RoutingInterface {
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {number} req.user.id - Current user's id
    *
    * @returns {Promise.<object>} - Returns the created flash token
    */
