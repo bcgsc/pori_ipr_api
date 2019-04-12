@@ -154,7 +154,7 @@ const batchExport = async (req, res) => {
   });
 
   // Removes skipped rows
-  variants = _.filter(variants, (variant) => { return (variant); });
+  variants = variants.filter((variant) => { return (variant); });
 
   // Prepare export
   const workbook = new Excel.Workbook();
