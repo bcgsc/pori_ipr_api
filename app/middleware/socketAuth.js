@@ -1,7 +1,6 @@
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
-const {logger} = process;
 const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
   : fs.readFileSync('keys/devkey.pem');
@@ -26,21 +25,24 @@ class SocketAuthentication {
    * @returns {Promise.<object>} - Returns the current authenticated socket connection
    */
   challenge() {
+    /* logger initialized here due to race condition with process.logger being defined */
+    const {logger} = process;
     logger.info(`Trying to connect socket: ${this.socket.id}`);
     return new Promise((resolve, reject) => {
       this.socket.on('authenticate', (msg) => {
-        const decoded = jwt.verify(msg.token, pubKey, {algorithms: ['RS256']});
-        if (!decoded) {
-          this.socket.disconnect();
-          return reject(new Error('Failed socket authentication'));
-        }
-        // All good
-        this.socket.user = decoded;
-        this.authenticated = true;
-        logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
+        jwt.verify(msg.token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
+          if (!decoded || err) {
+            this.socket.disconnect();
+            return reject(new Error('Failed socket authentication'));
+          }
+          // All good
+          this.socket.user = decoded;
+          this.authenticated = true;
+          logger.info(`Socket ${this.socket.id} authenticated as ${decoded.preferred_username}`);
 
-        this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
-        return resolve(this.socket);
+          this.io.sockets.connected[this.socket.id].emit('authenticated', {authenticated: true});
+          return resolve(this.socket);
+        });
       });
     });
   }
