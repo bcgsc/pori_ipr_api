@@ -31,6 +31,8 @@ const mapUser = (inputUser) => {
  * @param {string} dir - Directory to locate the KB exports in
  * @param {object} options - Contains the events filename
  *
+ * @property {string} options.events - Events file
+ *
  * @returns {Promise.<object>} - Resolves with object, Rejects with object
  */
 module.exports = async (dir, options) => {
