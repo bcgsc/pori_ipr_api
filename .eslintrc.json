@@ -59,7 +59,10 @@
         "no-multi-assign": "off",
         "one-var": ["warn", "never"],
         "no-plusplus": "off",
-        "max-len": "warn",
+        "max-len": ["warn", {
+            "code": 100,
+            "ignoreUrls": true
+        }],
         "no-underscore-dangle": "off",
         "no-empty": ["error", {
             "allowEmptyCatch": true

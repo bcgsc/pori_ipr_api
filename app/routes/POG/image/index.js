@@ -1,10 +1,8 @@
-'use strict';
-
 const express = require('express');
-const _ = require('lodash');
+const db = require('../../../models');
 
 const router = express.Router({mergeParams: true});
-const db = require(`${process.cwd()}/app/models`);
+const {logger} = process;
 
 // Register middleware
 
@@ -13,8 +11,9 @@ router.route('/retrieve/:key')
   .get(async (req, res) => {
     let keys = [];
     // Get All Pogs
-    if (req.params.key.indexOf(',') === -1) keys.push(req.params.key);
-    if (req.params.key.indexOf(',') > -1) {
+    if (!req.params.key.includes(',')) {
+      keys.push(req.params.key);
+    } else {
       keys = req.params.key.split(',');
     }
 
@@ -29,27 +28,25 @@ router.route('/retrieve/:key')
     };
 
     try {
-      const result = await db.models.imageData.findAll(opts);
+      const results = await db.models.imageData.findAll(opts);
       const output = {};
 
-      _.forEach(result, (v, k) => {
-        output[v.key] = v;
+      results.forEach((value) => {
+        output[value.key] = value;
       });
 
-      res.json(output);
+      return res.json(output);
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      logger.error(`There was an error finding image data ${error}`);
+      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
-  })
-  .put((req, res) => {
-    // Add a new Potential Clinical Alteration...
   });
 
 router.route('/expressionDensityGraphs')
   .get(async (req, res) => {
     try {
       const output = {};
-      const result = await db.models.imageData.findAll({
+      const results = await db.models.imageData.findAll({
         where: {
           pog_id: req.POG.id,
           pog_report_id: req.report.id,
@@ -61,13 +58,14 @@ router.route('/expressionDensityGraphs')
         attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
       });
 
-      _.forEach(result, (v, k) => {
-        output[v.key] = v;
+      results.forEach((value) => {
+        output[value.key] = value;
       });
 
-      res.json(output);
+      return res.json(output);
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      logger.error(error);
+      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 
@@ -89,13 +87,14 @@ router.route('/mutationSummary')
 
     try {
       const output = {};
-      const result = await db.models.imageData.findAll(opts);
-      _.forEach(result, (v) => {
-        output[v.key] = v;
+      const results = await db.models.imageData.findAll(opts);
+      results.forEach((value) => {
+        output[value.key] = value;
       });
-      res.json(output);
+      return res.json(output);
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      logger.error(error);
+      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 
@@ -103,7 +102,7 @@ router.route('/subtypePlots')
   .get(async (req, res) => {
     try {
       const output = {};
-      const result = await db.models.imageData.findAll({
+      const results = await db.models.imageData.findAll({
         where: {
           pog_id: req.POG.id,
           pog_report_id: req.report.id,
@@ -115,13 +114,14 @@ router.route('/subtypePlots')
         attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
       });
 
-      _.forEach(result, (v, k) => {
-        output[v.key] = v;
+      results.forEach((value) => {
+        output[value.key] = value;
       });
 
-      res.json(output);
+      return res.json(output);
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      logger.error(error);
+      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 

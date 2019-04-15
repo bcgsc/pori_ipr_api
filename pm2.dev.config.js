@@ -9,7 +9,7 @@ module.exports = {
     {
       name              : 'IPR-API-dev',
       script            : 'bin/www',
-      cwd               : '/var/www/ipr/api/development/current',
+      cwd               : '/var/www/ipr/api/current',
       watch             : false,
       log_date_format   : 'YYYY-MM-DD HH:mm Z',
       log_file          : '../persist/logs/combined.outerr.log',
@@ -27,9 +27,6 @@ module.exports = {
       env_development: {
         NODE_ENV: 'development'
       },
-      env_test: {
-        NODE_ENV: 'test'
-      }
     },
   ],
 };

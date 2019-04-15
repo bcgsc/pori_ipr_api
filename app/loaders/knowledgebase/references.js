@@ -49,7 +49,8 @@ module.exports = async (dir, options) => {
     entry.ref_id = entry.id; // Move id to ref_id;
     entry.type = (!entry.type) ? null : entry.type;
     if (typeof entry.sample_size === 'string') {
-      entry.sample_size = (parseInt(entry.sample_size, 10)) ? parseInt(entry.sample_size, 10) : null;
+      const sampleSize = parseInt(entry.sample_size, 10);
+      entry.sample_size = Number.isNaN(sampleSize) ? null : sampleSize;
     }
 
     delete entry.id;

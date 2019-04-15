@@ -48,8 +48,8 @@ module.exports = sequelize => sequelize.define('history_tag', {
     },
   },
 }, {
+  tableName: 'pog_analysis_reports_history_tags',
   // Automatically create createdAt
   createdAt: 'createdAt',
   updatedAt: false,
-  tableName: 'pog_analysis_reports_history_tags',
 });

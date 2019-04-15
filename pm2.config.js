@@ -9,7 +9,7 @@ module.exports = {
     {
       name              : 'IPR-API',
       script            : 'bin/www',
-      cwd               : '/var/www/ipr/api/production/current',
+      cwd               : '/var/www/ipr/api/current',
       watch             : false,
       log_date_format   : 'YYYY-MM-DD HH:mm Z',
       log_file          : '../persist/logs/combined.outerr.log',
@@ -33,7 +33,7 @@ module.exports = {
     {
       name              : 'IPR-API-syncWorker',
       script            : 'bin/syncWorker',
-      cwd               : '/var/www/ipr/api/production/current',
+      cwd               : '/var/www/ipr/api/current',
       watch             : false,
       log_date_format   : 'YYYY-MM-DD HH:mm Z',
       log_file          : '../persist/logs/sync.combined.outerr.log',
@@ -51,9 +51,6 @@ module.exports = {
       env_development: {
         NODE_ENV: 'development'
       },
-      env_test: {
-        NODE_ENV: 'test'
-      }
     }
   ],
 };
