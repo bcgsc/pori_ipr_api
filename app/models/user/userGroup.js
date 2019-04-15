@@ -36,7 +36,7 @@ module.exports = sequelize => sequelize.define('userGroup', {
         exclude: ['deletedAt', 'id', 'owner_id'],
       },
       include: [
-        {as: 'owner', model: sequelize.models.user.scope('public')},
+        {model: sequelize.models.user.scope('public'), as: 'owner'},
       ],
     },
   },

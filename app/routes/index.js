@@ -37,9 +37,14 @@ class Routing extends RouterInterface {
       };
   
   
-      this.io.on('connect', (socket) => {
+      this.io.on('connect', async (socket) => {
         let auth = new SocketAuth(socket, this.io);
-        auth.challenge();
+        try {
+          await auth.challenge();
+          console.log(`Socket connected ${socket.id}`);
+        } catch (error) {
+          console.error(`Challenge falied with this error: ${error}`);
+        }
       });
       
       this.io.on('disconnect', (socket) => {
@@ -137,11 +142,14 @@ class Routing extends RouterInterface {
             };
 
 
-            this.io.on('connect', (socket) => {
+            this.io.on('connect', async (socket) => {
                 const auth = new SocketAuth(socket, this.io);
-                auth.challenge();
-
-                console.log('Socket connected', socket.id);
+                try {
+                    await auth.challenge();
+                    console.log(`Socket connected ${socket.id}`);
+                } catch (error) {
+                    console.error(`Challenge failed with this error: ${error}`);
+                }
             });
 
             this.io.on('disconnect', (socket) => {

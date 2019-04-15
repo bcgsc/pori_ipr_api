@@ -64,8 +64,8 @@ module.exports = sequelize => sequelize.define('pog_analysis_reports_history', {
     allowNull: true,
   },
 }, {
+  tableName: 'pog_analysis_reports_histories',
   // Automatically create createdAt
   createdAt: 'createdAt',
   updatedAt: false,
-  tableName: 'pog_analysis_reports_histories',
 });

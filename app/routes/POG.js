@@ -82,7 +82,7 @@ router.route('/:POG')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.isPog();
+    access.isPog = true;
     if (access.check() === false) return;
 
     res.json(req.POG);
@@ -90,8 +90,8 @@ router.route('/:POG')
   .put(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.isPog();
-    access.pogEdit('analyst', 'reviewer', 'admin', 'superUser', 'Projects');
+    access.isPog = true;
+    access.pogEdit = ['analyst', 'reviewer', 'admin', 'superUser', 'Projects'];
     if (access.check() === false) return;
 
     // Update POG
