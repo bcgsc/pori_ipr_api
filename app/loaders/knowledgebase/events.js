@@ -37,7 +37,8 @@ module.exports = async (dir, options) => {
   const file = options.events;
 
   if (!file) {
-    throw new Error('No events filename specified');
+    logger.error(`No events file specified in options. Directory of file ${dir}`);
+    throw new Error(`No events file specified in options. Directory of file ${dir}`);
   }
 
   // Read in event entries
