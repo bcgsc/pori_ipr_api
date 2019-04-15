@@ -20,7 +20,7 @@ let baseDir;
 const parseCnvFile = async (report, cnvFile, cnvVariant) => {
   // Check that the provided alterationType is valid according to the schema
   if (!db.models.cnv.rawAttributes.cnvVariant.values.includes(cnvVariant)) {
-    throw new Error(`Invalid MutationType. Given: ${cnvVariant}`);
+    throw new Error(`Invalid cnvVariant. Given: ${cnvVariant}`);
   }
 
   // First parse in therapeutic
