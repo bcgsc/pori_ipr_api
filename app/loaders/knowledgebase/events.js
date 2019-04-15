@@ -1,5 +1,4 @@
-
-const dl = require('datalib');
+const datalib = require('datalib');
 const db = require('../../models');
 
 const {logger} = process;
@@ -42,7 +41,7 @@ module.exports = async (dir, options) => {
   }
 
   // Read in event entries
-  const entries = dl.tsv(`${dir}/${file}`);
+  const entries = datalib.tsv(`${dir}/${file}`);
   entries.forEach((entry, index) => {
     // Ignore deleted entries.
     if (entry.status === 'RESOLVED-CAN-DELETE') {
