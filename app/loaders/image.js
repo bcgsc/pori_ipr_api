@@ -1,11 +1,17 @@
-// Dependencies
+const promisfy = require('util').promisify;
 const fs = require('fs');
 const glob = require('glob');
+const im = require('imagemagick');
 const {spawn, execSync} = require('child_process');
 const db = require('../models');
 const images = require('../../config/images.json');
 
 const {logger} = process;
+
+
+const imageIdentify = promisfy(im.identify);
+
+const MAX_SUBPLOT_IMAGE_WIDTH = 600;
 
 // Image Path
 let imagePath;
@@ -74,7 +80,21 @@ const processSubtypePlotImages = async (report, img) => {
   const imageString = filename.replace(/\.[^/.]+$/, '');
 
   // pediatric subtype plots are sized similarly to expression charts - all others are normal subtype plot size
-  const imageSize = imageString.toLowerCase().startsWith('ped') ? '1000x900' : '600x375';
+  let imageSize;
+  if (imageString.toLowerCase().startsWith('ped')) {
+    imageSize = '1000x900';
+  } else {
+    // Get height and width of image and store at 25% of those values
+    const {height, width} = await imageIdentify(img);
+
+    if (width > MAX_SUBPLOT_IMAGE_WIDTH) {
+      const ratio = width / MAX_SUBPLOT_IMAGE_WIDTH;
+      const newHeight = Math.round(height / ratio);
+      imageSize = `${MAX_SUBPLOT_IMAGE_WIDTH}x${newHeight}`;
+    } else {
+      imageSize = `${width}x${height}`;
+    }
+  }
 
   const imgData = execSync(`convert "${img}" -resize ${imageSize} PNG:- | base64`);
 
