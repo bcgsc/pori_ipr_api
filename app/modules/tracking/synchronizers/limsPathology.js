@@ -35,7 +35,6 @@ class LimsPathologySync {
     this.pogs = {};               // Processed POGs from LIMS
     this.diseaseLibraries = [];   // Libraries that need resolution from LIMS Library API
     this.user = null;             // Sync User
-    //this.maxPathWindow = options.maxPathWindow || (90 * 86400); // (90 Days) Max number of seconds to wait between creation of tracking and biopsy event (used to diff multiple biopsies)
   }
   
   /**
@@ -327,12 +326,6 @@ class LimsPathologySync {
               let normal = _.find(lims_libs, {type: 'normal'});
               let tumour = _.find(lims_libs, {type: 'tumour'});
               let transcriptome = _.find(lims_libs, {type: 'transcriptome'});
-              
-              // Check that the biopsy overlap window is respected
-              // if(Math.abs(moment(tracking_analysis.createdAt).unix() - moment(lims_biopsy_date).unix()) > this.maxPathWindow) {
-              //   logger.info('Tracking event ' + pogid + ' ' + tracking_analysis.task.name + ' (' + tracking_analysis.clinical_biopsy + ') has a LIMS biopsy event out of the acceptable max pathology waiting window.');
-              //   return;
-              // }
               
               // Check for other normals if one is not in this biopsy date.
               if(!normal) {
