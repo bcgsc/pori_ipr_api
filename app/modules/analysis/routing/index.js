@@ -14,6 +14,9 @@ const {logger} = process;
 const Patient = require('../../../libs/patient/patient.library');
 const analysisMiddleware = require('../../../middleware/analysis');
 
+const DEFAULT_PAGE_LIMIT = 25;
+const DEFAULT_PAGE_OFFSET = 0;
+
 
 /**
  * Create and bind routes for Tracking
@@ -34,7 +37,7 @@ class TrackingRouter extends RoutingInterface {
     this.comparators();
     // Base Biopsy Endpoints
     this.registerResource('/')
-      .get((req, res) => {
+      .get(async (req, res) => {
         const opts = {
           order: [['createdAt', 'DESC']],
           include: [
@@ -42,7 +45,8 @@ class TrackingRouter extends RoutingInterface {
           ],
           where: {},
         };
-        const pog_include = {
+
+        const pogInclude = {
           as: 'pog',
           model: db.models.POG,
           where: {},
@@ -55,283 +59,331 @@ class TrackingRouter extends RoutingInterface {
             },
           ],
         };
-        if (req.query.search) opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%`};
 
-        const project_include = {
+        if (req.query.search) {
+          opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%`};
+        }
+
+        const projectInclude = {
           as: 'projects',
           model: db.models.project,
           attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']},
           where: {},
         };
+
         if (req.query.project) {
-          project_include.where = {name: req.query.project};
+          projectInclude.where = {name: req.query.project};
         }
-        pog_include.include.push(project_include);
-        opts.include.push(pog_include);
-        // Execute Query
-        db.models.pog_analysis.findAndCountAll(opts)
-          .then((result) => {
-            let rows = result.rows;
 
-            // Need to take care of limits and offsets outside of query to support natural sorting
-            if (req.query.paginated) {
-              const limit = parseInt(req.query.limit, 10) || 25;
-              const offset = parseInt(req.query.offset, 10) || 0;
+        pogInclude.include.push(projectInclude);
+        opts.include.push(pogInclude);
 
-              const analysis = result.rows;
+        let pogAnalyses;
+        try {
+          pogAnalyses = await db.models.pog_analysis.findAndCountAll(opts);
+        } catch (error) {
+          logger.error(`Error while trying to find all pog analyses ${error}`);
+          return res.status(500).json({message: 'Error while trying to find all pog analyses'});
+        }
 
-              // Reverse natural sort by POGID
-              analysis.sort((a, b) => {
-                return b.pog.POGID.localeCompare(a.pog.POGID, undefined, {numeric: true, sensitivity: 'base'});
-              });
+        //??? Might need to add null check here
 
-              // apply limit and offset to results
-              const start = offset;
-              const finish = offset + limit;
-              rows = analysis.slice(start, finish);
-            }
+        let {rows, count} = pogAnalyses;
 
-            res.json({total: result.count, analysis: rows});
-          })
-          .catch((err) => {
-            console.log(err);
-            res.status(500).json({message: 'Unable to fulfill the request for biopsies/analyses'});
+        // Need to take care of limits and offsets outside of query to support natural sorting
+        if (req.query.paginated) {
+          const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
+          const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
+
+          // Reverse natural sort by POGID
+          rows.sort((a, b) => {
+            return b.pog.POGID.localeCompare(a.pog.POGID, undefined, {numeric: true, sensitivity: 'base'});
           });
+
+          // apply limit and offset to results
+          const start = offset;
+          const finish = offset + limit;
+          rows = rows.slice(start, finish);
+        }
+
+        return res.json({total: count, analysis: rows});
       })
+
       // Add Biopsy/Analysis entry
-      .post((req, res) => {
-        // Gather and verify information
-        const analysis = {};
-        let POG;
-        const validation_err = [];
+      .post(async (req, res) => {
+        const validationErr = [];
+
         // Require Fields
         if (!req.body.POGID) {
-          validation_err.push('A valid POGID is required');
+          validationErr.push('A valid POGID is required');
         }
         if (!req.body.clinical_biopsy) {
-          validation_err.push('A clinical biopsy value is required');
+          validationErr.push('A clinical biopsy value is required');
         }
         if (!req.body.disease) {
-          validation_err.push('A valid disease type is required');
+          validationErr.push('A valid disease type is required');
         }
         if (!req.body.threeLetterCode || req.body.threeLetterCode.trim().length !== 3) {
-          validation_err.push('A valid cancer group (three letter code) is required');
+          validationErr.push('A valid cancer group (three letter code) is required');
         }
         if (!req.body.biopsy_date) {
-          validation_err.push('A valid biopsy date is required');
+          validationErr.push('A valid biopsy date is required');
         }
         if (req.body.physician.length < 1) {
-          validation_err.push('At least one physician is required');
+          validationErr.push('At least one physician is required');
         }
-        if (validation_err.length > 0) {
-          res.status(400).json({message: 'Invalid inputs supplied', cause: validation_err});
-          return;
+        if (validationErr.length > 0) {
+          return res.status(400).json({message: 'Invalid inputs supplied', cause: validationErr});
         }
+
         const pogFields = {
           alternate_identifier: req.body.alternate_identifier,
           age_of_consent: req.body.age_of_consent,
         };
 
-        Patient.retrieveOrCreate(req.body.POGID, req.body.project, pogFields)
-          .then((pog) => {
-            POG = pog;
-            analysis.pog_id = pog.id;
-            analysis.clinical_biopsy = req.body.clinical_biopsy;
-            analysis.disease = req.body.disease;
-            analysis.threeLetterCode = req.body.threeLetterCode;
-            analysis.biopsy_notes = req.body.biopsy_notes;
-            analysis.biopsy_date = req.body.biopsy_date;
-            analysis.notes = req.body.notes;
-            analysis.physician = req.body.physician;
-            analysis.pediatric_id = req.body.pediatric_id;
-            if (req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
-              analysis.libraries = req.body.libraries;
-            }
-            if (req.body.analysis_biopsy) analysis.analysis_biopsy = req.body.analysis_biopsy;
-            return db.models.pog_analysis.create(analysis);
-          })
-          .then((analysis) => {
-            // Generate Tracking if selected.
-            if (req.body.tracking) {
-              // Get initial tracking state to generate card for
-              db.models.tracking_state_definition.findOne({where: {ordinal: 1}})
-                .then((stateDefinition) => {
-                // Initiate Tracking Generator
-                  const initState = [{
-                    slug: stateDefinition.slug,
-                    status: 'active',
-                  }];
-                  return new Generator(analysis, req.user, initState);
-                })
-                .then((results) => {
-                  analysis = analysis.toJSON();
-                  analysis.pog = POG;
-                  res.json(analysis);
-                })
-                .catch((err) => {
-                  console.log(err);
-                  res.status(400).json(err);
-                });
-            } else {
-              analysis = analysis.toJSON();
-              analysis.pog = POG;
-              res.json(analysis);
-            }
-          })
-          .catch((err) => {
-            res.status(500).json({message: `Something went wrong, we were unable to add the biopsy: ${err.message}`});
-            console.log(err);
-          });
+        let POG;
+        try {
+          POG = await Patient.retrieveOrCreate(req.body.POGID, req.body.project, pogFields);
+        } catch (error) {
+          logger.error(`Error will trying to retrieve/create patient ${error}`);
+          return res.status(500).json({message: 'Error while trying to retrieve/create patient'});
+        }
+
+        const analysis = {
+          pog_id: POG.id,
+          clinical_biopsy: req.body.clinical_biopsy,
+          disease: req.body.disease,
+          threeLetterCode: req.body.threeLetterCode,
+          biopsy_notes: req.body.biopsy_notes,
+          biopsy_date: req.body.biopsy_date,
+          notes: req.body.notes,
+          physician: req.body.physician,
+          pediatric_id: req.body.pediatric_id,
+        };
+
+        if (req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
+          analysis.libraries = req.body.libraries;
+        }
+
+        if (req.body.analysis_biopsy) {
+          analysis.analysis_biopsy = req.body.analysis_biopsy;
+        }
+
+        let pogAnalysis;
+        try {
+          pogAnalysis = await db.models.pog_analysis.create(analysis);
+        } catch (error) {
+          logger.error(`Error while trying to create POG analysis ${error}`);
+          return res.status(500).json({message: 'Error while trying to create POG analysis'});
+        }
+
+        if (req.body.tracking) {
+          let trackingStateDef;
+          // Get initial tracking state to generate card for
+          try {
+            trackingStateDef = await db.models.tracking_state_definition.findOne({where: {ordinal: 1}});
+          } catch (error) {
+            logger.error(`Error while finding tracking state definition ${error}`);
+            return res.status(500).json({message: 'Error while finding tracking state definition'});
+          }
+
+          // Initiate Tracking Generator
+          const initState = [{
+            slug: trackingStateDef.slug,
+            status: 'active',
+          }];
+
+          new Generator(pogAnalysis, req.user, initState);
+        }
+
+        pogAnalysis = pogAnalysis.toJSON();
+        pogAnalysis.pog = POG;
+        return res.json(pogAnalysis);
       });
   }
 
   // Single Entry
   analysis() {
     this.registerResource(`/:analysis(${this.UUIDregex})`)
-      .put((req, res) => {
+      .put(async (req, res) => {
         const analysis = new Analysis(req.analysis);
-        analysis.update(req.body)
-          .then((result) => {
-            res.json(result);
-          })
-          .catch((err) => {
-            console.log(err);
-            res.status(500).json({message: `Failed to update analysis settings: ${err.message}`});
-          });
+        try {
+          const updatedAnalysis = await analysis.update(req.body);
+          return res.json(updatedAnalysis);
+        } catch (error) {
+          logger.error(`Error while updating analysis settings ${error}`);
+          return res.status(500).json({message: `Error while updating analysis settings ${error}`});
+        }
       })
       .get((req, res) => {
-        res.json(req.analysis);
+        return res.json(req.analysis);
       })
       .delete((req, res) => {
-        res.status(420).send();
+        return res.status(420).send();
       });
-    this.registerEndpoint('post', '/bioAppsTest', (req, res) => {
+
+    this.registerEndpoint('post', '/bioAppsTest', async (req, res) => {
       let patient;
       // Get POG
-      db.models.POG.findOne({where: {id: 252}})
-        .then((result) => {
-          patient = result;
-          console.log('Found patient: ', (patient));
-          return db.models.pog_analysis.findOne({where: {pog_id: patient.id, analysis_biopsy: {$not: null}}});
-          // return db.models.pog_analysis.findOne({where: {pog_id: patient.id}});
-        })
-        .then((analysis) => {
-          console.log('Found analysis: ', (analysis));
-          // return analysis;
-          // Time to call BioApps!
-          return $bioapps.updatePatientAnalysis(patient.POGID, analysis);
-        })
-        .then((response) => {
-          res.json(response);
-        })
-        .catch((e) => {
-          let message = '';
-          if (e.statusCode === 500) message = 'BioApps was unable to fulfill the update request sent.';
-          if (e.statusCode === 404) message = `The provided patient (${patient.POGID}) does not exist in BioApps`;
-          res.status(500).json({message});
-          console.log('Failed to update BioApps', e);
-        });
+      try {
+        patient = await db.models.POG.findOne({where: {id: 252}});
+      } catch (error) {
+        logger.error(`There was an error while trying to find a POG ${error}`);
+        return res.status(500).json({message: 'There was an error while trying to find a POG'});
+      }
+
+      logger.info(`Found patient: ${patient}`);
+
+      let analysis;
+      try {
+        analysis = await db.models.pog_analysis.findOne({where: {pog_id: patient.id, analysis_biopsy: {$not: null}}});
+      } catch (error) {
+        logger.error(`There was an error while finding the POG analysis ${error}`);
+        return res.status(500).json({message: 'There was an error while finding the POG analysis'});
+      }
+
+      logger.info(`Found analysis: ${analysis}`);
+
+      try {
+        const updatedPatientAnalysis = await $bioapps.updatePatientAnalysis(patient.POGID, analysis);
+        return res.json(updatedPatientAnalysis);
+      } catch (error) {
+        logger.error(`There was an error while updating the patient analysis ${error}`);
+        return res.status(500).json({message: 'There was an error while updating the patient analysis'});
+      }
     });
-    this.registerEndpoint('get', '/backfillComparators', (req, res) => {
-      let anlys;
-      db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {$not: null}}})
-        .then((analyses) => {
-          anlys = analyses;
-          console.log(`Found ${analyses.length} entries`);
-          // create promise array with request for data
-          return Promise.all(_.map(analyses, (a) => {
-            return $bioapps.patient(a.pog.POGID);
-          }));
-        })
-        .then((bioAppsResults) => {
-          const updates = [];
-          let source;
-          _.forEach(bioAppsResults, (p) => {
-            if (p.length === 0) return;
-            p = p[0]; // Remove array wrapper
-            let source_analysis_setting = null;
-            const update = {
-              data: {
-                comparator_disease: {},
-                comparator_normal: {},
-              },
-              where: {},
-            };
-            if (p.sources.length < 1) {
-              console.log('No sources for', p.id);
-              return;
-            }
-            const pogid = p.sources[0].participant_study_identifier;
-            let analysis;
-            _.forEach(anlys, (a) => {
-              if (a.pog.POGID === pogid) analysis = a;
-            });
-            if (!analysis) {
-              console.log('Failed to find an analysis & biosy for', p.id);
-              return;
-            }
-            // Pick the sources we're looking for.
-            _.forEach(p.sources, (s) => {
-              const search = _.find(s.libraries, {name: analysis.libraries.tumour});
-              if (search) source = s;
-            });
-            // Check if source was found. If not, move to next entry.
-            if (!source) {
-              logger.error(`Unable to find source for ${p.id}`);
-              return;
-            }
-            if (source.source_analysis_settings.length === 0) return;
-            try {
-              source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'data_version');
-              source_analysis_setting = _.last(source.source_analysis_settings);
 
-              // With a source Found, time to build the update for this case;
-              update.data.analysis_biopsy = 'biop'.concat(source_analysis_setting.biopsy_number);
-              update.data.bioapps_source_id = source.id;
-              update.data.biopsy_site = source.anatomic_site;
-    
-              // Three Letter Code
-              update.data.threeLetterCode = source_analysis_setting.cancer_group.code;
-            }
-            catch (e) {
-              reject({message: `BioApps source analysis settings missing required details: ${e.message}`});
-            }
+    this.registerEndpoint('get', '/backfillComparators', async (req, res) => {
+      let analyses;
+      try {
+        analyses = await db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {$not: null}}});
+      } catch (error) {
+        logger.error(`There was an error while finding all POG analyses ${error}`);
+        return res.status(500).json({message: 'There was an error while finding all POG analyses'});
+      }
 
-            const parsedSettings = $bioapps.parseSourceSettings(source);
-            
-            update.analysis = analysis;
-            
-            // Compile Disease Comparator
-            update.data.comparator_disease = {
-              analysis: parsedSettings.disease_comparator_analysis,
-              all: parsedSettings.disease_comparators,
-              tumour_type_report: parsedSettings.tumour_type_report,
-              tumour_type_kb: parsedSettings.tumour_type_kb,
-            };
-  
-            update.data.comparator_normal = {
-              normal_primary: parsedSettings.normal_primary,
-              normal_biopsy: parsedSettings.normal_biopsy,
-              gtex_primary: parsedSettings.gtex_primary,
-              gtex_biopsy: parsedSettings.gtex_biopsy,
-            };
-            updates.push(update);
-          });
-          
-          return Promise.all(_.map(updates, (u) => {
-            return db.models.pog_analysis.update(u.data, {where: {ident: u.analysis.ident}});
-          }));
-        })
-        .then((result) => {
-          res.json(result);
-        })
-        .catch((err) => {
-          res.status(500).json({message: `Failed to backfill biopsy data: ${err.message}`});
-          console.log(err);
+      logger.info(`Found ${analyses.length} entries`);
+
+      let bioAppsResults;
+      // create promise array with request for data
+      try {
+        bioAppsResults = await Promise.all(analyses.map((analysis) => {
+          return $bioapps.patient(analysis.pog.POGID);
+        }));
+      } catch (error) {
+        logger.error(`There was an error while retrieving BioApps patient data ${error}`);
+        return res.status(500).json({message: 'There was an error while retrieving BioApps patient data'});
+      }
+
+      const updates = [];
+
+      bioAppsResults.forEach(async (result) => {
+        if (result.length === 0) {
+          logger.error('No BioApps results found');
+          return;
+        }
+        [result] = result; // Remove array wrapper
+
+        const update = {
+          data: {
+            comparator_disease: {},
+            comparator_normal: {},
+          },
+          where: {},
+        };
+
+        if (result.sources.length < 1) {
+          logger.error(`No sources for ${result.id}`);
+          return;
+        }
+
+        const pogid = result.sources[0].participant_study_identifier;
+        const analysis = analyses.find((pogAnalysis) => {
+          return pogAnalysis.pog.POGID === pogid;
         });
+
+        if (!analysis) {
+          logger.error(`Failed to find an analysis & biosy for ${result.id}`);
+          return;
+        }
+
+        let source;
+        // Pick the sources we're looking for.
+        for (const s of result.sources) {
+          const found = _.find(s.libraries, {name: analysis.libraries.tumour});
+          if (found) {
+            source = s;
+            return;
+          }
+        }
+
+        // Check if source was found. If not, move to next entry.
+        if (!source) {
+          logger.error(`Unable to find source for ${result.id}`);
+          return;
+        }
+
+        if (source.source_analysis_settings.length === 0) {
+          logger.error('No analysis settings for source');
+          return;
+        }
+
+        let sourceAnalysisSetting;
+        try {
+          source.source_analysis_settings = _.sortBy(source.source_analysis_settings, 'data_version');
+          sourceAnalysisSetting = _.last(source.source_analysis_settings);
+
+          // With a source Found, time to build the update for this case;
+          update.data.analysis_biopsy = `biop${sourceAnalysisSetting.biopsy_number}`;
+          update.data.bioapps_source_id = source.id;
+          update.data.biopsy_site = source.anatomic_site;
+
+          // Three Letter Code
+          update.data.threeLetterCode = sourceAnalysisSetting.cancer_group.code;
+        } catch (error) {
+          logger.error(`BioApps source analysis setting missing required details: ${error}`);
+          throw new Error(`BioApps source analysis settings missing required details: ${error.message}`);
+        }
+
+        let parsedSettings;
+        try {
+          parsedSettings = await $bioapps.parseSourceSettings(source);
+        } catch (error) {
+          logger.error(`There was an error while trying to parse source settings ${error}`);
+          throw new Error(`There was an error while trying to parse source settings ${error}`);
+        }
+
+        update.analysis = analysis;
+
+        // Compile Disease Comparator
+        update.data.comparator_disease = {
+          analysis: parsedSettings.disease_comparator_analysis,
+          all: parsedSettings.disease_comparators,
+          tumour_type_report: parsedSettings.tumour_type_report,
+          tumour_type_kb: parsedSettings.tumour_type_kb,
+        };
+
+        update.data.comparator_normal = {
+          normal_primary: parsedSettings.normal_primary,
+          normal_biopsy: parsedSettings.normal_biopsy,
+          gtex_primary: parsedSettings.gtex_primary,
+          gtex_biopsy: parsedSettings.gtex_biopsy,
+        };
+        updates.push(update);
+      });
+
+      try {
+        const result = await Promise.all(updates.map((update) => {
+          return db.models.pog_analysis.update(update.data, {where: {ident: update.analysis.ident}});
+        }));
+        return res.json(result);
+      } catch (error) {
+        logger.error(`Error while trying to backfill biopsy data ${error}`);
+        return res.status(500).json({message: `Failed to backfill biopsy data: ${error.message}`});
+      }
     });
   }
-  
+
   // Extended Details
   extended() {
     this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
