@@ -145,16 +145,12 @@ class GSMRouter extends RoutingInterface {
       const processedVariants = await Variants.processVariants(report, req.body.rows);
       const rows = await db.models.germline_small_mutation_variant.bulkCreate(processedVariants);
 
-      const output = report.toJSON();
+      const output = _.omit(report.toJSON(),
+        ['id', 'pog_analysis_id', 'biofx_assigned_id', 'deletedAt']);
       output.analysis = analysis.toJSON();
       output.analysis.pog = patient.toJSON();
       output.variants = rows;
       output.biofx_assigned = req.user;
-
-      delete output.id;
-      delete output.pog_analysis_id;
-      delete output.biofx_assigned_id;
-      delete output.deletedAt;
 
       return res.json(output);
     } catch (error) {
