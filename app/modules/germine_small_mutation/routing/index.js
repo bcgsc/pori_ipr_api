@@ -530,11 +530,11 @@ class GSMRouter extends RoutingInterface {
     smallMutations.forEach((value) => {
       // Ensure all required reviews are present on report
       if (_.intersection(req.query.reviews.split(','),
-        _.map(value.reviews, (review) => { return review.type; })).length > req.query.reviews.split(',').length) {
+        value.reviews.map((review) => { return review.type; })).length > req.query.reviews.split(',').length) {
         return;
       }
 
-      const availableVariants = _.filter(value.variants, (variant) => {
+      const availableVariants = value.variants.filter((variant) => {
         return !variant.hidden;
       });
 
