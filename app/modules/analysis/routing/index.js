@@ -16,6 +16,7 @@ const analysisMiddleware = require('../../../middleware/analysis');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
+const DEFAULT_PAGE_LIMIT_2 = 15;
 
 
 /**
@@ -85,8 +86,6 @@ class TrackingRouter extends RoutingInterface {
           logger.error(`Error while trying to find all pog analyses ${error}`);
           return res.status(500).json({message: 'Error while trying to find all pog analyses'});
         }
-
-        //??? Might need to add null check here
 
         let {rows, count} = pogAnalyses;
 
@@ -193,7 +192,12 @@ class TrackingRouter extends RoutingInterface {
             status: 'active',
           }];
 
-          new Generator(pogAnalysis, req.user, initState);
+          try {
+            await new Generator(pogAnalysis, req.user, initState);
+          } catch (error) {
+            logger.error(`Error while initialize tracking entries for biopsy ${error}`);
+            return res.status(500).json({message: 'Error while initialize tracking entries for biopsy'});
+          }
         }
 
         pogAnalysis = pogAnalysis.toJSON();
@@ -387,177 +391,179 @@ class TrackingRouter extends RoutingInterface {
   // Extended Details
   extended() {
     this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
-      let bioAppsPatient = null;
-      const limsIllumina = {};
-      let analysis = null;
-
       const opts = {
-        limit: req.query.limit || 15,
-        offset: req.query.offset || 0,
+        limit: req.query.limit || DEFAULT_PAGE_LIMIT_2,
+        offset: req.query.offset || DEFAULT_PAGE_OFFSET,
         order: [['createdAt', 'DESC']],
         include: [
           {as: 'analysis', model: db.models.analysis_report, separate: true},
+          {as: 'pog', model: db.models.POG.scope('public'), where: {}},
         ],
         where: {ident: req.params.analysisIdent},
       };
 
-      const pogInclude = {as: 'pog', model: db.models.POG.scope('public'), where: {}};
+      let analysis;
+      try {
+        analysis = await db.models.pog_analysis.findOne(opts);
+      } catch (error) {
+        logger.error(`Error while finding POG analysis ${error}`);
+        return res.status(500).json({message: 'Error while finding POG analysis'});
+      }
 
-      opts.include.push(pogInclude);
-
-      let pogAnalysis;
       let patient;
       try {
-        pogAnalysis = await db.models.pog_analysis.findOne(opts);
         patient = await $bioapps.patient(analysis.pog.POGID);
-        if (patient.length === 0) {
-          return res.status(404).json({message: 'Failed to find patient record in BioApps for unknown reasons.'});
-        }
-        bioAppsPatient = patient[0];
-        const result = await $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
-        if (result.length === 0) {
-          return res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons.'});
-        }
       } catch (error) {
-        //
+        logger.error(`Error while trying to get BioApps patient ${error}`);
+        return res.status(500).json({message: 'Error while trying to get BioApps patient'});
       }
-      //Working though below query!!!
-      // Execute Query
-      db.models.pog_analysis.findOne(opts)
-        .then((result) => {
-          analysis = result;
-        })
-        .then(() => {
-          return $bioapps.patient(analysis.pog.POGID);
-        })
-        .then((result) => {
-          if (result.length === 0) {
-            res.status(404).json({message: 'Failed to find patient record in BioApps for unknown reasons.'});
-            return;
-          }
-          bioAppsPatient = result[0];
-        })
-        .then(() => {
-          return $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
-        })
-        .then((result) => {
-          if (result.length === 0) {
-            res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons.'});
-            return;
-          }
-          // Loop over lanes
-          _.forEach(result.results, (row) => {
-            let tumour = null;
-            let rna = null;
-            let pool = null;
-            
-            // Multiplex library
-            if (row.multiplex_libraries.length > 0) {
-              if (row.multiplex_libraries.indexOf(analysis.libraries.tumour) > -1) pool = tumour = true;
-              if (row.multiplex_libraries.indexOf(analysis.libraries.transcriptome) > -1) pool = rna = true;
-            }
-            
-            // Non-multiplex
-            if (row.multiplex_libraries.length === 0) {
-              if (row.library === analysis.libraries.tumour) tumour = true;
-              if (row.library === analysis.libraries.transcriptome) rna = true;
-            }
-            
-            if (tumour) {
-              if (analysis.libraries.tumour in limsIllumina) limsIllumina[analysis.libraries.tumour].lanes++;
-              if (!(analysis.libraries.tumour in limsIllumina)) limsIllumina[analysis.libraries.tumour] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
-            }
-            
-            if (rna) {
-              if (analysis.libraries.transcriptome in limsIllumina) limsIllumina[analysis.libraries.transcriptome].lanes++;
-              if (!(analysis.libraries.transcriptome in limsIllumina)) limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
-            }
-          });
-        })
-        .then(() => {
-          if (Object.keys(limsIllumina).length === 0) {
-            res.status(404).json({message: 'Failed to retrieve LIMS Illumina Run information.'});
-            return;
-          }
-          
-          if (!bioAppsPatient.sources) {
-            res.status(404).json({message: 'Failed to retrieve patient record for BioApps with sources listed.'});
-            return;
-          }
-        
-          // Get Source
-          // Find diseased sources
-          const sources = _.filter(bioAppsPatient.sources, {pathology: 'Diseased'});
-          if (!sources) {
-            res.status(404).json({message: 'Failed to find a BioApps record with disease source identified'});
-            return;
-          }
 
-          // Filter for source that has a matching analysis biopsy
-          const biopsyRegex = '([a-z]+)([0-9]+)';
-          // splitting analysis biopsy into sample type and biopsy number
-          const analysisBiopsy = analysis.analysis_biopsy.match(biopsyRegex);
-          let source = null;
-          let bioappsSources = '';
-          _.forEach(sources, (biospySource) => { // checking each source for matching biopsy
-            const sourceAnalysisSettings = biospySource.source_analysis_settings;
-            bioappsSources += `${sourceAnalysisSettings.sample_type} and ${sourceAnalysisSettings.biopsy_number}, `;
-            const sourceCheck = _.find(sourceAnalysisSettings, {
-              sample_type: analysisBiopsy[1], biopsy_number: parseInt(analysisBiopsy[2], 10),
-            });
-            if (sourceCheck) {
-              source = biospySource;
-              return false; // must be false to exit Lodash forEach
-            }
-          });
+      if (!patient || patient.length === 0) {
+        logger.error('Failed to find patient record in BioApps for unknown reasons');
+        return res.status(404).json({message: 'Failed to find patient record in BioApps for unknown reasons'});
+      }
 
-          if (!source) {
-            res.status(404).json({
-              message: `Searched Bioapps for sample_type: ${analysisBiopsy[1]} and biopsy_number: ${parseInt(analysisBiopsy[2], 10)} but found ${bioappsSources}`,
-            });
-            return;
+      const [bioAppsPatient] = patient;
+
+      let illuminaRun;
+      try {
+        illuminaRun = await $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
+      } catch (error) {
+        logger.error(`Error while finding Illumina Run records in LIMS ${error}`);
+        return res.status(500).json({message: 'Error while finding Illumina Run records in LIMS'});
+      }
+
+      if (!illuminaRun || illuminaRun.length === 0) {
+        logger.error('Failed to find Illumina Run records in LIMS for unknown reasons');
+        return res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons'});
+      }
+
+      const limsIllumina = {};
+      // Loop over lanes
+      _.forEach(illuminaRun.results, (row) => {
+        let tumour = null;
+        let rna = null;
+        let pool = null;
+
+        // Multiplex library
+        if (row.multiplex_libraries.length > 0) {
+          if (row.multiplex_libraries.includes(analysis.libraries.tumour)) {
+            pool = tumour = true;
           }
-
-          // get the latest version of analysis settings for the source
-          const analysis_settings = _.last(_.orderBy(source.source_analysis_settings, 'data_version'));
-
-          if (!analysis_settings) {
-            res.status(404).json({message: 'Failed to find a BioApps record with analysis settings'});
-            return;
+          if (row.multiplex_libraries.includes(analysis.libraries.transcriptome)) {
+            pool = rna = true;
           }
-          
-          // Map to variables
-          const response = {
-            patient: analysis.pog.POGID,
-            sex: source.sex,
-            age: source.stage,
-            threeLetterCode: analysis.threeLetterCode,
-            lib_normal: analysis.libraries.normal,
-            lib_tumour: analysis.libraries.tumour,
-            pool_tumour: limsIllumina[analysis.libraries.tumour].pool,
-            lib_rna: analysis.libraries.transcriptome,
-            pool_rna: limsIllumina[analysis.libraries.transcriptome].pool,
-            disease: analysis.disease,
-            biopsy_notes: analysis.biopsy_notes,
-            biop: analysis_settings.sample_type + analysis_settings.biopsy_number,
-            num_lanes_rna: limsIllumina[analysis.libraries.transcriptome].lanes,
-            num_lanes_tumour: limsIllumina[analysis.libraries.tumour].lanes,
-            sequencer_rna: limsIllumina[analysis.libraries.transcriptome].sequencer,
-            sequencer_tumour: limsIllumina[analysis.libraries.tumour].sequencer,
-            priority: analysis.priority,
-            biofxician: null,
-            analysis_due: analysis.date_analysis,
-          };
-      
-          res.json(response);
-        })
-        .catch((err) => {
-          console.log('Error', err);
-          res.status(500).json({message: 'Failed to query extended details'});
+        }
+
+        // Non-multiplex
+        if (row.multiplex_libraries.length === 0) {
+          if (row.library === analysis.libraries.tumour) {
+            tumour = true;
+          }
+          if (row.library === analysis.libraries.transcriptome) {
+            rna = true;
+          }
+        }
+
+        if (tumour) {
+          if (analysis.libraries.tumour in limsIllumina) {
+            limsIllumina[analysis.libraries.tumour].lanes++;
+          } else {
+            limsIllumina[analysis.libraries.tumour] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
+          }
+        }
+
+        if (rna) {
+          if (analysis.libraries.transcriptome in limsIllumina) {
+            limsIllumina[analysis.libraries.transcriptome].lanes++;
+          } else {
+            limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
+          }
+        }
+      });
+
+      if (Object.keys(limsIllumina).length === 0) {
+        logger.error('Failed to retrieve LIMS Illumina Run information');
+        return res.status(404).json({message: 'Failed to retrieve LIMS Illumina Run information'});
+      }
+
+      if (!bioAppsPatient.sources) {
+        logger.error('Failed to retrieve patient record for BioApps with sources listed');
+        return res.status(404).json({message: 'Failed to retrieve patient record for BioApps with sources listed'});
+      }
+
+      // Get Source
+      // Find diseased sources
+      const sources = _.filter(bioAppsPatient.sources, {pathology: 'Diseased'});
+
+      if (!sources) {
+        logger.error('Failed to find a BioApps record with disease source identified');
+        return res.status(404).json({message: 'Failed to find a BioApps record with disease source identified'});
+      }
+
+      // Filter for source that has a matching analysis biopsy
+      const biopsyRegex = '([a-z]+)([0-9]+)';
+      // splitting analysis biopsy into sample type and biopsy number
+      const analysisBiopsy = analysis.analysis_biopsy.match(biopsyRegex);
+      let source = null;
+      let bioappsSources = '';
+
+      _.forEach(sources, (biospySource) => { // checking each source for matching biopsy
+        const sourceAnalysisSettings = biospySource.source_analysis_settings;
+        bioappsSources += `${sourceAnalysisSettings.sample_type} and ${sourceAnalysisSettings.biopsy_number}, `;
+
+        const sourceCheck = _.find(sourceAnalysisSettings, {
+          sample_type: analysisBiopsy[1], biopsy_number: parseInt(analysisBiopsy[2], 10),
         });
+
+        if (sourceCheck) {
+          source = biospySource;
+          return false; // must be false to exit Lodash forEach
+        }
+      });
+
+      if (!source) {
+        logger.error(`Searched Bioapps for sample_type: ${analysisBiopsy[1]} and biopsy_number: ${parseInt(analysisBiopsy[2], 10)} but found ${bioappsSources}`);
+        return res.status(404).json({
+          message: `Searched Bioapps for sample_type: ${analysisBiopsy[1]} and biopsy_number: ${parseInt(analysisBiopsy[2], 10)} but found ${bioappsSources}`,
+        });
+      }
+
+      // get the latest version of analysis settings for the source
+      const analysisSettings = _.last(_.orderBy(source.source_analysis_settings, 'data_version'));
+
+      if (!analysisSettings) {
+        logger.error('Failed to find a BioApps record with analysis settings');
+        return res.status(404).json({message: 'Failed to find a BioApps record with analysis settings'});
+      }
+
+      // Map to variables
+      const response = {
+        patient: analysis.pog.POGID,
+        sex: source.sex,
+        age: source.stage,
+        threeLetterCode: analysis.threeLetterCode,
+        lib_normal: analysis.libraries.normal,
+        lib_tumour: analysis.libraries.tumour,
+        pool_tumour: limsIllumina[analysis.libraries.tumour].pool,
+        lib_rna: analysis.libraries.transcriptome,
+        pool_rna: limsIllumina[analysis.libraries.transcriptome].pool,
+        disease: analysis.disease,
+        biopsy_notes: analysis.biopsy_notes,
+        biop: `${analysisSettings.sample_type}${analysisSettings.biopsy_number}`,
+        num_lanes_rna: limsIllumina[analysis.libraries.transcriptome].lanes,
+        num_lanes_tumour: limsIllumina[analysis.libraries.tumour].lanes,
+        sequencer_rna: limsIllumina[analysis.libraries.transcriptome].sequencer,
+        sequencer_tumour: limsIllumina[analysis.libraries.tumour].sequencer,
+        priority: analysis.priority,
+        biofxician: null,
+        analysis_due: analysis.date_analysis,
+      };
+
+      return res.json(response);
     });
   }
-  
+
   // Comparator Endpoints
   comparators() {
     this.registerEndpoint('get', '/comparators', (req, res) => {
