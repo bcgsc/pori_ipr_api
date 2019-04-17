@@ -71,6 +71,7 @@ class GSMRouter extends RoutingInterface {
    * @property {Array.<object>} req.body.rows - Data rows
    * @property {string} req.body.project - Project name
    * @property {string} req.body.normal_library - The germline/normal library name Eg: P12345
+   * @property {object} req.user - Current user
    *
    * @returns {Promise.<object>} - Returns the created report
    */
@@ -105,9 +106,6 @@ class GSMRouter extends RoutingInterface {
     }
 
     let patient;
-    let analysis;
-    let report;
-
     try {
       // Create or retrieve patient object
       patient = await Patient.retrieveOrCreate(req.params.patient, req.body.project);
@@ -116,6 +114,7 @@ class GSMRouter extends RoutingInterface {
       return res.status(500).json({message: 'There was an error while retrieving patient'});
     }
 
+    let analysis;
     try {
       // Create or Retrieve Biopsy Analysis
       analysis = await Analysis.retrieveOrCreate(patient.id, req.params.analysis, null, {libraries: {normal: req.body.normal_library}});
@@ -132,6 +131,7 @@ class GSMRouter extends RoutingInterface {
       biofx_assigned_id: req.user.id,
     };
 
+    let report;
     try {
       // Create Small Mutation Report object
       report = await db.models.germline_small_mutation.create(reportOpt);
@@ -348,6 +348,8 @@ class GSMRouter extends RoutingInterface {
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
+   * @property {object} req.review - Report review
+   *
    * @returns {Promise.<object>} - Returns 204 status
    */
   async removeReview(req, res) {
@@ -363,10 +365,42 @@ class GSMRouter extends RoutingInterface {
   // Resource endpoints for Variants
   async reportVariants() {
     this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant/:variant')
+      /**
+       * Get an existing variant
+       *
+       * GET /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       * @urlParam {string} variant - Variant id (ident)
+       *
+       * @param {object} req - Express request
+       * @param {object} res - Express response
+       *
+       * @returns {object} - Returns requested variant
+       */
       .get((req, res) => {
         return res.json(req.variant);
       })
-      // Toggle variant hidden status
+
+      /**
+       * Update an existing variant
+       *
+       * PUT /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       * @urlParam {string} variant - Variant id (ident)
+       *
+       * @param {object} req - Express request
+       * @param {object} res - Express response
+       *
+       * @property {object} req.variant - Requested variant
+       *
+       * @returns {object} - Returns updated variant
+       */
       .put(async (req, res) => {
         // Update Variant details
         req.variant.patient_history = req.body.patient_history;
@@ -446,7 +480,7 @@ class GSMRouter extends RoutingInterface {
        * @param {object} req - Express request
        * @param {object} res - Express response
        *
-       * @returns {object} - Returns 204 status
+       * @returns {object} - Returns response
        */
       .delete(async (req, res) => {
         try {
@@ -508,8 +542,8 @@ class GSMRouter extends RoutingInterface {
         return !variant.hidden;
       });
 
-      const parsedVariants = _.map(availableVariants, (variant) => {
-        return _.assign({sample: `${value.analysis.pog.POGID}_${value.analysis.libraries.normal}`}, variant.toJSON());
+      const parsedVariants = availableVariants.map((variant) => {
+        return Object.assign({sample: `${value.analysis.pog.POGID}_${value.analysis.libraries.normal}`}, variant.toJSON());
       });
       variants = variants.concat(parsedVariants);
     });
@@ -524,7 +558,7 @@ class GSMRouter extends RoutingInterface {
 
     sheet.columns = Variants.createHeaders();
 
-    _.forEach(variants, (variant) => {
+    variants.forEach((variant) => {
       sheet.addRow(variant);
     });
 

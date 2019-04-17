@@ -14,6 +14,8 @@ const {logger} = process;
  * @param {object} res - Express response
  * @param {function} next - Callback function
  *
+ * @property {sequelize.DataTypes.UUID} req.query.flash_token - Flash token UUID
+ *
  * @returns {Promise.<number>} - Returns number of destroyed rows by deleting flash token from db
  */
 const tokenAuth = async (req, res, next) => {
@@ -52,10 +54,11 @@ const tokenAuth = async (req, res, next) => {
  *
  * GET /export/batch
  *
- * @urlParam optional {string} reviews - Comma separated list of reviews required for export
- *
  * @param {object} req - Express request
  * @param {object} res - Express response
+ *
+ * @property {object} req.flash_token - Flash token
+ * @property {string?} req.query.reviews - Comma separated list of reviews required for export
  *
  * @returns {Promise.<object>} - Returns response object
  */
@@ -182,7 +185,7 @@ const batchExport = async (req, res) => {
   try {
     reports = reports.filter((report) => {
       // Check if report was exported
-      return !(_.intersection(req.query.reviews.split(','), 
+      return !(_.intersection(req.query.reviews.split(','),
         report.reviews.map((review) => { return review.type; })).length !== req.query.reviews.split(',').length);
     });
     // Mark all exported reports in DB
