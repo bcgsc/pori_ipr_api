@@ -142,7 +142,7 @@ const batchExport = async (req, res) => {
 
       // Watch for hidden rows
       if (!variant.hidden) {
-        return _.assign({sample: `${report.analysis.pog.POGID}_${report.analysis.libraries.normal}`, biopsy: report.analysis.analysis_biopsy, mutation_landscape: ml}, variant.toJSON());
+        return Object.assign({sample: `${report.analysis.pog.POGID}_${report.analysis.libraries.normal}`, biopsy: report.analysis.analysis_biopsy, mutation_landscape: ml}, variant.toJSON());
       }
     });
 
