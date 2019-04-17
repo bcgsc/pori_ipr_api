@@ -5,7 +5,6 @@ let express = require('express'),
   router = express.Router({mergeParams: true}),
   db = require(process.cwd() + '/app/models'),
   _ = require('lodash'),
-  acl = require(process.cwd() + '/app/middleware/acl'),
   loader = require(process.cwd() + '/app/loaders/detailedGenomicAnalysis/alterations'),
   Report = require(process.cwd() + '/app/libs/structures/analysis_report'),
   Acl = require('../middleware/acl');
@@ -22,7 +21,7 @@ router.route('/')
   .get((req,res,next) => {
 
     // Check user permission and filter by project
-    let access = new acl(req, res);
+    let access = new Acl(req, res);
     access.getProjectAccess().then(
       (projectAccess) => {
         let opts = { where: {}};
