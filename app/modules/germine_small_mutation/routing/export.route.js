@@ -120,13 +120,13 @@ const batchExport = async (req, res) => {
   reports.forEach((report) => {
     // Ensure all required reviews are present on report
     if (_.intersection(req.query.reviews.split(','),
-      _.map(report.reviews, (review) => { return review.type; })).length !== req.query.reviews.split(',').length) {
+      report.reviews.map((review) => { return review.type; })).length !== req.query.reviews.split(',').length) {
       return;
     }
 
 
     // Add samples name for each variant
-    const parsedVariants = _.map(report.variants, (variant) => {
+    const parsedVariants = report.variants.map((variant) => {
 
       // Find mutation landscape
       const matchingLandscape = landscapes.find((landscape) => {
@@ -135,7 +135,7 @@ const batchExport = async (req, res) => {
 
       // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
       const parseMl = (arr) => {
-        return _.join(_.map(arr, (ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }), '; ');
+        return _.join(arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }), '; ');
       };
 
       const ml = (matchingLandscape) ? parseMl(matchingLandscape.mutationSignature) : 'N/A';
@@ -182,7 +182,8 @@ const batchExport = async (req, res) => {
   try {
     reports = reports.filter((report) => {
       // Check if report was exported
-      return !(_.intersection(req.query.reviews.split(','), _.map(report.reviews, (review) => { return review.type; })).length !== req.query.reviews.split(',').length);
+      return !(_.intersection(req.query.reviews.split(','), 
+        report.reviews.map((review) => { return review.type; })).length !== req.query.reviews.split(',').length);
     });
     // Mark all exported reports in DB
     await Promise.all(reports.map(async (report) => {
