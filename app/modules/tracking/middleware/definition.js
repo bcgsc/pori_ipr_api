@@ -13,12 +13,12 @@ module.exports = async (req, res, next, ident) => {
       limit: 1,
     });
   } catch (error) {
-    logger.error(`Error while finding tracking state definition ${error}`);
+    logger.error(`Error while finding tracking state definition with ident: ${ident} error: ${error}`);
     throw new MiddlewareQueryFailed('Error while finding tracking state definition', req, res, 'failedTrackingStateDefinitionMiddlewareQuery');
   }
 
   if (!trackingStateDef) {
-    logger.error('Unable to find the tracking state definition');
+    logger.error(`Unable to find tracking state definition with ident: ${ident}`);
     throw new MiddlewareNotFound('Unable to find the tracking state definition', req, res, 'trackingStateDefinitionNotFound');
   }
 

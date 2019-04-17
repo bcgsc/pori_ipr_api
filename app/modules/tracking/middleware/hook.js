@@ -18,13 +18,13 @@ module.exports = async (req, res, next, ident) => {
   try {
     trackingHook = await db.models.tracking_hook.findOne(opts);
   } catch (error) {
-    logger.error(`Error while looking up tracking hook ${error}`);
+    logger.error(`Error while looking up tracking hook with ident: ${ident} error: ${error}`);
     throw new MiddlewareQueryFailed('Error while looking up tracking hook', req, res, 'failedTrackingHookMiddlewareQuery');
   }
 
   if (!trackingHook) {
-    logger.error('Unable to find the tracking hook');
-    throw new MiddlewareNotFound('Unable to find the tracking hook', req, res, 'trackingHook');
+    logger.error(`Unable to find tracking hook with ident: ${ident}`);
+    throw new MiddlewareNotFound('Unable to find tracking hook', req, res, 'trackingHook');
   }
 
   req.hook = trackingHook;

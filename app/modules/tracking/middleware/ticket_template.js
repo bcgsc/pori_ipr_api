@@ -26,12 +26,12 @@ module.exports = async (req, res, next, ident) => {
   try {
     trackingTicketTemplate = await db.models.tracking_ticket_template.findOne(opts);
   } catch (error) {
-    logger.error(`Error while finding tracking ticket template ${error}`);
+    logger.error(`Error while finding tracking ticket template with ident: ${ident} error: ${error}`);
     throw new MiddlewareQueryFailed('Error while finding tracking ticket template', req, res, 'failedTrackingTicketTemplateMiddlewareQuery');
   }
 
   if (!trackingTicketTemplate) {
-    logger.error('Unable to find the tracking ticket template');
+    logger.error(`Unable to find tracking ticket template with ident: ${ident}`);
     throw new MiddlewareNotFound('Unable to find the tracking ticket template', req, res, 'trackingTicketTemplate');
   }
 

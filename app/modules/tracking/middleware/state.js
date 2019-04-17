@@ -44,12 +44,12 @@ module.exports = async (req, res, next, ident) => {
   try {
     trackingState = await db.models.tracking_state.findOne(opts);
   } catch (error) {
-    logger.error(`Error while finding tracking state ${error}`);
+    logger.error(`Error while finding tracking state with ident: ${ident} error: ${error}`);
     throw new MiddlewareQueryFailed('Error while finding tracking state', req, res, 'failedTrackingStateMiddlewareQuery');
   }
 
   if (!trackingState) {
-    logger.error('Unable to find the tracking state');
+    logger.error(`Unable to find the tracking state with ident: ${ident}`);
     throw new MiddlewareNotFound('Unable to find the tracking state', req, res, 'trackingState');
   }
 
