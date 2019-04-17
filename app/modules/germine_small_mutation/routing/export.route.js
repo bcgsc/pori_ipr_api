@@ -135,7 +135,7 @@ const batchExport = async (req, res) => {
 
       // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
       const parseMl = (arr) => {
-        return _.join(arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }), '; ');
+        return arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
       };
 
       const ml = (matchingLandscape) ? parseMl(matchingLandscape.mutationSignature) : 'N/A';
