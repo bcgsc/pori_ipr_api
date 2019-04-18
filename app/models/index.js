@@ -7,7 +7,7 @@ let CONFIG = {};
 
 try {
   // iprweb01 dev
-  CONFIG = require(`/var/www/ipr/api/persist/.env.json`);
+  CONFIG = require(`/var/www/ipr/api/persist/.env.json`)[process.env.NODE_ENV];
 } catch (e) {
   console.log('!! DB Config not found - attempting to load local dev .env.json file');
   // Probably running on local dev
