@@ -70,7 +70,7 @@ class Email {
       body: this.body,
     };
 
-    this.htmlBody = pug.renderFile('./templates/email.pug', locals);
+    this.htmlBody = pug.renderFile(`${__dirname}/templates/email.pug`, locals);
 
     const message = {
       from: 'No Reply <ipr@bcgsc.ca>',
