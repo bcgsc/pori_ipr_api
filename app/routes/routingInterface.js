@@ -2,7 +2,7 @@ const express = require('express');
 const MethodNotAllowed = require('./exceptions/MethodNotAllowed');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
+const logger = require('../../lib/log');
 
 /**
  *
