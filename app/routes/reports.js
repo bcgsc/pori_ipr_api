@@ -188,6 +188,13 @@ router.route('/:report')
  */
 router.route('/:report/user')
   .post(async (req, res) => {
+
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error(`User doesn't have correct permissions to add a user binding ${req.user.username}`);
+      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to add a user binding'}});
+    }
+
     if (!req.body.user) {
       return res.status(400).json({error: {message: 'No user provided for binding'}});
     }
@@ -208,6 +215,13 @@ router.route('/:report/user')
     }
   })
   .delete(async (req, res) => {
+
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error(`User doesn't have correct permissions to remove a user binding ${req.user.username}`);
+      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to remove a user binding'}});
+    }
+
     if (!req.body.user) {
       return res.status(400).json({error: {message: 'No user provided for binding'}});
     }
