@@ -285,7 +285,6 @@ class LimsSeqSync {
             if(this.illumina_run_failed_status.indexOf(result.status ) > -1) {
               failed = failed.concat(_.intersection(Object.keys(libraries), result.multiplex_libraries)); // Check in pooled libraries
               failed = failed.concat(_.intersection(Object.keys(libraries), [result.library])); // Check for non-pooled libraries (normal)
-              run_status.failed = true;
             }
   
             if(result.status === 'In Process' || result.status === 'Analyzing') {
@@ -296,6 +295,13 @@ class LimsSeqSync {
           // Filter uniques
           completed = _.uniq(completed);
           failed = _.uniq(failed);
+
+          for (const fail of failed) {
+            if (!completed.includes(fail)) {
+              run_status.failed = true;
+              break;
+            }
+          }
           
           logger.debug('Found ' + completed.length + ' libraries that have completed sequencing');
           
