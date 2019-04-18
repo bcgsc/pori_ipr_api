@@ -34,12 +34,12 @@ module.exports = async (req, res, next, ident) => {
   try {
     pogAnalysis = await db.models.pog_analysis.findOne(opts);
   } catch (error) {
-    logger.error(`Error while trying to find POG analysis ${error}`);
+    logger.error(`Error while trying to find POG analysis ident: ${ident} error: ${error}`);
     return res.status(500).json({error: {message: 'Error when trying to find POG analysis', code: 'analysisMiddlewareQueryFail'}});
   }
   // Nothing found?
   if (!pogAnalysis) {
-    return res.status(404).json({error: {message: 'Unable to find the requested analysis', code: 'analysisMiddlewareLookupFail'}});
+    return res.status(404).json({error: {message: `Unable to find the requested analysis ident: ${ident}`, code: 'analysisMiddlewareLookupFail'}});
   }
   // POG found, next()
   req.analysis = pogAnalysis;
