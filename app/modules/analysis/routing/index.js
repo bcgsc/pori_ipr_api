@@ -448,10 +448,12 @@ class TrackingRouter extends RoutingInterface {
         // Multiplex library
         if (row.multiplex_libraries.length > 0) {
           if (row.multiplex_libraries.includes(analysis.libraries.tumour)) {
-            pool = tumour = true;
+            pool = true;
+            tumour = true;
           }
           if (row.multiplex_libraries.includes(analysis.libraries.transcriptome)) {
-            pool = rna = true;
+            pool = true;
+            rna = true;
           }
         }
 
