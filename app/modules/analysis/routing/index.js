@@ -223,7 +223,7 @@ class TrackingRouter extends RoutingInterface {
         return res.json(req.analysis);
       })
       .delete((req, res) => {
-        return res.status(420).send();
+        return res.status(204).send();
       });
 
     this.registerEndpoint('post', '/bioAppsTest', async (req, res) => {
