@@ -2,9 +2,9 @@ const express = require('express');
 const _ = require('lodash');
 const db = require('../../models');
 const kbVersion = require('../../libs/kbVersionDatum.js');
+const logger = require('../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 /**
  * Build where clause for searching events

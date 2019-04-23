@@ -10,7 +10,6 @@ const API_VERSION = '1.0';
 const express = require('express'); // Call express
 const socketIO = require('socket.io'); // Ready the socket server
 const bodyParser = require('body-parser'); // Body parsing lib
-const fs = require('fs'); // File System access
 const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
@@ -20,7 +19,6 @@ const Routing = require('./app/routes');
 const logger = require('./lib/log'); // Load logging library
 
 const app = express(); // define app using express
-process.logger = logger;
 
 module.exports = (async () => {
   // Setup and store Socket IO in app

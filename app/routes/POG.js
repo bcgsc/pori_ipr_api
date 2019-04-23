@@ -1,12 +1,12 @@
 const express = require('express');
 const db = require('../models');
 const Acl = require('../middleware/acl');
+const logger = require('../../lib/log');
 
 const pogMiddleware = require('../middleware/pog');
 const reportMiddleware = require('../middleware/analysis_report');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 // Register middleware
 router.param('POG', pogMiddleware);

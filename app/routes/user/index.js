@@ -3,9 +3,9 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
+const logger = require('../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 // Route for getting a POG
 router.route('/')

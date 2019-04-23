@@ -1,8 +1,8 @@
 const express = require('express');
 const {execSync} = require('child_process');
+const logger = require('../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 
 // Test python library wrapper

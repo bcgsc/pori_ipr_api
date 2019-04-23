@@ -1,8 +1,8 @@
 const express = require('express');
 const db = require('../../../models');
+const logger = require('../../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 // Register middleware
 
