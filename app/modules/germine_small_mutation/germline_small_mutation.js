@@ -46,7 +46,7 @@ const updateReport = async (report, data) => {
   }
 
   try {
-    const users = await getUpdateUsers(_.values(resolveUsers));
+    const users = await getUpdateUsers(resolveUsers.values());
     if (users.length > 0 && _.find(users, {ident: data.biofx_assigned})) {
       updateData.biofx_assigned_id = _.find(users, {ident: data.biofx_assigned}).id;
     }
