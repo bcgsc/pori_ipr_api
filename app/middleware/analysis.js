@@ -1,7 +1,7 @@
 const validate = require('uuid-validate');
 const db = require('../models');
 
-const {logger} = process;
+const logger = require('../../lib/log');
 
 const ignored = {
   files: ['index.js', 'POG.js'],

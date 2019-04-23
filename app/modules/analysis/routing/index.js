@@ -9,7 +9,7 @@ const $lims = require('../../../api/lims');
 const comparators = require('../../../../database/comparators.json');
 const comparatorsV9 = require('../../../../database/comparators.v9.json');
 
-const {logger} = process;
+const logger = require('../../../../lib/log');
 
 const Patient = require('../../../libs/patient/patient.library');
 const analysisMiddleware = require('../../../middleware/analysis');
