@@ -8,7 +8,7 @@ const acl                 = require(process.cwd() + '/app/middleware/acl');
 const _                   = require('lodash');
 const db                  = require(process.cwd() + '/app/models');
 const RoutingInterface    = require('../../../routes/routingInterface');
-const logger              = process.logger;
+const logger              = require('../../../../lib/log');
 const Excel               = require('exceljs');
 const FastCSV             = require('fast-csv');
 

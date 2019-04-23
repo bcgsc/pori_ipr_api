@@ -1,73 +1,61 @@
-"use strict";
+const express = require('express');
+const $https = require('https');
+const logger = require('../../lib/log');
 
-// app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  moment = require('moment'),
-  _ = require('lodash'),
-  Q = require('q'),
-  $jira = require(process.cwd() + '/app/api/jira'),
-  crypto = require('crypto'),
-  $https = require('https');
+const router = express.Router({mergeParams: true});
 
 // Route for authentication actions
 router.route('/subtask')
-  .post((req,res,next) => {
-
+  .post((req, res) => {
     // Create object structure
-    let body = {
+    const body = {
       fields: {
         parent: {
-          key: req.body.ticket
+          key: req.body.ticket,
         },
         project: {
-          id: 10020 // Sequence Developers
+          id: 10020, // Sequence Developers
         },
         summary: req.body.title,
         issuetype: {
           id: 5, // type 5 is subtask
-          subtask: true
+          subtask: true,
         },
         reporter: {
           key: req.user.username,
-          name: req.user.username
+          name: req.user.username,
         },
         assignee: {
-          name: ""
+          name: '',
         },
         priority: {
-          id: "6" // Medium priority
+          id: '6', // Medium priority
         },
         labels: [
-          "IPR-Client"
+          'IPR-Client',
         ],
-        description: req.body.description + "\n\n---- Automated Notification ----\n Notifying: [~bpierce]",
+        description: `${req.body.description}\n\n---- Automated Notification ----\n Notifying: [~bpierce]`,
         components: [
-          { id: "15950" }
-        ]
-      }
+          {id: '15950'},
+        ],
+      },
     };
 
-    //res.status(400).json({error: {message: "The JIRA authtoken is stale and needs to be refreshed.", code: "JiraAuthStale"}});
-    //return;
-
     // Request options & settings
-    let opts = {
+    const opts = {
       hostname: 'www.bcgsc.ca',
       path: '/jira/rest/api/2/issue',
       port: 443,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': "JSESSIONID="+ req.user.jiraToken
-      }
+        Cookie: `JSESSIONID=${req.user.jiraToken}`,
+      },
     };
 
     // Create Request
-    let jiraRequest = $https.request(opts, (jResult) => {
-
-      let data = ""; // Chunked Data (in case)
+    const jiraRequest = $https.request(opts, (jResult) => {
+      let data = ''; // Chunked Data (in case)
 
       jResult.setEncoding('utf8');
 
@@ -77,35 +65,32 @@ router.route('/subtask')
       });
 
       jResult.on('end', () => {
-
-        if(jResult.statusCode === 401) {
-          return res.status(400).json({error: {message: "The JIRA authtoken is stale and needs to be refreshed.", code: "JiraAuthStale"}});
+        if (jResult.statusCode === 401) {
+          return res.status(400).json({error: {message: 'The JIRA authtoken is stale and needs to be refreshed.', code: 'JiraAuthStale'}});
         }
-        if(jResult.statusCode === 201) {
+        if (jResult.statusCode === 201) {
           return res.set({'Content-Type': 'application/json'}).send(data);
         }
 
-        console.log('=================== UNHANDLED ==============');
-        console.log('JIRA Response has no handler');
-        console.log(jResult, data);
-        return res.status(500).json({error: {message: "Something went wrong, and we're not sure what.", code: "UnhandledJiraResponse"}});
+        logger.info('=================== UNHANDLED ==============');
+        logger.info('JIRA Response has no handler');
+        logger.error(jResult, data);
+        return res.status(500).json({error: {message: 'Something went wrong, and we\'re not sure what.', code: 'UnhandledJiraResponse'}});
       });
-
     });
 
     // Send body
     jiraRequest.write(JSON.stringify(body));
 
     // Catch Errors
-    jiraRequest.on('error', (e) => {
-      console.log('=================== ERROR ==============');
-      console.log('JIRA request error', e);
-      res.status(500).json({error: {message: 'Unable to create the ticket', data: e}});
+    jiraRequest.on('error', (error) => {
+      logger.info('=================== ERROR ==============');
+      logger.error(`JIRA request error ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create the ticket', data: error}});
     });
 
     // End Request
     jiraRequest.end();
-
   });
 
 module.exports = router;

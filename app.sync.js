@@ -36,9 +36,6 @@ const bodyParser    = require('body-parser');   // Body parsing lib
 const colors        = require('colors');        // Console colours
 const fs            = require('fs');            // File System access
 const nconf         = require('nconf').argv().env().file({file: './config/config.json'});
-const logger        = require('./lib/log');       // Load logging library
-
-process.logger = logger;
 
 //const limsPathology = require(process.cwd() + '/app/modules/tracking/syncronizers/limsPathology');
 //const limsSequencing = require(process.cwd() + '/app/modules/tracking/syncronizers/limsSequencing');
