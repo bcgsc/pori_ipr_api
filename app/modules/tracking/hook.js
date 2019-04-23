@@ -2,7 +2,7 @@
 
 const db              = require(`${process.cwd()}/app/models`);
 const _               = require('lodash');
-const logger          = process.logger;
+const logger          = require('../../../lib/log');
 const Email           = require(`${process.cwd()}/app/modules/notification/email`);
 const render          = require('json-templater/string');
 

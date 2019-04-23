@@ -22,7 +22,7 @@ const Task        = require('../task');
 const State       = require('../state');
 
 //let logger        = require('winston'); // Load logging library
-let logger        = process.logger;
+let logger        = require('../../../../lib/log');
 
 logger.info('Starting LIMS Sync');
 

@@ -17,7 +17,7 @@ const moment      = require('moment');
 const Task        = require('../task');
 
 //let logger        = require('winston'); // Load logging library
-let logger        = process.logger;
+let logger        = require('../../../../lib/log');
 
 logger.info('Starting BioApps Sync');
 

@@ -2,7 +2,7 @@
 
 const db          = require(process.cwd() + '/app/models');
 const lodash      = require('lodash');
-const logger      = process.logger;
+const logger      = require('../../../lib/log');
 const p2s         = require(process.cwd() + '/app/libs/pyToSql');
 const _           = require('lodash');
 

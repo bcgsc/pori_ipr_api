@@ -19,7 +19,7 @@ const _           = require('lodash');
 const moment      = require('moment');
 const Task        = require('../task');
 
-let logger        = process.logger;
+let logger        = require('../../../../lib/log');
 
 logger.info('Starting LIMS Sync');
 
