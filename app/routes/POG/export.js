@@ -1,9 +1,9 @@
 const express = require('express');
 const db = require('../../models');
 const ExportDataTables = require('../../exporters/index');
+const logger = require('../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 
 router.route('/all')

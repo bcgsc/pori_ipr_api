@@ -1,10 +1,10 @@
 const express = require('express');
 const db = require('../../../models');
 const versionDatum = require('../../../libs/VersionDatum');
+const logger = require('../../../../lib/log');
 
 const router = express.Router({mergeParams: true});
 const model = db.models.genomicEventsTherapeutic;
-const {logger} = process;
 
 router.param('gene', async (req, res, next, altIdent) => {
   try {

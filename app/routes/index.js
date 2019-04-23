@@ -28,9 +28,9 @@ const GeneViewer = require('../modules/geneViewer/routing');
 const Analysis = require('../modules/analysis/routing');
 const GermlineReports = require('../modules/germine_small_mutation/routing');
 const GermlineReportsExport = require('../modules/germine_small_mutation/routing/export.route');
+const logger = require('../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 class Routing extends RouterInterface {
   /**

@@ -3,7 +3,7 @@ const GeneViewer = require('../geneViewer');
 const reportMiddleware = require('../../../middleware/analysis_report');
 const pogMiddleware = require('../../../middleware/pog');
 
-const {logger} = process;
+const logger = require('../../../../lib/log');
 
 class GeneViewRouter extends RoutingInterface {
   /**

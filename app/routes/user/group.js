@@ -1,9 +1,9 @@
 const express = require('express');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
+const logger = require('../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 
 // Middleware for all group functions

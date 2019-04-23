@@ -7,7 +7,7 @@ const Acl = require('../../middleware/acl');
 const kbControlled = require('../../../config/kbControlled.json');
 const diseaseJSON = require('../../../database/disease.json');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 router.use('/validate', require('./validate'));
 router.use('/genevar', require('./genevar'));

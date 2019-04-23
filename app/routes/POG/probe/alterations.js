@@ -1,9 +1,9 @@
 const express = require('express');
 const db = require('../../../models');
 const versionDatum = require('../../../libs/VersionDatum');
+const logger = require('../../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 router.param('alteration', async (req, res, next, altIdent) => {
   try {

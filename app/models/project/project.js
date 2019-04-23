@@ -1,6 +1,6 @@
 const Sq = require('sequelize');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 module.exports = sequelize => sequelize.define('project', {
   id: {

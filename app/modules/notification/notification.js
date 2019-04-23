@@ -1,6 +1,6 @@
 const db = require('../../models');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 class Notification {
   /**
