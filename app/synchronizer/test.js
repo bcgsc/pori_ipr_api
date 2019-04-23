@@ -12,10 +12,10 @@
 */
 
 const Syncro = require('./synchro'); // Import syncronizer Object
+const logger = require('../../lib/log');
 
 const SYNC_INTERVAL = 10; // number of seconds between syncs
 
-const {logger} = process;
 logger.info('Starting Test Sync class');
 
 /**

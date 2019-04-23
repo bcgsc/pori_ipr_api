@@ -1,51 +1,41 @@
-"use strict";
+const pug = require('pug');
+const RoutingInterface = require('../../../routes/routingInterface');
+const Email = require('../email');
 
-const express             = require('express');
-const acl                 = require(process.cwd() + '/app/middleware/acl');
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const RoutingInterface    = require('../../../routes/routingInterface');
-const AnalysisLib         = require('../../../libs/structures/analysis');
-const POGLib              = require('../../../libs/structures/pog');
-const Email               = require('../email');
-const pug                 = require('pug');
+const logger = require('../../../../lib/log');
 
 /**
  * Create and bind routes for Notifications
  *
  * @type {NotificationRouter}
  */
-module.exports = class NotificationRouter extends RoutingInterface {
-
+class NotificationRouter extends RoutingInterface {
   constructor(io) {
     super();
-
     this.io = io;
 
-    this.registerEndpoint('get', '/test', (req, res, next) => {
-
+    this.registerEndpoint('get', '/test', async (req, res) => {
       // Create new Email
-      let email = new Email({force: true});
+      const email = new Email({force: true});
 
-      email.setRecipient('bpierce@bcgsc.ca').setSubject('This is a test message').setBody('Hello World.\nThis is a multiline text body.').send().then(
-        (result) => {
-          res.json({result: 'Message sent.'});
-        },
-        (err) => {
-          console.log('Unable to send message');
-          console.log(err);
-          res.status(500).json({message: 'Unable to send messages', cause: err});
-        }
-      )
-
+      try {
+        await email.setRecipient('ipr@bcgsc.ca').setSubject('This is a test message')
+          .setBody('Hello World.\nThis is a multiline text body.').send();
+        return res.json({result: 'Message sent.'});
+      } catch (error) {
+        logger.error(`There was an error while trying to send messages ${error}`);
+        return res.status(500).json({message: 'Error while trying to send messages', cause: error});
+      }
     });
 
-    this.registerEndpoint('get', '/render', (req, res, next) => {
-
-      res.send(pug.renderFile(process.cwd() + '/app/modules/notification/templates/email.pug', {body: 'Hello World.\nThis is a multiline text body.', subject: 'This is a test subject'}))
-
+    this.registerEndpoint('get', '/render', async (req, res) => {
+      return res.send(pug.renderFile('../templates/email.pug',
+        {
+          body: 'Hello World.\nThis is a multiline text body.',
+          subject: 'This is a test subject',
+        }));
     });
-
   }
+}
 
-};
+module.exports = NotificationRouter;

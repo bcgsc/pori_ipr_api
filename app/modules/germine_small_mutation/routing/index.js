@@ -13,7 +13,7 @@ const gsmMiddleware = require('../middleware/germline_small_mutation.middleware'
 const reviewMiddleware = require('../middleware/germline_small_mutation_review.middleware');
 const variantMiddleware = require('../middleware/germline_small_mutation_variant.middleware');
 
-const {logger} = process;
+const logger = require('../../../../lib/log');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -25,6 +25,7 @@ class GSMRouter extends RoutingInterface {
    * @type {TrackingRouter}
    * @param {object} io - Socket.io connection
    */
+
   constructor(io) {
     super();
     this.io = io;

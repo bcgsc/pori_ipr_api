@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const db = require('../../models');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Retrieve user entries

@@ -1,48 +1,38 @@
-"use strict";
+const RoutingInterface = require('../../../routes/routingInterface');
+const GeneViewer = require('../geneViewer');
+const reportMiddleware = require('../../../middleware/analysis_report');
+const pogMiddleware = require('../../../middleware/pog');
 
-// app/routes/genomic/detailedGenomicAnalysis.js
-const validator           = require('validator');
-const express             = require('express');
-const router              = express.Router({mergeParams: true});
-const acl                 = require(process.cwd() + '/app/middleware/acl');
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const RoutingInterface    = require('../../../routes/routingInterface');
-const GeneViewer          = require('../geneViewer');
+const logger = require('../../../../lib/log');
 
-
-/**
- * Create and bind routes for Tracking
- *
- * @type {TrackingRouter}
- */
-module.exports = class GeneViewRouter extends RoutingInterface {
-  
+class GeneViewRouter extends RoutingInterface {
+  /**
+   * Create and bind routes for Tracking
+   *
+   * @type {TrackingRouter}
+   *
+   * @param {object} io - Socket.io server
+   */
   constructor(io) {
     super();
-    
     this.io = io;
-   
+
     // Register Middleware
-    this.registerMiddleware('report', require(process.cwd() + '/app/middleware/analysis_report'));
-    this.registerMiddleware('pog', require(process.cwd() + '/app/middleware/pog'));
-    
-    this.registerEndpoint('get', '/:gene', (req, res) => {
-    
-      let viewer = new GeneViewer(req.POG, req.report, req.params.gene);
-      
-      viewer.getAll().then(
-        (result) => {
-          res.json(viewer.results);
-        }
-      ).catch((err) => {
-        console.log('Error', err);
-      });
-    
+    this.registerMiddleware('report', reportMiddleware);
+    this.registerMiddleware('pog', pogMiddleware);
+
+    this.registerEndpoint('get', '/:gene', async (req, res) => {
+      const viewer = new GeneViewer(req.POG, req.report, req.params.gene);
+
+      try {
+        const result = await viewer.getAll();
+        return res.json(result);
+      } catch (error) {
+        logger.error(`There was an error when getting the viewer results ${error}`);
+        return res.status(500).json({error: {message: 'There was an error when getting the viewer results'}});
+      }
     });
-    
-    
   }
-  
-  
-};
+}
+
+module.exports = GeneViewRouter;

@@ -5,7 +5,7 @@ const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Variants = require('../germline_small_mutation_variant');
 
-const {logger} = process;
+const logger = require('../../../../lib/log');
 
 /**
  * Flash Token Authentication and user injection

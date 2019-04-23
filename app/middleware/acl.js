@@ -24,9 +24,11 @@ class ACL {
     this.isPog = false;
     this.authReq = true;
     this.read = ['*'];
-    this.write = ['superUser', 'admin'];
-    this.delete = ['superUser', 'admin'];
-    this.pogEdit = ['analyst', 'reviewer', 'admin'];
+    this.write = ['manager', 'superUser', 'admin'];
+    this.delete = ['manager', 'superUser', 'admin'];
+    this.restrictedPogEdit = ['analyst', 'reviewer', 'bioinformatician'];
+    this.masterPogEdit = ['manager', 'superUser', 'admin'];
+    this.pogEdit = this.restrictedPogEdit.concat(this.masterPogEdit);
   }
 
   // Get project access
@@ -73,10 +75,21 @@ class ACL {
       // Check if this is a write endpoint
       if (['POST', 'PUT', 'DELETE'].includes(this.req.method)
         && (_.intersection(pogRole, this.pogEdit).length > 0
-        || _.intersection(userGroups, this.pogEdit).length > 0)
+          || _.intersection(userGroups, this.pogEdit).length > 0)
       ) {
-        // Does this user have at least 1 pogRole that is allowed to edit?
-        allowed = true;
+        // Get bound user ids from analysis report
+        // *Note: both report user id and request user id need to be of type number
+        const [analysisReport] = this.req.POG.analysis_reports;
+        const boundUserIds = analysisReport.users.reduce((accum, user) => {
+          if (user.user_id) {
+            return accum.add(user.user_id);
+          }
+          return accum;
+        }, new Set());
+
+        if (boundUserIds.has(this.req.user.id) || _.intersection(userGroups, this.masterPogEdit).length > 0) {
+          allowed = true;
+        }
       }
 
       // If read is not set to allow all, run check for pogRole access
