@@ -1,34 +1,18 @@
-"use strict";
+const express = require('express');
+const genevar = require('../../../database/genevar.json');
 
-// app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  _ = require('lodash'),
-  acl = require(process.cwd() + '/app/middleware/acl'),
-  exec = require('child_process').exec;
+const router = express.Router({mergeParams: true});
 
 
 // Test python library wrapper
 router.route('/')
-  .get((req,res) => {
-
-    let data = {};
-
-    // Get Json DB
-    data.entries = require(process.cwd() + '/database/genevar.json');
-
+  .get((req, res) => {
     // Add to GenVar list
-    data.found = _.filter(data.entries, (e) => {
-      if(e.toLowerCase().indexOf(req.query.query.toLowerCase()) > -1) return true;
+    const data = genevar.filter((entry) => {
+      return entry.toLowerCase().includes(req.query.query.toLowerCase());
     });
 
-    res.json(data.found);
-
-    delete data.entries;
-    delete data.found;
-
-
+    return res.json(data);
   });
 
 module.exports = router;
