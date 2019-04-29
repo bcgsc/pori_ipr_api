@@ -1,7 +1,7 @@
 const request = require('request-promise-native');
 const gin = require('../../lib/ginCredentials');
 
-const host = 'https://lims13.bcgsc.ca';
+const host = 'https://lims16.bcgsc.ca';
 const basePath = '/prod/limsapi';
 const path = `${host}${basePath}`;
 const $lims = {};
@@ -29,36 +29,35 @@ $lims.sample = async (pogid) => {
   }
 
   // Create array of POGIDs to search for
-  pogid.forEach((id) => {
-    body.filters.content.push({
+  body.filters.content = pogid.map((id) => {
+    return {
       op: '=',
       content: {
-        field: 'participant_study_id',
+        field: 'participantStudyId',
         value: id,
       },
-    });
+    };
   });
 
   // Make Request
   const credentials = await $lims.getAuthCredentials();
-  const resp = await request({
+  return request({
     method: 'POST',
-    uri: `${path}/sample`,
+    uri: `${path}/biological-metadata/search`,
     gzip: true,
     body,
     json: true,
   }).auth(credentials.username, credentials.password);
-
-  return resp;
 };
 
 /**
  * Get library data from LIMS
  *
- * @param {string|array} libraries - Libraries to get details for
+ * @param {string|array} libraries - Libraries to get details for by library name
+ * @param {string} [field=name] - Field to seach for libraries (i.e originalSourceName)
  * @returns {Promise.<object>} - Returns the JSON parsed body of the resp
  */
-$lims.library = async (libraries) => {
+$lims.library = async (libraries, field = 'name') => {
   if (libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries');
   }
@@ -71,24 +70,23 @@ $lims.library = async (libraries) => {
     filters: {
       op: 'in',
       content: {
-        field: 'name',
+        field,
         value: libraries,
       },
     },
   };
 
   const credentials = await $lims.getAuthCredentials();
-  const resp = await request({
+  return request({
     method: 'POST',
-    uri: `${path}/library`,
+    uri: `${path}/libraries/search`,
     gzip: true,
     body: JSON.stringify(body),
+    json: true,
   }).auth(credentials.username, credentials.password);
-
-  return JSON.parse(resp);
 };
 
-$lims.illuminaRun = async (libraries) => {
+$lims.sequencerRun = async (libraries) => {
 
   if (libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries.');
@@ -101,14 +99,14 @@ $lims.illuminaRun = async (libraries) => {
         {
           op: 'in',
           content: {
-            field: 'library',
+            field: 'libraryName',
             value: libraries,
           },
         },
         {
           op: 'in',
           content: {
-            field: 'multiplex_library',
+            field: 'multiplexLibraryName',
             value: libraries,
           },
         },
@@ -117,14 +115,13 @@ $lims.illuminaRun = async (libraries) => {
   };
 
   const credentials = await $lims.getAuthCredentials();
-  const resp = await request({
+  return request({
     method: 'POST',
-    uri: `${path}/illumina_run`,
+    uri: `${path}/sequencer-runs/search`,
     gzip: true,
     body: JSON.stringify(body),
+    json: true,
   }).auth(credentials.username, credentials.password);
-
-  return JSON.parse(resp);
 };
 
 /**

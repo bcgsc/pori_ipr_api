@@ -371,40 +371,54 @@ module.exports = class TrackingRouter extends RoutingInterface {
           bioAppsPatient = result[0];
         })
         .then(() => {
-          return $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
+          return $lims.sequencerRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
         })
         .then((result) => {
-          if (result.length === 0) {
-            res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons.'});
-            return;
+          if (Object.keys(result).length === 0) {
+            return res.status(404).json({message: 'Failed to find Sequencer Run records in LIMS for unknown reasons.'});
           }
+
           // Loop over lanes
           _.forEach(result.results, (row) => {
             let tumour = null;
             let rna = null;
             let pool = null;
-            
+
             // Multiplex library
-            if (row.multiplex_libraries.length > 0) {
-              if (row.multiplex_libraries.indexOf(analysis.libraries.tumour) > -1) pool = tumour = true;
-              if (row.multiplex_libraries.indexOf(analysis.libraries.transcriptome) > -1) pool = rna = true;
+            if (row.multiplexLibraryNames.length > 0) {
+              if (row.multiplexLibraryNames.includes(analysis.libraries.tumour)) {
+                pool = tumour = true;
+              }
+              if (row.multiplexLibraryNames.includes(analysis.libraries.transcriptome)) {
+                pool = rna = true;
+              }
             }
             
             // Non-multiplex
-            if (row.multiplex_libraries.length === 0) {
-              if (row.library === analysis.libraries.tumour) tumour = true;
-              if (row.library === analysis.libraries.transcriptome) rna = true;
+            if (row.multiplexLibraryNames.length === 0) {
+              if (row.libraryName === analysis.libraries.tumour) {
+                tumour = true;
+              }
+              if (row.libraryName === analysis.libraries.transcriptome) {
+                rna = true;
+              }
             }
             
             if (tumour) {
-              if (analysis.libraries.tumour in limsIllumina) limsIllumina[analysis.libraries.tumour].lanes++;
-              if (!(analysis.libraries.tumour in limsIllumina)) limsIllumina[analysis.libraries.tumour] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
+              if (analysis.libraries.tumour in limsIllumina) {
+                limsIllumina[analysis.libraries.tumour].lanes++;
+              } else {
+                limsIllumina[analysis.libraries.tumour] = {sequencer: row.sequencerName, lanes: 1, pool: (pool) ? row.libraryName : {max: 1}};
+              }
             }
-            
+
             if (rna) {
-              if (analysis.libraries.transcriptome in limsIllumina) limsIllumina[analysis.libraries.transcriptome].lanes++;
-              if (!(analysis.libraries.transcriptome in limsIllumina)) limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
-            } 
+              if (analysis.libraries.transcriptome in limsIllumina) {
+                limsIllumina[analysis.libraries.transcriptome].lanes++;
+              } else {
+                limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencerName, lanes: 1, pool: (pool) ? row.libraryName : {max: 1}};
+              }
+            }
           });
         })
         .then(() => {
