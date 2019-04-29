@@ -18,7 +18,7 @@ const BioAppsSync = require('./BioApps');
 const LIMSPath    = require('./limsPathology');
 const LIMSSeq     = require('./limsSequencing');
 
-let logger        = process.logger;
+let logger        = require('../../../../lib/log');
 
 module.exports = function() {
   
