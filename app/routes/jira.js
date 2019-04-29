@@ -1,8 +1,8 @@
 const express = require('express');
 const $https = require('https');
+const logger = require('../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 // Route for authentication actions
 router.route('/subtask')

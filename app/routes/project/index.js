@@ -2,9 +2,9 @@ const express = require('express');
 const _ = require('lodash');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
+const logger = require('../../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 const ERRORS = Object.freeze({
   AccessForbidden: new Error('403 Access denied'),

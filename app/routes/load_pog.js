@@ -14,9 +14,9 @@ const Analysis = require('../libs/patient/analysis.library');
 
 const GenomicLoader = require('../loaders');
 const ProbeLoader = require('../loaders/probing');
+const logger = require('../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 // Loader config
 const loaderConf = nconf.get('loader');

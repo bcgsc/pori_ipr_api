@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 const db = require('../../models');
 const ACL = require('../../middleware/acl');

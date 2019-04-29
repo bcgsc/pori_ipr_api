@@ -12,7 +12,7 @@ const $lims = require('../../../api/lims');
 
 const comparators = require(`${process.cwd()}/database/comparators.json`);
 const comparators_v9 = require(`${process.cwd()}/database/comparators.v9.json`);
-const logger = process.logger;
+const logger = require('../../../../lib/log');
 
 const Patient = require(`${process.cwd()}/app/libs/patient/patient.library`);
 

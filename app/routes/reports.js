@@ -2,12 +2,12 @@ const express = require('express');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
+const logger = require('../../lib/log');
 
 const pogMiddleware = require('../middleware/pog');
 const reportMiddleware = require('../middleware/analysis_report');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;

@@ -3,9 +3,9 @@ const express = require('express');
 const db = require('../models');
 const HistoryManager = require('../libs/historyManager');
 const pogHandler = require('../middleware/pog');
+const logger = require('../../lib/log');
 
 const router = express.Router({mergeParams: true});
-const {logger} = process;
 
 // Register middleware
 router.param('POG', pogHandler);
