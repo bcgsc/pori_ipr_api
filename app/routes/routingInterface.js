@@ -1,7 +1,5 @@
 const express = require('express');
 const MethodNotAllowed = require('./exceptions/MethodNotAllowed');
-
-const router = express.Router({mergeParams: true});
 const logger = require('../../lib/log');
 
 /**
@@ -20,7 +18,7 @@ class RoutingInterface {
    *
    */
   constructor() {
-    this.router = router;
+    this.router = express.Router({mergeParams: true});
     this.root = null;
     this.allowedMethods = ['get', 'put', 'post', 'delete', 'patch'];
 
