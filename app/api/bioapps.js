@@ -2,11 +2,11 @@ const request = require('request-promise-native');
 const moment = require('moment');
 const _ = require('lodash');
 const gin = require('../../lib/ginCredentials');
+const logger = require('../../lib/log');
 
 const host = 'http://sbs.bcgsc.ca:8100';
 const basePath = '';
 const path = `${host}${basePath}`;
-const {logger} = process;
 const $bioapps = {};
 
 $bioapps.session = {
@@ -58,9 +58,8 @@ $bioapps.login = async () => {
     json: true,
   });
 
-  // need to verify
-  const token = Buffer.from(resp.token.split('.')[1]);
-  const tokenPayload = JSON.parse(token);
+  const tokenB64 = Buffer.from(resp.token.split('.')[1], 'base64');
+  const tokenPayload = JSON.parse(tokenB64.toString('utf-8'));
 
   // Store token for session use.
   $bioapps.session.token = resp.token;

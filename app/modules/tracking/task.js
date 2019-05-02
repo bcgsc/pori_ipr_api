@@ -8,7 +8,7 @@ const State = require('./state');
 const Checkin = require('./checkin');
 const Hook = require('./hook');
 
-const logger = require(process.cwd() + '/lib/log');
+const logger = require('../../../lib/log');
 
 
 module.exports = class Task {

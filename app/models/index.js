@@ -5,17 +5,13 @@ const nconf = require('nconf').argv().env().file({file: '../../config/config.jso
 
 let CONFIG = {};
 
-if (process.env.NODE_ENV === 'production') {
-  CONFIG = require('/var/www/ipr/api/production/persist/.env.json');
-} else if (['development', 'test', 'local'].includes(process.env.NODE_ENV)) {
-  try {
-    // iprweb01 dev
-    CONFIG = require(`/var/www/ipr/api/${process.env.NODE_ENV}/persist/.env.json`)[process.env.NODE_ENV];
-  } catch (e) {
-    console.log('!! DB Config not found - attempting to load local dev .env.json file');
-    // Probably running on local dev
-    CONFIG = require('../../.env.json')[process.env.NODE_ENV];
-  }
+try {
+  CONFIG = require('/var/www/ipr/api/persist/.env.json');
+  CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
+} catch (e) {
+  console.log('!! DB Config not found - attempting to load local dev .env.json file');
+  // Probably running on local dev
+  CONFIG = require('../../.env.json')[process.env.NODE_ENV];
 }
 
 // Load database

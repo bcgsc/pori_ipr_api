@@ -1,9 +1,3 @@
-"use strict";
+class MethodNotAllowed extends Error {}
 
-module.exports = class MethodNotAllowed extends Error {
-  constructor(m) {
-    // Invoke stderr response
-    super(m);
-  }
-
-};
+module.exports = MethodNotAllowed;

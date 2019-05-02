@@ -1,7 +1,6 @@
-"use strict";
-
-const MethodNotAllowed    = require('./exceptions/MethodNotAllowed');
-const _                   = require('lodash');
+const express = require('express');
+const MethodNotAllowed = require('./exceptions/MethodNotAllowed');
+const logger = require('../../lib/log');
 
 /**
  *
@@ -11,8 +10,7 @@ const _                   = require('lodash');
  *
  * @type {RoutingInterface}
  */
-module.exports = class RoutingInterface {
-
+class RoutingInterface {
   /**
    * Constructor
    *
@@ -20,8 +18,7 @@ module.exports = class RoutingInterface {
    *
    */
   constructor() {
-    // Add router to class
-    this.router = require('express').Router({mergeParams: true});
+    this.router = express.Router({mergeParams: true});
     this.root = null;
     this.allowedMethods = ['get', 'put', 'post', 'delete', 'patch'];
 
@@ -30,35 +27,22 @@ module.exports = class RoutingInterface {
   }
 
   /**
-   * Bind a file
-   *
-   * Binds a file at a given namespace to a valid Express router instance that is returned from importing a file
-   *
-   * @param binding
-   * @param file
-   */
-  bindRouteFile(binding, file) {
-    console.log('Route Registered: ', binding);
-
-    this.router.use((this.root) ? this.root : "" + binding, require(file));
-  }
-
-  /**
    * Bind a valid Express router object to the current router
    *
-   * @param binding
-   * @param router
+   * @param {string} path - Route to use specified middleware
+   * @param {object} middleware - Middleware function to use
+   *
+   * @returns {Router} - Returns the instance of the express router
    */
-  bindRouteObject(binding, router) {
-    console.log('Route Registered: ', binding);
-
-    this.router.use((this.root) ? this.root : "" + binding, router);
+  bindRouteObject(path, middleware) {
+    logger.info(`Route Registered: ${path}`);
+    return this.router.use((this.root) ? this.root : path, middleware);
   }
 
   /**
    * Retrieve prepared router
    *
-   * @returns {*}
+   * @returns {Router} - Returns the instance of the express router
    */
   getRouter() {
     return this.router;
@@ -69,18 +53,19 @@ module.exports = class RoutingInterface {
    *
    * Provided map a URL and method to a handler function
    *
-   * @param method
-   * @param url
-   * @param handle
+   * @param {string} method - HTTP method such as GET, PUT, POST, and so on, in lowercase
+   * @param {string} path - Route to use
+   * @param {function} handler - Handler function for endpoint
+   *
+   * @returns {Router} - Returns the instance of the express router
    */
-  registerEndpoint(method, url, handle) {
+  registerEndpoint(method, path, handler) {
+    if (!this.allowedMethods.includes(method)) {
+      throw new MethodNotAllowed(`The requested method: ${method} is not allowed. Allowable methods: ${this.allowedMethods.join(',')}`);
+    }
 
-    if(this.allowedMethods.indexOf(method) === -1) throw new MethodNotAllowed('The requested method: ' + method + ' is not allowed. Allowable methods: ' + _.join(this.allowedMethods, ','));
-
-
-    console.log('Route Registered: ', url);
-
-    this.router[method](url, handle);
+    logger.info(`Route Registered: ${path}`);
+    return this.router[method](path, handler);
   }
 
 
@@ -89,27 +74,26 @@ module.exports = class RoutingInterface {
    *
    * Takes in an express Router.route() definition and binds to a provided URl
    *
-   * @param url
-   * @param handle
+   * @param {string} path - Route to use
+   *
+   * @returns {IRoute} - Returns the instance of the route
    */
-  registerResource(url, handle) {
-
-    console.log('Route Registered: ', url);
-
-    return this.router.route(url)
-
+  registerResource(path) {
+    logger.info(`Route Registered: ${path}`);
+    return this.router.route(path);
   }
 
   /**
    * Register Middleware
    *
-   * @param {string} parameter - Parameter to bind the middleware too
-   * @param {function} handler - The function that will handle the middleware
+   * @param {string} name - Name of route parameter
+   * @param {function} handler - Handler function that will handle the middleware
+   *
+   * @returns {Router} - Returns the instance of the express router
    */
-  registerMiddleware(parameter, handler) {
-
-    this.router.param(parameter, handler);
-
+  registerMiddleware(name, handler) {
+    return this.router.param(name, handler);
   }
+}
 
-};
+module.exports = RoutingInterface;

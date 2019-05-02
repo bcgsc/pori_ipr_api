@@ -2,6 +2,7 @@
 
 // Dependencies
 let db = require(process.cwd() + '/app/models'),
+    promisfy = require('util').promisify,
     fs = require('fs'),
     _ = require('lodash'),
     Q = require('q'),
@@ -10,6 +11,10 @@ let db = require(process.cwd() + '/app/models'),
     { spawn } = require('child_process'),
     glob = require('glob'),
     nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+
+const imageIdentify = promisfy(im.identify);
+
+const MAX_SUBPLOT_IMAGE_WIDTH = 600;
 
 // Image Path
 let imagePath;
@@ -348,7 +353,7 @@ let loadSubtypePlot = (report, log) => {
 };
 
 // Process all Subtype Plot Images
-let processSubtypePlotImages = (report, img, log) => {
+let processSubtypePlotImages = async (report, img, log) => {
 
   let deferred = Q.defer();
 
@@ -357,7 +362,21 @@ let processSubtypePlotImages = (report, img, log) => {
   let image_string = filename.substring(0,filename.lastIndexOf('.png'));
 
   // pediatric subtype plots are sized similarly to expression charts - all others are normal subtype plot size
-  let image_size = image_string.toLowerCase().startsWith('ped') ? "1000x900" : "600x375";
+  let image_size;
+  if (image_string.toLowerCase().startsWith('ped')) {
+    image_size = '1000x900';
+  } else {
+    // Get height and width of image and store at 25% of those values
+    const {height, width} = await imageIdentify(img);
+
+    if (width > MAX_SUBPLOT_IMAGE_WIDTH) {
+      const ratio = width / MAX_SUBPLOT_IMAGE_WIDTH;
+      const newHeight = Math.round(height / ratio);
+      image_size = `${MAX_SUBPLOT_IMAGE_WIDTH}x${newHeight}`;
+    } else {
+      image_size = `${width}x${height}`;
+    }
+  }
 
   let process = exec('convert "'+img+ '" -resize ' + image_size + ' PNG:- | base64');
   

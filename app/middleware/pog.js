@@ -24,7 +24,13 @@ module.exports = async (req, res, next, pogID) => {
       attributes: {exclude: ['deletedAt']},
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}},
-        {as: 'analysis_reports', model: db.models.analysis_report.scope('public')},
+        {as: 'analysis_reports', model: db.models.analysis_report.scope('public'), include:
+          [{
+            model: db.models.analysis_reports_user,
+            as: 'users',
+            attributes: {exclude: ['id', 'ident']},
+          }],
+        },
         {as: 'projects', model: db.models.project},
       ],
     });
