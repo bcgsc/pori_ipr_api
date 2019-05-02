@@ -489,7 +489,7 @@ class LimsSeqSync {
         logger.warn(`[SeqValid] LIMS responded with failed library for: ${task.state.analysis.pog.POGID}`);
         return;
       } catch (error) {
-        logger.error(`[SeqValid] Unable to update task as failed for: ${task.state.analysis.pog.POGID}`);
+        logger.error(`[SeqValid] Unable to update task as failed for: ${task.state.analysis.pog.POGID} error: ${error}`);
       }
     }
 
@@ -642,7 +642,7 @@ class LimsSeqSync {
         logger.warn(`[SeqQC0] LIMS responded with failed library for: ${task.state.analysis.pog.POGID}`);
         return;
       } catch (error) {
-        logger.error(`[SeqQC0] Unable to update task as failed for: ${task.state.analysis.pog.POGID}`);
+        logger.error(`[SeqQC0] Unable to update task as failed for: ${task.state.analysis.pog.POGID} error: ${error}`);
         throw new Error({message: '[SeqQC0] Unable to update task as failed', cause: error});
       }
     }
