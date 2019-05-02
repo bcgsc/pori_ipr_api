@@ -111,7 +111,7 @@ class Routing extends RouterInterface {
     this.bindRouteObject('/knowledgebase', knowledgebaseRoute);
 
     // Register Get All Projects route
-    await this.getProjects();
+    this.getProjects();
 
     // Get Tracking Routes
     const TrackingRoutes = new Tracking(this.io);
