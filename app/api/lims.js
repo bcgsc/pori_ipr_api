@@ -125,6 +125,24 @@ $lims.sequencerRun = async (libraries) => {
 };
 
 /**
+ * 
+ * @param {*} query 
+ */
+$lims.diseaseOntology = async (query) => {
+  if (!query) {
+    throw new Error('Must provide a query');
+  }
+
+  const credentials = await $lims.getAuthCredentials();
+  return request({
+    method: 'GET',
+    uri: `${path}/elastic/disease_ontology/${query}`,
+    gzip: true,
+    json: true,
+  }).auth(credentials.username, credentials.password);
+};
+
+/**
  * Login to LIMS API
  *
  * @returns {Promise.<Object.<string, string>>} - Returns an object
