@@ -27,25 +27,20 @@ class GeneViewer {
       this._getKbMatches(),
       this._getSmallMutations(),
       this._getCopyNumber(),
-      this._getStructuralVariants(),
       this._getExpRNA(),
-      this._getExpProtein(),
       this._getExpDrugTarget(),
       this._getExpDensityGraph(),
     ];
 
     try {
       const [kbMatches, smallMutations, copyNumber,
-        structuralVariants, expRNA, expProtein,
-        expDrugTarget, expDensityGraph] = await Promise.all(promises);
+        expRNA, expDrugTarget, expDensityGraph] = await Promise.all(promises);
 
       return {
         kbMatches,
         smallMutations,
         copyNumber,
-        structuralVariants,
         expRNA,
-        expProtein,
         expDrugTarget,
         expDensityGraph,
       };
