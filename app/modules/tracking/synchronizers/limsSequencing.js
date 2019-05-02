@@ -33,7 +33,7 @@ class LimsSeqSync {
     this.maxPathWindow = options.maxPathWindow || '2592000';
 
     this.sequencingSubmit = [];
-    this.illumina_run_failed_status = ['Failed', 'Aborted', 'Expired'];
+    this.illumina_run_failed_status = ['Failed', 'Aborted', 'Expired', 'Not Applicable'];
   }
 
   /**
