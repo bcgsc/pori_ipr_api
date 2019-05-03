@@ -9,13 +9,13 @@ const router = express.Router({mergeParams: true});
 router.route('/biologicalMetadata')
   // Retrieve sample results based on POGID from LIMS
   .post(async (req, res) => {
-    if (!req.body.POGIDs) {
-      logger.error('Must provide a POG id');
-      return res.status(400).json({message: 'Must provide a POG id'});
+    if (!req.body.patientIds) {
+      logger.error('Must provide patient ids');
+      return res.status(400).json({message: 'Must provide patient ids'});
     }
 
     try {
-      const samples = await $lims.biologicalMetadata(req.body.POGID);
+      const samples = await $lims.biologicalMetadata(req.body.patientIds);
       return res.json(samples);
     } catch (error) {
       logger.error(`Unable to get sample info. from LIMS ${error}`);

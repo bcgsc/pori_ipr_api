@@ -11,10 +11,10 @@ const $lims = {};
 /**
  * Retrieve sample results based on POGID
  *
- * @param {string|Array.<string>} pogids - The patient identifier POGID
+ * @param {string|Array.<string>} patientIds - The patient identifier POGnnn
  * @returns {Promise.<string>} - Returns LIMS metadata for pogid(s)
  */
-$lims.biologicalMetadata = async (pogids) => {
+$lims.biologicalMetadata = async (patientIds) => {
   // Build base of query
   const body = {
     filters: {
@@ -24,12 +24,12 @@ $lims.biologicalMetadata = async (pogids) => {
   };
 
   // Convert string pogid to array
-  if (typeof pogids === 'string') {
-    pogids = [pogids];
+  if (typeof patientIds === 'string') {
+    patientIds = [patientIds];
   }
 
   // Create array of POGIDs to search for
-  body.filters.content = pogids.map((id) => {
+  body.filters.content = patientIds.map((id) => {
     return {
       op: '=',
       content: {
