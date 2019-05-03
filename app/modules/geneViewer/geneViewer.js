@@ -40,7 +40,9 @@ class GeneViewer {
         kbMatches,
         smallMutations,
         copyNumber,
+        structuralVariants: [],
         expRNA,
+        expProtein: [],
         expDrugTarget,
         expDensityGraph,
       };
