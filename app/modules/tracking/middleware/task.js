@@ -1,46 +1,56 @@
-
-const db = require(`${process.cwd()}/app/models`);
+const validate = require('uuid-validate');
+const db = require('../../../models');
 const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNotFound');
 const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
 
-// Lookup POG middleware
-module.exports = async (req, res, next, lookup) => {
-  const opts = {where: {}};
+const logger = require('../../../../lib/log');
 
-  opts.attributes = {
-    exclude: ['deletedAt'],
+// Lookup POG middleware
+module.exports = async (req, res, next, ident) => {
+  const opts = {
+    where: {},
+    attributes: {exclude: ['deletedAt']},
+    limit: 1,
+    order: [['ordinal', 'ASC']],
+    include: [
+      {as: 'state', model: db.models.tracking_state.scope('noTasks')},
+      {as: 'assignedTo', model: db.models.user.scope('public')},
+      {as: 'checkins', model: db.models.tracking_state_task_checkin, separate: true, include: 
+        [
+          {as: 'user', model: db.models.user.scope('public')},
+        ],
+      },
+    ],
   };
-  if (req.state) opts.where.state_id = req.state.id;
+
+  if (req.state) {
+    opts.where.state_id = req.state.id;
+  }
 
   // Check if it's a UUID
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(lookup)) opts.where.ident = lookup;
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(lookup)) {
-    if (!req.state) throw new MiddlewareQueryFailed('Lookup by task slug requires parent state to be specified');
-    opts.where.slug = lookup;
-  }
-
-  opts.limit = 1;
-  opts.order = [['ordinal', 'ASC']];
-
-  opts.include = [
-    {as: 'state', model: db.models.tracking_state.scope('noTasks')},
-    {as: 'assignedTo', model: db.models.user.scope('public')},
-    {as: 'checkins', model: db.models.tracking_state_task_checkin, include: [{as: 'user', model: db.models.user.scope('public')}], separate: true},
-  ];
-
-  try {
-    // Lookup POG first
-    const result = await db.models.tracking_state_task.findOne(opts);
-    // Nothing found?
-    if (result === null) throw new MiddlewareNotFound('Unable to find the tracking state task', req, res, 'trackingStateTask');
-
-    // POG found, next()
-    if (result !== null) {
-      req.task = result;
-      next();
+  if (validate(ident)) {
+    opts.where.ident = ident;
+  } else {
+    if (!req.state) {
+      logger.error('Lookup by task slug requires parent state to be specified');
+      throw new MiddlewareQueryFailed('Lookup by task slug requires parent state to be specified');
     }
-  } catch (error) {
-    console.log(error);
-    throw new MiddlewareQueryFailed('Unable to looking the requested state task.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+    opts.where.slug = ident;
   }
+
+  let trackingStateTask;
+  try {
+    trackingStateTask = await db.models.tracking_state_task.findOne(opts);
+  } catch (error) {
+    logger.error(`Error while trying to find tracking state task with ident: ${ident} error: ${error}`);
+    throw new MiddlewareQueryFailed('Error while trying to find tracking state task', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+  }
+
+  if (!trackingStateTask) {
+    logger.error(`Unable to find the tracking state task with ident ${ident}`);
+    throw new MiddlewareNotFound('Unable to find the tracking state task', req, res, 'trackingStateTask');
+  }
+
+  req.task = trackingStateTask;
+  return next();
 };
