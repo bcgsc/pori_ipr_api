@@ -11,6 +11,11 @@
     "api": "/jira/rest",
     "version": "2"
   },
+
+  "lims" : {
+    "hostname": "https://lims16.bcgsc.ca",
+    "api": "/prod/limsapi"
+  },
   
   "redis": {
     "uri": "",
