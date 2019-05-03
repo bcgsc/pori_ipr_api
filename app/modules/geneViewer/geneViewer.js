@@ -36,16 +36,15 @@ class GeneViewer {
 
     try {
       const [kbMatches, smallMutations, copyNumber,
-        structuralVariants, expRNA, expProtein,
-        expDrugTarget, expDensityGraph] = await Promise.all(promises);
+        expRNA, expDrugTarget, expDensityGraph] = await Promise.all(promises);
 
       return {
         kbMatches,
         smallMutations,
         copyNumber,
-        structuralVariants,
+        structuralVariants: [],
         expRNA,
-        expProtein,
+        expProtein: [],
         expDrugTarget,
         expDensityGraph,
       };
