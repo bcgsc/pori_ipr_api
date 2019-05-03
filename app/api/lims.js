@@ -1,20 +1,20 @@
 const request = require('request-promise-native');
+const nconf = require('nconf').argv().env().file({file: `${process.cwd()}/config/config.json`});
 const gin = require('../../lib/ginCredentials');
 
-const host = 'https://lims16.bcgsc.ca';
-const basePath = '/prod/limsapi';
-const path = `${host}${basePath}`;
-const $lims = {};
+const hostname = nconf.get('lims:hostname');
+const basePath = nconf.get('lims:api');
+const path = `${hostname}${basePath}`;
 
+const $lims = {};
 
 /**
  * Retrieve sample results based on POGID
  *
- *
- * @param {string|array} pogid - The patient identifier POGnnn
- * @returns {Promise.<string>} - Returns body of the resp in JSON
+ * @param {string|Array.<string>} pogids - The patient identifier POGID
+ * @returns {Promise.<string>} - Returns LIMS metadata for pogid(s)
  */
-$lims.sample = async (pogid) => {
+$lims.biologicalMetadata = async (pogids) => {
   // Build base of query
   const body = {
     filters: {
@@ -24,12 +24,12 @@ $lims.sample = async (pogid) => {
   };
 
   // Convert string pogid to array
-  if (typeof pogid === 'string') {
-    pogid = [pogid];
+  if (typeof pogids === 'string') {
+    pogids = [pogids];
   }
 
   // Create array of POGIDs to search for
-  body.filters.content = pogid.map((id) => {
+  body.filters.content = pogids.map((id) => {
     return {
       op: '=',
       content: {
@@ -53,9 +53,9 @@ $lims.sample = async (pogid) => {
 /**
  * Get library data from LIMS
  *
- * @param {string|array} libraries - Libraries to get details for by library name
+ * @param {string|Array.<string>} libraries - Libraries to get details for by library field
  * @param {string} [field=name] - Field to seach for libraries (i.e originalSourceName)
- * @returns {Promise.<object>} - Returns the JSON parsed body of the resp
+ * @returns {Promise.<object>} - Returns library data from LIMS
  */
 $lims.library = async (libraries, field = 'name') => {
   if (libraries.length === 0) {
@@ -81,13 +81,18 @@ $lims.library = async (libraries, field = 'name') => {
     method: 'POST',
     uri: `${path}/libraries/search`,
     gzip: true,
-    body: JSON.stringify(body),
+    body,
     json: true,
   }).auth(credentials.username, credentials.password);
 };
 
+/**
+ * Get sequencer-run data from LIMS
+ *
+ * @param {string|Array.<string>} libraries - sdfds
+ * @returns {Promise.<object>} - Returns sequencer-data from LIMS
+ */
 $lims.sequencerRun = async (libraries) => {
-
   if (libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries.');
   }
@@ -119,14 +124,16 @@ $lims.sequencerRun = async (libraries) => {
     method: 'POST',
     uri: `${path}/sequencer-runs/search`,
     gzip: true,
-    body: JSON.stringify(body),
+    body,
     json: true,
   }).auth(credentials.username, credentials.password);
 };
 
 /**
- * 
- * @param {*} query 
+ * Get disease ontology data from LIMS
+ *
+ * @param {string} query - String to query disease ontology in LIMS for
+ * @returns {Promise.<object>} - Returns disease ontology data from LIMS
  */
 $lims.diseaseOntology = async (query) => {
   if (!query) {
