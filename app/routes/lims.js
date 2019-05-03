@@ -6,16 +6,16 @@ const logger = require('../../lib/log');
 const router = express.Router({mergeParams: true});
 
 
-router.route('/sample')
-  // Retrieve sample results based on POGID
-  .get(async (req, res) => {
-    if (!req.body.pog_id) {
+router.route('/biologicalMetadata')
+  // Retrieve sample results based on POGID from LIMS
+  .post(async (req, res) => {
+    if (!req.body.POGIDs) {
       logger.error('Must provide a POG id');
-      return res.status(500).json({message: 'Must provide a POG id'});
+      return res.status(400).json({message: 'Must provide a POG id'});
     }
 
     try {
-      const samples = await $lims.sample(req.body.pog_id);
+      const samples = await $lims.biologicalMetadata(req.body.POGID);
       return res.json(samples);
     } catch (error) {
       logger.error(`Unable to get sample info. from LIMS ${error}`);
@@ -24,10 +24,11 @@ router.route('/sample')
   });
 
 router.route('/library')
-  .get(async (req, res) => {
+  // Retrieve libraries from LIMS
+  .post(async (req, res) => {
     if (!req.body.libraries) {
       logger.error('Must provide library names to query');
-      return res.status(500).json({message: 'Must provide library names to query'});
+      return res.status(400).json({message: 'Must provide library names to query'});
     }
 
     try {
@@ -41,10 +42,11 @@ router.route('/library')
 
 
 router.route('/sequencer-run')
-  .get(async (req, res) => {
+  // Retrieve sequencer-run data from LIMS
+  .post(async (req, res) => {
     if (!req.body.libraries) {
       logger.error('Must provide libraries for sequencer-run');
-      return res.status(500).json({message: 'Must provide libraries for sequencer-run'});
+      return res.status(400).json({message: 'Must provide libraries for sequencer-run'});
     }
 
     try {
@@ -56,15 +58,16 @@ router.route('/sequencer-run')
     }
   });
 
-router.route('/disease-ontology')
+router.route('/disease-ontology/:query')
+  // Query disease-ontology data in LIMS
   .get(async (req, res) => {
-    if (!req.body.query) {
+    if (!req.params.query) {
       logger.error('Must provide a query');
-      return res.status(500).json({message: 'Must provide a query'});
+      return res.status(400).json({message: 'Must provide a query'});
     }
 
     try {
-      const diseaseOntology = await $lims.diseaseOntology(req.body.query);
+      const diseaseOntology = await $lims.diseaseOntology(req.params.query);
       return res.json(diseaseOntology);
     } catch (error) {
       logger.error(`Unable to get disease ontology from LIMS ${error}`);
