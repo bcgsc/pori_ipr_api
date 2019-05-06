@@ -43,7 +43,8 @@ router.route('/')
 
     // Inputs set
     requiredInputs.forEach((value) => {
-      if (!req.body[value]) {
+      // Password can be null if type is ldap
+      if (req.body[value] === undefined) {
         inputErrors.push({
           input: value,
           message: `${value} is a required input`,
