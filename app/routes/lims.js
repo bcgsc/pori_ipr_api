@@ -6,7 +6,7 @@ const logger = require('../../lib/log');
 const router = express.Router({mergeParams: true});
 
 
-router.route('/biologicalMetadata')
+router.route('/biological-metadata')
   // Retrieve sample results based on POGID from LIMS
   .post(async (req, res) => {
     if (!req.body.patientIds) {
