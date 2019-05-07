@@ -224,9 +224,9 @@ router.route('/:type(genomic|probe)')
       }
 
       try {
-        analysisObj = await Analysis.create(patient.id, createAnalysis);
+        analysisObj = await Analysis.create(patientObj.id, createAnalysis);
       } catch (error) {
-        logger.error(`SQL Error unable to create analysis. Patient id ${patient.id} analysis ${createAnalysis} ${error}`);
+        logger.error(`SQL Error unable to create analysis. Patient id ${patientObj.id} analysis ${createAnalysis} ${error}`);
         return res.status(500).json({error: {message: 'Unable to create analysis'}});
       }
     }
