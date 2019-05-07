@@ -27,9 +27,7 @@ class GeneViewer {
       this._getKbMatches(),
       this._getSmallMutations(),
       this._getCopyNumber(),
-      this._getStructuralVariants(),
       this._getExpRNA(),
-      this._getExpProtein(),
       this._getExpDrugTarget(),
       this._getExpDensityGraph(),
     ];
