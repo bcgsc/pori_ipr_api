@@ -89,7 +89,7 @@ router.route('/')
       const dh = {
         type: 'create',
         pog_id: result.pog_id,
-        table: db.models.therapeuticTarget.getTableName(),
+        table: db.models.therapeuticTarget.tableName,
         model: db.models.therapeuticTarget.name,
         entry: result.ident,
         previous: null,
@@ -97,7 +97,7 @@ router.route('/')
         user_id: req.user.id,
         comment: req.body.comment,
       };
-      db.models.POGDataHistory.create(dh);
+      db.models.pog_analysis_reports_history.create(dh);
     } catch (error) {
       console.log('Unable to create entry', error);
       res.status(500).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
