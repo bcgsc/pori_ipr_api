@@ -1,4 +1,3 @@
-
 const express = require('express');
 const $lims = require('../api/lims');
 const logger = require('../../lib/log');
@@ -15,7 +14,12 @@ router.route('/biological-metadata')
     }
 
     try {
-      const samples = await $lims.biologicalMetadata(req.body.patientIds);
+      let samples;
+      if (!req.body.searchField) {
+        samples = await $lims.biologicalMetadata(req.body.patientIds);
+      } else {
+        samples = await $lims.biologicalMetadata(req.body.patientIds, req.body.searchField);
+      }
       return res.json(samples);
     } catch (error) {
       logger.error(`Unable to get sample info. from LIMS ${error}`);

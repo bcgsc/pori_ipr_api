@@ -12,9 +12,10 @@ const $lims = {};
  * Retrieve biological metadata based on POGID
  *
  * @param {string|Array.<string>} patientIds - Patient identifier POGnnn
+ * @param {string} [field=name] - Field to seach for patient IDs (i.e originalSourceName)
  * @returns {Promise.<string>} - Returns LIMS metadata for pogid(s)
  */
-$lims.biologicalMetadata = async (patientIds) => {
+$lims.biologicalMetadata = async (patientIds, field = 'participantStudyID') => {
   if (!patientIds || patientIds.length === 0) {
     throw new Error('Must provide 1 or more patient ids');
   }
@@ -29,7 +30,7 @@ $lims.biologicalMetadata = async (patientIds) => {
     filters: {
       op: 'in',
       content: {
-        field: 'participantStudyId',
+        field,
         value: patientIds,
       },
     },
