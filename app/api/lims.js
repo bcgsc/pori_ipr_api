@@ -9,35 +9,31 @@ const path = `${hostname}${basePath}`;
 const $lims = {};
 
 /**
- * Retrieve sample results based on POGID
+ * Retrieve biological metadata based on POGID
  *
- * @param {string|Array.<string>} patientIds - The patient identifier POGnnn
+ * @param {string|Array.<string>} patientIds - Patient identifier POGnnn
  * @returns {Promise.<string>} - Returns LIMS metadata for pogid(s)
  */
 $lims.biologicalMetadata = async (patientIds) => {
-  // Build base of query
-  const body = {
-    filters: {
-      op: 'or',
-      content: [],
-    },
-  };
+  if (!patientIds || patientIds.length === 0) {
+    throw new Error('Must provide 1 or more patient ids');
+  }
 
   // Convert string pogid to array
   if (typeof patientIds === 'string') {
     patientIds = [patientIds];
   }
 
-  // Create array of POGIDs to search for
-  body.filters.content = patientIds.map((id) => {
-    return {
-      op: '=',
+  // Query body
+  const body = {
+    filters: {
+      op: 'in',
       content: {
         field: 'participantStudyId',
-        value: id,
+        value: patientIds,
       },
-    };
-  });
+    },
+  };
 
   // Make Request
   const credentials = await $lims.getAuthCredentials();
@@ -58,7 +54,7 @@ $lims.biologicalMetadata = async (patientIds) => {
  * @returns {Promise.<object>} - Returns library data from LIMS
  */
 $lims.library = async (libraries, field = 'name') => {
-  if (libraries.length === 0) {
+  if (!libraries || libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries');
   }
 
@@ -89,12 +85,16 @@ $lims.library = async (libraries, field = 'name') => {
 /**
  * Get sequencer-run data from LIMS
  *
- * @param {string|Array.<string>} libraries - sdfds
+ * @param {string|Array.<string>} libraries - List libraries or multiplex libraries
  * @returns {Promise.<object>} - Returns sequencer-data from LIMS
  */
 $lims.sequencerRun = async (libraries) => {
-  if (libraries.length === 0) {
+  if (!libraries || libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries.');
+  }
+
+  if (typeof libraries === 'string') {
+    libraries = [libraries];
   }
 
   const body = {
