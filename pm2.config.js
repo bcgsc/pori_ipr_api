@@ -16,10 +16,6 @@ module.exports = {
       max_restarts: 20,
       min_uptime: 10000,
       append_env_to_name: true,
-      env: {
-        COMMON_VARIABLE: 'true',
-        NODE_ENV: 'development',
-      },
       env_production: {
         NODE_ENV: 'production',
       },
@@ -31,17 +27,13 @@ module.exports = {
     {
       name: 'IPR-API-syncWorker',
       script: 'npm',
-      args: 'sync',
+      args: 'run sync',
       watch: false,
       log_date_format: 'YYYY-MM-DD HH:mm Z',
       merge_logs: true,
       max_restarts: 20,
       min_uptime: 10000,
       append_env_to_name: true,
-      env: {
-        COMMON_VARIABLE: 'true',
-        NODE_ENV: 'development',
-      },
       env_production: {
         NODE_ENV: 'production',
       },
