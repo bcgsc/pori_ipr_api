@@ -425,68 +425,68 @@ class TrackingRouter extends RoutingInterface {
 
       const [bioAppsPatient] = patient;
 
-      let illuminaRun;
+      let sequencerRun;
       try {
-        illuminaRun = await $lims.illuminaRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
+        sequencerRun = await $lims.sequencerRun([analysis.libraries.tumour, analysis.libraries.transcriptome]);
       } catch (error) {
-        logger.error(`Error while finding Illumina Run records in LIMS ${error}`);
-        return res.status(500).json({message: 'Error while finding Illumina Run records in LIMS'});
+        logger.error(`Error while finding Sequencer Run records in LIMS ${error}`);
+        return res.status(500).json({message: 'Error while finding Sequencer Run records in LIMS'});
       }
 
-      if (!illuminaRun || illuminaRun.length === 0) {
-        logger.error('Failed to find Illumina Run records in LIMS for unknown reasons');
-        return res.status(404).json({message: 'Failed to find Illumina Run records in LIMS for unknown reasons'});
+      if (!sequencerRun || sequencerRun.length === 0) {
+        logger.error('Failed to find Sequencer Run records in LIMS for unknown reasons');
+        return res.status(404).json({message: 'Failed to find Sequencer Run records in LIMS for unknown reasons'});
       }
 
-      const limsIllumina = {};
+      const limsSequencer = {};
       // Loop over lanes
-      _.forEach(illuminaRun.results, (row) => {
+      _.forEach(sequencerRun.results, (row) => {
         let tumour = null;
         let rna = null;
         let pool = null;
 
         // Multiplex library
-        if (row.multiplex_libraries.length > 0) {
-          if (row.multiplex_libraries.includes(analysis.libraries.tumour)) {
+        if (row.multiplexLibraryNames.length > 0) {
+          if (row.multiplexLibraryNames.includes(analysis.libraries.tumour)) {
             pool = true;
             tumour = true;
           }
-          if (row.multiplex_libraries.includes(analysis.libraries.transcriptome)) {
+          if (row.multiplexLibraryNames.includes(analysis.libraries.transcriptome)) {
             pool = true;
             rna = true;
           }
         }
 
         // Non-multiplex
-        if (row.multiplex_libraries.length === 0) {
-          if (row.library === analysis.libraries.tumour) {
+        if (row.multiplexLibraryNames.length === 0) {
+          if (row.libraryName === analysis.libraries.tumour) {
             tumour = true;
           }
-          if (row.library === analysis.libraries.transcriptome) {
+          if (row.libraryName === analysis.libraries.transcriptome) {
             rna = true;
           }
         }
 
         if (tumour) {
-          if (analysis.libraries.tumour in limsIllumina) {
-            limsIllumina[analysis.libraries.tumour].lanes++;
+          if (analysis.libraries.tumour in limsSequencer) {
+            limsSequencer[analysis.libraries.tumour].lanes++;
           } else {
-            limsIllumina[analysis.libraries.tumour] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
+            limsSequencer[analysis.libraries.tumour] = {sequencer: row.sequencerName, lanes: 1, pool: (pool) ? row.libraryName : {max: 1}};
           }
         }
 
         if (rna) {
-          if (analysis.libraries.transcriptome in limsIllumina) {
-            limsIllumina[analysis.libraries.transcriptome].lanes++;
+          if (analysis.libraries.transcriptome in limsSequencer) {
+            limsSequencer[analysis.libraries.transcriptome].lanes++;
           } else {
-            limsIllumina[analysis.libraries.transcriptome] = {sequencer: row.sequencer, lanes: 1, pool: (pool) ? row.library : {max: 1}};
+            limsSequencer[analysis.libraries.transcriptome] = {sequencer: row.sequencerName, lanes: 1, pool: (pool) ? row.libraryName : {max: 1}};
           }
         }
       });
 
-      if (Object.keys(limsIllumina).length === 0) {
-        logger.error('Failed to retrieve LIMS Illumina Run information');
-        return res.status(404).json({message: 'Failed to retrieve LIMS Illumina Run information'});
+      if (Object.keys(limsSequencer).length === 0) {
+        logger.error('Failed to retrieve LIMS Sequencer Run information');
+        return res.status(404).json({message: 'Failed to retrieve LIMS Sequencer Run information'});
       }
 
       if (!bioAppsPatient.sources) {
@@ -547,16 +547,16 @@ class TrackingRouter extends RoutingInterface {
         threeLetterCode: analysis.threeLetterCode,
         lib_normal: analysis.libraries.normal,
         lib_tumour: analysis.libraries.tumour,
-        pool_tumour: limsIllumina[analysis.libraries.tumour].pool,
+        pool_tumour: limsSequencer[analysis.libraries.tumour].pool,
         lib_rna: analysis.libraries.transcriptome,
-        pool_rna: limsIllumina[analysis.libraries.transcriptome].pool,
+        pool_rna: limsSequencer[analysis.libraries.transcriptome].pool,
         disease: analysis.disease,
         biopsy_notes: analysis.biopsy_notes,
         biop: `${analysisSettings.sample_type}${analysisSettings.biopsy_number}`,
-        num_lanes_rna: limsIllumina[analysis.libraries.transcriptome].lanes,
-        num_lanes_tumour: limsIllumina[analysis.libraries.tumour].lanes,
-        sequencer_rna: limsIllumina[analysis.libraries.transcriptome].sequencer,
-        sequencer_tumour: limsIllumina[analysis.libraries.tumour].sequencer,
+        num_lanes_rna: limsSequencer[analysis.libraries.transcriptome].lanes,
+        num_lanes_tumour: limsSequencer[analysis.libraries.tumour].lanes,
+        sequencer_rna: limsSequencer[analysis.libraries.transcriptome].sequencer,
+        sequencer_tumour: limsSequencer[analysis.libraries.tumour].sequencer,
         priority: analysis.priority,
         biofxician: null,
         analysis_due: analysis.date_analysis,

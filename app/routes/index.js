@@ -13,6 +13,8 @@ const pogRoute = require('./POG');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
 const jiraRoute = require('./jira');
+const limsRoute = require('./lims');
+
 const loadPogRoute = require('./load_pog');
 const dataHistoryRoute = require('./dataHistory');
 const exportRoute = require('./POG/export');
@@ -85,6 +87,7 @@ class Routing extends RouterInterface {
         '/user',
         '/project',
         '/jira',
+        '/lims',
         '/knowledgebase',
         '/tracking',
         '/reports',
@@ -100,6 +103,7 @@ class Routing extends RouterInterface {
     this.bindRouteObject('/user', userRoute);
     this.bindRouteObject('/user/group', groupRoute);
     this.bindRouteObject('/jira', jiraRoute);
+    this.bindRouteObject('/lims', limsRoute);
 
     this.bindRouteObject('/POG/:POGID/load', loadPogRoute);
     this.bindRouteObject('/POG/:POG/report/:report/history', dataHistoryRoute);
