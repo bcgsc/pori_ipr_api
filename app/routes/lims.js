@@ -36,7 +36,12 @@ router.route('/library')
     }
 
     try {
-      const libraries = await $lims.library(req.body.libraries);
+      let libraries;
+      if (!req.body.searchField) {
+        libraries = await $lims.library(req.body.libraries);
+      } else {
+        libraries = await $lims.library(req.body.libraries, req.body.searchField);
+      }
       return res.json(libraries);
     } catch (error) {
       logger.error(`Unable to get libraries from LIMS ${error}`);
