@@ -15,7 +15,7 @@ const $lims = {};
  * @param {string} [field=name] - Field to seach for patient IDs (i.e originalSourceName)
  * @returns {Promise.<string>} - Returns LIMS metadata for pogid(s)
  */
-$lims.biologicalMetadata = async (patientIds, field = 'participantStudyID') => {
+$lims.biologicalMetadata = async (patientIds, field = 'participantStudyId') => {
   if (!patientIds || patientIds.length === 0) {
     throw new Error('Must provide 1 or more patient ids');
   }
