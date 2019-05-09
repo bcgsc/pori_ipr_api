@@ -116,19 +116,19 @@ class LimsPathologySync {
   }
 
   /**
-   * Query LIMS Sample endpoint for POGs that have results
+   * Query LIMS biological metadata endpoint for POGs that have results
    *
-   * @returns {Promise.<Array.<object>>} - Returns sample POGs
+   * @returns {Promise.<Array.<object>>} - Returns biological metadata for POGs
    */
   async queryLimsSample() {
-    logger.info('Querying LIMS for sample details for supplied POGs');
+    logger.info('Querying LIMS for biological metadata details for supplied POGs');
 
     let pogs;
     try {
-      pogs = await $lims.sample(this.pogids);
+      pogs = await $lims.biologicalMetadata(this.pogids);
     } catch (error) {
-      logger.error(`Unable to retrieve LIMS Sample results for the provided pogs ${error}`);
-      throw new Error({message: `Unable to retrieve LIMS Sample results for the provided pogs: ${error.message}`, cause: error});
+      logger.error(`Unable to retrieve LIMS biological metadata results for the provided pogs ${error}`);
+      throw new Error({message: `Unable to retrieve LIMS biological metadata for the provided pogs: ${error.message}`, cause: error});
     }
 
     // If no results, send empty
@@ -136,7 +136,7 @@ class LimsPathologySync {
       return [];
     }
 
-    logger.info(`Found ${pogs.results.length} results from LIMS sample endpoint.`);
+    logger.info(`Found ${pogs.results.length} results from LIMS biological metadata endpoint.`);
 
     const originalSourceNames = pogs.results.map((result) => {
       return result.originalSourceName;
@@ -144,7 +144,7 @@ class LimsPathologySync {
 
     let libs;
     try {
-      libs = await $lims.library(originalSourceNames, 'originalSourceName');
+      libs = await $lims.library(originalSourceNames);
     } catch (error) {
       logger.error(`Unable to get libraries by their original source name ${error}`);
       throw new Error({message: `Unable to get libraries by their original source name ${error}`, cause: error});
@@ -163,9 +163,9 @@ class LimsPathologySync {
   }
 
   /**
-   * Parse LIMS Sample endpoint results
+   * Parse LIMS biological metadata endpoint results
    *
-   * @param {array} pogs - LIMS Sample endpoint result collection
+   * @param {array} pogs - LIMS biological metadata endpoint result collection
    * @returns {Promise.<object>} - Returns an object containing POGS for the sample
    * @private
    */
@@ -239,7 +239,7 @@ class LimsPathologySync {
     }
 
     try {
-      const diseasedLibraries = await $lims.library(this.diseaseLibraries);
+      const diseasedLibraries = await $lims.library(this.diseaseLibraries, 'name');
       logger.info(`Received ${diseasedLibraries.results.length} libraries from LIMS library endpoint.`);
 
       return diseasedLibraries.results;

@@ -51,10 +51,10 @@ $lims.biologicalMetadata = async (patientIds, field = 'participantStudyID') => {
  * Get library data from LIMS
  *
  * @param {string|Array.<string>} libraries - Libraries to get details for by library field
- * @param {string} [field=name] - Field to seach for libraries (i.e originalSourceName)
+ * @param {string} [field=name] - Field to seach for libraries (i.e name)
  * @returns {Promise.<object>} - Returns library data from LIMS
  */
-$lims.library = async (libraries, field = 'name') => {
+$lims.library = async (libraries, field = 'originalSourceName') => {
   if (!libraries || libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries');
   }
