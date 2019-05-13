@@ -156,7 +156,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
         WHERE 
           "tracking_state"."deletedAt" IS NULL AND
           "tracking_state_task"."deletedAt" is NULL and
-          "tracking_state"."slug" = '${req.definition.slug}' AND 
+          "tracking_state"."slug" = ':slug' AND 
           "tracking_state_task"."status" IN ('active', 'pending')
         GROUP BY 
           "tracking_state"."name",
@@ -166,7 +166,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
       let totalTasks;
       try {
-        [[totalTasks]] = await db.query(getTotalTasks);
+        [[totalTasks]] = await db.query(getTotalTasks, {replacements: {slug: req.definition.slug}, type: db.QueryTypes.SELECT});
       } catch (error) {
         logger.error(`Unable to get total tracking state tasks ${error}`);
         return res.status().json({message: 'Unable to get total tracking state tasks', cause: error});
@@ -220,10 +220,10 @@ class TrackingDefinitionRoute extends RoutingInterface {
                 LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" 
                   ON 
                   "tracking_state_task"."assignedTo_id" = "user".id AND 
-                  "tracking_state_task"."state_id" in (SELECT id FROM "pog_tracking_states" as s WHERE s.slug='${req.definition.slug}' AND s.status NOT IN ('failed','completed') AND "deletedAt" IS null) AND
+                  "tracking_state_task"."state_id" in (SELECT id FROM "pog_tracking_states" as s WHERE s.slug=':slug' AND s.status NOT IN ('failed','completed') AND "deletedAt" IS null) AND
                   "tracking_state_task"."status" NOT IN ('failed', 'complete')
                 WHERE
-                  "user"."id" IN (${usersList})
+                  "user"."id" IN (:usersList)
                 GROUP BY
                   "user"."firstName",
                   "user"."lastName",
@@ -234,7 +234,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
       let results;
       try {
-        results = await db.query(query);
+        results = await db.query(query, {replacements: {slug: req.definition.slug, usersList}, type: db.QueryTypes.SELECT});
       } catch (error) {
         logger.error(`Unable to get user assigned tasks ${error}`);
         return res.status(500).json({message: 'Unable to get user assigned tasks', cause: error});
