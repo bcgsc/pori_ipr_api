@@ -1,5 +1,7 @@
 const express = require('express');
 const $https = require('https');
+const nconf = require('nconf').argv().env().file({file: `${__dirname}/../../config/config.json`});
+
 const logger = require('../../lib/log');
 
 const router = express.Router({mergeParams: true});
@@ -41,10 +43,14 @@ router.route('/subtask')
       },
     };
 
+    const hostname = nconf.get('jira:hostname');
+    const api = nconf.get('jira:api');
+    const version = nconf.get('jira:version');
+
     // Request options & settings
     const opts = {
-      hostname: 'www.bcgsc.ca',
-      path: '/jira/rest/api/2/issue',
+      hostname,
+      path: `${api}/api/${version}/issue`,
       port: 443,
       method: 'POST',
       headers: {
