@@ -166,13 +166,11 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
       let totalTasks;
       try {
-        totalTasks = await db.query(getTotalTasks);
+        [[totalTasks]] = await db.query(getTotalTasks);
       } catch (error) {
         logger.error(`Unable to get total tracking state tasks ${error}`);
         return res.status().json({message: 'Unable to get total tracking state tasks', cause: error});
       }
-
-      [[totalTasks]] = totalTasks;
 
       if (!totalTasks) {
         const response = {
