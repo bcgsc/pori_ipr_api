@@ -169,7 +169,7 @@ class TrackingTaskRoute extends RoutingInterface {
       const entry = new Task(req.task);
 
       const outcomes = (req.params.checkin.indexOf(',')) ? req.params.checkin.split(',') : [req.params.checkin];
-      const all = (req.params.all);
+      const {all} = req.params;
 
       try {
         const result = await entry.cancelCheckIn(outcomes, all);
