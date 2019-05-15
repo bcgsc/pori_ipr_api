@@ -1,4 +1,5 @@
 const express = require('express');
+const _ = require('lodash');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
@@ -112,23 +113,38 @@ router.route('/')
 
     try {
       // return all reports
-      const reports = await db.models.analysis_report.scope('public').findAll(opts);
-      if (!req.query.paginated) {
-        return res.json(reports);
+      let reports = await db.models.analysis_report.scope('public').findAll(opts);
+      if (req.query.paginated) {
+        // limits and offsets are causing the query to break due to the public scope and subqueries
+        // i.e. fields are not available for joining onto subquery selection
+        // dealing w/ applying the pagination here
+        const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
+        const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
+
+        // apply limit and offset to results
+        const start = offset;
+        const finish = offset + limit;
+        reports = reports.slice(start, finish);
+      }
+      if (req.query.sort) {
+        const mapping = {
+          patientID: 'pog.POGID',
+          analysisBiopsy: 'analysis.analysis_biopsy',
+          tumourType: 'patientInformation.tumourType',
+          physician: 'patientInformation.physician',
+          state: 'state',
+          caseType: 'patientInformation.caseType',
+          alternateIdentifier: 'analysis.pog.alternate_identifier',
+        };
+
+        let {sort} = req.query;
+        sort = sort.split(',');
+        const columns = sort.map(sortGroup => mapping[sortGroup.split(':')[0]]);
+        const orders = sort.map(sortGroup => sortGroup.split(':')[1]);
+        reports = _.orderBy(reports, columns, orders);
       }
 
-      // limits and offsets are causing the query to break due to the public scope and subqueries
-      // i.e. fields are not available for joining onto subquery selection
-      // dealing w/ applying the pagination here
-      const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
-      const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
-
-      // apply limit and offset to results
-      const start = offset;
-      const finish = offset + limit;
-      const paginatedReports = reports.slice(start, finish);
-
-      return res.json({total: reports.length, reports: paginatedReports});
+      return res.json({total: reports.length, reports});
     } catch (error) {
       logger.error(`Unable to lookup analysis reports ${error}`);
       return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
