@@ -405,7 +405,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
     // Access Control
     const access = new Acl(req, res);
     access.write = ['admin', 'superUser', 'Full Project Access'];
-    if (access.check()) {
+    if (!access.check()) {
       logger.error('User isn\'t allowed to add project POGs');
       return res.status(403).json(ERRORS.AccessForbidden);
     }
