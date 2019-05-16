@@ -1,352 +1,421 @@
-"use strict";
+const Excel = require('exceljs');
+const _ = require('lodash');
+const db = require('../../../models');
+const RoutingInterface = require('../../../routes/routingInterface');
 
-// app/routes/genomic/detailedGenomicAnalysis.js
-const validator           = require('validator');
-const express             = require('express');
-const router              = express.Router({mergeParams: true});
-const acl                 = require(process.cwd() + '/app/middleware/acl');
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const RoutingInterface    = require('../../../routes/routingInterface');
-const logger              = require('../../../../lib/log');
-const Excel               = require('exceljs');
-const FastCSV             = require('fast-csv');
+const Patient = require('../../../libs/patient/patient.library');
+const Analysis = require('../../../libs/patient/analysis.library');
+const Variants = require('../germline_small_mutation_variant');
+const Review = require('../germline_small_mutation_review');
+const Report = require('../germline_small_mutation');
 
-const Patient             = require(process.cwd() + '/app/libs/patient/patient.library');
-const Analysis            = require(process.cwd() + '/app/libs/patient/analysis.library');
-const Variants            = require('../germline_small_mutation_variant');
-const Review              = require('../germline_small_mutation_review');
-const Report              = require('../germline_small_mutation');
+const gsmMiddleware = require('../middleware/germline_small_mutation.middleware');
+const reviewMiddleware = require('../middleware/germline_small_mutation_review.middleware');
+const variantMiddleware = require('../middleware/germline_small_mutation_variant.middleware');
 
-/**
- * Create and bind routes for Germline Small Mutations Module
- *
- * @type {TrackingRouter}
- */
-module.exports = class GSMRouter extends RoutingInterface {
-  
+const logger = require('../../../../lib/log');
+
+const DEFAULT_PAGE_LIMIT = 25;
+const DEFAULT_PAGE_OFFSET = 0;
+
+class GSMRouter extends RoutingInterface {
+  /**
+   * Create and bind routes for Germline Small Mutations Module
+   *
+   * @type {TrackingRouter}
+   * @param {object} io - Socket.io connection
+   */
+
   constructor(io) {
     super();
-    
     this.io = io;
-    
-    // URL Root
-    //this.root = '/tracking/';
-    
+
     // Register Middleware
-    this.registerMiddleware('gsm_report', require('../middleware/germline_small_mutation.middleware'));
-    this.registerMiddleware('review', require('../middleware/germline_small_mutation_review.middleware'));
-    this.registerMiddleware('variant', require('../middleware/germline_small_mutation_variant.middleware'));
-    
-    //let States = new StateRoutes(this.io);
-    //this.bindRouteObject('/state', States.getRouter());
-    
-    //let Tasks = new TaskRoutes(this.io);
-    //this.bindRouteObject('/task', Tasks.getRouter());
-    
-    //let Ticket_Template = new TicketTemplateRoutes(this.io);
-    //this.bindRouteObject('/ticket/template', Ticket_Template.getRouter());
-    
+    this.registerMiddleware('gsm_report', gsmMiddleware);
+    this.registerMiddleware('review', reviewMiddleware);
+    this.registerMiddleware('variant', variantMiddleware);
+
     // Load Report
     this.registerEndpoint('post', '/patient/:patient/biopsy/:analysis', this.loadReport);
-  
+
     // All Reports
     this.registerEndpoint('get', '/', this.getReports); // All reports for all cases
     this.registerEndpoint('get', '/patient/:patient/biopsy/:analysis', this.getAnalysisReport); // All reports for a biopsy
-    
+
     // Individual Reports
     this.reportResource();
-    
+
     // Variants
     this.reportVariants();
-    
+
     // Reviews
     this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review', this.addReview); // Add review to report
     this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', this.removeReview); // Add review to report
-    
+
     // Export
     this.registerEndpoint('get', '/export/batch/token', this.getExportFlashToken);
     this.registerEndpoint('get', '/export/batch', this.batchExport);
   }
-  
+
   /**
    * Load Germline Report
    *
    * /POG/{POGID}/analysis/{analysis}
    *
-   *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {string} req.params.analysis - Bioapps biopsy/analysis value Eg: biop1
+   * @property {string} req.params.patient - Patient identifier Eg: POG1234
+   * @property {string} req.body.source - Source file path
+   * @property {string} req.body.version - Source file version Eg: v0.0.1
+   * @property {Array.<object>} req.body.rows - Data rows
+   * @property {string} req.body.project - Project name
+   * @property {string} req.body.normal_library - The germline/normal library name Eg: P12345
+   * @property {object} req.user - Current user
+   *
+   * @returns {Promise.<object>} - Returns the created report
    */
-  loadReport(req, res) {
-  
+  async loadReport(req, res) {
     // Check for required values
-    let required = {};
-    if(!req.params.analysis) required.analysis = 'A bioapps biopsy/analysis value is required. Eg: biop1';
-    if(!req.body.source) required.source = 'The source file path is required';
-    if(!req.body.version) required.version = 'The source file version is required. Eg: v0.0.1';
-    if(!req.params.patient) required.patient = 'The patient identifier is required. Eg: POG1234';
-    if(!req.body.rows) required.rows = 'Data rows are required for import. Empty arrays are valid.';
-    if(!req.body.project) required.project = 'Project name is required to load a report';
-    if(!req.body.normal_library) required.normal_library = 'The germline/normal library name is requried, Eg: P12345';
-    
-    if(_.keys(required).length > 0) return res.status(400).json({message: 'Required fields were missing.', fields: required});
-    
+    const required = {};
+    if (!req.params.analysis) {
+      required.analysis = 'A bioapps biopsy/analysis value is required. Eg: biop1';
+    }
+    if (!req.body.source) {
+      required.source = 'The source file path is required';
+    }
+    if (!req.body.version) {
+      required.version = 'The source file version is required. Eg: v0.0.1';
+    }
+    if (!req.params.patient) {
+      required.patient = 'The patient identifier is required. Eg: POG1234';
+    }
+    if (!req.body.rows) {
+      required.rows = 'Data rows are required for import. Empty arrays are valid.';
+    }
+    if (!req.body.project) {
+      required.project = 'Project name is required to load a report';
+    }
+    if (!req.body.normal_library) {
+      required.normal_library = 'The germline/normal library name is requried, Eg: P12345';
+    }
+
+    if (Object.keys(required).length > 0) {
+      logger.error('Required fields were missing');
+      return res.status(400).json({message: 'Required fields were missing.', fields: required});
+    }
+
     let patient;
-    let analysis;
-    let report;
-    let public_report;
-    
-    // Retrieve POG and Analysis
-    Patient.retrieveOrCreate(req.params.patient, req.body.project)
-      
+    try {
       // Create or retrieve patient object
-      .then((p) => {
-        patient = p;
-        return Analysis.retrieveOrCreate(p.id, req.params.analysis, null, {libraries: {normal: req.body.normal_library}});
-      })
-      
+      patient = await Patient.retrieveOrCreate(req.params.patient, req.body.project);
+    } catch (error) {
+      logger.error(`There was an error while retrieving patient ${error}`);
+      return res.status(500).json({message: 'There was an error while retrieving patient'});
+    }
+
+    let analysis;
+    try {
       // Create or Retrieve Biopsy Analysis
-      .then((a) => {
-        analysis = a;
-        
-        // Begin creating Report
-        let report = {
-          pog_analysis_id: analysis.id,
-          source_version: req.body.version,
-          source_path: req.body.source,
-          biofx_assigned_id: req.user.id
-        };
-        
-        return db.models.germline_small_mutation.create(report);
-        
-      })
+      analysis = await Analysis.retrieveOrCreate(patient.id, req.params.analysis, null, {libraries: {normal: req.body.normal_library}});
+    } catch (error) {
+      logger.error(`There was an error retrieving/creating analysis ${error}`);
+      return res.status(500).json({message: 'There was an error retrieving/creating analysis'});
+    }
+
+    // Begin creating Report
+    const reportOpt = {
+      pog_analysis_id: analysis.id,
+      source_version: req.body.version,
+      source_path: req.body.source,
+      biofx_assigned_id: req.user.id,
+    };
+
+    let report;
+    try {
       // Create Small Mutation Report object
-      .then((r) => {
-        report = r;
-  
-        // Prepare Rows with processing
-        let rows = Variants.processVariants(report, req.body.rows);
-        
-        return db.models.germline_small_mutation_variant.bulkCreate(rows);
-      })
-      // Get Full public object
-      .then((rows) => {
-        
-        let output = report.toJSON();
-        output.analysis = analysis.toJSON();
-        output.analysis.pog = patient.toJSON();
-        output.variants = rows;
-        output.biofx_assigned = req.user;
-        
-        delete output.id;
-        delete output.pog_analysis_id;
-        delete output.biofx_assigned_id;
-        delete output.deletedAt;
-        
-        res.json(output);
-      })
-      // Catch failures & errors
-      .catch((err) => {
-        // Cleanup
-        db.models.germline_small_mutation.destroy({where: {pog_analysis_id: analysis.id}});
-      
-        if(_.find(err.errors, {type: 'unique violation'})) return res.status(400).json({message: `A report for ${patient.POGID} with version ${req.body.version} already exists`});
-      
-        res.status(500).json({message: `Failed to import report: ${err.message}`, error: err});
-        console.log('Failed to import germline report', err);
-      });
+      report = await db.models.germline_small_mutation.create(reportOpt);
+    } catch (error) {
+      logger.error(`There was an error creating germline small mutation report ${error}`);
+      return res.status(500).json({message: 'There was an error creating germline small mutation report'});
+    }
+
+    try {
+      // Prepare Rows with processing
+      const processedVariants = await Variants.processVariants(report, req.body.rows);
+      const rows = await db.models.germline_small_mutation_variant.bulkCreate(processedVariants);
+
+      const output = _.omit(report.toJSON(),
+        ['id', 'pog_analysis_id', 'biofx_assigned_id', 'deletedAt']);
+      output.analysis = analysis.toJSON();
+      output.analysis.pog = patient.toJSON();
+      output.variants = rows;
+      output.biofx_assigned = req.user;
+
+      return res.json(output);
+    } catch (error) {
+      // Cleanup
+      await db.models.germline_small_mutation.destroy({where: {pog_analysis_id: analysis.id}});
+      if (_.find(error.errors, {type: 'unique violation'})) {
+        logger.error(`A report for ${patient.POGID} with version ${req.body.version} already exists`);
+        return res.status(400).json({message: `A report for ${patient.POGID} with version ${req.body.version} already exists`});
+      }
+
+      logger.error(`There was an error while creating germline reports ${error}`);
+      return res.status(500).json({message: `Failed to import report: ${error.message}`, error});
+    }
   }
-  
+
   /**
    * Get All Germline Reports
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {object} req.query - Contains query options
+   * @property {string} req.query.search - Search option for POGID
+   * @property {string} req.query.project - Search option for project
+   * @property {number} req.query.limit - Query page limit
+   * @property {number} req.query.offset - Query page offset
+   * @property {Array.<string>} req.user.groups - Array of groups user belongs to
+   *
+   * @returns {Promise.<object>} - Returns the reports and number of reports
    */
-  getReports(req, res) {
-    
-    // get all reports
-    
-    let opts = {
+  async getReports(req, res) {
+    const opts = {
       order: [['id', 'desc']],
-      where: {}
+      where: {},
     };
-        
-    if(req.query.search) opts.where['$analysis.pog.POGID$'] = {$ilike: `%${req.query.search}%` };
-    if(req.query.project) opts.where['$analysis.pog.projects.name$'] = req.query.project;
 
-    
-    db.models.germline_small_mutation.scope('public').findAndCountAll(opts)
-      .then((result) => {
+    if (req.query.search) {
+      opts.where['$analysis.pog.POGID$'] = {$ilike: `%${req.query.search}%`};
+    }
+    if (req.query.project) {
+      opts.where['$analysis.pog.projects.name$'] = req.query.project;
+    }
 
-        let reports = result.rows;
+    let gsmReports;
+    try {
+      gsmReports = await db.models.germline_small_mutation.scope('public').findAndCountAll(opts);
+    } catch (error) {
+      logger.error(`There was an error while finding all germline reports ${error}`);
+      return res.status(500).json({message: 'There was an error while finding all germline reports'});
+    }
 
-        // If user is in projects group, filter for reports that have been reviewed by biofx
-        if(_.find(req.user.groups, {name: 'Projects'})) {
-          reports = _.filter(reports, function(record) {
-            if(_.filter(record.reviews, {type: 'biofx'}).length > 0) return true;
-            return false;
-          });
-          
-          result.count = reports.length;
-        }
-        
-        // Need to take care of limits and offsets outside of query to support natural sorting
-        let limit = parseInt(req.query.limit) || 25; // Gotta parse those ints because javascript is javascript!
-        let offset = parseInt(req.query.offset) || 0;
+    let reports = gsmReports.rows;
 
-        // Reverse natural sort by POGID
-        reports.sort(function(a,b) {
-          return b.analysis.pog.POGID.localeCompare(a.analysis.pog.POGID, undefined, {numeric: true, sensitivity: 'base'});
-        });
-
-        // apply limit and offset to results
-        let start = offset,
-            finish = offset + limit;
-        let rows = reports.slice(start, finish);
-
-        res.json({total: result.count, reports: rows});
-      })
-      .catch((err) => {
-        res.status(500).json({message: 'Unable to retrieve reports'});
-        console.log('Unable to retrieve reports', err);
+    // If user is in projects group, filter for reports that have been reviewed by biofx
+    if (_.find(req.user.groups, {name: 'Projects'})) {
+      reports = _.filter(reports, (record) => {
+        return _.filter(record.reviews, {type: 'biofx'}).length > 0;
       });
-    
+
+      gsmReports.count = reports.length;
+    }
+
+    // Need to take care of limits and offsets outside of query to support natural sorting
+    const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
+    const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
+
+    // Reverse natural sort by POGID
+    reports.sort((a, b) => {
+      return b.analysis.pog.POGID.localeCompare(a.analysis.pog.POGID, undefined, {numeric: true, sensitivity: 'base'});
+    });
+
+    // apply limit and offset to results
+    const start = offset;
+    const finish = offset + limit;
+    const rows = reports.slice(start, finish);
+
+    return res.json({total: gsmReports.count, reports: rows});
   }
-  
+
   /**
    * Get Germline reports for specific biopsy
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
-   **/
-  getAnalysisReport(req, res) {
-    
-    let opts = {
-      order:  [['createdAt', 'desc']],
+   * @property {string} req.params.analysis - Analysis biopsy
+   * @property {string} req.params.patient - POGID
+   *
+   * @returns {Promise.<object>} - Returns the germline analysis reports
+   */
+  async getAnalysisReport(req, res) {
+    const opts = {
+      order: [['createdAt', 'desc']],
       attributes: {
         exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id']
       },
       include: [
-        { as: 'analysis', model: db.models.pog_analysis.scope('public'), where: { analysis_biopsy: req.params.analysis }, include: [ { model: db.models.POG, as: 'pog', where: { POGID: req.params.patient }} ] },
-        { as: 'biofx_assigned', model: db.models.user.scope('public') },
-        { as: 'variants', model: db.models.germline_small_mutation_variant, separate: true },
-        { as: 'reviews', model: db.models.germline_small_mutation_review, separate: true, include: [ {model: db.models.user.scope('public'), as: 'reviewedBy'} ] }
-      ]
+        {as: 'analysis', model: db.models.pog_analysis.scope('public'),
+          where: {analysis_biopsy: req.params.analysis},
+          include: [{model: db.models.POG, as: 'pog', where: {POGID: req.params.patient}}],
+        },
+        {as: 'biofx_assigned', model: db.models.user.scope('public')},
+        {as: 'variants', model: db.models.germline_small_mutation_variant, separate: true},
+        {as: 'reviews', model: db.models.germline_small_mutation_review, separate: true,
+          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+        },
+      ],
     };
-    
-    db.models.germline_small_mutation.scope('public').findAll(opts)
-      .then((reports) => {
-        res.json(reports);
-      })
-      .catch((err) => {
-        res.status(500).json({message: 'Unable to retrieve reports'});
-        console.log('Unable to retrieve reports', err);
-      });
+
+    try {
+      const reports = await db.models.germline_small_mutation.scope('public').findAll(opts);
+      return res.json(reports);
+    } catch (error) {
+      logger.error(`There was an error while trying to find all germline reports ${error}`);
+      return res.status(500).json({message: 'There was an error while trying to find all germline reports'});
+    }
   }
-  
-  
+
   /**
    * Add review event for germline report
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
    *
+   * @property {number} req.user.id - Current users id
+   * @property {string} req.body.type - Type of request
+   * @property {number} req.report.id - Germline report id
+   *
+   * @returns {Promise.<object>} - Returns new review for germline report
    */
-  addReview(req, res) {
-    
-    if(!req.body.type) return res.status(400).json({message: 'A review type is required in the body.'});
-    
-    let opts = {
+  async addReview(req, res) {
+    if (!req.body.type) {
+      logger.error('A review type is required in the body');
+      return res.status(400).json({message: 'A review type is required in the body'});
+    }
+
+    const opts = {
       where: {
         reviewedBy_id: req.user.id,
         type: req.body.type,
-        germline_report_id: req.report.id
-      }
+        germline_report_id: req.report.id,
+      },
     };
-    
-    // Make sure not already signed
-    db.models.germline_small_mutation_review.scope('public').findOne(opts)
-      .then((review) => {
-        if(review !== null) return res.status(400).json({message: `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`});
-        
-        // Create new review
-        let data = {
-          germline_report_id: req.report.id,
-          reviewedBy_id: req.user.id,
-          type: req.body.type,
-          comment: req.body.comment
-        };
-        
-        return db.models.germline_small_mutation_review.create(data);
-      })
-      .then((review) => {
-        if(!res.finished) return Review.public(review.ident);
-      })
-      .then((review) => {
-        res.json(review);
-      })
-      .catch((err) => {
-        res.status(500).json({message: 'Failed to create review entry for this report for internal reasons'});
-        console.log(`Failed to create review entry for germline report ${req.report.ident}`, err);
-      });
-  
+
+    let review;
+    try {
+      // Make sure not already signed
+      review = await db.models.germline_small_mutation_review.scope('public').findOne(opts);
+    } catch (error) {
+      logger.error(`There was an error while trying to find germline review ${error}`);
+      return res.status(500).json({message: 'There was an error while trying to find germline review'});
+    }
+
+    if (review) {
+      return res.status(400).json({message: `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`});
+    }
+
+    // Create new review
+    const data = {
+      germline_report_id: req.report.id,
+      reviewedBy_id: req.user.id,
+      type: req.body.type,
+      comment: req.body.comment,
+    };
+
+    let createdReview;
+    try {
+      createdReview = await db.models.germline_small_mutation_review.create(data);
+    } catch (error) {
+      logger.error(`There was an error while creating germline review ${error}`);
+      return res.status(500).json({message: 'There was an error while creating germline review'});
+    }
+
+    if (res.finished) {
+      logger.error('Response finished can\'t review report');
+      return res.status(500).json({message: 'Reponse finished can\'t review report'});
+    }
+
+    try {
+      const newReview = await Review.public(createdReview.ident);
+      return res.json(newReview);
+    } catch (error) {
+      logger.error(`There was an error while creating a review for this report ${error}`);
+      return res.status(500).json({message: 'There was an error while creating a review for this report'});
+    }
   }
-  
+
   /**
    * Remove a review from a report
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {object} req.review - Report review
+   *
+   * @returns {Promise.<object>} - Returns 204 status
    */
-  removeReview(req, res) {
-  
-    req.review.destroy()
-      .then(() => {
-        res.status(204).send();
-      })
-      .catch((e) => {
-        res.status(500).json({message: 'Unable to remove the requested germline report'});
-      });
-    
+  async removeReview(req, res) {
+    try {
+      await req.review.destroy();
+      return res.status(204).send();
+    } catch (error) {
+      logger.error(`There was an error while trying to remove the requested germline report ${error}`);
+      return res.status(500).json({message: 'Error while trying to remove the requested germline report'});
+    }
   }
-  
+
   // Resource endpoints for Variants
-  reportVariants() {
-    
+  async reportVariants() {
     this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant/:variant')
+      /**
+       * Get an existing variant
+       *
+       * GET /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       * @urlParam {string} variant - Variant id (ident)
+       *
+       * @param {object} req - Express request
+       * @param {object} res - Express response
+       *
+       * @returns {object} - Returns requested variant
+       */
       .get((req, res) => {
-        res.json(req.variant);
+        return res.json(req.variant);
       })
-      // Toggle variant hidden status
-      .put((req, res) => {
-        
+
+      /**
+       * Update an existing variant
+       *
+       * PUT /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+       *
+       * @urlParam {string} patientID - Patient unique ID (POGID)
+       * @urlParam {string} biopsy - Biopsy analysis id (biop1)
+       * @urlParam {stirng} report - Report UUID
+       * @urlParam {string} variant - Variant id (ident)
+       *
+       * @param {object} req - Express request
+       * @param {object} res - Express response
+       *
+       * @property {object} req.variant - Requested variant
+       *
+       * @returns {object} - Returns updated variant
+       */
+      .put(async (req, res) => {
         // Update Variant details
         req.variant.patient_history = req.body.patient_history;
         req.variant.family_history = req.body.family_history;
         req.variant.hidden = req.body.hidden;
-        
-        req.variant.save()
-          .then(() => {
-            res.json(req.variant);
-          })
-          .catch((e) => {
-            res.status(500).json({message: 'Failed to update the variant'});
-            console.log(e);
-          });
-      
+
+        try {
+          await req.variant.save();
+          return res.json(req.variant);
+        } catch (error) {
+          logger.error(`Error while trying to update variant ${error}`);
+          return res.status(500).json({message: 'Error while trying to update variant'});
+        }
       });
-    
   }
-  
-  /**
-   * Individual report resources
-   *
-   */
+
+  // Individual report resources
   reportResource() {
-  
     this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report')
 
       /**
@@ -358,10 +427,10 @@ module.exports = class GSMRouter extends RoutingInterface {
        * @urlParam {string} biopsy - Biopsy analysis id (biop1)
        * @urlParam {stirng} report - Report UUID
        *
-       *
+       * @returns {object} - Returns the requested report
        */
       .get((req, res) => {
-        res.json(req.report);
+        return res.json(req.report);
       })
 
       /**
@@ -376,24 +445,26 @@ module.exports = class GSMRouter extends RoutingInterface {
        * @bodyParam {string} biofx_assigned - ident string of user to be assigned
        * @bodyParam {
        *
+       * @returns {Promise.<object>} - Returns updated report
        */
-      .put((req, res) => {
-      
-        Report.updateReport(req.report, req.body)
-          .then((report) => {
-            return Report.public(report.ident);
-          })
-          .then((report) => {
-            res.json(report[0]);
-          })
-          .catch((e) => {
-            logger.error('Failed to update germline report', e);
-            res.status(500).json({message: 'Failed to update germline report due to an internal error'});
-            console.log(e);
-          });
-      
+      .put(async (req, res) => {
+        let report;
+        try {
+          report = await Report.updateReport(req.report, req.body);
+        } catch (error) {
+          logger.error(`There was an error updating the germline report ${error}`);
+          return res.status(500).json({message: 'There was an error updating the germline report'});
+        }
+
+        try {
+          const [publicReport] = await Report.public(report.ident);
+          return res.json(publicReport);
+        } catch (error) {
+          logger.error(`There was an error while updating the germline report ${error}`);
+          return res.status(500).json({message: 'There was an error while updating the germline report'});
+        }
       })
-      
+
       /**
        * Remove an existing report
        *
@@ -405,21 +476,20 @@ module.exports = class GSMRouter extends RoutingInterface {
        *
        * @param {object} req - Express request
        * @param {object} res - Express response
+       *
+       * @returns {object} - Returns response
        */
-      .delete((req, res) => {
-        req.report.destroy()
-          .then(() => {
-            res.status(204).send();
-          })
-          .catch((e) => {
-            res.status(500).json({message: 'Unable to remove the requested germline report'});
-          });
+      .delete(async (req, res) => {
+        try {
+          await req.report.destroy();
+          return res.status(204).send();
+        } catch (error) {
+          logger.error(`Error while removing requested germline report ${error}`);
+          return res.status(500).json({message: 'Error while removing requested germline report'});
+        }
       });
-    
-    
   }
-  
-  
+
   /**
    * Generate Batch Export
    *
@@ -431,94 +501,76 @@ module.exports = class GSMRouter extends RoutingInterface {
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {string} req.query.reviews - Report reviews
+   *
+   * @returns {Promise.<object>} - Returns the finished response
    */
-  batchExport(req, res) {
-    
-    // Where clauses
-    let opts = {
+  async batchExport(req, res) {
+    const opts = {
       where: {
-        exported: false
-      }
+        exported: false,
+      },
     };
-    
-    if(!req.query.reviews) req.query.reviews = "";
-    
-    // Build list of reports that have been reviewed by both projects and biofx
-    db.models.germline_small_mutation.scope('public').findAll(opts)
-      .then((exports) => {
-        
-        let variants = [];
-        
-        // Loop through reports, and ensure they have all required reviews
-        _.forEach(exports, (r, i) => {
-          // Ensure all required reviews are present on report
-          
-          if(_.intersection(req.query.reviews.split(','), _.map(r.reviews, (re) => { return re.type})).length > req.query.reviews.split(',').length) return;
-          
-          // Add samples name for each variant
-          let parsed_variants = _.map(r.variants, (v) => {
-            
-            // Watch for hidden rows
-            if(v.hidden) return;
-            
-            let process_variant = _.assign({sample: r.analysis.pog.POGID + '_' + r.analysis.libraries.normal}, v.toJSON());
-            
-            //return Variants.processVariant(Variants.createHeaders(), process_variant);
-            return process_variant;
-          });
-          
-          variants = variants.concat(parsed_variants);
-          
-        });
-        
-        
-        // Prepare export
-        let workbook = new Excel.Workbook();
-        
-        workbook.creator = 'BC Genome Sciences Center - BC Cancer Agency - IPR';
-        workbook.created = new Date();
-        
-        let sheet = workbook.addWorksheet('Exports');
-        
-        sheet.columns = Variants.createHeaders();
-        
-        _.forEach(variants, (v) => {
-          sheet.addRow(v);
-        });
-        
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=${new Date()}.ipr.germline.export.xlsx`);
-        
-        workbook.xlsx.write(res)
-          .then(() => {
-            res.end();
-          })
-          .catch((e) => {
-            res.status(500).json({message: 'Failed to create xlsx export of recent reports'});
-            console.log(e);
-          })
-          
-        
-        
-        //console.log('Variants', variants);
-        /*
-        FastCSV.writeToString(variants, {headers: true}, (err, data) => {
-          res.setHeader('Content-Type', 'application/CSV');
-          res.setHeader('Content-Disposition', 'attachment; filename="test.csv"');
-          res.send(data);
-          res.end();
-        }); */
-        
-      
-      })
-      .catch((err) => {
-        logger.error(`Failed to generate export: ${err.message}`);
-        console.log('Failed to generate export: ', err);
-        res.status(500).json({message: 'Failed to generate export due to internal server error'});
+
+    if (!req.query.reviews) {
+      req.query.reviews = '';
+    }
+
+    let smallMutations;
+    try {
+      // Build list of reports that have been reviewed by both projects and biofx
+      smallMutations = await db.models.germline_small_mutation.scope('public').findAll(opts);
+    } catch (error) {
+      logger.error(`Error while finding germline small mutations ${error}`);
+      return res.status(500).json({message: 'Error while finding germline small mutations'});
+    }
+
+    let variants = [];
+    // Loop through reports, and ensure they have all required reviews
+    smallMutations.forEach((value) => {
+      // Ensure all required reviews are present on report
+      if (_.intersection(req.query.reviews.split(','),
+        value.reviews.map((review) => { return review.type; })).length > req.query.reviews.split(',').length) {
+        return;
+      }
+
+      const availableVariants = value.variants.filter((variant) => {
+        return !variant.hidden;
       });
-  
+
+      const parsedVariants = availableVariants.map((variant) => {
+        return Object.assign({sample: `${value.analysis.pog.POGID}_${value.analysis.libraries.normal}`}, variant.toJSON());
+      });
+      variants = variants.concat(parsedVariants);
+    });
+
+    // Prepare export
+    const workbook = new Excel.Workbook();
+
+    workbook.creator = 'BC Genome Sciences Center - BC Cancer Agency - IPR';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Exports');
+
+    sheet.columns = Variants.createHeaders();
+
+    variants.forEach((variant) => {
+      sheet.addRow(variant);
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${new Date()}.ipr.germline.export.xlsx`);
+
+    try {
+      await workbook.xlsx.write(res);
+      return res.end();
+    } catch (error) {
+      logger.error(`Error while writing xlsx export of recent reports ${error}`);
+      return res.status(500).json({message: 'Error while writing xlsx export of recent reports'});
+    }
   }
-  
+
   /**
    * Generate a flash token for exporting reports
    *
@@ -528,18 +580,20 @@ module.exports = class GSMRouter extends RoutingInterface {
    *
    * @param {object} req - Express request
    * @param {object} res - Express response
+   *
+   * @property {number} req.user.id - Current user's id
+   *
+   * @returns {Promise.<object>} - Returns the created flash token
    */
-  getExportFlashToken(req, res) {
-    
-    // Generate Token
-    db.models.flash_token.create({user_id: req.user.id, resource: 'gsm_export'})
-      .then((result) => {
-        res.json({token: result.token});
-      })
-      .catch((e) => {
-        res.status(500).json({message:'Failed to generated download request'});
-        console.log(e);
-      });
+  async getExportFlashToken(req, res) {
+    try {
+      const flashToken = await db.models.flash_token.create({user_id: req.user.id, resource: 'gsm_export'});
+      return res.json({token: flashToken.token});
+    } catch (error) {
+      logger.error(`Error while trying to create flash token ${error}`);
+      return res.status(500).json({message: 'Error while trying to create flash token'});
+    }
   }
-  
-};
+}
+
+module.exports = GSMRouter;

@@ -1,65 +1,61 @@
 const request = require('request-promise-native');
+const nconf = require('nconf').argv().env().file({file: `${__dirname}/../../config/config.json`});
 const gin = require('../../lib/ginCredentials');
 
-const host = 'https://lims13.bcgsc.ca';
-const basePath = '/prod/limsapi';
-const path = `${host}${basePath}`;
+const hostname = nconf.get('lims:hostname');
+const basePath = nconf.get('lims:api');
+const path = `${hostname}${basePath}`;
+
 const $lims = {};
 
-
 /**
- * Retrieve sample results based on POGID
+ * Retrieve biological metadata based on POGID
  *
- *
- * @param {string|array} pogid - The patient identifier POGnnn
- * @returns {Promise.<string>} - Returns body of the resp in JSON
+ * @param {string|Array.<string>} patientIds - Patient identifier POGnnn
+ * @param {string} [field=name] - Field to seach for patient IDs (i.e originalSourceName)
+ * @returns {Promise.<string>} - Returns LIMS metadata for pogid(s)
  */
-$lims.sample = async (pogid) => {
-  // Build base of query
+$lims.biologicalMetadata = async (patientIds, field = 'participantStudyId') => {
+  if (!patientIds || patientIds.length === 0) {
+    throw new Error('Must provide 1 or more patient ids');
+  }
+
+  // Convert string pogid to array
+  if (typeof patientIds === 'string') {
+    patientIds = [patientIds];
+  }
+
+  // Query body
   const body = {
     filters: {
-      op: 'or',
-      content: [],
+      op: 'in',
+      content: {
+        field,
+        value: patientIds,
+      },
     },
   };
 
-  // Convert string pogid to array
-  if (typeof pogid === 'string') {
-    pogid = [pogid];
-  }
-
-  // Create array of POGIDs to search for
-  pogid.forEach((id) => {
-    body.filters.content.push({
-      op: '=',
-      content: {
-        field: 'participant_study_id',
-        value: id,
-      },
-    });
-  });
-
   // Make Request
   const credentials = await $lims.getAuthCredentials();
-  const resp = await request({
+  return request({
     method: 'POST',
-    uri: `${path}/sample`,
+    uri: `${path}/biological-metadata/search`,
     gzip: true,
     body,
     json: true,
   }).auth(credentials.username, credentials.password);
-
-  return resp;
 };
 
 /**
  * Get library data from LIMS
  *
- * @param {string|array} libraries - Libraries to get details for
- * @returns {Promise.<object>} - Returns the JSON parsed body of the resp
+ * @param {string|Array.<string>} libraries - Libraries to get details for by library field
+ * @param {string} [field=name] - Field to seach for libraries (i.e name)
+ * @returns {Promise.<object>} - Returns library data from LIMS
  */
-$lims.library = async (libraries) => {
-  if (libraries.length === 0) {
+$lims.library = async (libraries, field = 'originalSourceName') => {
+  if (!libraries || libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries');
   }
 
@@ -71,27 +67,35 @@ $lims.library = async (libraries) => {
     filters: {
       op: 'in',
       content: {
-        field: 'name',
+        field,
         value: libraries,
       },
     },
   };
 
   const credentials = await $lims.getAuthCredentials();
-  const resp = await request({
+  return request({
     method: 'POST',
-    uri: `${path}/library`,
+    uri: `${path}/libraries/search`,
     gzip: true,
-    body: JSON.stringify(body),
+    body,
+    json: true,
   }).auth(credentials.username, credentials.password);
-
-  return JSON.parse(resp);
 };
 
-$lims.illuminaRun = async (libraries) => {
-
-  if (libraries.length === 0) {
+/**
+ * Get sequencer-run data from LIMS
+ *
+ * @param {string|Array.<string>} libraries - List libraries or multiplex libraries
+ * @returns {Promise.<object>} - Returns sequencer-data from LIMS
+ */
+$lims.sequencerRun = async (libraries) => {
+  if (!libraries || libraries.length === 0) {
     throw new Error('Must be searching for 1 or more libraries.');
+  }
+
+  if (typeof libraries === 'string') {
+    libraries = [libraries];
   }
 
   const body = {
@@ -101,14 +105,14 @@ $lims.illuminaRun = async (libraries) => {
         {
           op: 'in',
           content: {
-            field: 'library',
+            field: 'libraryName',
             value: libraries,
           },
         },
         {
           op: 'in',
           content: {
-            field: 'multiplex_library',
+            field: 'multiplexLibraryName',
             value: libraries,
           },
         },
@@ -117,14 +121,33 @@ $lims.illuminaRun = async (libraries) => {
   };
 
   const credentials = await $lims.getAuthCredentials();
-  const resp = await request({
+  return request({
     method: 'POST',
-    uri: `${path}/illumina_run`,
+    uri: `${path}/sequencer-runs/search`,
     gzip: true,
-    body: JSON.stringify(body),
+    body,
+    json: true,
   }).auth(credentials.username, credentials.password);
+};
 
-  return JSON.parse(resp);
+/**
+ * Get disease ontology data from LIMS
+ *
+ * @param {string} query - String to query disease ontology in LIMS for
+ * @returns {Promise.<object>} - Returns disease ontology data from LIMS
+ */
+$lims.diseaseOntology = async (query) => {
+  if (!query) {
+    throw new Error('Must provide a query');
+  }
+
+  const credentials = await $lims.getAuthCredentials();
+  return request({
+    method: 'GET',
+    uri: `${path}/elastic/disease_ontology/${query}`,
+    gzip: true,
+    json: true,
+  }).auth(credentials.username, credentials.password);
 };
 
 /**

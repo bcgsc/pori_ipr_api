@@ -1,59 +1,56 @@
-"use strict";
+const db = require('../../../models');
+const RoutingInterface = require('../../../routes/routingInterface');
 
-// app/routes/genomic/detailedGenomicAnalysis.js
-const validator           = require('validator');
-const express             = require('express');
-const router              = express.Router({mergeParams: true});
-const acl                 = require(process.cwd() + '/app/middleware/acl');
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const RoutingInterface    = require('../../../routes/routingInterface');
-let DefinitionRoutes      = require('./definition');
-let StateRoutes           = require('./state');
-let TaskRoutes            = require('./task');
-let TicketTemplateRoutes  = require('./ticket_template');
-let HookRoutes            = require('./hook');
-const Generator           = require('./../generate');
-const AnalysisLib         = require('../../../libs/structures/analysis');
-const POGLib              = require('../../../libs/structures/pog');
+const DefinitionRoutes = require('./definition');
+const StateRoutes = require('./state');
+const TaskRoutes = require('./task');
+const TicketTemplateRoutes = require('./ticket_template');
+const HookRoutes = require('./hook');
+const Generator = require('./../generate');
+const POGLib = require('../../../libs/structures/pog');
+const Hook = require('../hook');
+
+// Middleware
+const analysisMiddleware = require('../../../middleware/analysis');
+const definitionMiddleware = require('../middleware/definition');
+const stateMiddleware = require('../middleware/state');
+const taskMiddleware = require('../middleware/task');
+
+const logger = require('../../../../lib/log');
 
 
-/**
- * Create and bind routes for Tracking
- *
- * @type {TrackingRouter}
- */
-module.exports = class TrackingRouter extends RoutingInterface {
-
+class TrackingRouter extends RoutingInterface {
+  /**
+   * Create and bind routes for Tracking
+   *
+   * @type {TrackingRouter}
+   * @param {object} io - Socket.io instance
+   */
   constructor(io) {
     super();
-
     this.io = io;
 
-    // URL Root
-    //this.root = '/tracking/';
-
     // Bind Routes
-    let Definitions = new DefinitionRoutes(this.io);
+    const Definitions = new DefinitionRoutes(this.io);
     this.bindRouteObject('/definition', Definitions.getRouter());
 
     // Register Middleware
-    this.registerMiddleware('analysis', require('../../../middleware/analysis'));
-    this.registerMiddleware('definition', require('../middleware/definition'));
-    this.registerMiddleware('state', require('../middleware/state'));
-    this.registerMiddleware('task', require('../middleware/task'));
+    this.registerMiddleware('analysis', analysisMiddleware);
+    this.registerMiddleware('definition', definitionMiddleware);
+    this.registerMiddleware('state', stateMiddleware);
+    this.registerMiddleware('task', taskMiddleware);
 
 
-    let States = new StateRoutes(this.io);
+    const States = new StateRoutes(this.io);
     this.bindRouteObject('/state', States.getRouter());
 
-    let Tasks = new TaskRoutes(this.io);
+    const Tasks = new TaskRoutes(this.io);
     this.bindRouteObject('/task', Tasks.getRouter());
 
-    let Ticket_Template = new TicketTemplateRoutes(this.io);
-    this.bindRouteObject('/ticket/template', Ticket_Template.getRouter());
+    const TicketTemplate = new TicketTemplateRoutes(this.io);
+    this.bindRouteObject('/ticket/template', TicketTemplate.getRouter());
 
-    let Hooks = new HookRoutes(this.io);
+    const Hooks = new HookRoutes(this.io);
     this.bindRouteObject('/hook', Hooks.getRouter());
 
     // Enable Generator
@@ -62,113 +59,100 @@ module.exports = class TrackingRouter extends RoutingInterface {
     // Enable Root Racking
     this.tracking(States);
 
-    this.registerEndpoint('get', '/test/hook/:state/:task', (req, res, next) => {
-    
-      const Hook = require('../hook');
-      
-      Hook.check_hook('bioapps', 'complete', 'bioapps_patient_sync', true)
-        .then((hooks) => {
-          return Promise.all(_.map(hooks, (hook) => { return Hook.invoke_hook(hook, req.state, req.task); }));
-        })
-        .then((result) => {
-          res.json({message: 'Sent email', result});
-        })
-        .catch((e) => {
-          res.status(500).json({message: 'Failed to run hooks: '+ e.message});
-        });
+    // Get and run hooks
+    this.registerEndpoint('get', '/test/hook/:state/:task', async (req, res) => {
+      let hooks;
+      try {
+        hooks = await Hook.check_hook('bioapps', 'complete', 'bioapps_patient_sync', true);
+      } catch (error) {
+        logger.error(`Failed to get hooks ${error}`);
+        return res.status(500).json({message: 'Failed to get hooks', cause: error});
+      }
+
+      try {
+        const result = await Promise.all(hooks.map((hook) => {
+          return Hook.invoke_hook(hook, req.state, req.task);
+        }));
+        return res.json({message: 'Sent email', result});
+      } catch (error) {
+        logger.error(`Failed to run hooks ${error}`);
+        return res.status(500).json({message: 'Failed to run hooks', cause: error});
+      }
     });
-    
   }
-  
-  /**
-   * Generate Tracking from source
-   *
-   */
+
+  // Generate Tracking from source
   generator() {
-
     // Create parent elements, then initiate tracking
-    this.registerEndpoint('post', '/', (req, res, next) => {
-
-      if(!req.body.POGID) return res.status(400).json({error: {message: 'POGID is a required input', code: 'failedValidation', input: 'POGID'}});
+    this.registerEndpoint('post', '/', async (req, res) => {
+      if (!req.body.POGID) {
+        logger.error('POGID is a required input');
+        return res.status(400).json({error: {message: 'POGID is a required input', code: 'failedValidation', input: 'POGID'}});
+      }
 
       // Create POG
-      let pog = new POGLib(req.body.POGID);
+      const pogLib = new POGLib(req.body.POGID);
 
-      let pogOpts = {
+      const pogOpts = {
         create: true,
-        analysis: false
+        analysis: false,
       };
-      
-      pog.retrieve(pogOpts).then(
-        (pog) => {
-          
-          let data = {
-            pog_id: pog.id,
-            libraries: {normal: null, tumour: null, transcriptome: null},
-            clinical_biopsy: req.body.clinical_biopsy,
-            analysis_biopsy: req.body.analysis_biopsy,
-            priority: req.body.priority,
-            disease: req.body.disease,
-            biopsy_notes: req.body.biopsy_notes
-          };
-          
-          db.models.pog_analysis.create(data).then(
-            (analysis) => {
 
-              let generator = new Generator(pog, analysis, req.user).then(
-                (results) => {
-                  res.json(results);
-                },
-                (err) => {
-                  console.log(err);
-                  res.status(400).json(err);
-                });
+      let pog;
+      // Retrieve POG from Library
+      try {
+        pog = await pogLib.retrieve(pogOpts);
+      } catch (error) {
+        logger.error(`Unable to retrieve POG ${error}`);
+        return res.status(500).json({message: 'Unable to retrieve POG', cause: error});
+      }
 
-            },
-            (err) => {
-              console.log(err);
-              res.status(400).json({error: {message: 'Unable to create analysis/biopsy entry: ' + err.message, cause: err}});
-            }
-          );
+      const data = {
+        pog_id: pog.id,
+        libraries: {normal: null, tumour: null, transcriptome: null},
+        clinical_biopsy: req.body.clinical_biopsy,
+        analysis_biopsy: req.body.analysis_biopsy,
+        priority: req.body.priority,
+        disease: req.body.disease,
+        biopsy_notes: req.body.biopsy_notes,
+      };
 
-        },
-        (err) => {
+      let analysis;
+      // Create POG analysis
+      try {
+        analysis = await db.models.pog_analysis.create(data);
+      } catch (error) {
+        logger.error(`Failed to create POG analysis ${error}`);
+        return res.status(500).json({message: 'Failed to create POG analysis', cause: error});
+      }
 
-        })
-
+      try {
+        const generator = await new Generator(pog, analysis, req.user);
+        return res.json(generator);
+      } catch (error) {
+        logger.error(`Failed to generate tracking ${error}`);
+        return res.status(500).json({message: 'Failed to generate tracking', cause: error});
+      }
     });
 
     // Generate Tracking Only
-    this.registerEndpoint('get', '/POG/:POG/analysis/:analysis([A-z0-9-]{36})/generate', (req,res,next) => {
-
+    this.registerEndpoint('get', '/POG/:POG/analysis/:analysis([A-z0-9-]{36})/generate', async (req, res) => {
       // Generate Request
-      let generator = new Generator(req.pog, req.analysis, req.user).then(
-        (results) => {
-          res.json(results);
-        },
-        (err) => {
-          console.log(err);
-          res.status(400).json(err);
-        }
-      ).catch((e) => {
-        res.status(500).json({error: {message: 'Tracking initialization failed: ' + e.message}});
-      });
-
+      try {
+        const generator = await new Generator(req.pog, req.analysis, req.user);
+        return res.json(generator);
+      } catch (error) {
+        logger.error(`Tracking initialization failed ${error}`);
+        return res.status(500).json({error: {message: 'Tracking initialization failed', cause: error}});
+      }
     });
-
   }
-  
-  /**
-   * Tracking Home Route
-   *
-   */
+
+  // Tracking Home Route
   tracking(stateRouter) {
-    
     // Map to state router function
     this.registerEndpoint('get', '/', stateRouter.getFilteredStates);
-
   }
+}
 
-
-
-};
+module.exports = TrackingRouter;

@@ -1,6 +1,8 @@
 const validate = require('uuid-validate');
 const db = require('../models');
 
+const logger = require('../../lib/log');
+
 const ignored = {
   files: ['index.js', 'POG.js'],
   routes: ['loadPog'],
@@ -28,12 +30,18 @@ module.exports = async (req, res, next, ident) => {
   opts.attributes = {exclude: ['deletedAt']};
 
   // Lookup POG first
-  const result = await db.models.pog_analysis.findOne(opts);
+  let pogAnalysis;
+  try {
+    pogAnalysis = await db.models.pog_analysis.findOne(opts);
+  } catch (error) {
+    logger.error(`Error while trying to find POG analysis ident: ${ident} error: ${error}`);
+    return res.status(500).json({error: {message: 'Error when trying to find POG analysis', code: 'analysisMiddlewareQueryFail'}});
+  }
   // Nothing found?
-  if (!result) {
-    return res.status(404).json({error: {message: 'Unable to find the requested analysis', code: 'analysisMiddlewareLookupFail'}});
+  if (!pogAnalysis) {
+    return res.status(404).json({error: {message: `Unable to find the requested analysis ident: ${ident}`, code: 'analysisMiddlewareLookupFail'}});
   }
   // POG found, next()
-  req.analysis = result;
+  req.analysis = pogAnalysis;
   return next();
 };

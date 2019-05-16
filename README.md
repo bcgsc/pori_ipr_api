@@ -62,6 +62,7 @@ The application server expects to find a `.env.json` file in one of two places:
 
 1. For local environments in the root folder: `./.env.json`
 2. For production, test, and development, it expects to find it in a parent folder: `../persist/.env.json`
+3. For specifying config values via the command line (i.e lims api) use --key value at the end of the command (i.e NODE_ENV=local npm start --lims:api /beta/limsapi)
 
 
 The format for the file declares a configuration by environment:

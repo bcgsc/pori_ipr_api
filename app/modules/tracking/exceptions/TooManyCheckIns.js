@@ -1,9 +1,3 @@
-"use strict";
+class TooManyCheckIns extends Error {}
 
-module.exports = class TooManyCheckIns extends Error {
-  constructor(m, target) {
-    // Invoke stderr response
-    super(m);
-  }
-
-};
+module.exports = TooManyCheckIns;

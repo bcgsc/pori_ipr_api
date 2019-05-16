@@ -1,34 +1,28 @@
-"use strict";
+const _ = require('lodash');
+const db = require('../../models');
 
-const db          = require(process.cwd() + '/app/models');
-const lodash      = require('lodash');
-const logger      = require('../../../lib/log');
-const p2s         = require(process.cwd() + '/app/libs/pyToSql');
-const _           = require('lodash');
-
+const logger = require('../../../lib/log');
 
 /**
  * Retrieve user entries
  *
  * Supporting function
  *
- * @param users
+ * @param {Array.<object>} users - Collection of user objects
+ *
+ * @returns {Promise.<Array.<object>>} - Returns an array of updated users
  */
-let getUpdateUsers = (users) => {
-  return new Promise((resolve, reject) => {
-    
-    if(users.length === 0) resolve([]);
-    
-    db.models.user.findAll({where: { ident: {$in: users}}})
-      .then((u) => {
-        resolve(u);
-      })
-      .catch((e) => {
-        reject({message: 'Failed query to find requested users'});
-        logger.error('Failed to query users table to find update users', e);
-      });
-    
-  });
+const getUpdateUsers = async (users) => {
+  if (users.length === 0) {
+    return [];
+  }
+
+  try {
+    return db.models.user.findAll({where: {ident: {$in: users}}});
+  } catch (error) {
+    logger.error(`There was an error while getting updated users ${error}`);
+    throw new Error('There was an error while getting updated users');
+  }
 };
 
 
@@ -38,37 +32,30 @@ let getUpdateUsers = (users) => {
  * @param {object} report - The model instance of an existing report
  * @param {object} data - Key-value paired object of values to be updated
  *
- * @returns {Promise/object} - Resolves with updated model object
+ * @returns {Promise.<object>} - Returns an updated model object
  */
-let updateReport =  (report, data) => {
-  return new Promise((resolve, reject) => {
-    
-    let updateData = {};
-    let resolveUsers = {};
-    
-    updateData.exported = data.exported;
-    
-    // Supported values to update
-    if(data.biofx_assigned) resolveUsers.biofx = data.biofx_assigned;
-    
-    getUpdateUsers(_.values(resolveUsers))
-    // Process update users
-      .then((users) => {
-        if(users.length > 0) {
-          if(_.find(users, {ident: data.biofx_assigned})) updateData.biofx_assigned_id = _.find(users, {ident: data.biofx_assigned}).id;
-        }
-        
-        return report.update(updateData);
-      })
-      .then((r) => {
-        resolve(r);
-      })
-      .catch((e) => {
-        reject({message: `Unable to update the supplied report: ${e.message}`});
-        logger.error('Unable to update the supplied report', e);
-      });
-    
-  });
+const updateReport = async (report, data) => {
+  const updateData = {};
+  const resolveUsers = {};
+
+  updateData.exported = data.exported;
+
+  // Supported values to update
+  if (data.biofx_assigned) {
+    resolveUsers.biofx = data.biofx_assigned;
+  }
+
+  try {
+    const users = await getUpdateUsers(resolveUsers.values());
+    if (users.length > 0 && _.find(users, {ident: data.biofx_assigned})) {
+      updateData.biofx_assigned_id = _.find(users, {ident: data.biofx_assigned}).id;
+    }
+
+    return report.update(updateData);
+  } catch (error) {
+    logger.error(`Error while trying to update supplied report ${error}`);
+    throw new Error('Error while trying to update supplied report');
+  }
 };
 
 
@@ -77,33 +64,19 @@ let updateReport =  (report, data) => {
  *
  * @param {string} ident - Germline report uuid ident
  *
- * @returns {Promise}
+ * @returns {Promise.<Array.<object>>} - Returns all public versions of germline reports with ident
  */
-let getPublic = (ident) => {
-  return new Promise((resolve, reject) => {
-    
-    db.models.germline_small_mutation.scope('public').findAll({where: {ident: ident}})
-      .then((patient) => {
-        resolve(patient);
-      })
-      .catch((e) => {
-        reject({message: `Failed to retrieve public scope of germline report: ${e.message}`});
-        logger.error('Failed to retrieve public version of germline report', e);
-      });
-    
-  });
+const getPublic = async (ident) => {
+  try {
+    return db.models.germline_small_mutation.scope('public').findAll({where: {ident}});
+  } catch (error) {
+    logger.error(`Error while retrieving public scope of germline report ${error}`);
+    throw new Error('Error while retrieving public scope of germline report');
+  }
 };
 
-// Pseudo Interface
 module.exports = {
-  
-  // Get public version of report
   public: getPublic,
-  
-  // Update report
-  updateReport: updateReport,
-  
-  // Get updated users
-  getUpdateUsers: getUpdateUsers
-  
+  updateReport,
+  getUpdateUsers,
 };
