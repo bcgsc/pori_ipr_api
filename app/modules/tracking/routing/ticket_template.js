@@ -1,14 +1,14 @@
-"use strict";
+const db = require('../../../models');
+const RoutingInterface = require('../../../routes/routingInterface');
+const TicketTemplate = require('../ticket_template');
 
-const express             = require('express');
-const router              = express.Router({mergeParams: true});
-const db                  = require(process.cwd() + '/app/models');
-const _                   = require('lodash');
-const RoutingInterface    = require('../../../routes/routingInterface');
-const Ticket_Template     = require('../ticket_template');
+// Middleware
+const ticketTemplateMiddleware = require('../middleware/ticket_template');
+const definitionMiddleware = require('../middleware/definition');
 
-module.exports = class TrackingTicketTemplateRoutes extends RoutingInterface {
-  
+const logger = require('../../../../lib/log');
+
+class TrackingTicketTemplateRoutes extends RoutingInterface {
   /**
    * Tracking Ticket Templates Routing
    *
@@ -18,38 +18,34 @@ module.exports = class TrackingTicketTemplateRoutes extends RoutingInterface {
    */
   constructor(io) {
     super();
-    
     this.io = io;
-    
+
     // Register Middleware
-    this.registerMiddleware('template', require('../middleware/ticket_template'));
-    this.registerMiddleware('definition', require('../middleware/definition'));
-    
+    this.registerMiddleware('template', ticketTemplateMiddleware);
+    this.registerMiddleware('definition', definitionMiddleware);
+
     // Register Task endpoint
     this.rootPath();
-    
   }
-  
+
   // URL Root
   rootPath() {
-    
     this.registerResource('/definition/:definition')
     // Get all state definitions
-      .get((req,res,next) => {
+      .get(async (req, res) => {
         // Get All Definitions
-        db.models.tracking_ticket_template.scope('public').findAll({ where: { definition_id: req.definition.id } }).then(
-          (templates) => {
-            res.json(templates);
-          },
-          (err) => {
-            console.log(err);
-            res.status(500).json({error: {message: 'Unable to query definitions'}});
-          }
-        )
+        try {
+          const templates = await db.models.tracking_ticket_template.scope('public').findAll({where: {definition_id: req.definition.id}});
+          return res.json(templates);
+        } catch (error) {
+          logger.error(`Unable to query definitions ${error}`);
+          return res.status(500).json({error: {message: 'Unable to query definitions', cause: error}});
+        }
       })
-      .post((req, res, next) => {
-        
-        let template = {
+
+      // Create state definition
+      .post(async (req, res) => {
+        const template = {
           definition_id: req.definition.id,
           name: req.body.name,
           body: req.body.body,
@@ -59,60 +55,53 @@ module.exports = class TrackingTicketTemplateRoutes extends RoutingInterface {
           components: req.body.components,
           tags: req.body.tags,
           summary: req.body.summary,
-          security: req.body.security
+          security: req.body.security,
         };
-        
-        db.models.tracking_ticket_template.create(template)
-          .then((ticket) => {
-            
-            let Ticket = new Ticket_Template(ticket);
-            
-            // Now that ticket template has been created, get public version of it.
-            Ticket.getPublic()
-              .then((output) => {
-                res.json(output);
-              })
-              .catch((err) => {
-                console.log(err);
-                res.status(500).json({message: 'Unable to retrieve new ticket template after creating: ' + err.message, cause: err});
-              });
-          
-          })
-          .catch((err) => {
-            console.log('Failed to create ticket', err);
-            res.status(500).json({message: 'Failed to create ticket template: ' + err.message, cause: err});
-          });
-      
+
+        let ticket;
+        try {
+          ticket = await db.models.tracking_ticket_template.create(template);
+        } catch (error) {
+          logger.error(`Failed to create ticket template ${error}`);
+          return res.status(500).json({message: 'Failed to create ticket template', cause: error});
+        }
+
+        const Ticket = new TicketTemplate(ticket);
+
+        try {
+          const result = await Ticket.getPublic();
+          return res.json(result);
+        } catch (error) {
+          logger.error(`Unable to retrieve new ticket template after creating ${error}`);
+          return res.status(500).json({message: 'Unable to retrieve new ticket template after creating', cause: error});
+        }
       });
-    
+
     this.registerResource('/definition/:definition/template/:template')
-      .put((req, res, next) => {
-      
-        // New up instance
-        let Ticket = new Ticket_Template(req.template);
-        
-        Ticket.update(req.body)
-          .then((ticket) => {
-            res.json(ticket);
-          })
-          .catch((err) => {
-            res.status(500).json({message: 'Unable to update ticket template: ' + err.message, cause: err });
-          });
-      
+      // Update ticket template
+      .put(async (req, res) => {
+        const Ticket = new TicketTemplate(req.template);
+
+        try {
+          const ticket = await Ticket.update(req.body);
+          return res.json(ticket);
+        } catch (error) {
+          logger.error(`Unable to update ticket template ${error}`);
+          return res.status(500).json({message: 'Unable to update ticket template', cause: error});
+        }
       })
-      .delete((req, res, next) => {
-        
-        db.models.tracking_ticket_template.destroy({where: { ident: req.template.ident}})
-          .then((result) => {
-            res.status(204).send();
-          })
-          .catch((err) => {
-            console.log('Failed to remove ticket template', err);
-            res.status(500).json({message: 'Unable to remove the ticket template: ' + err.message, cause: err});
-          });
-      
+
+      // Remove ticket template
+      .delete(async (req, res) => {
+        try {
+          await db.models.tracking_ticket_template.destroy({where: {ident: req.template.ident}});
+          return res.status(204).send();
+        } catch (error) {
+          logger.error(`Failed to remove ticket template ${error}`);
+          return res.status(500).json({message: 'Failed to remove ticket template', cause: error});
+        }
       });
-    
   }
-  
-};
+}
+
+module.exports = TrackingTicketTemplateRoutes;
