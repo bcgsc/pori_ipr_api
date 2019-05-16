@@ -1,9 +1,3 @@
-"use strict";
+class InvalidTaskOperation extends Error {}
 
-module.exports = class InvalidTaskOperation extends Error {
-  constructor(m) {
-    // Invoke stderr response
-    super(m);
-  }
-
-};
+module.exports = InvalidTaskOperation;

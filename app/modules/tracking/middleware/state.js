@@ -1,60 +1,58 @@
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const MiddlewareNotFound  = require('../../../middleware/exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed  = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+const validate = require('uuid-validate');
+const db = require('../../../models');
+const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNotFound');
+const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+
+const logger = require('../../../../lib/log');
 
 // Lookup POG middleware
-module.exports = (req,res,next,ident) => {
+module.exports = async (req, res, next, ident) => {
+  const opts = {
+    where: {},
+    attributes: {exclude: ['deletedAt']},
+    limit: 1,
+    include: [
+      {as: 'analysis', model: db.models.pog_analysis.scope('public')},
+      {
+        as: 'tasks',
+        model: db.models.tracking_state_task,
+        order: [['ordinal', 'ASC']],
+        include: [
+          {as: 'assignedTo', model: db.models.user.scope('public')},
+          {
+            as: 'checkins',
+            model: db.models.tracking_state_task_checkin,
+            include: [{as: 'user', model: db.models.user.scope('public')}],
+          },
+        ],
+      },
+    ],
+  };
 
-  let opts = { where: {} };
-
-  if(req.analysis) opts.where.analysis_id = req.analysis.id;
+  if (req.analysis) {
+    opts.where.analysis_id = req.analysis.id;
+  }
 
   // Check if it's a UUID
-  if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ident)) opts.where.ident = ident;
-  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ident)) opts.where.slug = ident;
+  if (validate(ident)) {
+    opts.where.ident = ident;
+  } else {
+    opts.where.slug = ident;
+  }
 
-  /*opts.where = {
-    $or: [
-      {ident: ident},
-      {slug: ident}
-    ]
-  };*/
+  let trackingState;
+  try {
+    trackingState = await db.models.tracking_state.findOne(opts);
+  } catch (error) {
+    logger.error(`Error while finding tracking state with ident: ${ident} error: ${error}`);
+    throw new MiddlewareQueryFailed('Error while finding tracking state', req, res, 'failedTrackingStateMiddlewareQuery');
+  }
 
-  opts.attributes = {exclude: ['deletedAt']};
-  opts.limit = 1;
-  opts.include = [
-    {as: 'analysis', model: db.models.pog_analysis.scope('public')},
-    {
-      as: 'tasks',
-      model: db.models.tracking_state_task,
-      order: [['ordinal', 'ASC']],
-      include: [
-        {as: 'assignedTo', model: db.models.user.scope('public')},
-        {
-          as: 'checkins',
-          model: db.models.tracking_state_task_checkin,
-          include: [{as: 'user', model: db.models.user.scope('public')}],
-        }
-      ]
-    }
-  ];
+  if (!trackingState) {
+    logger.error(`Unable to find the tracking state with ident: ${ident}`);
+    throw new MiddlewareNotFound('Unable to find the tracking state', req, res, 'trackingState');
+  }
 
-  // Lookup POG first
-  db.models.tracking_state.findOne(opts).then(
-    (result) => {
-      // Nothing found?
-      if(result === null) throw new MiddlewareNotFound("Unable to find the tracking state", req, res, "trackingState");
-
-      // POG found, next()
-      if(result !== null) {
-        req.state = result;
-        next();
-      }
-    },
-    (error) => {
-      console.log(error);
-      throw new MiddlewareQueryFailed("Unable to looking the requested state.", req, res, "failedTrackingStateMiddlewareQuery");
-    }
-  );
+  req.state = trackingState;
+  return next();
 };
