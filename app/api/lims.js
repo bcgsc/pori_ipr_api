@@ -2,9 +2,9 @@ const request = require('request-promise-native');
 const nconf = require('nconf').argv().env().file({file: `${__dirname}/../../config/config.json`});
 const gin = require('../../lib/ginCredentials');
 
-const hostname = nconf.get('lims:hostname');
-const basePath = nconf.get('lims:api');
-const path = `${hostname}${basePath}`;
+const HOSTNAME = nconf.get('lims:hostname');
+const BASEPATH = nconf.get('lims:api');
+const PATH = `${HOSTNAME}${BASEPATH}`;
 
 const $lims = {};
 
@@ -40,7 +40,7 @@ $lims.biologicalMetadata = async (patientIds, field = 'participantStudyId') => {
   const credentials = await $lims.getAuthCredentials();
   return request({
     method: 'POST',
-    uri: `${path}/biological-metadata/search`,
+    uri: `${PATH}/biological-metadata/search`,
     gzip: true,
     body,
     json: true,
@@ -76,7 +76,7 @@ $lims.library = async (libraries, field = 'originalSourceName') => {
   const credentials = await $lims.getAuthCredentials();
   return request({
     method: 'POST',
-    uri: `${path}/libraries/search`,
+    uri: `${PATH}/libraries/search`,
     gzip: true,
     body,
     json: true,
@@ -123,7 +123,7 @@ $lims.sequencerRun = async (libraries) => {
   const credentials = await $lims.getAuthCredentials();
   return request({
     method: 'POST',
-    uri: `${path}/sequencer-runs/search`,
+    uri: `${PATH}/sequencer-runs/search`,
     gzip: true,
     body,
     json: true,
@@ -144,7 +144,7 @@ $lims.diseaseOntology = async (query) => {
   const credentials = await $lims.getAuthCredentials();
   return request({
     method: 'GET',
-    uri: `${path}/elastic/disease_ontology/${query}`,
+    uri: `${PATH}/elastic/disease_ontology/${query}`,
     gzip: true,
     json: true,
   }).auth(credentials.username, credentials.password);
