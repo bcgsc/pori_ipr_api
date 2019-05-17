@@ -1,5 +1,5 @@
 const request = require('request-promise-native');
-const nconf = require('nconf').argv().env().file({file: '../../config/config.json'});
+const nconf = require('nconf').argv().env().file({file: './config/config.json'});
 
 const host = nconf.get('jira:hostname');
 const base = nconf.get('jira:api');

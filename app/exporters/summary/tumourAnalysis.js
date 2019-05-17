@@ -1,4 +1,4 @@
-const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
 const db = require('../../../app/models');
 const reverseMapKeys = require('../../../app/libs/reverseMapKeys');
 const WriteCSV = require('../../../lib/writeCSV');
