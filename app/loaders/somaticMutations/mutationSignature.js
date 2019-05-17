@@ -5,7 +5,7 @@ const nconf = require('nconf').argv().env().file({file: './config/columnMaps.jso
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Load Mutation Signature file and parse into database

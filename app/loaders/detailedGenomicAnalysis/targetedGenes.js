@@ -2,7 +2,7 @@ const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
 const db = require('../../models');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Parse Targeted Gene Report File

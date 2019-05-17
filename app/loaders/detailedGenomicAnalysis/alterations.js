@@ -4,8 +4,8 @@ const _ = require('lodash');
 const parse = require('csv-parse/lib/sync');
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
+const logger = require('../../../lib/log');
 
-const {logger} = process;
 let baseDir;
 
 /**

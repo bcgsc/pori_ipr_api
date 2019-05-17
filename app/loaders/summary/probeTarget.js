@@ -5,7 +5,7 @@ const colMap = require('nconf').file({file: './config/columnMaps.json'});
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Parse Alterations File

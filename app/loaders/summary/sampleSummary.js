@@ -2,7 +2,7 @@ const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
 const db = require('../../models');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Get Sample Summary Details and Append to Patient Information

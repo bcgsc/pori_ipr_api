@@ -5,7 +5,7 @@ const readFile = util.promisify(require('pyconf').readFile);
 const parse = require('csv-parse/lib/sync');
 const db = require('../models');
 
-const {logger} = process;
+const logger = require('../../lib/log');
 
 // Get Sample Info
 const getInfo = async (dir, file) => {

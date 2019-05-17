@@ -5,7 +5,7 @@ const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 const p2s = require('../../libs/pyToSql');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Parse Expression Drug Target Analysis File

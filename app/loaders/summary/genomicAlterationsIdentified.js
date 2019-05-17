@@ -3,7 +3,7 @@ const _ = require('lodash');
 const parse = require('csv-parse/lib/sync');
 const db = require('../../models');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 /**
  * Parse Genomic Alterations Identified File

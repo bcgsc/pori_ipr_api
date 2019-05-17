@@ -10,7 +10,7 @@ const approvedThisCancer = require('../detailedGenomicAnalysis/approvedThisCance
 const approvedOtherCancer = require('../detailedGenomicAnalysis/approvedOtherCancer');
 
 const config = nconf.get('paths:data');
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 // Map of loaders
 let loaders = [

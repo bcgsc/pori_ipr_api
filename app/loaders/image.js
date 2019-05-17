@@ -6,7 +6,7 @@ const {spawn, execSync} = require('child_process');
 const db = require('../models');
 const images = require('../../config/images.json');
 
-const {logger} = process;
+const logger = require('../../lib/log');
 
 
 const imageIdentify = promisfy(im.identify);

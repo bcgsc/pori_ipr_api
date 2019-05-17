@@ -1,7 +1,7 @@
 const events = require('./events');
 const references = require('./references');
 
-const {logger} = process;
+const logger = require('../../../lib/log');
 
 // Map of loaders
 const loaders = [];

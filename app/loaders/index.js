@@ -4,7 +4,7 @@ const glob = require('glob');
 const pyParse = util.promisify(require('pyconf').parse);
 const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
 
-const {logger} = process;
+const logger = require('../../lib/log');
 
 // Loader requires
 
