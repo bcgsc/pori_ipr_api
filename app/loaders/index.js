@@ -2,7 +2,7 @@ const util = require('util');
 const fs = require('fs');
 const glob = require('glob');
 const pyParse = util.promisify(require('pyconf').parse);
-const nconf = require('nconf').file({file: `../../config/${process.env.NODE_ENV.json}`});
+const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
 
 const {logger} = process;
 

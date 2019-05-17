@@ -1,7 +1,7 @@
 const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
 const _ = require('lodash');
-const colMap = require('nconf').file({file: '../../../config/columnMaps.json'});
+const colMap = require('nconf').file({file: './config/columnMaps.json'});
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 

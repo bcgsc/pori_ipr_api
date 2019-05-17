@@ -1,6 +1,6 @@
 const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
-const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 const p2s = require('../../libs/pyToSql');

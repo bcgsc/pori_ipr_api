@@ -1,4 +1,4 @@
-const nconf = require('nconf').argv().env().file({file: '../../../config/columnMaps.json'});
+const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
 const fs = require('fs');
 const _ = require('lodash');
 const parse = require('csv-parse/lib/sync');
