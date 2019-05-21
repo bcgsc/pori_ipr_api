@@ -1,9 +1,3 @@
-"use strict";
+class InvalidCheckInTarget extends Error {}
 
-module.exports = class InvalidCheckInTarget extends Error {
-  constructor(m) {
-    // Invoke stderr response
-    super(m);
-  }
-
-};
+module.exports = InvalidCheckInTarget;

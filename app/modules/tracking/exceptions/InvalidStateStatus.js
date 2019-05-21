@@ -1,9 +1,3 @@
-"use strict";
+class InvalidStateStatus extends Error {}
 
-module.exports = class InvalidStateStatus extends Error {
-  constructor(m) {
-    // Invoke stderr response
-    super(m);
-  }
-
-};
+module.exports = InvalidStateStatus;

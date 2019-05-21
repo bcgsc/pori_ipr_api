@@ -1,34 +1,32 @@
-const _                   = require('lodash');
-const db                  = require(process.cwd() + '/app/models');
-const MiddlewareNotFound  = require('../../../middleware/exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed  = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+const db = require('../../../models');
+const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNotFound');
+const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+
+const logger = require('../../../../lib/log');
 
 // Lookup POG middleware
-module.exports = (req,res,next,ident) => {
-
-  let opts = { where: {} };
-  
-  // Check if it's a UUID
-  opts.where.ident = ident;
-
-  opts.attributes = {exclude: ['deletedAt']};
-  opts.limit = 1;
-
-  // Lookup POG first
-  db.models.tracking_hook.findOne(opts).then(
-    (result) => {
-      // Nothing found?
-      if(result === null) throw new MiddlewareNotFound("Unable to find the tracking hook", req, res, "trackingHook");
-
-      // POG found, next()
-      if(result !== null) {
-        req.hook = result;
-        next();
-      }
+module.exports = async (req, res, next, ident) => {
+  const opts = {
+    where: {
+      ident,
     },
-    (error) => {
-      console.log(error);
-      throw new MiddlewareQueryFailed("Unable to looking the requested state.", req, res, "failedTrackingHookMiddlewareQuery");
-    }
-  );
+    limit: 1,
+    attributes: {exclude: ['deletedAt']},
+  };
+
+  let trackingHook;
+  try {
+    trackingHook = await db.models.tracking_hook.findOne(opts);
+  } catch (error) {
+    logger.error(`Error while looking up tracking hook with ident: ${ident} error: ${error}`);
+    throw new MiddlewareQueryFailed('Error while looking up tracking hook', req, res, 'failedTrackingHookMiddlewareQuery');
+  }
+
+  if (!trackingHook) {
+    logger.error(`Unable to find tracking hook with ident: ${ident}`);
+    throw new MiddlewareNotFound('Unable to find tracking hook', req, res, 'trackingHook');
+  }
+
+  req.hook = trackingHook;
+  return next();
 };

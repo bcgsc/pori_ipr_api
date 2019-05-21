@@ -13,6 +13,11 @@
     "version": "2"
   },
 
+  "lims" : {
+    "hostname": "https://lims16.bcgsc.ca",
+    "api": "/prod/limsapi"
+  },
+
   "database": {
     "database": "ipr-test"
   },
