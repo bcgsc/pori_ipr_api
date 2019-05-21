@@ -215,9 +215,6 @@ class TrackingDefinitionRoute extends RoutingInterface {
                   "user"."lastName" AS "user.lastName",
                   "user"."ident" AS "user.ident",
                   "user".email AS "user.email",
-                  "tracking_state_task"."name" AS "tracking_state.name",
-                  "tracking_state_task"."slug" AS "tracking_state.slug",
-                  "tracking_state_task"."ident" AS "tracking_state.ident",
                   COUNT("tracking_state_task"."ident") AS "user.assignedTasks"
                 FROM "users" as "user"
                 LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" 
@@ -231,10 +228,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
                   "user"."firstName",
                   "user"."lastName",
                   "user"."ident",
-                  "user"."email",
-                  "tracking_state_task"."name",
-                  "tracking_state_task"."slug",
-                  "tracking_state_task"."ident"
+                  "user"."email"
                 ORDER BY "user"."firstName" ASC;
                 `;
 
@@ -255,9 +249,6 @@ class TrackingDefinitionRoute extends RoutingInterface {
             email: result['user.email'],
             assignedTasks: parseInt(result['user.assignedTasks'], 10),
           },
-          name: result['tracking_state.name'],
-          slug: result['tracking_state.slug'],
-          ident: result['tracking_state.ident'],
         };
       });
 
