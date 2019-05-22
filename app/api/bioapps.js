@@ -1,7 +1,7 @@
 const request = require('request-promise-native');
 const moment = require('moment');
 const _ = require('lodash');
-const nconf = require('nconf').argv().env().file({file: `${__dirname}/../../config/config.json`});
+const nconf = require('nconf').argv().env().file({file: './config/config.json'});
 const gin = require('../../lib/ginCredentials');
 
 const logger = require('../../lib/log');
