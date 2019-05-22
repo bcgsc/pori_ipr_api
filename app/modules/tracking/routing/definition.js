@@ -156,7 +156,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
         WHERE 
           "tracking_state"."deletedAt" IS NULL AND
           "tracking_state_task"."deletedAt" is NULL and
-          "tracking_state"."slug" = ':slug' AND 
+          "tracking_state"."slug" = :slug AND 
           "tracking_state_task"."status" IN ('active', 'pending')
         GROUP BY 
           "tracking_state"."name",
@@ -166,7 +166,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
       let totalTasks;
       try {
-        [[totalTasks]] = await db.query(getTotalTasks, {replacements: {slug: req.definition.slug}, type: db.QueryTypes.SELECT});
+        [totalTasks] = await db.query(getTotalTasks, {replacements: {slug: req.definition.slug}, type: db.QueryTypes.SELECT});
       } catch (error) {
         logger.error(`Unable to get total tracking state tasks ${error}`);
         return res.status().json({message: 'Unable to get total tracking state tasks', cause: error});
@@ -207,7 +207,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
       const usersList = users.map((user) => {
         return user.user_id;
-      }).join(',');
+      });
 
       const query = `
                 SELECT
@@ -220,7 +220,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
                 LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" 
                   ON 
                   "tracking_state_task"."assignedTo_id" = "user".id AND 
-                  "tracking_state_task"."state_id" in (SELECT id FROM "pog_tracking_states" as s WHERE s.slug=':slug' AND s.status NOT IN ('failed','completed') AND "deletedAt" IS null) AND
+                  "tracking_state_task"."state_id" in (SELECT id FROM "pog_tracking_states" as s WHERE s.slug = :slug AND s.status NOT IN ('failed','completed') AND "deletedAt" IS null) AND
                   "tracking_state_task"."status" NOT IN ('failed', 'complete')
                 WHERE
                   "user"."id" IN (:usersList)
@@ -240,7 +240,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
         return res.status(500).json({message: 'Unable to get user assigned tasks', cause: error});
       }
 
-      const userCounts = results[0].map((result) => {
+      const userCounts = results.map((result) => {
         return {
           user: {
             firstName: result['user.firstName'],
@@ -249,9 +249,6 @@ class TrackingDefinitionRoute extends RoutingInterface {
             email: result['user.email'],
             assignedTasks: parseInt(result['user.assignedTasks'], 10),
           },
-          name: result['tracking_state.name'],
-          slug: result['tracking_state.slug'],
-          ident: result['tracking_state.ident'],
         };
       });
 
