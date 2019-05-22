@@ -1,161 +1,92 @@
-"use strict";
+const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
+const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
+const db = require('../../models');
+const remapKeys = require('../../libs/remapKeys');
+const p2s = require('../../libs/pyToSql');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-  fs = require('fs'),
-  parse = require('csv-parse'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  _ = require('lodash'),
-  p2s = require(process.cwd() + '/app/libs/pyToSql'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+const logger = require('../../../lib/log');
 
-/**
- * Protein Expression Data Loader
- *
- */
-class proteinExpressionLoader {
-  
-  constructor(report, dir, logger) {
-    
+
+class ProteinExpressionLoader {
+  /**
+   * Protein Expression Data Loader
+   *
+   * @param {object} report - POG report object
+   * @param {string} dir - The directory location
+   */
+  constructor(report, dir) {
     this.report = report;
     this.baseDir = dir;
-    this.logger = logger;
-    this.logging = logger.loader(this.report.ident, 'Expression.Protein');
     this.filesToLoad = [
-      //{file: 'ptx_biol.csv', type: 'biological', expType: 'protein'},
-      //{file: 'ptx_pot_clin_rel.csv', type: 'clinical', expType: 'protein'},
-      //{file: 'ptx_prog_diag.csv', type: 'nostic', expType: 'protein'},
       {file: 'downregulated_tsg.csv', type: 'downreg_tsg', expType: 'rna'},
-      {file: 'upregulated_oncogenes.csv', type: 'upreg_onco', expType: 'rna'}
+      {file: 'upregulated_oncogenes.csv', type: 'upreg_onco', expType: 'rna'},
     ];
     this.entryData = [];
-    
-    this.logging('Starting Protein Expression loader');
-    
   }
-  
+
   /**
    * Execute Loader
    *
-   * @returns {Promise|object} - Returns object with loader completion status
+   * @returns {Promise.<object>} - Returns an object with loader completion status
    */
-  load() {
-    return new Promise((resolve,reject) => {
-      
-      let promises = [];
-      
-      _.forEach(this.filesToLoad, (ld) => {
-        promises.push(this.retrieveFileEntry(ld.file, ld.type, ld.expType));
-      });
-      
-      Promise.all(promises)
-        .then(this.insertEntries.bind(this))
-        .then(
-          (result) => {
-            this.logging('Protein Expression Data completed.', this.logger.SUCCESS);
-            resolve({name: 'proteinExpression', result: true});
-          },
-          (err) => {
-            console.log(err);
-            this.logging('Protein Expression Data was not able to complete.', this.logger.ERROR);
-            resolve({loader: 'proteinExpression', message: 'Unable to load protein expression data: ' + err.message, result: false});
-          }
-        )
-        .catch((err) => {
-          console.log('Error loading Protein Expression data', err);
-          this.logging('Failed to load protein expression data:' + err.message);
-          resolve({loader: 'proteinExpression', message: 'Failed to load protein expression data:' + err.message, result: false});
-        });
-      
+  async load() {
+    const promises = this.filesToLoad.map((ld) => {
+      return this.retrieveFileEntry(ld.file, ld.type, ld.expType);
     });
+
+    const results = await Promise.all(promises);
+    results.forEach((result) => {
+      this.entryData = this.entryData.concat(result);
+    });
+    await this.insertEntries();
+    logger.info('Protein Expression Data completed.');
+    return {name: 'proteinExpression', result: true};
   }
-  
+
   /**
-   * Load
+   * Load entryData with file data
    *
    * @param {string} file - The file to load
    * @param {string} type - The KB match type
    * @param {string} expType - The expression outlier type (rna vs protein)
    *
-   * @returns {Promise}
+   * @returns {Promise.<Array.<object>>} - Returns an array of new entry data
    */
-  retrieveFileEntry(file, type, expType) {
-    return new Promise((resolve, reject) => {
-      
-      // Read in file
-      let output = fs.createReadStream(this.baseDir + '/JReport_CSV_ODF/' + file);
-      
-      // Parse file!
-      let parser = parse({delimiter: ',', columns: true},
-        (err, result) => {
-          
-          // Was there a problem processing the file?
-          if(err) {
-            this.logging('Unable to parse CSV file: ' + this.baseDir + '/JReport_CSV_ODF/' + file);
-            console.log(err);
-            reject({loader: 'proteinExpression', message: 'Unable to parse the protein expression file: ' + this.baseDir + '/JReport_CSV_ODF/' + file, result: false});
-          }
-  
-          // Remap results
-          let entries = remapKeys(result, nconf.get('expressionAnalysis:outlier'));
-          
-          // Add new values for DB
-          entries.forEach((v, k) => {
-            // Map needed DB column values
-            entries[k] = p2s(v, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
-            entries[k].pog_id = this.report.pog_id;
-            entries[k].pog_report_id = this.report.id;
-            entries[k].outlierType = type;
-            entries[k].expType = expType;
-          });
-  
-          this.entryData = this.entryData.concat(entries);
-  
-          this.logging('Parsed ' + type + ' file ' + file + ' successfully.');
-  
-          // Resolve With the data entries
-          resolve(true);
-        }
-      );
-      
-      // Pipe file through parser
-      output.pipe(parser);
-      
-      output.on('error', (err) => {
-        this.logging('Unable to find required file: ' + this.baseDir + '/JReport_CSV_ODF/' + file, this.logger.WARNING);
-        reject({loader: 'proteinExpression', message: 'Unable to find the protein expression file: ' + this.baseDir + '/JReport_CSV_ODF/' + file, result: false});
-      });
-      
+  async retrieveFileEntry(file, type, expType) {
+    // Read in file
+    const output = fs.readFileSync(`${this.baseDir}/JReport_CSV_ODF/${file}`);
+
+    // Parse file!
+    const result = parse(output, {delimiter: ',', columns: true});
+    // Remap results
+    const entries = remapKeys(result, nconf.get('expressionAnalysis:outlier'));
+
+    // Add new values for DB
+    const newEntryData = entries.map((entry) => {
+      const newEntry = p2s(entry, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
+      newEntry.pog_id = this.report.pog_id;
+      newEntry.pog_report_id = this.report.id;
+      newEntry.outlierType = type;
+      newEntry.expType = expType;
+      return newEntry;
     });
+    logger.info(`Parsed ${type} file ${file} successfully.`);
+
+    return newEntryData;
   }
-  
-  
+
   /**
    * Create new Protein Expression entries
    *
-   * @returns {Promise}
+   * @returns {Promise.<Array.<Model>>} - Returns the result of adding the entryData to the db
    */
-  insertEntries() {
-    return new Promise((resolve, reject) => {
-      
-      // Add to Database
-      db.models.outlier.bulkCreate(this.entryData).then(
-        (result) => {
-          
-          this.logging('Protein Expression data loaded.', this.logger.SUCCESS);
-          resolve(result);
-          
-        },
-        (err) => {
-          this.logging('Failed to load protein expression data: ' + err.message, this.logger.ERROR);
-          console.log(err);
-          reject({loader: 'proteinExpression', message: 'Unable to create database entries', result: false});
-        }
-      );
-      
-    });
+  async insertEntries() {
+    // Add to Database
+    const result = await db.models.outlier.bulkCreate(this.entryData);
+    logger.info('Protein Expression data loaded.');
+    return result;
   }
-  
 }
 
-module.exports = proteinExpressionLoader;
+module.exports = ProteinExpressionLoader;
