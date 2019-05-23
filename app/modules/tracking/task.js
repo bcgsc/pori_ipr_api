@@ -1,5 +1,3 @@
-'use strict';
-
 const db = require('../../models/');
 const TooManyCheckIns = require('./exceptions/TooManyCheckIns');
 const InvalidTaskOperation = require('./exceptions/InvalidTaskOperation');
@@ -11,14 +9,13 @@ const Hook = require('./hook');
 const logger = require('../../../lib/log');
 
 
-module.exports = class Task {
+class Task {
   /**
    * Initialize tracking state task object
    *
    * @param {string|object} init - Pass in either ident string or new object
-   * @param {object} options - Options object
    */
-  constructor(init, options={}) {
+  constructor(init) {
     this.instance = null;
     this.model = db.models.tracking_state_task;
     this.allowedStates = [
@@ -35,7 +32,10 @@ module.exports = class Task {
       this.instance = init;
     }
 
-    if (init === undefined || this.instance === null) throw new Error('Unable to instantiate State Tracking object');
+    if (init === undefined || this.instance === null) {
+      logger.error('Unable to instantiate State Tracking object');
+      throw new Error('Unable to instantiate State Tracking object');
+    }
   }
 
   /**
@@ -47,42 +47,32 @@ module.exports = class Task {
    * @param {boolean} checkStateComplete - Check if parent state is complete after task is checked in (optional, default: false)
    * @returns {Promise} - Resolves with updated task. Rejects with error object
    */
-  checkIn(user, payload = null, limitOverride = false, checkStateComplete = false) {
-    return new Promise((resolve, reject) => {
-      // Init State wrapper
-      const state = new State(this.instance.state);
+  async checkIn(user, payload = null, limitOverride = false, checkStateComplete = false) {
+    // Init State wrapper
+    const state = new State(this.instance.state);
 
-      // Check for too many checkins
-      if ((this.instance.checkins.length + 1) > this.instance.checkInsTarget && !limitOverride) {
-        reject({message: `Too many check ins have occurred for this task. Max: ${this.instance.checkInsTarget}, attempted: ${(this.instance.checkins.length + 1)}`, code: 'tooManyCheckins'});
-        throw new TooManyCheckIns(`Too many check ins have occurred for this task. Max: ${this.instance.checkInsTarget}, attempted: ${(this.instance.checkins.length + 1)}`);
+    // Check for too many checkins
+    if ((this.instance.checkins.length + 1) > this.instance.checkInsTarget && !limitOverride) {
+      logger.error(`Too many check ins have occurred for this task. Max: ${this.instance.checkInsTarget}, attempted: ${(this.instance.checkins.length + 1)}`);
+      throw new TooManyCheckIns(`Too many check ins have occurred for this task. Max: ${this.instance.checkInsTarget}, attempted: ${(this.instance.checkins.length + 1)}`);
+    }
+
+    try {
+      await this.createCheckin(user, payload);
+      await this.checkCompletion();
+
+      if (checkStateComplete) {
+        await state.checkCompleted();
       }
 
-      // Start chain
-      this.createCheckin(user, payload)
-        .then(this.checkCompletion.bind(this))
-        .then(() => { if (checkStateComplete) return state.checkCompleted(); })
-        .then(this.getPublic.bind(this))
-        .then(
-          (result) => {
-            logger.debug(`Checked in task ${this.instance.name}`);
-            resolve(result);
-          },
-          (err) => {
-            console.log('Failed to get instance', err);
-            const response = {
-              message: `Failed to check-in task: ${err.message}`,
-              cause: err,
-            };
-            if (err.code) response.code = err.code;
-            reject(response);
-          }
-        )
-        .catch((e) => {
-          console.log('Failed to perform checkin', e);
-          reject({message: `Failed to perform checkin. Reason: ${e.message}`, cause: e});
-        });
-    });
+      const publicView = await this.getPublic();
+      logger.debug(`Checked in task ${this.instance.name}`);
+
+      return publicView;
+    } catch (error) {
+      logger.error(`Failed to perform check in ${error}`);
+      throw new Error(`Failed to perform check in ${error}`);
+    }
   }
 
 
@@ -91,27 +81,24 @@ module.exports = class Task {
    *
    * @param {object} user - The user model instance
    * @param {string|int|boolean} payload - The payload to be provided in the checkin
-   * @returns {Promise} - Resolves with
+   * @returns {Promise.<object>} - Returns with created checkin instance
    */
-  createCheckin(user, payload) {
-    return new Promise((resolve, reject) => {
-      const checkin = new Checkin(null);
+  async createCheckin(user, payload) {
+    const checkin = new Checkin(null);
 
-      checkin.createCheckin(this.instance, user, payload).then(
-        (result) => {
-          // Add user to result.
-          result.user = user;
+    try {
+      const createdCheckin = await checkin.createCheckin(this.instance, user, payload);
 
-          // Add checkin to all checkins
-          this.instance.checkins.push(result);
-          resolve(result);
-        },
-        (err) => {
-          console.log(err);
-          reject({message: `Unable to perform checkin: ${err.error.message}`, cause: err, code: 'failedCreateCheckin'});
-        }
-      );
-    });
+      // Add user to result.
+      createdCheckin.user = user;
+
+      // Add checkin to all checkins
+      this.instance.checkins.push(createdCheckin);
+      return createdCheckin;
+    } catch (error) {
+      logger.error(`Unable to perform checkin ${error}`);
+      throw new Error(`Unable to perform checkin ${error}`);
+    }
   }
 
   /**
@@ -119,25 +106,24 @@ module.exports = class Task {
    *
    * Update the targeted number of check-ins for this task
    *
-   * @params {integer} target - The new number of check-in targets for this task
-   *
-   * @returns {Promise} - Resolves with the current task instance
+   * @param {integer} target - The new number of check-in targets for this task
+   * @returns {Promise.<object>} - Returns the current task instance
    */
-  updateCheckInsTarget(target) {
-    return new Promise((resolve, reject)=> {
-      if (typeof target !== 'number') throw new InvalidCheckInTarget('The supplied check in target is not a valid integer');
+  async updateCheckInsTarget(target) {
+    if (typeof target !== 'number') {
+      logger.error('The supplied check in target is not a valid integer');
+      throw new InvalidCheckInTarget('The supplied check in target is not a valid integer');
+    }
 
-      this.instance.checkInsTarget = target;
-      this.instance.save().then(
-        (result) => {
-          resolve(this.instance);
-        },
-        (err) => {
-          console.log(err);
-          throw new InvalidCheckInTarget('Unable to save the updated target value');
-        }
-      );
-    });
+    this.instance.checkInsTarget = target;
+
+    try {
+      await this.instance.save();
+      return this.instance;
+    } catch (error) {
+      logger.error(`Unable to save the updated target value ${error}`);
+      throw new InvalidCheckInTarget(`Unable to save the updated target value ${error}`);
+    }
   }
 
   /**
@@ -146,230 +132,257 @@ module.exports = class Task {
    * @param {array|string} target - The idents of the check-in to be removed
    * @param {boolean} all - Remove all checkins
    *
-   * @returns {Promise} - Resolves with updated instance
+   * @returns {Promise.<object>} - Returns updated instance
    */
-  cancelCheckIn(target, all = false) {
-    return new Promise((resolve, reject) => {
-      if (this.instance.checkIns === 0) throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
+  async cancelCheckIn(target, all = false) {
+    if (this.instance.checkIns === 0) {
+      logger.error('Attempting to undo an invalid amount of check ins');
+      throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
+    }
 
-      if (typeof target === 'string') target = [target];
+    if (typeof target === 'string') {
+      target = [target];
+    }
 
-      // Build Query
-      const opts = {};
+    // Build Query
+    const opts = {};
 
-      if (!all) opts.where = {ident: {$in: target}};
-      if (all) opts.where = {task_id: this.instance.id};
+    if (!all) {
+      opts.where = {ident: {$in: target}};
+    } else {
+      opts.where = {task_id: this.instance.id};
+    }
 
-      db.models.tracking_state_task_checkin.destroy(opts).then(
-        (result) => {
-          // Change current status based on target
-          if (this.instance.checkins.length === 0) this.instance.status = 'pending';
-          if (this.instance.checkins.length > 0 && this.instance.checkins.length < this.instance.checkInsTarget) this.instance.status = 'active';
+    try {
+      await db.models.tracking_state_task_checkin.destroy(opts);
+    } catch (error) {
+      logger.error(`Unable to delete tasks ${error}`);
+      throw new Error(`Unable to delete tasks ${error}`);
+    }
 
-          this.instance.save().then(
-            (result) => {
-              // Get public version
-              this.getPublic().then(
-                (task) => {
-                  resolve(task);
-                },
-                (err) => {
-                  console.log(err);
-                  reject({message: `Failed public lookup for task: ${err.message}`, code: 'failedCheckinRetrieve'});
-                }
-              );
-            },
-            (err) => {
-              console.log(err);
-              throw new InvalidTaskOperation('Unable to save the updated check ins amount');
-            }
-          );
-        },
-        (err) => {
-          console.log(err);
-          reject({message: 'Unable to delete tasks'});
-        }
-      );
-    });
+    // Change current status based on target
+    if (this.instance.checkins.length === 0) {
+      this.instance.status = 'pending';
+    }
+    if (this.instance.checkins.length > 0 && this.instance.checkins.length < this.instance.checkInsTarget) {
+      this.instance.status = 'active';
+    }
+
+    try {
+      await this.instance.save();
+    } catch (error) {
+      logger.error(`Unable to save the updated check ins amount ${error}`);
+      throw new Error(`Unable to save the updated check ins amount ${error}`);
+    }
+
+    try {
+      const task = await this.getPublic();
+      return task;
+    } catch (error) {
+      logger.error(`Failed public lookup for task ${error}`);
+      throw new Error(`Failed public lookup for task ${error}`);
+    }
   }
 
   /**
    * Check Completion
    *
-   * @returns {Promise} - Resolves with current instance
+   * @returns {Promise.<object>} - Returns current instance
    */
-  checkCompletion() {
-    return new Promise((resolve, reject) => {
-      // Get all checkins
-      db.models.tracking_state_task_checkin.findAll({where: {task_id: this.instance.id}}).then(
-        (checkins) => {
-          // Target met!
-          if (checkins.length >= this.instance.checkInsTarget) {
-            this.instance.status = 'complete';
-            this.instance.save()
-              // Check if there are any hooks to trigger
-              .then(() => {
-                return Hook.check_and_invoke(this.instance.state, 'complete', this.instance);
-              })
-              .then(() => {
-                return resolve(this.instance);
-              })
-              .catch((err) => {
-                console.log('Failed to update completed task', err);
-                reject({message: 'Unable to update completed task', code: 'failedTaskUpdate'});
-              });
-          }
+  async checkCompletion() {
+    // Get all checkins
+    let checkins;
+    try {
+      checkins = await db.models.tracking_state_task_checkin.findAll({where: {task_id: this.instance.id}});
+    } catch (error) {
+      logger.error(`Failed to update completed task ${error}`);
+      throw new Error(`Failed to update completed task ${error}`);
+    }
 
-          // Target not met yet
-          if (checkins.length < this.instance.checkInsTarget) resolve(this.instance);
-        },
-        (err) => {
-          // SQL Error
-          console.log('Failed to get checkins', err);
-          reject({message: `Failed to retrieve checkins for a task: ${err.message}`});
-        }
-      );
-    });
+    // Target not met yet
+    if (checkins.length < this.instance.checkInsTarget) {
+      return this.instance;
+    }
+
+    // Target met!
+    this.instance.status = 'complete';
+
+    try {
+      await this.instance.save();
+    } catch (error) {
+      logger.error(`Failed to save instance ${error}`);
+      throw new Error(`Failed to save instance ${error}`);
+    }
+
+    try {
+      await Hook.check_and_invoke(this.instance.state, 'complete', this.instance);
+      return this.instance;
+    } catch (error) {
+      logger.error(`Failed to check and invoke hook ${error}`);
+      throw new Error(`Failed to check and invoke hook ${error}`);
+    }
   }
-
-  /**
-   * Validate a task
-   *
-   * @param task
-   * @returns {boolean}
-   */
-  validateTask(task) {
-    // Check task name
-    return true;
-  }
-
 
   /**
    * Update unprotected values
    *
-   * @param {object} task - key-value pair object with values to be updated
+   * @param {object} task - Key-value pair object with values to be updated
+   * @returns {undefined}
    */
   setUnprotected(task) {
-    if (!this.validateTask(task))
-    if (task.name) this.instance.name = task.name;
-    if (task.checkInsTarget) this.instance.checkInsTarget = task.checkInsTarget;
-    if (task.description) this.instance.description = task.description;
-    if (task.status) this.instance.status = task.status;
-    if (task.assignedTo_id) this.instance.assignedTo_id = task.assignedTo_id;
+    if (task.checkInsTarget) {
+      this.instance.checkInsTarget = task.checkInsTarget;
+    }
+    if (task.description) {
+      this.instance.description = task.description;
+    }
+    if (task.status) {
+      this.instance.status = task.status;
+    }
+    if (task.assignedTo_id) {
+      this.instance.assignedTo_id = task.assignedTo_id;
+    }
   }
 
   /**
    * Update a task's status with trigger for state status flipping
    *
    * @param {string} status - The state to change the task to
-   *
-   * @returns {Promise} - Resolves with updated task
+   * @returns {Promise.<object>} - Returns the updated task
    */
-  setStatus(status) {
-    return new Promise((resolve, reject) => {
-      // Check that the provided status is allowed
-      if (this.allowedStates.indexOf(status) === -1) throw new Error('The provided status is not allowed');
-      this.instance.status = status;
-      if (status !== 'pending') {
-        // Init State wrapper
-        const state = new State(this.instance.state);
-        state.setStatus('active', true)
-          .then(this.model.update({status: status}, {where: {ident: this.instance.ident}}))
-          .then(Hook.check_and_invoke(this.instance.state, status, this.instance))
-          .then(state.checkCompleted())
-          .then(() => {
-            resolve(this.instance);
-          })
-          .catch((err) => {
-            console.log('Failed to update task or state status: ', err.message);
-            console.log(err);
-          });
-      }
-    });
+  async setStatus(status) {
+    // Check that the provided status is allowed
+    if (!this.allowedStates.includes(status)) {
+      logger.error('The provided status is not allowed');
+      throw new Error('The provided status is not allowed');
+    }
+
+    this.instance.status = status;
+
+    if (status === 'pending') {
+      return this.instance;
+    }
+
+    // Init State wrapper
+    const state = new State(this.instance.state);
+
+    try {
+      await state.setStatus('active', true);
+    } catch (error) {
+      logger.error(`Failed to set state status to active ${error}`);
+      throw new Error(`Failed to set state status to active ${error}`);
+    }
+
+    try {
+      await this.model.update({status}, {where: {ident: this.instance.ident}});
+    } catch (error) {
+      logger.error(`Failed to update model ${error}`);
+      throw new Error(`Failed to update model ${error}`);
+    }
+
+    try {
+      await Hook.check_and_invoke(this.instance.state, status, this.instance);
+    } catch (error) {
+      logger.error(`Failed to check and invoke hooks ${error}`);
+      throw new Error(`Failed to check and invoke hooks ${error}`);
+    }
+
+    try {
+      await state.checkCompleted();
+      return this.instance;
+    } catch (error) {
+      logger.error(`Failed to check if state is completed ${error}`);
+      throw new Error(`Failed to check if state is completed ${error}`);
+    }
   }
 
 
   /**
    * Assign the task to new user
    *
-   * @param {string|id} user - The user's ident string or row ID
-   * @returns {Promise}
+   * @param {string|number} userId - The user's ident string or row ID
+   * @returns {Promise.<object>} - Returns the public view of this Task
    */
-  setAsignedTo(user) {
-    return new Promise((resolve, reject) => {
-      // Check valid ident or id
+  async setAsignedTo(userId) {
+    // Check valid ident or id
+    const opts = {where: {}};
 
-      const opts = {where: {}};
-      if (typeof user === 'number') opts.where.id = user;
-      if (typeof user === 'string') opts.where.ident = user;
-      if (opts.where === undefined) throw new Error('No valid user identification given (expected id or ident).');
+    if (typeof userId === 'number') {
+      opts.where.id = userId;
+    } else if (typeof userId === 'string') {
+      opts.where.ident = userId;
+    } else {
+      logger.error(`No valid user identification given ${userId} (expected id or ident)`);
+      throw new Error(`No valid user identification given ${userId} (expected id or ident)`);
+    }
 
-      db.models.user.findOne(opts).then(
-        (result) => {
-          if (result === null) {
-            reject({message: 'Unable to find the specified user'});
-            throw new Error('Unable to find the specified user.');
-          }
+    let user;
+    try {
+      user = await db.models.user.findOne(opts);
+    } catch (error) {
+      logger.error(`Error while trying to find user ${error}`);
+      throw new Error(`Error while trying to find user ${error}`);
+    }
 
-          // Update entry
-          this.instance.assignedTo_id = result.id;
-          this.instance.save().then(
-            (saved) => {
-              this.getPublic().then(
-                (result) => {
-                  resolve(result);
-                },
-                (err) => {
-                  console.log('Failed task query after updating user', err);
-                  reject({message: `Unable to get updated task: ${err.message}`, cause: err, code: 'failedRetrieveTask'});
-                }
-              );
-            },
-            (err) => {
-              console.log(err);
-              throw new Error('Query to update task with updated assignee failed.');
-            }
-          );
-        },
-        (err) => {
-          console.log(err);
-          throw new Error('Query to find the specified user failed.');
-        }
-      );
-    });
+    if (!user) {
+      logger.error('Unable to find the specified user');
+      throw new Error('Unable to find the specified user');
+    }
+
+    // Update entry
+    this.instance.assignedTo_id = user.id;
+
+    try {
+      await this.instance.save();
+    } catch (error) {
+      logger.error(`Query to update task with updated assignee failed ${error}`);
+      throw new Error(`Query to update task with updated assignee failed ${error}`);
+    }
+
+    try {
+      const publicView = await this.getPublic();
+      return publicView;
+    } catch (error) {
+      logger.error(`Unable to get public instance of task ${error}`);
+      throw new Error(`Unable to get public instance of task ${error}`);
+    }
   }
 
   /**
    * Get public version of this instance
    *
-   * @returns {Promise} - Resolves with a public instance of the model
+   * @returns {Promise.<object>} - Returns a public instance of the model
    */
-  getPublic() {
-    return new Promise((resolve, reject) => {
-      const opts = {};
-      opts.where = {ident: this.instance.ident};
-      opts.limit = 1;
-      opts.order = [['ordinal', 'ASC']];
-
-      opts.attributes = {
+  async getPublic() {
+    const opts = {
+      where: {
+        ident: this.instance.ident,
+      },
+      limit: 1,
+      order: [['ordinal', 'ASC']],
+      attributes: {
         exclude: ['deletedAt'],
-      };
-
-      opts.include = [
-        {as: 'state', model: db.models.tracking_state.scope('noTasks'), },
+      },
+      include: [
+        {as: 'state', model: db.models.tracking_state.scope('noTasks')},
         {as: 'assignedTo', model: db.models.user.scope('public')},
-        {as: 'checkins', model: db.models.tracking_state_task_checkin, include: [{as: 'user', model: db.models.user.scope('public')}], separate: true},
-      ];
-
-      this.model.findOne(opts).then(
-        (result) => {
-          resolve(result);
+        {as: 'checkins', model: db.models.tracking_state_task_checkin, include: 
+          [
+            {as: 'user', model: db.models.user.scope('public')},
+          ],
+        separate: true,
         },
-        (err) => {
-          console.log(err);
-          reject({message: `Query failed to find the public instance: ${err.message}`});
-        }
-      );
-    });
+      ],
+    };
+
+    try {
+      const result = await this.model.findOne(opts);
+      return result;
+    } catch (error) {
+      logger.error(`Query failed to find the public instance: ${error}`);
+      throw new Error(`Query failed to find the public instance: ${error.message}`);
+    }
   }
-};
+}
+
+module.exports = Task;
