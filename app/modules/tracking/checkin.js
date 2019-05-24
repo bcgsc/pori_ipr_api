@@ -1,93 +1,58 @@
-"use strict";
+const db = require('../../models/');
+const InvalidTaskOperation = require('./exceptions/InvalidTaskOperation');
+const InvalidCheckInTarget = require('./exceptions/InvalidCheckInTarget');
 
-const _                       = require('lodash');
-const moment                  = require('moment');
-const db                      = require('../../models/');
-const FailedFindQuery         = require('../../models/exceptions/FailedFindQuery');
-const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
-const InvalidTaskDefinition   = require('./exceptions/InvalidTaskDefinition');
-const TooManyCheckIns         = require('./exceptions/TooManyCheckIns');
-const InvalidTaskOperation    = require('./exceptions/InvalidTaskOperation');
-const InvalidCheckInTarget    = require('./exceptions/InvalidCheckInTarget');
-const State                   = require('./state');
-const Task                   = require('./task');
+const logger = require('../../../lib/log');
 
-module.exports = class Checkin {
-
+class Checkin {
   /**
    * Initialize tracking state task object
    *
    * @param {string|object} init - Pass in either ident string or new object
    * @param {object} options - Options object
    */
-  constructor(init, options={}) {
+  constructor(init, options = {}) {
     this.instance = null;
     this.model = db.models.tracking_state_task_checkin;
 
     this.task = (options.task) ? options.task : null;
 
-    // Existing instance
-    if(typeof init === "object" && init !== null && typeof init.ident === "string") {
-      this.instance = init;
+    if (!init) {
+      logger.error('Unable to initiate checkin');
+      throw new Error('Unable to initiate checkin');
     }
 
+    // Existing instance
+    if (typeof init === 'object' && typeof init.ident === 'string') {
+      this.instance = init;
+    }
   }
 
   /**
    * Create Checkin
    *
-   * @params {object} user - The user checking in
-   * @params {object} payload - The outcome payload to be stored
+   * @param {object} task - Task object
+   * @param {object} user - The user checking in
+   * @param {string|int|boolean} payload - The outcome payload to be stored
    *
-   * @returns {Promise} - Resolves with checkin model instance
+   * @returns {Promise.<object>} - Returns checkin model instance
    */
-  createCheckin(task, user, payload) {
+  async createCheckin(task, user, payload) {
+    const checkin = {
+      task_id: task.id,
+      user_id: user.id,
+      outcome: payload,
+    };
 
-
-
-    return new Promise((resolve, reject) => {
-      let outcome;
-
-      // Check if payload matches set type
-      switch(task.outcomeType) {
-        case 'date':
-          // Valid IOS date
-          outcome = moment(payload).toISOString();
-          break;
-        case 'boolean':
-          if(payload === true || payload === false) outcome = payload;
-          if(payload === 'true') outcome = true;
-          if(payload === 'false') outcome = false;
-          break;
-        case 'text':
-        case 'pass/fail/proceed/oncopanel':
-        case 'location':
-          outcome = payload;
-          break;
-      }
-
-
-      let checkin = {
-        task_id: task.id,
-        user_id: user.id,
-        outcome: payload
-      };
-
-      // Create the instance
-      this.model.create(checkin).then(
-        (result) => {
-          this.instance = result;
-          resolve(this.instance);
-        },
-        (err) => {
-          console.log('Failed to create checkin', err);
-          reject({error: {message: 'Query to create checkin failed: ' + err.message}});
-        }
-      )
-
-    });
-
-
+    // Create the instance
+    try {
+      const result = await this.model.create(checkin);
+      this.instance = result;
+      return this.instance;
+    } catch (error) {
+      logger.error(`Failed to create checkin ${error}`);
+      throw new Error(`Failed to create checkin ${error}`);
+    }
   }
 
   /**
@@ -95,114 +60,89 @@ module.exports = class Checkin {
    *
    * Update the targeted number of check-ins for this task
    *
-   * @params {integer} target - The new number of check-in targets for this task
-   *
-   * @returns {Promise} - Resolves with the current task instance
+   * @param {integer} target - The new number of check-in targets for this task
+   * @returns {Promise} - Returns the current updated task instance
    */
-  updateCheckInsTarget(target) {
+  async updateCheckInsTarget(target) {
+    if (typeof target !== 'number') {
+      logger.error(`The supplied check in target is not a valid integer ${target}`);
+      throw new InvalidCheckInTarget('The supplied check in target is not a valid integer');
+    }
 
-    return new Promise((resolve, reject)=> {
+    this.instance.checkInsTarget = target;
 
-      if(typeof target !== 'number') throw new InvalidCheckInTarget('The supplied check in target is not a valid integer');
-
-      this.instance.checkInsTarget = target;
-      this.instance.save().then(
-        (result) => {
-          resolve(this.instance);
-        },
-        (err) => {
-          console.log(err);
-          throw new InvalidCheckInTarget('Unable to save the updated target value');
-        }
-      )
-    });
+    try {
+      await this.instance.save();
+      return this.instance;
+    } catch (error) {
+      logger.error(`Unable to save the updated target value: ${target} with error: ${error}`);
+      throw new InvalidCheckInTarget(`Unable to save the updated target value: ${target} with error: ${error}`);
+    }
   }
 
   /**
    * Undo a check in
    *
-   * @param {array|string} target - The datestamp of the check-in to be removed
+   * @param {array|string} targets - The datestamp of the check-in to be removed
    * @param {boolean} all - Remove all checkins
    *
-   * @returns {Promise} - Resolves with updated instance
+   * @returns {Promise} - Returns updated instance
    */
-  cancelCheckIn(target, all=false) {
+  async cancelCheckIn(targets, all = false) {
+    if (this.instance.checkIns === 0) {
+      logger.error('Attempting to undo an invalid amount of check ins');
+      throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
+    }
 
-    return new Promise((resolve, reject)=> {
-
-      if(this.instance.checkIns === 0) throw new InvalidTaskOperation('Attempting to undo an invalid amount of check ins');
-
-      // Removing a single entry
-      if(!all) {
-        if(typeof target === 'string') target = [target];
-
-        _.forEach(target, (t) => {
-          if(!this.instance.outcome[t]) throw new InvalidTaskOperation('Unable to find the outcome to revoke');
-          delete this.instance.outcome[t];
-        });
-
-        if(Object.keys(this.instance.outcome).length === 0) this.instance.outcome = null;
-
-        this.instance.checkIns = this.instance.checkIns - 1;
+    // Removing a single entry
+    if (!all) {
+      if (typeof targets === 'string') {
+        targets = [targets];
       }
 
-      if(all) {
-        this.instance.outcome = null;
-        this.instance.checkIns = 0;
-      }
-
-      // Change current status based on target
-      if(this.instance.checkIns === 0) this.instance.status = 'pending';
-      if(this.instance.checkIns > 0 && this.instance.checkIns < this.instance.checkInsTarget) this.instance.status = 'active';
-
-      this.instance.save().then(
-        (result) => {
-          resolve(this.instance);
-        },
-        (err) => {
-          console.log(err);
-          throw new InvalidTaskOperation('Unable to save the updated check ins amount');
+      targets.forEach((target) => {
+        if (!this.instance.outcome[target]) {
+          logger.error('Unable to find the outcome to revoke');
+          throw new InvalidTaskOperation('Unable to find the outcome to revoke');
         }
-      )
-    });
+        delete this.instance.outcome[target];
+      });
 
-  }
+      if (Object.keys(this.instance.outcome).length === 0) {
+        this.instance.outcome = null;
+      }
 
+      this.instance.checkIns = this.instance.checkIns - 1;
+    } else {
+      this.instance.outcome = null;
+      this.instance.checkIns = 0;
+    }
 
-  /**
-   * Update unprotected values
-   *
-   * @param {object} task - key-value pair object with values to be updated
-   */
-  setUnprotected(task) {
+    // Change current status based on target
+    if (this.instance.checkIns === 0) {
+      this.instance.status = 'pending';
+    }
+    if (this.instance.checkIns > 0 && this.instance.checkIns < this.instance.checkInsTarget) {
+      this.instance.status = 'active';
+    }
 
-    if(!this.validateTask(task))
-
-    if(task.name) this.instance.name = task.name;
-    if(task.description) this.instance.description = task.description;
-    if(task.status) this.instance.status = task.status;
-    if(task.assignedTo_id) this.instance.assignedTo_id = task.assignedTo_id;
+    try {
+      await this.instance.save();
+      return this.instance;
+    } catch (error) {
+      logger.error(`Unable to save the updated check ins amount ${error}`);
+      throw new InvalidTaskOperation(`Unable to save the updated check ins amount error: ${error}`);
+    }
   }
 
   /**
    * Get public version of this instance
    *
-   * @returns {Promise} - Resolves with a public instance of the model
+   * @returns {Promise} - Return a public instance of the model
    */
-  getPublic() {
-    return new Promise((resolve, reject) => {
-
-      this.model.scope('public').findOne({where: {ident: this.instance.ident}}).then(
-        (result) => {
-          resolve(result);
-        },
-        (err) => {
-          console.log(err);
-          reject({error: {message: 'Query failed to find the public instance: ' + err.message}});
-        }
-      )
-
-    });
+  async getPublic() {
+    return this.model.scope('public').findOne({where: {ident: this.instance.ident}});
   }
+}
 
-};
+module.exports = Checkin;
