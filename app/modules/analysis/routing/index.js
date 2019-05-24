@@ -193,7 +193,8 @@ class TrackingRouter extends RoutingInterface {
           }];
 
           try {
-            await new Generator(pogAnalysis, req.user, initState);
+            const generator = new Generator(pogAnalysis, req.user);
+            await generator.generateTrackingStates(initState);
           } catch (error) {
             logger.error(`Error while initialize tracking entries for biopsy ${error}`);
             return res.status(500).json({message: 'Error while initialize tracking entries for biopsy'});

@@ -115,7 +115,8 @@ module.exports = class TrackingRouter extends RoutingInterface {
           db.models.pog_analysis.create(data).then(
             (analysis) => {
 
-              let generator = new Generator(pog, analysis, req.user).then(
+              let generator = new Generator(pog, analysis);
+              generator.generateTrackingStates(req.user).then(
                 (results) => {
                   res.json(results);
                 },
@@ -142,7 +143,8 @@ module.exports = class TrackingRouter extends RoutingInterface {
     this.registerEndpoint('get', '/POG/:POG/analysis/:analysis([A-z0-9-]{36})/generate', (req,res,next) => {
 
       // Generate Request
-      let generator = new Generator(req.pog, req.analysis, req.user).then(
+      let generator = new Generator(req.pog, req.analysis);
+      generator.generateTrackingStates(req.user).then(
         (results) => {
           res.json(results);
         },

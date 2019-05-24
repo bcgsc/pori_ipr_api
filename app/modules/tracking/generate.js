@@ -1,143 +1,119 @@
-"use strict";
+const db = require('../../models');
+const InvalidTaskDefinition = require('./exceptions/InvalidTaskDefinition');
+const InvalidStateDefintion = require('./exceptions/InvalidStateDefinition');
 
-const _                       = require('lodash');
-const db                      = require('../../models/');
-const InvalidTaskDefinition   = require('./exceptions/InvalidTaskDefinition');
-const InvalidStateDefintion   = require('./exceptions/InvalidStateDefinition');
-const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
-const moment                  = require('moment');
+const logger = require('../../../lib/log');
 
-module.exports = class TrackingGenerator {
-
+class TrackingGenerator {
   /**
    * Initialize tracking entries for a biopsy
    *
-   * @param {object} analysis - analysis object
+   * @param {object} analysis - Analysis object
    * @param {object} user - Current user instance
-   * @param {array} states - states to generate tracking for in the format [{slug: <state slug>, status: <status to initialize>}, ...]
-   * 
    */
-  constructor(analysis, user, states) {
+  constructor(analysis, user) {
+    this.user = user;
+    this.analysis = analysis;
+  }
 
-    this.user         = user;
-    this.analysis     = analysis;
+  /**
+   * Generate Tracking States
+   *
+   * @param {Array.<object>} states - States to generate tracking for in the format [{slug: <state slug>, status: <status to initialize>}, ...]
+   * @returns {Promise.<Array.<object>>} - Returns newly generated tracking states
+   */
+  async generateTrackingStates(states) {
+    const slugs = states.map((state) => {
+      return state.slug;
+    });
 
-    return new Promise((resolve, reject) => {
-
-      // Retrieve current set of definitions
-      db.models.tracking_state_definition.findAll({
+    // Retrieve current set of definitions
+    let trackingStateDefinitions;
+    try {
+      trackingStateDefinitions = await db.models.tracking_state_definition.findAll({
         where: {
           hidden: false,
-          slug: {
-            $in: _.map(states, 'slug')
-          }
-        }
-      }).then(
-        (definitions) => {
-          
-          let promises = [];
-
-          _.forEach(definitions, (d) => {
-
-            // get status to set based off of state definition slug
-            let state = _.find(states, function(state) {
-              return state.slug == d.slug
-            });
-            let status = state.status;
-
-            promises.push(this.createState(d, status));
-          });
-
-          Promise.all(promises).then(
-            (success) => {
-
-              // All states were created OK
-              db.models.tracking_state.findAll({where: {analysis_id: analysis.id}}).then(
-                (states) => {
-
-                  // All tracking states made
-                  resolve(states);
-                },
-                (err) => {
-                  console.log(err);
-                  reject({error: {message: 'Unable to retrieve newly created states'}});
-                }
-              );
-
-            },
-            (err) => {
-              reject({error: {message: 'Failed to create all the states', error: err}});
-            }
-          )
-
+          slug: {$in: slugs},
         },
-        (reject) => {
-          console.log(err);
-          reject({error: {message: 'Failed to retrieve all currently defined states'}});
-        }
-      )
+      });
+    } catch (error) {
+      logger.error(`Failed to retrieve all currently defined states ${error}`);
+      throw new Error(`Failed to retrieve all currently defined states ${error}`);
+    }
 
-    });
+    // get status to set based off of state definition slug
+    try {
+      const promises = trackingStateDefinitions.map((definition) => {
+        const stateDef = states.find((state) => {
+          return state.slug === definition.slug;
+        });
+
+        const {status} = stateDef;
+
+        return this.createState(definition, status);
+      });
+
+      await Promise.all(promises);
+    } catch (error) {
+      logger.error(`Failed to create all the states ${error}`);
+      throw new Error(`Failed to create all the states ${error}`);
+    }
+
+    try {
+      const trackingStates = await db.models.tracking_state.findAll({where: {analysis_id: this.analysis.id}});
+      return trackingStates;
+    } catch (error) {
+      logger.error(`Unable to retrieve newly created states ${error}`);
+      throw new Error(`Unable to retrieve newly created states ${error}`);
+    }
   }
 
   /**
    * Generate a state entry with a definition
    *
-   * @param {object} definition - the definition/template to use
-   * @param {string} status - the status to initialize the state to (optional)
+   * @param {object} definition - The definition/template to use
+   * @param {string} status - The status to initialize the state to (optional)
    *
-   * @returns {Promise} - Resolves with the model instance
+   * @returns {Promise.<Array.<object>>} - Returns array of created tasks
    */
-  createState(definition, status=null) {
-    return new Promise((resolve, reject) => {
-      const ordinalStatus = (definition.ordinal === 1) ? 'active' : 'pending';
-      const setStatus = status ? status : ordinalStatus; // unless explicitly specified, default to start as pending if not ordinal=0
+  async createState(definition, status = null) {
+    const ordinalStatus = (definition.ordinal === 1) ? 'active' : 'pending';
+    const setStatus = status || ordinalStatus; // unless explicitly specified, default to start as pending if not ordinal=0
 
-      // Create new state
-      let newState = {
-        analysis_id:  this.analysis.id,
-        group_id:     definition.group_id,
-        name:         definition.name,
-        slug:         definition.slug,
-        description:  definition.description,
-        ordinal:      definition.ordinal,
-        status:       setStatus,
-        startedAt:    null,
-        createdBy_id: this.user.id,
-      };
+    // Create new state
+    const newState = {
+      analysis_id: this.analysis.id,
+      group_id: definition.group_id,
+      name: definition.name,
+      slug: definition.slug,
+      description: definition.description,
+      ordinal: definition.ordinal,
+      status: setStatus,
+      startedAt: null,
+      createdBy_id: this.user.id,
+    };
 
-      // Create State
-      db.models.tracking_state.create(newState)
-        .then(
-        (state) => {
+    // Create State
+    let state;
+    try {
+      state = await db.models.tracking_state.create(newState);
+    } catch (error) {
+      logger.error(`Unable to create tracking state definition: ${definition.name} with error ${error}`);
+      throw new InvalidStateDefintion(`Unable to create tracking state definition: ${definition.name} with error ${error}`);
+    }
 
-          let promises = [];
-
-          // Create Tasks
-          _.forEach(definition.tasks, (task, i) => {
-            promises.push(this.createTask(state, task, i));
-          });
-
-          Promise.all(promises)
-            .then((tasks) => {
-              resolve(tasks);
-            })
-            .catch((e) => {
-              console.log('Create tasks error', e);
-              reject({error: {message: 'Unable to create tasks due to: '+ e.error.message}});
-              throw new Error('Unable to create tasks');
-            });
-
-        },
-        (err) => {
-          console.log(err);
-          // Throw Exception
-          reject({error: {message: 'Failed to init tracking, a bad state definition was the cause: ' + err.message}});
-          throw new InvalidStateDefintion('Bad state definition, unable to create state: ' + definition.name);
-        }
-      )
-
+    // Create Tasks
+    const promises = definition.tasks.map((task, index) => {
+      return this.createTask(state, task, index);
     });
+
+    try {
+      const tasks = await Promise.all(promises);
+      return tasks;
+    } catch (error) {
+      logger.error(`Unable to create tasks ${error}`);
+      throw new Error(`Unable to create tasks ${error}`);
+    }
   }
 
   /**
@@ -147,34 +123,28 @@ module.exports = class TrackingGenerator {
    * @param {object} task - The task definition
    * @param {integer} ordinal - The execution order number for the task
    *
-   * @returns {Promise} - Resolves with the task definition
+   * @returns {Promise.<object>} - Returns created task definition
    */
-  createTask(state, task, ordinal) {
-    return new Promise((resolve, reject) => {
+  async createTask(state, task, ordinal) {
+    const newTask = {
+      state_id: state.id,
+      name: task.name,
+      slug: task.slug,
+      description: task.description,
+      ordinal,
+      status: task.status,
+      outcomeType: task.outcomeType,
+      checkInsTarget: task.checkInsTarget,
+    };
 
-      let newTask = {
-        state_id:         state.id,
-        name:             task.name,
-        slug:             task.slug,
-        description:      task.description,
-        ordinal:          ordinal,
-        status:           task.status,
-        outcomeType:      task.outcomeType,
-        checkInsTarget:   task.checkInsTarget,
-      };
-
-      db.models.tracking_state_task.create(newTask).then(
-        (task) => {
-          resolve(task);
-        },
-        (err) => {
-          reject({error: {message: 'Failed to create task: "' + task.slug + '" due to an SQL error: ' + err.message}});
-          console.log(err);
-          throw new InvalidTaskDefinition('Unable to create task (sql error)');
-        }
-      )
-
-    });
+    try {
+      const createdTask = await db.models.tracking_state_task.create(newTask);
+      return createdTask;
+    } catch (error) {
+      logger.error(`Failed to create task ${task.slug} due to a SQL error ${error}`);
+      throw new InvalidTaskDefinition(`Failed to create task ${task.slug} due to a SQL error ${error}`);
+    }
   }
+}
 
-};
+module.exports = TrackingGenerator;

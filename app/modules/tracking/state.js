@@ -278,7 +278,9 @@ module.exports = class State {
 
         logger.debug(`Creating new states: ${JSON.stringify(createNewStates)}`);
 
-        return new Generator(analysis, user, createNewStates); // generate new tracking state cards for states that don't exist yet
+        const generator = new Generator(analysis, user);
+
+        return generator.generateTrackingStates(createNewStates); // generate new tracking state cards for states that don't exist yet
       }).then((createdStates) => {
         resolve(createdStates);
       }).catch((err) => {
