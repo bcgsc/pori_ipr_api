@@ -1,12 +1,12 @@
 const request = require('request-promise-native');
 const nconf = require('nconf').argv().env().file({file: './config/config.json'});
 
-const host = nconf.get('jira:hostname');
-const base = nconf.get('jira:api');
+const HOSTNAME = nconf.get('jira:hostname');
+const BASEPATH = nconf.get('jira:api');
 
 // Base Request options object
 const opts = {
-  hostname: host,
+  hostname: HOSTNAME,
   port: 443,
   headers: {
     'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ const $jira = {
     });
 
     // Endpoint
-    opts.path = `${base}/auth/1/session`;
+    opts.path = `${BASEPATH}/auth/1/session`;
     opts.method = 'POST';
     opts.headers['Content-Length'] = Buffer.byteLength(body);
 
