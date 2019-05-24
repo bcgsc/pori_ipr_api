@@ -1,15 +1,10 @@
-"use strict";
+const render = require('json-templater/string');
+const db = require('../../models');
+const Email = require('../../modules/notification/email');
 
-const db              = require(`${process.cwd()}/app/models`);
-const _               = require('lodash');
-const logger          = require('../../../lib/log');
-const Email           = require(`${process.cwd()}/app/modules/notification/email`);
-const render          = require('json-templater/string');
+const logger = require('../../../lib/log');
 
-
-
-/** --- Hook Type Handlers --- **/
-
+// ** --- Hook Type Handlers --- ** //
 
 /**
  * Send email on hook invoke
@@ -18,32 +13,28 @@ const render          = require('json-templater/string');
  * @param {object} state - State object
  * @param {object} [task] - Task object
  *
- * @returns {Promise}
+ * @returns {undefined}
  */
-let hook_email = (hook, state, task=null) => {
-  return new Promise((resolve, reject) => {
-    
-    let analysis = state.analysis;
-    let pog = state.analysis.pog;
-    
-    let data = {state: state, task: task, analysis: analysis, patient: pog};
-    
-    let email = new Email();
-    email
-      .setRecipient(hook.target)
-      .setSubject(render(hook.payload.subject, data))
-      .setBody(render(hook.payload.body, data))
-      .send()
-      .then((result) => {
-        resolve(result);
-      })
-      .catch((e) => {
-        logger.error('Unable to send email hook', e.message);
-        console.log('Unable to send email hook', e);
-      });
-    
-  
-  });
+const hookEmail = async (hook, state, task = null) => {
+  const {analysis} = state;
+  const {pog} = analysis;
+
+  const data = {
+    state, task, analysis, patient: pog,
+  };
+
+  const email = new Email();
+  email
+    .setRecipient(hook.target)
+    .setSubject(render(hook.payload.subject, data))
+    .setBody(render(hook.payload.body, data));
+
+  try {
+    await email.send();
+  } catch (error) {
+    logger.error(`Unable to send email hook: ${hook} error: ${error}`);
+    throw new Error(`Unable to send email hook: ${hook} error: ${error}`);
+  }
 };
 
 /**
@@ -54,35 +45,30 @@ let hook_email = (hook, state, task=null) => {
  * @param {string} task - Task slug name
  * @param {boolean} enabled - Only enabled tasks
  *
- * @returns {Promise}
+ * @returns {Promise.<Array.<object>>} - Returns hooks for state and task
  */
-let check_hook = (state, status, task=null, enabled=true) => {
-  return new Promise((resolve, reject) => {
-    
-    let opts = {
-      where: {
-        state_name: state,
-        status: status
-      }
-    };
+const check_hook = async (state, status, task = null, enabled = true) => {
+  const opts = {
+    where: {
+      state_name: state,
+      status,
+      task_name: task || null,
+    },
+  };
 
-    opts.where.task_name = task ? task : null;
-    
-    // Only if enabled?
-    if(enabled) opts.where.enabled = true;
-    
-    // Check if a hook exists
-    db.models.tracking_hook.findAll(opts)
-      .then((hooks) => {
-        resolve(hooks);
-      })
-      .catch((err) => {
-        logger.error(`Unable to retrieve hooks for ${state} (${task})`);
-        reject({message: `failed to retrieve hooks for ${state} (${task})`});
-        console.log(err);
-      });
-    
-  });
+  // Only if enabled?
+  if (enabled) {
+    opts.where.enabled = true;
+  }
+
+  // Check if a hook exists
+  try {
+    const hooks = await db.models.tracking_hook.findAll(opts);
+    return hooks;
+  } catch (error) {
+    logger.error(`Unable to retrieve hooks for ${state} (${task})`);
+    throw new Error(`Unable to retrieve hooks for ${state} (${task})`);
+  }
 };
 
 /**
@@ -92,74 +78,49 @@ let check_hook = (state, status, task=null, enabled=true) => {
  * @param {object} state - Model instance object for specified state
  * @param {object} task - Model instance object for specified task
  *
- * @returns {Promise} - Resolves with status
+ * @returns {undefined}
  */
-let invoke_hook = (hook, state, task=null) => {
-  switch(hook.action) {
-    case 'email':
-      return hook_email(hook, state, task);
-      break;
+const invoke_hook = (hook, state, task = null) => {
+  if (hook.action === 'email') {
+    hookEmail(hook, state, task);
   }
 };
 
+/**
+ * Check and invoke hooks
+ *
+ * @param {object} state - The state model object instance
+ * @param {string} status - The transition-to state of the referenced object
+ * @param {object=} task - The optional task model instance
+ * @param {boolean=} enabled - Enabled override
+ *
+ * @returns {undefined}
+ */
+const check_and_invoke = async (state, status, task = null, enabled = true) => {
+  const taskSlug = (task) ? task.slug : null;
 
-/** Module Interface **/
-module.exports = {
-  
-  /**
-   * Check if hooks exist
-   *
-   * @param {string} state - State slug name
-   * @param {string} status - Updated status/state
-   * @param {string} task - Task slug name
-   * @param {boolean} enabled - Only enabled tasks
-   *
-   * @returns {Promise}
-   */
-  check_hook: (state, status, task=null, enabled=true) => {
-    return check_hook(state, status, task, enabled);
-  },
-  
-  /**
-   * Invoke a hook
-   *
-   * @param {object} hook - Model instance object for specified hook
-   * @param {object} state - Model instance object for specified state
-   * @param {object} task - Model instance object for specified task
-   *
-   * @returns {Promise} - Resolves with status
-   */
-  invoke_hook: (hook, state, task=null) => {
-    return invoke_hook(hook, state, task=null);
-  },
-  
-  /**
-   * Check and invoke hooks
-   *
-   *
-   * @param {object} state - The state model object instance
-   * @param {string} status - The transition-to state of the referenced object
-   * @param {object=} task - The optional task model instance
-   * @param {boolean=} enabled - Enabled override
-   * @returns {Promise}
-   */
-  check_and_invoke: (state, status, task=null, enabled=true) => {
-    return new Promise((resolve, reject) => {
-      
-      let t = (task) ? task.slug : null;
-      
-      check_hook(state.slug, status, t, enabled)
-        .then((hooks) => {
-          return Promise.all(_.map(hooks, (h) => { return invoke_hook(h, state, task) }))
-        })
-        .then((r) => {
-          resolve(true);
-        })
-        .catch((e) => {
-          reject({message: 'Failed to retrieve and invoke hooks'});
-          console.log(e);
-        });
+  let hooks;
+  try {
+    hooks = await check_hook(state.slug, status, taskSlug, enabled);
+  } catch (error) {
+    logger.error(`Failed to check hook ${error}`);
+    throw new Error(`Failed to check hook ${error}`);
+  }
+
+  try {
+    const promises = hooks.map((hook) => {
+      return invoke_hook(hook, state, task);
     });
-  },
-  
+
+    await Promise.all(promises);
+  } catch (error) {
+    logger.error(`Failed to retrieve and invoke hooks ${error}`);
+    throw new Error(`Failed to retrieve and invoke hooks ${error}`);
+  }
+};
+
+module.exports = {
+  check_hook,
+  invoke_hook,
+  check_and_invoke,
 };
