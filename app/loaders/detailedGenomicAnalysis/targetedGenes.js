@@ -1,93 +1,49 @@
-"use strict";
+const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
+const db = require('../../models');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-  fs = require('fs'),
-  parse = require('csv-parse'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  _ = require('lodash'),
-  Q = require('q'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+const logger = require('../../../lib/log');
 
 /**
  * Parse Targeted Gene Report File
  *
- *
  * @param {object} report - POG report model object
  * @param {string} dir - base directory
- * @param {object} logger - logging interface
  *
- * @returns {promise|object} - Resolves with boolean
+ * @returns {Promise.<Array.<object>>} - Returns db created entries
  */
-module.exports = (report, dir, logger) => {
-
-  // Create promise
-  let deferred = Q.defer();
-
-  // Setup Logger
-  let log = logger.loader(report.ident, 'DetailedGenomicAnalysis.TargetedGenes');
-
+module.exports = async (report, dir) => {
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/probe_summary.csv');
-
-  log('Found and read probe_summary.csv file.');
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_summary.csv`);
+  logger.info('Found and read probe_summary.csv file.');
 
   // Parse file!
-  let parser = parse({delimiter: ',', columns: true},
-    (err, result) => {
+  const results = parse(output, {delimiter: ',', columns: true});
 
-      // Was there a problem processing the file?
-      if(err) {
-        log('Unable to parse CSV file');
-        console.log(err);
-        deferred.reject({reason: 'parseCSVFail'});
-      }
-
-      // Remap results
-      let entries = [];
-      let entriesMap = {};
-      // Map needed DB column values
-      _.forEach(result, (v, k) => {
-
-        if(v.Gene + '-' + v.Variant in entriesMap) return;
-
-        let entry = {
-          pog_id: report.pog_id,
-          pog_report_id: report.id,
-          gene: v.Gene,
-          variant: v.Variant,
-          sample: v.Sample
-        };
-
-        entries.push(entry); // Add entry
-        entriesMap[v.Gene + '-' + v.Variant] = true; // Add entry to map to prevent multiple identical entries
-
-      });
-
-      // Add to Database
-      db.models.targetedGenes.bulkCreate(entries).then(
-        (result) => {
-          log('Finished Targeted Gene Report.', logger.SUCCESS)
-
-          // Resolve Promise
-          deferred.resolve(result);
-        },
-        (err) => {
-          log('Failed to load Targeted Gene Report.', logger.ERROR)
-          deferred.reject('Failed to load Targeted Gene Report.');
-        }
-      );
+  // Remap results
+  const entries = [];
+  const entriesMap = {};
+  // Map needed DB column values
+  results.forEach((value) => {
+    if (`${value.Gene}-${value.Variant}` in entriesMap) {
+      return;
     }
-  );
 
-  // Pipe file through parser
-  output.pipe(parser);
+    const entry = {
+      pog_id: report.pog_id,
+      pog_report_id: report.id,
+      gene: value.Gene,
+      variant: value.Variant,
+      sample: value.Sample,
+    };
 
-  output.on('error', (err) => {
-    log('Unable to find required CSV file');
-    deferred.resolve({reason: 'targetedGenes - sourceFileNotFound'});
+    entries.push(entry); // Add entry
+    entriesMap[`${value.Gene}-${value.Variant}`] = true; // Add entry to map to prevent multiple identical entries
   });
 
-  return deferred.promise;
+  // Add to Database
+  const createdEntries = await db.models.targetedGenes.bulkCreate(entries);
+  logger.info('Finished Targeted Gene Report.');
 
+  return createdEntries;
 };

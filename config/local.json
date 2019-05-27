@@ -13,8 +13,13 @@
   },
 
   "lims" : {
-    "hostname": "https://lims16.bcgsc.ca",
+    "hostname": "https://lims13.bcgsc.ca",
     "api": "/prod/limsapi"
+  },
+
+  "bioapps" : {
+    "hostname": "http://sbs.bcgsc.ca:8100",
+    "api": ""
   },
 
   "redis": {

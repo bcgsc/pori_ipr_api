@@ -1,21 +1,20 @@
-"use strict";
-
-const moment = require('moment');
 const fs = require('fs');
-const Parse = require('csv-parse');
-const _ = require('lodash');
+const parse = require('csv-parse/lib/sync');
 
-/**
- * Loader Class Wrapper
- *
- * Provides common functions for loaders to extend
- *
- */
 class Loader {
-
-  constructor(directory_base, directory_csv, directory_image, pog, report, options={}) {
-    this.log = [];
-    this.directory = {base: directory_base, csv: directory_csv, image: directory_image};
+  /**
+   * Loader Class Wrapper
+   * Provides common functions for loaders to extend
+   *
+   * @param {string} directoryBase - Base directory
+   * @param {string} directoryCsv - CSV directory
+   * @param {string} directoryImage - Image directory
+   * @param {object} pog - POG report model object
+   * @param {object} report - Report object
+   * @param {object} options - Options for loading
+   */
+  constructor(directoryBase, directoryCsv, directoryImage, pog, report, options = {}) {
+    this.directory = {base: directoryBase, csv: directoryCsv, image: directoryImage};
     this.name = ['loader'];
     this.report = report;
     this.pog = pog;
@@ -23,61 +22,18 @@ class Loader {
   }
 
   /**
-   * Add to the log namespace
-   *
-   * @param {array|string} name - An array or string of name to add to log namespace
-   */
-  addToLogNamespace(name) {
-    if(typeof name === 'string') name = [name];
-    this.name = this.name.concat(name);
-  }
-
-  /**
-   * Add message to loader log
-   *
-   * @param {string} message - The message to add to the log
-   * @param {string} status - The status of the message
-   */
-  log(message, status) {
-
-    // Insert entry to log
-    let entry = "";
-
-    entry += '[' + moment().format() + ']';
-    entry += '[' + _.join(this.name, '][') + ']';
-    entry += message;
-
-    this.log.push(entry);
-  }
-
-  /**
    * Read and retrieve a file
-   *
    * Checks for the existence of a file and returns the data
    *
-   * @param {array} file - Read in a file and return the data
-   *
-   * @returns {Promise|array} - Resolves with the content of the file
+   * @param {string} file - File location
+   * @returns {Promise.<string>} - Returns the content of the file
    */
-  readFile(file) {
-    return new Promise((resolve, reject) => {
-      // Check the file exists and can be read
-      fs.access(file, fs.constants.R_OK, (err) => {
-        if(err) return reject({message: 'Permissions error - Unable to read the file:' + file});
-
-        // Read in the file
-        fs.readFile(file, 'utf8', (err, data) => {
-
-          if(err) return reject({message: 'Unable to read the file: ' + file});
-
-          // Resolves with the file data
-          resolve(data);
-        }); // end readfile cb
-      }); // end access cb
-    });  // end promise
+  async readFile(file) {
+    // Check the file exists and can be read
+    fs.accessSync(file, fs.R_OK);
+    // Read in the file
+    return fs.readFileSync(file, 'utf-8');
   }
-
-
 
   /**
    * Parse Data into CSV and remap columns
@@ -85,39 +41,10 @@ class Loader {
    * @param {string} data - Large string to be converted from CSV to collection
    * @param {string} separator - The deliminator in the file to be parsed
    *
-   * @returns {Promise|array} - Resolves with a collection of converted & remapped CSV data
+   * @returns {Promise.<Array.<string>>} - Returns a collection of converted & remapped CSV data
    */
-  parseFile(data, separator=',') {
-    return new Promise((resolve, reject) => {
-
-
-      let output = [];
-      let parser = Parse({delimiter: separator, columns: true});
-
-      parser.on('readable', () => {
-        let record;
-        while(record = parser.read()) {
-          output.push(record);
-        }
-      });
-
-      parser.on('error', (err) => {
-        console.log('Unable to parse data: ', err);
-        this.log('Unable to parse data', 'ERROR');
-        reject({message: 'unable to parse data'});
-      });
-
-      // Remake column headers
-      parser.on('finish', () => {
-        resolve(output);
-      });
-
-      // Write data to parser
-      parser.write(data);
-
-      // Close the readable stream
-      parser.end();
-    });
+  async parseFile(data, separator = ',') {
+    return parse(data, {delimiter: separator, columns: true});
   }
 }
 
