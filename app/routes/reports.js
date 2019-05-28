@@ -64,6 +64,10 @@ router.route('/')
       ],
     };
 
+    /* Sort fields
+     * args expected to take the form: ?sort=column:direction,column:direction...
+     * where direction = asc or desc and column is one of:
+     * patientID, analysisBiopsy, tumourType, physician, state, caseType, or alternateIdentifier */
     if (req.query.sort) {
       let {sort} = req.query;
       sort = sort.split(',');
