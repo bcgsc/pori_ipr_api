@@ -63,17 +63,28 @@ router.route('/')
       ],
     };
 
+<<<<<<< HEAD
     /* Sort fields
      * args expected to take the form: ?sort=column:direction,column:direction...
      * where direction = asc or desc and column is one of:
      * patientID, analysisBiopsy, tumourType, physician, state, caseType, or alternateIdentifier */
     if (req.query.sort) {
+=======
+    if (req.query.sort) {
+      let {sort} = req.query;
+      sort = sort.split(',');
+      const orders = sort.map(sortGroup => sortGroup.split(':')[1]);
+>>>>>>> Move default ordering code to actually be default
       const modelMapping = (index, order) => ({
         patientID: [{model: db.models.POG, as: 'pog'}, 'POGID', order],
         analysisBiopsy: [{model: db.models.pog_analysis, as: 'analysis'}, 'analysis_biopsy', order],
         tumourType: [
           {model: db.models.patientInformation, as: 'patientInformation'},
+<<<<<<< HEAD
           'tumour_type',
+=======
+          'tumourType',
+>>>>>>> Move default ordering code to actually be default
           order,
         ],
         physician: [
@@ -93,10 +104,19 @@ router.route('/')
           order,
         ],
       }[index]);
+<<<<<<< HEAD
       let {sort} = req.query;
 
       sort = sort.split(',');
       opts.order = sort.map(sortGroup => modelMapping(...sortGroup.split(':')));
+=======
+
+      const columns = sort.map((sortGroup, index) => modelMapping(
+        sortGroup.split(':')[0], orders[index]
+      ));
+
+      opts.order = columns;
+>>>>>>> Move default ordering code to actually be default
     } else {
       opts.order = [
         ['state', 'desc'],
