@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
@@ -31,7 +32,7 @@ router.route('/')
       return res.status(500).json({error: {message: error.message, code: error.code}});
     }
     const opts = {
-      where: {},
+      where: {[Op.and]: {}},
       include: [
         {
           model: db.models.patientInformation,
@@ -131,7 +132,7 @@ router.route('/')
       opts.where.type = 'genomic';
     }
 
-    if (req.query.project) { // check access if filtering
+    if (req.query.project) { // check access if filtering on project
       // Get the names of the projects the user has access to
       const projectAccessNames = projectAccess.map((project) => {
         return project.name;
@@ -148,7 +149,7 @@ router.route('/')
       const projectAccessIdent = projectAccess.map((project) => {
         return project.ident;
       });
-      opts.where['$pog.projects.ident$'] = {$in: projectAccessIdent};
+      opts.where[Op.and]['$pog.projects.ident$'] = {[Op.in]: projectAccessIdent};
     }
 
     if (req.query.searchText) {
@@ -161,6 +162,49 @@ router.route('/')
         '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
         '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
       };
+    }
+
+    const allowedOperatorsMapping = {
+      equals: Op.eq,
+      notEqual: Op.ne,
+    };
+
+    const columnMapping = {
+      patientID: {column: 'POGID', table: 'pog'},
+      analysisBiopsy: {column: 'analysis_biopsy', table: 'analysis'},
+      tumourType: {column: 'tumourType', table: 'patientInformation'},
+      physician: {column: 'physician', table: 'patientInformation'},
+      state: {column: 'state', table: null},
+      caseType: {column: 'caseType', table: 'patientInformation'},
+      alternateIdentifier: {column: 'alternate_identifier', table: 'analysis'},
+    };
+
+    /* Grab the filters and check to see if the columns are in the list of filterable ones */
+    let queryFilters = Object.entries(req.query)
+      .filter(([key]) => Object.keys(columnMapping).includes(key));
+
+    if (queryFilters.length) {
+      /* Get the column, operation, and value for each filter */
+      queryFilters = queryFilters.map((queryFilter) => {
+        const column = queryFilter.shift();
+        const [operation, text] = queryFilter.shift().split(':');
+        return {column, operation, text};
+      });
+
+      queryFilters.forEach((filterObject) => {
+        const {column, operation, text} = filterObject;
+        /* Check to see if there's a table associated with the column */
+        /* Used to check the case where the column belongs to the base model */
+        /* ex: opts.include[1].where[Op.eq] = "texthere" where [1] is the table index */
+        const columnName = columnMapping[column].column;
+        const tableName = columnMapping[column].table;
+        const mappedOp = allowedOperatorsMapping[operation];
+        if (tableName) {
+          opts.where[Op.and][`$${tableName}.${columnName}$`] = {[mappedOp]: text};
+        } else {
+          opts.where[Op.and][columnName] = {[mappedOp]: text};
+        }
+      });
     }
 
     // States
