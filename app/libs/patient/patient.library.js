@@ -29,7 +29,7 @@ const retrieveOrCreate = async (patientID, project = null, additionalFields = nu
     const [bindProject] = projectResult; // created/retrieved project
 
     // See if patient and project are already bound
-    if (bindProject.pogs.find((pog) => { return pog.ident === bindProject.ident; })) {
+    if (bindProject.pogs && bindProject.pogs.find((pog) => { return pog.ident === bindProject.ident; })) {
       return patient; // binding already exists - resolve pog
     }
 
