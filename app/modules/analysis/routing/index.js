@@ -399,15 +399,20 @@ class TrackingRouter extends RoutingInterface {
           {as: 'analysis', model: db.models.analysis_report, separate: true},
           {as: 'pog', model: db.models.POG.scope('public'), where: {}},
         ],
-        where: {ident: req.params.analysisIdent},
+        where: {
+          ident: req.params.analysisIdent,
+          analysis_biopsy: {
+            [db.Op.ne]: null,
+          },
+        },
       };
 
       let analysis;
       try {
         analysis = await db.models.pog_analysis.findOne(opts);
       } catch (error) {
-        logger.error(`Error while finding POG analysis ${error}`);
-        return res.status(500).json({message: 'Error while finding POG analysis'});
+        logger.error(`Error while finding POG analysis: ${req.params.analysisIdent} with biopsy. Error: ${error}`);
+        return res.status(500).json({message: `Error while finding POG analysis: ${req.params.analysisIdent} with biopsy. Error: ${error}`});
       }
 
       let patient;
