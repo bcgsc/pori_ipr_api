@@ -68,9 +68,6 @@ router.route('/')
      * where direction = asc or desc and column is one of:
      * patientID, analysisBiopsy, tumourType, physician, state, caseType, or alternateIdentifier */
     if (req.query.sort) {
-      let {sort} = req.query;
-      sort = sort.split(',');
-      const orders = sort.map(sortGroup => sortGroup.split(':')[1]);
       const modelMapping = (index, order) => ({
         patientID: [{model: db.models.POG, as: 'pog'}, 'POGID', order],
         analysisBiopsy: [{model: db.models.pog_analysis, as: 'analysis'}, 'analysis_biopsy', order],
@@ -96,12 +93,15 @@ router.route('/')
           order,
         ],
       }[index]);
+      let {sort} = req.query;
 
-      const columns = sort.map((sortGroup, index) => modelMapping(
-        sortGroup.split(':')[0], orders[index]
-      ));
-
-      opts.order = columns;
+      sort = sort.split(',');
+      opts.order = sort.map(sortGroup => modelMapping(...sortGroup.split(':')));
+    } else {
+      opts.order = [
+        ['state', 'desc'],
+        [{model: db.models.POG, as: 'pog'}, 'POGID', 'desc'],
+      ];
     }
 
     // Check for types
@@ -164,11 +164,6 @@ router.route('/')
       }
       opts.include.push(userFilter);
     }
-
-    opts.order = [
-      ['state', 'desc'],
-      [{model: db.models.POG, as: 'pog'}, 'POGID', 'desc'],
-    ];
 
     try {
       // return all reports
