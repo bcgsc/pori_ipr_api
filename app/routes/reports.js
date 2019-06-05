@@ -32,7 +32,7 @@ router.route('/')
       return res.status(500).json({error: {message: error.message, code: error.code}});
     }
     const opts = {
-      where: {[Op.and]: {}},
+      where: {},
       include: [
         {
           model: db.models.patientInformation,
@@ -149,7 +149,7 @@ router.route('/')
       const projectAccessIdent = projectAccess.map((project) => {
         return project.ident;
       });
-      opts.where[Op.and]['$pog.projects.ident$'] = {[Op.in]: projectAccessIdent};
+      opts.where['$pog.projects.ident$'] = {[Op.in]: projectAccessIdent};
     }
 
     if (req.query.searchText) {
@@ -180,29 +180,58 @@ router.route('/')
     };
 
     /* Grab the filters and check to see if the columns are in the list of filterable ones */
-    let queryFilters = Object.entries(req.query)
+    const queryFilters = Object.entries(req.query)
       .filter(([key]) => Object.keys(columnMapping).includes(key));
 
     if (queryFilters.length) {
       /* Get the column, operation, and value for each filter */
-      queryFilters = queryFilters.map((queryFilter) => {
-        const column = queryFilter.shift();
-        const [operation, text] = queryFilter.shift().split(':');
-        return {column, operation, text};
-      });
-
-      queryFilters.forEach((filterObject) => {
-        const {column, operation, text} = filterObject;
-        /* Check to see if there's a table associated with the column */
-        /* Used to check the case where the column belongs to the base model */
-        /* ex: opts.include[1].where[Op.eq] = "texthere" where [1] is the table index */
+      queryFilters.forEach(([column, value]) => {
         const columnName = columnMapping[column].column;
         const tableName = columnMapping[column].table;
-        const mappedOp = allowedOperatorsMapping[operation];
-        if (tableName) {
-          opts.where[Op.and][`$${tableName}.${columnName}$`] = {[mappedOp]: text};
+        /* Case where there is no boolean operators */
+        if (!(value.includes('||') || value.includes('&&'))) {
+          const [operation, text] = value.shift().split(':');
+          /* Check to see if there's a table associated with the column */
+          /* Used to check the case where the column belongs to the base model */
+          /* ex: opts.include[1].where[Op.eq] = "texthere" where [1] is the table index */
+          const mappedOp = allowedOperatorsMapping[operation];
+          if (tableName) {
+            opts.where[`$${tableName}.${columnName}$`] = {[mappedOp]: text};
+          } else {
+            opts.where[columnName] = {[mappedOp]: text};
+          }
         } else {
-          opts.where[Op.and][columnName] = {[mappedOp]: text};
+          /* Case where there are multiple filters on a single column using AND/OR */
+          const [rawCond1, rawCond2] = value.split(/\|\||&&/);
+          const [condition1Op, condition1Text] = rawCond1.split(':');
+          const [condition2Op, condition2Text] = rawCond2.split(':');
+          const boolOp = value.includes('||') ? Op.or : Op.and;
+          const mappedOp1 = allowedOperatorsMapping[condition1Op];
+          const mappedOp2 = allowedOperatorsMapping[condition2Op];
+          /* Same operator indexing, combine text into an array */
+          if (tableName) {
+            opts.where[boolOp] = [{
+              [`$${tableName}.${columnName}$`]: {
+                [mappedOp1]: condition1Text,
+              },
+            },
+            {
+              [`$${tableName}.${columnName}$`]: {
+                [mappedOp2]: condition2Text,
+              },
+            }];
+          } else {
+            opts.where[boolOp] = [{
+              [columnName]: {
+                [mappedOp1]: condition1Text,
+              },
+            },
+            {
+              [columnName]: {
+                [mappedOp2]: condition2Text,
+              },
+            }];
+          }
         }
       });
     }
