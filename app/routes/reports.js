@@ -193,7 +193,7 @@ router.route('/')
           const [operation, text] = value.shift().split(':');
           /* Check to see if there's a table associated with the column */
           /* Used to check the case where the column belongs to the base model */
-          /* ex: opts.include[1].where[Op.eq] = "texthere" where [1] is the table index */
+          /* If it doesn't belong to the base model, then attach the table name */
           const mappedOp = allowedOperatorsMapping[operation];
           if (tableName) {
             opts.where[`$${tableName}.${columnName}$`] = {[mappedOp]: text};
@@ -202,36 +202,29 @@ router.route('/')
           }
         } else {
           /* Case where there are multiple filters on a single column using AND/OR */
-          const [rawCond1, rawCond2] = value.split(/\|\||&&/);
-          const [condition1Op, condition1Text] = rawCond1.split(':');
-          const [condition2Op, condition2Text] = rawCond2.split(':');
-          const boolOp = value.includes('||') ? Op.or : Op.and;
-          const mappedOp1 = allowedOperatorsMapping[condition1Op];
-          const mappedOp2 = allowedOperatorsMapping[condition2Op];
-          /* Same operator indexing, combine text into an array */
-          if (tableName) {
-            opts.where[boolOp] = [{
-              [`$${tableName}.${columnName}$`]: {
-                [mappedOp1]: condition1Text,
-              },
-            },
-            {
-              [`$${tableName}.${columnName}$`]: {
-                [mappedOp2]: condition2Text,
-              },
-            }];
-          } else {
-            opts.where[boolOp] = [{
-              [columnName]: {
-                [mappedOp1]: condition1Text,
-              },
-            },
-            {
-              [columnName]: {
-                [mappedOp2]: condition2Text,
-              },
-            }];
-          }
+          const rawCondition = value.split(/\|\||&&/);
+          rawCondition.forEach((condition) => {
+            const [operator, text] = condition.split(':');
+            const boolOp = value.includes('||') ? Op.or : Op.and;
+            const mappedOp = allowedOperatorsMapping[operator];
+            /* Make sure the array is defined before pushing to it */
+            if (!Array.isArray(opts.where[boolOp])) {
+              opts.where[boolOp] = [];
+            }
+            if (tableName) {
+              opts.where[boolOp].push({
+                [`$${tableName}.${columnName}$`]: {
+                  [mappedOp]: text,
+                },
+              });
+            } else {
+              opts.where[boolOp].push({
+                [columnName]: {
+                  [mappedOp]: text,
+                },
+              });
+            }
+          });
         }
       });
     }
