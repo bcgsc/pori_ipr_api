@@ -1,5 +1,4 @@
 const express = require('express');
-const _ = require('lodash');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
@@ -48,7 +47,7 @@ router.route('/')
             {
               model: db.models.project,
               as: 'projects',
-              attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']}
+              attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']},
             },
           ],
         },
@@ -121,7 +120,7 @@ router.route('/')
         opts.where['$pog.projects.name$'] = req.query.project;
       } else {
         return res.status(403).json({
-          error: {message: 'You do not have access to the selected project'}
+          error: {message: 'You do not have access to the selected project'},
         });
       }
     } else {
