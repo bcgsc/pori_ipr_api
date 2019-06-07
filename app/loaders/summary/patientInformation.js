@@ -83,7 +83,7 @@ class patientLoader {
    */
   checkPatientInformationExists() {
     return new Promise((resolve,reject) => {
-      db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id}}).then(
+      db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id, pog_report_id: this.report.id}}).then(
         (entry) => {
           resolve(entry);
         },
