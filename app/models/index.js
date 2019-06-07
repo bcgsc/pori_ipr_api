@@ -79,6 +79,8 @@ imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'pog_report_id',
 
 // Patient Information
 const patientInformation = sequelize.import('./patientInformation');
+analysisReports.hasOne(patientInformation, {as: 'patientInformation', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true});
+patientInformation.belongsTo(analysisReports, {as: 'report', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true});
 
 // Summary
 const summary = {};
