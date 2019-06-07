@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Analysis = require('../analysis.object');
@@ -402,7 +403,7 @@ class TrackingRouter extends RoutingInterface {
         where: {
           ident: req.params.analysisIdent,
           analysis_biopsy: {
-            [db.Op.ne]: null,
+            [Op.ne]: null,
           },
         },
       };
