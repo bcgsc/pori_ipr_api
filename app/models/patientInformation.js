@@ -63,6 +63,7 @@ module.exports = sequelize => sequelize.define('patientInformation', {
   },
   pog_report_id: {
     type: Sq.INTEGER,
+    allowNull: false,
     references: {
       model: 'pog_analysis_reports',
       key: 'id',
