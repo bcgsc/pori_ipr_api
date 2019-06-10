@@ -54,7 +54,7 @@ module.exports = (report, dir, logger) => {
       
       
       // Add to Database
-      db.models.patientInformation.update(entry, {where: {pog_id: report.pog_id}, limit: 1}).then(
+      db.models.patientInformation.update(entry, {where: {pog_id: report.pog_id, pog_report_id: report.id}, limit: 1}).then(
         (result) => {
 
           log('Sample Summary appended.', logger.SUCCESS);
