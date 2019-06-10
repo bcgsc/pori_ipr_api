@@ -33,22 +33,76 @@ router.route('/')
     const opts = {
       where: {},
       include: [
-        {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}},
+        {
+          model: db.models.patientInformation,
+          as: 'patientInformation',
+          attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
+        },
         {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
-        {model: db.models.POG.scope('public'), as: 'pog', include:
-          [
-            {model: db.models.project, as: 'projects', attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']}},
+        {
+          model: db.models.POG.scope('public'),
+          as: 'pog',
+          include: [
+            {
+              model: db.models.project,
+              as: 'projects',
+              attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']},
+            },
           ],
         },
         {model: db.models.pog_analysis.scope('public'), as: 'analysis'},
-        {model: db.models.analysis_reports_user, as: 'users', separate: true, include:
-          [
+        {
+          model: db.models.analysis_reports_user,
+          as: 'users',
+          separate: true,
+          include: [
             {model: db.models.user.scope('public'), as: 'user'},
           ],
         },
       ],
     };
+
+    /* Sort fields
+     * args expected to take the form: ?sort=column:direction,column:direction...
+     * where direction = asc or desc and column is one of:
+     * patientID, analysisBiopsy, tumourType, physician, state, caseType, or alternateIdentifier */
+    if (req.query.sort) {
+      const modelMapping = (index, order) => ({
+        patientID: [{model: db.models.POG, as: 'pog'}, 'POGID', order],
+        analysisBiopsy: [{model: db.models.pog_analysis, as: 'analysis'}, 'analysis_biopsy', order],
+        tumourType: [
+          {model: db.models.patientInformation, as: 'patientInformation'},
+          'tumour_type',
+          order,
+        ],
+        physician: [
+          {model: db.models.patientInformation, as: 'patientInformation'},
+          'physician',
+          order,
+        ],
+        state: ['state', order],
+        caseType: [
+          {model: db.models.patientInformation, as: 'patientInformation'},
+          'caseType',
+          order,
+        ],
+        alternateIdentifier: [
+          {model: db.models.pog_analysis, as: 'analysis'},
+          'pog.alternate_identifier',
+          order,
+        ],
+      }[index]);
+      let {sort} = req.query;
+
+      sort = sort.split(',');
+      opts.order = sort.map(sortGroup => modelMapping(...sortGroup.split(':')));
+    } else {
+      opts.order = [
+        ['state', 'desc'],
+        [{model: db.models.POG, as: 'pog'}, 'POGID', 'desc'],
+      ];
+    }
 
     // Check for types
     if (req.query.type === 'probe') {
@@ -65,7 +119,9 @@ router.route('/')
       if (projectAccessNames.includes(req.query.project)) {
         opts.where['$pog.projects.name$'] = req.query.project;
       } else {
-        return res.status(403).json({error: {message: 'You do not have access to the selected project'}});
+        return res.status(403).json({
+          error: {message: 'You do not have access to the selected project'},
+        });
       }
     } else {
       // otherwise filter by accessible projects
@@ -97,7 +153,11 @@ router.route('/')
 
     // Are we filtering on POGUser relationship?
     if (req.query.all !== 'true' || req.query.role) {
-      const userFilter = {model: db.models.analysis_reports_user, as: 'ReportUserFilter', where: {}};
+      const userFilter = {
+        model: db.models.analysis_reports_user,
+        as: 'ReportUserFilter',
+        where: {},
+      };
       userFilter.where.user_id = req.user.id;
       if (req.query.role) {
         userFilter.where.role = req.query.role; // Role filtering
@@ -105,30 +165,22 @@ router.route('/')
       opts.include.push(userFilter);
     }
 
-    opts.order = [
-      ['state', 'desc'],
-      [{model: db.models.POG, as: 'pog'}, 'POGID', 'desc'],
-    ];
-
     try {
       // return all reports
-      const reports = await db.models.analysis_report.scope('public').findAll(opts);
-      if (!req.query.paginated) {
-        return res.json(reports);
+      let reports = await db.models.analysis_report.scope('public').findAll(opts);
+      if (req.query.paginated) {
+        // limits and offsets are causing the query to break due to the public scope and subqueries
+        // i.e. fields are not available for joining onto subquery selection
+        // dealing w/ applying the pagination here
+        const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
+        const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
+
+        // apply limit and offset to results
+        const start = offset;
+        const finish = offset + limit;
+        reports = reports.slice(start, finish);
       }
-
-      // limits and offsets are causing the query to break due to the public scope and subqueries
-      // i.e. fields are not available for joining onto subquery selection
-      // dealing w/ applying the pagination here
-      const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
-      const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
-
-      // apply limit and offset to results
-      const start = offset;
-      const finish = offset + limit;
-      const paginatedReports = reports.slice(start, finish);
-
-      return res.json({total: reports.length, reports: paginatedReports});
+      return res.json({total: reports.length, reports});
     } catch (error) {
       logger.error(`Unable to lookup analysis reports ${error}`);
       return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
@@ -150,7 +202,9 @@ router.route('/:report')
 
     // Update Report
     if (req.body.state) {
-      if (!['ready', 'active', 'presented', 'archived', 'nonproduction', 'reviewed', 'uploaded', 'signedoff'].includes(req.body.state)) {
+      if (!['ready', 'active', 'presented', 'archived', 'nonproduction',
+        'reviewed', 'uploaded', 'signedoff'].includes(req.body.state)
+      ) {
         return res.status(400).json({error: {message: 'The provided report state is not valid'}});
       }
       req.report.state = req.body.state;
@@ -191,8 +245,12 @@ router.route('/:report/user')
 
     const access = new Acl(req, res);
     if (!access.check()) {
-      logger.error(`User doesn't have correct permissions to add a user binding ${req.user.username}`);
-      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to add a user binding'}});
+      logger.error(
+        `User doesn't have correct permissions to add a user binding ${req.user.username}`,
+      );
+      return res.status(403).json(
+        {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
+      );
     }
 
     if (!req.body.user) {
@@ -218,8 +276,12 @@ router.route('/:report/user')
 
     const access = new Acl(req, res);
     if (!access.check()) {
-      logger.error(`User doesn't have correct permissions to remove a user binding ${req.user.username}`);
-      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to remove a user binding'}});
+      logger.error(
+        `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
+      );
+      return res.status(403).json(
+        {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
+      );
     }
 
     if (!req.body.user) {
