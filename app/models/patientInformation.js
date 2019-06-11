@@ -61,6 +61,14 @@ module.exports = sequelize => sequelize.define('patientInformation', {
   constitutionalProtocol: {
     type: Sq.STRING,
   },
+  pog_report_id: {
+    type: Sq.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'pog_analysis_reports',
+      key: 'id',
+    },
+  },
 }, {
   // Table Name
   tableName: 'pog_patient_information',

@@ -8,10 +8,11 @@ const logger = require('../../lib/log');
 router.use('/', async (req, res, next) => {
   // Get Patient Information for this POG
   try {
-    const result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id}});
+    const result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
 
     if (!result) {
-      return res.status(404).json({error: {message: `Unable to find the patient information for ${req.POG.POGID}.`, code: 'failedPatientInformationLookup'}});
+      logger.error(`Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`);
+      return res.status(404).json({error: {message: `Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`, code: 'failedPatientInformationLookup'}});
     }
     // Found the patient information
     req.patientInformation = result;
@@ -30,8 +31,8 @@ router.route('/')
   })
   .put(async (req, res) => {
     try {
-      await db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id}});
-      const result = await db.models.patientInformation.findOne({where: {pog_id: req.POG.id}});
+      await db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
+      const result = await db.models.patientInformation.findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
       return res.json(result);
     } catch (error) {
       logger.error(error);
