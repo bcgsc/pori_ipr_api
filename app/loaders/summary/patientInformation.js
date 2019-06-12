@@ -27,6 +27,7 @@ class PatientLoader {
   async load() {
     // Check if the patient Information exists yet
     const exists = await this.checkPatientInformationExists();
+
     // Delete patient info entry if it already exists
     if (exists) {
       logger.info('Patient Information already loaded - overriding.');
@@ -45,10 +46,10 @@ class PatientLoader {
   /**
    * Check is a patient information entry exists yet
    *
-   * @returns {Promise.<Model>} - Returns the found patient information or null
+   * @returns {Promise.<object>} - Returns the found patient information or null
    */
   async checkPatientInformationExists() {
-    return db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id}});
+    return db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id, pog_report_id: this.this.report.id}});
   }
 
   /**
@@ -64,7 +65,8 @@ class PatientLoader {
     const result = parse(output, {delimiter: ',', columns: true});
 
     if (result.length > 1) {
-      throw new Error(`[${this.report.ident}][Loader][Summary.PatientInformation] More than one patient history entry found.`);
+      logger.error(`[${this.report.ident}][Loader][Summary.PatientInformation] More than one patient history entry found`);
+      throw new Error(`[${this.report.ident}][Loader][Summary.PatientInformation] More than one patient history entry found`);
     }
     return result;
   }
@@ -74,7 +76,7 @@ class PatientLoader {
    * Create new Patient Information entries
    *
    * @param {array} entries - A collection of patient information details (only 1 row expected)
-   * @returns {Promise.<Array.<Model>>} - Returns the created patient info entries
+   * @returns {Promise.<Array.<object>>} - Returns the created patient info entries
    */
   async insertEntries(entries) {
     // Remap results
@@ -94,13 +96,13 @@ class PatientLoader {
    * Remove an existing Patient Information entry
    *
    * @param {int} patientId - the id of the row to delete from the patient info table
-   * @returns {Promise.<Model>} - Returns the destroyed patient info entry
+   * @returns {Promise.<object>} - Returns the destroyed patient info entry
    */
   async deleteEntry(patientId) {
     const result = await db.models.patientInformation.destroy({where: {id: patientId}});
     logger.info('Existing patient entry has been deleted');
     return result;
-   }
+  }
 
   /**
    * Run Sample Summary loader

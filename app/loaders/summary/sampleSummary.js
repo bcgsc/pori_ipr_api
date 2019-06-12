@@ -24,6 +24,7 @@ module.exports = async (report, dir) => {
   const result = parse(output, {delimiter: ',', columns: true});
 
   if (result.length > 1) {
+    logger.error(`[${report.ident}][Loader][Summary.SampleSummary] More than one sample summary entry found.`);
     throw new Error(`[${report.ident}][Loader][Summary.SampleSummary] More than one sample summary entry found.`);
   }
 
@@ -36,7 +37,7 @@ module.exports = async (report, dir) => {
   };
 
   // Add to Database
-  await db.models.patientInformation.update(entry, {where: {pog_id: report.pog_id}, limit: 1});
+  await db.models.patientInformation.update(entry, {where: {pog_id: report.pog_id, pog_report_id: report.id}, limit: 1});
   logger.info('Sample Summary appended.');
 
   return {data: entry, result: true, loader: 'sampleSummary'};
