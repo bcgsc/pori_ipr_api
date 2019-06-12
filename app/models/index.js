@@ -1,7 +1,7 @@
 const Sq = require('sequelize');
 const colors = require('colors');
 const bcrypt = require('bcryptjs');
-const nconf = require('nconf').argv().env().file({file: '../../config/config.json'});
+const nconf = require('nconf').argv().env().file({file: './config/config.json'});
 
 let CONFIG = {};
 
