@@ -100,7 +100,6 @@ summary.mutationSummaryv2 = sequelize.import('./reports/genomic/summary/mutation
 POG.hasMany(summary.therapeuticTargets, {as: 'therapeuticTargets', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
 
 POG.hasOne(patientInformation, {as: 'patientInformation', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
-analysisReports.belongsTo(patientInformation, {as: 'patientInformation', foreignKey: 'pog_id', targetKey: 'pog_id'});
 analysisReports.belongsTo(user, {as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true});
 analysisReports.hasOne(summary.tumourAnalysis, {as: 'tumourAnalysis', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true});
 

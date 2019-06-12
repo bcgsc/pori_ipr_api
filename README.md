@@ -22,17 +22,17 @@ npm install
 This process can take between 1-5 minutes depending on caches, and connection speed. Once NPM has finished installing
 all required dependencies, the server can be started with the following command:
 ```
-NODE_ENV=[local|development|test|production] npm start
+NODE_ENV=[local|development|production] npm start
 ```
 
 To start the synchronizer server, run the following command:
 ```
-NODE_ENV=[local|development|test|production] npm run sync
+NODE_ENV=[local|development|production] npm run sync
 ```
 
 If NPM is not available, the application server can be booted by executing through node directly:
 ```
-NODE_ENV=[local|development|test|production] node bin/www
+NODE_ENV=[local|development|production] node bin/www
 ```
 
 If a new database installation is required:
@@ -55,7 +55,7 @@ Please note that database migration will not execute alter statements (e.g. addi
 ======================================
 
 This repository contains configuration profiles for production, testing, and development environments. A profile will be
-selected based on the NODE_ENV environment setting, or by explicitly calling --env [test|production|development] when
+selected based on the NODE_ENV environment setting, or by explicitly calling --env [production|development] when
 initializing the server.
 
 The application server expects to find a `.env.json` file in one of two places:
@@ -155,6 +155,15 @@ To run unit tests, cd into the project root directory and run the command `npm t
 
 Developer documentation is generated using the JSDoc library. To generate a local copy of the documentation, cd into the root of the project directory and run the command `npm run jsdoc`. This should automatically create documentation within folder named 'jsdoc' that can be viewed in a web browser.
 
+#### Migrating Database Changes
+======================================
+
+* Create a migration: `sequelize migration:create`
+* Write up and down functions in your migration file
+* According to your changes in migration file, change your Sequelize models manually
+* Run: `npx sequelize-cli db:migrate` or `npx sequelize-cli db:migrate --url 'mysql://root:password@mysql_host.com/database_name'`
+
+Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
 
 #### Process Manager
 ======================================
@@ -260,13 +269,13 @@ IPR's Tracking system has three primary synchronizer tasks:
 
 ###### LIMS Pathology Sync
 Attempts to retrieve pathology passed information, as well as library details for a POG. Effectively it starts with 1 data point: POGID.
-It contacts the LIMS `/source` endpoint and collects all libraries associated with the POGID. Through a few more library endpoints, it uses
+It contacts the LIMS `/libraries/search` endpoint and collects all libraries associated with the POGID. Through a few more library endpoints, it uses
 the protocol detail for each library to determine normal vs. tumour vs. transcriptome. It is assumed by the presence of an entry in LIMS
 that pathology has passed.
 
 ###### LIMS Sequencing Sync
 This task characterizes the sequencing state of pending POG cases in tracking. First POGs pending sequencing submission are queried against the
-`/illumina_run` endpoint to see which have entries. If _any_ entry is existent, the "sequencing started" task is satisfied.
+`/sequencer-runs/search` endpoint to see which have entries. If _any_ entry is existent, the "sequencing started" task is satisfied.
 
 Next, sequencing completed status is checked for at the same endpoint. As are QC passed and Validation.
 
