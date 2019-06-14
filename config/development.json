@@ -19,7 +19,7 @@
   },
 
   "bioapps" : {
-    "hostname": "http://bioappsdev01:8300",
+    "hostname": "http://bioappsdev01:8500",
     "api": ""
   },
 
