@@ -4,7 +4,7 @@ const _ = require('lodash');
 const gin = require('../../lib/ginCredentials');
 const logger = require('../../lib/log');
 
-const host = 'http://sbs.bcgsc.ca:8100';
+const host = 'http://bioappsdev01:8300';
 const basePath = '';
 const path = `${host}${basePath}`;
 const $bioapps = {};
