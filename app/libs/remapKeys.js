@@ -2,16 +2,14 @@
  *
  * Remaps the keys of an object
  *
- * @param {object} input - An object to remap keys for
+ * @param {Array.<object>} input - An array of objects to remap keys for
  * @param {object} keyMap - A keyMap object
  * @returns {Array.<object>} - Returns an array of objects with remapped keys
  */
 
 const remapKeys = (input, keyMap) => {
-  const output = [];
-  let newObj = {};
-
-  Object.entries(input).forEach(([k, v]) => {
+  const output = input.map((v) => {
+    const newObj = {};
     Object.entries(v).forEach(([key, value]) => {
       // Unhandled colons - Check to see if double or single colons exists and are not yet handled!
       if (key.includes(':') && !(key.replace(':', '~') in keyMap) && !(key.replace('::', '~') in keyMap)) {
@@ -32,8 +30,7 @@ const remapKeys = (input, keyMap) => {
         newObj[key] = value;
       }
     });
-    output[k] = newObj;
-    newObj = {};
+    return newObj;
   });
 
   return output;
