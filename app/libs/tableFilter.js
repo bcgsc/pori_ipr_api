@@ -2,6 +2,7 @@ const {Op} = require('sequelize');
 
 /**
  * Takes a base sequelize opts object and attaches filters from the request to it
+ * Request should be a GET request of the format ?column=operation:value
  * @param {Object} req - Query base request
  * @param {Object} opts - Sequelize options to be passed to find method
  * @param {Object.<Object>} columnMapping - Object containing table and column info
