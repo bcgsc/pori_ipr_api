@@ -15,6 +15,10 @@ const tableFilter = (req, opts, columnMapping) => {
     notEqual: Op.ne,
   };
 
+  if (!req.query) {
+    return tempOpts;
+  }
+
   /* Grab the filters and check to see if the columns are in the list of filterable ones */
   const queryFilters = Object.entries(req.query)
     .filter(([key]) => Object.keys(columnMapping).includes(key));
