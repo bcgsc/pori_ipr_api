@@ -1,5 +1,6 @@
 const express = require('express');
 const {Op} = require('sequelize');
+const tableFilter = require('../libs/tableFilter');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
@@ -31,7 +32,7 @@ router.route('/')
       logger.error(error);
       return res.status(500).json({error: {message: error.message, code: error.code}});
     }
-    const opts = {
+    let opts = {
       where: {},
       include: [
         {
@@ -144,11 +145,7 @@ router.route('/')
       };
     }
 
-    const allowedOperatorsMapping = {
-      equals: Op.eq,
-      notEqual: Op.ne,
-    };
-
+    // Create mapping for available columns to filter on
     const columnMapping = {
       patientID: {column: 'POGID', table: 'pog'},
       analysisBiopsy: {column: 'analysis_biopsy', table: 'analysis'},
@@ -159,55 +156,8 @@ router.route('/')
       alternateIdentifier: {column: 'alternate_identifier', table: 'analysis'},
     };
 
-    /* Grab the filters and check to see if the columns are in the list of filterable ones */
-    const queryFilters = Object.entries(req.query)
-      .filter(([key]) => Object.keys(columnMapping).includes(key));
-
-    if (queryFilters.length) {
-      /* Get the column, operation, and value for each filter */
-      queryFilters.forEach(([column, value]) => {
-        const columnName = columnMapping[column].column;
-        const tableName = columnMapping[column].table;
-        /* Case where there is no boolean operators */
-        if (!(value.includes('||') || value.includes('&&'))) {
-          const [operation, text] = value.shift().split(':');
-          /* Check to see if there's a table associated with the column */
-          /* Used to check the case where the column belongs to the base model */
-          /* If it doesn't belong to the base model, then attach the table name */
-          const mappedOp = allowedOperatorsMapping[operation];
-          if (tableName) {
-            opts.where[`$${tableName}.${columnName}$`] = {[mappedOp]: text};
-          } else {
-            opts.where[columnName] = {[mappedOp]: text};
-          }
-        } else {
-          /* Case where there are multiple filters on a single column using AND/OR */
-          const rawCondition = value.split(/\|\||&&/);
-          rawCondition.forEach((condition) => {
-            const [operator, text] = condition.split(':');
-            const boolOp = value.includes('||') ? Op.or : Op.and;
-            const mappedOp = allowedOperatorsMapping[operator];
-            /* Make sure the array is defined before pushing to it */
-            if (!Array.isArray(opts.where[boolOp])) {
-              opts.where[boolOp] = [];
-            }
-            if (tableName) {
-              opts.where[boolOp].push({
-                [`$${tableName}.${columnName}$`]: {
-                  [mappedOp]: text,
-                },
-              });
-            } else {
-              opts.where[boolOp].push({
-                [columnName]: {
-                  [mappedOp]: text,
-                },
-              });
-            }
-          });
-        }
-      });
-    }
+    // Add filters to query if available
+    opts = tableFilter(req, opts, columnMapping);
 
     // States
     if (req.query.states) {
