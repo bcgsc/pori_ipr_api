@@ -41,8 +41,8 @@ module.exports = async (req, res, next) => {
       const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
       token = respAccess.access_token;
     } catch (error) {
-      logger.error('Authentication failed for entered username and password');
-      return res.status(400).json({message: 'Authentication failed for entered username and password'});
+      logger.error(`Authentication falied ${error.name} ${error.message}`);
+      return res.status(400).json({error: {name: error.name, code: error.statusCode, cause: error.error}});
     }
   }
   if (!token) {
