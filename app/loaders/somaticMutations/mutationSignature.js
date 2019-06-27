@@ -11,10 +11,11 @@ const logger = require('../../../lib/log');
  * Load Mutation Signature file and parse into database
  *
  * @param {object} report - The report the mutation signatures belong to
+ * @param {object} baseDir - Base directory
  * @param {object} options - Location of mutation signature folder
  * @returns {Promise.<object>} - Returns an object with successfull load info
  */
-module.exports = async (report, options = {}) => {
+module.exports = async (report, baseDir, options = {}) => {
   // Find File
   const files = glob.sync(`${options.config.mutationSigFolder}/*_msig_combined.txt`);
 
@@ -29,13 +30,13 @@ module.exports = async (report, options = {}) => {
   logger.info('Found and read sample_summary.csv file.');
 
   // Parse file!
-  const result = parse(output, {delimiter: ' ', columns: true});
+  const result = parse(output, {delimiter: '\t', columns: true});
 
   const entries = remapKeys(result, nconf.get('somaticMutations:mutationSignature'));
 
   // Loop over entries
   entries.forEach((value) => {
-    value.pog_id = report.id;
+    value.pog_id = report.pog_id;
     value.pog_report_id = report.id;
     value.signature = value.signature.match(/[0-9]{1,2}/g)[0];
   });

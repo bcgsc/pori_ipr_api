@@ -1,6 +1,6 @@
 const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
-const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
+const nconf = require('nconf');
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 
@@ -15,6 +15,9 @@ const logger = require('../../../lib/log');
  * @returns {Promise.<object>} - Returns the created tumour analysis
  */
 module.exports = async (report, dir) => {
+  // Load columnMaps.json
+  nconf.argv().env().file({file: './config/columnMaps.json'});
+
   // First parse in therapeutic
   const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/patient_tumour_analysis.csv`);
 
@@ -34,7 +37,7 @@ module.exports = async (report, dir) => {
     throw new Error('Failed to find tumour analysis information in file');
   }
 
-  if (parseInt(entry.tumourContent).toString().length !== entry.tumourContent.length) {
+  if (parseInt(entry.tumourContent, 10).toString().length !== entry.tumourContent.length) {
     logger.error('Non-integer tumour content detected');
     throw new Error('Tumour content was not an integer');
   }
