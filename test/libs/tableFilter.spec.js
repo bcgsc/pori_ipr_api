@@ -3,7 +3,7 @@ const {Op} = require('sequelize');
 const tableFilter = require('../../app/libs/tableFilter');
 
 describe('tableFilter tests with missing or invalid options', () => {
-  it('Does not mutate opts when the query property is not set', (done) => {
+  it('Does not mutate opts when the query property is not set', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -15,11 +15,9 @@ describe('tableFilter tests with missing or invalid options', () => {
 
     assert.isEmpty(opts.where);
     assert.deepEqual(opts, {where: {}});
-
-    done();
   });
 
-  it('Does not mutate opts when there is no valid column mapping', (done) => {
+  it('Does not mutate opts when there is no valid column mapping', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -31,13 +29,11 @@ describe('tableFilter tests with missing or invalid options', () => {
 
     assert.isEmpty(opts.where);
     assert.deepEqual(opts, {where: {}});
-
-    done();
   });
 });
 
 describe('Basic tableFilter tests with no boolean operators', () => {
-  it('Adds a where clause when the table is null', (done) => {
+  it('Adds a where clause when the table is null', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -51,11 +47,9 @@ describe('Basic tableFilter tests with no boolean operators', () => {
     assert.property(opts.where, '$actualCol$');
     assert.isNotEmpty(opts.where);
     assert.deepEqual(opts, {where: {$actualCol$: {[Op.eq]: 90}}});
-
-    done();
   });
 
-  it('Adds a where clause when the table is defined', (done) => {
+  it('Adds a where clause when the table is defined', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: 'table1'},
     };
@@ -69,13 +63,11 @@ describe('Basic tableFilter tests with no boolean operators', () => {
     assert.property(opts.where, '$table1.actualCol$');
     assert.isNotEmpty(opts.where);
     assert.deepEqual(opts, {where: {'$table1.actualCol$': {[Op.eq]: 90}}});
-
-    done();
   });
 });
 
 describe('tableFilter tests with boolean operators', () => {
-  it('Adds a where clause with an AND operator when the table is null', (done) => {
+  it('Adds a where clause with an AND operator when the table is null', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -97,11 +89,9 @@ describe('tableFilter tests with boolean operators', () => {
         }],
       },
     });
-
-    done();
   });
 
-  it('Adds a where clause with an OR operator when the table is defined', (done) => {
+  it('Adds a where clause with an OR operator when the table is defined', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: 'table1'},
     };
@@ -123,7 +113,5 @@ describe('tableFilter tests with boolean operators', () => {
         }],
       },
     });
-
-    done();
   });
 });
