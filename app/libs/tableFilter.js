@@ -1,4 +1,5 @@
 const {Op} = require('sequelize');
+const {cloneDeep} = require('lodash');
 
 /**
  * Takes a base sequelize opts object and attaches filters from the request to it
@@ -9,7 +10,7 @@ const {Op} = require('sequelize');
  * @returns {Object} - Returns the opts object with filters attached to where field
  */
 const tableFilter = (req, opts, columnMapping) => {
-  const tempOpts = opts;
+  const tempOpts = cloneDeep(opts);
   const allowedOperatorsMapping = {
     equals: Op.eq,
     notEqual: Op.ne,
