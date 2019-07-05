@@ -44,8 +44,8 @@ module.exports = async (report, dir) => {
 
   // Did we find it?
   if (files.length === 0) {
-    logger.warn('Unable to find report config file.');
-    return {pogSampleQC: false};
+    logger.error('Unable to find report config file.');
+    throw new Error('Unable to find report config file');
   }
 
   const conf = await readFile(files[0]);

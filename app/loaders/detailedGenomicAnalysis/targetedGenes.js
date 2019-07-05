@@ -14,13 +14,7 @@ const logger = require('../../../lib/log');
  */
 module.exports = async (report, dir) => {
   // First parse in therapeutic
-  let output;
-  try {
-    output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_summary.csv`);
-  } catch (error) {
-    logger.warn(error);
-    return [];
-  }
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_summary.csv`);
   logger.info('Found and read probe_summary.csv file.');
 
   // Parse file!
