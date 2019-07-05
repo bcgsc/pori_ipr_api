@@ -341,7 +341,7 @@ router.route('/:type(genomic|probe)')
       await loader.load();
     } catch (error) {
       logger.error(`Error unable to load loader ${error}`);
-      return res.status(500).json({error: {message: 'Unable to load loader'}});
+      return res.status(500).json({error: {message: 'Unable to load loader', cause: error}});
     }
 
     // Retrieve results from loaders, and ask for public report object
