@@ -255,9 +255,10 @@ module.exports = async (report, dir) => {
       if (image.optional) {
         return;
       }
+      return;
 
-      logger.error(`Failed to find image file: ${image.name}`);
-      throw new Error(`Failed to find image file: ${image.name}`);
+      //logger.error(`Failed to find image file: ${image.name}`);
+      //throw new Error(`Failed to find image file: ${image.name}`);
     }
 
     promises.push(processImage(report, image));

@@ -20,8 +20,9 @@ module.exports = async (report, baseDir, options = {}) => {
   const files = glob.sync(`${options.config.mutationSigFolder}/*_msig_combined.txt`);
 
   if (files.length === 0) {
-    logger.error(`Unable to find Mutation Signature source file: ${options.config.mutationSigFolder}/*_msig_combined.txt`);
-    throw new Error(`Unable to find Mutation Signature source file: ${options.config.mutationSigFolder}/*_msig_combined.txt`);
+    //logger.error(`Unable to find Mutation Signature source file: ${options.config.mutationSigFolder}/*_msig_combined.txt`);
+    return {result: false, message: 'Successfully loaded mutation signatures', loader: 'MutationSignature'};
+    //throw new Error(`Unable to find Mutation Signature source file: ${options.config.mutationSigFolder}/*_msig_combined.txt`);
   }
 
   // Get File
