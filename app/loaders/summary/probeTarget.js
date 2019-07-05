@@ -74,12 +74,15 @@ module.exports = async (report, basedir, options) => {
     'clin_rel_unknown_alt_detailed.csv',
   ];
 
-  const promises = sources.map((input) => {
+  const promises = [];
+
+  sources.forEach((input) => {
     if (!fs.existsSync(`${probeDir}/JReport_CSV_ODF/${input}`)) {
       logger.error(`Unable to find probe report data. Missing input file(s): ${input}`);
-      throw new Error(`Failed to find the file for probe targeting: ${probeDir}/JReport_CSV_ODF/${input}`);
+      return;
+      //throw new Error(`Failed to find the file for probe targeting: ${probeDir}/JReport_CSV_ODF/${input}`);
     }
-    return parseAlterationsFile(report, input, probeDir);
+    promises.push(parseAlterationsFile(report, input, probeDir));
   });
 
   if (promises.length === 0) {
