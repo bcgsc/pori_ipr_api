@@ -78,9 +78,8 @@ module.exports = async (report, basedir, options) => {
 
   sources.forEach((input) => {
     if (!fs.existsSync(`${probeDir}/JReport_CSV_ODF/${input}`)) {
-      //logger.error(`Unable to find probe report data. Missing input file(s): ${input}`);
+      logger.warn(`Unable to find probe report data. Missing input file(s): ${input}`);
       return;
-      //throw new Error(`Failed to find the file for probe targeting: ${probeDir}/JReport_CSV_ODF/${input}`);
     }
     promises.push(parseAlterationsFile(report, input, probeDir));
   });

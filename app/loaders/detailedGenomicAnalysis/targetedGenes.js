@@ -18,6 +18,7 @@ module.exports = async (report, dir) => {
   try {
     output = fs.readFileSync(`${dir}/JReport_CSV_ODF/probe_summary.csv`);
   } catch (error) {
+    logger.warn(error);
     return [];
   }
   logger.info('Found and read probe_summary.csv file.');
