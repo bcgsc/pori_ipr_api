@@ -1,23 +1,25 @@
 const express = require('express');
 const db = require('../../../models');
-const versionDatum = require('../../../libs/VersionDatum');
 const logger = require('../../../../lib/log');
 
 const router = express.Router({mergeParams: true});
 const model = db.models.genomicEventsTherapeutic;
 
 router.param('gene', async (req, res, next, altIdent) => {
+  let result;
   try {
-    const result = model.scope('public').findOne({where: {ident: altIdent, reportType: 'probe'}});
-    if (!result) {
-      return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedGenomicEventsTherapeuticLookup'}});
-    }
-    req.event = result;
-    return next();
+    result = await model.scope('public').findOne({where: {ident: altIdent, reportType: 'probe'}});
   } catch (error) {
-    logger.error(`Error on finding genomic therapeutic event ${error}`);
-    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedGenomicEventsTherapeuticQuery'}});
+    logger.error(`Unable to find genomic therapeutic event ${error}`);
+    return res.status(500).json({error: {message: 'Unable to find genomic therapeutic event', code: 'failedGenomicEventsTherapeuticQuery'}});
   }
+
+  if (!result) {
+    logger.error('Unable to locate genomic therapeutic event');
+    return res.status(404).json({error: {message: 'Unable to locate genomic therapeutic event', code: 'failedGenomicEventsTherapeuticLookup'}});
+  }
+  req.event = result;
+  return next();
 });
 
 // Handle requests for events
@@ -26,24 +28,30 @@ router.route('/:gene([A-z0-9-]{36})')
     return res.json(req.event);
   })
   .put(async (req, res) => {
+    // Update DB Version for Entry
     try {
-      // Update DB Version for Entry
-      const result = await versionDatum(model, req.event, req.body, req.user);
-      return res.json(result.data.create);
+      const result = await model.update(req.body, {
+        where: {
+          ident: req.event.ident,
+        },
+        paranoid: true,
+        returning: true,
+      });
+      return res.json(result);
     } catch (error) {
-      logger.error(`Unable to update db verion for entry ${error}`);
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedMutationSummaryVersion'}});
+      logger.error(`Unable to update genomic therapeutic event ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update genomic therapeutic event', code: 'failedMutationSummaryVersion'}});
     }
   })
   .delete(async (req, res) => {
+    // Soft delete the entry
+    // Update result
     try {
-      // Soft delete the entry
-      // Update result
       await model.destroy({where: {ident: req.event.ident}});
       return res.status(204);
     } catch (error) {
-      logger.error(`Entry delete was unsuccessful ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedGenomicEventsTherapeuticRemove'}});
+      logger.error(`Unable to remove genomic therapeutic event ${error}`);
+      return res.status(500).json({error: {message: 'Unable to remove genomic therapeutic event', code: 'failedGenomicEventsTherapeuticRemove'}});
     }
   });
 
@@ -58,12 +66,11 @@ router.route('/')
     };
 
     try {
-      // Get all rows for this POG
       const results = await model.scope('public').findAll(options);
       return res.json(results);
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedGenomicEventsTherapeuticQuery'}});
+      logger.error(`Unable to get all genomic therapeutic event ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get all genomic therapeutic event', code: 'failedGenomicEventsTherapeuticQuery'}});
     }
   });
 

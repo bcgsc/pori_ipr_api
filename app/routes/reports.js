@@ -198,42 +198,19 @@ router.route('/:report')
     return res.json(req.report);
   })
   .put(async (req, res) => {
-    const pastState = req.report.state;
-
-    // Update Report
-    if (req.body.state) {
-      if (!['ready', 'active', 'presented', 'archived', 'nonproduction',
-        'reviewed', 'uploaded', 'signedoff'].includes(req.body.state)
-      ) {
-        return res.status(400).json({error: {message: 'The provided report state is not valid'}});
-      }
-      req.report.state = req.body.state;
-    }
-
     try {
-      await req.report.save();
-      logger.info('Report was saved');
-      // Add history record
-      // Create DataHistory entry
-      const dh = {
-        type: 'change',
-        pog_id: req.report.pog_id,
-        pog_report_id: req.report.id,
-        table: 'pog_analysis_reports',
-        model: 'analysis_report',
-        entry: req.report.ident,
-        previous: pastState,
-        new: req.report.state,
-        user_id: req.user.id,
-        comment: 'N/A',
-      };
-      await db.models.pog_analysis_reports_history.create(dh);
-      logger.info('Analysis report history was successfylly created');
+      const result = await db.models.analysis_report.update(req.body, {
+        where: {
+          ident: req.report.ident,
+        },
+        paranoid: true,
+        returning: true,
+      });
 
-      return res.json(req.report);
+      return res.json(result);
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to update report.'}});
+      logger.error(`Unable to update analysis report ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update analysis report', cause: error}});
     }
   });
 

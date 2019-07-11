@@ -1,86 +1,84 @@
-// app/routes/genomic/somaticMutation.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  versionDatum = require(process.cwd() + '/app/libs/VersionDatum');
+const express = require('express');
 
-router.param('sv', (req,res,next,svtIdent) => {
-  db.models.sv.scope('public').findOne({ where: {ident: svIdent}}).then(
-    (result) => {
-      if(result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareStructuralVariationLookup'} });
-      req.variation = result;
-      next();
-    },
-    (error) => {
-      return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareStructuralVariationQuery'} });
-    }
-  );
+const router = express.Router({mergeParams: true});
+const db = require('../../../models');
+
+const logger = require('../../../../lib/log');
+
+router.param('sv', async (req, res, next, svIdent) => {
+  let result;
+  try {
+    result = await db.models.sv.scope('public').findOne({where: {ident: svIdent}});
+  } catch (error) {
+    logger.error(`Unable to get structural variant ${error}`);
+    return res.status(500).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'} });
+  }
+
+  if (!result) {
+    logger.error('Unable to locate structural variant');
+    return res.status(404).json({error: {message: 'Unable to locate structural variant', code: 'failedMiddlewareStructuralVariationLookup'}});
+  }
+  req.variation = result;
+  return next();
 });
 
 // Handle requests for alterations
 router.route('/sv/:sv([A-z0-9-]{36})')
-  .get((req,res,next) => {
-
-    res.json(req.variation);
-
+  .get((req, res) => {
+    return res.json(req.variation);
   })
-  .put((req,res,next) => {
-
+  .put(async (req, res) => {
     // Update DB Version for Entry
-    versionDatum(db.models.sv, req.variation, req.body, req.user).then(
-      (resp) => {
-        res.json(resp.data.create);
-      },
-      (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedOutlierVersion'}});
-      }
-    );
-
+    try {
+      const result = await db.models.sv.update(req.body, {
+        where: {
+          ident: req.variation.ident,
+        },
+        paranoid: true,
+        returning: true,
+      });
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Unable to update structural variant ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update structural variant', code: 'failedOutlierVersion'}});
+    }
   })
-  .delete((req,res,next) => {
+  .delete(async (req, res) => {
     // Soft delete the entry
     // Update result
-    db.models.sv.destroy({ where: {ident: req.sv.ident}}).then(
-      (result) => {
-        res.json({success: true});
-      },
-      (error) => {
-        res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedStructuralVariationremove'} });
-      }
-    );
-
-
+    try {
+      await db.models.sv.destroy({where: {ident: req.sv.ident}});
+      return res.json({success: true});
+    } catch (error) {
+      logger.error(`Unable to remove structural variant ${error}`);
+      return res.status(500).json({error: {message: 'Unable to remove structural variant', code: 'failedStructuralVariationremove'}});
+    }
   });
 
 // Routing for Alteration
 router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
-  .get((req,res,next) => {
-
+  .get(async (req, res) => {
     // Setup where clause
-    let where = {pog_report_id: req.report.id};
+    const where = {pog_report_id: req.report.id};
 
     // Searching for specific type of alterations
-    if(req.params.type) {
+    if (req.params.type) {
       // Are we looking for approved types?
       where.svVariant = req.params.type;
     }
 
-    let options = {
-      where: where,
+    const options = {
+      where,
     };
 
     // Get all rows for this POG
-    db.models.sv.scope('public').findAll(options).then(
-      (result) => {
-        res.json(result);
-      },
-      (error) => {
-        console.log(error);
-        res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedStructuralVariationlookup'} });
-      }
-    );
-
+    try {
+      const results = await db.models.sv.scope('public').findAll(options);
+      return res.json(results);
+    } catch (error) {
+      logger.error(`Unable to retrieve structural variants ${error}`);
+      return res.status(500).json({error: {message: 'Unable to retrieve structural variants', code: 'failedStructuralVariationlookup'}});
+    }
   });
 
 

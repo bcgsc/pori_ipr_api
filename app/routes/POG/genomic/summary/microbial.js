@@ -1,36 +1,30 @@
-// app/routes/summary/variantCounts.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  logger = require(process.cwd() + '/app/libs/logger'),
-  versionDatum = new require(process.cwd() + '/app/libs/VersionDatum');
+const express = require('express');
+
+const router = express.Router({mergeParams: true});
+const db = require('../../../../models');
+
+const logger = require('../../../../../lib/log');
 
 // Middleware for Variant Counts
-router.use('/', (req,res,next) => {
-
+router.use('/', async (req, res, next) => {
   // Get Mutation Summary for this POG
-  db.models.summary_microbial.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
-    (result) => {
-      // Not found
-            // Found the patient information
-      req.microbial = result;
-      next();
+  let result;
+  try {
+    result = await db.models.summary_microbial.scope('public').findOne({where: {pog_report_id: req.report.id}});
+  } catch (error) {
+    logger.error(`Unable to lookup microbial data for ${req.POG.POGID} error: ${error}`);
+    return res.status(500).json({error: {message: `Unable to lookup the microbial data for ${req.POG.POGID}`, code: 'failedMicrobialQuery'}});
+  }
 
-    },
-    (error) => {
-      res.status(500).json({error: {message: 'Unable to lookup the microbial data for ' + req.POG.POGID + '.', code: 'failedMicrobialQuery'}});
-      return new Error('Unable to query Variant Counts');
-    }
-  );
-
+  req.microbial = result;
+  return next();
 });
 
 // Handle requests for Variant Counts
 router.route('/')
-  .get((req,res,next) => {
+  .get((req, res) => {
     // Get Patient History
-    res.json(req.microbial);
-
+    return res.json(req.microbial);
   });
 
 module.exports = router;

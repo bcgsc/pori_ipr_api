@@ -1,152 +1,150 @@
-"use strict";
+const express = require('express');
+const moment = require('moment');
 
-// app/routes/genomic/detailedGenomicAnalysis.js
-let express = require('express'),
-    router = express.Router({mergeParams: true}),
-    db = require(process.cwd() + '/app/models'),
-    logger = require(process.cwd() + '/app/libs/logger'),
-    versionDatum = new require(process.cwd() + '/app/libs/VersionDatum'),
-    moment = require('moment');
+const router = express.Router({mergeParams: true});
+const db = require('../../../../models');
+
+const logger = require('../../../../../lib/log');
 
 // Middleware for Analyst Comments
-router.use('/', (req,res,next) => {
-  
+router.use('/', async (req, res, next) => {
   // Get Patient Information for this POG
-  db.models.analystComments.scope('public').findOne({ where: {pog_report_id: req.report.id}}).then(
-    (result) => {
-    
-      // Not found is allowed!
-      // Found the patient information
-      req.analystComments = result;
-      next();
-      
-    },
-    (error) => {
-      console.log('Unable to query Analyst Comments', error);
-      res.status(500).json({error: {message: 'Unable to lookup the analyst comments for ' + req.POG.POGID + '.', code: 'failedAnalystCommentsQuery'}});
-      res.end();
-    }
-  );
-  
+  let result;
+  try {
+    result = await db.models.analystComments.scope('public').findOne({where: {pog_report_id: req.report.id}});
+  } catch (error) {
+    logger.error(`Unable to query analyst comments ${error}`);
+    return res.status(500).json({error: {message: `Unable to query analyst comments for ${req.POG.POGID}`, code: 'failedAnalystCommentsQuery'}});
+  }
+
+  // Not found is allowed!
+  // Found the patient information
+  req.analystComments = result;
+  return next();
 });
 
 // Handle requests for alterations
 router.route('/')
-  .get((req,res,next) => {
+  .get((req, res) => {
     // Get Patient History
-    res.json(req.analystComments);
-    
+    return res.json(req.analystComments);
   })
-  .put((req,res,next) => {
-
+  .put(async (req, res) => {
     // First Comments
-    if(req.analystComments === null) {
-
-      req.body.dataVersion = 0;
+    if (!req.analystComments) {
       req.body.pog_id = req.POG.id;
       req.body.pog_report_id = req.report.id;
 
       // Create new entry
-      db.models.analystComments.create(req.body).then(
-        (resp) => {
-          res.json(resp);
-        },
-        (error) => {
-          console.log(error);
-          res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAnalystCommentCreate'}});
-        }
-      );
-
+      try {
+        const result = await db.models.analystComments.create(req.body);
+        return res.json(result);
+      } catch (error) {
+        logger.error(`Unable to create new analysis comments ${error}`);
+        return res.status(500).json({error: {message: 'Unable to create new analysis comments', code: 'failedAnalystCommentCreate'}});
+      }
     } else {
-      req.analystComments.pog_id = req.POG.id;
-      req.analystComments.pog_report_id = req.report.id;
       // Update DB Version for Entry
-      versionDatum(db.models.analystComments, req.analystComments, req.body, req.user).then(
-        (resp) => {
-          res.json(resp.data.create);
-        },
-        (error) => {
-          console.log(error);
-          res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAnalystCommentVersion'}});
-        }
-      );
+      try {
+        const result = await db.models.analystComments.update(req.body, {
+          where: {
+            ident: req.analystComments.ident,
+          },
+          paranoid: true,
+          returning: true,
+        });
+        return res.json(result);
+      } catch (error) {
+        logger.error(`Unable to update analysis comments ${error}`);
+        return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedAnalystCommentVersion'}});
+      }
     }
-    
   });
 
 router.route('/sign/:role(author|reviewer)')
-  .put((req,res,next) => {
-
+  .put(async (req, res) => {
     // Get the role
     let role;
-    if(req.params.role === 'author') role = 'authorSigned';
-    if(req.params.role === 'reviewer') role = 'reviewerSigned';
+    if (req.params.role === 'author') {
+      role = 'authorSigned';
+    } else if (req.params.role === 'reviewer') {
+      role = 'reviewerSigned';
+    }
 
-    if(!role) return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidCommentSignRole'}});
+    if (!role) {
+      logger.error('A valid signing role must be specified');
+      return res.status(401).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
+    }
 
     // Update Comments
-    let data= {};
+    const data = {};
     data[`${role}By_id`] = req.user.id;
     data[`${role}At`] = moment().toISOString();
 
-    let update = (u) => {
-      return db.models.analystComments.update(u, {where: {ident: req.analystComments.ident}, options: {returning: true}});
-    };
+    try {
+      await db.models.analystComments.update(data, {
+        where: {
+          ident: req.analystComments.ident,
+        },
+        options: {
+          paranoid: true,
+        },
+      });
+    } catch (error) {
+      logger.error(`Unable to update analysis comments ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
+    }
 
-    let get = () => {
-      return db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
-    };
-
-    update(data)
-      .then(get)
-      .then(
-      (result) => {
-        res.json(result);
-      },
-      (err) => {
-        console.log('Unable to sign comments', err);
-        res.status(500).json({error: {message: 'Unable to sign comments', code: 'failedSignCommentsQuery'}});
-      }
-    );
-
-
+    try {
+      const result = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Unable to get newly created analysis comments ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get newly created analysis comments', code: 'failedSignCommentsQuery'}});
+    }
   });
-router.route('/sign/revoke/:role(author|reviewer)')
-  .put((req,res,next) => {
 
+router.route('/sign/revoke/:role(author|reviewer)')
+  .put(async (req, res) => {
     // Get the role
     let role;
-    if(req.params.role === 'author') role = 'authorSigned';
-    if(req.params.role === 'reviewer') role = 'reviewerSigned';
+    if (req.params.role === 'author') {
+      role = 'authorSigned';
+    } else if (req.params.role === 'reviewer') {
+      role = 'reviewerSigned';
+    }
 
-    if(!role) return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidCommentSignRole'}});
+    if (!role) {
+      logger.error('A valid signing role must be specified');
+      return res.status(401).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
+    }
 
     // Update Comments
-    let data= {};
+    const data = {};
     data[`${role}By_id`] = null;
     data[`${role}At`] = null;
 
-    let update = (u) => {
-      return db.models.analystComments.update(u, {where: {ident: req.analystComments.ident}, options: {returning: true}});
-    };
+    try {
+      await db.models.analystComments.update(data, {
+        where: {
+          ident: req.analystComments.ident,
+        },
+        options: {
+          paranoid: true,
+        },
+      });
+    } catch (error) {
+      logger.error(`Unable to update analysis comments ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
+    }
 
-    let get = () => {
-      return db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
-    };
-
-    update(data)
-      .then(get)
-      .then(
-      (result) => {
-        res.json(result);
-      },
-      (err) => {
-        console.log('Unable to sign comments', err);
-        res.status(500).json({error: {message: 'Unable to sign comments', code: 'failedSignCommentsQuery'}});
-      }
-    );
-
-
+    try {
+      const result = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Unable to get newly created analysis comments ${error}`);
+      return res.status(500).json({error: {message: 'Unable to get newly created analysis comments', code: 'failedSignCommentsQuery'}});
+    }
   });
 
 module.exports = router;
