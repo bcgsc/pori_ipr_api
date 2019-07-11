@@ -166,19 +166,6 @@ presentation.slides.belongsTo(analysisReports, {as: 'report', foreignKey: 'pog_r
 presentation.slides.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 presentation.discussion.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
 
-
-// Data History
-const POGDataHistory = sequelize.import('./POGDataHistory');
-const POGDataHistoryTag = sequelize.import('./POGDataHistoryTag');
-POGDataHistory.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
-POGDataHistory.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
-POG.hasMany(POGDataHistory, {as: 'dataHistory', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true});
-
-POGDataHistory.hasMany(POGDataHistoryTag, {as: 'tags', foreignKey: 'history_id', onDelete: 'CASCADE', constraints: true});
-POGDataHistoryTag.belongsTo(POGDataHistory, {as: 'history', foreignKey: 'history_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
-POGDataHistoryTag.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true});
-user.hasMany(POGDataHistory, {as: 'edits', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true});
-
 // Data Export
 const POGDataExport = sequelize.import('./POGDataExport');
 POGDataExport.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true});
