@@ -16,7 +16,6 @@ const jiraRoute = require('./jira');
 const limsRoute = require('./lims');
 
 const loadPogRoute = require('./load_pog');
-const dataHistoryRoute = require('./dataHistory');
 const exportRoute = require('./POG/export');
 const patientInformationRoute = require('./patientInformation');
 const reportsRoute = require('./reports');
@@ -106,7 +105,6 @@ class Routing extends RouterInterface {
     this.bindRouteObject('/lims', limsRoute);
 
     this.bindRouteObject('/POG/:POGID/load', loadPogRoute);
-    this.bindRouteObject('/POG/:POG/report/:report/history', dataHistoryRoute);
     this.bindRouteObject('/POG/:POG/report/:report/export', exportRoute);
     this.bindRouteObject('/POG/:POG/report/:report/patientInformation', patientInformationRoute);
 
