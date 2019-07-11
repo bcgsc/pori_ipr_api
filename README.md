@@ -158,7 +158,7 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 #### Migrating Database Changes
 ======================================
 
-* Create a migration: `sequelize migration:create`
+* Create a migration: `npx sequelize migration:create --name name_of_migratrion`
 * Write up and down functions in your migration file
 * According to your changes in migration file, change your Sequelize models manually
 * Run: `npx sequelize-cli db:migrate` or `npx sequelize-cli db:migrate --url 'mysql://root:password@mysql_host.com/database_name'`
