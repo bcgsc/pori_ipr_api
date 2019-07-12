@@ -1,6 +1,6 @@
 const fs = require('fs');
 const _ = require('lodash');
-const parse = require('csv-parse');
+const parse = require('csv-parse/lib/sync');
 const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
@@ -44,7 +44,7 @@ const parseSmallMutationFile = async (report, smallMutationFile, mutationType) =
   });
 
   // Log progress
-  logger(`Parsed .csv for: ${mutationType}`);
+  logger.info(`Parsed .csv for: ${mutationType}`);
 
   return entries;
 };

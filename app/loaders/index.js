@@ -245,10 +245,10 @@ class GenomicLoader {
       promises.push(loaderPromise);
     });
 
-    const result = await Promise.all(promises);
+    const results = await Promise.all(promises);
     logger.info('All loaders have completed.');
 
-    return result;
+    return results;
   }
 
 

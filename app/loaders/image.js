@@ -247,15 +247,19 @@ const processImage = async (report, image) => {
 module.exports = async (report, dir) => {
   // Set Image Path
   imagePath = `${dir}/images`;
+  const promises = [];
 
-  const promises = images.map((image) => {
+  images.forEach((image) => {
     // Check that image exists
     if (!fs.existsSync(`${imagePath}${image.file}`)) {
+      if (image.optional) {
+        return;
+      }
+      logger.error(`Failed to find image file: ${image.name}`);
       throw new Error(`Failed to find image file: ${image.name}`);
     }
 
-    // Create Promise
-    return processImage(report, image);
+    promises.push(processImage(report, image));
   });
 
   const results = await Promise.all(promises);

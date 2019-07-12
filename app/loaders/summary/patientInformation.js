@@ -49,7 +49,7 @@ class PatientLoader {
    * @returns {Promise.<object>} - Returns the found patient information or null
    */
   async checkPatientInformationExists() {
-    return db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id, pog_report_id: this.this.report.id}});
+    return db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id, pog_report_id: this.report.id}});
   }
 
   /**
