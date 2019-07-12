@@ -9,8 +9,7 @@ const tables = ['pog_analysis_reports_therapeutic_targets', 'pog_patient_informa
   'pog_analysis_reports_expression_outlier', 'pog_analysis_reports_somatic_mutations_mutation_signature',
   'pog_analysis_reports_somatic_mutations_small_mutations', 'pog_analysis_reports_structural_variation_sv',
   'pog_analysis_reports_summary_microbial', 'pog_analysis_reports_summary_mutation',
-  'pog_analysis_reports_summary_mutation_summary', 'pog_analysis_reports_summary_probe_target',
-  'pog_analysis_reports_expression_protein'];
+  'pog_analysis_reports_summary_mutation_summary', 'pog_analysis_reports_summary_probe_target'];
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
