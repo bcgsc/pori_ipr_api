@@ -69,18 +69,12 @@ module.exports = {
     }
 
     // If a library is specified
-    if (options.library) {
+    if (options.libraries) {
       const libwhere = {};
       libwhere.pog_id = pogId;
 
       if (options.libraries.normal) {
         libwhere.libraries = {$contains: {normal: options.libraries.normal}};
-      }
-      if (options.libraries.tumour) {
-        libwhere.libraries = {$contains: {tumour: options.libraries.tumour}};
-      }
-      if (options.libraries.transcriptome) {
-        libwhere.libraries = {$contains: {transcriptome: options.libraries.transcriptome}};
       }
 
       if (Object.keys(libwhere).length > 1) {
@@ -102,50 +96,8 @@ module.exports = {
     if (biop) {
       data.analysis_biopsy = biop;
     }
-    if (clinspec) {
-      data.clinical_biopsy = clinspec;
-    }
     if (options.libraries) {
       data.libraries = options.libraries;
-    }
-    if (options.notes) {
-      data.notes = options.notes;
-    }
-    if (options.bioapps_source_id) {
-      data.bioapps_source_id = options.bioapps_source_id;
-    }
-    if (options.onco_panel_submitted) {
-      data.onco_panel_submitted = options.onco_panel_submitted;
-    }
-    if (options.comparator_disease) {
-      data.comparator_disease = options.comparator_disease;
-    }
-    if (options.comparator_normal) {
-      data.comparator_normal = options.comparator_normal;
-    }
-    if (options.biopsy_site) {
-      data.biopsy_site = options.biopsy_site;
-    }
-    if (options.biopsy_type) {
-      data.biopsy_type = options.biopsy_type;
-    }
-    if (options.date_analysis) {
-      data.date_analysis = options.date_analysis;
-    }
-    if (options.date_presentation) {
-      data.date_presentation = options.date_presentation;
-    }
-    if (options.biopsy_date) {
-      data.biopsy_date = options.biopsy_date;
-    }
-    if (options.threeLetterCode) {
-      data.threeLetterCode = options.threeLetterCode;
-    }
-    if (options.physician) {
-      data.physician = options.physician;
-    }
-    if (options.pediatric_id) {
-      data.pediatric_id = options.pediatric_id;
     }
 
     const [result] = await db.models.pog_analysis.findOrCreate({where, defaults: data});

@@ -1,7 +1,7 @@
 const glob = require('glob');
 const fs = require('fs');
 const j2p = require('json2plain');
-const nconf = require('nconf').file({file: `../../config/${process.env.NODE_ENV}.json`});
+const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
 
 const db = require('../../app/models');
 const WriteCSV = require('../../lib/writeCSV');

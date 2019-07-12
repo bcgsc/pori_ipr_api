@@ -1,67 +1,98 @@
-"use strict";
-/*
- * Loaders - Onboards CSV data into SQL databases
- *
- * Recursively works back g
- *
- */
+const util = require('util');
+const fs = require('fs');
+const glob = require('glob');
+const pyParse = util.promisify(require('pyconf').parse);
+const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
 
-let db = require(process.cwd() + '/app/models'),
-    Q = require('q'),
-    logger = require(process.cwd() + '/app/libs/logger'),
-    glob = require('glob'),
-    _ = require('lodash'),
-    fs = require('fs'),
-    pyconf = require('pyconf'),
-    nconf = require('nconf').file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
+const logger = require('../../lib/log');
+
+// Loader requires
+
+// meta
+const meta = require('./POG');
+const image = require('./image');
+
+// summary
+const summaryPatientInformation = require('./summary/patientInformation');
+const summaryTumourAnalysis = require('./summary/tumourAnalysis');
+const summaryMutationSummary = require('./summary/mutationSummary');
+const summaryVariantCounts = require('./summary/variantCounts');
+const summaryGenomicAlterationsIdentified = require('./summary/genomicAlterationsIdentified');
+const summaryGenomicEventsTherapeutic = require('./summary/genomicEventsTherapeutic');
+const summaryProbeTarget = require('./summary/probeTarget');
+const summaryMicrobial = require('./summary/microbial');
+
+// detailed genomic analysis
+const detailedAlterations = require('./detailedGenomicAnalysis/alterations');
+const detailedApprovedThisCancer = require('./detailedGenomicAnalysis/approvedThisCancer');
+const detailedApprovedOtherCancer = require('./detailedGenomicAnalysis/approvedOtherCancer');
+const detailedTargetedGenes = require('./detailedGenomicAnalysis/targetedGenes');
+
+// somatic mutations
+const somaticSmallMutations = require('./somaticMutations/smallMutations');
+const somaticMutationSignature = require('./somaticMutations/mutationSignature');
+
+// copy number analysis
+const copyNumberCNV = require('./copyNumberAnalysis/cnv');
+
+// structural variation
+const structuralSV = require('./structuralVariation/sv');
+
+// expression analysis
+const expressionOutlier = require('./expressionAnalysis/outlier');
+const expressionProtein = require('./expressionAnalysis/proteinExpression');
+const expressionDrugTarget = require('./expressionAnalysis/drugTarget');
 
 // Load config into memory
 const config = nconf.get('paths:data');
 
 // Map of Available Loaders
-let loaders = [
+const loaders = [
   // Meta
-  { name: 'meta', required: true, location: '/POG'},
-  { name: 'image', required: true, location: '/image'},
+  {name: 'meta', required: true, location: meta},
+  {name: 'image', required: true, location: image},
 
   // Summary
-  { name: 'summary_patientInformation', required: true, location: '/summary/patientInformation', loaderType: 'class' },
-  { name: 'summary_tumourAnalysis', required: true, location: '/summary/tumourAnalysis' },
-  { name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary', loaderType: 'class' },
-  //{ name: 'summary_mutationSummary', required: true, location: '/summary/mutationSummary'},
-  { name: 'summary_variantCounts', required: false, location: '/summary/variantCounts' },
-  { name: 'summary_genomicAlterationsIdentified', required: true, location: '/summary/genomicAlterationsIdentified' },
-  { name: 'summary_genomicEventsTherapeutic', required: true, location: '/summary/genomicEventsTherapeutic' },
-  { name: 'summary_probeTarget', required: false, location: '/summary/probeTarget' },
-  { name: 'summary_microbial', required: false, location: '/summary/microbial', loaderType: 'class'  },
+  {name: 'summary_patientInformation', required: true, location: summaryPatientInformation, loaderType: 'class'},
+  {name: 'summary_tumourAnalysis', required: true, location: summaryTumourAnalysis},
+  {name: 'summary_mutationSummary', required: true, location: summaryMutationSummary, loaderType: 'class'},
+  {name: 'summary_variantCounts', required: false, location: summaryVariantCounts},
+  {name: 'summary_genomicAlterationsIdentified', required: true, location: summaryGenomicAlterationsIdentified},
+  {name: 'summary_genomicEventsTherapeutic', required: true, location: summaryGenomicEventsTherapeutic},
+  {name: 'summary_probeTarget', required: false, location: summaryProbeTarget},
+  {name: 'summary_microbial', required: false, location: summaryMicrobial, loaderType: 'class'},
 
   // Detailed Genomic Analysis
-  { name: 'detailed_alterations', required: false, location: '/detailedGenomicAnalysis/alterations' },
-  { name: 'detailed_approvedThisCancer', required: false, location: '/detailedGenomicAnalysis/approvedThisCancer' },
-  { name: 'detailed_approvedOtherCancer', required: false, location: '/detailedGenomicAnalysis/approvedOtherCancer' },
-  { name: 'detailed_targetedGenes', required: false, location: '/detailedGenomicAnalysis/targetedGenes' },
+  {name: 'detailed_alterations', required: false, location: detailedAlterations},
+  {name: 'detailed_approvedThisCancer', required: false, location: detailedApprovedThisCancer},
+  {name: 'detailed_approvedOtherCancer', required: false, location: detailedApprovedOtherCancer},
+  {name: 'detailed_targetedGenes', required: false, location: detailedTargetedGenes},
 
   // Somatic Mutations
-  { name: 'somatic_smallMutations', required: false, location: '/somaticMutations/smallMutations' },
-  { name: 'somatic_mutationSignature', required: false, location: '/somaticMutations/mutationSignature' },
+  {name: 'somatic_smallMutations', required: false, location: somaticSmallMutations},
+  {name: 'somatic_mutationSignature', required: false, location: somaticMutationSignature},
 
   // Copy Number Analyses
-  { name: 'copynumber_cnv', required: false, location: '/copyNumberAnalysis/cnv' },
+  {name: 'copynumber_cnv', required: false, location: copyNumberCNV},
 
   // Structural Variation
-  { name: 'structural_sv', required: false, location: '/structuralVariation/sv' },
+  {name: 'structural_sv', required: false, location: structuralSV},
 
   // Expression Analysis
-  { name: 'expression_outlier', required: false, location: '/expressionAnalysis/outlier' },
-  { name: 'protein_expression', required: false, location: '/expressionAnalysis/proteinExpression', loaderType: 'class' },
-  { name: 'expression_drugTarget', required: false, location: '/expressionAnalysis/drugTarget' },
-
+  {name: 'expression_outlier', required: false, location: expressionOutlier},
+  {name: 'protein_expression', required: false, location: expressionProtein, loaderType: 'class'},
+  {name: 'expression_drugTarget', required: false, location: expressionDrugTarget},
 ];
 
 class GenomicLoader {
-
+  /**
+   * Onboards genomic CSV data into SQL databases
+   *
+   * @param {object} POG - POG report model obeject
+   * @param {object} report - Report model object
+   * @param {object} options - Options object
+   */
   constructor(POG, report, options) {
-
     this.POG = POG;
     this.report = report;
     this.options = options;
@@ -69,170 +100,111 @@ class GenomicLoader {
     this.libraries = options.libraries || [];
     this.baseDir = options.baseDir || null;
     this.moduleOptions = options.moduleOptions || {};
-    this.log = logger.loader(POG.POGID + '-' + report.ident);
-    
   }
 
   /**
    * Run loaders
    *
-   * @returns {Promise|array} - Returns collection of loader results
+   * @returns {Promise.<Array.<string>>} - Returns collection of loader results
    */
-  load() {
+  async load() {
+    logger.info('Starting Genomic Loader');
 
-    return Q.Promise((resolve, reject) => {
+    // Run default POG Genomic Report loading
+    if (this.options.profile === 'pog_genomic'
+    || this.options.profile === 'pog_genomic_no_flat'
+    ) {
+      if (this.options.profile === 'pog_genomic_no_flat') {
+        logger.info('Running POG Genomic Loader without flatfile');
 
-      this.log('Starting Genomic Loader');
-
-      // Run default POG Genomic Report loading
-      if(this.options.profile === 'pog_genomic' || this.options.profile === 'pog_genomic_no_flat') {
-
-        if(this.options.profile === 'pog_genomic_no_flat') {
-          this.log('Running POG Genomic Loader without flatfile');
-
-          // Skip tumour analysis and patient info loaders if no flatfile is available
-          _.remove(loaders, {name: 'summary_tumourAnalysis'});
-          _.remove(loaders, {name: 'summary_patientInformation'});
-        } else {
-          this.log('Running POG Genomic Loader');
-        }
-
-        // If there is a baseDir, run using that dir
-        if(this.baseDir !== null) {
-
-          // Run Loaders
-          this.getConfig()
-            .then(this.runLoaders.bind(this))
-            .then(
-              (successLoaders) => {
-                resolve(successLoaders);
-              },
-              // Rejects with load-ending failures.
-              (err) => {
-                console.log('Unable to finish loaders', err);
-                reject(err);
-              }
-          );
-          return;
-        }
-
-
-        this.log('Running default POG Genomic loader profile');
-
-        // Run Default Loader Scenario
-        this.getLibraryFolder()
-          .then(this.getReportFolder.bind(this))
-          .then(this.getConfig.bind(this))
-          .then(this.runLoaders.bind(this))
-          .then(
-            // Resolves with status of loaders
-            (successLoaders) => {
-              resolve(successLoaders);
-            },
-            // Rejects with load-ending failures.
-            (err) => {
-              console.log('Unable to finish loaders', err);
-              reject(err);
-            }
-          );
-        return;
-      }
-
-      // Loader NonPOG Report
-      if(this.options.profile !== 'pog_genomic') {
-
-        if(!this.baseDir) {
-          this.log('Non-POG no base directory specified', logger.ERROR);
-        }
-
-        // Run Loaders
-        this.getConfig()
-          .then(this.runLoaders.bind(this))
-          .then(
-          (successLoaders) => {
-            resolve(successLoaders);
-          },
-          // Rejects with load-ending failures.
-          (err) => {
-            reject(err);
+        // Skip tumour analysis and patient info loaders if no flatfile is available
+        loaders.forEach((val, index) => {
+          if (['summary_tumourAnalysis', 'summary_patientInformation'].includes(val.name)) {
+            delete loaders[index];
           }
-        );
-        return;
+        });
+      } else {
+        logger.info('Running POG Genomic Loader');
       }
 
-      reject({error: {message: 'Unable to find loader profile to run'}});
-    });
+      if (!this.baseDir) {
+        logger.info('Running default POG Genomic loader profile');
+        // Run Default Loader Scenario
+        const libDir = await this.getLibraryFolder();
+        await this.getReportFolder(libDir);
+      }
+
+      await this.getConfig();
+      return this.runLoaders();
+    }
+
+    // Loader NonPOG Report
+    if (!this.baseDir) {
+      logger.error('Non-POG no base directory specified');
+      throw new Error('Non-POG no base directory specified');
+    }
+
+    // Run Loaders
+    await this.getConfig();
+    return this.runLoaders();
   }
 
   /**
    * Get the report folder for a POG
    *
-   * @throws DirectoryNotFound - If the directory is not found by globbing
-   * @returns {Promise} - Resolves with the directory to the latest libraries available
+   * @returns {Promise.<string>} - Returns the directory to the latest libraries available
    */
-  getLibraryFolder() {
-    return Q.Promise((resolve, reject) => {
+  async getLibraryFolder() {
+    logger.info('Attempting to find library directory');
 
-      this.log('Attempting to find library directory');
+    // Determine which folder/biopsy to go for (grabs oldest by default)
+    const files = glob.sync(`${config.POGdata}/${this.POG.POGID}/P*`);
 
-      // Determine which folder/biopsy to go for (grabs oldest by default)
-      glob(config.POGdata + '/' + this.POG.POGID + '/P*', (err, files) => {
+    if (files.length === 0) {
+      throw new Error('Unable to find the report library folder(s)');
+    }
 
-        if(files.length === 0) throw new DirectoryNotFound('Unable to find the report library folder(s)');
-
-        // Explode out and get biggest
-        _.forEach(files, (f) => {
-          let t = f.split('/');
-          this.libraries.push(t[t.length-1]);
-        });
-        this.libraries.sort().reverse();
-
-        this.log('Detected and using libraries: ' + this.libraries[0], logger.SUCCESS);
-
-        let dir = config.POGdata + '/' + this.POG.POGID + '/' + this.libraries[0];
-
-        resolve(dir);
-      });
+    // Explode out and get biggest
+    files.forEach((file) => {
+      this.libraries.push(file.split('/').pop());
     });
+
+    this.libraries.sort().reverse();
+    logger.info(`Detected and using libraries: ${this.libraries[0]}`);
+
+    return `${config.POGdata}/${this.POG.POGID}/${this.libraries[0]}`;
   }
 
   /**
    * Find the reports folder and select latest
    *
-   * @throws DirectoryNotFound - If the report folder is not found
    * @param {string} libraryDirectory - The library directory to search for a report directory in
-   * @returns {Promise|string} - Resolves with the base string to the report directory
+   *
+   * @returns {Promise.<string>} - Returns the base string to the report directory
    */
-  getReportFolder(libraryDirectory) {
+  async getReportFolder(libraryDirectory) {
+    logger.info('Attempting to find report directory');
 
-    this.log('Attempting to find report directory');
+    // Go globbing for the report directory
+    const files = glob.sync(`${libraryDirectory}/jreport_genomic_summary_v*`);
 
-    return Q.Promise((resolve, reject) => {
+    if (files.length === 0) {
+      throw new Error('Unable to find the genomic report directory');
+    }
 
-      // Go globbing for the report directory
-      glob(libraryDirectory + '/jreport_genomic_summary_v*', (err, files) => {
-
-        if(err || files.length === 0) throw new DirectoryNotFound('Unable to find the genomic report directory');
-
-        // Explode out and get biggest
-        let versionOptions = [];
-        _.forEach(files, (f) => {
-          let t = f.split('/');
-          versionOptions.push(t[t.length - 1]);
-        });
-
-        // Sort by largest value (newest version)
-        versionOptions.sort().reverse();
-
-        if (err) reject('Unable to find POG sources.');
-        this.baseDir = config.POGdata + '/' + this.POG.POGID + '/' + this.libraries[0] + '/' + versionOptions[0] + '/report';
-
-        // Log Base Path for Source
-        this.log('Source path: ' + this.baseDir, logger.SUCCESS);
-
-        resolve(this.baseDir);
-      });
+    // Explode out and get biggest
+    const versionOptions = files.map((file) => {
+      return file.split('/').pop();
     });
+
+    // Sort by largest value (newest version)
+    versionOptions.sort();
+
+    this.baseDir = `${config.POGdata}/${this.POG.POGID}/${this.libraries[0]}/${versionOptions.pop()}/report`;
+    // Log Base Path for Source
+    logger.info(`Source path: ${this.baseDir}`);
+
+    return this.baseDir;
   }
 
 
@@ -240,149 +212,73 @@ class GenomicLoader {
    * Execute the loaders
    *
    * @param {string} baseDir - The base directory the loaders need to work in (report root)
-   * @returns {Promise} - TODO: design this object
+   *
+   * @returns {Promise.<Array.<object>>} - Returns the results of running all the loaders
    */
-  runLoaders() {
+  async runLoaders() {
+    logger.info('Starting loader execution');
 
-    this.log('Starting loader execution');
+    const promises = []; // Collection of module promises
 
-    return new Promise((resolve, reject) => {
+    // Set loaders to run - if none are specified, load them all.
+    const toLoad = (this.options.load) ? this.loaderFilter() : loaders;
 
-      let promises = []; // Collection of module promises
+    // Loop over loader files and create promises
+    toLoad.forEach((loader) => {
+      const {location, loaderType, name} = loader;
+      let loaderPromise = null;
 
-      // Set loaders to run - if none are specified, load them all.
-      let toLoad = (this.options.load) ? this.loaderFilter() : loaders;
+      // Check for Module Options
+      const moduleOptions = this.moduleOptions[name] || {};
+      moduleOptions.library = this.libraries[0];
 
-      // Loop over loader files and create promises
-      _.forEach(toLoad, (loader) => {
-        // If the looped loader exists in the toLoad intersection, queue the promise!
-        let loaderPromise = null;
-        let l = require(__dirname + loader.location);
+      // Include report config file in options
+      moduleOptions.config = this.config;
 
-        // Check for Module Options
-        let moduleOptions = this.moduleOptions[loader.name] || {};
-        moduleOptions.library = this.libraries[0];
-
-        // Include report config file in options
-        moduleOptions.config = this.config;
-
-        // Check for new class designed loader
-        if(loader.loaderType === 'class') {
-          let classLoader = new l(this.report, this.baseDir, logger, moduleOptions);
-          loaderPromise = classLoader.load();
-        } else {
-          // Standard function designed loader
-          loaderPromise = l(this.report, this.baseDir, logger, moduleOptions);
-        }
-
-        promises.push(loaderPromise);
-      });
-
-      // Wait for all loaders to finish!
-      Q.all(promises)
-        .done((result) => {
-
-            // Check Results
-            this.log('All loaders have completed.', logger.SUCCESS);
-
-            // All good!
-            resolve(result);
-
-          },
-          (error) => {
-            // A Loader failed
-            this.log('Loading process failed', logger.ERROR);
-            this.log('A loader failed: ' + error.loader, logger.ERROR);
-            this.log('Reason: ' + error.message, logger.ERROR);
-            console.log(error);
-
-            reject(error);
-          }
-        );
-
+      // Check for new class designed loader
+      if (loaderType === 'class') {
+        loaderPromise = new location(this.report, this.baseDir, moduleOptions).load();
+      } else {
+        // Standard function designed loader
+        loaderPromise = location(this.report, this.baseDir, moduleOptions);
+      }
+      promises.push(loaderPromise);
     });
+
+    const results = await Promise.all(promises);
+    logger.info('All loaders have completed.');
+
+    return results;
   }
 
 
   /**
    * Return a collection of loaders to execute
    *
-   * @returns {array} - Returns a collection of loaders
+   * @returns {Array.<object>} - Returns a collection of loaders
    */
   loaderFilter() {
-
-    return _.filter(loaders, (l) => {
+    return loaders.filter((loader) => {
       // If the loader's name appears in the target loaders, include in array
-      return (this.options.load.indexOf(l.name) > -1);
+      return this.options.includes(loader.name);
     });
-
   }
 
   /**
    * Get POG Report Config File
-   *
    * Retrieve and parse the Report Tracking config file
    *
+   * @returns {Promise.<object>} - Returns new config object
    */
-  getConfig() {
+  async getConfig() {
+    // From the base directory read in the Report_Tracking.cfg file
+    const data = fs.readFileSync(`${this.baseDir}/Report_tracking.cfg`, 'utf-8');
 
-    return new Promise((resolve, reject) => {
-
-      // From the base directory read in the Report_Tracking.cfg file
-      fs.readFile(this.baseDir + '/Report_tracking.cfg', 'utf8', (err, data) => {
-        if(err) {
-          console.log(err);
-          // Unable to find config file
-          this.log('Unable to find Report_tracking.cfg file', logger.ERROR);
-          reject('Unable to find Report_tracking.cfg file');
-          return;
-        }
-
-        // Parse config file with pyconf
-        pyconf.parse(data, (err, config) => {
-
-          if(err) {
-            this.log('Unable to parse python report tracking config file', logger.ERROR);
-            reject('Unable to parse python report tracking config file');
-          }
-
-          this.log('Loaded & parsed Report config file', logger.SUCCESS);
-
-          this.config = config;
-
-          resolve(this.config);
-
-        });
-      });
-    });
+    // Parse config file with pyconf
+    this.config = await pyParse(data);
+    logger.info('Loaded & parsed Report config file');
+    return this.config;
   }
-
-  /**
-   * Handle a failed loader scenario
-   *
-   * If environment is production, allow passage of
-   *
-   * @param err
-   * @returns {Promise}
-   */
-  LoaderFailed(err) {
-
-    return new Promise((resolve, reject) => {
-
-
-
-    });
-
-  }
-
 }
 
 module.exports = GenomicLoader;
-
-
-class DirectoryNotFound extends Error {
-
-  constructor(m) {
-    super(m);
-  }
-}

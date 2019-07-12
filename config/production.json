@@ -18,6 +18,11 @@
     "api": "/prod/limsapi"
   },
 
+  "bioapps" : {
+    "hostname": "http://bioappsdev01:8500",
+    "api": ""
+  },
+
   "redis": {
     "uri": "",
     "host": "",

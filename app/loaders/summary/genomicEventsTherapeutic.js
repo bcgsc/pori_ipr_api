@@ -1,85 +1,45 @@
-"use strict";
+const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
+const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
+const db = require('../../models');
+const remapKeys = require('../../libs/remapKeys');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-    fs = require('fs'),
-    parse = require('csv-parse'),
-    remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-    _ = require('lodash'),
-    Q = require('q'),
-    nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+const logger = require('../../../lib/log');
 
 /**
  * Parse Genomic Events With Potential Clinical Association File
  *
- * 
  * @param {object} report - POG report model object
  * @param {string} dir - CSV directory base
- * @param {object} logger - Logging interface
- * @param {object} options - Options key-value pair
  *
+ * @returns {Promise.<Array.<object>>} - Returns genomic events that were loaded into the db
  */
-module.exports = (report, dir, logger, options={}) => {
-
-  // Create promise
-  let deferred = Q.defer();
-  
-  // Setup Logger
-  let log = logger.loader(report.ident, 'Summary.GenomicEventsTherapeutic');
-  
+module.exports = async (report, dir) => {
   // First parse in therapeutic
-  let output = fs.createReadStream(dir + '/JReport_CSV_ODF/genomic_events_thera_assoc.csv');
-  
-  log('Found and read genomic_events_thera_assoc.csv file.');
-  
+  const output = fs.readFileSync(`${dir}/JReport_CSV_ODF/genomic_events_thera_assoc.csv`);
+
+  logger.info('Found and read genomic_events_thera_assoc.csv file.');
+
   // Parse file!
-  let parser = parse({delimiter: ',', columns: true},
-    (err, result) => {
-      
-      // Was there a problem processing the file?
-      if(err) {
-        log('Unable to parse CSV file');
-        console.log(err);
-        deferred.reject({loader: 'genomicEventsTherapeutic', message: 'Unable to parse the CSV file: ' + dir + '/JReport_CSV_ODF/genomic_events_thera_assoc.csv'});
-      }
+  const results = parse(output, {delimiter: ',', columns: true});
 
-      // Create Entries Array
-      let entries = remapKeys(result, nconf.get('summary:genomicEventsTherapeutic'));
+  // Create Entries Array
+  const entries = remapKeys(results, nconf.get('summary:genomicEventsTherapeutic'));
 
-      // Loop over returned rows, and read in each column value
-      _.forEach(result, (v, k) => {
-          entries[k].pog_id = report.pog_id;
-          entries[k].pog_report_id = report.id;
-          if(report.type === 'probe') entries[k].reportType = 'probe';
-      });
-
-      log('Entries found: ' + entries.length);
-
-      // Add to Database
-      db.models.genomicEventsTherapeutic.bulkCreate(entries).then(
-        (result) => {
-          log('Finished Genomic Events With Therapeutic Association.', logger.SUCCESS);
-         
-          // Resolve Promise
-          deferred.resolve(result);
-        },
-        (err) => {
-          console.log(err);
-          log('Failed to load patient genomic events with therapeutic association.', logger.ERROR);
-          deferred.reject({loader: 'genomicEventsTherapeutic', message: 'Failed to created DB entries'});
-        }
-      );
+  // Loop over returned rows, and read in each column value
+  entries.forEach((entry) => {
+    entry.pog_id = report.pog_id;
+    entry.pog_report_id = report.id;
+    if (report.type === 'probe') {
+      entry.reportType = 'probe';
     }
-  );
-  
-  // Pipe file through parser
-  output.pipe(parser);
-  
-  output.on('error', (err) => {
-    log('Unable to find required CSV file');
-    deferred.reject({loader: 'genomicEventsTherapeutic', message: 'Unable to find the source file: ' + dir + '/JReport_CSV_ODF/genomic_events_thera_assoc.csv'});
   });
-  
-  return deferred.promise;
-  
+
+  logger.info(`Entries found: ${entries.length}`);
+
+  // Add to Database
+  const createResult = await db.models.genomicEventsTherapeutic.bulkCreate(entries);
+  logger.info('Finished Genomic Events With Therapeutic Association.');
+
+  return createResult;
 };

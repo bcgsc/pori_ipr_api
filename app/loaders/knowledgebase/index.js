@@ -1,67 +1,39 @@
-"use strict";
-/*
- * Loaders - Onboards CSV data into SQL databases
- *
- * Recursively works back g
- *
- */
+const events = require('./events');
+const references = require('./references');
 
-let db = require(process.cwd() + '/app/models'),
-  Q = require('q'),
-  logger = require(process.cwd() + '/app/libs/logger'),
-  _ = require('lodash'),
-  fs = require('fs'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/'+process.env.NODE_ENV+'.json'});
+const logger = require('../../../lib/log');
 
 // Map of loaders
-let loaders = [
-  // Loaders
-  'references',
-  'events',
-];
+const loaders = [];
 
-// Run loaders for a specified POGID
-module.exports = (options={}) => {
-
-  let log = logger.loader('KB-Import');
-
+/**
+ * Knowledgebase Loaders - Onboards CSV data into SQL databases
+ *
+ * @param {object} options - Options for dir to use and whether to include events and/or references
+ * @returns {Promise.<boolean>} - Returns true if the loader was successfull
+ */
+module.exports = async (options = {}) => {
+  logger.info('KB-Import');
   // Started to onboard a POG Report
-  log('Running Knowledge Base Import');
+  logger.info('Running Knowledge Base Import');
 
-  let deferred = Q.defer(); // Create promise
-  let promises = [];
+  if (!options.directory) {
+    throw new Error('Directory option was not set and is required.');
+  }
+  if (options.events) {
+    loaders.push(events);
+  }
+  if (options.references) {
+    loaders.push(references);
+  }
 
-  if(!options.directory) deferred.reject({error: 'directory option was not set and is required.'});
-  
-  if(!options.events) loaders.splice(loaders.indexOf('events'), 1);
-  if(!options.references) loaders.splice(loaders.indexOf('references'), 1);
-  
   // Loop over loader files and create promises
-  loaders.forEach((file) => {
-    promises.push(require('./' + file)(options.directory, logger, options));
+  const promises = loaders.map((file) => {
+    return file(options.directory, options);
   });
 
   // Wait for all loaders to finish!
-  Q.all(promises)
-    .done((result) => {
-        // Check Results
-        log('All loaders have completed.', logger.SUCCESS);
-        // All good!
-        deferred.resolve(true);
-      },
-      (error) => {
-        // A loader failed
-        let fail = {};
-
-        // Log error
-        log('Failed KB loading process.', logger.ERROR);
-        console.log(error);
-
-        if(error.reason && error.reason.indexOf('sourceFileNotFound') !== -1) fail.status = 400; // Bad POG source
-
-        // Return fail
-        deferred.reject(fail);
-      }
-    );
-  return deferred.promise;
+  await Promise.all(promises);
+  logger.info('All loaders have completed.');
+  return true;
 };

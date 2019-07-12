@@ -5,7 +5,7 @@ const express = require('express');
 const moment = require('moment');
 const fs = require('fs');
 const d3 = require('d3-dsv');
-const nconf = require('nconf').file(`../../config/${process.env.NODE_ENV}.json`);
+const nconf = require('nconf').file(`./config/${process.env.NODE_ENV}.json`);
 
 const db = require('../models');
 const ReportLib = require('../libs/structures/analysis_report');
@@ -341,7 +341,7 @@ router.route('/:type(genomic|probe)')
       await loader.load();
     } catch (error) {
       logger.error(`Error unable to load loader ${error}`);
-      return res.status(500).json({error: {message: 'Unable to load loader'}});
+      return res.status(500).json({error: {message: 'Unable to load loader', cause: error}});
     }
 
     // Retrieve results from loaders, and ask for public report object

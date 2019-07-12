@@ -1,12 +1,15 @@
 const request = require('request-promise-native');
 const moment = require('moment');
 const _ = require('lodash');
+const nconf = require('nconf').argv().env().file({file: './config/config.json'});
 const gin = require('../../lib/ginCredentials');
+
 const logger = require('../../lib/log');
 
-const host = 'http://bioappsdev01:8500';
-const basePath = '';
-const path = `${host}${basePath}`;
+const HOSTNAME = nconf.get('bioapps:hostname');
+const BASEPATH = nconf.get('bioapps:api');
+const PATH = `${HOSTNAME}${BASEPATH}`;
+
 const $bioapps = {};
 
 $bioapps.session = {
@@ -53,7 +56,7 @@ $bioapps.login = async () => {
 
   const resp = await request({
     method: 'POST',
-    uri: `${path}/session`,
+    uri: `${PATH}/session`,
     body: {username: credentials.username, password: credentials.password},
     json: true,
   });
@@ -93,7 +96,7 @@ $bioapps.query = async (opts) => {
 $bioapps.merge = async (library) => {
   return $bioapps.query({
     method: 'GET',
-    uri: `${path}/merge?production=true&library=${library}`,
+    uri: `${PATH}/merge?production=true&library=${library}`,
     gzip: true,
     json: true,
   });
@@ -108,7 +111,7 @@ $bioapps.merge = async (library) => {
 $bioapps.assembly = async (library) => {
   return $bioapps.query({
     method: 'GET',
-    uri: `${path}/assembly?production=true&library=${library}`,
+    uri: `${PATH}/assembly?production=true&library=${library}`,
     gzip: true,
     json: true,
   });
@@ -123,7 +126,7 @@ $bioapps.assembly = async (library) => {
 $bioapps.libraryInfo = async (libraries) => {
   return $bioapps.query({
     method: 'GET',
-    uri: `${path}/library/info?library=${libraries}`,
+    uri: `${PATH}/library/info?library=${libraries}`,
     gzip: true,
     json: true,
   });
@@ -143,7 +146,7 @@ $bioapps.targetLanes = async (libraries) => {
 
   return $bioapps.query({
     method: 'GET',
-    uri: `${path}/library/lane_target?production=true&library=${libraries}`,
+    uri: `${PATH}/library/lane_target?production=true&library=${libraries}`,
     gzip: true,
     json: true,
   });
@@ -164,7 +167,7 @@ $bioapps.libraryAlignedCores = async (libraries) => {
 
   return $bioapps.query({
     method: 'GET',
-    uri: `${path}/aligned_libcore/info?production=true&library=${libraries}`,
+    uri: `${PATH}/aligned_libcore/info?production=true&library=${libraries}`,
     gzip: true,
     json: true,
   });
@@ -179,7 +182,7 @@ $bioapps.libraryAlignedCores = async (libraries) => {
 $bioapps.patient = async (pogid) => {
   return $bioapps.query({
     method: 'GET',
-    uri: `${path}/patient_analysis?pog_id=${pogid}`,
+    uri: `${PATH}/patient_analysis?pog_id=${pogid}`,
     gzip: true,
     json: true,
   });
@@ -215,7 +218,7 @@ $bioapps.updatePatientAnalysis = async (patient, analysis) => {
 
   return $bioapps.query({
     method: 'PATCH',
-    uri: `${path}/patient_analysis/${patient}`,
+    uri: `${PATH}/patient_analysis/${patient}`,
     json: body,
   });
 };
