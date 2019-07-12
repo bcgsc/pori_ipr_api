@@ -255,7 +255,6 @@ module.exports = async (report, dir) => {
       if (image.optional) {
         return;
       }
-
       logger.error(`Failed to find image file: ${image.name}`);
       throw new Error(`Failed to find image file: ${image.name}`);
     }
