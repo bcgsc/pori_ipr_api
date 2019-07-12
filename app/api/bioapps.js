@@ -6,16 +6,10 @@ const gin = require('../../lib/ginCredentials');
 
 const logger = require('../../lib/log');
 
-<<<<<<< HEAD
 const HOSTNAME = nconf.get('bioapps:hostname');
 const BASEPATH = nconf.get('bioapps:api');
 const PATH = `${HOSTNAME}${BASEPATH}`;
 
-=======
-const host = 'http://bioappsdev01:8500';
-const basePath = '';
-const path = `${host}${basePath}`;
->>>>>>> e97d33a6f25157a227b01d7f3fc918409fbb3838
 const $bioapps = {};
 
 $bioapps.session = {
