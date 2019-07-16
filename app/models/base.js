@@ -36,8 +36,6 @@ const DEFAULT_OPTIONS = {
   timestamps: true,
   // Use soft-deletes!
   paranoid: true,
-  // Convert all camel case to underscore seperated
-  underscored: true,
   // Disable modification of table names
   freezeTableName: true,
   indexes: [
@@ -54,7 +52,7 @@ const DEFAULT_OPTIONS = {
   hooks: {
     beforeUpdate: (instance, options = {}) => {
       const {id, ...content} = instance._previousDataValues;
-      return instance.create({
+      return options.model.create({
         ...content, deletedAt: new Date().getTime(),
       }, {
         silent: true,
