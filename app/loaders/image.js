@@ -26,6 +26,7 @@ let imagePath;
  */
 const processExpDensityImages = async (report, img) => {
   const geneName = img.split('/').pop().split('.').shift();
+  /* This returns a Uint8Array type which needs to be converted to a string */
   const imgData = execSync(`convert "${img}" -resize 450x450 PNG:- | base64`);
 
   // Write to DB
@@ -36,7 +37,7 @@ const processExpDensityImages = async (report, img) => {
     format: 'PNG',
     filename: img.split('/').pop(),
     key: `expDensity.${geneName}`,
-    data: imgData,
+    data: imgData.toString(),
   });
 
   logger.info(`Loaded image: expDensity.${geneName}`);
@@ -96,6 +97,7 @@ const processSubtypePlotImages = async (report, img) => {
     }
   }
 
+  /* This returns a Uint8Array type which needs to be converted to a string */
   const imgData = execSync(`convert "${img}" -resize ${imageSize} PNG:- | base64`);
 
   // Write to DB
@@ -106,7 +108,7 @@ const processSubtypePlotImages = async (report, img) => {
     format: 'PNG',
     filename,
     key: `subtypePlot.${imageString}`,
-    data: imgData,
+    data: imgData.toString(),
   });
 
   logger.info(`Loaded image: subtypePlot.${imageString}`);
@@ -137,6 +139,7 @@ const loadSubtypePlot = async (report) => {
  * @returns {Promise.<boolean>} - Returns true if the image was added to db successfully
  */
 const processSummaryImage = async (report, file) => {
+  /* This returns a Uint8Array type which needs to be converted to a string */
   const imgData = execSync(`convert "${file}" -resize 560x151 PNG:- | base64`);
   // Convert pre genomicReport.py v5.0.0 summary image names to updated format
   const legacyNames = {
@@ -164,7 +167,7 @@ const processSummaryImage = async (report, file) => {
     format: 'PNG',
     filename,
     key: `mutation_summary.${imageString}`,
-    data: imgData,
+    data: imgData.toString(),
   });
   logger.info(`Loaded image: mutation_summary.${imageString}`);
 
