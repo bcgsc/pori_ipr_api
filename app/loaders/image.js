@@ -27,7 +27,7 @@ let imagePath;
 const processExpDensityImages = async (report, img) => {
   const geneName = img.split('/').pop().split('.').shift();
   /* This returns a Uint8Array type which needs to be converted to a string */
-  const imgData = execSync(`convert "${img}" -resize 450x450 PNG:- | base64`);
+  const imgData = execSync(`convert "${img}" -resize 450x450 PNG:- | base64`).toString();
 
   // Write to DB
   // Add to database
@@ -37,7 +37,7 @@ const processExpDensityImages = async (report, img) => {
     format: 'PNG',
     filename: img.split('/').pop(),
     key: `expDensity.${geneName}`,
-    data: imgData.toString(),
+    data: imgData,
   });
 
   logger.info(`Loaded image: expDensity.${geneName}`);
@@ -98,7 +98,7 @@ const processSubtypePlotImages = async (report, img) => {
   }
 
   /* This returns a Uint8Array type which needs to be converted to a string */
-  const imgData = execSync(`convert "${img}" -resize ${imageSize} PNG:- | base64`);
+  const imgData = execSync(`convert "${img}" -resize ${imageSize} PNG:- | base64`).toString();
 
   // Write to DB
   // Add to database
@@ -108,7 +108,7 @@ const processSubtypePlotImages = async (report, img) => {
     format: 'PNG',
     filename,
     key: `subtypePlot.${imageString}`,
-    data: imgData.toString(),
+    data: imgData,
   });
 
   logger.info(`Loaded image: subtypePlot.${imageString}`);
@@ -140,7 +140,7 @@ const loadSubtypePlot = async (report) => {
  */
 const processSummaryImage = async (report, file) => {
   /* This returns a Uint8Array type which needs to be converted to a string */
-  const imgData = execSync(`convert "${file}" -resize 560x151 PNG:- | base64`);
+  const imgData = execSync(`convert "${file}" -resize 560x151 PNG:- | base64`).toString();
   // Convert pre genomicReport.py v5.0.0 summary image names to updated format
   const legacyNames = {
     bar_indel: 'barplot_indel',
@@ -167,7 +167,7 @@ const processSummaryImage = async (report, file) => {
     format: 'PNG',
     filename,
     key: `mutation_summary.${imageString}`,
-    data: imgData.toString(),
+    data: imgData,
   });
   logger.info(`Loaded image: mutation_summary.${imageString}`);
 
