@@ -20,7 +20,7 @@ module.exports = {
 
     console.log('DataVersion columns removed');
 
-    // Remove table pog_a
+    // Remove table pog_analysis_reports_history_tags
     await queryInterface.dropTable('pog_analysis_reports_history_tags');
 
     // Remove table pog_analysis_reports_history_tags
@@ -30,6 +30,18 @@ module.exports = {
     await queryInterface.dropTable('pog_analysis_reports_histories');
 
     console.log('Removed table pog_analysis_reports_histories');
+
+    // Add not null constarint to ident
+    await Promise.all(tables.map((table) => {
+      return queryInterface.changeColumn(table, 'ident', {
+        type: Sequelize.UUID,
+        allowNull: false,
+      });
+    }));
+
+    console.log('Added not null constraint to ident');
+
+    tables.push('pog_analysis_reports');
 
     // Rename properties
     await Promise.all(tables.map((table) => {
@@ -41,16 +53,6 @@ module.exports = {
     }));
 
     console.log('Renamed createdAt, updatedAt, and deletedAt columns');
-
-    // Add not null constarint to ident
-    await Promise.all(tables.map((table) => {
-      return queryInterface.changeColumn(table, 'ident', {
-        type: Sequelize.UUID,
-        allowNull: false,
-      });
-    }));
-
-    console.log('Added not null constraint to ident');
 
     // Add indexes
     await Promise.all(tables.map((table) => {
