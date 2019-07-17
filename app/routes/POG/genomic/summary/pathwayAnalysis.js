@@ -66,6 +66,7 @@ router.route('/')
           where: {
             ident: req.pathwayAnalysis.ident,
           },
+          individualHooks: true,
           paranoid: true,
           returning: true,
         });

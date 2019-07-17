@@ -35,6 +35,7 @@ router.route('/:alteration([A-z0-9-]{36})')
         where: {
           ident: req.alteration.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

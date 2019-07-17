@@ -51,7 +51,10 @@ const updateReport = async (report, data) => {
       updateData.biofx_assigned_id = _.find(users, {ident: data.biofx_assigned}).id;
     }
 
-    return report.update(updateData);
+    return report.update(updateData, {
+      individualHooks: true,
+      paranoid: true,
+    });
   } catch (error) {
     logger.error(`Error while trying to update supplied report ${error}`);
     throw new Error('Error while trying to update supplied report');

@@ -203,6 +203,7 @@ router.route('/:report')
         where: {
           ident: req.report.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

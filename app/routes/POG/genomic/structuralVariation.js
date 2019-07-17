@@ -11,7 +11,7 @@ router.param('sv', async (req, res, next, svIdent) => {
     result = await db.models.sv.scope('public').findOne({where: {ident: svIdent}});
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);
-    return res.status(500).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'} });
+    return res.status(500).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'}});
   }
 
   if (!result) {
@@ -34,6 +34,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
         where: {
           ident: req.variation.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

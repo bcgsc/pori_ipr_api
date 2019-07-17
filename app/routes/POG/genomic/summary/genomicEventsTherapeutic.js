@@ -37,6 +37,7 @@ router.route('/:gene([A-z0-9-]{36})')
         where: {
           ident: req.event.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

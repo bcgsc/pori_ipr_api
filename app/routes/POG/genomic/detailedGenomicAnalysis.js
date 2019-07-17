@@ -44,6 +44,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
         where: {
           ident: req.alteration.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });
@@ -115,6 +116,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
         where: {
           ident: req.alteration.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });
@@ -169,6 +171,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
         where: {
           ident: req.alteration.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

@@ -39,6 +39,7 @@ router.route('/')
         where: {
           ident: req.tumourAnalysis.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

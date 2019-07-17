@@ -35,6 +35,7 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
         where: {
           ident: req.cnv.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

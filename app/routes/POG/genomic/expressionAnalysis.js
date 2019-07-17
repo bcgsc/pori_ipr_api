@@ -39,6 +39,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
         where: {
           ident: req.outlier.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });
@@ -117,6 +118,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
         where: {
           ident: req.drugTarget.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });
@@ -188,6 +190,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
         where: {
           ident: req.protein.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

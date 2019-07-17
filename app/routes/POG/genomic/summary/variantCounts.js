@@ -42,6 +42,7 @@ router.route('/')
         where: {
           ident: req.variantCounts.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

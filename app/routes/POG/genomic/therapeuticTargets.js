@@ -36,6 +36,7 @@ router.route('/:target([A-z0-9-]{36})')
         where: {
           ident: req.target.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });

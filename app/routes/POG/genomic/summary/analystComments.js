@@ -50,6 +50,7 @@ router.route('/')
           where: {
             ident: req.analystComments.ident,
           },
+          individualHooks: true,
           paranoid: true,
           returning: true,
         });
@@ -86,9 +87,8 @@ router.route('/sign/:role(author|reviewer)')
         where: {
           ident: req.analystComments.ident,
         },
-        options: {
-          paranoid: true,
-        },
+        individualHooks: true,
+        paranoid: true,
       });
     } catch (error) {
       logger.error(`Unable to update analysis comments ${error}`);
@@ -129,9 +129,8 @@ router.route('/sign/revoke/:role(author|reviewer)')
         where: {
           ident: req.analystComments.ident,
         },
-        options: {
-          paranoid: true,
-        },
+        individualHooks: true,
+        paranoid: true,
       });
     } catch (error) {
       logger.error(`Unable to update analysis comments ${error}`);
