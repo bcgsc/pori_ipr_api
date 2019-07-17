@@ -53,7 +53,9 @@ router.route('/:role(ready|reviewer)')
 
     // Update
     try {
-      await db.models.probe_signature.update(data, {where: {ident: req.signature.ident}, options: {returning: true}});
+      await db.models.probe_signature.update(data, {
+        where: {ident: req.signature.ident},
+      });
     } catch (error) {
       logger.error(`Unable to update prob signature ${error}`);
       return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
@@ -90,7 +92,9 @@ router.route('/revoke/:role(ready|reviewer)')
     data[`${role}At`] = null;
 
     try {
-      await db.models.probe_signature.update(data, {where: {ident: req.signature.ident}, options: {returning: true}});
+      await db.models.probe_signature.update(data, {
+        where: {ident: req.signature.ident},
+      });
     } catch (error) {
       logger.error(`Unable to update prob signature ${error}`);
       return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});

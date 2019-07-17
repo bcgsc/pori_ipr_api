@@ -67,7 +67,12 @@ router.route('/')
       restoreUser.deletedAt = null;
 
       try {
-        const user = await db.models.user.update(restoreUser, {paranoid: false, where: {ident: existCheck.ident}, returning: true});
+        const user = await db.models.user.update(restoreUser, {
+          where: {ident: existCheck.ident},
+          paranoid: false,
+          returning: true,
+        });
+
         const response = {
           ident: user[1][0].ident,
           username: user[1][0].username,
@@ -150,7 +155,9 @@ router.route('/settings')
   })
   .put(async (req, res) => {
     try {
-      const update = await db.models.user.update(req.body, {where: {ident: req.user.ident}});
+      const update = await db.models.user.update(req.body, {
+        where: {ident: req.user.ident},
+      });
       return res.json(update);
     } catch (error) {
       logger.error(`SQL Error unable to update user ${error}`);
@@ -213,7 +220,11 @@ router.route('/:ident([A-z0-9-]{36})')
     let userUpdate;
     try {
       // Attempt user model update
-      userUpdate = await db.models.user.update(updateBody, {where: {ident: req.body.ident}, returning: true, limit: 1});
+      userUpdate = await db.models.user.update(updateBody, {
+        where: {ident: req.body.ident},
+        returning: true,
+        limit: 1,
+      });
     } catch (error) {
       logger.error(`SQL Error unable to update user model ${error}`);
       return res.status(500).json({error: {message: 'Unable to update user model', code: 'failedUserModelUpdate'}});

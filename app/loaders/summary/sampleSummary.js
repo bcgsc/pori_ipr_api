@@ -37,7 +37,12 @@ module.exports = async (report, dir) => {
   };
 
   // Add to Database
-  await db.models.patientInformation.update(entry, {where: {pog_id: report.pog_id, pog_report_id: report.id}, limit: 1});
+  await db.models.patientInformation.update(entry, {
+    where: {pog_id: report.pog_id, pog_report_id: report.id},
+    individualHooks: true,
+    paranoid: true,
+    limit: 1,
+  });
   logger.info('Sample Summary appended.');
 
   return {data: entry, result: true, loader: 'sampleSummary'};

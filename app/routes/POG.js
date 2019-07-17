@@ -123,7 +123,11 @@ router.route('/:POG')
 
     try {
       // Attempt POG model update
-      const result = await db.models.POG.update(updateBody, {where: {ident: req.body.ident}, limit: 1, returning: true});
+      const result = await db.models.POG.update(updateBody, {
+        where: {ident: req.body.ident},
+        limit: 1,
+        returning: true,
+      });
       return res.json(result[1][0]);
     } catch (error) {
       logger.error(error);

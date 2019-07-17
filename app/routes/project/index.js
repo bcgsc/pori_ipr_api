@@ -124,7 +124,11 @@ router.route('/')
     if (existingProject) {
       // Restore!
       try {
-        const restored = await db.models.project.update({deletedAt: null}, {paranoid: false, where: {ident: existingProject.ident}, returning: true});
+        const restored = await db.models.project.update({deletedAt: null}, {
+          where: {ident: existingProject.ident},
+          paranoid: false,
+          returning: true,
+        });
         return res.status(201).json(restored);
       } catch (error) {
         logger.error(`Error while trying to restore project ${error}`);
@@ -183,7 +187,10 @@ router.route('/:ident([A-z0-9-]{36})')
     let modelUpdate;
     try {
       // Attempt project model update
-      modelUpdate = await db.models.project.update(updateBody, {where: {ident: req.body.ident}, limit: 1});
+      modelUpdate = await db.models.project.update(updateBody, {
+        where: {ident: req.body.ident},
+        limit: 1,
+      });
     } catch (error) {
       logger.error(`Error while trying to update project ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
@@ -315,7 +322,11 @@ router.route('/:project([A-z0-9-]{36})/user')
     // exists - set deletedAt to null
     if (hasBinding) {
       try {
-        await db.models.user_project.update({deletedAt: null}, {paranoid: false, where: {id: hasBinding.id}, returning: true});
+        await db.models.user_project.update({deletedAt: null}, {
+          where: {id: hasBinding.id},
+          paranoid: false,
+          returning: true,
+        });
         return res.json(user);
       } catch (error) {
         logger.error(`Error while restoring user project binding ${error}`);
