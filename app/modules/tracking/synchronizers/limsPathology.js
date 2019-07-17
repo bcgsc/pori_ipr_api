@@ -279,11 +279,11 @@ class LimsPathologySync {
 
         logger.debug(`Found mapped POG biopsy entry for ${library.name} in position ${index} in biopsy ${biopsyDate} for ${pogName}`);
 
-        // Types of library strategy mappings
-        if (library.libraryStrategyName.includes('WGS')) {
+        // Libraries are all diseased so don't worry about normal
+        if (library.nucleicAcidType === 'DNA') {
           this.pogs[pogName][biopsyDate][index].type = 'tumour';
         }
-        if (library.libraryStrategyName.includes('RNA')) {
+        if (library.nucleicAcidType === 'RNA') {
           this.pogs[pogName][biopsyDate][index].type = 'transcriptome';
         }
       });
