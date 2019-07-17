@@ -33,6 +33,7 @@ router.route('/:alteration([A-z0-9-]{36})')
         where: {
           ident: req.alteration.ident,
         },
+        individualHooks: true,
         paranoid: true,
         returning: true,
       });
@@ -98,20 +99,11 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
     req.body.pog_report_id = req.report.id;
 
     try {
-      // Update result ?? might need upsert
-      const result = await db.models.alterations.update(req.body, {
-        where: {
-          ident: req.alteration.ident,
-        },
-        paranoid: true,
-        returning: true,
-      });
-
-      // Send back newly created/updated result.
+      const result = await db.models.alterations.create(req.body);
       return res.json(result);
     } catch (error) {
-      logger.error(`Unable to update alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update alterations', code: 'failedAPClookup'}});
+      logger.error(`Unable to create alterations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create alterations', code: 'failedAPClookup'}});
     }
   });
 
