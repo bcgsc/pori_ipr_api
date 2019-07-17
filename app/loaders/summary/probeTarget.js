@@ -63,7 +63,7 @@ module.exports = async (report, basedir, options) => {
   // Read in config file.
   const {config} = options;
   // Set probe directory from Python config
-  const probeDir = config.Probe_Report_Folder;
+  const probeDir = config.Report_Folder;
 
   // Alterations to be processed
   const sources = [
