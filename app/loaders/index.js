@@ -245,8 +245,13 @@ class GenomicLoader {
       promises.push(loaderPromise);
     });
 
-    const results = await Promise.all(promises);
-    logger.info('All loaders have completed.');
+    let results;
+    try {
+      results = await Promise.all(promises);
+      logger.info('All loaders have completed.');
+    } catch (err) {
+      return err;
+    }
 
     return results;
   }
