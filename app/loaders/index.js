@@ -254,7 +254,7 @@ class GenomicLoader {
       }
     };
 
-    await tryLoader(promises.map(tryLoader));
+    await Promise.all(promises.map(tryLoader));
     return loaderErrors;
   }
 
