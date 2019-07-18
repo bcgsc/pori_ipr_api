@@ -245,15 +245,20 @@ class GenomicLoader {
       promises.push(loaderPromise);
     });
 
-    let results;
-    try {
-      results = await Promise.all(promises);
-      logger.info('All loaders have completed.');
-    } catch (err) {
-      return err;
-    }
+    Promise.almost = (promiseArray) => {
+      const errStack = [];
+      Promise.all(promiseArray.map((prom) => {
+        return prom.catch ? prom.catch((err) => {
+          errStack.push(err);
+        }) : prom;
+      }));
+      return errStack;
+    };
 
-    return results;
+    const response = await Promise.almost(promises);
+    logger.info('All loaders have completed.');
+
+    return response;
   }
 
 
