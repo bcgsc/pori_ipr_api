@@ -12,9 +12,15 @@ chai.use(require('chai-things'));
 let ident;
 let server;
 
-// Still need to figure out what to do with username and password
-const username = '';
-const password = '';
+let CONFIG = {};
+try {
+  CONFIG = require('/var/www/ipr/api/persist/.env.json');
+  CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
+} catch (error) {
+  CONFIG = require('../.env.json')[process.env.NODE_ENV];
+}
+
+const {username, password} = CONFIG.test.user;
 
 const update = {
   cnvVariant: 'biological',
