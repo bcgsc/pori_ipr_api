@@ -35,16 +35,15 @@ router.route('/')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.mutationSummary.update(req.body, {
+      await db.models.mutationSummary.update(req.body, {
         where: {
           ident: req.mutationSummary.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
 
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update mutation summary ${error}`);
       return res.status(500).json({error: {message: 'Unable to update mutation summary', code: 'failedMutationSummaryVersion'}});

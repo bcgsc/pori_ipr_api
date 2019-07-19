@@ -29,16 +29,15 @@ router.route('/:alteration([A-z0-9-]{36})')
   })
   .put(async (req, res) => {
     try {
-      const result = await db.models.genomicAlterationsIdentified.update(req.body, {
+      await db.models.genomicAlterationsIdentified.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
 
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update genomic alterations ${error}`);
       return res.status(500).json({error: {message: 'Unable to update genomic alterations', code: 'failedAPCDestroy'}});

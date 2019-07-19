@@ -40,15 +40,14 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 
     // Update DB Version for Entry
     try {
-      const result = await db.models.alterations.update(req.body, {
+      await db.models.alterations.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update the resource ${error}`);
       return res.status(500).json({error: {message: 'Unable to update the resource', code: 'failedAPCDestroy'}});
@@ -111,14 +110,12 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     req.body.reportType = 'genomic';
 
     try {
-      // Update result
-      const result = await db.models.alterations.update(req.body, {
+      await db.models.alterations.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
 
       // Create new entry for Key Genomic Identified
@@ -129,7 +126,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       });
 
       // Send back newly created/updated result.
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update alterations ${error}`);
       return res.status(500).json({error: {message: 'Unable to update alterations', code: 'failedAPClookup'}});
@@ -166,17 +163,15 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
     req.body.pog_report_id = req.report.id;
 
     try {
-      // Update result
-      const result = await db.models.alterations.update(req.body, {
+      await db.models.alterations.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
       // Send back newly created/updated result.
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update resource ${error}`);
       return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedTargetedGenelookup'}});

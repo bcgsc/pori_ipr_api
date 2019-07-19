@@ -62,16 +62,15 @@ router.route('/')
 
       // Update DB Version for Entry
       try {
-        const result = await db.models.pathwayAnalysis.update(request, {
+        await db.models.pathwayAnalysis.update(request, {
           where: {
             ident: req.pathwayAnalysis.ident,
           },
           individualHooks: true,
           paranoid: true,
-          returning: true,
         });
 
-        return res.json(result);
+        return res.status(200).send();
       } catch (error) {
         logger.error(`Unable to update pathway analysis ${error}`);
         return res.status(500).json({error: {message: 'Unable to update pathway analysis', code: 'failedAnalystCommentVersion'}});

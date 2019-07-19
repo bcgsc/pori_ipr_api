@@ -124,12 +124,11 @@ router.route('/')
     if (existingProject) {
       // Restore!
       try {
-        const restored = await db.models.project.update({deletedAt: null}, {
+        await db.models.project.update({deletedAt: null}, {
           where: {ident: existingProject.ident},
           paranoid: false,
-          returning: true,
         });
-        return res.status(201).json(restored);
+        return res.status(200).send();
       } catch (error) {
         logger.error(`Error while trying to restore project ${error}`);
         return res.status(500).json({error: {message: 'Error while trying to restore project'}});
@@ -184,20 +183,15 @@ router.route('/:ident([A-z0-9-]{36})')
       name: req.body.name,
     };
 
-    let modelUpdate;
+    // Attempt project model update
     try {
-      // Attempt project model update
-      modelUpdate = await db.models.project.update(updateBody, {
+      await db.models.project.update(updateBody, {
         where: {ident: req.body.ident},
         limit: 1,
       });
     } catch (error) {
       logger.error(`Error while trying to update project ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
-    }
-
-    if (modelUpdate) {
-      return res.json(modelUpdate);
     }
 
     // Success, get project -- UGH
@@ -325,7 +319,6 @@ router.route('/:project([A-z0-9-]{36})/user')
         await db.models.user_project.update({deletedAt: null}, {
           where: {id: hasBinding.id},
           paranoid: false,
-          returning: true,
         });
         return res.json(user);
       } catch (error) {

@@ -199,16 +199,15 @@ router.route('/:report')
   })
   .put(async (req, res) => {
     try {
-      const result = await db.models.analysis_report.update(req.body, {
+      await db.models.analysis_report.update(req.body, {
         where: {
           ident: req.report.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
 
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update analysis report ${error}`);
       return res.status(500).json({error: {message: 'Unable to update analysis report', cause: error}});

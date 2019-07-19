@@ -32,16 +32,15 @@ router.route('/:target([A-z0-9-]{36})')
 
     // Update DB Version for Entry
     try {
-      const result = await db.models.therapeuticTarget.update(req.body, {
+      await db.models.therapeuticTarget.update(req.body, {
         where: {
           ident: req.target.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
 
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);
       return res.status(500).json({error: {message: 'Unable to update therapeutic target', code: 'failedTherapeuticTargetVersion'}});

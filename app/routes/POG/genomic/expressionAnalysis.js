@@ -35,15 +35,14 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.outlier.update(req.body, {
+      await db.models.outlier.update(req.body, {
         where: {
           ident: req.outlier.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update outlier ${error}`);
       return res.status(500).json({error: {message: 'Unable to update outlier', code: 'failedOutlierVersion'}});
@@ -114,15 +113,14 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.drugTarget.update(req.body, {
+      await db.models.drugTarget.update(req.body, {
         where: {
           ident: req.drugTarget.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update drug target ${error}`);
       return res.status(500).json({error: {message: 'Unable to update drug target', code: 'failedMutationSummaryVersion'}});
@@ -186,15 +184,14 @@ router.route('/protein/:protein([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.outlier.update(req.body, {
+      await db.models.outlier.update(req.body, {
         where: {
           ident: req.protein.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update outlier ${error}`);
       return res.status(500).json({error: {message: 'Unable to update outlier', code: 'failedProteinVersion'}});

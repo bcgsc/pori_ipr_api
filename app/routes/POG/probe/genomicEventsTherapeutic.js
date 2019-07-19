@@ -30,15 +30,14 @@ router.route('/:gene([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await model.update(req.body, {
+      await model.update(req.body, {
         where: {
           ident: req.event.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to update genomic therapeutic event ${error}`);
       return res.status(500).json({error: {message: 'Unable to update genomic therapeutic event', code: 'failedMutationSummaryVersion'}});

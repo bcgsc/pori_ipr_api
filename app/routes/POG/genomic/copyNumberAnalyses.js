@@ -31,15 +31,14 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.cnv.update(req.body, {
+      await db.models.cnv.update(req.body, {
         where: {
           ident: req.cnv.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-      return res.json(result);
+      return res.status(200).send();
     } catch (error) {
       logger.error(`Unable to version the resource ${error}`);
       return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'}});

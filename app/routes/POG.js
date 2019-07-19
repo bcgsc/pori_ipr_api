@@ -122,13 +122,11 @@ router.route('/:POG')
     };
 
     try {
-      // Attempt POG model update
-      const result = await db.models.POG.update(updateBody, {
+      await db.models.POG.update(updateBody, {
         where: {ident: req.body.ident},
         limit: 1,
-        returning: true,
       });
-      return res.json(result[1][0]);
+      return res.status(200).send();
     } catch (error) {
       logger.error(error);
       return res.status(500).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
