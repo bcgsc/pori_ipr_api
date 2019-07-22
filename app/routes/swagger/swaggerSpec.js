@@ -1,6 +1,8 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('../../../swagger.json');
+const YAML = require('yamljs');
+
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 const router = express.Router({mergeParams: true});
 
