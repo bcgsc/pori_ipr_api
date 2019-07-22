@@ -59,6 +59,7 @@ const referenceQueryFilter = (req) => {
     status: {operator: '$in', each: null, wrap: false},
     events_expression: {operator: '$or', each: '$ilike', wrap: true},
     ref_id: {operator: '$or', each: '$ilike', wrap: true},
+    ident: {operator: '$or', each: null, wrap: false},
   };
 
   // Are we building a where clause?
