@@ -1,4 +1,6 @@
 const express = require('express');
+const {Op} = require('sequelize');
+const tableFilter = require('../libs/tableFilter');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
@@ -30,7 +32,7 @@ router.route('/')
       logger.error(error);
       return res.status(500).json({error: {message: error.message, code: error.code}});
     }
-    const opts = {
+    let opts = {
       where: {},
       include: [
         {
@@ -111,7 +113,7 @@ router.route('/')
       opts.where.type = 'genomic';
     }
 
-    if (req.query.project) { // check access if filtering
+    if (req.query.project) { // check access if filtering on project
       // Get the names of the projects the user has access to
       const projectAccessNames = projectAccess.map((project) => {
         return project.name;
@@ -128,7 +130,7 @@ router.route('/')
       const projectAccessIdent = projectAccess.map((project) => {
         return project.ident;
       });
-      opts.where['$pog.projects.ident$'] = {$in: projectAccessIdent};
+      opts.where['$pog.projects.ident$'] = {[Op.in]: projectAccessIdent};
     }
 
     if (req.query.searchText) {
@@ -142,6 +144,20 @@ router.route('/')
         '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
       };
     }
+
+    // Create mapping for available columns to filter on
+    const columnMapping = {
+      patientID: {column: 'POGID', table: 'pog'},
+      analysisBiopsy: {column: 'analysis_biopsy', table: 'analysis'},
+      tumourType: {column: 'tumourType', table: 'patientInformation'},
+      physician: {column: 'physician', table: 'patientInformation'},
+      state: {column: 'state', table: null},
+      caseType: {column: 'caseType', table: 'patientInformation'},
+      alternateIdentifier: {column: 'alternate_identifier', table: 'analysis'},
+    };
+
+    // Add filters to query if available
+    opts = tableFilter(req, opts, columnMapping);
 
     // States
     if (req.query.states) {
