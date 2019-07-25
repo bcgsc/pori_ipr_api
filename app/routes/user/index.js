@@ -21,7 +21,7 @@ router.route('/')
 
     try {
       // Get users
-      const users = await db.models.user.all({
+      const users = await db.models.user.findAll({
         attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']},
         order: [['username', 'ASC']],
         include: [
