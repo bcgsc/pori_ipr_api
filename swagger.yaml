@@ -4,10 +4,9 @@ info:
     available for authorized users to consume.
   version: 1.0.0
   title: POG Reports
-  termsOfService: http://ipr.bcgsc.ca/api/terms/
   contact:
-    name: Brandon Pierce
-    email: bpierce@bcgsc.ca
+    name: IPR Team
+    email: ipr@bcgsc.ca
   license:
     name: Proprietary
 tags:
@@ -51,13 +50,20 @@ paths:
       description: Authorize a new user to access IPR
       tags:
         - User
-      parameters:
-        - name: newUser
-          in: body
-          required: true
-          description: New user to be added to the database.
-          schema:
-            $ref: "#/components/schemas/NewUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newUser:
+                  description: New user to be added to the database
+                  $ref: "#/components/schemas/NewUser"
+                searchField:
+                  description: Field to search for patient ids in (i.e originalSourceName)
+                  type: string
+              required:
+                - newUser
       responses:
         "200":
           description: User has been successfully added to the system
@@ -82,12 +88,17 @@ paths:
           description: User's UUID string
           schema:
             type: string
-        - name: user
-          in: body
-          required: true
-          description: The updated user object entry to be stored in the database.
-          schema:
-            $ref: "#/components/schemas/NewUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  description: The updated user object entry to be stored in the database
+                  $ref: '#/components/schemas/NewUser'
+              required:
+                - user
       responses:
         "200":
           description: User account was updated
@@ -165,34 +176,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
         "403":
           description: No settings available for the current authenticated user.
     put:
-      summary: Update a user account
-      description: Update the user specified user details
+      summary: Update a users settings
+      description: Update settings for a specific user
       tags:
         - User
-      parameters:
-        - name: user
-          in: path
-          required: true
-          description: User's UUID string
-          schema:
-            type: string
-        - name: user
-          in: body
-          required: true
-          description: The updated user object entry to be stored in the database.
-          schema:
-            $ref: "#/components/schemas/User"
+      requestBody:
+        description: The updated user settings to be stored in the database.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         "200":
-          description: User account was updated
+          description: User settings was successfully updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: array
+                items:
+                  anyOf:
+                    - type: number
+                    - type: array
+                      items:
+                        $ref: "#/components/schemas/User"
   /user/search:
     get:
       summary: User Search
@@ -243,16 +254,17 @@ paths:
       tags:
         - User
         - Group
-      parameters:
-        - name: newGroup
-          in: body
-          required: true
-          description: New group object to be created
-          schema:
-            type: object
-            properties:
-              name:
-                type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newGroup:
+                  description: New group objects to be created
+                  type: string
+              required:
+                - newGroup
       responses:
         "200":
           description: Group successfully added to database
@@ -298,15 +310,20 @@ paths:
           description: Group UUID string
           schema:
             type: string
-        - name: newGroup
-          in: body
-          required: true
-          description: New group object to be created
-          schema:
-            type: object
-            properties:
-              name:
-                type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newGroup:
+                  description: New group object to be created
+                  type: object
+                  properties:
+                    name:
+                      type: string
+              required:
+                - newGroup
       responses:
         "200":
           description: Successfully updated the group.
@@ -379,17 +396,22 @@ paths:
           description: Group UUID string
           schema:
             type: string
-        - name: user
-          in: body
-          required: true
-          description: The user UUID ident string
-          schema:
-            type: object
-            properties:
-              user:
-                type: string
-                description: UUID ident string belonging to the user
-                example: 8cd64045-7e68-4455-bcc2-e750c4372974
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  description: The user UUID ident string
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      description: UUID ident string belonging to the user
+                      example: 8cd64045-7e68-4455-bcc2-e750c4372974
+              required:
+                - user
       responses:
         "200":
           description: The user was successfully added to the group.
@@ -414,17 +436,22 @@ paths:
           description: Group UUID string
           schema:
             type: string
-        - name: user
-          in: body
-          required: true
-          description: The user UUID ident string
-          schema:
-            type: object
-            properties:
-              user:
-                type: string
-                description: UUID ident string belonging to the user
-                example: 8cd64045-7e68-4455-bcc2-e750c4372974
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  description: The user UUID ident string
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      description: UUID ident string belonging to the user
+                      example: 8cd64045-7e68-4455-bcc2-e750c4372974
+              required:
+                - user
       responses:
         "204":
           description: The user was successfully removed from the group.
@@ -443,21 +470,24 @@ paths:
         - name: all
           in: query
           required: false
-          description: When value is true, API will return all POGs available, regardless of
-            relationship
-          type: boolean
+          description: When value is true, API will return all POGs available, regardless of relationship
+          schema:
+            type: boolean
         - name: query
           in: query
           required: false
-          description: Search POG entries within scope.
-          type: string
+          description: Search POG entries within scope
+          schema:
+            type: string
       responses:
         "200":
           description: Successfully retrieved all POGs
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/POG"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/POG"
         "403":
           description: You are not authorized to view this resource
   "/POG/{POG}":
@@ -465,18 +495,16 @@ paths:
       summary: Get details of a specific POG
       description: Retrieved details for a given POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: POG ID
-          type: string
+        - $ref: "#/components/parameters/POG"
       tags:
         - POG
       responses:
         "200":
           description: Successfully found POG entry
-          schema:
-            $ref: "#/components/schemas/POG"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/POG"
         "403":
           description: You are not authorized to view this resource
   "/POG/{POG}/load/{type}":
@@ -484,43 +512,45 @@ paths:
       summary: Load report into IPR
       description: Load the requested project/report type into the Interactive POG Report
         database.
+      tags:
+        - POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: POG ID
-          type: string
+        - $ref: "#/components/parameters/POG"
         - name: type
           in: path
           required: true
           description: Report type, either genomic, probe, or nonPOG
-          type: string
-        - in: body
-          description: Loading parameters for this report
-          required: false
-          name: options
           schema:
-            type: object
-            properties:
-              baseDir:
-                type: string
-                example: /projects/tumour_char/pog/reports/genomic/POG000/P00000_P00000/jreport_genomic_summary_v4.1.0/report
-                description: Base directory of genomic report. Expects to find
-                  ./Reporting_Tracking.cfg, ./images and ./JReport_CSV_ODF folders
-              project:
-                type: string
-                description: Project to be used in determining the loader profile.
-                enum:
-                  - POG
-                  - gph_lymphoma
-                  - profyle
-      tags:
-        - POG
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                options:
+                  description: Loading parameters for this report
+                  type: object
+                  properties:
+                    baseDir:
+                      type: string
+                      example: /projects/tumour_char/pog/reports/genomic/POG000/P00000_P00000/jreport_genomic_summary_v4.1.0/report
+                      description: Base directory of genomic report. Expects to find
+                        ./Reporting_Tracking.cfg, ./images and ./JReport_CSV_ODF folders
+                    project:
+                      type: string
+                      description: Project to be used in determining the loader profile.
+                      enum:
+                        - POG
+                        - gph_lymphoma
+                        - profyle
       responses:
         "200":
           description: Successfully loaded report into IPR
-          schema:
-            $ref: "#/components/schemas/report"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/report"
         "400":
           description: Failed to load POG report. Possibly a required source file/image was
             not found, and the report failed to load.
@@ -533,133 +563,128 @@ paths:
       summary: Get all reports for a POG
       description: Retrieve list of all reports, of all types for a given POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: POG ID
-          type: string
+        - $ref: "#/components/parameters/POG"
       tags:
         - POG
       responses:
         "200":
           description: Successfully found all reports for this POG
-          schema:
-            $ref: "#/components/schemas/report"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/report"
   "/POG/{POG}/reports/{report}":
     get:
       summary: Get all reports for a POG
       description: Retrieve list of all reports, of all types for a given POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: POG ID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - POG
       responses:
         "200":
           description: Successfully found the requested report
-          schema:
-            $ref: "#/components/schemas/report"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/report"
         "404":
           description: Unable to find the requested report
     put:
       summary: Update report
-      description: Update an analysis report's settings.
-      parameters:
-        - name: POG
-          in: path
-          required: true
-          description: POG ID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Report ident
-          type: string
-        - in: body
-          name: settings
-          required: true
-          description: Fields for updating a report's settings
-          schema:
-            type: object
-            properties:
-              state:
-                type: string
-                enum:
-                  - ready
-                  - active
-                  - presented
-                  - archived
-              reportVersion:
-                type: string
-              kbVersion:
-                type: string
-              type:
-                type: string
+      description: Update an analysis report's settings
       tags:
         - POG
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                settings:
+                  description: Fields for updating a report's settings
+                  type: object
+                  properties:
+                    state:
+                      type: string
+                      enum:
+                        - ready
+                        - active
+                        - presented
+                        - archived
+                    reportVersion:
+                      type: string
+                    kbVersion:
+                      type: string
+                    type:
+                      type: string
+              required:
+                - settings
       responses:
         "200":
           description: Successfully updated the report
-          schema:
-            $ref: "#/components/schemas/report"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/report"
   "/POG/{POG}/user":
     post:
       summary: Bind user to POG
       description: Bind a new user to the specified POG
-      parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: relationship
-          in: body
-          required: true
-          schema:
-            type: object
-            properties:
-              user:
-                type: string
-                example: d1caf489-107f-4f3e-94bf-8004d4905763
-                description: User's UUID ident string
-              role:
-                $ref: "#/components/schemas/POGRelationship"
       tags:
         - POG
+      parameters:
+        - $ref: "#/components/parameters/POG"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                relationship:
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      example: d1caf489-107f-4f3e-94bf-8004d4905763
+                      description: User's UUID ident string
+                    role:
+                      $ref: "#/components/schemas/POGRelationship"
+              required:
+                - relationship
       responses:
         "200":
           description: Successfully bound user
-          schema:
-            $ref: "#/components/schemas/POGUser"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/POGUser"
         "404":
           description: Unable to find provided user
     delete:
       summary: Unbind user from POG
       description: Remove a user's relationship to the specified POG
-      parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: relationship
-          in: body
-          required: true
-          schema:
-            type: object
-            properties:
-              user:
-                type: string
       tags:
         - POG
+      parameters:
+        - $ref: "#/components/parameters/POG"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                relationship:
+                  type: object
+                  properties:
+                    user:
+                      type: string
+              required:
+                - relationship
       responses:
         "204":
           description: User successfully unbound from POG
@@ -671,54 +696,47 @@ paths:
       summary: Get Patient Summary
       description: Retrieve basic metadata patient details for a POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns basic patient meta details.
-          schema:
-            $ref: "#/components/schemas/patientInformation"
+          description: Returns basic patient meta details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/patientInformation"
         "404":
           description: POG Not found
     put:
       summary: Updated Patient Information
-      description: Updated some of the tracked patient meta details.
-      parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: update
-          in: body
-          required: true
-          description: The updated patient information object
-          schema:
-            $ref: "#/components/schemas/summary_patientInformation_update"
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+      description: Updated some of the tracked patient meta details
       tags:
         - Genomic Report
         - Genomic Summary
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                update:
+                  description: The updated patient information object
+                  $ref: "#/components/schemas/summary_patientInformation_update"
+              required:
+                - update
       responses:
         "200":
-          description: Returns the update basic patient meta details.
-          schema:
-            $ref: "#/components/schemas/patientInformation"
+          description: Returns the update basic patient meta details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/patientInformation"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/mutationSummary":
@@ -726,59 +744,52 @@ paths:
       summary: Get Mutation Summary
       description: Retrieve summary of mutation details for the POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns summary of mutation details.
-          schema:
-            $ref: "#/components/schemas/summary_mutationSummary"
+          description: Returns summary of mutation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_mutationSummary"
         "404":
           description: POG Not found
     put:
       summary: Updated Mutation Summary
-      description: Update some of the mutation summary details.
-      parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
-        - name: update
-          in: body
-          required: true
-          description: The updated mutation summary object
-          schema:
-            type: object
-            properties:
-              mutationSignature:
-                type: array
-                items:
-                  $ref: "#/components/schemas/smallMut_signature"
+      description: Update some of the mutation summary details
       tags:
         - Genomic Report
         - Genomic Summary
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                update:
+                  description: The updated mutation summary object
+                  type: object
+                  properties:
+                    mutationSignature:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/smallMut_signature"
+              required:
+                - update
       responses:
         "200":
-          description: Returns the update basic patient meta details.
-          schema:
-            $ref: "#/components/schemas/summary_mutationSummary"
+          description: Returns the update basic patient meta details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_mutationSummary"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/tumourAnalysis":
@@ -786,57 +797,50 @@ paths:
       summary: Get Tumour Analysis Summary
       description: Retrieve summary of Tumour Analysis details for the POG
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns summary of Tumour Analysis details.
-          schema:
-            $ref: "#/components/schemas/summary_tumourAnalysis"
+          description: Returns summary of Tumour Analysis details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_tumourAnalysis"
         "404":
           description: POG Not found
     put:
       summary: Updated Tumour Analysis Summary
-      description: Update some of the Tumour Analysis summary details.
-      parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
-        - name: update
-          in: body
-          required: true
-          description: The updated mutation summary object
-          schema:
-            type: object
-            properties:
-              subtyping:
-                type: string
+      description: Update some of the Tumour Analysis summary details
       tags:
         - Genomic Report
         - Genomic Summary
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                update:
+                  description: The updated mutation summary object
+                  type: object
+                  properties:
+                    subtyping:
+                      type: string
+              required:
+                - update
       responses:
         "200":
-          description: Returns summary of Tumour Analysis details.
-          schema:
-            $ref: "#/components/schemas/summary_tumourAnalysis"
+          description: Returns summary of Tumour Analysis details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_tumourAnalysis"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/variantCounts":
@@ -845,24 +849,18 @@ paths:
       description: This endpoint is soon to be deprecated. Returns static analysis of variant
         counts
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns static counts of detected variants.
-          schema:
-            $ref: "#/components/schemas/summary_variantCounts"
+          description: Returns static counts of detected variants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_variantCounts"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified":
@@ -870,46 +868,51 @@ paths:
       summary: Get key genomic alterations
       description: Retrieve list of key identified genomic alterations
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns array of key identified gemomic alterations.
-          schema:
-            $ref: "#/components/schemas/summary_genomicAlteration"
+          description: Returns an array of key identified gemomic alterations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_genomicAlteration"
         "404":
           description: POG Not found
+    post:
+      summary: Add key genomic alterations
+      description: Add new key genomic alterations to a analysis report
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
+      tags:
+        - Genomic Report
+        - Genomic Summary
+      responses:
+        "200":
+          description: Returns newly created key genomic alterations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_genomicAlteration"
+        "403":
+          description: User is not authorized to add key genomic alterations
   "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}":
     delete:
       summary: Remove key genomic alterations
       description: Remove a key identified genomic alteration entry.
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
         - name: alteration
           in: path
           required: true
           description: The alteration to be removed summary object
-          type: string
+          schema:
+            type: string
       tags:
         - Genomic Report
         - Genomic Summary
@@ -923,24 +926,18 @@ paths:
       summary: Get genomic events with therapeutic association
       description: Retrieve list of genomic events with potential therapeutic association
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns array of enomic events with potential therapeutic association.
-          schema:
-            $ref: "#/components/schemas/summary_genomicEvents"
+          description: Returns array of enomic events with potential therapeutic association
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_genomicEvents"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/probeTarget":
@@ -948,24 +945,18 @@ paths:
       summary: Get probe targets
       description: Retrieve list of key identified genomic alterations
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Genomic Report
         - Genomic Summary
       responses:
         "200":
-          description: Returns array of key identified gemomic alterations.
-          schema:
-            $ref: "#/components/schemas/summary_probeTarget"
+          description: Returns array of key identified gemomic alterations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/summary_probeTarget"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/probeTarget/{target}":
@@ -973,21 +964,14 @@ paths:
       summary: Remove probe target
       description: Remove an idenfitied probe target.
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
         - name: target
           in: path
           required: true
           description: The probe target entry to be removed
-          type: string
+          schema:
+            type: string
       tags:
         - Genomic Report
         - Genomic Summary
@@ -1001,75 +985,74 @@ paths:
       summary: Get probe test information
       description: Get probe analysis test information
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Probe Report
       responses:
         "204":
           description: Probe report test information was successfully received
-          schema:
-            type: object
-            properties:
-              ident:
-                $ref: "#/components/schemas/ident"
-              kbVersion:
-                type: string
-              snpProbe:
-                type: string
-              snpGenes:
-                type: string
-              snpVars:
-                type: string
-              fusionProbe:
-                type: string
-              fusionGenes:
-                type: string
-              fusionVars:
-                type: string
-              createdAt:
-                $ref: "#/components/schemas/datetime"
-              updatedAt:
-                $ref: "#/components/schemas/datetime"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ident:
+                    $ref: "#/components/schemas/ident"
+                  kbVersion:
+                    type: string
+                  snpProbe:
+                    type: string
+                  snpGenes:
+                    type: string
+                  snpVars:
+                    type: string
+                  fusionProbe:
+                    type: string
+                  fusionGenes:
+                    type: string
+                  fusionVars:
+                    type: string
+                  createdAt:
+                    $ref: "#/components/schemas/datetime"
+                  updatedAt:
+                    $ref: "#/components/schemas/datetime"
         "404":
           description: Probe report test results not found
   /lims/biological-metadata:
     post:
       summary: Retrieve LIMS biological metadata
       description: Retrieve sample results based on POGID from LIMS
-      parameters:
-        - name: patientIds
-          in: body
-          required: true
-          description: Patient id (POG id) or array of patient ids
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-        - name: searchField
-          in: body
-          required: false
-          description: Field to search for patient ids in (i.e originalSourceName)
-          type: string
       tags:
         - LIMS
         - biological-metadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patientIds:
+                  description: Patient id (POG id) or array of patient ids
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                searchField:
+                  description: Field to search for patient ids in (i.e originalSourceName)
+                  type: string
+              required:
+                - patientIds
       responses:
         "200":
           description: User has successfully retrieved biological metadata
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/LimsBiologicalMetadata"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LimsBiologicalMetadata"
         "400":
           description: Missing patient ids
         "403":
@@ -1078,31 +1061,36 @@ paths:
     post:
       summary: Retrieve LIMS libraries
       description: Retrieve library data from LIMS for specified library names
-      parameters:
-        - name: libraries
-          in: body
-          required: true
-          description: Name of library(ies) to search in LIMS for
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-        - name: searchField
-          in: body
-          required: false
-          description: Field to search for libraries in (i.e name)
-          type: string
       tags:
         - LIMS
         - LIMS library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                libraries:
+                  description: Name of library(ies) to search for in LIMS
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                searchField:
+                  description: Field to search for libraries in (i.e name)
+                  type: string
+              required:
+                - libraries
       responses:
         "200":
           description: User has successfully retrieved LIMS library data
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/LimsLibrary"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LimsLibrary"
         "400":
           description: Missing libraries
         "403":
@@ -1111,24 +1099,31 @@ paths:
     post:
       summary: Retrieve LIMS sequencer run information
       description: Retrieve sequencer run data from LIMS for a specified library
-      parameters:
-        - name: libraries
-          in: body
-          required: true
-          description: Name of library(ies) or multiplex library(ies) to search in LIMS for sequencer run data
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
       tags:
         - LIMS
         - Sequencer Run
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                libraries:
+                  description: Name of library(ies) or multiplex library(ies) to search for in LIMS sequencer-run data
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+              required:
+                - libraries
       responses:
         "200":
           description: User has successfully retrieved sequencer run data
-          schema:
-            $ref: "#/components/schemas/SequencerRun"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LimsSequencerRuns"
         "400":
           description: Missing libraries for sequencer run
         "403":
@@ -1142,16 +1137,20 @@ paths:
           in: path
           required: true
           description: Query LIMS disease ontology
-          type: string
+          schema:
+            type: string
       tags:
         - LIMS
         - Disease Ontology
       responses:
         "200":
           description: Returns array of key identified gemomic alterations
-          type: array
-          items:
-            $ref: "#/components/schemas/LimsDiseaseOntology"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LimsDiseaseOntology"
         "404":
           description: POG Not found
   /reports:
@@ -1165,23 +1164,30 @@ paths:
       responses:
         "200":
           description: Returns an array of POG analysis reports
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/report"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/report"
         "403":
           description: Insufficient access to get POG reports
   "/POG/{POG}/report/{report}/genomic/summary/microbial":
     get:
       summary: Get microbial data
       description: Get microbial data for a specific POG report
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       tags:
         - Microbial
       responses:
         "200":
           description: Returns an object of microbial data
-          schema:
-            type: object
+          content:
+            application/json:
+              schema:
+                type: object
   /project:
     get:
       summary: Get all projects
@@ -1191,10 +1197,12 @@ paths:
       responses:
         "200":
           description: Get all projects that the user has access to
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/Project"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
         "403":
           description: User doesn't have access to projects
     post:
@@ -1206,59 +1214,67 @@ paths:
       responses:
         "200":
           description: A project was successfully added or successfully updated
-          schema:
-            $ref: "#/components/schemas/Project"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
         "403":
           description: User isn't allowed to add a project
-  "/POG/{POGID}/report/{report}/genomic/therapeuticTargets":
+  "/POG/{POG}/report/{report}/genomic/therapeuticTargets":
     get:
       summary: Get therapeutic targets
       description: Returns all therapeutic targets for an analysis report
       tags:
         - Therapeutic
+        - Therapeutic Target
         - Therapeutic Targets
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       responses:
         "200":
           description: Get therapeutic targets for analysis report
-          schema:
-            type: array
-            items:
-              type: "#/components/schemas/therapeuticTarget"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/therapeuticTarget"
         "403":
           description: Don't have permissions to get therapeutic targets
-  "/POG/{POGID}/report/{report}/genomic/summary/pathwayAnalysis":
+    post:
+      summary: Create a new therapeutic target
+      description: Creates a new therapeutic target and sdfs
+      tags:
+        - Therapeutic
+        - Therapeutic Target
+        - Therapeutic Targets
+      parameters:
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
+      responses:
+        "200":
+          description: Add therapeutic targets to analysis report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/therapeuticTarget"
+  "/POG/{POG}/report/{report}/genomic/summary/pathwayAnalysis":
     get:
       summary: Get report pathway analysis
       description: Get a reports pathway analysis image
       tags:
         - Pathway Analysis
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       responses:
         "200":
           description: Returns a reports pathway analysis image
-          schema:
-            $ref: "#/components/schemas/pathwayAnalysis"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/pathwayAnalysis"
         "403":
           description: User doesn't have permissions to access this analysis image
     put:
@@ -1267,21 +1283,15 @@ paths:
       tags:
         - Pathway Analysis
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       responses:
         "200":
           description: Returns the newly created/updated pathway analysis model
-          schema:
-            $ref: "#/components/schemas/pathwayAnalysis"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/pathwayAnalysis"
         "403":
           description: User doesn't have permissions to create/update a pathway analysis image
     post:
@@ -1290,24 +1300,18 @@ paths:
       tags:
         - Pathway Analysis
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       responses:
         "200":
           description: Uploads new pathway analysis image and returns new pathway analysis object
-          schema:
-            $ref: "#/components/schemas/pathwayAnalysis"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/pathwayAnalysis"
         "403":
           description: User doesn't have permissions to upload pathway analysis image
-  "/POG/{POGID}/report/{report}/genomic/somaticMutations/smallMutations":
+  "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations":
     get:
       summary: Get somatic small mutations
       description: Returns an analysis reports somatic small mutations
@@ -1315,80 +1319,96 @@ paths:
         - Mutations
         - Small Mutations
       parameters:
-        - name: POG
-          in: path
-          required: true
-          description: Specified POGID
-          type: string
-        - name: report
-          in: path
-          required: true
-          description: Analysis report ident
-          type: string
+        - $ref: "#/components/parameters/POG"
+        - $ref: "#/components/parameters/report"
       responses:
         "200":
           description: Returns a reports somatic small mutations
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/smallMutation"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/smallMutation"
         "403":
           description: User doesn't have permissions to access somatic small mutations
   "/germline_small_mutation":
     get:
       summary: Get all germline small mutation reports
-      description: ewer
+      description: Returns all germline small mutation reports the user has access to
       tags:
         - Germline Small Mutation
       parameters:
         - name: search
-          in: path
+          in: query
           required: false
           description: POGID to search reports for
-          type: string
+          schema:
+            type: string
         - name: project
-          in: path
+          in: query
           required: false
           description: Search report for project name
-          type: string
+          schema:
+            type: string
         - name: limit
-          in: path
+          in: query
           required: false
           description: The end of the set of reports to retrieve
-          type: integer
+          schema:
+            type: integer
         - name: offset
-          in: path
+          in: query
           required: false
           description: The start of the set of reports to retrieve
-          type: integer
+          schema:
+            type: integer
       responses:
         "200":
           description: Returns an object containing the germline reports and the number of reports
-          schema:
-            type: object
-            properties:
-              total:
-                type: integer
-              reports:
-                type: array
-                items:
-                  $ref: "#/components/schemas/germlineSmallMutation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  reports:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/germlineSmallMutation"
         "403":
           description: User doesn't have permissions to access germline small mutations
   # Below are all skeleton routes, with no details added
-  "/POG/{POGID}/report/{report}/image/mutationSummary":
-  "/POG/{POGID}/report/{report}/genomic/mavis":
-  "/POG/{POGID}/load/genomic":
-  "/germline_small_mutation/patient/{POGID}/biopsy/{biopsy}/report/{report}":
-  "/germline_small_mutation/patient/{POGID}/biopsy/{biopsy}/report/{report}/variant/{variant}":
-  "/POG/{POGID}/report/{report}/probe/alterations":
-  "":
+  # "/POG/{POG}/report/{report}/image/mutationSummary":
+  # "/POG/{POG}/report/{report}/genomic/mavis":
+  # "/POG/{POG}/load/genomic":
+  # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}":
+  # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}/variant/{variant}":
+  # "/POG/{POG}/report/{report}/probe/alterations":
+  # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{mutation}":
+  # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{type}":
 externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
   - url: http://api-ipr.bcgsc.ca:8001/api/1.0
 components:
+  parameters:
+    POG:
+      name: POG
+      in: path
+      required: true
+      description: POG ID
+      schema:
+        type: string
+    report:
+      name: report
+      in: path
+      required: true
+      description: Analysis report ident
+      schema:
+        type: string
   securitySchemes:
     api_key:
       type: apiKey
@@ -1529,7 +1549,7 @@ components:
         sampleCollectionTimes:
           type: array
           items:
-            type: "#/components/schemas/datetime"
+            $ref: "#/components/schemas/datetime"
         sampleType:
           type: array
           items:
@@ -1610,7 +1630,7 @@ components:
         duplicateRate:
           type: integer
         approvalDatetime:
-          type: "#/components/schemas/datetime"
+          $ref: "#/components/schemas/datetime"
         qcStatus:
           type: string
         multiplexLibraryNames:
@@ -1618,7 +1638,7 @@ components:
           items:
             type: string
         datetime:
-          type: "#/components/schemas/datetime"
+          $ref: "#/components/schemas/datetime"
         projectName:
           type: string
         uri:
@@ -1644,7 +1664,7 @@ components:
         approval:
           type: string
         qcStatusDatetime:
-          type: "#/components/schemas/datetime"
+          $ref: "#/components/schemas/datetime"
         lane:
           type: string
         id:
@@ -1767,16 +1787,14 @@ components:
             - chemoresistance
         rank:
           type: integer
-          defaultValue: 0
         target:
-          type: jsonb
+          type: object
         targetContext:
           type: string
         resistance:
           type: string
         biomaker:
-          type: jsonb
-          defaultValue: []
+          type: object
         notes:
           type: string
     smallMutation:
@@ -1815,9 +1833,9 @@ components:
         RNAReads:
           type: string
         expressionRpkm:
-          type: float
+          type: number
         foldChange:
-          type: float
+          type: number
         TCGAPerc:
           type: integer
         createdAt:
@@ -2121,9 +2139,9 @@ components:
       description: Randomly generated public unique ID
     datetime:
       type: string
-      format: datetime
+      format: date-time
       example: 2017-03-30T19:04:13.354Z
-      description: YYYY-MM-DDTZHH:ii:ss timestamp.
+      description: YYYY-MM-DDTZHH:ii:ss timestamp
     dataVersion:
       type: integer
       description: Describes which edit version this entry is. Default is 0
