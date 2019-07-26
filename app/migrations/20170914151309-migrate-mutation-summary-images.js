@@ -1,6 +1,6 @@
 'use strict';
 
-const Sq = require('sequelize');
+const {Op} = require('sequelize');
 const db = require("../models");
 const _ = require('lodash');
 
@@ -43,7 +43,7 @@ let updateReportMutationSummaryImages = (ta) => {
       where: {
         pog_report_id: ta.pog_report_id,
         key: {
-          $in: [
+          [Op.in]: [
             'mutSummary.barSv',
             'mutSummary.barSnv',
             'mutSummary.barIndel',

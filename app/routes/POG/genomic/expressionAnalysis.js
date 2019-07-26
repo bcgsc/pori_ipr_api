@@ -1,5 +1,6 @@
 // app/routes/genomic/somaticMutation.js
 const express = require('express');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 const db = require(`${process.cwd()}/app/models`);
@@ -12,7 +13,7 @@ const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
  */
 router.param('outlier', async (req, res, next, oIdent) => {
   try {
-    const result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: {$in: ['rna', 'protein']}}});
+    const result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: {[Op.in]: ['rna', 'protein']}}});
     if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
 
     req.outlier = result;
@@ -53,7 +54,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 router.route('/outlier/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {pog_report_id: req.report.id, expType: {$in: ['rna', 'protein']}};
+    const where = {pog_report_id: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
     // Searching for specific type of outlier
     if (req.params.type) {
       // Are we looking for approved types?

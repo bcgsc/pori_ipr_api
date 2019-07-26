@@ -1,5 +1,6 @@
 const Excel = require('exceljs');
 const moment = require('moment');
+const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
@@ -102,10 +103,10 @@ const batchExport = async (req, res) => {
     ],
     where: {
       '$report.analysis_id$': {
-        $in: reports.map((report) => { return report.analysis.id; }),
+        [Op.in]: reports.map((report) => { return report.analysis.id; }),
       },
       '$report.state$': {
-        $in: ['presented', 'active', 'archived'],
+        [Op.in]: ['presented', 'active', 'archived'],
       },
     },
   };

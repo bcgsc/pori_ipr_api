@@ -1,6 +1,6 @@
 'use strict';
 
-const Sq = require('sequelize');
+const {Op} = require('sequelize');
 const db = require("../models");
 const _ = require('lodash');
 const summaryLoader = require(process.cwd() + '/app/loaders/summary/mutationSummary');
@@ -58,7 +58,7 @@ let getReportObjects = (cra) => {
   let opts = {
     where: {
       id: {
-        $in: _.map(clinReportAssocs, 'id')
+        [Op.in]: _.map(clinReportAssocs, 'id')
       }
     },
     include: [
