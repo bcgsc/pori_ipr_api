@@ -160,7 +160,7 @@ router.route('/')
         return {ref_id: {[Op.notILike]: refSource}};
       });
 
-      opts.where[Op.and].concat(sources);
+      opts.where[Op.and] = opts.where[Op.and].concat(sources);
     }
 
     try {
@@ -241,7 +241,7 @@ router.route('/count')
         return {ref_id: {[Op.notILike]: refSource}};
       });
 
-      opts.where[Op.and].concat(sources);
+      opts.where[Op.and] = opts.where[Op.and].concat(sources);
     }
 
     try {
