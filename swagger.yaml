@@ -30,6 +30,8 @@ paths:
         object descriptions in the database.
       tags:
         - User
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: For those authorized, returns all available users in the database
@@ -39,6 +41,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Denied access to list of all users
           content:
@@ -50,6 +54,8 @@ paths:
       description: Authorize a new user to access IPR
       tags:
         - User
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -73,6 +79,8 @@ paths:
                 $ref: "#/components/schemas/User"
         "400":
           description: Invalid input was provided
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to authorize new accounts
   "/user/{user}":
@@ -81,6 +89,8 @@ paths:
       description: Update the user specified user details
       tags:
         - User
+      security:
+        - basicAuth: []
       parameters:
         - name: user
           in: path
@@ -106,11 +116,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
     get:
       summary: Get single user
       description: Return full user description from ident key.
       tags:
         - User
+      security:
+        - basicAuth: []
       parameters:
         - name: user
           in: path
@@ -125,6 +139,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to view user records
         "404":
@@ -135,6 +151,8 @@ paths:
         the dataStore the user is located in.
       tags:
         - User
+      security:
+        - basicAuth: []
       parameters:
         - name: user
           in: path
@@ -145,6 +163,8 @@ paths:
       responses:
         "204":
           description: The user has been successfully removed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to remove the user
         "404":
@@ -155,6 +175,8 @@ paths:
       description: Return the current authenticated user
       tags:
         - User
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns the current authenticated self
@@ -162,6 +184,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: No authenticated user available.
   /user/settings:
@@ -170,6 +194,8 @@ paths:
       description: Return the current authenticated user's settings
       tags:
         - User
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns settings for the current user
@@ -177,6 +203,8 @@ paths:
             application/json:
               schema:
                 type: object
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: No settings available for the current authenticated user.
     put:
@@ -184,6 +212,8 @@ paths:
       description: Update settings for a specific user
       tags:
         - User
+      security:
+        - basicAuth: []
       requestBody:
         description: The updated user settings to be stored in the database.
         required: true
@@ -204,6 +234,8 @@ paths:
                     - type: array
                       items:
                         $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   /user/search:
     get:
       summary: User Search
@@ -211,6 +243,8 @@ paths:
         Query is search against first name, last name, email, and username.
       tags:
         - User
+      security:
+        - basicAuth: []
       parameters:
         - name: query
           in: query
@@ -228,6 +262,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   /user/group:
     get:
       summary: Get all groups
@@ -237,6 +273,8 @@ paths:
       tags:
         - Group
         - User
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: The API will return all available groups it has on record.
@@ -246,6 +284,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Group"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to view this resource
     post:
@@ -254,6 +294,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -272,6 +314,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not allowed to create new group entries.
   "/user/group/{group}":
@@ -281,6 +325,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       parameters:
         - name: group
           in: path
@@ -295,6 +341,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to view the resource
     put:
@@ -303,6 +351,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       parameters:
         - name: group
           in: path
@@ -331,6 +381,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to perform this action
         "404":
@@ -342,6 +394,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       parameters:
         - name: group
           in: path
@@ -352,6 +406,8 @@ paths:
       responses:
         "204":
           description: The group was successfully removed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to perform this action
         "404":
@@ -363,6 +419,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       parameters:
         - name: group
           in: path
@@ -379,6 +437,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to view group members
         "404":
@@ -389,6 +449,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       parameters:
         - name: group
           in: path
@@ -419,6 +481,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to perform this action
         "404":
@@ -429,6 +493,8 @@ paths:
       tags:
         - User
         - Group
+      security:
+        - basicAuth: []
       parameters:
         - name: group
           in: path
@@ -455,6 +521,8 @@ paths:
       responses:
         "204":
           description: The user was successfully removed from the group.
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to perform this action
         "404":
@@ -466,6 +534,8 @@ paths:
         assigned to the current user are returned
       tags:
         - POG
+      security:
+        - basicAuth: []
       parameters:
         - name: all
           in: query
@@ -488,6 +558,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/POG"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to view this resource
   "/POG/{POG}":
@@ -498,6 +570,8 @@ paths:
         - $ref: "#/components/parameters/POG"
       tags:
         - POG
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Successfully found POG entry
@@ -505,6 +579,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/POG"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: You are not authorized to view this resource
   "/POG/{POG}/load/{type}":
@@ -514,6 +590,8 @@ paths:
         database.
       tags:
         - POG
+      security:
+        - basicAuth: []
       parameters:
         - $ref: "#/components/parameters/POG"
         - name: type
@@ -554,6 +632,8 @@ paths:
         "400":
           description: Failed to load POG report. Possibly a required source file/image was
             not found, and the report failed to load.
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: Unable to find the source files required for this POG.
         "500":
@@ -566,6 +646,8 @@ paths:
         - $ref: "#/components/parameters/POG"
       tags:
         - POG
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Successfully found all reports for this POG
@@ -573,6 +655,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/report"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   "/POG/{POG}/reports/{report}":
     get:
       summary: Get all reports for a POG
@@ -582,6 +666,8 @@ paths:
         - $ref: "#/components/parameters/report"
       tags:
         - POG
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Successfully found the requested report
@@ -589,6 +675,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/report"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: Unable to find the requested report
     put:
@@ -599,6 +687,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -631,6 +721,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/report"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   "/POG/{POG}/user":
     post:
       summary: Bind user to POG
@@ -639,6 +731,8 @@ paths:
         - POG
       parameters:
         - $ref: "#/components/parameters/POG"
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -663,6 +757,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/POGUser"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: Unable to find provided user
     delete:
@@ -672,6 +768,8 @@ paths:
         - POG
       parameters:
         - $ref: "#/components/parameters/POG"
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -688,6 +786,8 @@ paths:
       responses:
         "204":
           description: User successfully unbound from POG
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: Unable to find a provided user and/or unable to remove a user from a
             POG
@@ -701,6 +801,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns basic patient meta details
@@ -708,6 +810,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/patientInformation"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
     put:
@@ -719,6 +823,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -737,6 +843,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/patientInformation"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/mutationSummary":
@@ -749,6 +857,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns summary of mutation details
@@ -756,6 +866,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_mutationSummary"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
     put:
@@ -767,6 +879,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -790,6 +904,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_mutationSummary"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/tumourAnalysis":
@@ -802,6 +918,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns summary of Tumour Analysis details
@@ -809,6 +927,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_tumourAnalysis"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
     put:
@@ -820,6 +940,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -841,6 +963,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_tumourAnalysis"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/variantCounts":
@@ -854,6 +978,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns static counts of detected variants
@@ -861,6 +987,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_variantCounts"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified":
@@ -873,6 +1001,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns an array of key identified gemomic alterations
@@ -880,6 +1010,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_genomicAlteration"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
     post:
@@ -891,6 +1023,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns newly created key genomic alterations
@@ -898,6 +1032,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_genomicAlteration"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User is not authorized to add key genomic alterations
   "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}":
@@ -916,9 +1052,13 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "204":
           description: Alteration was successfully removed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/genomicEventsTherapeutic":
@@ -931,6 +1071,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns array of enomic events with potential therapeutic association
@@ -938,6 +1080,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_genomicEvents"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/probeTarget":
@@ -950,6 +1094,8 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns array of key identified gemomic alterations
@@ -957,6 +1103,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/summary_probeTarget"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/genomic/summary/probeTarget/{target}":
@@ -975,9 +1123,13 @@ paths:
       tags:
         - Genomic Report
         - Genomic Summary
+      security:
+        - basicAuth: []
       responses:
         "204":
           description: Probe target was successfully removed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   "/POG/{POG}/report/{report}/probe/testInformation":
@@ -989,6 +1141,8 @@ paths:
         - $ref: "#/components/parameters/report"
       tags:
         - Probe Report
+      security:
+        - basicAuth: []
       responses:
         "204":
           description: Probe report test information was successfully received
@@ -1017,6 +1171,8 @@ paths:
                     $ref: "#/components/schemas/datetime"
                   updatedAt:
                     $ref: "#/components/schemas/datetime"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: Probe report test results not found
   /lims/biological-metadata:
@@ -1026,6 +1182,8 @@ paths:
       tags:
         - LIMS
         - biological-metadata
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -1055,6 +1213,8 @@ paths:
                   $ref: "#/components/schemas/LimsBiologicalMetadata"
         "400":
           description: Missing patient ids
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to get biological metadata
   /lims/library:
@@ -1064,6 +1224,8 @@ paths:
       tags:
         - LIMS
         - LIMS library
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -1093,6 +1255,8 @@ paths:
                   $ref: "#/components/schemas/LimsLibrary"
         "400":
           description: Missing libraries
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to get LIMS library datas
   /lims/sequencer-run:
@@ -1102,6 +1266,8 @@ paths:
       tags:
         - LIMS
         - Sequencer Run
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -1126,6 +1292,8 @@ paths:
                 $ref: "#/components/schemas/LimsSequencerRuns"
         "400":
           description: Missing libraries for sequencer run
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to get sequencer run data
   "/lims/disease-ontology/{query}":
@@ -1142,6 +1310,8 @@ paths:
       tags:
         - LIMS
         - Disease Ontology
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns array of key identified gemomic alterations
@@ -1151,6 +1321,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/LimsDiseaseOntology"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
   /reports:
@@ -1161,6 +1333,8 @@ paths:
         - Analysis
         - Analysis Reports
         - Reports
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns an array of POG analysis reports
@@ -1170,6 +1344,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/report"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to get POG reports
   "/POG/{POG}/report/{report}/genomic/summary/microbial":
@@ -1181,6 +1357,8 @@ paths:
         - $ref: "#/components/parameters/report"
       tags:
         - Microbial
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns an object of microbial data
@@ -1188,12 +1366,16 @@ paths:
             application/json:
               schema:
                 type: object
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   /project:
     get:
       summary: Get all projects
       description: Returns all projects that the user has access to
       tags:
         - Projects
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Get all projects that the user has access to
@@ -1203,6 +1385,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Project"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have access to projects
     post:
@@ -1211,6 +1395,8 @@ paths:
       tags:
         - Project
         - Add project
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: A project was successfully added or successfully updated
@@ -1218,6 +1404,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Project"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User isn't allowed to add a project
   "/POG/{POG}/report/{report}/genomic/therapeuticTargets":
@@ -1231,6 +1419,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Get therapeutic targets for analysis report
@@ -1240,6 +1430,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/therapeuticTarget"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Don't have permissions to get therapeutic targets
     post:
@@ -1252,6 +1444,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Add therapeutic targets to analysis report
@@ -1259,6 +1453,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/therapeuticTarget"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   "/POG/{POG}/report/{report}/genomic/summary/pathwayAnalysis":
     get:
       summary: Get report pathway analysis
@@ -1268,6 +1464,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns a reports pathway analysis image
@@ -1275,6 +1473,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/pathwayAnalysis"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to access this analysis image
     put:
@@ -1285,6 +1485,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns the newly created/updated pathway analysis model
@@ -1292,6 +1494,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/pathwayAnalysis"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to create/update a pathway analysis image
     post:
@@ -1302,6 +1506,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Uploads new pathway analysis image and returns new pathway analysis object
@@ -1309,6 +1515,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/pathwayAnalysis"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to upload pathway analysis image
   "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations":
@@ -1321,6 +1529,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/POG"
         - $ref: "#/components/parameters/report"
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns a reports somatic small mutations
@@ -1330,6 +1540,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/smallMutation"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to access somatic small mutations
   "/germline_small_mutation":
@@ -1363,6 +1575,8 @@ paths:
           description: The start of the set of reports to retrieve
           schema:
             type: integer
+      security:
+        - basicAuth: []
       responses:
         "200":
           description: Returns an object containing the germline reports and the number of reports
@@ -1377,6 +1591,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/germlineSmallMutation"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to access germline small mutations
   # Below are all skeleton routes, with no details added
@@ -1392,7 +1608,7 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: http://api-ipr.bcgsc.ca:8001/api/1.0
+  - url: https://ipr-api.bcgsc.ca/api/1.0
 components:
   parameters:
     POG:
@@ -1410,10 +1626,9 @@ components:
       schema:
         type: string
   securitySchemes:
-    api_key:
-      type: apiKey
-      name: Authorization
-      in: header
+    basicAuth:
+      type: http
+      scheme: basic
   schemas:
     User:
       type: object
@@ -2172,3 +2387,12 @@ components:
         message:
           type: string
           example: You are not authorized to view this resource.
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+security:
+  - basicAuth: []
