@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../../models');
 
 /**
@@ -46,15 +47,11 @@ module.exports = {
     }
     // Create data object
     const data = {};
-
-    // Find existing object
-    const where = {
-      $or: [],
-    };
+    const availableOptions = [];
 
     // If Biopsy is specified
     if (biop !== null) {
-      where.$or.push({
+      availableOptions.push({
         pog_id: pogId,
         analysis_biopsy: biop,
       });
@@ -62,7 +59,7 @@ module.exports = {
 
     // If clinspec is specified
     if (clinspec !== null) {
-      where.$or.push({
+      availableOptions.push({
         pog_id: pogId,
         clinical_biopsy: clinspec,
       });
@@ -74,22 +71,26 @@ module.exports = {
       libwhere.pog_id = pogId;
 
       if (options.libraries.normal) {
-        libwhere.libraries = {$contains: {normal: options.libraries.normal}};
+        libwhere.libraries = {[Op.contains]: {normal: options.libraries.normal}};
       }
 
       if (Object.keys(libwhere).length > 1) {
-        where.$or.push(libwhere);
+        availableOptions.push(libwhere);
       }
     }
 
     // If the ident string is set
     if (options.ident) {
-      where.$or.ident = options.ident;
+      availableOptions.ident = options.ident;
     }
 
-    if (where.$or.length === 0) {
+    if (availableOptions.length === 0) {
       throw new Error('Insufficient indexes to find or create new analysis entry');
     }
+
+    const where = {
+      [Op.or]: availableOptions,
+    };
 
     // Building data block for new entries
     data.pog_id = pogId;
