@@ -164,7 +164,7 @@ class GeneViewer {
   async _getExpDrugTarget() {
     const opts = {
       where: {
-        gene: {[Op.iLike]: this.gene},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -181,7 +181,7 @@ class GeneViewer {
   async _getExpDensityGraph() {
     const opts = {
       where: {
-        key: {[Op.iLike]: `expDensity.${this.gene}%`},
+        key: {[Op.iLike]: `%expDensity.${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
