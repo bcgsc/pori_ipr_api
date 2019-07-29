@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
@@ -77,7 +78,7 @@ router.route('/')
         exclude: ['deletedAt', 'id'],
       },
       include: includeOpts,
-      where: {ident: {$in: _.map(projectAccess, 'ident')}},
+      where: {ident: {[Op.in]: _.map(projectAccess, 'ident')}},
     };
 
     try {
@@ -115,7 +116,7 @@ router.route('/')
     // Check for existing project
     let existingProject;
     try {
-      existingProject = await db.models.project.findOne({where: {name: req.body.name, deletedAt: {$not: null}}, paranoid: false});
+      existingProject = await db.models.project.findOne({where: {name: req.body.name, deletedAt: {[Op.ne]: null}}, paranoid: false});
     } catch (error) {
       logger.error(`Error while trying to find project ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to find project'}});
@@ -241,7 +242,7 @@ router.route('/search')
     const {query} = req.query;
 
     const where = {
-      name: {$ilike: `%${query}%`},
+      name: {[Op.iLike]: `%${query}%`},
     };
 
     let projects;
@@ -307,7 +308,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let hasBinding;
     try {
       // See if binding already exists
-      hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {$ne: null}}});
+      hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {[Op.ne]: null}}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserBindingLookupUserProject'}});

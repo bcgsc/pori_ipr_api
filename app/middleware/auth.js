@@ -3,6 +3,8 @@ const fs = require('fs');
 const db = require('../models');
 const keycloak = require('../api/keycloak');
 
+const logger = require('../../lib/log');
+
 const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
   ? fs.readFileSync('keys/prodkey.pem')
   : fs.readFileSync('keys/devkey.pem');
@@ -38,8 +40,10 @@ module.exports = async (req, res, next) => {
     try {
       const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
       token = respAccess.access_token;
-    } catch (err) {
-      return res.status(400).json(err);
+    } catch (error) {
+      const errorDescription = JSON.parse(error.error).error_description;
+      logger.error(`Authentication falied ${error.name} ${error.statusCode} - ${errorDescription}`);
+      return res.status(400).json({error: {name: error.name, code: error.statusCode, cause: errorDescription}});
     }
   }
   if (!token) {

@@ -1,6 +1,6 @@
 'use strict';
 
-const Sq = require('sequelize');
+const {Op} = require('sequelize');
 const db = require(process.cwd() + "/app/models");
 const _ = require('lodash');
 const summaryLoader = require(process.cwd() + '/app/loaders/summary/mutationSummary');
@@ -54,7 +54,7 @@ let updateComparatorEntry = (comparators) => {
   return new Promise((resolve, reject) => {
     
     Promise.all(_.map(comparators, (comp) => {
-        return db.models.mutationSummaryv2.update({ comparator: comp.diseaseExpressionComparator }, {where: {pog_report_id: comp.pog_report_id, comparator: null, sv_percentile: {$not: null}}})
+        return db.models.mutationSummaryv2.update({ comparator: comp.diseaseExpressionComparator }, {where: {pog_report_id: comp.pog_report_id, comparator: null, sv_percentile: {[Op.ne]: null}}});
       }))
       .then((result) => {
         console.log('Affected Rows: ' + result.length);

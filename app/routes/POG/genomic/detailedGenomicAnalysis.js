@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
@@ -85,7 +86,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       }
     } else {
       where.approvedTherapy = null;
-      where.alterationType = {$notIn: ['unknown', 'novel']};
+      where.alterationType = {[Op.notIn]: ['unknown', 'novel']};
     }
 
     const options = {

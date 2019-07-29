@@ -26,7 +26,8 @@ let imagePath;
  */
 const processExpDensityImages = async (report, img) => {
   const geneName = img.split('/').pop().split('.').shift();
-  const imgData = execSync(`convert "${img}" -resize 450x450 PNG:- | base64`);
+  /* This returns a Uint8Array type which needs to be converted to a string */
+  const imgData = execSync(`convert "${img}" -resize 450x450 PNG:- | base64`).toString();
 
   // Write to DB
   // Add to database
@@ -96,7 +97,8 @@ const processSubtypePlotImages = async (report, img) => {
     }
   }
 
-  const imgData = execSync(`convert "${img}" -resize ${imageSize} PNG:- | base64`);
+  /* This returns a Uint8Array type which needs to be converted to a string */
+  const imgData = execSync(`convert "${img}" -resize ${imageSize} PNG:- | base64`).toString();
 
   // Write to DB
   // Add to database
@@ -137,7 +139,8 @@ const loadSubtypePlot = async (report) => {
  * @returns {Promise.<boolean>} - Returns true if the image was added to db successfully
  */
 const processSummaryImage = async (report, file) => {
-  const imgData = execSync(`convert "${file}" -resize 560x151 PNG:- | base64`);
+  /* This returns a Uint8Array type which needs to be converted to a string */
+  const imgData = execSync(`convert "${file}" -resize 560x151 PNG:- | base64`).toString();
   // Convert pre genomicReport.py v5.0.0 summary image names to updated format
   const legacyNames = {
     bar_indel: 'barplot_indel',
@@ -255,7 +258,6 @@ module.exports = async (report, dir) => {
       if (image.optional) {
         return;
       }
-
       logger.error(`Failed to find image file: ${image.name}`);
       throw new Error(`Failed to find image file: ${image.name}`);
     }

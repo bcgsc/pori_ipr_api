@@ -1,5 +1,6 @@
 'use strict';
 
+const {Op} = require('sequelize');
 const db = require('../../models/');
 const TooManyCheckIns = require('./exceptions/TooManyCheckIns');
 const InvalidTaskOperation = require('./exceptions/InvalidTaskOperation');
@@ -157,7 +158,7 @@ module.exports = class Task {
       // Build Query
       const opts = {};
 
-      if (!all) opts.where = {ident: {$in: target}};
+      if (!all) opts.where = {ident: {[Op.in]: target}};
       if (all) opts.where = {task_id: this.instance.id};
 
       db.models.tracking_state_task_checkin.destroy(opts).then(

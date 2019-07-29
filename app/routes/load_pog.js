@@ -5,6 +5,7 @@ const express = require('express');
 const moment = require('moment');
 const fs = require('fs');
 const d3 = require('d3-dsv');
+const {Op} = require('sequelize');
 const nconf = require('nconf').file(`./config/${process.env.NODE_ENV}.json`);
 
 const db = require('../models');
@@ -132,8 +133,8 @@ router.route('/:type(genomic|probe)')
 
     const opts = {
       where: {
-        $and: {
-          'libraries.normal': {$in: libraries}, 'libraries.tumour': {$in: libraries}, 'libraries.transcriptome': {$in: libraries},
+        [Op.and]: {
+          'libraries.normal': {[Op.in]: libraries}, 'libraries.tumour': {[Op.in]: libraries}, 'libraries.transcriptome': {[Op.in]: libraries},
         },
         '$pog.POGID$': patient,
       },
@@ -341,7 +342,7 @@ router.route('/:type(genomic|probe)')
       await loader.load();
     } catch (error) {
       logger.error(`Error unable to load loader ${error}`);
-      return res.status(500).json({error: {message: 'Unable to load loader'}});
+      return res.status(500).json({error: {message: 'Unable to load loader', cause: error}});
     }
 
     // Retrieve results from loaders, and ask for public report object

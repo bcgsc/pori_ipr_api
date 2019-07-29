@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
@@ -12,7 +13,7 @@ const logger = require('../../../../lib/log');
 router.param('outlier', async (req, res, next, oIdent) => {
   let result;
   try {
-    result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: {$in: ['rna', 'protein']}}});
+    result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: {[Op.in]: ['rna', 'protein']}}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
     return res.status(500).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
@@ -63,7 +64,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 router.route('/outlier/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {pog_report_id: req.report.id, expType: {$in: ['rna', 'protein']}};
+    const where = {pog_report_id: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
     // Searching for specific type of outlier
     if (req.params.type) {
       // Are we looking for approved types?

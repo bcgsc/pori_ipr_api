@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const $lims = require('../../../api/lims');
 const Task = require('../task');
@@ -63,7 +64,7 @@ class LimsPathologySync {
         deletedAt: null,
         status: 'pending',
         '$state.status$': {
-          $in: [
+          [Op.in]: [
             'active',
           ],
         },
@@ -279,11 +280,11 @@ class LimsPathologySync {
 
         logger.debug(`Found mapped POG biopsy entry for ${library.name} in position ${index} in biopsy ${biopsyDate} for ${pogName}`);
 
-        // Types of library strategy mappings
-        if (library.libraryStrategyName.includes('WGS')) {
+        // Libraries are all diseased so don't worry about normal
+        if (library.nucleicAcidType === 'DNA') {
           this.pogs[pogName][biopsyDate][index].type = 'tumour';
         }
-        if (library.libraryStrategyName.includes('RNA')) {
+        if (library.nucleicAcidType === 'RNA') {
           this.pogs[pogName][biopsyDate][index].type = 'transcriptome';
         }
       });
@@ -468,13 +469,15 @@ class LimsPathologySync {
     const opts = {
       where: {
         slug: {
-          $in: [
+          [Op.in]: [
             'tumour_received',
             'blood_received',
             'pathology_passed',
           ],
         },
-        state_id: {$in: stateIds},
+        state_id: {
+          [Op.in]: stateIds,
+        },
       },
       include: [
         {as: 'state', model: db.models.tracking_state},

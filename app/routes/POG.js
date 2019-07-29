@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const logger = require('../../lib/log');
@@ -40,12 +41,12 @@ router.route('/')
         return value.name;
       });
       const projectOpts = {
-        as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {$in: projectAccess}},
+        as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {[Op.in]: projectAccess}},
       };
       opts.include.push(projectOpts);
 
       if (req.query.query) {
-        opts.where.POGID = {$ilike: `%${req.query.query}%`};
+        opts.where.POGID = {[Op.iLike]: `%${req.query.query}%`};
       }
       if (req.query.nonPOG === 'true') {
         opts.where.nonPOG = true;
@@ -68,13 +69,14 @@ router.route('/')
 
       // Optional States
       if (!req.query.archived || !req.query.nonproduction) {
-        reportInclude.where.state = {$not: []};
+        const optStates = [];
         if (!req.query.archived) {
-          reportInclude.where.state.$not.push('archived');
+          optStates.push('archived');
         }
         if (!req.query.nonproduction) {
-          reportInclude.where.state.$not.push('nonproduction');
+          optStates.push('nonproduction');
         }
+        reportInclude.where.state = {[Op.not]: optStates};
       }
       opts.include.push(reportInclude);
 
@@ -204,7 +206,7 @@ router.route('/:POG/reports')
     // States
     if (req.query.state) {
       const state = req.query.state.split(',');
-      opts.where.state = {$in: state};
+      opts.where.state = {[Op.in]: state};
     }
 
     try {

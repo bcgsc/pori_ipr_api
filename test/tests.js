@@ -55,6 +55,7 @@ describe('IPR API', () => {
     // Utilities
     require('./utilities/pyToSql');
     require('./utilities/remapKeys');
+    require('./libs/tableFilter.spec');
 
     // Reports Tests
     // require('./reports/reports');
