@@ -1609,6 +1609,9 @@ externalDocs:
   url: http://swagger.io
 servers:
   - url: https://ipr-api.bcgsc.ca/api/1.0
+    description: Production server (uses live data)
+  - url: https://dev-ipr.bcgsc.ca:8081/api/1.0
+    description: Development server
 components:
   parameters:
     POG:
