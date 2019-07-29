@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const versionDatum = require('../../../libs/VersionDatum');
 const logger = require('../../../../lib/log');
@@ -78,7 +79,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
       }
     } else {
       where.approvedTherapy = null;
-      where.alterationType = {$ne: 'unknown'};
+      where.alterationType = {[Op.ne]: 'unknown'};
     }
 
     const options = {

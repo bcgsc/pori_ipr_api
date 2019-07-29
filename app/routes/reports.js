@@ -134,14 +134,16 @@ router.route('/')
     }
 
     if (req.query.searchText) {
-      opts.where.$or = {
-        '$patientInformation.tumourType$': {$ilike: `%${req.query.searchText}%`},
-        '$patientInformation.biopsySite$': {$ilike: `%${req.query.searchText}%`},
-        '$patientInformation.physician$': {$ilike: `%${req.query.searchText}%`},
-        '$patientInformation.caseType$': {$ilike: `%${req.query.searchText}%`},
-        '$tumourAnalysis.diseaseExpressionComparator$': {$ilike: `%${req.query.searchText}%`},
-        '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
-        '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
+      opts.where = {
+        [Op.or]: [
+          {'$patientInformation.tumourType$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.biopsySite$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$pog.POGID$': {[Op.iLike]: `%${req.query.searchText}%`}},
+        ],
       };
     }
 
@@ -162,9 +164,9 @@ router.route('/')
     // States
     if (req.query.states) {
       const states = req.query.states.split(',');
-      opts.where.state = {$in: states};
+      opts.where.state = {[Op.in]: states};
     } else {
-      opts.where.state = {$not: ['archived', 'nonproduction', 'reviewed']};
+      opts.where.state = {[Op.not]: ['archived', 'nonproduction', 'reviewed']};
     }
 
     // Are we filtering on POGUser relationship?

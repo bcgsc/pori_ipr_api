@@ -63,7 +63,7 @@ class TrackingRouter extends RoutingInterface {
         };
 
         if (req.query.search) {
-          opts.where['$pog.POGID$'] = {$ilike: `%${req.query.search}%`};
+          opts.where['$pog.POGID$'] = {[Op.iLike]: `%${req.query.search}%`};
         }
 
         const projectInclude = {
@@ -241,7 +241,7 @@ class TrackingRouter extends RoutingInterface {
 
       let analysis;
       try {
-        analysis = await db.models.pog_analysis.findOne({where: {pog_id: patient.id, analysis_biopsy: {$not: null}}});
+        analysis = await db.models.pog_analysis.findOne({where: {pog_id: patient.id, analysis_biopsy: {[Op.ne]: null}}});
       } catch (error) {
         logger.error(`There was an error while finding the POG analysis ${error}`);
         return res.status(500).json({message: 'There was an error while finding the POG analysis'});
@@ -261,7 +261,7 @@ class TrackingRouter extends RoutingInterface {
     this.registerEndpoint('get', '/backfillComparators', async (req, res) => {
       let analyses;
       try {
-        analyses = await db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {$not: null}}});
+        analyses = await db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {[Op.ne]: null}}});
       } catch (error) {
         logger.error(`There was an error while finding all POG analyses ${error}`);
         return res.status(500).json({message: 'There was an error while finding all POG analyses'});
