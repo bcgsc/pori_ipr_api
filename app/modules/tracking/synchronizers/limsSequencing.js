@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const $lims = require('../../../api/lims');
 const Task = require('../task');
@@ -61,10 +62,10 @@ class LimsSeqSync {
     const opt = {
       where: {
         slug: 'sequencing_submit',
-        status: {$not: 'complete'},
+        status: {[Op.not]: 'complete'},
         deletedAt: null,
         '$state.status$': {
-          $in: [
+          [Op.in]: [
             'active',
           ],
         },
@@ -176,10 +177,10 @@ class LimsSeqSync {
     const opt = {
       where: {
         slug: 'sequencing',
-        status: {$not: 'complete'},
+        status: {[Op.not]: 'complete'},
         deletedAt: null,
         '$state.status$': {
-          $in: [
+          [Op.in]: [
             'active',
           ],
         },
@@ -363,10 +364,10 @@ class LimsSeqSync {
     const opt = {
       where: {
         slug: 'sequencing_validated',
-        status: {$not: 'complete'},
+        status: {[Op.not]: 'complete'},
         deletedAt: null,
         '$state.status$': {
-          $in: [
+          [Op.in]: [
             'active',
           ],
         },
@@ -519,10 +520,10 @@ class LimsSeqSync {
     const opt = {
       where: {
         slug: 'sequencing_qc0',
-        status: {$not: 'complete'},
+        status: {[Op.not]: 'complete'},
         deletedAt: null,
         '$state.status$': {
-          $in: [
+          [Op.in]: [
             'active',
           ],
         },
