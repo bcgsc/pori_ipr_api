@@ -32,9 +32,6 @@ module.exports = {
     console.log('Removed table pog_analysis_reports_histories');
 
     tables.push('pog_analysis_reports_probe_signature');
-    tables.push('projects');
-    tables.push('POGs');
-    tables.push('users');
 
     // Add not null constarint to ident
     await Promise.all(tables.map((table) => {
@@ -47,6 +44,9 @@ module.exports = {
     console.log('Added not null constraint to ident');
 
     tables.push('pog_analysis_reports');
+    tables.push('projects');
+    tables.push('POGs');
+    tables.push('users');
 
     // Rename properties
     await Promise.all(tables.map((table) => {
