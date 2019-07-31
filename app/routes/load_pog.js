@@ -338,8 +338,9 @@ router.route('/:type(genomic|probe)')
       return res.status(400).json({error: {message: 'Unable to invoke loading mechanism - no loader configuration matched request'}});
     }
 
+    let loaderMessages;
     try {
-      await loader.load();
+      loaderMessages = await loader.load();
     } catch (error) {
       logger.error(`Error unable to load loader ${error}`);
       return res.status(500).json({error: {message: 'Unable to load loader', cause: error}});
@@ -350,7 +351,8 @@ router.route('/:type(genomic|probe)')
     try {
       // Send public copy of report object
       const publicReport = await reportLibrary.public();
-      return res.json(publicReport);
+      publicReport.loaderMessages = loaderMessages;
+      return res.status(200).json(publicReport);
     } catch (error) {
       logger.error(`Error unable to get public interface of report library ${error}`);
       return res.status(500).json({error: {message: 'Unable to get public interface of report library'}});
