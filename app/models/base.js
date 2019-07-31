@@ -50,7 +50,7 @@ const DEFAULT_OPTIONS = {
     },
   ],
   hooks: {
-    afterUpdate: (instance, options = {}) => {
+    beforeUpdate: (instance, options = {}) => {
       const {id, ...content} = instance._previousDataValues;
 
       return options.model.create({
