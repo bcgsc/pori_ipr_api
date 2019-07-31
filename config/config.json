@@ -18,7 +18,7 @@
   },
 
   "bioapps" : {
-    "hostname": "http://bioappsdev01:8500",
+  "hostname": "http://sbs.bcgsc.ca:8100",
     "api": ""
   },
   
