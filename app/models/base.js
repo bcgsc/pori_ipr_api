@@ -36,8 +36,6 @@ const DEFAULT_OPTIONS = {
   timestamps: true,
   // Use soft-deletes!
   paranoid: true,
-  // Disable modification of table names
-  freezeTableName: true,
   indexes: [
     {
       unique: true,
