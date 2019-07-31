@@ -1,16 +1,8 @@
 const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = sequelize => sequelize.define('user', {
-  id: {
-    type: Sq.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  ident: {
-    type: Sq.UUID,
-    unique: true,
-    defaultValue: Sq.UUIDV4,
-  },
+  ...DEFAULT_COLUMNS,
   username: {
     type: Sq.STRING,
     unique: true,
@@ -62,10 +54,7 @@ module.exports = sequelize => sequelize.define('user', {
   },
 },
 {
-  // Automatically create createdAt, updatedAt, deletedAt
-  timestamps: true,
-  // Use soft-deletes!
-  paranoid: true,
+  ...DEFAULT_OPTIONS,
   scopes: {
     public: {
       attributes: {
