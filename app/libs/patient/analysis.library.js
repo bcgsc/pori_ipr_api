@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../../models');
 
 /**
@@ -46,15 +47,11 @@ module.exports = {
     }
     // Create data object
     const data = {};
-
-    // Find existing object
-    const where = {
-      $or: [],
-    };
+    const availableOptions = [];
 
     // If Biopsy is specified
     if (biop !== null) {
-      where.$or.push({
+      availableOptions.push({
         pog_id: pogId,
         analysis_biopsy: biop,
       });
@@ -62,90 +59,46 @@ module.exports = {
 
     // If clinspec is specified
     if (clinspec !== null) {
-      where.$or.push({
+      availableOptions.push({
         pog_id: pogId,
         clinical_biopsy: clinspec,
       });
     }
 
     // If a library is specified
-    if (options.library) {
+    if (options.libraries) {
       const libwhere = {};
       libwhere.pog_id = pogId;
 
       if (options.libraries.normal) {
-        libwhere.libraries = {$contains: {normal: options.libraries.normal}};
-      }
-      if (options.libraries.tumour) {
-        libwhere.libraries = {$contains: {tumour: options.libraries.tumour}};
-      }
-      if (options.libraries.transcriptome) {
-        libwhere.libraries = {$contains: {transcriptome: options.libraries.transcriptome}};
+        libwhere.libraries = {[Op.contains]: {normal: options.libraries.normal}};
       }
 
       if (Object.keys(libwhere).length > 1) {
-        where.$or.push(libwhere);
+        availableOptions.push(libwhere);
       }
     }
 
     // If the ident string is set
     if (options.ident) {
-      where.$or.ident = options.ident;
+      availableOptions.ident = options.ident;
     }
 
-    if (where.$or.length === 0) {
+    if (availableOptions.length === 0) {
       throw new Error('Insufficient indexes to find or create new analysis entry');
     }
+
+    const where = {
+      [Op.or]: availableOptions,
+    };
 
     // Building data block for new entries
     data.pog_id = pogId;
     if (biop) {
       data.analysis_biopsy = biop;
     }
-    if (clinspec) {
-      data.clinical_biopsy = clinspec;
-    }
     if (options.libraries) {
       data.libraries = options.libraries;
-    }
-    if (options.notes) {
-      data.notes = options.notes;
-    }
-    if (options.bioapps_source_id) {
-      data.bioapps_source_id = options.bioapps_source_id;
-    }
-    if (options.onco_panel_submitted) {
-      data.onco_panel_submitted = options.onco_panel_submitted;
-    }
-    if (options.comparator_disease) {
-      data.comparator_disease = options.comparator_disease;
-    }
-    if (options.comparator_normal) {
-      data.comparator_normal = options.comparator_normal;
-    }
-    if (options.biopsy_site) {
-      data.biopsy_site = options.biopsy_site;
-    }
-    if (options.biopsy_type) {
-      data.biopsy_type = options.biopsy_type;
-    }
-    if (options.date_analysis) {
-      data.date_analysis = options.date_analysis;
-    }
-    if (options.date_presentation) {
-      data.date_presentation = options.date_presentation;
-    }
-    if (options.biopsy_date) {
-      data.biopsy_date = options.biopsy_date;
-    }
-    if (options.threeLetterCode) {
-      data.threeLetterCode = options.threeLetterCode;
-    }
-    if (options.physician) {
-      data.physician = options.physician;
-    }
-    if (options.pediatric_id) {
-      data.pediatric_id = options.pediatric_id;
     }
 
     const [result] = await db.models.pog_analysis.findOrCreate({where, defaults: data});

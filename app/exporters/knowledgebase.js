@@ -1,7 +1,8 @@
 const glob = require('glob');
 const fs = require('fs');
 const j2p = require('json2plain');
-const nconf = require('nconf').file({file: `../../config/${process.env.NODE_ENV}.json`});
+const {Op} = require('sequelize');
+const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
 
 const db = require('../../app/models');
 const WriteCSV = require('../../lib/writeCSV');
@@ -46,7 +47,7 @@ class ExportKnowledgeBase {
     const opts = {
       where: {
         status: {
-          $not: 'FLAGGED-INCORRECT',
+          [Op.not]: 'FLAGGED-INCORRECT',
         },
       },
       attributes: {
@@ -70,7 +71,7 @@ class ExportKnowledgeBase {
     const opts = {
       where: {
         status: {
-          $not: 'FLAGGED-INCORRECT',
+          [Op.not]: 'FLAGGED-INCORRECT',
         },
       },
       attributes: {

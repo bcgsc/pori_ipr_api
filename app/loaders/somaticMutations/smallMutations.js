@@ -1,156 +1,100 @@
-"use strict";
+const fs = require('fs');
+const _ = require('lodash');
+const parse = require('csv-parse/lib/sync');
+const nconf = require('nconf').argv().env().file({file: './config/columnMaps.json'});
+const db = require('../../models');
+const remapKeys = require('../../libs/remapKeys');
+const p2s = require('../../libs/pyToSql');
 
-// Dependencies
-let db = require(process.cwd() + '/app/models'),
-  fs = require('fs'),
-  parse = require('csv-parse'),
-  remapKeys = require(process.cwd() + '/app/libs/remapKeys'),
-  _ = require('lodash'),
-  Q = require('q'),
-  p2s = require(process.cwd() + '/app/libs/pyToSql'),
-  nconf = require('nconf').argv().env().file({file: process.cwd() + '/config/columnMaps.json'});
+const logger = require('../../../lib/log');
 
 let baseDir;
 
 /**
  * Parse Small Mutations File
  *
- *
  * @param {object} report - POG report model object
  * @param {string} smallMutationFile - name of CSV file for given small mutation type
  * @param {string} mutationType - mutationType of these entries (clinical, nostic, biological, unknown)
- * @param {object} log - /app/libs/logger instance
+ * @returns {Promise.<Array.<object>>} - Returns the results of the parsed small mutation file
  *
  */
-let parseSmallMutationFile = (report, smallMutationFile, mutationType, log) => {
-
-  // Create promise
-  let deferred = Q.defer();
-
+const parseSmallMutationFile = async (report, smallMutationFile, mutationType) => {
   // Check that the provided alterationType is valid according to the schema
-  if(db.models.smallMutations.rawAttributes.mutationType.values.indexOf(mutationType) === -1) deferred.reject('Invalid MutationType. Given: ' + mutationType) && new Error('Invalid MutationType. Given: ' + mutationType);
+  if (!db.models.smallMutations.rawAttributes.mutationType.values.includes(mutationType)) {
+    throw new Error(`Invalid MutationType. Given: ${mutationType}`);
+  }
 
   // First parse in therapeutic
-  let output = fs.createReadStream(baseDir + '/JReport_CSV_ODF/' + smallMutationFile, {'delimiter': ','});
+  const output = fs.readFileSync(`${baseDir}/JReport_CSV_ODF/${smallMutationFile}`);
 
   // Parse file!
-  let parser = parse({delimiter: ',', columns: true},
-    (err, result) => {
+  const result = parse(output, {delimiter: ',', columns: true});
 
-      // Was there a problem processing the file?
-      if(err) {
-        log('Unable to parse CSV file');
-        console.log(err);
-        deferred.reject({loader: 'smallMutations', message: 'Unable to parse the small mutation file: ' + baseDir + '/JReport_CSV_ODF/' + smallMutationFile, result: false});
-      }
+  // Remap results
+  const entries = remapKeys(result, nconf.get('somaticMutations:smallMutations'));
 
-      // Remap results
-      let entries = remapKeys(result, nconf.get('somaticMutations:smallMutations'));
-
-      // Add new values for DB
-      entries.forEach((v, k) => {
-        // Map needed DB column values
-        entries[k].pog_id = report.pog_id;
-        entries[k].pog_report_id = report.id;
-        entries[k].mutationType = mutationType;
-        entries[k].TCGAPerc = p2s(v.TCGAPerc);
-
-      });
-
-      // Log progress
-      log('Parsed .csv for: ' + mutationType);
-
-      // Resolve Promise
-      deferred.resolve(entries);
-    }
-  );
-
-  // Pipe file through parser
-  output.pipe(parser);
-
-  output.on('error', (err) => {
-    log('Unable to find required CSV file: ' + smallMutationFile);
-    deferred.reject({loader: 'smallMutations', message: 'Unable to find the small mutation file: ' + baseDir + '/JReport_CSV_ODF/' + smallMutationFile, result: false});
+  // Add new values for DB
+  entries.forEach((value) => {
+    // Map needed DB column values
+    value.pog_id = report.pog_id;
+    value.pog_report_id = report.id;
+    value.mutationType = mutationType;
+    value.TCGAPerc = p2s(value.TCGAPerc);
   });
 
-  return deferred.promise;
+  // Log progress
+  logger.info(`Parsed .csv for: ${mutationType}`);
 
+  return entries;
 };
 
-/*
+/**
  * Somatic Mutations - Small Mutations Loader
  *
  * Load values for "Small Mutations: Genomic Details"
  * sources:
- *  - sm_biol.csv   -Biological
- *  - sm_known_clin_rel.csv  -Clinical
- *  - sm_prog_diag.csv  -Nostic
- *  - sm_unknown.csv  -Unknown
+ *  - sm_biol.csv             -Biological
+ *  - sm_known_clin_rel.csv   -Clinical
+ *  - sm_prog_diag.csv        -Nostic
+ *  - sm_unknown.csv          -Unknown
  *
  * Create DB entries for Small Mutations. Parse in CSV values, mutate, insert.
  *
- * @param object POG - POG model object
- * @param object options - Currently no options defined on this import
+ * @param {object} report - POG report associated with small mutations
+ * @param {object} dir - The directory to use as the base directory for loading files
+ * @returns {Promise.<object>} - Returns the result of successfully loading the small mutations into the db
  *
  */
-module.exports = (report, dir, logger) => {
-
+module.exports = async (report, dir) => {
   baseDir = dir;
 
-  // Create promise
-  let deferred = Q.defer();
-
-  // Setup Logger
-  let log = logger.loader(report.ident, 'SM.SmallMutations');
-
   // Small Mutations to be processed
-  let sources = [
+  const sources = [
     {file: 'sm_biol.csv', type: 'biological'},
     {file: 'sm_known_clin_rel.csv', type: 'clinical'},
     {file: 'sm_prog_diag.csv', type: 'nostic'},
-    {file: 'sm_uncertain.csv', type: 'unknown'}
+    {file: 'sm_uncertain.csv', type: 'unknown'},
   ];
 
-  // Promises Array
-  let promises = [];
-
   // Loop over sources and collect promises
-  sources.forEach((input) => {
-    promises.push(parseSmallMutationFile(report, input.file, input.type, log));
+  const promises = sources.map((input) => {
+    return parseSmallMutationFile(report, input.file, input.type);
   });
 
   // Wait for all promises to be resolved
-  Q.all(promises)
-    .then((results) => {
-      // Log progress
-      log('Small Mutations collected: ' + _.flattenDepth(results, 2).length);
+  const results = await Promise.all(promises);
 
-      // Load into Database
-      db.models.smallMutations.bulkCreate(_.flattenDepth(results, 2)).then(
-        (result) => {
+  const flatResults = _.flattenDepth(results, 2);
 
-          // Successful create into DB
-          log('Database entries created.', logger.SUCCESS);
+  // Log progress
+  logger.info(`Small Mutations collected: ${flatResults.length}`);
 
-          // Done!
-          deferred.resolve({loader: 'smallMutations', result: true, data: result});
+  // Load into Database
+  const result = await db.models.smallMutations.bulkCreate(flatResults);
 
-        },
-        // Problem creating DB entries
-        (err) => {
-          console.log(err);
-          log('Unable to create database entries.', logger.ERROR);
-          new Error('Unable to create small mutations database entries.');
-          deferred.reject({loader: 'smallMutations', message: 'Unable to create database entries.', result: false});
-        }
-      );
+  // Successful create into DB
+  logger.info('Database entries created.');
 
-    },
-    (error) => {
-      console.log(error);
-      log('Unable to process a small mutation file', logger.ERROR);
-      deferred.reject({loader: 'smallMutations', message: 'Unable to process a small mutation file: ' + error.message, result: false});
-    });
-
-  return deferred.promise;
+  return {loader: 'smallMutations', result: true, data: result};
 };

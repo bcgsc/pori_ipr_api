@@ -1,5 +1,6 @@
 
 const express = require('express');
+const {Op} = require('sequelize');
 const db = require('../models');
 const HistoryManager = require('../libs/historyManager');
 const pogHandler = require('../middleware/pog');
@@ -152,7 +153,7 @@ router.route('/tag/search/:query')
     const opts = {
       attributes: {exclude: ['id', 'pog_id', 'user_id', 'history_id', 'ident', 'createdAt']},
       group: 'tag',
-      where: {$or: [{tag: {$ilike: `%${req.params.query}%`}}]},
+      where: {[Op.or]: [{tag: {[Op.iLike]: `%${req.params.query}%`}}]},
     };
 
     try {

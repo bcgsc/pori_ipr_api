@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const $lims = require('../../../api/lims');
 const Task = require('../task');
@@ -63,7 +64,7 @@ class LimsPathologySync {
         deletedAt: null,
         status: 'pending',
         '$state.status$': {
-          $in: [
+          [Op.in]: [
             'active',
           ],
         },
@@ -138,7 +139,9 @@ class LimsPathologySync {
 
     logger.info(`Found ${pogs.results.length} results from LIMS biological metadata endpoint.`);
 
+    // Get original source name and set libraries
     const originalSourceNames = pogs.results.map((result) => {
+      result.libraries = [];
       return result.originalSourceName;
     });
 
@@ -150,13 +153,11 @@ class LimsPathologySync {
       throw new Error({message: `Unable to get libraries by their original source name ${error}`, cause: error});
     }
 
-    if (!libs || libs.length !== pogs.results.length) {
-      throw new Error('Some/all results don\'t have an original source name');
-    }
-
-    // Attach library to result object
-    pogs.results.forEach((result) => {
-      result.library = libs.shift();
+    libs.results.forEach((lib) => {
+      const foundPog = pogs.results.find((pog) => {
+        return pog.originalSourceName === lib.originalSourceName;
+      });
+      foundPog.libraries.push(lib.name);
     });
 
     return pogs.results;
@@ -191,33 +192,35 @@ class LimsPathologySync {
         throw new Error({message: 'Error while trying to get collection time', cause: error});
       }
 
-      const library = {
-        name: sample.library,
-        type: (sample.diseaseStatus === 'Normal') ? 'normal' : null,
-        source: sample.originalSourceName,
-        disease: sample.diseaseName,
-        sampleCollectionTime: firstCollectionTime,
-      };
+      sample.libraries.forEach((lib) => {
+        const library = {
+          name: lib,
+          type: (sample.diseaseStatus === 'Normal') ? 'normal' : null,
+          source: sample.originalSourceName,
+          disease: sample.diseaseName,
+          sampleCollectionTime: firstCollectionTime,
+        };
 
-      if (sample.diseaseStatus === 'Diseased' && !this.diseaseLibraries.includes(sample.library)) {
-        this.diseaseLibraries.push(sample.library);
-      }
+        if (sample.diseaseStatus === 'Diseased' && !this.diseaseLibraries.includes(lib)) {
+          this.diseaseLibraries.push(lib);
+        }
 
-      // Check if pog has been seen yet in this cycle
-      if (!this.pogs[pogid]) {
-        this.pogs[pogid] = {};
-      }
+        // Check if pog has been seen yet in this cycle
+        if (!this.pogs[pogid]) {
+          this.pogs[pogid] = {};
+        }
 
-      // Check if this biopsy event date
-      if (!this.pogs[pogid][datestamp]) {
-        this.pogs[pogid][datestamp] = [];
-      }
+        // Check if this biopsy event date
+        if (!this.pogs[pogid][datestamp]) {
+          this.pogs[pogid][datestamp] = [];
+        }
 
-      // Has this library name been listed yet?
-      if (!_.find(this.pogs[pogid][datestamp], {name: library.name})) {
-        this.pogs[pogid][datestamp].push(library);
-        logger.debug(`Setting ${library.name} for ${pogid} biopsy ${datestamp}${((library.type !== null) ? ` | library type detected: ${library.type}` : '')}`);
-      }
+        // Has this library name been listed yet?
+        if (!_.find(this.pogs[pogid][datestamp], {name: library.name})) {
+          this.pogs[pogid][datestamp].push(library);
+          logger.debug(`Setting ${library.name} for ${pogid} biopsy ${datestamp}${((library.type !== null) ? ` | library type detected: ${library.type}` : '')}`);
+        }
+      });
     });
 
     logger.info(`Resulting in ${this.diseaseLibraries.length} disease libraries that have pathology information and need additional library details to differentiate RNA vs DNA.`);
@@ -277,11 +280,11 @@ class LimsPathologySync {
 
         logger.debug(`Found mapped POG biopsy entry for ${library.name} in position ${index} in biopsy ${biopsyDate} for ${pogName}`);
 
-        // Types of library strategy mappings
-        if (library.libraryStrategyName.includes('WGS')) {
+        // Libraries are all diseased so don't worry about normal
+        if (library.nucleicAcidType === 'DNA') {
           this.pogs[pogName][biopsyDate][index].type = 'tumour';
         }
-        if (library.libraryStrategyName.includes('RNA')) {
+        if (library.nucleicAcidType === 'RNA') {
           this.pogs[pogName][biopsyDate][index].type = 'transcriptome';
         }
       });
@@ -466,13 +469,15 @@ class LimsPathologySync {
     const opts = {
       where: {
         slug: {
-          $in: [
+          [Op.in]: [
             'tumour_received',
             'blood_received',
             'pathology_passed',
           ],
         },
-        state_id: {$in: stateIds},
+        state_id: {
+          [Op.in]: stateIds,
+        },
       },
       include: [
         {as: 'state', model: db.models.tracking_state},

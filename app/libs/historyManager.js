@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../models');
 
 /**
@@ -34,7 +35,7 @@ class HistoryManager {
     const versions = await db.models[this.model].findAll({
       where: {
         dataVersion: {
-          $or: [this.history.get('previous'), this.history.get('new')],
+          [Op.or]: [this.history.get('previous'), this.history.get('new')],
         },
         ident: this.history.get('entry'),
       },
@@ -93,7 +94,7 @@ class HistoryManager {
     const fetchedVersions = await db.models[this.model].findAll({
       where: {
         dataVersion: {
-          $or: [this.history.get('previous'), this.history.get('new')],
+          [Op.or]: [this.history.get('previous'), this.history.get('new')],
         },
         ident: this.history.get('entry'),
       },

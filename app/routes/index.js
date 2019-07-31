@@ -110,7 +110,7 @@ class Routing extends RouterInterface {
     this.bindRouteObject('/POG/:POGID/load', loadPogRoute);
     this.bindRouteObject('/POG/:POG/report/:report/history', dataHistoryRoute);
     this.bindRouteObject('/POG/:POG/report/:report/export', exportRoute);
-    this.bindRouteObject('/POG/:POG/patientInformation', patientInformationRoute);
+    this.bindRouteObject('/POG/:POG/report/:report/patientInformation', patientInformationRoute);
 
     this.bindRouteObject('/reports', reportsRoute);
 

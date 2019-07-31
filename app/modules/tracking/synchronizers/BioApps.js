@@ -10,6 +10,7 @@
  *
  */
 
+const {Op} = require('sequelize');
 const db          = require(process.cwd() + '/app/models/'); // Load database
 const $bioapps    = require(process.cwd() + '/app/api/bioapps');
 const _           = require('lodash');
@@ -89,7 +90,7 @@ class BioAppsSync {
           slug: 'bioapps_patient_sync',
           deletedAt: null,
           status: ['pending', 'failed'],
-          '$state.status$': {$in: [
+          '$state.status$': {[Op.in]: [
             'active',
           ]},
         },
@@ -280,7 +281,7 @@ class BioAppsSync {
           slug: 'bioapps_merged_bams',
           deletedAt: null,
           status: ['pending', 'failed'],
-          '$state.status$': {$in: [
+          '$state.status$': {[Op.in]: [
             'active',
           ]},
         },
@@ -394,7 +395,7 @@ class BioAppsSync {
           slug: 'bioapps_assembly',
           deletedAt: null,
           status: ['pending', 'failed'],
-          '$state.status$': {$in: [
+          '$state.status$': {[Op.in]: [
             'active',
           ]},
         },
@@ -504,7 +505,7 @@ class BioAppsSync {
           slug: 'bioapps_symlinks_created',
           deletedAt: null,
           status: ['pending', 'active', 'failed'],
-          '$state.status$': {$in: [
+          '$state.status$': {[Op.in]: [
             'active',
           ]},
         },
