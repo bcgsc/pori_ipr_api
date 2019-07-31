@@ -31,6 +31,11 @@ module.exports = {
 
     console.log('Removed table pog_analysis_reports_histories');
 
+    tables.push('pog_analysis_reports_probe_signature');
+    tables.push('projects');
+    tables.push('POGs');
+    tables.push('users');
+
     // Add not null constarint to ident
     await Promise.all(tables.map((table) => {
       return queryInterface.changeColumn(table, 'ident', {
