@@ -184,7 +184,7 @@ router.route('/')
       let newReference = await db.models.kb_reference.create(createReference);
       const createHistory = {
         type: 'create',
-        table: db.models.kb_reference.getTableName(),
+        table: db.models.kb_reference.tableName,
         model: db.models.kb_reference.name,
         entry: newReference.ident,
         previous: null,
