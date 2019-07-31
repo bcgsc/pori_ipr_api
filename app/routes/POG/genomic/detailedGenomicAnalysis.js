@@ -41,14 +41,24 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 
     // Update DB Version for Entry
     try {
-      await db.models.alterations.update(req.body, {
+      const result = await db.models.alterations.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
-      return res.status(200).send();
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update the resource ${error}`);
       return res.status(500).json({error: {message: 'Unable to update the resource', code: 'failedAPCDestroy'}});
@@ -111,13 +121,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     req.body.reportType = 'genomic';
 
     try {
-      await db.models.alterations.update(req.body, {
-        where: {
-          ident: req.alteration.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-      });
+      const result = await db.models.alterations.create(req.body);
 
       // Create new entry for Key Genomic Identified
       await db.models.genomicAlterationsIdentified.scope('public').create({
@@ -126,8 +130,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
         geneVariant: `${req.body.gene} (${req.body.variant})`,
       });
 
-      // Send back newly created/updated result.
-      return res.status(200).send();
+      return res.json(result);
     } catch (error) {
       logger.error(`Unable to update alterations ${error}`);
       return res.status(500).json({error: {message: 'Unable to update alterations', code: 'failedAPClookup'}});
@@ -164,15 +167,24 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
     req.body.pog_report_id = req.report.id;
 
     try {
-      await db.models.alterations.update(req.body, {
+      const result = await db.models.alterations.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
-      // Send back newly created/updated result.
-      return res.status(200).send();
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update resource ${error}`);
       return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedTargetedGenelookup'}});

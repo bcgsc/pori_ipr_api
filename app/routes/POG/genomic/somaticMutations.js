@@ -31,14 +31,24 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      await db.models.somaticMutations.update(req.body, {
+      const result = await db.models.somaticMutations.update(req.body, {
         where: {
           ident: req.mutation.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
-      return res.status(200).send();
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update somatic mutations ${error}`);
       return res.status(500).json({error: {message: 'Unable to update somatic mutations', code: 'failedOutlierVersion'}});

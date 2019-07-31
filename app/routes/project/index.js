@@ -125,11 +125,22 @@ router.route('/')
     if (existingProject) {
       // Restore!
       try {
-        await db.models.project.update({deletedAt: null}, {
+        const result = await db.models.project.update({deletedAt: null}, {
           where: {ident: existingProject.ident},
-          paranoid: false,
+          individualHooks: true,
+          paranoid: true,
+          returning: true,
         });
-        return res.status(200).send();
+
+        // Get updated model data from update
+        const [, [{dataValues}]] = result;
+
+        // Remove id's and deletedAt properties from returned model
+        const {
+          id, deletedAt, ...publicModel
+        } = dataValues;
+
+        return res.json(publicModel);
       } catch (error) {
         logger.error(`Error while trying to restore project ${error}`);
         return res.status(500).json({error: {message: 'Error while trying to restore project'}});
@@ -188,6 +199,8 @@ router.route('/:ident([A-z0-9-]{36})')
     try {
       await db.models.project.update(updateBody, {
         where: {ident: req.body.ident},
+        individualHooks: true,
+        paranoid: true,
         limit: 1,
       });
     } catch (error) {
@@ -319,7 +332,8 @@ router.route('/:project([A-z0-9-]{36})/user')
       try {
         await db.models.user_project.update({deletedAt: null}, {
           where: {id: hasBinding.id},
-          paranoid: false,
+          individualHooks: true,
+          paranoid: true,
         });
         return res.json(user);
       } catch (error) {

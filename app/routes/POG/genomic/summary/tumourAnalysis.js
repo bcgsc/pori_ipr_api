@@ -35,15 +35,24 @@ router.route('/')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      await db.models.tumourAnalysis.update(req.body, {
+      const result = await db.models.tumourAnalysis.update(req.body, {
         where: {
           ident: req.tumourAnalysis.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
 
-      return res.status(200).send();
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update tumour analysis ${error}`);
       return res.status(500).json({error: {message: 'Unable to update tumour analysis', code: 'failedTumourAnalysisVersion'}});

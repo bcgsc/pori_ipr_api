@@ -33,13 +33,22 @@ router.route('/')
   })
   .put(async (req, res) => {
     try {
-      await db.models.patientInformation.update(req.body, {
+      const result = await db.models.patientInformation.update(req.body, {
         where: {pog_id: req.POG.id, pog_report_id: req.report.id},
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
-      const result = await db.models.patientInformation.findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
-      return res.json(result);
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update patient information ${error}`);
       return res.status(500).json({error: {message: 'Unable to update patient information', code: 'failedPatientInformationVersion'}});

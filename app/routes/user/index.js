@@ -68,30 +68,22 @@ router.route('/')
       restoreUser.deletedAt = null;
 
       try {
-        await db.models.user.update(restoreUser, {
+        const result = await db.models.user.update(restoreUser, {
           where: {ident: existCheck.ident},
-          paranoid: false,
+          individualHooks: true,
+          paranoid: true,
+          returning: true,
         });
 
-        const user = await db.models.user.findOne({
-          where: {ident: existCheck.ident},
-        });
+        // Get updated model data from update
+        const [, [{dataValues}]] = result;
 
-        const response = {
-          ident: user.ident,
-          username: user.username,
-          type: user.type,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          access: user.access,
-          settings: user.settings,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-          lastLogin: user.lastLogin,
-        };
+        // Remove id's and deletedAt properties from returned model
+        const {
+          id, password, deletedAt, ...publicModel
+        } = dataValues;
 
-        return res.json(response);
+        return res.json(publicModel);
       } catch (error) {
         logger.error(`Unable to restore username ${error}`);
         return res.status(500).json({error: {message: 'Unable to restore existing username', code: 'failedUsernameCheckQuery'}});
@@ -159,10 +151,17 @@ router.route('/settings')
   })
   .put(async (req, res) => {
     try {
-      await db.models.user.update(req.body, {
+      const result = await db.models.user.update(req.body, {
         where: {ident: req.user.ident},
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
       });
-      return res.status(200).send();
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      return res.json(dataValues.settings);
     } catch (error) {
       logger.error(`SQL Error unable to update user ${error}`);
       return res.status(500).json({error: {message: 'Unable to update user', code: 'failedUserUpdate'}});
@@ -225,6 +224,8 @@ router.route('/:ident([A-z0-9-]{36})')
     try {
       await db.models.user.update(updateBody, {
         where: {ident: req.body.ident},
+        individualHooks: true,
+        paranoid: true,
         limit: 1,
       });
     } catch (error) {

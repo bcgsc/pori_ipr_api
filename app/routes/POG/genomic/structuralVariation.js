@@ -30,14 +30,23 @@ router.route('/sv/:sv([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      await db.models.sv.update(req.body, {
+      const result = await db.models.sv.update(req.body, {
         where: {
           ident: req.variation.ident,
         },
         individualHooks: true,
         paranoid: true,
       });
-      return res.status(200).send();
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update structural variant ${error}`);
       return res.status(500).json({error: {message: 'Unable to update structural variant', code: 'failedOutlierVersion'}});

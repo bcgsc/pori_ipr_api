@@ -46,14 +46,24 @@ router.route('/')
     } else {
       // Update DB Version for Entry
       try {
-        await db.models.analystComments.update(req.body, {
+        const result = await db.models.analystComments.update(req.body, {
           where: {
             ident: req.analystComments.ident,
           },
           individualHooks: true,
           paranoid: true,
+          returning: true,
         });
-        return res.status(200).send();
+
+        // Get updated model data from update
+        const [, [{dataValues}]] = result;
+
+        // Remove id's and deletedAt properties from returned model
+        const {
+          id, pog_id, pog_report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        } = dataValues;
+
+        return res.json(publicModel);
       } catch (error) {
         logger.error(`Unable to update analysis comments ${error}`);
         return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedAnalystCommentVersion'}});
@@ -82,24 +92,27 @@ router.route('/sign/:role(author|reviewer)')
     data[`${role}At`] = moment().toISOString();
 
     try {
-      await db.models.analystComments.update(data, {
+      const result = await db.models.analystComments.update(data, {
         where: {
           ident: req.analystComments.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update analysis comments ${error}`);
       return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
-    }
-
-    try {
-      const result = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
-      return res.json(result);
-    } catch (error) {
-      logger.error(`Unable to get newly created analysis comments ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get newly created analysis comments', code: 'failedSignCommentsQuery'}});
     }
   });
 
@@ -124,24 +137,27 @@ router.route('/sign/revoke/:role(author|reviewer)')
     data[`${role}At`] = null;
 
     try {
-      await db.models.analystComments.update(data, {
+      const result = await db.models.analystComments.update(data, {
         where: {
           ident: req.analystComments.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update analysis comments ${error}`);
       return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
-    }
-
-    try {
-      const result = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
-      return res.json(result);
-    } catch (error) {
-      logger.error(`Unable to get newly created analysis comments ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get newly created analysis comments', code: 'failedSignCommentsQuery'}});
     }
   });
 

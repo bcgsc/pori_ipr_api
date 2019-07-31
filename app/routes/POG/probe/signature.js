@@ -51,23 +51,26 @@ router.route('/:role(ready|reviewer)')
       }
     }
 
-    // Update
     try {
-      await db.models.probe_signature.update(data, {
+      const result = await db.models.probe_signature.update(data, {
         where: {ident: req.signature.ident},
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
       });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update prob signature ${error}`);
       return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
-    }
-
-    // Get
-    try {
-      const result = await db.models.probe_signature.scope('public').findOne({where: {ident: req.signature.ident}});
-      return res.json(result);
-    } catch (error) {
-      logger.error(`Unable to get prob signature ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get probe signature', code: 'failedGetProbeSignature'}});
     }
   });
 
@@ -92,20 +95,25 @@ router.route('/revoke/:role(ready|reviewer)')
     data[`${role}At`] = null;
 
     try {
-      await db.models.probe_signature.update(data, {
+      const result = await db.models.probe_signature.update(data, {
         where: {ident: req.signature.ident},
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
       });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update prob signature ${error}`);
       return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
-    }
-
-    try {
-      const result = await db.models.probe_signature.scope('public').findOne({where: {ident: req.signature.ident}});
-      return res.json(result);
-    } catch (error) {
-      logger.error(`Unable to sign comments ${error}`);
-      return res.status(500).json({error: {message: 'Unable to sign comments', code: 'failedSignCommentsQuery'}});
     }
   });
 
