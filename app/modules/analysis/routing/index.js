@@ -1,11 +1,14 @@
 const _ = require('lodash');
 const {Op} = require('sequelize');
+const render = require('json-templater/string');
+const moment = require('moment');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Analysis = require('../analysis.object');
 const Generator = require('../../tracking/generate');
 const $bioapps = require('../../../api/bioapps');
 const $lims = require('../../../api/lims');
+const Email = require('../../notification/email');
 
 const comparators = require('../../../../database/comparators.json');
 const comparatorsV9 = require('../../../../database/comparators.v9.json');
@@ -175,6 +178,35 @@ class TrackingRouter extends RoutingInterface {
         } catch (error) {
           logger.error(`Error while trying to create POG analysis ${error}`);
           return res.status(500).json({message: 'Error while trying to create POG analysis'});
+        }
+
+        const clinicians = analysis.physician.map(physician => `Dr. ${physician.last_name}`);
+        const data = {
+          patientId: POG.POGID,
+          clinician: clinicians.join(', '),
+          disease: analysis.disease,
+          biopsyDate: moment(analysis.biopsy_date).format('YYYY-MM-DD'),
+          biopsyTime: req.body.biopsy_time,
+          biopsyNotes: req.body.biopsy_notes,
+          biopsySite: req.body.biopsy_site,
+          radiologistOrSurgeon: req.body.radiologist_or_surgeon,
+          bloodCollection: req.body.blood_collection,
+          bloodCollectionTime: req.body.blood_collection_time,
+          notes: req.body.notes,
+          analysis,
+          patient: POG,
+        };
+
+        // ID of email task. This sends an email upon biopsy addition.
+        const opts = {where: {id: 6}};
+        const [hook] = await db.models.tracking_hook.findAll(opts);
+        if (hook) {
+          const email = new Email({force: true});
+          await email
+            .setRecipient(hook.target)
+            .setSubject(render(hook.payload.subject, data))
+            .setBody(render(hook.payload.body, data))
+            .send();
         }
 
         if (req.body.tracking) {
