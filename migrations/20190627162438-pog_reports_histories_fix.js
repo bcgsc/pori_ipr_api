@@ -43,10 +43,17 @@ module.exports = {
 
     console.log('Added not null constraint to ident');
 
-    tables.push('pog_analysis_reports');
-    tables.push('projects');
-    tables.push('POGs');
-    tables.push('users');
+    const uniqConstTables = ['projects', 'users', 'POGs', 'pog_analysis_reports'];
+
+    // Remove unique constraint
+    await Promise.all(uniqConstTables.map((table) => {
+      return queryInterface.removeConstraint(table, `${table}_ident_key`);
+    }));
+
+    // Add unique ident table to list of tables
+    uniqConstTables.forEach((table) => {
+      tables.push(table);
+    });
 
     // Rename properties
     await Promise.all(tables.map((table) => {
