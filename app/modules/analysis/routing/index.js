@@ -198,7 +198,7 @@ class TrackingRouter extends RoutingInterface {
         };
 
         // ID of email task. This sends an email upon biopsy addition.
-        const opts = {where: {id: 6}};
+        const opts = {where: {id: 4}};
         const [hook] = await db.models.tracking_hook.findAll(opts);
         if (hook) {
           const email = new Email({force: true});
