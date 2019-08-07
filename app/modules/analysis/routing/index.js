@@ -195,6 +195,7 @@ class TrackingRouter extends RoutingInterface {
           notes: req.body.notes || '',
           analysis,
           patient: POG,
+          emails: req.body.emails || '',
         };
 
         // ID of email task. This sends an email upon biopsy addition.
@@ -204,6 +205,7 @@ class TrackingRouter extends RoutingInterface {
           const email = new Email({force: true});
           await email
             .setRecipient(hook.target)
+            .setCC(data.emails)
             .setSubject(render(hook.payload.subject, data))
             .setBody(render(hook.payload.body, data))
             .send();
