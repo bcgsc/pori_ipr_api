@@ -13,7 +13,7 @@ chai.use(require('chai-things'));
 let ident;
 let server;
 
-let CONFIG = {};
+let CONFIG = {test: {user: {}}};
 try {
   CONFIG = require('/var/www/ipr/api/persist/.env.json');
   CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
