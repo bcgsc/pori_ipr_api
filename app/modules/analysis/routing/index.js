@@ -115,6 +115,8 @@ class TrackingRouter extends RoutingInterface {
       // Add Biopsy/Analysis entry
       .post(async (req, res) => {
         const validationErr = [];
+        // ID of email task. This sends an email upon biopsy addition.
+        const BIOPSY_EMAIL_ID = 4;
 
         // Require Fields
         if (!req.body.POGID) {
@@ -198,8 +200,7 @@ class TrackingRouter extends RoutingInterface {
           emails: req.body.emails || '',
         };
 
-        // ID of email task. This sends an email upon biopsy addition.
-        const opts = {where: {id: 4}};
+        const opts = {where: {id: BIOPSY_EMAIL_ID}};
         const [hook] = await db.models.tracking_hook.findAll(opts);
         if (hook) {
           const email = new Email({force: true});
