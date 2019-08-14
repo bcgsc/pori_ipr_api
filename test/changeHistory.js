@@ -85,73 +85,73 @@ describe('/GET CopyNumberAnalyses/CNV', () => {
 });
 
 // Update variant counts details
-describe('/PUT CopyNumberAnalyses/CNV', () => {
-  it(`Update copy number analysis for ${ident}`, (done) => {
-    chai.request(server)
-      .put(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
-      .auth(username, password)
-      .send(update)
-      .end((err, res) => {
-        res.should.have.status(200);
+// describe('/PUT CopyNumberAnalyses/CNV', () => {
+//   it(`Update copy number analysis for ${ident}`, (done) => {
+//     chai.request(server)
+//       .put(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+//       .auth(username, password)
+//       .send(update)
+//       .end((err, res) => {
+//         res.should.have.status(200);
 
-        done();
-      });
-  });
-});
+//         done();
+//       });
+//   });
+// });
 
-// Get updated copy number analysis and compare to updated values
-describe('/GET CopyNumberAnalyses/CNV', () => {
-  it('Get updated copy number analysis and match to updated values', (done) => {
-    chai.request(server)
-      .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
-      .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(200);
-        res.should.be.json;
+// // Get updated copy number analysis and compare to updated values
+// describe('/GET CopyNumberAnalyses/CNV', () => {
+//   it('Get updated copy number analysis and match to updated values', (done) => {
+//     chai.request(server)
+//       .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+//       .auth(username, password)
+//       .end((err, res) => {
+//         res.should.have.status(200);
+//         res.should.be.json;
 
-        // Should equal updated values
-        res.body.cnvVariant.should.equal(update.cnvVariant);
-        res.body.gene.should.equal(update.gene);
-        res.body.ploidyCorrCpChange.should.equal(update.ploidyCorrCpChange);
-        res.body.lohState.should.equal(update.lohState);
-        res.body.cnvState.should.equal(update.cnvState);
-        res.body.chromosomeBand.should.equal(update.chromosomeBand);
-        res.body.start.should.equal(update.start);
-        res.body.end.should.equal(update.end);
-        res.body.size.should.equal(update.size);
-        res.body.expressionRpkm.should.equal(update.expressionRpkm);
-        res.body.foldChange.should.equal(update.foldChange);
-        res.body.tcgaPerc.should.equal(update.tcgaPerc);
+//         // Should equal updated values
+//         res.body.cnvVariant.should.equal(update.cnvVariant);
+//         res.body.gene.should.equal(update.gene);
+//         res.body.ploidyCorrCpChange.should.equal(update.ploidyCorrCpChange);
+//         res.body.lohState.should.equal(update.lohState);
+//         res.body.cnvState.should.equal(update.cnvState);
+//         res.body.chromosomeBand.should.equal(update.chromosomeBand);
+//         res.body.start.should.equal(update.start);
+//         res.body.end.should.equal(update.end);
+//         res.body.size.should.equal(update.size);
+//         res.body.expressionRpkm.should.equal(update.expressionRpkm);
+//         res.body.foldChange.should.equal(update.foldChange);
+//         res.body.tcgaPerc.should.equal(update.tcgaPerc);
 
-        done();
-      });
-  });
-});
+//         done();
+//       });
+//   });
+// });
 
-// Delete newly created copy number analysis
-describe('/DELETE CopyNumberAnalyses/CNV', () => {
-  it('Delete newly created copy number analysis CNV', (done) => {
-    chai.request(server)
-      .delete(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
-      .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(200);
+// // Delete newly created copy number analysis
+// describe('/DELETE CopyNumberAnalyses/CNV', () => {
+//   it('Delete newly created copy number analysis CNV', (done) => {
+//     chai.request(server)
+//       .delete(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+//       .auth(username, password)
+//       .end((err, res) => {
+//         res.should.have.status(200);
 
-        done();
-      });
-  });
-});
+//         done();
+//       });
+//   });
+// });
 
-// Make sure updated copy number analysis is deleted
-describe('/GET CopyNumberAnalyses/CNV', () => {
-  it('Verify updated copy number analysis is deleted', (done) => {
-    chai.request(server)
-      .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
-      .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(404);
+// // Make sure updated copy number analysis is deleted
+// describe('/GET CopyNumberAnalyses/CNV', () => {
+//   it('Verify updated copy number analysis is deleted', (done) => {
+//     chai.request(server)
+//       .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+//       .auth(username, password)
+//       .end((err, res) => {
+//         res.should.have.status(404);
 
-        done();
-      });
-  });
-});
+//         done();
+//       });
+//   });
+// });
