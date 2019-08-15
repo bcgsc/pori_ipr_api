@@ -30,9 +30,6 @@ try {
 
 const {username, password} = CONFIG.test.user;
 
-console.log('Username: ' + username);
-console.log('HalfPass: ' + password.substr(0,3));
-
 const update = {
   cnvVariant: 'biological',
   gene: 'forsenCD -- updated',
