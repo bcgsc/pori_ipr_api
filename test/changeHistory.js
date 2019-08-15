@@ -1,5 +1,4 @@
 process.env.NODE_ENV = 'local';
-console.log("Node Environment: " + process.env.NODE_ENV);
 
 const nconf = require('nconf').argv();
 const chai = require('chai');
@@ -30,6 +29,9 @@ try {
 }
 
 const {username, password} = CONFIG.test.user;
+
+console.log('Username: ' + username);
+console.log('HalfPass: ' + password.substr(0,3));
 
 const update = {
   cnvVariant: 'biological',
