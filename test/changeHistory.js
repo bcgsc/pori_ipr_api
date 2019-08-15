@@ -1,4 +1,4 @@
-//process.env.NODE_ENV = 'local';
+process.env.NODE_ENV = 'local';
 console.log("Node Environment: " + process.env.NODE_ENV);
 
 const nconf = require('nconf').argv();
