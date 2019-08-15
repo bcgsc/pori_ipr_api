@@ -8,7 +8,7 @@
     "start": "node ./bin/www",
     "migrate": "node ./bin/www --database.migrate",
     "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
-    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha -R mocha-multi-reporters --reporter-options configFile=config/coverage.json --timeout 10000 --include ['test/changeHistory.js']",
+    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha -R mocha-multi-reporters --reporter-options configFile=config/coverage.json --timeout 10000 --exclude ['test/*.js'] --include ['test/changeHistory.js']",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js",
     "sync": "node ./bin/syncWorker"
   },
