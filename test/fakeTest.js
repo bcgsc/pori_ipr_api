@@ -22,4 +22,7 @@ describe('Basic Test Suite', () => {
 
     done();
   });
+  after(() => {
+    server.close();
+  });
 });
