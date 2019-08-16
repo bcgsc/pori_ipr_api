@@ -1,0 +1,25 @@
+process.env.NODE_ENV = 'local';
+
+const nconf = require('nconf').argv();
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+
+chai.should();
+
+
+chai.use(chaiHttp);
+chai.use(require('chai-things'));
+
+before(async () => {
+  const server = await require('../app.js');
+});
+
+// Get a copy number analysis
+describe('Basic Test Suite', () => {
+  it('Test Case', (done) => {
+    [1, 2, 3].indexOf(5).should.equal(-1);
+    console.log('Finished');
+
+    done();
+  });
+});
