@@ -10,12 +10,12 @@ chai.should();
 chai.use(chaiHttp);
 chai.use(require('chai-things'));
 
-// before(async () => {
-//   const server = await require('../app.js');
-// });
-
 // Get a copy number analysis
 describe('Basic Test Suite', () => {
+  let server;
+  before(async () => {
+    server = await require('../app.js');
+  });
   it('Test Case', (done) => {
     [1, 2, 3].indexOf(5).should.equal(-1);
     console.log('Finished');
