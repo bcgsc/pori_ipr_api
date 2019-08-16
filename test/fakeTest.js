@@ -13,16 +13,14 @@ chai.use(require('chai-things'));
 // Get a copy number analysis
 describe('Basic Test Suite', () => {
   let server;
-  before(async () => {
+  before(async (done) => {
     server = await require('../app.js');
+    done();
   });
   it('Test Case', (done) => {
     [1, 2, 3].indexOf(5).should.equal(-1);
     console.log('Finished');
 
     done();
-  });
-  after(() => {
-    server.close();
   });
 });
