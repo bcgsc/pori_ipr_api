@@ -10,9 +10,9 @@ chai.should();
 chai.use(chaiHttp);
 chai.use(require('chai-things'));
 
-before(async () => {
-  const server = await require('../app.js');
-});
+// before(async () => {
+//   const server = await require('../app.js');
+// });
 
 // Get a copy number analysis
 describe('Basic Test Suite', () => {
