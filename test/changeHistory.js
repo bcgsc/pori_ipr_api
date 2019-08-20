@@ -43,8 +43,9 @@ before(async () => {
 // Tests history changes and for update changes
 describe('Tests for update changes', () => {
   let ident;
-  // Get a copy number analysis record to perform an update on
-  it('Get a copy number analysis', (done) => {
+  // Test update changes
+  it('Test update changes', () => {
+    // Get a copy number analysis record to perform an update on
     chai.request(server)
       .get('/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv')
       .auth(username, password)
@@ -69,24 +70,18 @@ describe('Tests for update changes', () => {
         res.body.should.all.have.property('updatedAt');
 
         ident = res.body[0].ident;
-        done();
       });
-  });
 
-  // Update copy number analysis details for given ident
-  it('Update copy number analysis', (done) => {
+    // Update copy number analysis details for given ident
     chai.request(server)
       .put(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);
-        done();
       });
-  });
 
-  // Get updated copy number analysis and compare to update values
-  it('Get updated copy number analysis and match to raw update data', (done) => {
+    // Get updated copy number analysis and compare to update values
     chai.request(server)
       .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
@@ -107,30 +102,22 @@ describe('Tests for update changes', () => {
         res.body.expressionRpkm.should.equal(update.expressionRpkm);
         res.body.foldChange.should.equal(update.foldChange);
         res.body.tcgaPerc.should.equal(update.tcgaPerc);
-
-        done();
       });
-  });
 
-  // Delete newly created copy number analysis
-  it('Delete newly created copy number analysis', (done) => {
+    // Delete newly created copy number analysis
     chai.request(server)
       .delete(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
       .end((err, res) => {
         res.should.have.status(200);
-        done();
       });
-  });
 
-  // Make sure updated copy number analysis is deleted
-  it('Verify updated copy number analysis is deleted', (done) => {
+    // Make sure updated copy number analysis is deleted
     chai.request(server)
       .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
       .end((err, res) => {
         res.should.have.status(404);
-        done();
       });
   });
 });
