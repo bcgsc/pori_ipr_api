@@ -6,14 +6,10 @@ const chaiHttp = require('chai-http');
 
 chai.should();
 
-
 chai.use(chaiHttp);
 chai.use(require('chai-things'));
 
-let ident;
-let server;
-
-let CONFIG = {test: {user: {}}};
+let CONFIG;
 try {
   CONFIG = require('/var/www/ipr/api/persist/.env.json');
   CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
@@ -30,6 +26,7 @@ try {
 
 const {username, password} = CONFIG.test.user;
 
+// Data for copy number analysis update
 const update = {
   cnvVariant: 'biological',
   gene: 'forsenCD -- updated',
@@ -45,12 +42,16 @@ const update = {
   tcgaPerc: 74,
 };
 
+let server;
+// Start API
 before(async () => {
   server = await require('../app.js');
 });
 
-// Get a copy number analysis
-describe('/GET CopyNumberAnalyses/CNV', () => {
+// Tests history changes and for update changes
+describe('Tests for update changes', () => {
+  let ident;
+  // Get a copy number analysis record to perform an update on
   it('Get a copy number analysis', (done) => {
     chai.request(server)
       .get('/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv')
@@ -76,32 +77,24 @@ describe('/GET CopyNumberAnalyses/CNV', () => {
         res.body.should.all.have.property('updatedAt');
 
         ident = res.body[0].ident;
-
-        console.log(`Ident: ${ident}`);
-
         done();
       });
   });
-});
 
-// Update variant counts details
-describe('/PUT CopyNumberAnalyses/CNV', () => {
-  it(`Update copy number analysis for ${ident}`, (done) => {
+  // Update copy number analysis details for given ident
+  it('Update copy number analysis', (done) => {
     chai.request(server)
       .put(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
       .send(update)
       .end((err, res) => {
         res.should.have.status(200);
-
         done();
       });
   });
-});
 
-// Get updated copy number analysis and compare to updated values
-describe('/GET CopyNumberAnalyses/CNV', () => {
-  it('Get updated copy number analysis and match to updated values', (done) => {
+  // Get updated copy number analysis and compare to update values
+  it('Get updated copy number analysis and match to raw update data', (done) => {
     chai.request(server)
       .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
@@ -126,31 +119,25 @@ describe('/GET CopyNumberAnalyses/CNV', () => {
         done();
       });
   });
-});
 
-// Delete newly created copy number analysis
-describe('/DELETE CopyNumberAnalyses/CNV', () => {
-  it('Delete newly created copy number analysis CNV', (done) => {
+  // Delete newly created copy number analysis
+  it('Delete newly created copy number analysis', (done) => {
     chai.request(server)
       .delete(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
       .end((err, res) => {
         res.should.have.status(200);
-
         done();
       });
   });
-});
 
-// Make sure updated copy number analysis is deleted
-describe('/GET CopyNumberAnalyses/CNV', () => {
+  // Make sure updated copy number analysis is deleted
   it('Verify updated copy number analysis is deleted', (done) => {
     chai.request(server)
       .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
       .auth(username, password)
       .end((err, res) => {
         res.should.have.status(404);
-
         done();
       });
   });
