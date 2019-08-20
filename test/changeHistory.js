@@ -1,6 +1,5 @@
 process.env.NODE_ENV = 'local';
 
-const nconf = require('nconf').argv();
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
@@ -14,14 +13,7 @@ try {
   CONFIG = require('/var/www/ipr/api/persist/.env.json');
   CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
 } catch (error) {
-  try {
-    CONFIG = require('../.env.json')[process.env.NODE_ENV];
-  } catch (err) {
-    CONFIG.test.user = {
-      username: nconf.get('testUsername'),
-      password: nconf.get('testPassword'),
-    };
-  }
+  CONFIG = require('../.env.json')[process.env.NODE_ENV];
 }
 
 const {username, password} = CONFIG.test.user;
