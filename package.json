@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "ipr-api",
-  "version": "2.4.3",
+  "version": "2.4.4",
   "description": "Integrated Pipeline Reports API",
   "main": "app.js",
   "scripts": {
