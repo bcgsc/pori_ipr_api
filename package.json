@@ -51,8 +51,8 @@
     "request": "~2.81.0",
     "request-promise-native": "~1.0.5",
     "require-dir": "~0.3.1",
-    "sequelize": "~4.42.0",
-    "sequelize-cli": "~2.5.1",
+    "sequelize": "^5.10.3",
+    "sequelize-cli": "^5.5.0",
     "socket.io": "~2.0.3",
     "sqlite3": "~3.1.8",
     "uuid": "~3.1.0",
@@ -61,9 +61,9 @@
     "winston": "~2.3.1"
   },
   "devDependencies": {
-    "chai": "~3.5.0",
+    "chai": "~4.2.0",
     "chai-as-promised": "~7.1.1",
-    "chai-http": "~3.0.0",
+    "chai-http": "~4.3.0",
     "chai-things": "~0.2.0",
     "docdash": "~1.0.0",
     "eslint": "~5.12.0",

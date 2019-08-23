@@ -1,5 +1,6 @@
 "use strict";
 
+const {Op} = require('sequelize');
 const _                       = require('lodash');
 const db                      = require('../../models/');
 const InvalidTaskDefinition   = require('./exceptions/InvalidTaskDefinition');
@@ -29,7 +30,7 @@ module.exports = class TrackingGenerator {
         where: {
           hidden: false,
           slug: {
-            $in: _.map(states, 'slug')
+            [Op.in]: _.map(states, 'slug')
           }
         }
       }).then(

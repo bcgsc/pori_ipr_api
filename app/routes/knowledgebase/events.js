@@ -1,5 +1,6 @@
 const express = require('express');
 const _ = require('lodash');
+const {Op} = require('sequelize');
 const db = require('../../models');
 const kbVersion = require('../../libs/kbVersionDatum.js');
 const logger = require('../../../lib/log');
@@ -15,27 +16,25 @@ const router = express.Router({mergeParams: true});
  */
 const eventQueryFilter = (req) => {
   let where = null;
+  const clauses = [];
 
   // Allow filters, and their query settings
   const allowedFilters = {
-    key: {operator: '$or', each: '$ilike', wrap: true},
-    type: {operator: '$in', each: null, wrap: false},
-    name: {operator: '$or', each: '$ilike', wrap: true},
-    display_coord: {operator: '$or', each: '$ilike', wrap: true},
-    notation: {operator: '$or', each: '$ilike', wrap: true},
-    related_events: {operator: '$or', each: '$ilike', wrap: true},
-    subtype: {operator: '$in', each: null, wrap: false},
-    description: {operator: '$or', each: '$ilike', wrap: true},
-    status: {operator: '$or', each: '$ilike', wrap: true},
+    key: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    type: {operator: [Op.in], each: null, wrap: false},
+    name: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    display_coord: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    notation: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    related_events: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    subtype: {operator: [Op.in], each: null, wrap: false},
+    description: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    status: {operator: [Op.or], each: [Op.iLike], wrap: true},
   };
 
   // Are we building a where clause?
   if (_.intersection(Object.keys(req.query), Object.keys(allowedFilters)).length > 0) {
-    where = {$and: []};
-
     // Which filters, from the allowed list, have been sent?
     const filters = _.chain(req.query).keysIn().intersection(_.keysIn(allowedFilters)).value();
-
 
     // Loop over filters and build them into the ORM clause
     filters.forEach((filter) => {
@@ -56,33 +55,32 @@ const eventQueryFilter = (req) => {
       clause[filter][allowedFilters[filter].operator] = values;
 
       // Add to required (and) clauses
-      where.$and.push(clause);
+      clauses.push(clause);
     });
   }
 
   // Search clause sent?
   if (req.query.search) {
-    // Make a search query
-    if (!where) {
-      where = {$and: []};
-    }
-
     const query = req.query.search;
 
-    const searchClause = {$or: []};
-    searchClause.$or.push({key: {$ilike: `%${query}%`}});
-    searchClause.$or.push({name: {$ilike: `%${query}%`}});
-    searchClause.$or.push({display_coord: {$ilike: `%${query}%`}});
-    searchClause.$or.push({notation: {$ilike: `%${query}%`}});
-    searchClause.$or.push({related_events: {$ilike: `%${query}%`}});
-    searchClause.$or.push({subtype: {$ilike: `%${query}%`}});
-    searchClause.$or.push({description: {$ilike: `%${query}%`}});
-    searchClause.$or.push({status: {$ilike: `%${query}%`}});
-    searchClause.$or.push({comments: {$ilike: `%${query}%`}});
+    const searchClause = {
+      [Op.or]: [
+        {key: {[Op.iLike]: `%${query}%`}},
+        {name: {[Op.iLike]: `%${query}%`}},
+        {display_coord: {[Op.iLike]: `%${query}%`}},
+        {notation: {[Op.iLike]: `%${query}%`}},
+        {related_events: {[Op.iLike]: `%${query}%`}},
+        {subtype: {[Op.iLike]: `%${query}%`}},
+        {description: {[Op.iLike]: `%${query}%`}},
+        {status: {[Op.iLike]: `%${query}%`}},
+        {comments: {[Op.iLike]: `%${query}%`}},
+      ],
+    };
 
-    where.$and.push(searchClause);
+    clauses.push(searchClause);
   }
 
+  where = {[Op.and]: clauses};
   return where;
 };
 

@@ -1,5 +1,6 @@
 const Excel = require('exceljs');
 const _ = require('lodash');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 
@@ -189,7 +190,7 @@ class GSMRouter extends RoutingInterface {
     };
 
     if (req.query.search) {
-      opts.where['$analysis.pog.POGID$'] = {$ilike: `%${req.query.search}%`};
+      opts.where['$analysis.pog.POGID$'] = {[Op.iLike]: `%${req.query.search}%`};
     }
     if (req.query.project) {
       opts.where['$analysis.pog.projects.name$'] = req.query.project;

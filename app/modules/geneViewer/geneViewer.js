@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../../models/');
 
 const logger = require('../../../lib/log');
@@ -61,7 +62,7 @@ class GeneViewer {
   async _getKbMatches() {
     const opts = {
       where: {
-        gene: {$ilike: `%${this.gene}%`},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -78,7 +79,7 @@ class GeneViewer {
   async _getSmallMutations() {
     const opts = {
       where: {
-        gene: {$ilike: `%${this.gene}%`},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -95,7 +96,7 @@ class GeneViewer {
   async _getCopyNumber() {
     const opts = {
       where: {
-        gene: {$ilike: `%${this.gene}%`},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -112,7 +113,7 @@ class GeneViewer {
   async _getStructuralVariants() {
     const opts = {
       where: {
-        gene: {$ilike: `%${this.gene}%`},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -129,7 +130,7 @@ class GeneViewer {
   async _getExpRNA() {
     const opts = {
       where: {
-        gene: {$ilike: `%${this.gene}%`},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -146,7 +147,7 @@ class GeneViewer {
   async _getExpProtein() {
     const opts = {
       where: {
-        gene: {$ilike: `%${this.gene}%`},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -163,7 +164,7 @@ class GeneViewer {
   async _getExpDrugTarget() {
     const opts = {
       where: {
-        gene: {$ilike: this.gene},
+        gene: {[Op.iLike]: `%${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
@@ -180,7 +181,7 @@ class GeneViewer {
   async _getExpDensityGraph() {
     const opts = {
       where: {
-        key: {$ilike: `expDensity.${this.gene}%`},
+        key: {[Op.iLike]: `%expDensity.${this.gene}%`},
         pog_report_id: this.report.id,
       },
     };
