@@ -21,7 +21,7 @@ router.route('/retrieve/:key')
     const opts = {
       where: {
         key: {
-          in: keys,
+          [Op.in]: keys,
         },
         pog_report_id: req.report.id,
       },
