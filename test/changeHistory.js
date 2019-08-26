@@ -18,20 +18,14 @@ try {
 
 const {username, password} = CONFIG.test.user;
 
-// Data for copy number analysis update
+// new project info
+const projectData = {
+  name: 'TEST-PROJECT',
+};
+
+// data for update project
 const update = {
-  cnvVariant: 'biological',
-  gene: 'forsenCD -- updated',
-  ploidyCorrCpChange: 1,
-  lohState: 'Speed',
-  cnvState: 'Violence',
-  chromosomeBand: 'Momentum',
-  start: 37601047,
-  end: 39514598,
-  size: 2.78,
-  expressionRpkm: 148.34,
-  foldChange: 1.8,
-  tcgaPerc: 74,
+  name: 'UPDATED-TEST-PROJECT',
 };
 
 let server;
@@ -40,84 +34,79 @@ before(async () => {
   server = await require('../app.js');
 });
 
-// Tests history changes and for update changes
+// Tests history changes and update changes
 describe('Tests for update changes', () => {
   let ident;
+
+  before(async () => {
+    // create project record
+    let res = await chai.request(server)
+      .post('/api/1.0/project')
+      .auth(username, password)
+      .type('json')
+      .send(projectData);
+
+    res.should.have.status(201);
+    ident = res.body.ident;
+
+    // check that the created project record exists
+    res = await chai.request(server)
+      .get(`/api/1.0/project/search?query=${projectData.name}`)
+      .auth(username, password)
+      .type('json');
+
+    res.should.have.status(200);
+    res.body = res.body[0];
+
+    res.body.should.have.property('ident');
+    res.body.should.have.property('name');
+    res.body.should.have.property('createdAt');
+    res.body.should.have.property('updatedAt');
+
+    res.body.ident.should.equal(ident);
+  });
+
   // Test update changes
-  it('Test update changes', () => {
-    // Get a copy number analysis record to perform an update on
-    chai.request(server)
-      .get('/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv')
+  it('Test update changes', async () => {
+    // update project name for given ident
+    let res = await chai.request(server)
+      .put(`/api/1.0/project/${ident}`)
       .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(200);
-        res.should.be.json;
-        res.body.should.be.a('array');
-        res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('cnvVariant');
-        res.body.should.all.have.property('gene');
-        res.body.should.all.have.property('ploidyCorrCpChange');
-        res.body.should.all.have.property('lohState');
-        res.body.should.all.have.property('cnvState');
-        res.body.should.all.have.property('chromosomeBand');
-        res.body.should.all.have.property('start');
-        res.body.should.all.have.property('end');
-        res.body.should.all.have.property('size');
-        res.body.should.all.have.property('expressionRpkm');
-        res.body.should.all.have.property('foldChange');
-        res.body.should.all.have.property('tcgaPerc');
-        res.body.should.all.have.property('createdAt');
-        res.body.should.all.have.property('updatedAt');
+      .type('json')
+      .send(update);
 
-        ident = res.body[0].ident;
-      });
+    res.should.have.status(200);
 
-    // Update copy number analysis details for given ident
-    chai.request(server)
-      .put(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+    // get updated project and compare to update values
+    res = await chai.request(server)
+      .get(`/api/1.0/project/search?query=${projectData.name}`)
       .auth(username, password)
-      .send(update)
-      .end((err, res) => {
-        res.should.have.status(200);
-      });
+      .type('json');
 
-    // Get updated copy number analysis and compare to update values
-    chai.request(server)
-      .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+    res.should.have.status(200);
+    res.body.should.be.a('array');
+    res.body = res.body[0];
+
+    // Should equal updated values
+    res.body.name.should.equal(update.name);
+  });
+
+  // Remove newly created/updated project
+  after(async () => {
+    // delete newly created project
+    let res = await chai.request(server)
+      .delete(`/api/1.0/project/${ident}`)
       .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(200);
-        res.should.be.json;
+      .type('json');
 
-        // Should equal updated values
-        res.body.cnvVariant.should.equal(update.cnvVariant);
-        res.body.gene.should.equal(update.gene);
-        res.body.ploidyCorrCpChange.should.equal(update.ploidyCorrCpChange);
-        res.body.lohState.should.equal(update.lohState);
-        res.body.cnvState.should.equal(update.cnvState);
-        res.body.chromosomeBand.should.equal(update.chromosomeBand);
-        res.body.start.should.equal(update.start);
-        res.body.end.should.equal(update.end);
-        res.body.size.should.equal(update.size);
-        res.body.expressionRpkm.should.equal(update.expressionRpkm);
-        res.body.foldChange.should.equal(update.foldChange);
-        res.body.tcgaPerc.should.equal(update.tcgaPerc);
-      });
+    res.should.have.status(204);
 
-    // Delete newly created copy number analysis
-    chai.request(server)
-      .delete(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
+    // verify project is deleted
+    res = await chai.request(server)
+      .get(`/api/1.0/POG/project/search?query=${projectData.name}`)
       .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(200);
-      });
+      .type('json');
 
-    // Make sure updated copy number analysis is deleted
-    chai.request(server)
-      .get(`/api/1.0/POG/POG684/report/TV83Z/genomic/copyNumberAnalyses/cnv/${ident}`)
-      .auth(username, password)
-      .end((err, res) => {
-        res.should.have.status(404);
-      });
+    res.should.have.status(404);
   });
 });
