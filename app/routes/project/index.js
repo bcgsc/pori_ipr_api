@@ -198,7 +198,7 @@ router.route('/:ident([A-z0-9-]{36})')
     // Attempt project model update
     try {
       await db.models.project.update(updateBody, {
-        where: {ident: req.body.ident},
+        where: {ident: req.params.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
@@ -210,7 +210,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Success, get project -- UGH
     const opts = {
-      where: {ident: req.body.ident},
+      where: {ident: req.params.ident},
       attributes: {exclude: ['id']},
       include: [
         {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
