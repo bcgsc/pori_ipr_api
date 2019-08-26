@@ -251,6 +251,7 @@ module.exports = async (report, dir) => {
   // Set Image Path
   imagePath = `${dir}/images`;
   const promises = [];
+  const errors = [];
 
   images.forEach((image) => {
     // Check that image exists
@@ -259,19 +260,35 @@ module.exports = async (report, dir) => {
         return;
       }
       logger.error(`Failed to find image file: ${image.name}`);
-      throw new Error(`Failed to find image file: ${image.name}`);
+      errors.push(`missing image: ${image.name}`);
+    } else {
+      promises.push(processImage(report, image));
     }
-
-    promises.push(processImage(report, image));
   });
 
-  const results = await Promise.all(promises);
+  const results = [];
 
-  let complete = results;
-  const loadResults = await Promise.all([loadExpressionDensity(report), loadSummaryImage(report), loadSubtypePlot(report)]);
+  const tryLoader = async (loaderPromise) => {
+    try {
+      const result = await loaderPromise;
+      results.push(result);
+    } catch (err) {
+      logger.error(err);
+      errors.push(err);
+    }
+  };
 
-  complete = complete.concat(loadResults);
-  logger.info('Loaded all images');
+  await Promise.all(promises.map(tryLoader));
 
-  return {loader: 'images', result: true, outcome: complete};
+  await Promise.all([loadExpressionDensity(report), loadSummaryImage(report), loadSubtypePlot(report)].map(tryLoader));
+
+  logger.info('Image loading complete');
+  // must not block loading all images if one image fails so throw the error here instead
+  if (errors.length > 1) {
+    throw new Error(`Error(s) loading image(s): ${errors.map((err) => { return err.toString(); }).join(';')}`);
+  }
+
+  return {
+    loader: 'images', result: true, outcome: results,
+  };
 };

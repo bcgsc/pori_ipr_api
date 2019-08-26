@@ -20,6 +20,8 @@ const exportRoute = require('./POG/export');
 const patientInformationRoute = require('./patientInformation');
 const reportsRoute = require('./reports');
 const knowledgebaseRoute = require('./knowledgebase');
+const swaggerSpec = require('./swagger/swaggerSpec');
+const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
 
 // Get module route files
@@ -111,6 +113,9 @@ class Routing extends RouterInterface {
     this.bindRouteObject('/reports', reportsRoute);
 
     this.bindRouteObject('/knowledgebase', knowledgebaseRoute);
+
+    this.bindRouteObject('/spec', swaggerSpec);
+    this.bindRouteObject('/spec.json', swaggerSpecJson);
 
     // Register Get All Projects route
     this.getProjects();
