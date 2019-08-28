@@ -121,6 +121,11 @@ The format for the file declares a configuration by environment:
       }
     }
   }
+
+  "testUser": {
+    "username": "test-account-username",
+    "password": "test-account-password"
+  }
 }
 
 ```
@@ -141,6 +146,10 @@ The format for the file declares a configuration by environment:
 * `schema` - PGSQL only; The schema the database is namespaced under
 * `database` - Name of the database
 * `prefix` - Not in use.
+
+* `testUser` - Defines the user/credentials to use to run API tests
+* `username` - Username to use to run API tests
+* `password` - Password to use to run API tests
 
 
 #### Running Tests with Mocha
