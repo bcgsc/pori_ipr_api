@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'local';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const uuidv4 = require('uuid/v4');
 
 chai.should();
 
@@ -27,8 +28,8 @@ const projectData = {
 
 // data for update project
 const update = {
-  // Can't have duplicate project name so I'm appending a large random number
-  name: `UPDATED-TEST-PROJECT-${Math.ceil(Math.random() * 10000000)}`,
+  // Can't have duplicate project name so I'm appending a UUID
+  name: `UPDATED-TEST-PROJECT-${uuidv4()}`,
 };
 
 let server;
