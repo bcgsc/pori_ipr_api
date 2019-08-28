@@ -8,15 +8,17 @@ chai.should();
 chai.use(chaiHttp);
 chai.use(require('chai-things'));
 
+// get test user info
 let CONFIG;
+let username;
+let password;
 try {
-  CONFIG = require('/var/www/ipr/api/persist/.env.json');
-  CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
+  CONFIG = require('../.env.json');
+  ({username, password} = CONFIG.testUser);
 } catch (error) {
-  CONFIG = require('../.env.json')[process.env.NODE_ENV];
+  console.log(`Unable to get test user ${error}`);
+  throw new Error(`Unable to get test user ${error}`);
 }
-
-const {username, password} = CONFIG.test.user;
 
 // new project info
 const projectData = {
@@ -25,7 +27,8 @@ const projectData = {
 
 // data for update project
 const update = {
-  name: 'UPDATED-TEST-PROJECT',
+  // Can't have duplicate project name so I'm appending a large random number
+  name: `UPDATED-TEST-PROJECT-${Math.ceil(Math.random() * 10000000)}`,
 };
 
 let server;
