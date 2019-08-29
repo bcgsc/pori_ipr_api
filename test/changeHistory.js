@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'local';
+process.env.NODE_ENV = 'development';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
