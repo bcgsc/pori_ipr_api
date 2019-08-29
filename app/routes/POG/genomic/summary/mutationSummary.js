@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../../../../lib/log');
+const db = require('../../../../models');
 
 const logger = require('../../../../../lib/log');
 
