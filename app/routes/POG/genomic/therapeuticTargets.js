@@ -1,59 +1,70 @@
-'use strict';
-
-// app/routes/genomic/somaticMutation.js
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require(`${process.cwd()}/app/models`);
-const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
+const db = require('../../../models');
+const logger = require('../../../../lib/log');
 
 router.param('target', async (req, res, next, target) => {
+  let result;
   try {
-    const result = await db.models.therapeuticTarget.scope('public').findOne({where: {ident: target}});
-    if (result == null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareTherapeuticTargetLookup'}});
-    req.target = result;
-    return next();
+    result = await db.models.therapeuticTarget.scope('public').findOne({where: {ident: target}});
   } catch (error) {
-    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareTherapeuticTargetQuery'}});
+    logger.error(`Unable to find therapeutic target ${error}`);
+    return res.status(500).json({error: {message: 'Unable to find therapeutic target', code: 'failedMiddlewareTherapeuticTargetQuery'}});
   }
+
+  if (!result) {
+    logger.error('Unable to locate therapeutic target');
+    return res.status(404).json({error: {message: 'Unable to locate therapeutic target', code: 'failedMiddlewareTherapeuticTargetLookup'}});
+  }
+
+  req.target = result;
+  return next();
 });
 
 // Handle requests for alterations
 router.route('/:target([A-z0-9-]{36})')
   .get((req, res) => {
-    res.json(req.target);
+    return res.json(req.target);
   })
   .put(async (req, res) => {
     req.body.ident = req.target.ident;
 
+    // Update DB Version for Entry
     try {
-      // Update DB Version for Entry
-      const result = await versionDatum(db.models.therapeuticTarget, req.target, req.body, req.user, req.body.comment);
-      res.json(result.data.create);
+      const result = await db.models.therapeuticTarget.update(req.body, {
+        where: {
+          ident: req.target.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
+      });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedTherapeuticTargetVersion'}});
+      logger.error(`Unable to update therapeutic target ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update therapeutic target', code: 'failedTherapeuticTargetVersion'}});
     }
   })
   .delete(async (req, res) => {
+    // Soft delete the entry
+    // Update result
     try {
-      // Soft delete the entry
-      // Update result
       await db.models.therapeuticTarget.destroy({where: {ident: req.target.ident}});
-      db.models.POGDataHistory.create({
-        pog_id: req.POG.id,
-        type: 'remove',
-        table: db.models.therapeuticTarget.getTableName(),
-        model: db.models.therapeuticTarget.name,
-        entry: req.target.ident,
-        previous: req.target.dataVersion,
-        user_id: req.user.id,
-        comment: req.body.comment,
-      });
 
-      res.json({success: true});
+      return res.json({success: true});
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedTherapeuticTargetRemove'}});
+      logger.error(`Unable to remove therapeutic target ${error}`);
+      return res.status(500).json({error: {message: 'Unable to remove therapeutic target', code: 'failedTherapeuticTargetRemove'}});
     }
   });
 
@@ -67,13 +78,13 @@ router.route('/')
       order: [['rank', 'ASC']],
     };
 
+    // Get all rows for this POG
     try {
-      // Get all rows for this POG
-      const result = await db.models.therapeuticTarget.scope('public').findAll(options);
-      res.json(result);
+      const results = await db.models.therapeuticTarget.scope('public').findAll(options);
+      return res.json(results);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedTherapeuticTargetlookup'}});
+      logger.error(`Unable to retrieve therapeutic targets ${error}`);
+      return res.status(500).json({error: {message: 'Unable to retrieve therapeutic targets', code: 'failedTherapeuticTargetlookup'}});
     }
   })
   .post(async (req, res) => {
@@ -83,24 +94,10 @@ router.route('/')
 
     try {
       const result = await db.models.therapeuticTarget.create(req.body);
-      res.json(result);
-
-      // Create DataHistory entry
-      const dh = {
-        type: 'create',
-        pog_id: result.pog_id,
-        table: db.models.therapeuticTarget.tableName,
-        model: db.models.therapeuticTarget.name,
-        entry: result.ident,
-        previous: null,
-        new: 0,
-        user_id: req.user.id,
-        comment: req.body.comment,
-      };
-      db.models.pog_analysis_reports_history.create(dh);
+      return res.json(result);
     } catch (error) {
-      console.log('Unable to create entry', error);
-      res.status(500).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
+      logger.error(`Unable to create new therapeutic target entry ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
     }
   });
 

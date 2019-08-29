@@ -124,9 +124,23 @@ router.route('/:POG')
     };
 
     try {
-      // Attempt POG model update
-      const result = await db.models.POG.update(updateBody, {where: {ident: req.body.ident}, limit: 1, returning: true});
-      return res.json(result[1][0]);
+      const result = await db.models.POG.update(updateBody, {
+        where: {ident: req.body.ident},
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
+        limit: 1,
+      });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(error);
       return res.status(500).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
@@ -224,7 +238,9 @@ router.route('/:POG/reports')
  */
 router.route('/:POG/reports/:report')
   .get((req, res) => {
-    const {id, pog_id, createdBy_id, deletedAt, ...report} = req.report.get();
+    const {
+      id, pog_id, createdBy_id, deletedAt, ...report
+    } = req.report.get();
 
     return res.json(report);
   });

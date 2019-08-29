@@ -7,20 +7,22 @@ const logger = require('../../lib/log');
 // Middleware for Patient Information
 router.use('/', async (req, res, next) => {
   // Get Patient Information for this POG
+  let result;
   try {
-    const result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
-
-    if (!result) {
-      logger.error(`Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`);
-      return res.status(404).json({error: {message: `Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`, code: 'failedPatientInformationLookup'}});
-    }
-    // Found the patient information
-    req.patientInformation = result;
-    return next();
+    result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to query Patient Information ${error}`);
     return res.status(500).json({error: {message: `Unable to lookup the patient information for ${req.POG.POGID}.`, code: 'failedPatientInformationQuery'}});
   }
+
+  if (!result) {
+    logger.error(`Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`);
+    return res.status(404).json({error: {message: `Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`, code: 'failedPatientInformationLookup'}});
+  }
+
+  // Found the patient information
+  req.patientInformation = result;
+  return next();
 });
 
 // Handle requests for alterations
@@ -31,12 +33,25 @@ router.route('/')
   })
   .put(async (req, res) => {
     try {
-      await db.models.patientInformation.update(req.body, {where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
-      const result = await db.models.patientInformation.findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
-      return res.json(result);
+      const result = await db.models.patientInformation.update(req.body, {
+        where: {pog_id: req.POG.id, pog_report_id: req.report.id},
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
+      });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedPatientInformationVersion'}});
+      logger.error(`Unable to update patient information ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update patient information', code: 'failedPatientInformationVersion'}});
     }
   });
 

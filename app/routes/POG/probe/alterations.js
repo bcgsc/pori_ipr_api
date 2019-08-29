@@ -1,24 +1,26 @@
 const express = require('express');
 const {Op} = require('sequelize');
 const db = require('../../../models');
-const versionDatum = require('../../../libs/VersionDatum');
 const logger = require('../../../../lib/log');
 
 const router = express.Router({mergeParams: true});
 
 router.param('alteration', async (req, res, next, altIdent) => {
+  let result;
   try {
-    const result = await db.models.alterations.scope('public').findOne({where: {ident: altIdent}});
-    if (!result) {
-      return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareAlterationLookup'}});
-    }
-
-    req.alteration = result;
-    return next();
+    result = await db.models.alterations.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
-    logger.error(error);
-    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareAlterationQuery'}});
+    logger.error(`Unable to find alteration ${error}`);
+    return res.status(500).json({error: {message: 'Unable to find alteration', code: 'failedMiddlewareAlterationQuery'}});
   }
+
+  if (!result) {
+    logger.error('Unable to locate alteration');
+    return res.status(404).json({error: {message: 'Unable to locate alteration', code: 'failedMiddlewareAlterationLookup'}});
+  }
+
+  req.alteration = result;
+  return next();
 });
 
 // Handle requests for alterations
@@ -27,35 +29,39 @@ router.route('/:alteration([A-z0-9-]{36})')
     return res.json(req.alteration);
   })
   .put(async (req, res) => {
-    const promises = [];
-    // Promoting from unknown to another state.
-    if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
-      promises.push(db.models.genomicAlterationsIdentified.scope('public').create({
-        pog_report_id: req.report.id,
-        geneVariant: `${req.alteration.gene} (${req.alteration.variant})`,
-      }));
-    }
-
     try {
-      // Update DB Version for Entry
-      promises.push(versionDatum(db.models.alterations, req.alteration, req.body, req.user, req.body.comment));
-      const result = await Promise.all(promises);
+      const result = await db.models.genomicAlterationsIdentified.update(req.body, {
+        where: {
+          ident: req.alteration.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
+      });
 
-      return res.json(result.pop().data.create);
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'}});
+      logger.error(`Unable to update genomic alterations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update genomic alterations', code: 'failedAPCDestroy'}});
     }
   })
   .delete(async (req, res) => {
+    // Soft delete the entry
+    // Update result
     try {
-      // Soft delete the entry
-      // Update result
       await db.models.alterations.destroy({where: {ident: req.alteration.ident}});
       return res.json({success: true});
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
+      logger.error(`Unable to remove alterations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to remove alterations', code: 'failedAPCremove'}});
     }
   });
 
@@ -87,46 +93,27 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
       order: [['gene', 'ASC']],
     };
 
+    // Get all rows for this POG
     try {
-      // Get all rows for this POG
       const results = await db.models.alterations.scope('public').findAll(options);
       return res.json(results);
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
+      logger.error(`Unable to retrieve alterations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to retrieve alterations', code: 'failedAPClookup'}});
     }
   })
   .post(async (req, res) => {
     // Setup new data entry from vanilla
-    req.body.dataVersion = 0;
     req.body.pog_id = req.POG.id;
     req.body.pog_report_id = req.report.id;
 
     try {
-      // Update result
       const result = await db.models.alterations.create(req.body);
-
-      // Send back newly created/updated result.
-      res.json(result);
-
-      // Create DataHistory entry
-      const dh = {
-        type: 'create',
-        pog_id: result.pog_id,
-        table: db.models.alterations.tableName,
-        model: db.models.alterations.name,
-        entry: result.ident,
-        previous: null,
-        new: 0,
-        user_id: req.user.id,
-        comment: req.body.comment,
-      };
-      return db.models.POGDataHistory.create(dh);
+      return res.json(result);
     } catch (error) {
-      logger.error(`SQL insert error ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedAPClookup'}});
+      logger.error(`Unable to create alterations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create alterations', code: 'failedAPClookup'}});
     }
   });
-
 
 module.exports = router;

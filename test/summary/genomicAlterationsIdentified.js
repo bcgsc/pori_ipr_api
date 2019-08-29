@@ -25,7 +25,6 @@ describe('/GET expressionAnalysis/Outliers', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('outlierType');
         res.body.should.all.have.property('gene');
         res.body.should.all.have.property('location');
@@ -54,10 +53,9 @@ describe('/GET expressionAnalysis/DrugTargets', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('gene');
         res.body.should.all.have.property('copy');
-        res.body.should.all.have.property('lohRegion')
+        res.body.should.all.have.property('lohRegion');
         res.body.should.all.have.property('tcgaPerc');
         res.body.should.all.have.property('foldChange');
         res.body.should.all.have.property('drugOptions');

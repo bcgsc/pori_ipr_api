@@ -23,7 +23,6 @@ describe('/GET SomaticMutations/SmallMutations', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('mutationType');
         res.body.should.all.have.property('gene');
         res.body.should.all.have.property('transcript');
@@ -56,7 +55,6 @@ describe('/GET SomaticMutations/MutationSignature', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('signature');
         res.body.should.all.have.property('pearson');
         res.body.should.all.have.property('nnls');

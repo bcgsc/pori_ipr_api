@@ -25,7 +25,6 @@ describe('/GET CopyNumberAnalyses/CNV', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('cnvVariant');
         res.body.should.all.have.property('gene');
         res.body.should.all.have.property('ploidyCorrCpChange');
@@ -75,7 +74,6 @@ describe('/PUT CopyNumberAnalyses/CNV', () => {
         res.should.be.json;
         res.body.should.be.a('object');
         res.body.should.have.property('ident');
-        res.body.should.have.property('dataVersion');
         res.body.should.have.property('cnvVariant');
         res.body.should.have.property('gene', 'ACTN4 -- updated');
         res.body.should.have.property('ploidyCorrCpChange');

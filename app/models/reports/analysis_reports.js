@@ -1,16 +1,9 @@
 const Sq = require('sequelize');
 
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+
 module.exports = sequelize => sequelize.define('analysis_report', {
-  id: {
-    type: Sq.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  ident: {
-    type: Sq.STRING,
-    unique: true,
-    allowNull: false,
-  },
+  ...DEFAULT_COLUMNS,
   pog_id: {
     type: Sq.INTEGER,
     references: {
@@ -59,11 +52,8 @@ module.exports = sequelize => sequelize.define('analysis_report', {
   },
 },
 {
+  ...DEFAULT_OPTIONS,
   tableName: 'pog_analysis_reports',
-  // Automatically create createdAt, updatedAt, deletedAt
-  timestamps: true,
-  // Use soft-deletes!
-  paranoid: true,
   scopes: {
     public: {
       attributes: {
