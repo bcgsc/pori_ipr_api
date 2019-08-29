@@ -13,7 +13,7 @@ router.use('/', async (req, res, next) => {
     result = await db.models.mutationSummaryv2.scope('public').findAll({where: {pog_report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup mutation summaries for ${req.POG.POGID} error: ${error}`);
-    return res.status(500).json({error: {message: `Unable to lookup the mutation summeries for ${req.POG.POGID}`, code: 'failedMutationSummaryQuery'}});
+    return res.status(500).json({error: {message: `Unable to lookup the mutation summaries for ${req.POG.POGID}`, code: 'failedMutationSummaryQuery'}});
   }
 
   if (!result) {

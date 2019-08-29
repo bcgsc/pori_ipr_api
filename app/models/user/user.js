@@ -5,7 +5,6 @@ module.exports = sequelize => sequelize.define('user', {
   ...DEFAULT_COLUMNS,
   username: {
     type: Sq.STRING,
-    unique: true,
     allowNull: false,
   },
   password: {
@@ -55,6 +54,18 @@ module.exports = sequelize => sequelize.define('user', {
 },
 {
   ...DEFAULT_OPTIONS,
+  indexes: [
+    ...DEFAULT_OPTIONS.indexes || [],
+    {
+      unique: true,
+      fields: ['username'],
+      where: {
+        deleted_at: {
+          [Sq.Op.eq]: null,
+        },
+      },
+    },
+  ],
   scopes: {
     public: {
       attributes: {
