@@ -59,29 +59,6 @@ module.exports = {
     await queryInterface.removeConstraint('users', 'users_username_key');
     await queryInterface.removeConstraint('projects', 'projects_name_key');
 
-    // Add username/name indexes
-    await queryInterface.addIndex('users', {
-      name: 'users_username_index',
-      unique: true,
-      fields: ['username'],
-      where: {
-        deleted_at: {
-          [Sequelize.Op.eq]: null,
-        },
-      },
-    });
-
-    await queryInterface.addIndex('projects', {
-      name: 'projects_name_index',
-      unique: true,
-      fields: ['name'],
-      where: {
-        deleted_at: {
-          [Sequelize.Op.eq]: null,
-        },
-      },
-    });
-
     // Rename properties
     await Promise.all(tables.map((table) => {
       return Promise.all([
@@ -109,6 +86,29 @@ module.exports = {
     }));
 
     console.log('Added ident indexes to tables');
+
+    // Add username/name indexes
+    await queryInterface.addIndex('users', {
+      name: 'users_username_index',
+      unique: true,
+      fields: ['username'],
+      where: {
+        deleted_at: {
+          [Sequelize.Op.eq]: null,
+        },
+      },
+    });
+
+    await queryInterface.addIndex('projects', {
+      name: 'projects_name_index',
+      unique: true,
+      fields: ['name'],
+      where: {
+        deleted_at: {
+          [Sequelize.Op.eq]: null,
+        },
+      },
+    });
 
     return Promise.resolve(true);
   },
