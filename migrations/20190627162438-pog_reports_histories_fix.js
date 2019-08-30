@@ -55,6 +55,10 @@ module.exports = {
       tables.push(table);
     });
 
+    // Remove unique name and username constraints
+    await queryInterface.removeConstraint('users', 'users_username_key');
+    await queryInterface.removeConstraint('projects', 'projects_name_key');
+
     // Rename properties
     await Promise.all(tables.map((table) => {
       return Promise.all([
