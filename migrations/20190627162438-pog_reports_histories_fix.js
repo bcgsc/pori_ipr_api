@@ -110,6 +110,8 @@ module.exports = {
       },
     });
 
+    console.log('Added username/name indexes');
+
     return Promise.resolve(true);
   },
 
