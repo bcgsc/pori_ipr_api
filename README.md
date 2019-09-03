@@ -121,6 +121,11 @@ The format for the file declares a configuration by environment:
       }
     }
   }
+
+  "testUser": {
+    "username": "test-account-username",
+    "password": "test-account-password"
+  }
 }
 
 ```
@@ -142,6 +147,10 @@ The format for the file declares a configuration by environment:
 * `database` - Name of the database
 * `prefix` - Not in use.
 
+* `testUser` - Defines the user/credentials to use to run API tests
+* `username` - Username to use to run API tests
+* `password` - Password to use to run API tests
+
 
 #### Running Tests with Mocha
 ======================================
@@ -158,7 +167,7 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 #### Migrating Database Changes
 ======================================
 
-* Create a migration: `sequelize migration:create`
+* Create a migration: `npx sequelize migration:create --name name_of_migratrion`
 * Write up and down functions in your migration file
 * According to your changes in migration file, change your Sequelize models manually
 * Run: `npx sequelize-cli db:migrate` or `npx sequelize-cli db:migrate --url 'mysql://root:password@mysql_host.com/database_name'`

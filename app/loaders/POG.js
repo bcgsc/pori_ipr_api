@@ -59,7 +59,12 @@ module.exports = async (report, dir) => {
   pogInfo.reportVersion = conf.programVersion;
 
   // Add to Database
-  await db.models.analysis_report.update(pogInfo, {where: {id: report.id}});
+  await db.models.analysis_report.update(pogInfo, {
+    where: {id: report.id},
+    individualHooks: true,
+    paranoid: true,
+  });
+
   logger.info('POG Sample & QC information loaded.');
   return {pogSampleQC: true};
 };

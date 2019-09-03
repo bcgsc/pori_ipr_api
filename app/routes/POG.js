@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const logger = require('../../lib/log');
@@ -40,12 +41,12 @@ router.route('/')
         return value.name;
       });
       const projectOpts = {
-        as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {$in: projectAccess}},
+        as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}, where: {name: {[Op.in]: projectAccess}},
       };
       opts.include.push(projectOpts);
 
       if (req.query.query) {
-        opts.where.POGID = {$ilike: `%${req.query.query}%`};
+        opts.where.POGID = {[Op.iLike]: `%${req.query.query}%`};
       }
       if (req.query.nonPOG === 'true') {
         opts.where.nonPOG = true;
@@ -68,13 +69,14 @@ router.route('/')
 
       // Optional States
       if (!req.query.archived || !req.query.nonproduction) {
-        reportInclude.where.state = {$not: []};
+        const optStates = [];
         if (!req.query.archived) {
-          reportInclude.where.state.$not.push('archived');
+          optStates.push('archived');
         }
         if (!req.query.nonproduction) {
-          reportInclude.where.state.$not.push('nonproduction');
+          optStates.push('nonproduction');
         }
+        reportInclude.where.state = {[Op.not]: optStates};
       }
       opts.include.push(reportInclude);
 
@@ -122,9 +124,23 @@ router.route('/:POG')
     };
 
     try {
-      // Attempt POG model update
-      const result = await db.models.POG.update(updateBody, {where: {ident: req.body.ident}, limit: 1, returning: true});
-      return res.json(result[1][0]);
+      const result = await db.models.POG.update(updateBody, {
+        where: {ident: req.body.ident},
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
+        limit: 1,
+      });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(error);
       return res.status(500).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
@@ -202,7 +218,7 @@ router.route('/:POG/reports')
     // States
     if (req.query.state) {
       const state = req.query.state.split(',');
-      opts.where.state = {$in: state};
+      opts.where.state = {[Op.in]: state};
     }
 
     try {
@@ -222,7 +238,9 @@ router.route('/:POG/reports')
  */
 router.route('/:POG/reports/:report')
   .get((req, res) => {
-    const {id, pog_id, createdBy_id, deletedAt, ...report} = req.report.get();
+    const {
+      id, pog_id, createdBy_id, deletedAt, ...report
+    } = req.report.get();
 
     return res.json(report);
   });

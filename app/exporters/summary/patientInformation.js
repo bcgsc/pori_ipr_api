@@ -13,7 +13,6 @@ module.exports = async (pog, directory) => {
       exclude: [
         'id',
         'ident',
-        'dataVersion',
         'pog_id',
         'tumourSample',
         'tumourProtocol',

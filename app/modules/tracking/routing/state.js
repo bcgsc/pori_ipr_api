@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const State = require('../state');
@@ -83,17 +84,17 @@ class TrackingStateRoute extends RoutingInterface {
       opts.where.name = req.query.name;
     }
     if (req.query.slug) {
-      opts.where.slug = {$in: req.query.slug.split(',')};
+      opts.where.slug = {[Op.in]: req.query.slug.split(',')};
     }
     if (req.query.status) {
-      opts.where.status = {$in: req.query.status.split(',')};
+      opts.where.status = {[Op.in]: req.query.status.split(',')};
     }
 
     if (req.query.createdAt && req.query.createdAt.split(',').length === 2) {
-      opts.where.createdAt = {$between: req.query.createdAt.split(',')};
+      opts.where.createdAt = {[Op.between]: req.query.createdAt.split(',')};
     }
     if (req.query.startedAt && req.query.startedAt.split(',').length === 2) {
-      opts.where.startedAt = {$between: req.query.startedAt.split(',')};
+      opts.where.startedAt = {[Op.between]: req.query.startedAt.split(',')};
     }
 
     const taskInclude = {

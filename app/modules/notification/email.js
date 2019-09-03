@@ -34,6 +34,19 @@ class Email {
   }
 
   /**
+   * Set CC
+   *
+   * @param {string|array} address - Email message CC(s)
+   *
+   * @returns {object} - Return self object for chaining
+   */
+  setCC(address) {
+    this.cc = address;
+
+    return this;
+  }
+
+  /**
    * Set Subject
    *
    * @param {string} subject - Email message subject
@@ -75,6 +88,7 @@ class Email {
     const message = {
       from: 'No Reply <ipr@bcgsc.ca>',
       to: this.to,
+      cc: this.cc,
       subject: this.subject,
       text: this.body,
       html: this.htmlBody,

@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
@@ -77,7 +78,7 @@ router.route('/')
         exclude: ['deletedAt', 'id'],
       },
       include: includeOpts,
-      where: {ident: {$in: _.map(projectAccess, 'ident')}},
+      where: {ident: {[Op.in]: _.map(projectAccess, 'ident')}},
     };
 
     try {
@@ -115,7 +116,7 @@ router.route('/')
     // Check for existing project
     let existingProject;
     try {
-      existingProject = await db.models.project.findOne({where: {name: req.body.name, deletedAt: {$not: null}}, paranoid: false});
+      existingProject = await db.models.project.findOne({where: {name: req.body.name, deletedAt: {[Op.ne]: null}}, paranoid: false});
     } catch (error) {
       logger.error(`Error while trying to find project ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to find project'}});
@@ -124,8 +125,22 @@ router.route('/')
     if (existingProject) {
       // Restore!
       try {
-        const restored = await db.models.project.update({deletedAt: null}, {paranoid: false, where: {ident: existingProject.ident}, returning: true});
-        return res.status(201).json(restored);
+        const result = await db.models.project.update({deletedAt: null}, {
+          where: {ident: existingProject.ident},
+          individualHooks: true,
+          paranoid: true,
+          returning: true,
+        });
+
+        // Get updated model data from update
+        const [, [{dataValues}]] = result;
+
+        // Remove id's and deletedAt properties from returned model
+        const {
+          id, deletedAt, ...publicModel
+        } = dataValues;
+
+        return res.json(publicModel);
       } catch (error) {
         logger.error(`Error while trying to restore project ${error}`);
         return res.status(500).json({error: {message: 'Error while trying to restore project'}});
@@ -180,22 +195,22 @@ router.route('/:ident([A-z0-9-]{36})')
       name: req.body.name,
     };
 
-    let modelUpdate;
+    // Attempt project model update
     try {
-      // Attempt project model update
-      modelUpdate = await db.models.project.update(updateBody, {where: {ident: req.body.ident}, limit: 1});
+      await db.models.project.update(updateBody, {
+        where: {ident: req.params.ident},
+        individualHooks: true,
+        paranoid: true,
+        limit: 1,
+      });
     } catch (error) {
       logger.error(`Error while trying to update project ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
     }
 
-    if (modelUpdate) {
-      return res.json(modelUpdate);
-    }
-
     // Success, get project -- UGH
     const opts = {
-      where: {ident: req.body.ident},
+      where: {ident: req.params.ident},
       attributes: {exclude: ['id']},
       include: [
         {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
@@ -240,7 +255,7 @@ router.route('/search')
     const {query} = req.query;
 
     const where = {
-      name: {$ilike: `%${query}%`},
+      name: {[Op.iLike]: `%${query}%`},
     };
 
     let projects;
@@ -306,7 +321,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let hasBinding;
     try {
       // See if binding already exists
-      hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {$ne: null}}});
+      hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {[Op.ne]: null}}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserBindingLookupUserProject'}});
@@ -315,7 +330,11 @@ router.route('/:project([A-z0-9-]{36})/user')
     // exists - set deletedAt to null
     if (hasBinding) {
       try {
-        await db.models.user_project.update({deletedAt: null}, {paranoid: false, where: {id: hasBinding.id}, returning: true});
+        await db.models.user_project.update({deletedAt: null}, {
+          where: {id: hasBinding.id},
+          individualHooks: true,
+          paranoid: true,
+        });
         return res.json(user);
       } catch (error) {
         logger.error(`Error while restoring user project binding ${error}`);

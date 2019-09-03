@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 const logger = require('../../../lib/log');
@@ -48,23 +49,23 @@ router.param('reference', async (req, res, next, ref) => {
  */
 const referenceQueryFilter = (req) => {
   let where = null;
+  const clauses = [];
 
   // Allow filters, and their query settings
   const allowedFilters = {
-    type: {operator: '$in', each: null, wrap: false},
-    relevance: {operator: '$in', each: null, wrap: false},
-    disease_list: {operator: '$or', each: '$ilike', wrap: true},
-    context: {operator: '$or', each: '$ilike', wrap: true},
-    evidence: {operator: '$in', each: null, wrap: false},
-    status: {operator: '$in', each: null, wrap: false},
-    events_expression: {operator: '$or', each: '$ilike', wrap: true},
-    ref_id: {operator: '$or', each: '$ilike', wrap: true},
+    type: {operator: [Op.in], each: null, wrap: false},
+    relevance: {operator: [Op.in], each: null, wrap: false},
+    disease_list: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    context: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    evidence: {operator: [Op.in], each: null, wrap: false},
+    status: {operator: [Op.in], each: null, wrap: false},
+    events_expression: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    ref_id: {operator: [Op.or], each: [Op.iLike], wrap: true},
+    ident: {operator: [Op.or], each: null, wrap: false},
   };
 
   // Are we building a where clause?
   if (_.intersection(Object.keys(req.query), Object.keys(allowedFilters)).length > 0) {
-    where = {$and: []};
-
     // Which filters, from the allowed list, have been sent?
     const filters = _.chain(req.query).keysIn().intersection(_.keysIn(allowedFilters)).value();
 
@@ -88,34 +89,33 @@ const referenceQueryFilter = (req) => {
       clause[filter][allowedFilters[filter].operator] = values;
 
       // Add to required (and) clauses
-      where.$and.push(clause);
+      clauses.push(clause);
     });
   }
 
   // Search clause sent?
   if (req.query.search) {
-    // Make a search query
-    if (!where) {
-      where = {$and: []};
-    }
-
     const query = req.query.search;
 
-    const searchClause = {$or: []};
-    searchClause.$or.push({events_expression: {$ilike: `%${query}%`}});
-    searchClause.$or.push({relevance: {$ilike: `%${query}%`}});
-    searchClause.$or.push({context: {$ilike: `%${query}%`}});
-    searchClause.$or.push({disease_list: {$ilike: `%${query}%`}});
-    searchClause.$or.push({evidence: {$ilike: `%${query}%`}});
-    searchClause.$or.push({id_type: {$ilike: `%${query}%`}});
-    searchClause.$or.push({ref_id: {$ilike: `%${query}%`}});
-    searchClause.$or.push({id_title: {$ilike: `%${query}%`}});
-    searchClause.$or.push({status: {$ilike: `%${query}%`}});
-    searchClause.$or.push({comments: {$ilike: `%${query}%`}});
+    const searchClause = {
+      [Op.or]: [
+        {events_expression: {[Op.iLike]: `%${query}%`}},
+        {relevance: {[Op.iLike]: `%${query}%`}},
+        {context: {[Op.iLike]: `%${query}%`}},
+        {disease_list: {[Op.iLike]: `%${query}%`}},
+        {evidence: {[Op.iLike]: `%${query}%`}},
+        {id_type: {[Op.iLike]: `%${query}%`}},
+        {ref_id: {[Op.iLike]: `%${query}%`}},
+        {id_title: {[Op.iLike]: `%${query}%`}},
+        {status: {[Op.iLike]: `%${query}%`}},
+        {comments: {[Op.iLike]: `%${query}%`}},
+      ],
+    };
 
-    where.$and.push(searchClause);
+    clauses.push(searchClause);
   }
 
+  where = {[Op.and]: clauses};
   return where;
 };
 
@@ -154,11 +154,13 @@ router.route('/')
 
     if (externalUser) {
       if (!opts.where) {
-        opts.where = {$and: []};
+        opts.where = {[Op.and]: []};
       }
-      filterReferenceSources.forEach((refSource) => {
-        opts.where.$and.push({ref_id: {$notILike: refSource}});
+      const sources = filterReferenceSources.map((refSource) => {
+        return {ref_id: {[Op.notILike]: refSource}};
       });
+
+      opts.where[Op.and] = opts.where[Op.and].concat(sources);
     }
 
     try {
@@ -233,12 +235,13 @@ router.route('/count')
 
     if (externalUser) {
       if (!opts.where) {
-        opts.where = {$and: []};
+        opts.where = {[Op.and]: []};
       }
-
-      filterReferenceSources.forEach((refSource) => {
-        opts.where.$and.push({ref_id: {$notILike: refSource}});
+      const sources = filterReferenceSources.map((refSource) => {
+        return {ref_id: {[Op.notILike]: refSource}};
       });
+
+      opts.where[Op.and] = opts.where[Op.and].concat(sources);
     }
 
     try {

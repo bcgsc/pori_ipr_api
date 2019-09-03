@@ -1,5 +1,6 @@
 "use strict";
 
+const {Op} = require('sequelize');
 const _                       = require('lodash');
 const moment                  = require('moment');
 const db                      = require('../../models/');
@@ -255,7 +256,7 @@ module.exports = class State {
           where: {
             analysis_id: this.instance.analysis_id,
             slug: {
-              $in: nextStateSlugs
+              [Op.in]: nextStateSlugs
             }
           }
         });

@@ -1,4 +1,5 @@
 const validate = require('uuid-validate');
+const {Op} = require('sequelize');
 const db = require('../models');
 
 const logger = require('../../lib/log');
@@ -24,7 +25,7 @@ module.exports = async (req, res, next, ident) => {
     if (!req.POG) {
       throw new Error('No POG set, unable to find analysis middleware');
     }
-    opts.where = {$or: [{clinical_biopsy: ident}, {analysis_biopsy: ident}], pog_id: req.POG.id};
+    opts.where = {[Op.or]: [{clinical_biopsy: ident}, {analysis_biopsy: ident}], pog_id: req.POG.id};
   }
 
   opts.attributes = {exclude: ['deletedAt']};

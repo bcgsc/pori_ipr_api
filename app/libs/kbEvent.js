@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../models');
 
 module.exports = {
@@ -10,7 +11,7 @@ module.exports = {
    * @returns {Promise.<Object.<boolean, string>>} - Returns status and if the event exists or was created
    */
   eventCheck: async (event, user) => {
-    const result = await db.models.kb_event.findOne({where: {key: {$ilike: event}}});
+    const result = await db.models.kb_event.findOne({where: {key: {[Op.iLike]: event}}});
 
     // Create new event entry
     if (result === null) {

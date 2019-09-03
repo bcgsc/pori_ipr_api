@@ -55,11 +55,11 @@ describe('Create next state(s) from old state status change', () => {
         // generate tracking card for next state then set to pending
         let nextStates = await state.createNextState();
         await db.models.tracking_state.update({status: 'pending'}, {where: {ident: nextStates[0].ident}});
-        let pendingCard = await db.models.tracking_state.find({where: {ident: nextStates[0].ident}});
+        let pendingCard = await db.models.tracking_state.findOne({where: {ident: nextStates[0].ident}});
 
         // card should be reset to active
         let nextStatesRepeated = await state.createNextState();
-        let activeCard = await db.models.tracking_state.find({where: {ident: nextStates[0].ident}});
+        let activeCard = await db.models.tracking_state.findOne({where: {ident: nextStates[0].ident}});
 
         expect(nextStatesRepeated[0]).to.have.property('slug', 'sequencing');
         expect(nextStatesRepeated[0]).to.have.property('status', 'active');

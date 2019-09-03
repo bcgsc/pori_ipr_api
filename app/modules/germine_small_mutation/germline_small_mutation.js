@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../models');
 
@@ -18,7 +19,7 @@ const getUpdateUsers = async (users) => {
   }
 
   try {
-    return db.models.user.findAll({where: {ident: {$in: users}}});
+    return db.models.user.findAll({where: {ident: {[Op.in]: users}}});
   } catch (error) {
     logger.error(`There was an error while getting updated users ${error}`);
     throw new Error('There was an error while getting updated users');
@@ -51,7 +52,10 @@ const updateReport = async (report, data) => {
       updateData.biofx_assigned_id = _.find(users, {ident: data.biofx_assigned}).id;
     }
 
-    return report.update(updateData);
+    return report.update(updateData, {
+      individualHooks: true,
+      paranoid: true,
+    });
   } catch (error) {
     logger.error(`Error while trying to update supplied report ${error}`);
     throw new Error('Error while trying to update supplied report');
