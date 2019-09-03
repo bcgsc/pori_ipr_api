@@ -22,6 +22,9 @@ module.exports = {
       env_development: {
         NODE_ENV: 'development',
       },
+      env_staging: {
+        NODE_ENV: 'staging',
+      },
     },
     // Sync Worker
     {
@@ -39,6 +42,9 @@ module.exports = {
       },
       env_development: {
         NODE_ENV: 'development',
+      },
+      env_staging: {
+        NODE_ENV: 'staging',
       },
     },
   ],
