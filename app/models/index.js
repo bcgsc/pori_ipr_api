@@ -1,28 +1,24 @@
 const Sq = require('sequelize');
 const colors = require('colors');
 const bcrypt = require('bcryptjs');
-const nconf = require('nconf').argv().env().file({file: './config/config.json'});
-
-let CONFIG = {};
-
-try {
-  CONFIG = require('/var/www/ipr/api/persist/.env.json');
-  CONFIG = CONFIG[process.env.NODE_ENV] || CONFIG;
-} catch (e) {
-  console.log('!! DB Config not found - attempting to load local dev .env.json file');
-  // Probably running on local dev
-  CONFIG = require('../../.env.json')[process.env.NODE_ENV];
-}
+const nconf = require('../config');
+const logger = require('../../lib/log'); // Load logging library
 
 // Load database
-const dbSettings = CONFIG.database[CONFIG.database.engine];
-const sequelize = new Sq(dbSettings.database, dbSettings.username, dbSettings.password, {
-  host: dbSettings.hostname,
-  dialect: CONFIG.database.engine,
-  port: dbSettings.port,
-  schema: dbSettings.schema,
-  logging: null,
-});
+const dbSettings = nconf.get('database');
+logger.info(`setting connection to database ${dbSettings.hostname}:${dbSettings.port} as ${dbSettings.username}`);
+const sequelize = new Sq(
+  dbSettings.name,
+  dbSettings.username,
+  dbSettings.password,
+  {
+    host: dbSettings.hostname,
+    dialect: dbSettings.engine,
+    port: dbSettings.port,
+    schema: dbSettings.schema,
+    logging: null,
+  }
+);
 
 // Import Application Models
 const user = sequelize.import('./user/user');
@@ -345,7 +341,7 @@ if (nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
   sequelize.sync(
     {
       force: true,
-      schema: nconf.get('database:postgres:schema'),
+      schema: nconf.get('database:schema'),
     }
   ).then(
     async (res) => {
@@ -378,7 +374,7 @@ if (nconf.get('database:migrate') && nconf.get('database:hardMigrate')) {
 }
 
 if (nconf.get('database:migrate') && !nconf.get('database:hardMigrate')) {
-  sequelize.sync({schema: nconf.get('database:postgres:schema')});
+  sequelize.sync({schema: nconf.get('database:schema')});
   console.log('Updating database to match current model schemas'.white.bgRed);
 }
 
