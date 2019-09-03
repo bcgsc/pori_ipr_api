@@ -23,7 +23,6 @@ describe('/GET StructuraVariation/sv', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('svVariant');
         res.body.should.all.have.property('genes');
         res.body.should.all.have.property('exons');

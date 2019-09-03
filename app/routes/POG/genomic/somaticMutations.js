@@ -1,45 +1,68 @@
-// app/routes/genomic/somaticMutation.js
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require(`${process.cwd()}/app/models`);
-const versionDatum = require(`${process.cwd()}/app/libs/VersionDatum`);
+const db = require('../../../models');
+
+const logger = require('../../../../lib/log');
 
 router.param('mutation', async (req, res, next, mutIdent) => {
+  let result;
   try {
-    const result = await db.models.somaticMutations.scope('public').findOne({where: {ident: mutIdent}});
-    if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareSomaticMutationLookup'}});
-
-    req.mutation = result;
-    return next();
+    result = await db.models.somaticMutations.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
-    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareSomaticMutationQuery'}});
+    logger.error(`Unable to get somatic mutations ${error}`);
+    return res.status(500).json({error: {message: 'Unable to get somatic mutations', code: 'failedMiddlewareSomaticMutationQuery'}});
   }
+
+  if (!result) {
+    logger.error('Unable to locate somatic mutations');
+    return res.status(404).json({error: {message: 'Unable to locate somatic mutations', code: 'failedMiddlewareSomaticMutationLookup'}});
+  }
+
+  req.mutation = result;
+  return next();
 });
 
 // Handle requests for alterations
 router.route('/smallMutations/:mutation([A-z0-9-]{36})')
   .get((req, res) => {
-    res.json(req.mutation);
+    return res.json(req.mutation);
   })
   .put(async (req, res) => {
+    // Update DB Version for Entry
     try {
-      // Update DB Version for Entry
-      const result = await versionDatum(db.models.somaticMutations, req.mutation, req.body, req.user);
-      res.json(result.data.create);
+      const result = await db.models.somaticMutations.update(req.body, {
+        where: {
+          ident: req.mutation.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+        returning: true,
+      });
+
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, pog_report_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      return res.json(publicModel);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({error: {message: 'Unable to version the resource', code: 'failedOutlierVersion'}});
+      logger.error(`Unable to update somatic mutations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update somatic mutations', code: 'failedOutlierVersion'}});
     }
   })
   .delete(async (req, res) => {
+    // Soft delete the entry
+    // Update result
     try {
-      // Soft delete the entry
-      // Update result
       await db.models.somaticMutations.destroy({where: {ident: req.mutation.ident}});
-      res.json({success: true});
+      return res.json({success: true});
     } catch (error) {
-      res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedSomaticMutationremove'}});
+      logger.error(`Unable to remove somatic mutations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to remove somatic mutations', code: 'failedSomaticMutationremove'}});
     }
   });
 
@@ -60,13 +83,13 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
       order: [['gene', 'ASC']],
     };
 
+    // Get all rows for this POG
     try {
-      // Get all rows for this POG
-      const result = await db.models.smallMutations.scope('public').findAll(options);
-      res.json(result);
+      const results = await db.models.smallMutations.scope('public').findAll(options);
+      return res.json(results);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedSomaticMutationlookup'}});
+      logger.error(`Unable to retrieve small mutations ${error}`);
+      return res.status(500).json({error: {message: 'Unable to retrieve small mutations', code: 'failedSomaticMutationlookup'}});
     }
   });
 
@@ -78,13 +101,13 @@ router.route('/mutationSignature')
       order: [['signature', 'ASC']],
     };
 
+    // Get all rows for this POG
     try {
-      // Get all rows for this POG
-      const result = await db.models.mutationSignature.scope('public').findAll(options);
-      res.json(result);
+      const results = await db.models.mutationSignature.scope('public').findAll(options);
+      return res.json(results);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedMutationSignaturelookup'}});
+      logger.error(`Unable to retrieve mutation signatures ${error}`);
+      return res.status(500).json({error: {message: 'Unable to retrieve mutation signatures', code: 'failedMutationSignaturelookup'}});
     }
   });
 

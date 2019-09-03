@@ -1,4 +1,5 @@
 const express = require('express');
+const {Op} = require('sequelize');
 const db = require('../../../models');
 const logger = require('../../../../lib/log');
 
@@ -20,7 +21,7 @@ router.route('/retrieve/:key')
     const opts = {
       where: {
         key: {
-          in: keys,
+          [Op.in]: keys,
         },
         pog_report_id: req.report.id,
       },
@@ -51,7 +52,7 @@ router.route('/expressionDensityGraphs')
           pog_id: req.POG.id,
           pog_report_id: req.report.id,
           key: {
-            $like: 'expDensity.%',
+            [Op.like]: 'expDensity.%',
           },
         },
         order: [['key', 'ASC']],
@@ -75,9 +76,9 @@ router.route('/mutationSummary')
       where: {
         pog_report_id: req.report.id,
         key: {
-          $or: [
-            {$like: 'mutation_summary.%'},
-            {$like: 'mutSummary.%'},
+          [Op.or]: [
+            {[Op.like]: 'mutation_summary.%'},
+            {[Op.like]: 'mutSummary.%'},
           ],
         },
       },
@@ -107,7 +108,7 @@ router.route('/subtypePlots')
           pog_id: req.POG.id,
           pog_report_id: req.report.id,
           key: {
-            $like: 'subtypePlot.%',
+            [Op.like]: 'subtypePlot.%',
           },
         },
         order: [['key', 'ASC']],

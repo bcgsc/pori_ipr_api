@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../../../models');
 
 const RoutingInterface = require('../../../routes/routingInterface');
@@ -68,7 +69,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
         opts.where = (req.query.hidden && req.query.hidden === 'true') ? {} : {hidden: false};
 
         if (req.query.slug) {
-          opts.where.slug = {$in: req.query.slug.split(',')};
+          opts.where.slug = {[Op.in]: req.query.slug.split(',')};
         }
 
         // Get All Definitions

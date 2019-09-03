@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../models');
 
 const ignored = {
@@ -16,10 +17,10 @@ module.exports = async (req, res, next, pogID) => {
     // Look for patient w/ a matching POGID or alternate_identifier
     const patient = await db.models.POG.findOne({
       where: {
-        $or: {
-          POGID: pogID,
-          alternate_identifier: pogID,
-        },
+        [Op.or]: [
+          {POGID: pogID},
+          {alternate_identifier: pogID},
+        ],
       },
       attributes: {exclude: ['deletedAt']},
       include: [

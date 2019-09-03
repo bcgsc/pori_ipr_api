@@ -25,7 +25,6 @@ describe('/GET DetailedGenomicAnalysis/Alterations', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('alterationType');
         res.body.should.all.have.property('newEntry');
         res.body.should.all.have.property('approvedTherapy');
@@ -74,7 +73,6 @@ describe('/GET Type DetailedGenomicAnalysis/Alterations', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('alterationType', 'prognostic');
         res.body.should.all.have.property('newEntry');
         res.body.should.all.have.property('approvedTherapy');
@@ -123,7 +121,6 @@ describe('/GET Single DetailedGenomicAnalysis/Alterations', () => {
         res.should.be.json;
         res.body.should.be.a('object');
         res.body.should.have.property('ident');
-        res.body.should.have.property('dataVersion');
         res.body.should.have.property('alterationType');
         res.body.should.have.property('newEntry');
         res.body.should.have.property('approvedTherapy');
@@ -201,7 +198,6 @@ describe('/PUT DetailedGenomicAnalysis/Alterations', () => {
         res.should.be.json;
         res.body.should.be.a('object');
         res.body.should.have.property('ident');
-        res.body.should.have.property('dataVersion');
         res.body.should.have.property('alterationType');
         res.body.should.have.property('newEntry');
         res.body.should.have.property('approvedTherapy');
@@ -248,7 +244,6 @@ describe('/GET DetailedGenomicAnalysis/Targeted Genes', () => {
         res.should.be.json;
         res.body.should.be.a('array');
         res.body.should.all.have.property('ident');
-        res.body.should.all.have.property('dataVersion');
         res.body.should.all.have.property('gene');
         res.body.should.all.have.property('variant');
         res.body.should.all.have.property('sample');

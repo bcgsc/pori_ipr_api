@@ -1,33 +1,33 @@
 const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 const logger = require('../../../lib/log');
 
 module.exports = sequelize => sequelize.define('project', {
-  id: {
-    type: Sq.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  ident: {
-    type: Sq.UUID,
-    unique: true,
-    defaultValue: Sq.UUIDV4,
-  },
+  ...DEFAULT_COLUMNS,
   name: {
     type: Sq.STRING,
-    unique: true,
     allowNull: false,
   },
 },
 {
-  // Automatically create createdAt, updatedAt, deletedAt
-  timestamps: true,
-  // Use soft-deletes!
-  paranoid: true,
+  ...DEFAULT_OPTIONS,
+  indexes: [
+    ...DEFAULT_OPTIONS.indexes || [],
+    {
+      unique: true,
+      fields: ['name'],
+      where: {
+        deleted_at: {
+          [Sq.Op.eq]: null,
+        },
+      },
+    },
+  ],
   scopes: {
     public: {
       attributes: {
-        exclude: ['deletedAt'],
+        exclude: ['id', 'deletedAt'],
       },
     },
   },

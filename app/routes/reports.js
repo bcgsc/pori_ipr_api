@@ -1,4 +1,6 @@
 const express = require('express');
+const {Op} = require('sequelize');
+const tableFilter = require('../libs/tableFilter');
 const db = require('../models');
 const Acl = require('../middleware/acl');
 const Report = require('../libs/structures/analysis_report');
@@ -30,7 +32,7 @@ router.route('/')
       logger.error(error);
       return res.status(500).json({error: {message: error.message, code: error.code}});
     }
-    const opts = {
+    let opts = {
       where: {},
       include: [
         {
@@ -111,7 +113,7 @@ router.route('/')
       opts.where.type = 'genomic';
     }
 
-    if (req.query.project) { // check access if filtering
+    if (req.query.project) { // check access if filtering on project
       // Get the names of the projects the user has access to
       const projectAccessNames = projectAccess.map((project) => {
         return project.name;
@@ -128,27 +130,43 @@ router.route('/')
       const projectAccessIdent = projectAccess.map((project) => {
         return project.ident;
       });
-      opts.where['$pog.projects.ident$'] = {$in: projectAccessIdent};
+      opts.where['$pog.projects.ident$'] = {[Op.in]: projectAccessIdent};
     }
 
     if (req.query.searchText) {
-      opts.where.$or = {
-        '$patientInformation.tumourType$': {$ilike: `%${req.query.searchText}%`},
-        '$patientInformation.biopsySite$': {$ilike: `%${req.query.searchText}%`},
-        '$patientInformation.physician$': {$ilike: `%${req.query.searchText}%`},
-        '$patientInformation.caseType$': {$ilike: `%${req.query.searchText}%`},
-        '$tumourAnalysis.diseaseExpressionComparator$': {$ilike: `%${req.query.searchText}%`},
-        '$tumourAnalysis.ploidy$': {$ilike: `%${req.query.searchText}%`},
-        '$pog.POGID$': {$ilike: `%${req.query.searchText}%`},
+      opts.where = {
+        [Op.or]: [
+          {'$patientInformation.tumourType$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.biopsySite$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$pog.POGID$': {[Op.iLike]: `%${req.query.searchText}%`}},
+        ],
       };
     }
+
+    // Create mapping for available columns to filter on
+    const columnMapping = {
+      patientID: {column: 'POGID', table: 'pog'},
+      analysisBiopsy: {column: 'analysis_biopsy', table: 'analysis'},
+      tumourType: {column: 'tumourType', table: 'patientInformation'},
+      physician: {column: 'physician', table: 'patientInformation'},
+      state: {column: 'state', table: null},
+      caseType: {column: 'caseType', table: 'patientInformation'},
+      alternateIdentifier: {column: 'alternate_identifier', table: 'analysis'},
+    };
+
+    // Add filters to query if available
+    opts = tableFilter(req, opts, columnMapping);
 
     // States
     if (req.query.states) {
       const states = req.query.states.split(',');
-      opts.where.state = {$in: states};
+      opts.where.state = {[Op.in]: states};
     } else {
-      opts.where.state = {$not: ['archived', 'nonproduction', 'reviewed']};
+      opts.where.state = {[Op.not]: ['archived', 'nonproduction', 'reviewed']};
     }
 
     // Are we filtering on POGUser relationship?
@@ -199,42 +217,19 @@ router.route('/:report')
     return res.json(req.report);
   })
   .put(async (req, res) => {
-    const pastState = req.report.state;
-
-    // Update Report
-    if (req.body.state) {
-      if (!['ready', 'active', 'presented', 'archived', 'nonproduction',
-        'reviewed', 'uploaded', 'signedoff'].includes(req.body.state)
-      ) {
-        return res.status(400).json({error: {message: 'The provided report state is not valid'}});
-      }
-      req.report.state = req.body.state;
-    }
-
     try {
-      await req.report.save();
-      logger.info('Report was saved');
-      // Add history record
-      // Create DataHistory entry
-      const dh = {
-        type: 'change',
-        pog_id: req.report.pog_id,
-        pog_report_id: req.report.id,
-        table: 'pog_analysis_reports',
-        model: 'analysis_report',
-        entry: req.report.ident,
-        previous: pastState,
-        new: req.report.state,
-        user_id: req.user.id,
-        comment: 'N/A',
-      };
-      await db.models.pog_analysis_reports_history.create(dh);
-      logger.info('Analysis report history was successfylly created');
+      await db.models.analysis_report.update(req.body, {
+        where: {
+          ident: req.report.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+      });
 
-      return res.json(req.report);
+      return res.status(200).send();
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to update report.'}});
+      logger.error(`Unable to update analysis report ${error}`);
+      return res.status(500).json({error: {message: 'Unable to update analysis report', cause: error}});
     }
   });
 
