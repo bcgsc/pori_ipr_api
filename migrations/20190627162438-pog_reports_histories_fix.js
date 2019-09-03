@@ -55,6 +55,10 @@ module.exports = {
       tables.push(table);
     });
 
+    // Remove unique name and username constraints
+    await queryInterface.removeConstraint('users', 'users_username_key');
+    await queryInterface.removeConstraint('projects', 'projects_name_key');
+
     // Rename properties
     await Promise.all(tables.map((table) => {
       return Promise.all([
@@ -66,7 +70,7 @@ module.exports = {
 
     console.log('Renamed createdAt, updatedAt, and deletedAt columns');
 
-    // Add indexes
+    // Add ident indexes
     await Promise.all(tables.map((table) => {
       const tableName = table.includes('pog_analysis_reports_') ? table.replace('pog_analysis_reports_', '') : table.replace('pog_', '');
       return queryInterface.addIndex(table, {
@@ -82,6 +86,31 @@ module.exports = {
     }));
 
     console.log('Added ident indexes to tables');
+
+    // Add username/name indexes
+    await queryInterface.addIndex('users', {
+      name: 'users_username_index',
+      unique: true,
+      fields: ['username'],
+      where: {
+        deleted_at: {
+          [Sequelize.Op.eq]: null,
+        },
+      },
+    });
+
+    await queryInterface.addIndex('projects', {
+      name: 'projects_name_index',
+      unique: true,
+      fields: ['name'],
+      where: {
+        deleted_at: {
+          [Sequelize.Op.eq]: null,
+        },
+      },
+    });
+
+    console.log('Added username/name indexes');
 
     return Promise.resolve(true);
   },
