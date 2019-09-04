@@ -17,9 +17,9 @@ const DEFAULTS = {
     ssl: '/etc/ssl/certs/current/combinedcert.cert',
   },
   keycloak: {
-    uri: ['production', 'development', 'test'].includes(process.env.NODE_ENV)
+    uri: ['production', 'development', 'staging'].includes(process.env.NODE_ENV)
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
-      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
+      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/TestIPR/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
     keyFile: process.env.NODE_ENV === 'production'
