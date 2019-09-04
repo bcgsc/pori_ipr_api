@@ -29,6 +29,11 @@ const DEFAULTS = {
   testing: {
     username: 'ipr-test',
   },
+  logging: {
+    level: process.env.NODE_ENV === 'production'
+      ? 'debug'
+      : 'info',
+  },
   database: {
     engine: 'postgres',
     migrate: false,
