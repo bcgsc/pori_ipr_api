@@ -9,7 +9,6 @@ if (process.env.NODE_ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr-staging';
 }
 
-
 const DEFAULTS = {
   env: process.env.NODE_ENV || 'development',
   web: {

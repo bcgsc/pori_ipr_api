@@ -30,28 +30,8 @@ module.exports = (async () => {
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Expose-Headers', 'X-token, X-Requested-With ,Origin, Content-Type, Accept');
-    next();
+    return next();
   });
-
-  // Suppress Console messages when testing...
-  if (process.env.NODE_ENV !== 'test') {
-    app.use(morgan((tokens, req, res) => {
-      const token = req.header('Authorization');
-      let user;
-      try {
-        user = jwt.decode(token).preferred_username;
-      } catch (err) {
-        user = token;
-      }
-      return [
-        tokens.method(req, res),
-        tokens.url(req, res),
-        tokens.status(req, res),
-        tokens['remote-user'](req, res) || user,
-        tokens['response-time'](req, res), 'ms',
-      ].join(' ');
-    }));
-  }
 
   // DEPENDENCIES CHECK ------------------------------------------------------
   const check = exec('convert');
