@@ -6,14 +6,12 @@ const nconf = require('../config');
 
 const logger = require('../../lib/log');
 
-const pubKey = fs.readFileSync(nconf.get('web:keyFile'));
+const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile')).toString();
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
   // Get Authorization Header
   let token = req.header('Authorization') || '';
-  let username;
-  let expiry;
 
   // Report loader case for permanent token lookup
   const respToken = await db.models.userToken.findOne({
@@ -41,7 +39,7 @@ module.exports = async (req, res, next) => {
       token = respAccess.access_token;
     } catch (error) {
       const errorDescription = JSON.parse(error.error).error_description;
-      logger.error(`Authentication falied ${error.name} ${error.statusCode} - ${errorDescription}`);
+      logger.error(`Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`);
       return res.status(400).json({error: {name: error.name, code: error.statusCode, cause: errorDescription}});
     }
   }

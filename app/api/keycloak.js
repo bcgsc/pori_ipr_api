@@ -20,6 +20,7 @@ $keycloak.getToken = async (username, password) => {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
   };
+  logger.debug(`requesting token from ${uri}`);
   const resp = JSON.parse(await request(options));
   return resp;
 };
