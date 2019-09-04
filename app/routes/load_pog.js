@@ -6,7 +6,7 @@ const moment = require('moment');
 const fs = require('fs');
 const d3 = require('d3-dsv');
 const {Op} = require('sequelize');
-const nconf = require('nconf').file(`./config/${process.env.NODE_ENV}.json`);
+const nconf = require('../config');
 
 const db = require('../models');
 const ReportLib = require('../libs/structures/analysis_report');

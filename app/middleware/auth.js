@@ -2,12 +2,11 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const db = require('../models');
 const keycloak = require('../api/keycloak');
+const nconf = require('../config');
 
 const logger = require('../../lib/log');
 
-const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
-  ? fs.readFileSync('keys/prodkey.pem')
-  : fs.readFileSync('keys/devkey.pem');
+const pubKey = fs.readFileSync(nconf.get('web:keyFile'));
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {

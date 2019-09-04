@@ -8,16 +8,25 @@ if (process.env.NODE_ENV === 'production') {
 } else if (process.env.NODE_ENV === 'staging') {
   DEFAULT_DB_NAME = 'ipr-staging';
 }
-const DEFAULT_DB_HOST = 'seqdevdb01.bcgsc.ca';
-const DEFAULT_DB_PORT = 5432;
-const DEFAULT_DB_USER = 'ipr_service';
 
 
 const DEFAULTS = {
-  env: 'development',
+  env: process.env.NODE_ENV || 'development',
   web: {
     port: 8080,
     ssl: '/etc/ssl/certs/current/combinedcert.cert',
+    keyFile: process.env.NODE_ENV === 'production'
+      ? 'keys/prodkey.pem'
+      : 'keys/devkey.pem',
+  },
+  keycloak: {
+    uri: ['production', 'development', 'test'].includes(process.env.NODE_ENV)
+      ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
+      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
+    clientId: 'IPR',
+  },
+  testing: {
+    username: 'ipr-test',
   },
   database: {
     engine: 'postgres',
@@ -25,10 +34,10 @@ const DEFAULTS = {
     hardMigration: false,
     schema: 'public',
     prefix: '',
-    username: DEFAULT_DB_USER,
-    hostname: DEFAULT_DB_HOST,
-    port: DEFAULT_DB_PORT,
-    database: DEFAULT_DB_NAME,
+    username: 'ipr_service',
+    hostname: 'seqdevdb01.bcgsc.ca',
+    port: 5432,
+    name: DEFAULT_DB_NAME,
   },
   jira: {
     hostname: 'www.bcgsc.ca',
@@ -243,6 +252,10 @@ const processEnvVariables = (env = process.env, opt = {}) => {
 
 const CONFIG = nconf.defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
-nconf.required(['database:password']);
+if (process.env.NODE_ENV === 'test') {
+  nconf.required(['database:password', 'testing:password']);
+} else {
+  nconf.required(['database:password']);
+}
 
 module.exports = CONFIG;

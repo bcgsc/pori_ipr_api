@@ -1,16 +1,15 @@
 const request = require('request-promise-native');
 const form = require('form-urlencoded').default;
+const nconf = require('../config');
 
 const $keycloak = {};
 
 $keycloak.getToken = async (username, password) => {
   const options = {
     method: 'POST',
-    uri: ['production', 'development', 'test'].includes(process.env.NODE_ENV)
-      ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
-      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
+    uri: nconf.get('keycloak:uri'),
     body: form({
-      client_id: 'IPR',
+      client_id: nconf.get('keycloak:clientId'),
       grant_type: 'password',
       username,
       password,

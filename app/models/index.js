@@ -6,7 +6,7 @@ const logger = require('../../lib/log'); // Load logging library
 
 // Load database
 const dbSettings = nconf.get('database');
-logger.info(`setting connection to database ${dbSettings.hostname}:${dbSettings.port} as ${dbSettings.username}`);
+logger.info(`setting connection to database ${dbSettings.name}(${dbSettings.hostname}):${dbSettings.port} as ${dbSettings.username}`);
 const sequelize = new Sq(
   dbSettings.name,
   dbSettings.username,
