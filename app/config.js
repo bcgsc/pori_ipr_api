@@ -16,6 +16,8 @@ if (process.env.NODE_ENV === 'production') {
   DEFAULT_LOG_LEVEL = 'warn';
 }
 
+const DEFAULT_TEST_USER = 'ipr-test';
+
 const DEFAULTS = {
   env: process.env.NODE_ENV || 'development',
   web: {
@@ -33,7 +35,7 @@ const DEFAULTS = {
       : 'keys/devkey.pem',
   },
   testing: {
-    username: 'ipr-test',
+    username: DEFAULT_TEST_USER,
   },
   logging: {
     level: DEFAULT_LOG_LEVEL,
@@ -260,7 +262,38 @@ const processEnvVariables = (env = process.env, opt = {}) => {
 };
 
 
-const CONFIG = nconf.defaults(merge(DEFAULTS, processEnvVariables(process.env)));
+const argv = {};
+Object.entries(DEFAULTS.database, ([key, value]) => {
+  argv[`database.${key}`] = {alias: `database:${key}`, default: value, parseValues: true};
+});
+Object.entries(DEFAULTS.keycloak, ([key, value]) => {
+  argv[`keycloak.${key}`] = {alias: `keycloak:${key}`, default: value, parseValues: true};
+});
+
+
+const CONFIG = nconf
+  .argv({
+    ...argv,
+    'testing.password': {
+      alias: 'testing:password',
+    },
+    'testing.username': {
+      alias: 'testing:username',
+      default: DEFAULT_TEST_USER,
+    },
+    'logging.level': {
+      alias: 'logging:level',
+      default: DEFAULT_LOG_LEVEL,
+    },
+    'database.password': {
+      alias: 'database:password',
+    },
+    port: {
+      alias: 'web:port',
+      default: 8080,
+    },
+  })
+  .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
 if (process.env.NODE_ENV === 'test') {
   CONFIG.required(['database:password', 'testing:password']);
