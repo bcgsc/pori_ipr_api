@@ -129,7 +129,8 @@ class AnalysisReport {
    * @returns {Promise.<object>} - Returns a public-safe object
    */
   async public() {
-    const result = await this.model.scope('public').findOne({
+    const reportModel = this.model.scope('public');
+    const result = await reportModel.bind(reportModel).findOne({
       where: {ident: this.instance.ident},
       attributes: {exclude: ['deletedAt']},
       include: [
