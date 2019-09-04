@@ -9,6 +9,13 @@ if (process.env.NODE_ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr-staging';
 }
 
+let DEFAULT_LOG_LEVEL = 'debug';
+if (process.env.NODE_ENV === 'production') {
+  DEFAULT_LOG_LEVEL = 'info';
+} else if (process.env.NODE_ENV === 'test') {
+  DEFAULT_LOG_LEVEL = 'warn';
+}
+
 const DEFAULTS = {
   env: process.env.NODE_ENV || 'development',
   web: {
@@ -29,9 +36,7 @@ const DEFAULTS = {
     username: 'ipr-test',
   },
   logging: {
-    level: process.env.NODE_ENV === 'production'
-      ? 'debug'
-      : 'info',
+    level: DEFAULT_LOG_LEVEL,
   },
   database: {
     engine: 'postgres',
