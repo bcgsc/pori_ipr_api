@@ -186,6 +186,7 @@ router.route('/')
     try {
       // return all reports
       let reports = await db.models.analysis_report.scope('public').findAll(opts);
+      const total = reports.length;
       if (req.query.paginated) {
         // limits and offsets are causing the query to break due to the public scope and subqueries
         // i.e. fields are not available for joining onto subquery selection
@@ -198,7 +199,7 @@ router.route('/')
         const finish = offset + limit;
         reports = reports.slice(start, finish);
       }
-      return res.json({total: reports.length, reports});
+      return res.json({total, reports});
     } catch (error) {
       logger.error(`Unable to lookup analysis reports ${error}`);
       return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
