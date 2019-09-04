@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const nconf = require('../config');
 const logger = require('../../lib/log');
 
-const pubKey = fs.readFileSync(nconf.get('web:keyFile'));
+const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile'));
 
 class SocketAuthentication {
   /**
