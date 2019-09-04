@@ -107,7 +107,7 @@ class GenomicLoader {
    * @returns {Promise.<Array.<string>>} - Returns collection of loader results
    */
   async load() {
-    logger.info('Starting Genomic Loader');
+    logger.info(`Starting Genomic Loader (${this.report.ident})`);
 
     // Run default POG Genomic Report loading
     if (this.options.profile === 'pog_genomic'
