@@ -259,9 +259,9 @@ const processEnvVariables = (env = process.env, opt = {}) => {
 const CONFIG = nconf.defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
 if (process.env.NODE_ENV === 'test') {
-  nconf.required(['database:password', 'testing:password']);
+  CONFIG.required(['database:password', 'testing:password']);
 } else {
-  nconf.required(['database:password']);
+  CONFIG.required(['database:password']);
 }
 
 module.exports = CONFIG;
