@@ -53,15 +53,15 @@ const referenceQueryFilter = (req) => {
 
   // Allow filters, and their query settings
   const allowedFilters = {
-    type: {operator: [Op.in], each: null, wrap: false},
-    relevance: {operator: [Op.in], each: null, wrap: false},
-    disease_list: {operator: [Op.or], each: [Op.iLike], wrap: true},
-    context: {operator: [Op.or], each: [Op.iLike], wrap: true},
-    evidence: {operator: [Op.in], each: null, wrap: false},
-    status: {operator: [Op.in], each: null, wrap: false},
-    events_expression: {operator: [Op.or], each: [Op.iLike], wrap: true},
-    ref_id: {operator: [Op.or], each: [Op.iLike], wrap: true},
-    ident: {operator: [Op.or], each: null, wrap: false},
+    type: {operator: Op.in, each: null, wrap: false},
+    relevance: {operator: Op.in, each: null, wrap: false},
+    disease_list: {operator: Op.or, each: Op.iLike, wrap: true},
+    context: {operator: Op.or, each: Op.iLike, wrap: true},
+    evidence: {operator: Op.in, each: null, wrap: false},
+    status: {operator: Op.in, each: null, wrap: false},
+    events_expression: {operator: Op.or, each: Op.iLike, wrap: true},
+    ref_id: {operator: Op.or, each: Op.iLike, wrap: true},
+    ident: {operator: Op.or, each: null, wrap: false},
   };
 
   // Are we building a where clause?
@@ -78,15 +78,18 @@ const referenceQueryFilter = (req) => {
       // Loop over each value and setup the query syntax
       values.forEach((v, i, arr) => {
         if (allowedFilters[filter].each) {
-          arr[i] = {}; // Make collection entry
-          arr[i][allowedFilters[filter].each] = (allowedFilters[filter].wrap) ? `%${v}%` : v;
+          // Make collection entry
+          arr[i] = {
+            [allowedFilters[filter].each]: (allowedFilters[filter].wrap) ? `%${v}%` : v,
+          };
         }
       });
 
       // Build where clause
       const clause = {};
-      clause[filter] = {};
-      clause[filter][allowedFilters[filter].operator] = values;
+      clause[filter] = {
+        [allowedFilters[filter].operator]: values,
+      };
 
       // Add to required (and) clauses
       clauses.push(clause);
