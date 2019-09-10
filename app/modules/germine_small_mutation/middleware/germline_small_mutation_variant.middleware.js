@@ -16,7 +16,8 @@ module.exports = async (req, res, next, ident) => {
   };
 
   try {
-    const result = await db.models.germline_small_mutation_variant.scope('public').findOne(opts);
+    const variantModel = db.models.germline_small_mutation_variant.scope('public');
+    const result = await variantModel.bind(variantModel).findOne(opts);
     if (!result) {
       throw new MiddlewareNotFound('Unable to find the germline report variant', req, res, 'germlineReportVariant');
     }

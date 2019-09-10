@@ -22,6 +22,8 @@ tags:
     description: User permissions - groups.
   - name: Genomic Summary
     description: Genomic Report - Summary details for a POG report
+  - name: Germline Report
+    description: Routes associated with creating, reviewing, and exporting the Germline Report
 paths:
   /user:
     get:
@@ -1181,7 +1183,6 @@ paths:
       description: Retrieve sample results based on POGID from LIMS
       tags:
         - LIMS
-        - biological-metadata
       security:
         - basicAuth: []
       requestBody:
@@ -1223,7 +1224,6 @@ paths:
       description: Retrieve library data from LIMS for specified library names
       tags:
         - LIMS
-        - LIMS library
       security:
         - basicAuth: []
       requestBody:
@@ -1265,7 +1265,6 @@ paths:
       description: Retrieve sequencer run data from LIMS for a specified library
       tags:
         - LIMS
-        - Sequencer Run
       security:
         - basicAuth: []
       requestBody:
@@ -1309,7 +1308,6 @@ paths:
             type: string
       tags:
         - LIMS
-        - Disease Ontology
       security:
         - basicAuth: []
       responses:
@@ -1330,8 +1328,6 @@ paths:
       summary: Get all analysis reports
       description: Get all POG analysis reports that you have acess to
       tags:
-        - Analysis
-        - Analysis Reports
         - Reports
       security:
         - basicAuth: []
@@ -1393,8 +1389,7 @@ paths:
       summary: Add new project
       description: Add a new project to the list of projects
       tags:
-        - Project
-        - Add project
+        - Projects
       security:
         - basicAuth: []
       responses:
@@ -1549,7 +1544,7 @@ paths:
       summary: Get all germline small mutation reports
       description: Returns all germline small mutation reports the user has access to
       tags:
-        - Germline Small Mutation
+        - Germline Report
       parameters:
         - name: search
           in: query
@@ -1604,6 +1599,165 @@ paths:
   # "/POG/{POG}/report/{report}/probe/alterations":
   # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{mutation}":
   # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{type}":
+  /patient/{POG}/biopsy/{analysis}:
+    security:
+      - basicAuth: []
+    parameters:
+      - $ref: '#components/parameters/POG'
+      - $ref: '#components/parameters/analysis'
+    get:
+      summary: Get the details of a Germline Report
+      tags:
+        - Germline Report
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysis:
+                    type: object
+                  biofx_assigned:
+                    $ref: '#components/schemas/User'
+                  reviews:
+                    type: array
+                    items:
+                      type: object
+                  variants:
+                    type: array
+                    items:
+                      type: object
+    post:
+      summary: Upload a Germline Report
+      tags:
+        - Germline Report
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source
+                - version
+                - patient
+                - rows
+                - project
+                - normal_library
+              properties:
+                source:
+                  type: string
+                  description: source file path
+                version:
+                  type: string
+                  description: source file version
+                  example: v0.0.1
+                patient:
+                  type: string
+                  description: patient identifier
+                  example: POG1234
+                rows:
+                  type: array
+                  description: Data rows
+                  items:
+                    type: object
+                    required:
+                      - cgl_category
+                      - preferred_transcript
+                      - gmaf
+                    properties:
+                      flagged:
+                        type: string
+                      clinvar:
+                        type: string
+                      cgl_category:
+                        type: string
+                      gmaf:
+                        type: string
+                      transcript:
+                        type: string
+                      gene:
+                        type: string
+                      variant:
+                        type: string
+                      impact:
+                        type: string
+                      chromosome:
+                        type: string
+                      position:
+                        type: string
+                      dbSNP:
+                        type: string
+                      reference:
+                        type: string
+                      alteration:
+                        type: string
+                      zygosity_germline:
+                        type: string
+                      preferred_transcript:
+                        type: boolean
+                      hgvs_cdna:
+                        type: string
+                      hgvs_protein:
+                        type: string
+                      zygosity_tumour:
+                        type: string
+                      genomic_variant_reads:
+                        type: string
+                      rna_variant_reads:
+                        type: string
+                      gene_somatic_abberation:
+                        type: string
+                      notes:
+                        type: string
+                      type:
+                        type: string
+                      patient_history:
+                        type: string
+                      family_history:
+                        type: string
+                      tcga_comp_norm_percentile:
+                        type: string
+                      tcga_comp_percentile:
+                        type: string
+                      gtex_comp_percentile:
+                        type: string
+                      fc_bodymap:
+                        type: string
+                      gene_expression_rpkm:
+                          type: decimal
+                      additional_info:
+                        type: string
+                project:
+                  type: string
+                  description: Project name
+                normal_library:
+                  type: string
+                  example: P12345
+                  description: The germline/normal library name
+      responses:
+        400:
+          description: Missing Required Fields or the Report already Exists
+        200:
+          description: The report was created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  variants:
+                    type: object
+                  analysis:
+                    type: object
+                    properties:
+                      pog:
+                        $ref: '#components/schemas/POG'
+                  biofx_assigned:
+                    $ref: '#components/schemas/User'
+
+
+
 externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
@@ -1628,6 +1782,14 @@ components:
       description: Analysis report ident
       schema:
         type: string
+    analysis:
+      name: analysis
+      in: path
+      required: true
+      description: the analysis (or biopsy) ID
+      schema:
+        type: string
+        format: UUIDv4
   securitySchemes:
     basicAuth:
       type: http
