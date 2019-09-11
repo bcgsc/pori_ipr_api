@@ -64,7 +64,10 @@ class PatientLoader {
     // Parse file!
     const result = parse(output, {delimiter: ',', columns: true});
 
-    if (result.length > 1) {
+    if (result.length === 0) {
+      logger.error(`[${this.report.ident}][Loader][Summary.PatientInformation] Patient information is required`);
+      throw new Error(`[${this.report.ident}][Loader][Summary.PatientInformation] Patient information is required`);
+    } else if (result.length > 1) {
       logger.error(`[${this.report.ident}][Loader][Summary.PatientInformation] More than one patient history entry found`);
       throw new Error(`[${this.report.ident}][Loader][Summary.PatientInformation] More than one patient history entry found`);
     }
