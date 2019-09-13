@@ -218,15 +218,29 @@ router.route('/:report')
   })
   .put(async (req, res) => {
     try {
-      await db.models.analysis_report.update(req.body, {
+      const result = await db.models.analysis_report.update(req.body, {
         where: {
           ident: req.report.ident,
         },
         individualHooks: true,
         paranoid: true,
+        returning: true,
       });
 
-      return res.status(200).send();
+      // Get updated model data from update
+      const [, [{dataValues}]] = result;
+
+      // Remove id's and deletedAt properties from returned model
+      const {
+        id, pog_id, createdBy_id, deletedAt, ...publicModel
+      } = dataValues;
+
+      publicModel.patientInformation = req.report.patientInformation;
+      publicModel.analysis = req.report.analysis;
+      publicModel.pog = req.report.pog;
+      publicModel.users = req.report.users;
+
+      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update analysis report ${error}`);
       return res.status(500).json({error: {message: 'Unable to update analysis report', cause: error}});
