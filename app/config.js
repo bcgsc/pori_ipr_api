@@ -6,7 +6,7 @@ let DEFAULT_DB_NAME = 'ipr-dev';
 if (process.env.NODE_ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (process.env.NODE_ENV === 'staging') {
-  DEFAULT_DB_NAME = 'ipr-staging';
+  DEFAULT_DB_NAME = 'ipr-sync-staging';
 }
 
 let DEFAULT_LOG_LEVEL = 'debug';
