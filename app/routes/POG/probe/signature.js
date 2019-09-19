@@ -40,37 +40,36 @@ router.route('/:role(ready|reviewer)')
     const data = {};
     data[`${role}By_id`] = req.user.id;
     data[`${role}At`] = moment().toISOString();
+    data.pog_id = req.POG.id;
+    data.pog_report_id = req.report.id;
 
     // Is there a signature entry yet? If not, create one.
     if (!req.signature) {
       try {
-        req.signature = await db.models.probe_signature.create({pog_id: req.POG.id, pog_report_id: req.report.id});
+        await db.models.probe_signature.create(data);
       } catch (error) {
         logger.error(`Create Signature Error ${error}`);
         return res.status(500).json({error: {message: 'Unable to create probe signature', code: 'failedCreateProbeSignature'}});
       }
+    } else {
+      try {
+        await db.models.probe_signature.update(data, {
+          where: {ident: req.signature.ident},
+          individualHooks: true,
+          paranoid: true,
+        });
+      } catch (error) {
+        logger.error(`Unable to update prob signature ${error}`);
+        return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
+      }
     }
 
     try {
-      const result = await db.models.probe_signature.update(data, {
-        where: {ident: req.signature.ident},
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      const result = await db.models.probe_signature.scope('public').findOne({where: {pog_report_id: req.report.id}});
+      return res.json(result);
     } catch (error) {
-      logger.error(`Unable to update prob signature ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
+      logger.error(`Error while trying to find updated probe signature ${error}`);
+      return res.status().json({error: {message: 'Error while trying to find updated probe signature', code: 'failedUpdateProbeSignature', cause: error}});
     }
   });
 
@@ -95,25 +94,22 @@ router.route('/revoke/:role(ready|reviewer)')
     data[`${role}At`] = null;
 
     try {
-      const result = await db.models.probe_signature.update(data, {
+      await db.models.probe_signature.update(data, {
         where: {ident: req.signature.ident},
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update prob signature ${error}`);
       return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
+    }
+
+    try {
+      const result = await db.models.probe_signature.scope('public').findOne({where: {pog_report_id: req.report.id}});
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Error while trying to find updated probe signature ${error}`);
+      return res.status().json({error: {message: 'Error while trying to find updated probe signature', code: 'failedUpdateProbeSignature', cause: error}});
     }
   });
 
