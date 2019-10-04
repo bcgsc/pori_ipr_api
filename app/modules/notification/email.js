@@ -34,6 +34,19 @@ class Email {
   }
 
   /**
+   * Set Sender
+   *
+   * @param {string|array} address - Email message sender
+   *
+   * @returns {object} - Return self object for chaining
+   */
+  setSender(address) {
+    this.from = address;
+
+    return this;
+  }
+
+  /**
    * Set CC
    *
    * @param {string|array} address - Email message CC(s)
@@ -86,7 +99,7 @@ class Email {
     this.htmlBody = pug.renderFile(`${__dirname}/templates/email.pug`, locals);
 
     const message = {
-      from: 'No Reply <ipr@bcgsc.ca>',
+      from: this.from || 'No Reply <ipr@bcgsc.ca>',
       to: this.to,
       cc: this.cc,
       subject: this.subject,
