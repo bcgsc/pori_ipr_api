@@ -302,7 +302,7 @@ const CONFIG = nconf
     },
     'bioapps.api': {
       alias: 'bioapps:api',
-      default: BIOAPPS_DEFAULTS.uri,
+      default: BIOAPPS_DEFAULTS.api,
     },
     'lims.hostname': {
       alias: 'lims:hostname',
@@ -310,7 +310,7 @@ const CONFIG = nconf
     },
     'lims.api': {
       alias: 'lims:api',
-      default: LIMS_DEFAULTS.uri,
+      default: LIMS_DEFAULTS.api,
     },
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
