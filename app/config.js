@@ -16,7 +16,17 @@ if (process.env.NODE_ENV === 'production') {
   DEFAULT_LOG_LEVEL = 'warn';
 }
 
+
 const DEFAULT_TEST_USER = 'ipr-test';
+const BIOAPPS_DEFAULTS = {
+  hostname: 'http://sbs.bcgsc.ca:8100',
+  api: '',
+};
+
+const LIMS_DEFAULTS = {
+  hostname: 'https://lims13.bcgsc.ca',
+  api: '/prod/limsapi',
+};
 
 const DEFAULTS = {
   env: process.env.NODE_ENV || 'development',
@@ -56,14 +66,8 @@ const DEFAULTS = {
     api: '/jira/rest',
     version: '2',
   },
-  lims: {
-    hostname: 'https://lims13.bcgsc.ca',
-    api: '/prod/limsapi',
-  },
-  bioapps: {
-    hostname: 'http://sbs.bcgsc.ca:8100',
-    api: '',
-  },
+  lims: LIMS_DEFAULTS,
+  bioapps: BIOAPPS_DEFAULTS,
   redis: {
     uri: '',
     host: '',
@@ -291,6 +295,22 @@ const CONFIG = nconf
     port: {
       alias: 'web:port',
       default: 8080,
+    },
+    'bioapps.hostname': {
+      alias: 'bioapps:hostname',
+      default: BIOAPPS_DEFAULTS.hostname,
+    },
+    'bioapps.api': {
+      alias: 'bioapps:api',
+      default: BIOAPPS_DEFAULTS.uri,
+    },
+    'lims.hostname': {
+      alias: 'lims:hostname',
+      default: LIMS_DEFAULTS.hostname,
+    },
+    'lims.api': {
+      alias: 'lims:api',
+      default: LIMS_DEFAULTS.uri,
     },
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
