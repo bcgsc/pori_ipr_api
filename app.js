@@ -33,6 +33,26 @@ module.exports = (async () => {
     return next();
   });
 
+  // log http request information
+  // ex. "GET /api/1.0/project 200 username 173.095 ms"
+  app.use(morgan((tokens, req, res) => {
+    const token = req.header('Authorization');
+    let user;
+    try {
+      user = jwt.decode(token).preferred_username;
+    } catch (err) {
+      user = token;
+    }
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens['remote-user'](req, res) || user,
+      tokens['response-time'](req, res), 'ms',
+    ].join(' ');
+  }));
+
+
   // DEPENDENCIES CHECK ------------------------------------------------------
   const check = exec('convert');
 
