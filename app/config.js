@@ -47,7 +47,7 @@ const DEFAULTS = {
   testing: {
     username: DEFAULT_TEST_USER,
   },
-  logging: {
+  log: {
     level: DEFAULT_LOG_LEVEL,
   },
   database: {
@@ -259,6 +259,7 @@ const processEnvVariables = (env = process.env, opt = {}) => {
         }
         parent = parent[subkey];
       }
+
       parent[keys[keys.length - 1]] = value;
     }
   }
@@ -283,34 +284,27 @@ const CONFIG = nconf
     },
     'testing.username': {
       alias: 'testing:username',
-      default: DEFAULT_TEST_USER,
     },
-    'logging.level': {
-      alias: 'logging:level',
-      default: DEFAULT_LOG_LEVEL,
+    'log.level': {
+      alias: 'log:level',
     },
     'database.password': {
       alias: 'database:password',
     },
     port: {
       alias: 'web:port',
-      default: 8080,
     },
     'bioapps.hostname': {
       alias: 'bioapps:hostname',
-      default: BIOAPPS_DEFAULTS.hostname,
     },
     'bioapps.api': {
       alias: 'bioapps:api',
-      default: BIOAPPS_DEFAULTS.api,
     },
     'lims.hostname': {
       alias: 'lims:hostname',
-      default: LIMS_DEFAULTS.hostname,
     },
     'lims.api': {
       alias: 'lims:api',
-      default: LIMS_DEFAULTS.api,
     },
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
