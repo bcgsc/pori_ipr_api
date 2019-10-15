@@ -5,7 +5,9 @@
   "description": "Integrated Pipeline Reports API",
   "main": "app.js",
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "NODE_ENV=local node ./bin/www",
+    "start:prod": "NODE_ENV=production node ./bin/www",
+    "start:dev": "NODE_ENV=development node ./bin/www",
     "migrate": "node ./bin/www --database.migrate",
     "hardMigrate": "node ./bin/www --database.migrate --database.hardMigrate",
     "test": "nyc --reporter=html --reporter=text --reporter=clover mocha -R mocha-multi-reporters --reporter-options configFile=config/coverage.json --timeout 10000 --exclude ['**/test/*.js'] --include ['**/test/changeHistory.js']",
