@@ -1,6 +1,6 @@
 const express = require('express');
 const $https = require('https');
-const nconf = require('nconf').argv().env().file({file: './config/config.json'});
+const nconf = require('../config');
 
 const logger = require('../../lib/log');
 

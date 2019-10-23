@@ -1,5 +1,5 @@
 const request = require('request-promise-native');
-const nconf = require('nconf').argv().env().file({file: './config/config.json'});
+const nconf = require('../config');
 const gin = require('../../lib/ginCredentials');
 
 const HOSTNAME = nconf.get('lims:hostname');

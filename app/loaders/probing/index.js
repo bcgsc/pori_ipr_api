@@ -1,5 +1,5 @@
 const glob = require('glob');
-const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
+const nconf = require('../../config');
 
 const summaryPatientInformation = require('../summary/patientInformation');
 const summaryGenomicEventsTherapeutic = require('../summary/genomicEventsTherapeutic');

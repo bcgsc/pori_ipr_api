@@ -2,19 +2,16 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const db = require('../models');
 const keycloak = require('../api/keycloak');
+const nconf = require('../config');
 
 const logger = require('../../lib/log');
 
-const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
-  ? fs.readFileSync('keys/prodkey.pem')
-  : fs.readFileSync('keys/devkey.pem');
+const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile')).toString();
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
   // Get Authorization Header
   let token = req.header('Authorization') || '';
-  let username;
-  let expiry;
 
   // Report loader case for permanent token lookup
   const respToken = await db.models.userToken.findOne({
@@ -42,7 +39,7 @@ module.exports = async (req, res, next) => {
       token = respAccess.access_token;
     } catch (error) {
       const errorDescription = JSON.parse(error.error).error_description;
-      logger.error(`Authentication falied ${error.name} ${error.statusCode} - ${errorDescription}`);
+      logger.error(`Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`);
       return res.status(400).json({error: {name: error.name, code: error.statusCode, cause: errorDescription}});
     }
   }
@@ -51,18 +48,19 @@ module.exports = async (req, res, next) => {
   }
 
   // Verify token using public key
-  jwt.verify(token, pubKey, {algorithms: ['RS256']}, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({message: 'Invalid or expired authorization token'});
-    }
-    // Check for IPR access
-    if (!decoded.realm_access.roles.includes('IPR')) {
-      return res.status(403).json({message: 'IPR Access Error'});
-    }
-    username = decoded.preferred_username;
-    expiry = decoded.exp;
-    return null;
-  });
+  let decoded;
+  try {
+    decoded = await jwt.verify(token, pubKey, {algorithms: ['RS256']});
+  } catch (err) {
+    logger.debug(`token verification failed against key ${nconf.get('keycloak:keyFile')}`);
+    return res.status(403).json({message: `Invalid or expired authorization token: (${err.message})`});
+  }
+  // Check for IPR access
+  if (!decoded.realm_access.roles.includes(nconf.get('keycloak:role'))) {
+    return res.status(403).json({message: 'IPR Access Error'});
+  }
+  const username = decoded.preferred_username;
+  const expiry = decoded.exp;
 
   // Lookup token in IPR database
   try {

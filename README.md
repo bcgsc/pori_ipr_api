@@ -4,12 +4,12 @@
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
 The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
-The API is responsible for providing all data for GSC genomic and probe reports, POG sample tracking, 
+The API is responsible for providing all data for GSC genomic and probe reports, POG sample tracking,
 POG Biopsy tracking, Germline Small Mutation reports, and legacy Knowledgebase.
 
 An integrated data synchronization application runs concurrently with the API in a separate process.
 The sync-worker is responsible for regularly checking in with LIMS and BioApps to keep sample tracking
-tasks up to date. 
+tasks up to date.
 
 #### Installation
 ======================================
@@ -22,7 +22,7 @@ npm install
 This process can take between 1-5 minutes depending on caches, and connection speed. Once NPM has finished installing
 all required dependencies, the server can be started with the following command:
 ```
-NODE_ENV=[local|development|production] npm start
+NODE_ENV=[local|development|production|staging|test] npm start
 ```
 
 To start the synchronizer server, run the following command:
@@ -49,107 +49,35 @@ environment flag set.
 Please note that database migration will not execute alter statements (e.g. adding/editing columns on an existing table). These changes will need to be applied in the sequelize model as well as directly in the database itself to take effect.
 
 
-
-
 #### Configuration
 ======================================
 
 This repository contains configuration profiles for production, testing, and development environments. A profile will be
 selected based on the NODE_ENV environment setting, or by explicitly calling --env [production|development] when
-initializing the server.
+initializing the server. The configuration values are set with defaults in `app/config.js`, which
+can be overridden with environment variables.
 
-The application server expects to find a `.env.json` file in one of two places:
+Environment Variables are expected to be prefixed with `IPR_` and separated by underscores. For example,
+to override the database hostname you might use the following
 
-1. For local environments in the root folder: `./.env.json`
-2. For production, test, and development, it expects to find it in a parent folder: `../persist/.env.json`
-3. For specifying config values via the command line (i.e lims api) use --key value at the end of the command (i.e NODE_ENV=local npm start --lims:api /beta/limsapi)
-
-
-The format for the file declares a configuration by environment:
+```bash
+export IPR_DATABASE_HOSTNAME=someTestServerName
 ```
+
+This would then be converted to
+
+```json
 {
-  "development": {
-    "database": {
-      "engine": "postgres",
-      "migrate": false,
-      "hardMigration": false,
-
-      "postgres": {
-        "hostname": "seqdevdb01.bcgsc.ca",
-        "port": 5432,
-        "username": "AzureDiamond",
-        "password": "hunter2",
-        "schema": "public",
-        "database": "ipr-dev",
-        "prefix": ""
-      }
-    }
-  },
-
-  "test": {
-    "database": {
-      "engine": "postgres",
-      "migrate": false,
-      "hardMigration": false,
-
-      "postgres": {
-        "hostname": "seqdevdb01.bcgsc.ca",
-        "port": 5432,
-        "username": "AzureDiamond",
-        "password": "hunter2",
-        "schema": "public",
-        "database": "ipr-test",
-        "prefix": ""
-      }
-    }
-  },
-
-  "local": {
-    "database": {
-      "engine": "postgres",
-      "migrate": false,
-      "hardMigration": false,
-
-      "postgres": {
-        "hostname": "seqdevdb01.bcgsc.ca",
-        "port": 5432,
-        "username": "AzureDiamond",
-        "password": "hunter2",
-        "schema": "public",
-        "database": "ipr-dev",
-        "prefix": ""
-      }
-    }
-  }
-
-  "testUser": {
-    "username": "test-account-username",
-    "password": "test-account-password"
-  }
+  "database": {"hostname": "someTestServerName"}
 }
-
 ```
 
+Database settings and credentials can also be given via command line arguments which follow the pattern
+of `--<section>.<setting>`. For Example
 
-##### Settings
-
-* `database` - Defines the DB settings
-* `engine` - The database engine/driver being used
-* `migrate` - Default state for migration settings - Keep to false! When true, SequelizeJS attempts to create tables according to the loaded schema
-* `hardMigrate` - When true, SequelizeJS will drop all tables and recreate based on the current loaded models.
-
-* `postgres` - Settings for Postgres engine
-* `hostname` - Hostname for the database server
-* `port` - Port to connect to the DB on
-* `username` - The username the application should be connecting with
-* `password` - DB password for the nominated user account
-* `schema` - PGSQL only; The schema the database is namespaced under
-* `database` - Name of the database
-* `prefix` - Not in use.
-
-* `testUser` - Defines the user/credentials to use to run API tests
-* `username` - Username to use to run API tests
-* `password` - Password to use to run API tests
+```bash
+app.js --database.hostname someTestServerName
+```
 
 
 #### Running Tests with Mocha
@@ -157,7 +85,19 @@ The format for the file declares a configuration by environment:
 
 Unit and Integration tests are run and written using Mocha + Chai with code coverage reports generated using Istanbul/NYC and Clover. Tests are configured to run using a local environment variable - this currently cannot be overridden.
 
-To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage.
+To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run
+
+```bash
+npm run test -- --database.password someDbPassword --testing.password someApiPassword
+```
+
+or with environment variables
+
+```bash
+export IPR_DATABASE_PASSWORD=someDbPassword
+export IPR_TESTING_PASSWORD=someApiPassword
+npm run test
+```
 
 #### Generating JSDocs
 ======================================
@@ -211,8 +151,8 @@ It is possible to use pm2 to actively monitor the console of the applications by
 Note: The pm2 daemon will sometimes launch a new instance of pm2 when running pm2 commands as opposed to accessing the currently running version of pm2. You can tell if there are multiple instances running by executing the command `ps aux | grep pm2`
 ```
 [nmartin@iprweb03 ~]$ ps aux | grep pm2
-bpierce  13787  0.1  1.2 952276 50004 ?        Ssl  Jul20   9:28 PM2 v3.0.0: God Daemon (/home/bpierce/.pm2)                                           
-bpierce  13800  0.1  1.5 1224456 61028 ?       Ssl  Jul20   9:49 node /home/bpierce/.pm2/node_modules/pm2-logrotate/app.js                                           
+bpierce  13787  0.1  1.2 952276 50004 ?        Ssl  Jul20   9:28 PM2 v3.0.0: God Daemon (/home/bpierce/.pm2)
+bpierce  13800  0.1  1.5 1224456 61028 ?       Ssl  Jul20   9:49 node /home/bpierce/.pm2/node_modules/pm2-logrotate/app.js
 nmartin  18162  0.0  0.0 103312   856 pts/0    S+   10:55   0:00 grep pm2
 ```
 At any given time, there should only be three processes listed in this command: one for the daemon, one for the node pm2 instance, and one for the grep command. If there are additional instances running (usually in a pair of a daemon process and node process) you should execute the kill command as bpierce for any daemon instances that are not the most recent one. Note that the logs are streamed in from the most recently activated instance of pm2 - therefore, if you have multiple instances running off of the same port, the logs will only indicate that the API initialization has failed due to the port already being in use until you kill old instances and allow the newest one to connect.
@@ -264,9 +204,6 @@ pm2 start current/pm2.config.js --env production
 In the above screenshot, the syncWorker task is busy running a job against LIMS API.
 
 
-
-
-
 #### Synchronizer tasks
 ======================================
 
@@ -309,6 +246,8 @@ Merged BAMs have their own endpoint, and are easy to check via this endpoint. Th
 ```
 .
 ├── app                                 # Application files
+|   |
+|   ├── config.js                       # Main configuration module which handles all ENV specific defaults
 │   │
 │   ├── api                             # API Interfaces
 │   │                                   Factories for interacting with API services.
@@ -373,8 +312,7 @@ Merged BAMs have their own endpoint, and are easy to check via this endpoint. Th
 │                                        data with other API services.
 │
 │
-├── config                              # Configuration
-│   └── file.json                       JSON formatted configuration files.
+├── config                              # Other Configuration files
 │
 ├── database                            # Databases
 │   ├── development.sqlite              Local development DB - not to be commited to source

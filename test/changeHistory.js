@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -10,16 +10,11 @@ chai.use(chaiHttp);
 chai.use(require('chai-things'));
 
 // get test user info
-let CONFIG;
-let username;
-let password;
-try {
-  CONFIG = require('../.env.json');
-  ({username, password} = CONFIG.testUser);
-} catch (error) {
-  console.log(`Unable to get test user ${error}`);
-  throw new Error(`Unable to get test user ${error}`);
-}
+const CONFIG = require('../app/config');
+
+CONFIG.set('env', 'test');
+
+const {username, password} = CONFIG.get('testing');
 
 // new project info
 const projectData = {
@@ -35,7 +30,7 @@ const update = {
 let server;
 // Start API
 before(async () => {
-  server = await require('../app.js');
+  server = await require('../app.js'); // eslint-disable-line
 });
 
 // Tests history changes and update changes
@@ -49,9 +44,9 @@ describe('Tests for update changes', () => {
       .auth(username, password)
       .type('json')
       .send(projectData);
-
     res.should.have.status(201);
     ident = res.body.ident;
+
 
     // check that the created project record exists
     res = await chai.request(server)

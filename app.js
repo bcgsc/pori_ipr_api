@@ -30,11 +30,12 @@ module.exports = (async () => {
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Expose-Headers', 'X-token, X-Requested-With ,Origin, Content-Type, Accept');
-    next();
+    return next();
   });
 
-  // Suppress Console messages when testing...
-  if (process.env.NODE_ENV !== 'test') {
+  // log http request information
+  // ex. "GET /api/1.0/project 200 username 173.095 ms"
+  if (logger.levels[logger.level] >= logger.levels.info) {
     app.use(morgan((tokens, req, res) => {
       const token = req.header('Authorization');
       let user;
@@ -52,6 +53,7 @@ module.exports = (async () => {
       ].join(' ');
     }));
   }
+
 
   // DEPENDENCIES CHECK ------------------------------------------------------
   const check = exec('convert');
