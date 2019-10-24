@@ -33,6 +33,7 @@ const Analysis = require('../modules/analysis/routing');
 const GermlineReports = require('../modules/germine_small_mutation/routing');
 const GermlineReportsExport = require('../modules/germine_small_mutation/routing/export.route');
 const logger = require('../../lib/log');
+const POG = require('./POG/base');
 
 const router = express.Router({mergeParams: true});
 
@@ -149,40 +150,7 @@ class Routing extends RouterInterface {
     this.bindRouteObject('/project', projectRoute);
 
     // Auto-Build routes
-    await this.buildRecursiveRoutes();
-    return true;
-  }
-
-  /**
-   * Automatically map POG endpoints
-   *
-   * @returns {Promise.<boolean>} - Returns true if building routes was successful
-   */
-  async buildRecursiveRoutes() {
-    // Recursively include routes
-    const files = await recursive('./app/routes/POG');
-    files.forEach((route) => {
-      // Remove index file
-      if (route === 'app/routes/index.js'
-        || route.includes('/user/')
-        || this.ignored.files.includes(route.split('/').pop())
-      ) {
-        return;
-      }
-
-      // Remove first two directories of path
-      const formattedRoute = route.replace(/(app\/routes\/POG\/)/g, '').replace(/(.js)/g, '').split('/');
-
-      // Create routeName Object
-      const filename = formattedRoute.pop();
-      const path = (formattedRoute.length === 0) ? '' : `${formattedRoute.join('/')}/`;
-
-      // Initialize the route to add its func
-      const module = require(`./POG/${path}${filename}`); // causes linting error but need to be generated dynamically
-
-      // Add router to specified route name in the app
-      this.bindRouteObject(`/POG/:POG/report/:report/${path}${(filename === 'index') ? '' : filename}`, module);
-    });
+    this.router.use('/POG/:POG/report/:report', POG);
     return true;
   }
 
