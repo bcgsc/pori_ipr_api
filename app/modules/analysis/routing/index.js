@@ -33,7 +33,7 @@ class TrackingRouter extends RoutingInterface {
     super();
     this.io = io;
     // Register Middleware
-    this.registerMiddleware('analysis', analysisMiddleware);
+    this.router.param('analysis', analysisMiddleware);
     // Setup analysis endpoint
     this.analysis();
     // Extended Details

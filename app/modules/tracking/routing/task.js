@@ -25,11 +25,11 @@ class TrackingTaskRoute extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('POG', pogMiddleware);
-    this.registerMiddleware('analysis', analysisMiddleware);
-    this.registerMiddleware('definition', definitionMiddleware);
-    this.registerMiddleware('state', stateMiddleware);
-    this.registerMiddleware('task', taskMiddleware);
+    this.router.param('POG', pogMiddleware);
+    this.router.param('analysis', analysisMiddleware);
+    this.router.param('definition', definitionMiddleware);
+    this.router.param('state', stateMiddleware);
+    this.router.param('task', taskMiddleware);
 
     // Register Task endpoint
     this.taskPath();

@@ -21,7 +21,7 @@ class TrackingStateRoute extends RoutingInterface {
     this.io = io;
 
     // Register middleware
-    this.registerMiddleware('state', stateMiddleware);
+    this.router.param('state', stateMiddleware);
 
     // Register root
     this.rootPath();

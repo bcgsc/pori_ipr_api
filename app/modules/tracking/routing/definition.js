@@ -21,7 +21,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
     this.io = io;
 
     // Register middleware
-    this.registerMiddleware('definition', definitionMiddleware);
+    this.router.param('definition', definitionMiddleware);
 
     // Register root
     this.rootPath();

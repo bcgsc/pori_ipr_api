@@ -32,19 +32,6 @@ class RoutingInterface {
   getRouter() {
     return this.router;
   }
-
-
-  /**
-   * Register Middleware
-   *
-   * @param {string} name - Name of route parameter
-   * @param {function} handler - Handler function that will handle the middleware
-   *
-   * @returns {Router} - Returns the instance of the express router
-   */
-  registerMiddleware(name, handler) {
-    return this.router.param(name, handler);
-  }
 }
 
 module.exports = RoutingInterface;

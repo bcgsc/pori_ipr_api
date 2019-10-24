@@ -32,9 +32,9 @@ class GSMRouter extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('gsm_report', gsmMiddleware);
-    this.registerMiddleware('review', reviewMiddleware);
-    this.registerMiddleware('variant', variantMiddleware);
+    this.router.param('gsm_report', gsmMiddleware);
+    this.router.param('review', reviewMiddleware);
+    this.router.param('variant', variantMiddleware);
 
     // Load Report
     this.router.post('/patient/:patient/biopsy/:analysis', this.loadReport);

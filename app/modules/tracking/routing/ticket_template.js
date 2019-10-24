@@ -21,8 +21,8 @@ class TrackingTicketTemplateRoutes extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('template', ticketTemplateMiddleware);
-    this.registerMiddleware('definition', definitionMiddleware);
+    this.router.param('template', ticketTemplateMiddleware);
+    this.router.param('definition', definitionMiddleware);
 
     // Register Task endpoint
     this.rootPath();

@@ -18,8 +18,8 @@ class GeneViewRouter extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('report', reportMiddleware);
-    this.registerMiddleware('pog', pogMiddleware);
+    this.router.param('report', reportMiddleware);
+    this.router.param('pog', pogMiddleware);
 
     this.router.get('/:gene', async (req, res) => {
       const viewer = new GeneViewer(req.POG, req.report, req.params.gene);

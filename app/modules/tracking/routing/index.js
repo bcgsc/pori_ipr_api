@@ -35,10 +35,10 @@ class TrackingRouter extends RoutingInterface {
     this.router.use('/definition', Definitions.getRouter());
 
     // Register Middleware
-    this.registerMiddleware('analysis', analysisMiddleware);
-    this.registerMiddleware('definition', definitionMiddleware);
-    this.registerMiddleware('state', stateMiddleware);
-    this.registerMiddleware('task', taskMiddleware);
+    this.router.param('analysis', analysisMiddleware);
+    this.router.param('definition', definitionMiddleware);
+    this.router.param('state', stateMiddleware);
+    this.router.param('task', taskMiddleware);
 
 
     const States = new StateRoutes(this.io);
