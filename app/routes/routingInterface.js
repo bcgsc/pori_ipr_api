@@ -48,26 +48,6 @@ class RoutingInterface {
     return this.router;
   }
 
-  /**
-   * Register a single route with the router
-   *
-   * Provided map a URL and method to a handler function
-   *
-   * @param {string} method - HTTP method such as GET, PUT, POST, and so on, in lowercase
-   * @param {string} path - Route to use
-   * @param {function} handler - Handler function for endpoint
-   *
-   * @returns {Router} - Returns the instance of the express router
-   */
-  router[method](path, handler) {
-    if (!this.allowedMethods.includes(method)) {
-      throw new MethodNotAllowed(`The requested method: ${method} is not allowed. Allowable methods: ${this.allowedMethods.join(',')}`);
-    }
-
-    logger.info(`Route Registered: ${path}`);
-    return this.router[method](path, handler);
-  }
-
 
   /**
    * Binds an Express Route definition
