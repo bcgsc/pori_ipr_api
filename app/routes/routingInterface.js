@@ -1,5 +1,4 @@
 const express = require('express');
-const MethodNotAllowed = require('./exceptions/MethodNotAllowed');
 const logger = require('../../lib/log');
 
 /**
