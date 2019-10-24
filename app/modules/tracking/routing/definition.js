@@ -35,7 +35,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/')
+    this.router.route('/')
       // Create new state definition
       .post(async (req, res) => {
         // Create new definition entry
@@ -84,7 +84,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
   }
 
   definitionPath() {
-    this.registerResource('/:definition([A-z0-9-]{36})')
+    this.router.route('/:definition([A-z0-9-]{36})')
 
       // Delete definition
       .delete(async (req, res) => {
@@ -129,7 +129,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
         }
       });
 
-    this.registerResource('/:slug')
+    this.router.route('/:slug')
       // Get tracking state definition by slug
       .get(async (req, res) => {
         try {
@@ -144,7 +144,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // User Assignment Workload
   userAssignmentLoad() {
-    this.router['get'](`/:definition(${this.UUIDregex})/userload`, async (req, res) => {
+    this.router.get(`/:definition(${this.UUIDregex})/userload`, async (req, res) => {
       // get group members
       const getTotalTasks = `
         SELECT

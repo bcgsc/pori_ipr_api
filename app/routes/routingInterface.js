@@ -36,20 +36,6 @@ class RoutingInterface {
 
 
   /**
-   * Binds an Express Route definition
-   *
-   * Takes in an express Router.route() definition and binds to a provided URl
-   *
-   * @param {string} path - Route to use
-   *
-   * @returns {IRoute} - Returns the instance of the route
-   */
-  registerResource(path) {
-    logger.info(`Route Registered: ${path}`);
-    return this.router.route(path);
-  }
-
-  /**
    * Register Middleware
    *
    * @param {string} name - Name of route parameter

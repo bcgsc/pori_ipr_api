@@ -32,7 +32,7 @@ class TrackingStateRoute extends RoutingInterface {
     // Assignee Path
     this.assignUser();
 
-    this.router['get'](`/:state(${this.UUIDregex})/check`, async (req, res) => {
+    this.router.get(`/:state(${this.UUIDregex})/check`, async (req, res) => {
       const existing = new State(req.state);
 
       try {
@@ -47,7 +47,7 @@ class TrackingStateRoute extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/')
+    this.router.route('/')
       // Get all state definitions
       .get(this.getFilteredStates);
   }
@@ -124,7 +124,7 @@ class TrackingStateRoute extends RoutingInterface {
   }
 
   statePath() {
-    this.registerResource(`/:state(${this.UUIDregex})`)
+    this.router.route(`/:state(${this.UUIDregex})`)
     // Delete registered state definition
       .delete(async (req, res) => {
         try {
@@ -163,7 +163,7 @@ class TrackingStateRoute extends RoutingInterface {
 
   // Assign user to all state tasks
   assignUser() {
-    this.router['put'](`/:state(${this.UUIDregex})/assign/:assignee`, async (req, res) => {
+    this.router.put(`/:state(${this.UUIDregex})/assign/:assignee`, async (req, res) => {
       const existing = new State(req.state);
 
       // Update values

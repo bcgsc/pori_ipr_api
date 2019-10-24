@@ -30,7 +30,7 @@ class TrackingTicketTemplateRoutes extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/definition/:definition')
+    this.router.route('/definition/:definition')
     // Get all state definitions
       .get(async (req, res) => {
         // Get All Definitions
@@ -77,7 +77,7 @@ class TrackingTicketTemplateRoutes extends RoutingInterface {
         }
       });
 
-    this.registerResource('/definition/:definition/template/:template')
+    this.router.route('/definition/:definition/template/:template')
       // Update ticket template
       .put(async (req, res) => {
         const Ticket = new TicketTemplate(req.template);
