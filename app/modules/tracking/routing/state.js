@@ -32,7 +32,7 @@ class TrackingStateRoute extends RoutingInterface {
     // Assignee Path
     this.assignUser();
 
-    this.registerEndpoint('get', `/:state(${this.UUIDregex})/check`, async (req, res) => {
+    this.router['get'](`/:state(${this.UUIDregex})/check`, async (req, res) => {
       const existing = new State(req.state);
 
       try {
@@ -163,7 +163,7 @@ class TrackingStateRoute extends RoutingInterface {
 
   // Assign user to all state tasks
   assignUser() {
-    this.registerEndpoint('put', `/:state(${this.UUIDregex})/assign/:assignee`, async (req, res) => {
+    this.router['put'](`/:state(${this.UUIDregex})/assign/:assignee`, async (req, res) => {
       const existing = new State(req.state);
 
       // Update values

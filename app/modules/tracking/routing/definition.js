@@ -144,7 +144,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // User Assignment Workload
   userAssignmentLoad() {
-    this.registerEndpoint('get', `/:definition(${this.UUIDregex})/userload`, async (req, res) => {
+    this.router['get'](`/:definition(${this.UUIDregex})/userload`, async (req, res) => {
       // get group members
       const getTotalTasks = `
         SELECT
@@ -154,12 +154,12 @@ class TrackingDefinitionRoute extends RoutingInterface {
           COUNT("tracking_state_task"."ident") AS "tasks"
         FROM "pog_tracking_states" AS "tracking_state"
         LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" ON "tracking_state_task".state_id = "tracking_state".id
-        WHERE 
+        WHERE
           "tracking_state"."deletedAt" IS NULL AND
           "tracking_state_task"."deletedAt" is NULL and
-          "tracking_state"."slug" = :slug AND 
+          "tracking_state"."slug" = :slug AND
           "tracking_state_task"."status" IN ('active', 'pending')
-        GROUP BY 
+        GROUP BY
           "tracking_state"."name",
           "tracking_state"."slug",
           "tracking_state"."group_id";
@@ -218,9 +218,9 @@ class TrackingDefinitionRoute extends RoutingInterface {
                   "user".email AS "user.email",
                   COUNT("tracking_state_task"."ident") AS "user.assignedTasks"
                 FROM "users" as "user"
-                LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" 
-                  ON 
-                  "tracking_state_task"."assignedTo_id" = "user".id AND 
+                LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task"
+                  ON
+                  "tracking_state_task"."assignedTo_id" = "user".id AND
                   "tracking_state_task"."state_id" in (SELECT id FROM "pog_tracking_states" as s WHERE s.slug = :slug AND s.status NOT IN ('failed','completed') AND "deletedAt" IS null) AND
                   "tracking_state_task"."status" NOT IN ('failed', 'complete')
                 WHERE

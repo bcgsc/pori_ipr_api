@@ -59,7 +59,7 @@ class RoutingInterface {
    *
    * @returns {Router} - Returns the instance of the express router
    */
-  registerEndpoint(method, path, handler) {
+  router[method](path, handler) {
     if (!this.allowedMethods.includes(method)) {
       throw new MethodNotAllowed(`The requested method: ${method} is not allowed. Allowable methods: ${this.allowedMethods.join(',')}`);
     }

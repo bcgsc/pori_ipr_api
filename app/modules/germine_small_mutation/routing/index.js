@@ -37,11 +37,11 @@ class GSMRouter extends RoutingInterface {
     this.registerMiddleware('variant', variantMiddleware);
 
     // Load Report
-    this.registerEndpoint('post', '/patient/:patient/biopsy/:analysis', this.loadReport);
+    this.router['post']('/patient/:patient/biopsy/:analysis', this.loadReport);
 
     // All Reports
-    this.registerEndpoint('get', '/', this.getReports); // All reports for all cases
-    this.registerEndpoint('get', '/patient/:patient/biopsy/:analysis', this.getAnalysisReport); // All reports for a biopsy
+    this.router['get']('/', this.getReports); // All reports for all cases
+    this.router['get']('/patient/:patient/biopsy/:analysis', this.getAnalysisReport); // All reports for a biopsy
 
     // Individual Reports
     this.reportResource();
@@ -50,12 +50,12 @@ class GSMRouter extends RoutingInterface {
     this.reportVariants();
 
     // Reviews
-    this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review', this.addReview); // Add review to report
-    this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', this.removeReview); // Add review to report
+    this.router['put']('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', this.addReview); // Add review to report
+    this.router['delete']('/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', this.removeReview); // Add review to report
 
     // Export
-    this.registerEndpoint('get', '/export/batch/token', this.getExportFlashToken);
-    this.registerEndpoint('get', '/export/batch', this.batchExport);
+    this.router['get']('/export/batch/token', this.getExportFlashToken);
+    this.router['get']('/export/batch', this.batchExport);
   }
 
   /**

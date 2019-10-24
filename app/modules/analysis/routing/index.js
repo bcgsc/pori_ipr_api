@@ -262,7 +262,7 @@ class TrackingRouter extends RoutingInterface {
         return res.status(204).send();
       });
 
-    this.registerEndpoint('post', '/bioAppsTest', async (req, res) => {
+    this.router['post']('/bioAppsTest', async (req, res) => {
       let patient;
       // Get POG
       try {
@@ -293,7 +293,7 @@ class TrackingRouter extends RoutingInterface {
       }
     });
 
-    this.registerEndpoint('get', '/backfillComparators', async (req, res) => {
+    this.router['get']('/backfillComparators', async (req, res) => {
       let analyses;
       try {
         analyses = await db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {[Op.ne]: null}}});
@@ -426,7 +426,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Extended Details
   extended() {
-    this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
+    this.router['get'](`/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
       const opts = {
         limit: req.query.limit || DEFAULT_PAGE_LIMIT_2,
         offset: req.query.offset || DEFAULT_PAGE_OFFSET,
@@ -609,7 +609,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Comparator Endpoints
   comparators() {
-    this.registerEndpoint('get', '/comparators', (req, res) => {
+    this.router['get']('/comparators', (req, res) => {
       return res.json({v8: comparators, v9: comparatorsV9});
     });
   }

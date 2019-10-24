@@ -159,7 +159,7 @@ class Routing extends RouterInterface {
  * @returns {undefined}
  */
   getProjects() {
-    this.registerEndpoint('get', '/pogProjects', async (req, res) => {
+    this.router.get('/pogProjects', async (req, res) => {
       try {
         const results = await db.query('SELECT DISTINCT project FROM "POGs"');
         const mappedResult = results.shift().map((value) => {

@@ -87,11 +87,11 @@ class TrackingTaskRoute extends RoutingInterface {
       .put(this.updateTask.bind(this));
 
     // Update Task Details
-    this.registerEndpoint('put', '/:POG/:analysis/:state/:task', this.updateTask.bind(this));
-    this.registerEndpoint('put', '/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', this.updateTask.bind(this));
+    this.router['put']('/:POG/:analysis/:state/:task', this.updateTask.bind(this));
+    this.router['put']('/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', this.updateTask.bind(this));
 
     // Retrieve Task
-    this.registerEndpoint('get', '/:POG/:analysis/:state/:task', (req, res) => {
+    this.router['get']('/:POG/:analysis/:state/:task', (req, res) => {
       const {id, ...response} = req.task.toJSON();
       return res.json(response);
     });
@@ -134,7 +134,7 @@ class TrackingTaskRoute extends RoutingInterface {
   // Check in a task
   checkIns() {
     // Checkin by pog/analysis(biospec, or biop)/state_slug/task_slug
-    this.registerEndpoint('patch', '/checkin/:POG/:analysis/:state/:task', async (req, res) => {
+    this.router['patch']('/checkin/:POG/:analysis/:state/:task', async (req, res) => {
       const entry = new Task(req.task);
 
       try {
@@ -150,7 +150,7 @@ class TrackingTaskRoute extends RoutingInterface {
     });
 
     // Checkin by ident
-    this.registerEndpoint('patch', '/checkin/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', async (req, res) => {
+    this.router['patch']('/checkin/:task([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})', async (req, res) => {
       const entry = new Task(req.task);
 
       // Update
@@ -165,7 +165,7 @@ class TrackingTaskRoute extends RoutingInterface {
     });
 
     // Cancel a check-in
-    this.registerEndpoint('delete', `/checkin/:task(${this.UUIDregex})/:checkin/:all?`, async (req, res) => {
+    this.router['delete'](`/checkin/:task(${this.UUIDregex})/:checkin/:all?`, async (req, res) => {
       const entry = new Task(req.task);
 
       const outcomes = (req.params.checkin.indexOf(',')) ? req.params.checkin.split(',') : [req.params.checkin];
@@ -183,7 +183,7 @@ class TrackingTaskRoute extends RoutingInterface {
 
   // Assign a user to a task
   assignUser() {
-    this.registerEndpoint('put', `/:task(${this.UUIDregex})/assignTo/:user(${this.UUIDregex})`, async (req, res) => {
+    this.router['put'](`/:task(${this.UUIDregex})/assignTo/:user(${this.UUIDregex})`, async (req, res) => {
       const entry = new Task(req.task);
 
       try {
