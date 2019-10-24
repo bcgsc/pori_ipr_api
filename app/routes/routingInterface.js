@@ -1,5 +1,4 @@
 const express = require('express');
-const logger = require('../../lib/log');
 
 /**
  *
