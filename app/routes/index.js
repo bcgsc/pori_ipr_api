@@ -1,4 +1,3 @@
-const recursive = require('recursive-readdir');
 const express = require('express');
 const db = require('../models/');
 
