@@ -10,6 +10,7 @@ const definitionMiddleware = require('../middleware/definition');
 const stateMiddleware = require('../middleware/state');
 const taskMiddleware = require('../middleware/task');
 
+const {UUIDregex} = require('../../../constants');
 const logger = require('../../../../lib/log');
 
 class TrackingTaskRoute extends RoutingInterface {
@@ -169,7 +170,7 @@ class TrackingTaskRoute extends RoutingInterface {
     });
 
     // Cancel a check-in
-    this.router.delete(`/checkin/:task(${this.UUIDregex})/:checkin/:all?`, async (req, res) => {
+    this.router.delete(`/checkin/:task(${UUIDregex})/:checkin/:all?`, async (req, res) => {
       const entry = new Task(req.task);
 
       const outcomes = (req.params.checkin.indexOf(',')) ? req.params.checkin.split(',') : [req.params.checkin];
@@ -187,7 +188,7 @@ class TrackingTaskRoute extends RoutingInterface {
 
   // Assign a user to a task
   assignUser() {
-    this.router.put(`/:task(${this.UUIDregex})/assignTo/:user(${this.UUIDregex})`, async (req, res) => {
+    this.router.put(`/:task(${UUIDregex})/assignTo/:user(${UUIDregex})`, async (req, res) => {
       const entry = new Task(req.task);
 
       try {

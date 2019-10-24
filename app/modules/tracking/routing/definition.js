@@ -6,6 +6,7 @@ const StateDefinition = require('../definition');
 const definitionMiddleware = require('../middleware/definition');
 
 const logger = require('../../../../lib/log');
+const {UUIDregex} = require('../../../constants');
 
 class TrackingDefinitionRoute extends RoutingInterface {
   /**
@@ -144,7 +145,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // User Assignment Workload
   userAssignmentLoad() {
-    this.router.get(`/:definition(${this.UUIDregex})/userload`, async (req, res) => {
+    this.router.get(`/:definition(${UUIDregex})/userload`, async (req, res) => {
       // get group members
       const getTotalTasks = `
         SELECT

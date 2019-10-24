@@ -17,6 +17,7 @@ const logger = require('../../../../lib/log');
 
 const Patient = require('../../../libs/patient/patient.library');
 const analysisMiddleware = require('../../../middleware/analysis');
+const {UUIDregex} = require('../../../constants');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -244,7 +245,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Single Entry
   analysis() {
-    this.router.route(`/:analysis(${this.UUIDregex})`)
+    this.router.route(`/:analysis(${UUIDregex})`)
       .put(async (req, res) => {
         const analysis = new Analysis(req.analysis);
         try {
@@ -426,7 +427,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Extended Details
   extended() {
-    this.router.get(`/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
+    this.router.get(`/extended/:analysisIdent(${UUIDregex})`, async (req, res) => {
       const opts = {
         limit: req.query.limit || DEFAULT_PAGE_LIMIT_2,
         offset: req.query.offset || DEFAULT_PAGE_OFFSET,
