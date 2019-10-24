@@ -32,7 +32,7 @@ class TrackingRouter extends RoutingInterface {
 
     // Bind Routes
     const Definitions = new DefinitionRoutes(this.io);
-    this.bindRouteObject('/definition', Definitions.getRouter());
+    this.router.use('/definition', Definitions.getRouter());
 
     // Register Middleware
     this.registerMiddleware('analysis', analysisMiddleware);
@@ -42,16 +42,16 @@ class TrackingRouter extends RoutingInterface {
 
 
     const States = new StateRoutes(this.io);
-    this.bindRouteObject('/state', States.getRouter());
+    this.router.use('/state', States.getRouter());
 
     const Tasks = new TaskRoutes(this.io);
-    this.bindRouteObject('/task', Tasks.getRouter());
+    this.router.use('/task', Tasks.getRouter());
 
     const TicketTemplate = new TicketTemplateRoutes(this.io);
-    this.bindRouteObject('/ticket/template', TicketTemplate.getRouter());
+    this.router.use('/ticket/template', TicketTemplate.getRouter());
 
     const Hooks = new HookRoutes(this.io);
-    this.bindRouteObject('/hook', Hooks.getRouter());
+    this.router.use('/hook', Hooks.getRouter());
 
     // Enable Generator
     this.generator();
