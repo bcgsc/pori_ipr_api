@@ -55,7 +55,7 @@ const fetchRoutes = (initialRouter) => {
       route, handle, name, ...rest
     }) => {
       if (route) { // routes registered directly on the app
-        const path = replaceParams(`${prefix}${route.path}`).replace(/\\/g, '');
+        const path = replaceParams(`${prefix}${route.path}`).replace(/\\/g, '').replace(/\/$/, '');
         routes.push({path, methods: route.methods});
       } else if (name === 'router') {
         // router middleware
@@ -140,7 +140,14 @@ const listen = async () => {
 
   // socket.io
   app.io.attach(server);
-  fetchRoutes(routing.getRouter()).forEach((r) => { console.log(r); });
+
+  // list all the routes that are found from the express router
+  const routes = fetchRoutes(routing.getRouter())
+    .sort((r1, r2) => { return r1.path.localeCompare(r2.path); });
+
+  for (const {methods, path} of routes) {
+    logger.info(`Registered route: (${Object.keys(methods).sort().join('|')}) ${path}`);
+  }
 };
 
 module.exports = {listen};
