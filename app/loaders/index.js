@@ -3,7 +3,7 @@ const fs = require('fs');
 const glob = require('glob');
 const pyParse = util.promisify(require('pyconf').parse);
 const nconf = require('../config');
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 // Loader requires
 

@@ -2,7 +2,7 @@ const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const hookMiddleware = require('../middleware/hook');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 class TrackingDefinitionRoute extends RoutingInterface {
   /**

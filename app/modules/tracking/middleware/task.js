@@ -3,7 +3,7 @@ const db = require('../../../models');
 const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNotFound');
 const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 // Lookup POG middleware
 module.exports = async (req, res, next, ident) => {
@@ -15,7 +15,7 @@ module.exports = async (req, res, next, ident) => {
     include: [
       {as: 'state', model: db.models.tracking_state.scope('noTasks')},
       {as: 'assignedTo', model: db.models.user.scope('public')},
-      {as: 'checkins', model: db.models.tracking_state_task_checkin, separate: true, include: 
+      {as: 'checkins', model: db.models.tracking_state_task_checkin, separate: true, include:
         [
           {as: 'user', model: db.models.user.scope('public')},
         ],

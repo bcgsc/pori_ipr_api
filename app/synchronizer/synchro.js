@@ -18,7 +18,7 @@ const uuidv4 = require('uuid/v4');
 const moment = require('moment');
 const _ = require('lodash');
 
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 /**
  * Synchronizer base class

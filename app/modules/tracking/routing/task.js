@@ -11,7 +11,7 @@ const stateMiddleware = require('../middleware/state');
 const taskMiddleware = require('../middleware/task');
 
 const {UUIDregex} = require('../../../constants');
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 class TrackingTaskRoute extends RoutingInterface {
   /**

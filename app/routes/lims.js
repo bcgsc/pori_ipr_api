@@ -1,6 +1,6 @@
 const express = require('express');
 const $lims = require('../api/lims');
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const router = express.Router({mergeParams: true});
 

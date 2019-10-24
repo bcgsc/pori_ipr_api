@@ -2,7 +2,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const nconf = require('../config');
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile'));
 

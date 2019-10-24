@@ -13,7 +13,7 @@ const Email = require('../../notification/email');
 const comparators = require('../../../../database/comparators.json');
 const comparatorsV9 = require('../../../../database/comparators.v9.json');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 const Patient = require('../../../libs/patient/patient.library');
 const analysisMiddleware = require('../../../middleware/analysis');

@@ -6,7 +6,7 @@ const TicketTemplate = require('../ticket_template');
 const ticketTemplateMiddleware = require('../middleware/ticket_template');
 const definitionMiddleware = require('../middleware/definition');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 class TrackingTicketTemplateRoutes extends RoutingInterface {
   /**

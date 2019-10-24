@@ -16,7 +16,7 @@ const definitionMiddleware = require('../middleware/definition');
 const stateMiddleware = require('../middleware/state');
 const taskMiddleware = require('../middleware/task');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 
 class TrackingRouter extends RoutingInterface {

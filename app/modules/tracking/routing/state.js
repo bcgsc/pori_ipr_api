@@ -6,7 +6,7 @@ const State = require('../state');
 // Middleware
 const stateMiddleware = require('../middleware/state');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 const {UUIDregex} = require('../../../constants');
 
 class TrackingStateRoute extends RoutingInterface {
