@@ -18,25 +18,25 @@ const BioAppsSync = require('./BioApps');
 const LIMSPath    = require('./limsPathology');
 const LIMSSeq     = require('./limsSequencing');
 
-let logger        = require('../../../../lib/log');
+let logger        = require('../../../log');
 
 module.exports = function() {
-  
+
   logger.info('Initializing Tracking Syncronizers');
-  
+
   // Setup Tracking Synchronizer Process
   let TrackingSync = new Syncro(60);
-  
+
   // Setup Sync Processes
   let limsPath    = new LIMSPath();
   let limsSeq     = new LIMSSeq();
   let bioAppsSync = new BioAppsSync();
-  
+
   TrackingSync.registerHook('BioApps', 600, bioAppsSync);
   TrackingSync.registerHook('LIMS.Pathology', 600, limsPath);
   TrackingSync.registerHook('LIMS.Sequencing', 600, limsSeq);
-  
+
   // Start Sync
   TrackingSync.start();
-  
+
 };

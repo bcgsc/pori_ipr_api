@@ -2,7 +2,7 @@ const pug = require('pug');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Email = require('../email');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 /**
  * Create and bind routes for Notifications

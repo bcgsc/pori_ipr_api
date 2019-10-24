@@ -5,10 +5,10 @@ const moment                  = require('moment');
 const db                      = require('../../models/');
 const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
-const logger                  = require(process.cwd() + '/lib/log');
+const logger                  = require('../../log');
 
 module.exports = class Ticket_Template {
-  
+
   /**
    * Initialize tracking state object
    *
@@ -18,16 +18,16 @@ module.exports = class Ticket_Template {
   constructor(init, options={}) {
     this.instance = null;
     this.model = db.models.tracking_ticket_template;
-    
+
     // Existing instance
     if(typeof init === "object" && typeof init.ident === "string") {
       this.instance = init;
     }
-    
+
     if(init === undefined || this.instance === null) throw new Error('Unable to instantiate State Tracking Ticket Template');
-    
+
   }
-  
+
   /**
    * Create new ticket template
    *
@@ -40,9 +40,9 @@ module.exports = class Ticket_Template {
    * @returns {Promise} - Resolves with updated instance
    */
   create(state, name, body) {
-    
+
     return new Promise((resolve, reject) => {
-      
+
       // Convert state ident into model object
       db.models.tracking_state_definition.findOne({where: {ident: state}})
         // Handle found state
@@ -59,7 +59,7 @@ module.exports = class Ticket_Template {
             name: name,
             body: body
           };
-          
+
           // Return model create promise
           return this.model.create(template);
         })
@@ -72,12 +72,12 @@ module.exports = class Ticket_Template {
           console.log('Failed to create new ticket template', err);
           reject({message: 'failed to create new ticket template: ' + err.message, cause: err});
         });
-      
+
     });
-    
+
   }
-  
-  
+
+
   /**
    * Update the current ticket template
    *
@@ -87,7 +87,7 @@ module.exports = class Ticket_Template {
    */
   update(template) {
     return new Promise((resolve, reject) => {
-  
+
       if(template.name) this.instance.name = template.name;
       if(template.body) this.instance.body = template.body;
       if(template.summary) this.instance.summary = template.summary;
@@ -97,7 +97,7 @@ module.exports = class Ticket_Template {
       if(template.priority) this.instance.priority = template.priority;
       if(template.issueType) this.instance.issueType = template.issueType;
       if(template.security) this.instance.security = template.security;
-      
+
       this.model.update(template, {where: { ident: this.instance.ident}})
         .then((instance) => {
           resolve(this.instance);
@@ -105,13 +105,13 @@ module.exports = class Ticket_Template {
         .catch((err) => {
           reject({message: 'Failed to update ticket template: ' + err.message, cause: err});
         });
-      
+
     });
-    
+
   }
-  
- 
-  
+
+
+
   /**
    * Get full public version of this instance
    *
@@ -119,7 +119,7 @@ module.exports = class Ticket_Template {
    */
   getPublic() {
     return new Promise((resolve, reject) => {
-      
+
       let opts = {
         where: {
           ident: this.instance.ident,
@@ -131,7 +131,7 @@ module.exports = class Ticket_Template {
           {as: 'definition', model: db.models.tracking_state_definition.scope('public')},
         ]
       };
-      
+
       // Get updated public state with nested tasks
       this.model.scope('public').findOne(opts).then(
         (template) => {
@@ -143,10 +143,10 @@ module.exports = class Ticket_Template {
           throw new Error('failed to get updated state.');
         }
       );
-      
+
     });
-    
+
   }
-  
-  
+
+
 };

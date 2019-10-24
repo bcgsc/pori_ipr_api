@@ -3,7 +3,7 @@ const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
 

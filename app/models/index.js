@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const colors = require('colors');
 const bcrypt = require('bcryptjs');
 const nconf = require('../config');
-const logger = require('../../lib/log'); // Load logging library
+const logger = require('../log'); // Load logging library
 
 // Load database
 const dbSettings = nconf.get('database');

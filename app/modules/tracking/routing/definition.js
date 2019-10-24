@@ -5,7 +5,7 @@ const RoutingInterface = require('../../../routes/routingInterface');
 const StateDefinition = require('../definition');
 const definitionMiddleware = require('../middleware/definition');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 const {UUIDregex} = require('../../../constants');
 
 class TrackingDefinitionRoute extends RoutingInterface {

@@ -2,7 +2,7 @@
 
 const db              = require(`${process.cwd()}/app/models`);
 const _               = require('lodash');
-const logger          = require('../../../lib/log');
+const logger          = require('../../log');
 const Email           = require(`${process.cwd()}/app/modules/notification/email`);
 const render          = require('json-templater/string');
 
@@ -22,12 +22,12 @@ const render          = require('json-templater/string');
  */
 let hook_email = (hook, state, task=null) => {
   return new Promise((resolve, reject) => {
-    
+
     let analysis = state.analysis;
     let pog = state.analysis.pog;
-    
+
     let data = {state: state, task: task, analysis: analysis, patient: pog};
-    
+
     let email = new Email();
     email
       .setRecipient(hook.target)
@@ -41,8 +41,8 @@ let hook_email = (hook, state, task=null) => {
         logger.error('Unable to send email hook', e.message);
         console.log('Unable to send email hook', e);
       });
-    
-  
+
+
   });
 };
 
@@ -58,7 +58,7 @@ let hook_email = (hook, state, task=null) => {
  */
 let check_hook = (state, status, task=null, enabled=true) => {
   return new Promise((resolve, reject) => {
-    
+
     let opts = {
       where: {
         state_name: state,
@@ -67,10 +67,10 @@ let check_hook = (state, status, task=null, enabled=true) => {
     };
 
     opts.where.task_name = task ? task : null;
-    
+
     // Only if enabled?
     if(enabled) opts.where.enabled = true;
-    
+
     // Check if a hook exists
     db.models.tracking_hook.findAll(opts)
       .then((hooks) => {
@@ -81,7 +81,7 @@ let check_hook = (state, status, task=null, enabled=true) => {
         reject({message: `failed to retrieve hooks for ${state} (${task})`});
         console.log(err);
       });
-    
+
   });
 };
 
@@ -105,7 +105,7 @@ let invoke_hook = (hook, state, task=null) => {
 
 /** Module Interface **/
 module.exports = {
-  
+
   /**
    * Check if hooks exist
    *
@@ -119,7 +119,7 @@ module.exports = {
   check_hook: (state, status, task=null, enabled=true) => {
     return check_hook(state, status, task, enabled);
   },
-  
+
   /**
    * Invoke a hook
    *
@@ -132,7 +132,7 @@ module.exports = {
   invoke_hook: (hook, state, task=null) => {
     return invoke_hook(hook, state, task=null);
   },
-  
+
   /**
    * Check and invoke hooks
    *
@@ -145,9 +145,9 @@ module.exports = {
    */
   check_and_invoke: (state, status, task=null, enabled=true) => {
     return new Promise((resolve, reject) => {
-      
+
       let t = (task) ? task.slug : null;
-      
+
       check_hook(state.slug, status, t, enabled)
         .then((hooks) => {
           return Promise.all(_.map(hooks, (h) => { return invoke_hook(h, state, task) }))
@@ -161,5 +161,5 @@ module.exports = {
         });
     });
   },
-  
+
 };

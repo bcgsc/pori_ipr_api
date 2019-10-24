@@ -5,7 +5,7 @@ const nconf = require('nconf').argv().env().file({file: './config/columnMaps.jso
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 const mavis = require('../../libs/mavis');
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 let baseDir;
 

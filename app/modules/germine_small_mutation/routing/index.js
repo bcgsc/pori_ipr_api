@@ -14,7 +14,7 @@ const gsmMiddleware = require('../middleware/germline_small_mutation.middleware'
 const reviewMiddleware = require('../middleware/germline_small_mutation_review.middleware');
 const variantMiddleware = require('../middleware/germline_small_mutation_variant.middleware');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
