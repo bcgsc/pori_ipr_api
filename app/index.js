@@ -148,6 +148,7 @@ const listen = async () => {
   for (const {methods, path} of routes) {
     logger.info(`Registered route: (${Object.keys(methods).sort().join('|')}) ${path}`);
   }
+  return app;
 };
 
 module.exports = {listen};
