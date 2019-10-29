@@ -40,7 +40,7 @@ const DEFAULTS = {
       : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
-    keyFile: process.env.NODE_ENV === 'production'
+    keyFile: ['production', 'development', 'staging'].includes(process.env.NODE_ENV)
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
