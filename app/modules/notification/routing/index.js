@@ -14,7 +14,7 @@ class NotificationRouter extends RoutingInterface {
     super();
     this.io = io;
 
-    this.router['get']('/test', async (req, res) => {
+    this.router.get('/test', async (req, res) => {
       // Create new Email
       const email = new Email({force: true});
 
@@ -28,7 +28,7 @@ class NotificationRouter extends RoutingInterface {
       }
     });
 
-    this.router['get']('/render', async (req, res) => {
+    this.router.get('/render', async (req, res) => {
       return res.send(pug.renderFile('../templates/email.pug',
         {
           body: 'Hello World.\nThis is a multiline text body.',

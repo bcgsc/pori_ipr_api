@@ -213,8 +213,8 @@ class GSMDownloadRouter extends RoutingInterface {
     this.io = io;
 
     // Export
-    this.router['get']('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
-    this.router['get']('/batch/download', batchExport);
+    this.router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
+    this.router.get('/batch/download', batchExport);
   }
 }
 
