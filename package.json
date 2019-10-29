@@ -56,7 +56,6 @@
     "sequelize": "^5.10.3",
     "sequelize-cli": "^5.5.0",
     "socket.io": "~2.0.3",
-    "sqlite3": "~4.1.0",
     "swagger-ui-express": "^4.0.2",
     "uuid": "~3.1.0",
     "uuid-validate": "0.0.3",
