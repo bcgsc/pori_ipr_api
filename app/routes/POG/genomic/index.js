@@ -1,16 +1,27 @@
 const express = require('express');
 
+const summary = require('./summary');
+const appendices = require('./appendices');
+const copyNumberAnalyses = require('./copyNumberAnalyses');
+const detailedGenomicAnalysis = require('./detailedGenomicAnalysis');
+const expressionAnalysis = require('./expressionAnalysis');
+const mavis = require('./mavis');
+const presentation = require('./presentation');
+const somaticMutations = require('./somaticMutations');
+const structuralVariation = require('./structuralVariation');
+const therapeuticTargets = require('./therapeuticTargets');
+
 const router = express.Router({mergeParams: true});
 
-router.use('/summary', require('./summary'));
-router.use('/appendices', require('./appendices'));
-router.use('/copyNumberAnalyses', require('./copyNumberAnalyses'));
-router.use('/detailedGenomicAnalysis', require('./detailedGenomicAnalysis'));
-router.use('/expressionAnalysis', require('./expressionAnalysis'));
-router.use('/mavis', require('./mavis'));
-router.use('/presentation', require('./presentation'));
-router.use('/somaticMutations', require('./somaticMutations'));
-router.use('/structuralVariation', require('./structuralVariation'));
-router.use('/therapeuticTargets', require('./therapeuticTargets'));
+router.use('/summary', summary);
+router.use('/appendices', appendices);
+router.use('/copyNumberAnalyses', copyNumberAnalyses);
+router.use('/detailedGenomicAnalysis', detailedGenomicAnalysis);
+router.use('/expressionAnalysis', expressionAnalysis);
+router.use('/mavis', mavis);
+router.use('/presentation', presentation);
+router.use('/somaticMutations', somaticMutations);
+router.use('/structuralVariation', structuralVariation);
+router.use('/therapeuticTargets', therapeuticTargets);
 
 module.exports = router;

@@ -1,15 +1,24 @@
 const express = require('express');
+const analystComments = require('./analystComments');
+const genomicAlterationsIdentified = require('./genomicAlterationsIdentified');
+const genomicEventsTherapeutic = require('./genomicEventsTherapeutic');
+const microbial = require('./microbial');
+const mutationSummary = require('./mutationSummary');
+const pathwayAnalysis = require('./pathwayAnalysis');
+const probeTarget = require('./probeTarget');
+const tumourAnalysis = require('./tumourAnalysis');
+const variantCounts = require('./variantCounts');
 
 const router = express.Router({mergeParams: true});
 
-router.use('/analystComments', require('./analystComments'));
-router.use('/genomicAlterationsIdentified', require('./genomicAlterationsIdentified'));
-router.use('/genomicEventsTherapeutic', require('./genomicEventsTherapeutic'));
-router.use('/microbial', require('./microbial'));
-router.use('/mutationSummary', require('./mutationSummary'));
-router.use('/pathwayAnalysis', require('./pathwayAnalysis'));
-router.use('/probeTarget', require('./probeTarget'));
-router.use('/tumourAnalysis', require('./tumourAnalysis'));
-router.use('/variantCounts', require('./variantCounts'));
+router.use('/analystComments', analystComments);
+router.use('/genomicAlterationsIdentified', genomicAlterationsIdentified);
+router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
+router.use('/microbial', microbial);
+router.use('/mutationSummary', mutationSummary);
+router.use('/pathwayAnalysis', pathwayAnalysis);
+router.use('/probeTarget', probeTarget);
+router.use('/tumourAnalysis', tumourAnalysis);
+router.use('/variantCounts', variantCounts);
 
 module.exports = router;
