@@ -6,7 +6,8 @@ const State = require('../state');
 // Middleware
 const stateMiddleware = require('../middleware/state');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
+const {UUIDregex} = require('../../../constants');
 
 class TrackingStateRoute extends RoutingInterface {
   /**
@@ -21,7 +22,7 @@ class TrackingStateRoute extends RoutingInterface {
     this.io = io;
 
     // Register middleware
-    this.registerMiddleware('state', stateMiddleware);
+    this.router.param('state', stateMiddleware);
 
     // Register root
     this.rootPath();
@@ -32,7 +33,7 @@ class TrackingStateRoute extends RoutingInterface {
     // Assignee Path
     this.assignUser();
 
-    this.registerEndpoint('get', `/:state(${this.UUIDregex})/check`, async (req, res) => {
+    this.router.get(`/:state(${UUIDregex})/check`, async (req, res) => {
       const existing = new State(req.state);
 
       try {
@@ -47,7 +48,7 @@ class TrackingStateRoute extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/')
+    this.router.route('/')
       // Get all state definitions
       .get(this.getFilteredStates);
   }
@@ -124,7 +125,7 @@ class TrackingStateRoute extends RoutingInterface {
   }
 
   statePath() {
-    this.registerResource(`/:state(${this.UUIDregex})`)
+    this.router.route(`/:state(${UUIDregex})`)
     // Delete registered state definition
       .delete(async (req, res) => {
         try {
@@ -163,7 +164,7 @@ class TrackingStateRoute extends RoutingInterface {
 
   // Assign user to all state tasks
   assignUser() {
-    this.registerEndpoint('put', `/:state(${this.UUIDregex})/assign/:assignee`, async (req, res) => {
+    this.router.put(`/:state(${UUIDregex})/assign/:assignee`, async (req, res) => {
       const existing = new State(req.state);
 
       // Update values

@@ -3,7 +3,7 @@ const GeneViewer = require('../geneViewer');
 const reportMiddleware = require('../../../middleware/analysis_report');
 const pogMiddleware = require('../../../middleware/pog');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 class GeneViewRouter extends RoutingInterface {
   /**
@@ -18,10 +18,10 @@ class GeneViewRouter extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('report', reportMiddleware);
-    this.registerMiddleware('pog', pogMiddleware);
+    this.router.param('report', reportMiddleware);
+    this.router.param('pog', pogMiddleware);
 
-    this.registerEndpoint('get', '/:gene', async (req, res) => {
+    this.router.get('/:gene', async (req, res) => {
       const viewer = new GeneViewer(req.POG, req.report, req.params.gene);
 
       try {

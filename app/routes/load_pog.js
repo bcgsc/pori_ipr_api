@@ -15,7 +15,7 @@ const Analysis = require('../libs/patient/analysis.library');
 
 const GenomicLoader = require('../loaders');
 const ProbeLoader = require('../loaders/probing');
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const router = express.Router({mergeParams: true});
 

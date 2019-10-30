@@ -6,7 +6,7 @@ const TicketTemplate = require('../ticket_template');
 const ticketTemplateMiddleware = require('../middleware/ticket_template');
 const definitionMiddleware = require('../middleware/definition');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 class TrackingTicketTemplateRoutes extends RoutingInterface {
   /**
@@ -21,8 +21,8 @@ class TrackingTicketTemplateRoutes extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('template', ticketTemplateMiddleware);
-    this.registerMiddleware('definition', definitionMiddleware);
+    this.router.param('template', ticketTemplateMiddleware);
+    this.router.param('definition', definitionMiddleware);
 
     // Register Task endpoint
     this.rootPath();
@@ -30,7 +30,7 @@ class TrackingTicketTemplateRoutes extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/definition/:definition')
+    this.router.route('/definition/:definition')
     // Get all state definitions
       .get(async (req, res) => {
         // Get All Definitions
@@ -77,7 +77,7 @@ class TrackingTicketTemplateRoutes extends RoutingInterface {
         }
       });
 
-    this.registerResource('/definition/:definition/template/:template')
+    this.router.route('/definition/:definition/template/:template')
       // Update ticket template
       .put(async (req, res) => {
         const Ticket = new TicketTemplate(req.template);

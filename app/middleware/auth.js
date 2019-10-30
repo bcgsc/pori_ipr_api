@@ -4,7 +4,7 @@ const db = require('../models');
 const keycloak = require('../api/keycloak');
 const nconf = require('../config');
 
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile')).toString();
 

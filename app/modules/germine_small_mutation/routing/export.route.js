@@ -6,7 +6,7 @@ const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Variants = require('../germline_small_mutation_variant');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 /**
  * Flash Token Authentication and user injection
@@ -213,8 +213,8 @@ class GSMDownloadRouter extends RoutingInterface {
     this.io = io;
 
     // Export
-    this.registerEndpoint('get', '/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
-    this.registerEndpoint('get', '/batch/download', batchExport);
+    this.router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
+    this.router.get('/batch/download', batchExport);
   }
 }
 

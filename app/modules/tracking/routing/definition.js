@@ -5,7 +5,8 @@ const RoutingInterface = require('../../../routes/routingInterface');
 const StateDefinition = require('../definition');
 const definitionMiddleware = require('../middleware/definition');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
+const {UUIDregex} = require('../../../constants');
 
 class TrackingDefinitionRoute extends RoutingInterface {
   /**
@@ -21,7 +22,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
     this.io = io;
 
     // Register middleware
-    this.registerMiddleware('definition', definitionMiddleware);
+    this.router.param('definition', definitionMiddleware);
 
     // Register root
     this.rootPath();
@@ -35,7 +36,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/')
+    this.router.route('/')
       // Create new state definition
       .post(async (req, res) => {
         // Create new definition entry
@@ -84,7 +85,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
   }
 
   definitionPath() {
-    this.registerResource('/:definition([A-z0-9-]{36})')
+    this.router.route('/:definition([A-z0-9-]{36})')
 
       // Delete definition
       .delete(async (req, res) => {
@@ -129,7 +130,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
         }
       });
 
-    this.registerResource('/:slug')
+    this.router.route('/:slug')
       // Get tracking state definition by slug
       .get(async (req, res) => {
         try {
@@ -144,7 +145,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // User Assignment Workload
   userAssignmentLoad() {
-    this.registerEndpoint('get', `/:definition(${this.UUIDregex})/userload`, async (req, res) => {
+    this.router.get(`/:definition(${UUIDregex})/userload`, async (req, res) => {
       // get group members
       const getTotalTasks = `
         SELECT
@@ -154,12 +155,12 @@ class TrackingDefinitionRoute extends RoutingInterface {
           COUNT("tracking_state_task"."ident") AS "tasks"
         FROM "pog_tracking_states" AS "tracking_state"
         LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" ON "tracking_state_task".state_id = "tracking_state".id
-        WHERE 
+        WHERE
           "tracking_state"."deletedAt" IS NULL AND
           "tracking_state_task"."deletedAt" is NULL and
-          "tracking_state"."slug" = :slug AND 
+          "tracking_state"."slug" = :slug AND
           "tracking_state_task"."status" IN ('active', 'pending')
-        GROUP BY 
+        GROUP BY
           "tracking_state"."name",
           "tracking_state"."slug",
           "tracking_state"."group_id";
@@ -218,9 +219,9 @@ class TrackingDefinitionRoute extends RoutingInterface {
                   "user".email AS "user.email",
                   COUNT("tracking_state_task"."ident") AS "user.assignedTasks"
                 FROM "users" as "user"
-                LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task" 
-                  ON 
-                  "tracking_state_task"."assignedTo_id" = "user".id AND 
+                LEFT JOIN "pog_tracking_state_tasks" AS "tracking_state_task"
+                  ON
+                  "tracking_state_task"."assignedTo_id" = "user".id AND
                   "tracking_state_task"."state_id" in (SELECT id FROM "pog_tracking_states" as s WHERE s.slug = :slug AND s.status NOT IN ('failed','completed') AND "deletedAt" IS null) AND
                   "tracking_state_task"."status" NOT IN ('failed', 'complete')
                 WHERE

@@ -3,7 +3,7 @@ const parse = require('csv-parse/lib/sync');
 const db = require('../../models');
 const pyToSql = require('../../libs/pyToSql');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 class MutationSummaryLoader {
   /**

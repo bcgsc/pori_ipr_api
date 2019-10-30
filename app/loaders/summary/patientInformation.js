@@ -5,7 +5,7 @@ const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 const sampleSummary = require('./sampleSummary.js');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 class PatientLoader {
   /**

@@ -11,6 +11,7 @@ chai.use(require('chai-things'));
 
 // get test user info
 const CONFIG = require('../app/config');
+const {listen} = require('../app');
 
 CONFIG.set('env', 'test');
 
@@ -30,7 +31,7 @@ const update = {
 let server;
 // Start API
 before(async () => {
-  server = await require('../app.js'); // eslint-disable-line
+  server = await listen(); // eslint-disable-line
 });
 
 // Tests history changes and update changes

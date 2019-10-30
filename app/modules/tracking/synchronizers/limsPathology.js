@@ -6,7 +6,7 @@ const $lims = require('../../../api/lims');
 const Task = require('../task');
 const State = require('../state');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 logger.info('Starting LIMS Sync');
 
