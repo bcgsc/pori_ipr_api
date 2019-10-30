@@ -19,7 +19,7 @@ if (ENV === 'production') {
   DEFAULT_LOG_LEVEL = 'warn';
 }
 
-const DEFAULT_TEST_USER = 'ipr-test';
+const DEFAULT_TEST_USER = 'ipr-bamboo-admin';
 const BIOAPPS_DEFAULTS = {
   hostname: 'http://sbs.bcgsc.ca:8100',
   api: '',
