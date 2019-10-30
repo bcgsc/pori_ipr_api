@@ -40,7 +40,7 @@ const DEFAULTS = {
   keycloak: {
     uri: ['production', 'staging'].includes(ENV)
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
-      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
+      : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
     keyFile: ['production', 'staging'].includes(ENV)
