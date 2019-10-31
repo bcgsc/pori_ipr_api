@@ -1,23 +1,25 @@
 const nconf = require('nconf');
 const {merge} = require('lodash');
 
+
+const ENV = process.env.NODE_ENV || 'local';
+
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'ipr-dev';
-if (process.env.NODE_ENV === 'production') {
+if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
-} else if (process.env.NODE_ENV === 'staging') {
+} else if (ENV === 'staging') {
   DEFAULT_DB_NAME = 'ipr-sync-staging';
 }
 
 let DEFAULT_LOG_LEVEL = 'debug';
-if (process.env.NODE_ENV === 'production') {
+if (ENV === 'production') {
   DEFAULT_LOG_LEVEL = 'info';
-} else if (process.env.NODE_ENV === 'test') {
+} else if (ENV === 'test') {
   DEFAULT_LOG_LEVEL = 'warn';
 }
 
-
-const DEFAULT_TEST_USER = 'ipr-test';
+const DEFAULT_TEST_USER = 'ipr-bamboo-admin';
 const BIOAPPS_DEFAULTS = {
   hostname: 'http://sbs.bcgsc.ca:8100',
   api: '',
@@ -28,19 +30,20 @@ const LIMS_DEFAULTS = {
   api: '/prod/limsapi',
 };
 
+
 const DEFAULTS = {
-  env: process.env.NODE_ENV || 'development',
+  env: ENV,
   web: {
     port: 8080,
     ssl: '/etc/ssl/certs/current/combinedcert.cert',
   },
   keycloak: {
-    uri: ['production', 'development', 'staging'].includes(process.env.NODE_ENV)
+    uri: ['production', 'staging'].includes(ENV)
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
-      : 'http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG/protocol/openid-connect/token',
+      : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
-    keyFile: ['production', 'development', 'staging'].includes(process.env.NODE_ENV)
+    keyFile: ['production', 'staging'].includes(ENV)
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
@@ -309,7 +312,7 @@ const CONFIG = nconf
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
-if (process.env.NODE_ENV === 'test') {
+if (ENV === 'test') {
   CONFIG.required(['database:password', 'testing:password']);
 } else {
   CONFIG.required(['database:password']);
