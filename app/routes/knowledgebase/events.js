@@ -3,7 +3,7 @@ const _ = require('lodash');
 const {Op} = require('sequelize');
 const db = require('../../models');
 const kbVersion = require('../../libs/kbVersionDatum.js');
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
 

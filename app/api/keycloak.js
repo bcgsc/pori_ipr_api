@@ -1,7 +1,7 @@
 const request = require('request-promise-native');
 const form = require('form-urlencoded').default;
 const nconf = require('../config');
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const $keycloak = {};
 

@@ -2,7 +2,7 @@ const validate = require('uuid-validate');
 const {Op} = require('sequelize');
 const db = require('../models');
 
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const ignored = {
   files: ['index.js', 'POG.js'],

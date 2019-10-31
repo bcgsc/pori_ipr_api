@@ -1,6 +1,6 @@
 const winston = require('winston'); // Logging
 const moment = require('moment');
-const nconf = require('../app/config');
+const nconf = require('./config');
 
 const logger = new (winston.Logger)({
   transports: [

@@ -6,7 +6,7 @@ const moment                  = require('moment');
 const db                      = require('../../models/');
 const InvalidStateStatus      = require('./exceptions/InvalidStateStatus');
 const FailedCreateQuery       = require('../../models/exceptions/FailedCreateQuery');
-const logger                  = require(process.cwd() + '/lib/log');
+const logger                  = require('../../log');
 const Hook                    = require('./hook');
 const Generator               = require('./generate');
 
@@ -94,9 +94,9 @@ module.exports = class State {
 
       // Update State Status
       this.instance.status = status;
-      
+
       logger.debug('Setting status of', this.instance.status);
-      
+
       if(this.instance.startedAt === null && (status === 'active' || status === 'completed')) this.instance.startedAt = moment().toISOString();
       if(this.instance.completedAt === null && status === 'completed') this.instance.completedAt = moment().toISOString();
 
@@ -150,13 +150,13 @@ module.exports = class State {
     return new Promise((resolve, reject) => {
       let stateComplete = true;
       this.instance.status = 'active';
-    
+
       logger.debug('[state]', `Starting Check Completed for state id ${this.instance.id}`);
-  
+
       // get Tasks
       db.models.tracking_state_task.findAll({where: {state_id: this.instance.id}}).then(
         (tasks) => {
-          
+
           _.forEach(tasks, (t) => {
             if(t.status !== 'complete') stateComplete = false;
           });
@@ -164,26 +164,26 @@ module.exports = class State {
           if(this.instance.startedAt === null) {
             this.instance.startedAt = moment().toISOString();
           }
-          
+
           if(stateComplete) {
             this.instance.completedAt = moment().toISOString();
             this.instance.status = 'complete';
           }
-          
+
           _.forEach(tasks, (t, i) => {
             tasks[i] = t.toJSON();
           });
-          
+
           logger.debug('[state]', 'Checking if state is complete', stateComplete);
-          
+
           this.instance.save().then(
             (result) => {
-              
+
               // Current state has completed!
               if(stateComplete) {
-                
+
                 logger.debug('[state]', 'Marking state as complete');
-                
+
                 // Check For Hooks
                 Hook.check_hook(this.instance.slug, 'complete', null)
                   .then((hooks) => {
@@ -203,21 +203,21 @@ module.exports = class State {
                     console.log('Failed to check hooks or next states');
                     reject({message: 'Failed to check hooks or invoke next state'});
                   });
-                
+
               }
-              
+
               // State not complete
               if(!stateComplete) {
                 logger.debug('[state]', 'State not complete');
                 resolve(false);
               }
-  
+
             },
             (err) => {
               console.log(err);
               reject({error: {message: 'Unable to update state to completed due to SQL error: ' + err.message}});
             });
-          
+
         });
       },
       (err) => {
@@ -230,9 +230,9 @@ module.exports = class State {
 
   /**
    * Create next State
-   * 
+   *
    * Takes in the current state model object and status and creates new tracking cards
-   * 
+   *
    * @returns {Promise} - resolves with state model objects that have been created
    */
   createNextState() {
@@ -240,7 +240,7 @@ module.exports = class State {
       logger.debug(`Starting next state check from state ${this.instance.name} (id: ${this.instance.id}, status: ${this.instance.status})`);
       let nextStates = [];
       let createNewStates = [];
-      
+
       // retrieve next_state_on_status info for state definition
       db.models.tracking_state_definition.findOne({
         where: {
@@ -262,7 +262,7 @@ module.exports = class State {
         });
       }).then((existingStates) => {
         createNewStates = _.differenceBy(nextStates, existingStates, 'slug'); // filter for states that don't yet exist for this analysis
-        
+
         // create promises to start states that already exist
         let startStates = [];
         _.forEach(existingStates, function(state) {

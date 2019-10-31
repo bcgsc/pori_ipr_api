@@ -4,7 +4,7 @@ const _ = require('lodash');
 const nconf = require('../config');
 const gin = require('../../lib/ginCredentials');
 
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const HOSTNAME = nconf.get('bioapps:hostname');
 const BASEPATH = nconf.get('bioapps:api');
@@ -249,7 +249,7 @@ $bioapps.parseSourceSettings = async (source) => {
     physicians: [],
     biop: null,
   };
-  
+
   if (currentSettings.disease_comparators && currentSettings.disease_comparators.length > 0) {
     details.disease_comparators = _.orderBy(currentSettings.disease_comparators, 'ordinal').map((c) => {
       return c.disease_code.code;
@@ -280,7 +280,7 @@ $bioapps.parseSourceSettings = async (source) => {
     details.threeLetterCode = currentSettings.cancer_group.code;
   }
   if (currentSettings.physicians) {
-    details.physicians.push(currentSettings.physicians.map((physician) => { 
+    details.physicians.push(currentSettings.physicians.map((physician) => {
       return {firstName: physician.first_name, lastName: physician.last_name};
     }));
   }

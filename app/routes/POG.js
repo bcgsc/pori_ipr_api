@@ -2,7 +2,7 @@ const express = require('express');
 const {Op} = require('sequelize');
 const db = require('../models');
 const Acl = require('../middleware/acl');
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const pogMiddleware = require('../middleware/pog');
 const reportMiddleware = require('../middleware/analysis_report');

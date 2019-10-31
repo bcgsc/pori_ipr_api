@@ -4,7 +4,7 @@ const nconf = require('nconf').argv().env().file({file: './config/columnMaps.jso
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 /**
  * Parse Genomic Events With Potential Clinical Association File

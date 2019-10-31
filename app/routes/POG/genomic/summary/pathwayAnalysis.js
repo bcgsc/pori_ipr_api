@@ -4,7 +4,7 @@ const multer = require('multer');
 const router = express.Router({mergeParams: true});
 const db = require('../../../../models');
 
-const logger = require('../../../../../lib/log');
+const logger = require('../../../../log');
 
 // Middleware for Analyst Comments
 router.use('/', async (req, res, next) => {

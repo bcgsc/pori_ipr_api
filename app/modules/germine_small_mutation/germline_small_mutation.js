@@ -2,7 +2,7 @@ const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../models');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 /**
  * Retrieve user entries

@@ -4,7 +4,7 @@ const nconf = require('nconf');
 const db = require('../../models');
 const remapKeys = require('../../libs/remapKeys');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 /**
  * Parse Patient Tumour Analysis File

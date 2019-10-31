@@ -16,7 +16,7 @@ const definitionMiddleware = require('../middleware/definition');
 const stateMiddleware = require('../middleware/state');
 const taskMiddleware = require('../middleware/task');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 
 class TrackingRouter extends RoutingInterface {
@@ -32,26 +32,26 @@ class TrackingRouter extends RoutingInterface {
 
     // Bind Routes
     const Definitions = new DefinitionRoutes(this.io);
-    this.bindRouteObject('/definition', Definitions.getRouter());
+    this.router.use('/definition', Definitions.getRouter());
 
     // Register Middleware
-    this.registerMiddleware('analysis', analysisMiddleware);
-    this.registerMiddleware('definition', definitionMiddleware);
-    this.registerMiddleware('state', stateMiddleware);
-    this.registerMiddleware('task', taskMiddleware);
+    this.router.param('analysis', analysisMiddleware);
+    this.router.param('definition', definitionMiddleware);
+    this.router.param('state', stateMiddleware);
+    this.router.param('task', taskMiddleware);
 
 
     const States = new StateRoutes(this.io);
-    this.bindRouteObject('/state', States.getRouter());
+    this.router.use('/state', States.getRouter());
 
     const Tasks = new TaskRoutes(this.io);
-    this.bindRouteObject('/task', Tasks.getRouter());
+    this.router.use('/task', Tasks.getRouter());
 
     const TicketTemplate = new TicketTemplateRoutes(this.io);
-    this.bindRouteObject('/ticket/template', TicketTemplate.getRouter());
+    this.router.use('/ticket/template', TicketTemplate.getRouter());
 
     const Hooks = new HookRoutes(this.io);
-    this.bindRouteObject('/hook', Hooks.getRouter());
+    this.router.use('/hook', Hooks.getRouter());
 
     // Enable Generator
     this.generator();
@@ -60,7 +60,7 @@ class TrackingRouter extends RoutingInterface {
     this.tracking(States);
 
     // Get and run hooks
-    this.registerEndpoint('get', '/test/hook/:state/:task', async (req, res) => {
+    this.router.get('/test/hook/:state/:task', async (req, res) => {
       let hooks;
       try {
         hooks = await Hook.check_hook('bioapps', 'complete', 'bioapps_patient_sync', true);
@@ -84,7 +84,7 @@ class TrackingRouter extends RoutingInterface {
   // Generate Tracking from source
   generator() {
     // Create parent elements, then initiate tracking
-    this.registerEndpoint('post', '/', async (req, res) => {
+    this.router.post('/', async (req, res) => {
       if (!req.body.POGID) {
         logger.error('POGID is a required input');
         return res.status(400).json({error: {message: 'POGID is a required input', code: 'failedValidation', input: 'POGID'}});
@@ -136,7 +136,7 @@ class TrackingRouter extends RoutingInterface {
     });
 
     // Generate Tracking Only
-    this.registerEndpoint('get', '/POG/:POG/analysis/:analysis([A-z0-9-]{36})/generate', async (req, res) => {
+    this.router.get('/POG/:POG/analysis/:analysis([A-z0-9-]{36})/generate', async (req, res) => {
       // Generate Request
       try {
         const generator = await new Generator(req.pog, req.analysis, req.user);
@@ -151,7 +151,7 @@ class TrackingRouter extends RoutingInterface {
   // Tracking Home Route
   tracking(stateRouter) {
     // Map to state router function
-    this.registerEndpoint('get', '/', stateRouter.getFilteredStates);
+    this.router.get('/', stateRouter.getFilteredStates);
   }
 }
 

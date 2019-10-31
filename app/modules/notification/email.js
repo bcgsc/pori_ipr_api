@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const pug = require('pug');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 const nconf = require('../../config');
 
 class Email {

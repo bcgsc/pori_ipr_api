@@ -14,7 +14,7 @@ const gsmMiddleware = require('../middleware/germline_small_mutation.middleware'
 const reviewMiddleware = require('../middleware/germline_small_mutation_review.middleware');
 const variantMiddleware = require('../middleware/germline_small_mutation_variant.middleware');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -32,16 +32,16 @@ class GSMRouter extends RoutingInterface {
     this.io = io;
 
     // Register Middleware
-    this.registerMiddleware('gsm_report', gsmMiddleware);
-    this.registerMiddleware('review', reviewMiddleware);
-    this.registerMiddleware('variant', variantMiddleware);
+    this.router.param('gsm_report', gsmMiddleware);
+    this.router.param('review', reviewMiddleware);
+    this.router.param('variant', variantMiddleware);
 
     // Load Report
-    this.registerEndpoint('post', '/patient/:patient/biopsy/:analysis', this.loadReport);
+    this.router.post('/patient/:patient/biopsy/:analysis', this.loadReport);
 
     // All Reports
-    this.registerEndpoint('get', '/', this.getReports); // All reports for all cases
-    this.registerEndpoint('get', '/patient/:patient/biopsy/:analysis', this.getAnalysisReport); // All reports for a biopsy
+    this.router.get('/', this.getReports); // All reports for all cases
+    this.router.get('/patient/:patient/biopsy/:analysis', this.getAnalysisReport); // All reports for a biopsy
 
     // Individual Reports
     this.reportResource();
@@ -50,12 +50,12 @@ class GSMRouter extends RoutingInterface {
     this.reportVariants();
 
     // Reviews
-    this.registerEndpoint('put', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review', this.addReview); // Add review to report
-    this.registerEndpoint('delete', '/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', this.removeReview); // Add review to report
+    this.router.put('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', this.addReview); // Add review to report
+    this.router.delete('/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', this.removeReview); // Add review to report
 
     // Export
-    this.registerEndpoint('get', '/export/batch/token', this.getExportFlashToken);
-    this.registerEndpoint('get', '/export/batch', this.batchExport);
+    this.router.get('/export/batch/token', this.getExportFlashToken);
+    this.router.get('/export/batch', this.batchExport);
   }
 
   /**
@@ -247,16 +247,21 @@ class GSMRouter extends RoutingInterface {
     const opts = {
       order: [['createdAt', 'desc']],
       attributes: {
-        exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id']
+        exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id'],
       },
       include: [
-        {as: 'analysis', model: db.models.pog_analysis.scope('public'),
+        {
+          as: 'analysis',
+          model: db.models.pog_analysis.scope('public'),
           where: {analysis_biopsy: req.params.analysis},
           include: [{model: db.models.POG, as: 'pog', where: {POGID: req.params.patient}}],
         },
         {as: 'biofx_assigned', model: db.models.user.scope('public')},
         {as: 'variants', model: db.models.germline_small_mutation_variant, separate: true},
-        {as: 'reviews', model: db.models.germline_small_mutation_review, separate: true,
+        {
+          as: 'reviews',
+          model: db.models.germline_small_mutation_review,
+          separate: true,
           include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
         },
       ],
@@ -362,7 +367,7 @@ class GSMRouter extends RoutingInterface {
 
   // Resource endpoints for Variants
   async reportVariants() {
-    this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant/:variant')
+    this.router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant/:variant')
       /**
        * Get an existing variant
        *
@@ -417,7 +422,7 @@ class GSMRouter extends RoutingInterface {
 
   // Individual report resources
   reportResource() {
-    this.registerResource('/patient/:patient/biopsy/:analysis/report/:gsm_report')
+    this.router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
 
       /**
        * Get an existing report
