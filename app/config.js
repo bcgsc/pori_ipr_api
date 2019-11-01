@@ -26,7 +26,7 @@ const BIOAPPS_DEFAULTS = {
 };
 
 const LIMS_DEFAULTS = {
-  hostname: 'https://lims13.bcgsc.ca',
+  hostname: 'https://lims16.bcgsc.ca',
   api: '/prod/limsapi',
 };
 
