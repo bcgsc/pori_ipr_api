@@ -1,7 +1,11 @@
 {
   "private": true,
   "name": "ipr-api",
+<<<<<<< HEAD
   "version": "2.6.0",
+=======
+  "version": "2.5.6",
+>>>>>>> master
   "description": "Integrated Pipeline Reports API",
   "main": "bin/server.js",
   "scripts": {

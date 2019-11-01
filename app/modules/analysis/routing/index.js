@@ -118,6 +118,7 @@ class TrackingRouter extends RoutingInterface {
         const validationErr = [];
         // ID of email task. This sends an email upon biopsy addition.
         const BIOPSY_EMAIL_ID = 4;
+        const BIOPSY_SENDER = 'pogsamples@bcgsc.ca';
 
         // Require Fields
         if (!req.body.POGID) {
@@ -207,6 +208,7 @@ class TrackingRouter extends RoutingInterface {
           const email = new Email({force: true});
           await email
             .setRecipient(hook.target)
+            .setSender(BIOPSY_SENDER)
             .setCC(data.emails)
             .setSubject(render(hook.payload.subject, data))
             .setBody(render(hook.payload.body, data))
