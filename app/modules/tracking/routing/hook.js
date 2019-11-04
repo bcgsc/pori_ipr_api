@@ -2,7 +2,7 @@ const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const hookMiddleware = require('../middleware/hook');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 class TrackingDefinitionRoute extends RoutingInterface {
   /**
@@ -18,7 +18,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
     this.io = io;
 
     // Register middleware
-    this.registerMiddleware('hook', hookMiddleware);
+    this.router.param('hook', hookMiddleware);
 
     // Register root
     this.rootPath();
@@ -29,7 +29,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
 
   // URL Root
   rootPath() {
-    this.registerResource('/')
+    this.router.route('/')
 
       // Create new state definition
       .get(async (req, res) => {
@@ -93,7 +93,7 @@ class TrackingDefinitionRoute extends RoutingInterface {
   }
 
   hookPath() {
-    this.registerResource('/:hook([A-z0-9-]{36})')
+    this.router.route('/:hook([A-z0-9-]{36})')
 
       // Delete definition
       .delete(async (req, res) => {

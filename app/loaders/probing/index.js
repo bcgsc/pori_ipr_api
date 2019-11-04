@@ -1,5 +1,5 @@
 const glob = require('glob');
-const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
+const nconf = require('../../config');
 
 const summaryPatientInformation = require('../summary/patientInformation');
 const summaryGenomicEventsTherapeutic = require('../summary/genomicEventsTherapeutic');
@@ -10,7 +10,7 @@ const approvedThisCancer = require('../detailedGenomicAnalysis/approvedThisCance
 const approvedOtherCancer = require('../detailedGenomicAnalysis/approvedOtherCancer');
 
 const config = nconf.get('paths:data');
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 // Map of loaders
 let loaders = [

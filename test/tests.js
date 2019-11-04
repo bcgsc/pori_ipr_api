@@ -18,7 +18,7 @@ console.log(('Application API Port: ').green, port.toString().white);
 
 const App = require('../app');
 
-describe('IPR API', () => {
+describe.skip('IPR API', () => {
     let server,
         io;
 

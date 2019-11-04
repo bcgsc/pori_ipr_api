@@ -1,7 +1,7 @@
 const datalib = require('datalib');
 const db = require('../../models');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 const remapStatus = (inputStatus) => {
   if (!inputStatus) {

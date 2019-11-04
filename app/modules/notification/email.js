@@ -1,7 +1,8 @@
 const nodemailer = require('nodemailer');
 const pug = require('pug');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
+const nconf = require('../../config');
 
 class Email {
   /**
@@ -107,9 +108,9 @@ class Email {
       html: this.htmlBody,
     };
 
-    if (process.env.NODE_ENV !== 'production' && this.force !== true) {
+    if (nconf.get('env') !== 'production' && this.force !== true) {
       logger.info(`Mocked email generated: ${message}`);
-      return {env: process.env.NODE_ENV, message: 'success', mock: true};
+      return {env: nconf.get('env'), message: 'success', mock: true};
     }
 
     return this.transport.sendMail(message);

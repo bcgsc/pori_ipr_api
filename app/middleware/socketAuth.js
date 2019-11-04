@@ -1,11 +1,10 @@
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
-const logger = require('../../lib/log');
+const nconf = require('../config');
+const logger = require('../log');
 
-const pubKey = ['production', 'development', 'test'].includes(process.env.NODE_ENV)
-  ? fs.readFileSync('keys/prodkey.pem')
-  : fs.readFileSync('keys/devkey.pem');
+const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile'));
 
 class SocketAuthentication {
   /**

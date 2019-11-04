@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 router.param('cnv', async (req, res, next, mutIdent) => {
   let result;

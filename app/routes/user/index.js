@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
 

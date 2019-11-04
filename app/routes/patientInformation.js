@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('../models');
 
 const router = express.Router({mergeParams: true});
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 // Middleware for Patient Information
 router.use('/', async (req, res, next) => {

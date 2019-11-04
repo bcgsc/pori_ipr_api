@@ -1,7 +1,7 @@
 const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 module.exports = sequelize => sequelize.define('project', {
   ...DEFAULT_COLUMNS,

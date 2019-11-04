@@ -9,7 +9,7 @@ const State = require('./state');
 const Checkin = require('./checkin');
 const Hook = require('./hook');
 
-const logger = require('../../../lib/log');
+const logger = require('../../log');
 
 
 module.exports = class Task {

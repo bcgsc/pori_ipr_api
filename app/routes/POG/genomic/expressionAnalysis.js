@@ -4,7 +4,7 @@ const {Op} = require('sequelize');
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 /*
  * Outliers

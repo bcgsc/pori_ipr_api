@@ -12,7 +12,7 @@
 */
 
 const Syncro = require('./synchro'); // Import syncronizer Object
-const logger = require('../../lib/log');
+const logger = require('../log');
 
 const SYNC_INTERVAL = 10; // number of seconds between syncs
 

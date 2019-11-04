@@ -13,10 +13,11 @@ const Email = require('../../notification/email');
 const comparators = require('../../../../database/comparators.json');
 const comparatorsV9 = require('../../../../database/comparators.v9.json');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 const Patient = require('../../../libs/patient/patient.library');
 const analysisMiddleware = require('../../../middleware/analysis');
+const {UUIDregex} = require('../../../constants');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -33,7 +34,7 @@ class TrackingRouter extends RoutingInterface {
     super();
     this.io = io;
     // Register Middleware
-    this.registerMiddleware('analysis', analysisMiddleware);
+    this.router.param('analysis', analysisMiddleware);
     // Setup analysis endpoint
     this.analysis();
     // Extended Details
@@ -41,7 +42,7 @@ class TrackingRouter extends RoutingInterface {
     // Comparators
     this.comparators();
     // Base Biopsy Endpoints
-    this.registerResource('/')
+    this.router.route('/')
       .get(async (req, res) => {
         const opts = {
           order: [['createdAt', 'DESC']],
@@ -183,7 +184,7 @@ class TrackingRouter extends RoutingInterface {
           return res.status(500).json({message: 'Error while trying to create POG analysis'});
         }
 
-        const clinicians = analysis.physician.map(physician => `Dr. ${physician.last_name}`);
+        const clinicians = analysis.physician.map((physician) => { return `Dr. ${physician.last_name}`; });
         const data = {
           patientId: POG.POGID,
           clinician: clinicians.join(', '),
@@ -246,7 +247,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Single Entry
   analysis() {
-    this.registerResource(`/:analysis(${this.UUIDregex})`)
+    this.router.route(`/:analysis(${UUIDregex})`)
       .put(async (req, res) => {
         const analysis = new Analysis(req.analysis);
         try {
@@ -264,7 +265,7 @@ class TrackingRouter extends RoutingInterface {
         return res.status(204).send();
       });
 
-    this.registerEndpoint('post', '/bioAppsTest', async (req, res) => {
+    this.router.post('/bioAppsTest', async (req, res) => {
       let patient;
       // Get POG
       try {
@@ -295,7 +296,7 @@ class TrackingRouter extends RoutingInterface {
       }
     });
 
-    this.registerEndpoint('get', '/backfillComparators', async (req, res) => {
+    this.router.get('/backfillComparators', async (req, res) => {
       let analyses;
       try {
         analyses = await db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {[Op.ne]: null}}});
@@ -428,7 +429,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Extended Details
   extended() {
-    this.registerEndpoint('get', `/extended/:analysisIdent(${this.UUIDregex})`, async (req, res) => {
+    this.router.get(`/extended/:analysisIdent(${UUIDregex})`, async (req, res) => {
       const opts = {
         limit: req.query.limit || DEFAULT_PAGE_LIMIT_2,
         offset: req.query.offset || DEFAULT_PAGE_OFFSET,
@@ -611,7 +612,7 @@ class TrackingRouter extends RoutingInterface {
 
   // Comparator Endpoints
   comparators() {
-    this.registerEndpoint('get', '/comparators', (req, res) => {
+    this.router.get('/comparators', (req, res) => {
       return res.json({v8: comparators, v9: comparatorsV9});
     });
   }

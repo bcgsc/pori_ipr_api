@@ -2,7 +2,7 @@ const pug = require('pug');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Email = require('../email');
 
-const logger = require('../../../../lib/log');
+const logger = require('../../../log');
 
 /**
  * Create and bind routes for Notifications
@@ -14,7 +14,7 @@ class NotificationRouter extends RoutingInterface {
     super();
     this.io = io;
 
-    this.registerEndpoint('get', '/test', async (req, res) => {
+    this.router.get('/test', async (req, res) => {
       // Create new Email
       const email = new Email({force: true});
 
@@ -28,7 +28,7 @@ class NotificationRouter extends RoutingInterface {
       }
     });
 
-    this.registerEndpoint('get', '/render', async (req, res) => {
+    this.router.get('/render', async (req, res) => {
       return res.send(pug.renderFile('../templates/email.pug',
         {
           body: 'Hello World.\nThis is a multiline text body.',

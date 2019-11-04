@@ -2,9 +2,8 @@ const util = require('util');
 const fs = require('fs');
 const glob = require('glob');
 const pyParse = util.promisify(require('pyconf').parse);
-const nconf = require('nconf').file({file: `./config/${process.env.NODE_ENV}.json`});
-
-const logger = require('../../lib/log');
+const nconf = require('../config');
+const logger = require('../log');
 
 // Loader requires
 
@@ -108,7 +107,7 @@ class GenomicLoader {
    * @returns {Promise.<Array.<string>>} - Returns collection of loader results
    */
   async load() {
-    logger.info('Starting Genomic Loader');
+    logger.info(`Starting Genomic Loader (${this.report.ident})`);
 
     // Run default POG Genomic Report loading
     if (this.options.profile === 'pog_genomic'
