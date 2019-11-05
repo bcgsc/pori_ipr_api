@@ -5,7 +5,7 @@
 
 The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic and probe reports, POG sample tracking,
-POG Biopsy tracking, Germline Small Mutation reports, and legacy Knowledgebase.
+POG Biopsy tracking and Germline Small Mutation reports.
 
 An integrated data synchronization application runs concurrently with the API in a separate process.
 The sync-worker is responsible for regularly checking in with LIMS and BioApps to keep sample tracking
@@ -276,7 +276,7 @@ Merged BAMs have their own endpoint, and are easy to check via this endpoint. Th
 │   │
 │   │
 │   ├── modules                         # Modules
-│   │   │                               Isolated, independant application modules. Tracking, germline reports, biopsy/analysis, knowledgebase.
+│   │   │                               Isolated, independant application modules. Tracking, germline reports, biopsy/analysis.
 │   │   │                                Most logic for these modules is kept within the /module/ directory. There might be a few exceptions to this rule.
 │   │   │
 │   │   ├── module_a                      An individual model component. Each module has packing for exceptions, middleware, models, routing, and

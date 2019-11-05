@@ -18,7 +18,6 @@ const loadPogRoute = require('./load_pog');
 const exportRoute = require('./POG/export');
 const patientInformationRoute = require('./patientInformation');
 const reportsRoute = require('./reports');
-const knowledgebaseRoute = require('./knowledgebase');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
@@ -89,7 +88,6 @@ class Routing extends RouterInterface {
         '/project',
         '/jira',
         '/lims',
-        '/knowledgebase',
         '/tracking',
         '/reports',
         '/analysis',
@@ -111,8 +109,6 @@ class Routing extends RouterInterface {
     this.router.use('/POG/:POG/report/:report/patientInformation', patientInformationRoute);
 
     this.router.use('/reports', reportsRoute);
-
-    this.router.use('/knowledgebase', knowledgebaseRoute);
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
