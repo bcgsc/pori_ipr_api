@@ -32,12 +32,7 @@ function deleteTestAccounts() {
 
 }
 
-function deleteTestTrackingStates() {
-    return db.models.tracking_state.destroy({where: {analysis_id: null}, force: true});    
-}
-
 module.exports = {
     createTestAccounts : createTestAccounts,
     deleteTestAccounts : deleteTestAccounts,
-    deleteTestTrackingStates: deleteTestTrackingStates,
 };

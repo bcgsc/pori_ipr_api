@@ -33,20 +33,6 @@ class Notification {
       },
       include: [
         {as: 'analysis', model: db.models.pog_analysis.scope('public')},
-        {
-          as: 'tasks',
-          model: db.models.tracking_state_task,
-          attributes: {exclude: ['id', 'state_id', 'assignedTo_id']},
-          order: [['ordinal', 'ASC']],
-          include: [
-            {as: 'assignedTo', model: db.models.user.scope('public')},
-            {
-              as: 'checkins',
-              model: db.models.tracking_state_task_checkin,
-              include: [{as: 'user', model: db.models.user.scope('public')}],
-            },
-          ],
-        },
       ],
     };
 

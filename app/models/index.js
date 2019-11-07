@@ -281,9 +281,6 @@ probeSignature.belongsTo(user, {
   as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
-// Load Tracking Models
-const trackingModels = require('../modules/tracking/models')(sequelize);
-
 // Subscription
 const subscription = sequelize.import('./pog_analysis_subscription');
 subscription.belongsTo(sequelize.models.pog_analysis, {

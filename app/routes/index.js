@@ -24,7 +24,6 @@ const projectRoute = require('./project');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
-const Tracking = require('../modules/tracking/routing');
 const Notification = require('../modules/notification/routing');
 const GeneViewer = require('../modules/geneViewer/routing');
 const Analysis = require('../modules/analysis/routing');
@@ -88,7 +87,6 @@ class Routing extends RouterInterface {
         '/project',
         '/jira',
         '/lims',
-        '/tracking',
         '/reports',
         '/analysis',
         '/analysis_reports',
@@ -116,20 +114,15 @@ class Routing extends RouterInterface {
     // Register Get All Projects route
     this.getProjects();
 
-    // Get Tracking Routes
-    const TrackingRoutes = new Tracking(this.io);
-    this.router.use('/tracking', TrackingRoutes.getRouter());
-
     // Get Notification Routes
     const NotificationRoutes = new Notification(this.io);
     this.router.use('/notification', NotificationRoutes.getRouter());
 
-
-    // Get Notification Routes
+    // Get Gene Viewer Routes
     const GeneViewerRoutes = new GeneViewer(this.io);
     this.router.use('/POG/:POG/report/:report/geneviewer', GeneViewerRoutes.getRouter());
 
-    // Get Notification Routes
+    // Get Analysis Routes
     const AnalysisRoutes = new Analysis(this.io);
     this.router.use('/analysis', AnalysisRoutes.getRouter());
 

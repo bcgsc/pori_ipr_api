@@ -1,14 +1,10 @@
 const _ = require('lodash');
 const {Op} = require('sequelize');
-const render = require('json-templater/string');
-const moment = require('moment');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Analysis = require('../analysis.object');
-const Generator = require('../../tracking/generate');
 const $bioapps = require('../../../api/bioapps');
 const $lims = require('../../../api/lims');
-const Email = require('../../notification/email');
 
 const comparators = require('../../../../database/comparators.json');
 const comparatorsV9 = require('../../../../database/comparators.v9.json');
@@ -116,8 +112,6 @@ class TrackingRouter extends RoutingInterface {
       // Add Biopsy/Analysis entry
       .post(async (req, res) => {
         const validationErr = [];
-        // ID of email task. This sends an email upon biopsy addition.
-        const BIOPSY_EMAIL_ID = 4;
 
         // Require Fields
         if (!req.body.POGID) {
@@ -181,60 +175,6 @@ class TrackingRouter extends RoutingInterface {
         } catch (error) {
           logger.error(`Error while trying to create POG analysis ${error}`);
           return res.status(500).json({message: 'Error while trying to create POG analysis'});
-        }
-
-        const clinicians = analysis.physician.map((physician) => { return `Dr. ${physician.last_name}`; });
-        const data = {
-          patientId: POG.POGID,
-          clinician: clinicians.join(', '),
-          disease: analysis.disease,
-          biopsyDate: moment(analysis.biopsy_date).format('YYYY-MM-DD'),
-          biopsyTime: req.body.biopsy_time || 'N/A',
-          biopsyNotes: req.body.biopsy_notes,
-          biopsySite: req.body.biopsy_site,
-          radiologistOrSurgeon: req.body.radiologist_or_surgeon || 'N/A',
-          bloodCollection: req.body.blood_collection,
-          bloodCollectionTime: req.body.blood_collection_time || 'N/A',
-          notes: req.body.notes || '',
-          analysis,
-          patient: POG,
-          emails: req.body.emails || '',
-        };
-
-        const opts = {where: {id: BIOPSY_EMAIL_ID}};
-        const [hook] = await db.models.tracking_hook.findAll(opts);
-        if (hook) {
-          const email = new Email({force: true});
-          await email
-            .setRecipient(hook.target)
-            .setCC(data.emails)
-            .setSubject(render(hook.payload.subject, data))
-            .setBody(render(hook.payload.body, data))
-            .send();
-        }
-
-        if (req.body.tracking) {
-          let trackingStateDef;
-          // Get initial tracking state to generate card for
-          try {
-            trackingStateDef = await db.models.tracking_state_definition.findOne({where: {ordinal: 1}});
-          } catch (error) {
-            logger.error(`Error while finding tracking state definition ${error}`);
-            return res.status(500).json({message: 'Error while finding tracking state definition'});
-          }
-
-          // Initiate Tracking Generator
-          const initState = [{
-            slug: trackingStateDef.slug,
-            status: 'active',
-          }];
-
-          try {
-            await new Generator(pogAnalysis, req.user, initState);
-          } catch (error) {
-            logger.error(`Error while initialize tracking entries for biopsy ${error}`);
-            return res.status(500).json({message: 'Error while initialize tracking entries for biopsy'});
-          }
         }
 
         pogAnalysis = pogAnalysis.toJSON();

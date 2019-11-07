@@ -59,7 +59,4 @@ describe.skip('IPR API', () => {
 
     // Reports Tests
     // require('./reports/reports');
-
-    // Tracking Tests
-    require('./tracking/state');
 });
