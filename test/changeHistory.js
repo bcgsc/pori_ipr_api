@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const uuidv4 = require('uuid/v4');
+const getPort = require('get-port');
 
 chai.should();
 
@@ -31,7 +32,8 @@ const update = {
 let server;
 // Start API
 before(async () => {
-  server = await listen(); // eslint-disable-line
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
 });
 
 // Tests history changes and update changes
@@ -109,4 +111,8 @@ describe('Tests for update changes', () => {
 
     res.should.have.status(404);
   });
+});
+
+after(async () => {
+  await server.close();
 });

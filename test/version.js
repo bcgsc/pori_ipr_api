@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const getPort = require('get-port');
 
 chai.should();
 
@@ -19,7 +20,8 @@ const {username, password} = CONFIG.get('testing');
 let server;
 // Start API
 before(async () => {
-  server = await listen(); // eslint-disable-line
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
 });
 
 // Tests API version endpoint
@@ -38,4 +40,9 @@ describe('Tests API version endpoint', () => {
     res.body.should.be.a('object');
     res.body.apiVersion.should.equal(expectedVersion);
   });
+});
+
+
+after(async () => {
+  await server.close();
 });
