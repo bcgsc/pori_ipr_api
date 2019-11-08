@@ -22,7 +22,6 @@ const projectRoute = require('./project');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
-const Notification = require('../modules/notification/routing');
 const GeneViewer = require('../modules/geneViewer/routing');
 const Analysis = require('../modules/analysis/routing');
 const GermlineReports = require('../modules/germine_small_mutation/routing');
@@ -107,10 +106,6 @@ class Routing extends RouterInterface {
 
     // Register Get All Projects route
     this.getProjects();
-
-    // Get Notification Routes
-    const NotificationRoutes = new Notification(this.io);
-    this.router.use('/notification', NotificationRoutes.getRouter());
 
     // Get Gene Viewer Routes
     const GeneViewerRoutes = new GeneViewer(this.io);

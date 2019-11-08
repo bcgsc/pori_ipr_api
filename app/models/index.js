@@ -296,9 +296,6 @@ flashToken.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
 });
 
-// Notifications
-const notification = require('../modules/notification/models')(sequelize);
-
 // Germline Small Mutations
 const gsm = require('../modules/germine_small_mutation/models')(sequelize);
 
