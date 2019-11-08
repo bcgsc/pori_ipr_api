@@ -22,9 +22,8 @@ const DEFAULT_PAGE_OFFSET = 0;
  * @type {TrackingRouter}
  */
 class TrackingRouter extends RoutingInterface {
-  constructor(io) {
+  constructor() {
     super();
-    this.io = io;
     // Register Middleware
     this.router.param('analysis', analysisMiddleware);
     // Setup analysis endpoint

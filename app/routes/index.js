@@ -5,7 +5,6 @@ const db = require('../models/');
 const pogMiddleware = require('../middleware/pog');
 const reportMiddleware = require('../middleware/analysis_report');
 const authMiddleware = require('../middleware/auth');
-const SocketAuth = require('../middleware/socketAuth');
 
 // Get route files
 const pogRoute = require('./POG');
@@ -35,12 +34,7 @@ class Routing extends RouterInterface {
   /**
    * Handles the loading of all the route files
    *
-   * @param {object} io - socket.io server
    */
-  constructor(io) {
-    super();
-    this.io = io;
-  }
 
   /**
    * Initialize routing
@@ -52,20 +46,6 @@ class Routing extends RouterInterface {
       files: ['POG.js', 'user.js', '.svn', 'user'],
       routes: ['loadPog', '.svn'],
     };
-
-    this.io.on('connect', async (socket) => {
-      const auth = new SocketAuth(socket, this.io);
-      try {
-        await auth.challenge();
-        logger.info(`Socket connected ${socket.id}`);
-      } catch (error) {
-        logger.error(`Challenge falied with this error: ${error}`);
-      }
-    });
-
-    this.io.on('disconnect', (socket) => {
-      logger.info(`Socket disconnected ${socket.id}`);
-    });
 
     // Add router to class
     this.router = router;
@@ -108,19 +88,19 @@ class Routing extends RouterInterface {
     this.getProjects();
 
     // Get Gene Viewer Routes
-    const GeneViewerRoutes = new GeneViewer(this.io);
+    const GeneViewerRoutes = new GeneViewer();
     this.router.use('/POG/:POG/report/:report/geneviewer', GeneViewerRoutes.getRouter());
 
     // Get Analysis Routes
-    const AnalysisRoutes = new Analysis(this.io);
+    const AnalysisRoutes = new Analysis();
     this.router.use('/analysis', AnalysisRoutes.getRouter());
 
     // Get Germline Reports Routes
-    const GermlineReportsRoutes = new GermlineReports(this.io);
+    const GermlineReportsRoutes = new GermlineReports();
     this.router.use('/germline_small_mutation', GermlineReportsRoutes.getRouter());
 
     // Get Export Germline Reports Routes
-    const GermlineReportsExportRoutes = new GermlineReportsExport(this.io);
+    const GermlineReportsExportRoutes = new GermlineReportsExport();
     this.router.use('/export/germline_small_mutation', GermlineReportsExportRoutes.getRouter());
 
     // Get Project Routes

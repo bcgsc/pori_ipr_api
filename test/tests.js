@@ -19,8 +19,7 @@ console.log(('Application API Port: ').green, port.toString().white);
 const App = require('../app');
 
 describe.skip('IPR API', () => {
-    let server,
-        io;
+    let server;
 
     // Start API servers before running tests
     before(function (done) {
@@ -32,10 +31,6 @@ describe.skip('IPR API', () => {
 
             // Create HTTP server.
             server = http.createServer(app);
-
-            // Socket.io
-            io = app.io;
-            io.attach(server);
 
             // Listen on provided port, on all network interfaces.
             server.listen(port);
