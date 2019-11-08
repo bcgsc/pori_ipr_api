@@ -20,7 +20,7 @@ const {username, password} = CONFIG.get('testing');
 
 // new project info
 const projectData = {
-  name: 'TEST-PROJECT',
+  name: `TEST-PROJECT-${uuidv4()}`,
 };
 
 // data for update project
