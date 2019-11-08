@@ -20,16 +20,6 @@ if (ENV === 'production') {
 }
 
 const DEFAULT_TEST_USER = 'ipr-bamboo-admin';
-const BIOAPPS_DEFAULTS = {
-  hostname: 'http://sbs.bcgsc.ca:8100',
-  api: '',
-};
-
-const LIMS_DEFAULTS = {
-  hostname: 'https://lims13.bcgsc.ca',
-  api: '/prod/limsapi',
-};
-
 
 const DEFAULTS = {
   env: ENV,
@@ -64,13 +54,6 @@ const DEFAULTS = {
     port: 5432,
     name: DEFAULT_DB_NAME,
   },
-  jira: {
-    hostname: 'www.bcgsc.ca',
-    api: '/jira/rest',
-    version: '2',
-  },
-  lims: LIMS_DEFAULTS,
-  bioapps: BIOAPPS_DEFAULTS,
   redis: {
     uri: '',
     host: '',
@@ -296,18 +279,6 @@ const CONFIG = nconf
     },
     port: {
       alias: 'web:port',
-    },
-    'bioapps.hostname': {
-      alias: 'bioapps:hostname',
-    },
-    'bioapps.api': {
-      alias: 'bioapps:api',
-    },
-    'lims.hostname': {
-      alias: 'lims:hostname',
-    },
-    'lims.api': {
-      alias: 'lims:api',
     },
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));

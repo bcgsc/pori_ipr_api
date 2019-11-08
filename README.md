@@ -188,7 +188,6 @@ pm2 start current/pm2.config.js --env production
 │                                     ││ Interpreter args      N/A                                                               │
 └─────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
-In the above screenshot, the syncWorker task is busy running a job against LIMS API.
 
 
 

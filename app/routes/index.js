@@ -11,8 +11,6 @@ const SocketAuth = require('../middleware/socketAuth');
 const pogRoute = require('./POG');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
-const jiraRoute = require('./jira');
-const limsRoute = require('./lims');
 
 const loadPogRoute = require('./load_pog');
 const exportRoute = require('./POG/export');
@@ -85,8 +83,6 @@ class Routing extends RouterInterface {
         '/user/*',
         '/user',
         '/project',
-        '/jira',
-        '/lims',
         '/reports',
         '/analysis',
         '/analysis_reports',
@@ -99,8 +95,6 @@ class Routing extends RouterInterface {
 
     this.router.use('/user', userRoute);
     this.router.use('/user/group', groupRoute);
-    this.router.use('/jira', jiraRoute);
-    this.router.use('/lims', limsRoute);
 
     this.router.use('/POG/:POGID/load', loadPogRoute);
     this.router.use('/POG/:POG/report/:report/export', exportRoute);
