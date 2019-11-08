@@ -75,13 +75,13 @@ describe('Tests for update changes', () => {
       .put(`/api/1.0/project/${ident}`)
       .auth(username, password)
       .type('json')
-      .send(update);
+      .send({...update});
 
     res.should.have.status(200);
 
     // get updated project and compare to update values
     res = await chai.request(server)
-      .get(`/api/1.0/project/search?query=${projectData.name}`)
+      .get(`/api/1.0/project/search?query=${update.name}`)
       .auth(username, password)
       .type('json');
 
