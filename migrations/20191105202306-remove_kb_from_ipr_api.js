@@ -11,7 +11,7 @@ module.exports = {
     await queryInterface.dropTable('kb_references');
     console.log('kb_references table dropped');
 
-    return Promise.resolve(true);
+    return true;
   },
 
   down: (queryInterface, Sequelize) => {

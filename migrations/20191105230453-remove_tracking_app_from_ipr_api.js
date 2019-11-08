@@ -23,7 +23,7 @@ module.exports = {
     await queryInterface.dropTable('pog_tracking_ticket_template', {cascade: true});
     console.log('pog_tracking_ticket_template table dropped');
 
-    return Promise.resolve(true);
+    return true;
   },
 
   down: (queryInterface, Sequelize) => {
