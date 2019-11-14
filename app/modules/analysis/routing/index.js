@@ -3,9 +3,6 @@ const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 const Analysis = require('../analysis.object');
 
-const comparators = require('../../../../database/comparators.json');
-const comparatorsV9 = require('../../../../database/comparators.v9.json');
-
 const logger = require('../../../log');
 
 const Patient = require('../../../libs/patient/patient.library');
@@ -28,8 +25,6 @@ class TrackingRouter extends RoutingInterface {
     this.router.param('analysis', analysisMiddleware);
     // Setup analysis endpoint
     this.analysis();
-    // Comparators
-    this.comparators();
     // Base Biopsy Endpoints
     this.router.route('/')
       .get(async (req, res) => {
@@ -195,37 +190,6 @@ class TrackingRouter extends RoutingInterface {
       .delete((req, res) => {
         return res.status(204).send();
       });
-
-    this.router.get('/backfillComparators', async (req, res) => {
-      let analyses;
-      try {
-        analyses = await db.models.pog_analysis.scope('public').findAll({where: {analysis_biopsy: {[Op.ne]: null}}});
-      } catch (error) {
-        logger.error(`There was an error while finding all POG analyses ${error}`);
-        return res.status(500).json({message: 'There was an error while finding all POG analyses'});
-      }
-
-      logger.info(`Found ${analyses.length} entries`);
-
-      const updates = [];
-
-      try {
-        const result = await Promise.all(updates.map((update) => {
-          return db.models.pog_analysis.update(update.data, {where: {ident: update.analysis.ident}});
-        }));
-        return res.json(result);
-      } catch (error) {
-        logger.error(`Error while trying to backfill biopsy data ${error}`);
-        return res.status(500).json({message: `Failed to backfill biopsy data: ${error.message}`});
-      }
-    });
-  }
-
-  // Comparator Endpoints
-  comparators() {
-    this.router.get('/comparators', (req, res) => {
-      return res.json({v8: comparators, v9: comparatorsV9});
-    });
   }
 }
 
