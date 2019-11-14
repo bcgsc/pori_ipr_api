@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const uuidv4 = require('uuid/v4');
+const getPort = require('get-port');
 
 chai.should();
 
@@ -19,7 +20,7 @@ const {username, password} = CONFIG.get('testing');
 
 // new project info
 const projectData = {
-  name: 'TEST-PROJECT',
+  name: `TEST-PROJECT-${uuidv4()}`,
 };
 
 // data for update project
@@ -31,7 +32,8 @@ const update = {
 let server;
 // Start API
 before(async () => {
-  server = await listen(); // eslint-disable-line
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
 });
 
 // Tests history changes and update changes
@@ -73,13 +75,13 @@ describe('Tests for update changes', () => {
       .put(`/api/1.0/project/${ident}`)
       .auth(username, password)
       .type('json')
-      .send(update);
+      .send({...update});
 
     res.should.have.status(200);
 
     // get updated project and compare to update values
     res = await chai.request(server)
-      .get(`/api/1.0/project/search?query=${projectData.name}`)
+      .get(`/api/1.0/project/search?query=${update.name}`)
       .auth(username, password)
       .type('json');
 
@@ -109,4 +111,8 @@ describe('Tests for update changes', () => {
 
     res.should.have.status(404);
   });
+});
+
+after(async () => {
+  await server.close();
 });
