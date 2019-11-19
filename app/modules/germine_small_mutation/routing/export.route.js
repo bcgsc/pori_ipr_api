@@ -206,11 +206,9 @@ class GSMDownloadRouter extends RoutingInterface {
    * Create and bind routes for Germline Small Mutations Module
    *
    * @type {TrackingRouter}
-   * @param {object} io - Socket.io connection
    */
-  constructor(io) {
+  constructor() {
     super();
-    this.io = io;
 
     // Export
     this.router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent

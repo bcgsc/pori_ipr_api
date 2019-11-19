@@ -145,41 +145,6 @@ class Analysis {
   }
 
   /**
-   * Update data values from LIMS sync
-   *
-   * @param {object} libraries - Libraries hashmap
-   * @param {string} biopsyNotes - Confirmed biopsy notes from LIMS
-   * @param {string} disease - Confirmed disease name from LIMS
-   *
-   * @returns {Promise.<object>} - Returns updated and saved instance of model
-   */
-  async limsSync(libraries, biopsyNotes, disease) {
-    this.instance.libraryes = libraries;
-    this.instance.biopsy_notes = biopsyNotes;
-    this.instance.disease = disease;
-
-    return this.instance.save();
-  }
-
-  /**
-   *
-   * @param {object} libraries - Libraries hashmap
-   * @param {string} analysisBiopsy - The BioApps biopsy ident (eg biop1)
-   * @param {string} disease - The updated/filtered disease name
-   * @param {integer} bioappsSourceId - The BioApps source_id primary key
-   *
-   * @returns {Promise} - Returns updated and saved instance of model
-   */
-  async bioAppsSync(libraries, analysisBiopsy, disease, bioappsSourceId) {
-    this.instance.libraryes = libraries;
-    this.instance.analysis_biopsy = analysisBiopsy;
-    this.instance.disease = disease;
-    this.instance.bioapps_source_id = bioappsSourceId;
-
-    return this.instance.save();
-  }
-
-  /**
    * Get public version of this instance
    *
    * @returns {Promise.<object>} - Returns a public instance of the model

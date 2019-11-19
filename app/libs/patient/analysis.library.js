@@ -215,21 +215,4 @@ module.exports = {
   public: async (ident) => {    
     return db.models.pog_analysis.scope('public').findAll({where: {ident}});
   },
-
-  /**
-   * Synchronize Analysis record with BioApps
-   *
-   * TODO: Build BioApps sync chain
-   *
-   * @param {object} analysis - DB Model Object
-   * @returns {Promise.<boolean>} - Returns true if sync was successful
-   */
-  syncBiopApps: async (analysis) => {
-    const model = db.define('Model', {}, {db});
-
-    if (!(analysis instanceof model)) {
-      throw new Error('The provided analysis object is not a valid model instance');
-    }
-    return true;
-  },
 };

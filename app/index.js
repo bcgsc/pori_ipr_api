@@ -3,7 +3,6 @@
  */
 const http = require('http');
 const express = require('express'); // Call express
-const socketIO = require('socket.io'); // Ready the socket server
 const bodyParser = require('body-parser'); // Body parsing lib
 const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
@@ -74,7 +73,6 @@ const fetchRoutes = (initialRouter) => {
 
 const listen = async () => {
   const app = express(); // define app using express
-  app.io = socketIO();
 
   app.use(bodyParser.json());
   app.use(cors());
@@ -121,7 +119,7 @@ const listen = async () => {
   await sequelize.authenticate();
 
   // set up the routing
-  const routing = new Routing(app.io);
+  const routing = new Routing();
   try {
     await routing.init();
 
@@ -135,11 +133,8 @@ const listen = async () => {
 
   //   console.log(routing.getRouter().stack);
 
-  const server = http.createServer(app).listen(conf.get('web:port'));
+  http.createServer(app).listen(conf.get('web:port'));
   logger.log('info', `started application server on port ${conf.get('web:port')}`);
-
-  // socket.io
-  app.io.attach(server);
 
   // list all the routes that are found from the express router
   const routes = fetchRoutes(routing.getRouter())

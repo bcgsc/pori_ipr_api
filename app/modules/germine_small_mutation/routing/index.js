@@ -24,12 +24,10 @@ class GSMRouter extends RoutingInterface {
    * Create and bind routes for Germline Small Mutations Module
    *
    * @type {TrackingRouter}
-   * @param {object} io - Socket.io connection
    */
 
-  constructor(io) {
+  constructor() {
     super();
-    this.io = io;
 
     // Register Middleware
     this.router.param('gsm_report', gsmMiddleware);
