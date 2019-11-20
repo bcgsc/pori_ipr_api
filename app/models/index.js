@@ -258,32 +258,6 @@ POGDataExport.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
-// Knowledgebase
-const kb = {};
-kb.references = sequelize.import('./knowledgebase/kb_references');
-kb.references.belongsTo(user, {
-  as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-kb.references.belongsTo(user, {
-  as: 'reviewedBy', foreignKey: 'reviewedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-
-kb.events = sequelize.import('./knowledgebase/kb_events');
-kb.events.belongsTo(user, {
-  as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-kb.events.belongsTo(user, {
-  as: 'reviewedBy', foreignKey: 'reviewedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-
-kb.history = sequelize.import('./knowledgebase/kb_history');
-kb.history.belongsTo(user, {
-  as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-user.hasMany(kb.history, {
-  as: 'kbedits', foreignKey: 'user_id', onDelete: 'SET NULL', constraints: true,
-});
-
 // Probe Report
 const probeTestInformation = sequelize.import('./reports/probe/test_information');
 probeTestInformation.belongsTo(analysisReports, {
@@ -307,9 +281,6 @@ probeSignature.belongsTo(user, {
   as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
-// Load Tracking Models
-const trackingModels = require('../modules/tracking/models')(sequelize);
-
 // Subscription
 const subscription = sequelize.import('./pog_analysis_subscription');
 subscription.belongsTo(sequelize.models.pog_analysis, {
@@ -324,9 +295,6 @@ const flashToken = sequelize.import('./flashtoken.model');
 flashToken.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
 });
-
-// Notifications
-const notification = require('../modules/notification/models')(sequelize);
 
 // Germline Small Mutations
 const gsm = require('../modules/germine_small_mutation/models')(sequelize);

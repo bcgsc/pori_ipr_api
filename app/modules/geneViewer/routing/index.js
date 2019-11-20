@@ -10,12 +10,9 @@ class GeneViewRouter extends RoutingInterface {
    * Create and bind routes for Tracking
    *
    * @type {TrackingRouter}
-   *
-   * @param {object} io - Socket.io server
    */
-  constructor(io) {
+  constructor() {
     super();
-    this.io = io;
 
     // Register Middleware
     this.router.param('report', reportMiddleware);
