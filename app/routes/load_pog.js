@@ -11,7 +11,7 @@ const nconf = require('../config');
 const db = require('../models');
 const ReportLib = require('../libs/structures/analysis_report');
 const Patient = require('../libs/patient/patient.library');
-const Analysis = require('../libs/patient/analysis.library');
+const Analysis = require('../modules/analysis/analysis.object');
 
 const GenomicLoader = require('../loaders');
 const ProbeLoader = require('../loaders/probing');
@@ -225,7 +225,8 @@ router.route('/:type(genomic|probe)')
       }
 
       try {
-        analysisObj = await Analysis.create(patientObj.id, createAnalysis);
+        const newAnalysisObj = new Analysis(null, true);
+        analysisObj = await newAnalysisObj.create(patientObj, createAnalysis);
       } catch (error) {
         logger.error(`SQL Error unable to create analysis. Patient id ${patientObj.id} analysis ${createAnalysis} ${error}`);
         return res.status(500).json({error: {message: 'Unable to create analysis'}});

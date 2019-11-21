@@ -105,14 +105,11 @@ class TrackingRouter extends RoutingInterface {
         if (!req.body.POGID) {
           validationErr.push('A valid POGID is required');
         }
-        if (!req.body.clinical_biopsy) {
-          validationErr.push('A clinical biopsy value is required');
+        if (!req.body.analysis_biopsy) {
+          validationErr.push('A valid biopsy number is required');
         }
         if (!req.body.disease) {
           validationErr.push('A valid disease type is required');
-        }
-        if (!req.body.threeLetterCode || req.body.threeLetterCode.trim().length !== 3) {
-          validationErr.push('A valid cancer group (three letter code) is required');
         }
         if (!req.body.biopsy_date) {
           validationErr.push('A valid biopsy date is required');
@@ -139,22 +136,42 @@ class TrackingRouter extends RoutingInterface {
 
         const analysis = {
           pog_id: POG.id,
-          clinical_biopsy: req.body.clinical_biopsy,
+          analysis_biopsy: req.body.analysis_biopsy,
           disease: req.body.disease,
-          threeLetterCode: req.body.threeLetterCode,
-          biopsy_notes: req.body.biopsy_notes,
           biopsy_date: req.body.biopsy_date,
-          notes: req.body.notes,
           physician: req.body.physician,
-          pediatric_id: req.body.pediatric_id,
         };
+
+        if (req.body.biopsy_notes) {
+          analysis.biopsy_notes = req.body.biopsy_notes;
+        }
+
+        if (req.body.priority) {
+          analysis.priority = req.body.priority;
+        }
+
+        if (req.body.biopsy_site) {
+          analysis.biopsy_site = req.body.biopsy_site;
+        }
+
+        if (req.body.biopsy_type) {
+          analysis.biopsy_type = req.body.biopsy_site;
+        }
+
+        if (req.body.date_analysis) {
+          analysis.date_analysis = req.body.date_analysis;
+        }
+
+        if (req.body.date_presentation) {
+          analysis.date_presentation = req.body.date_presentation;
+        }
+
+        if (req.body.pediatric_id) {
+          analysis.pediatric_id = req.body.pediatric_id;
+        }
 
         if (req.body.libraries && (req.body.libraries.tumour || req.body.libraries.transcriptome || req.body.libraries.normal)) {
           analysis.libraries = req.body.libraries;
-        }
-
-        if (req.body.analysis_biopsy) {
-          analysis.analysis_biopsy = req.body.analysis_biopsy;
         }
 
         let pogAnalysis;
