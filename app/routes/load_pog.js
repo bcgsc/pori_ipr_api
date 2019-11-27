@@ -224,6 +224,11 @@ router.route('/:type(genomic|probe)')
         return res.status(500).json({error: {message: 'Unable to retrieve or create a patient'}});
       }
 
+      if (!createAnalysis.analysis_biopsy) {
+        logger.error('An analysis biopsy (sample_prefix) is required as part of the report upload');
+        return res.status(400).json({error: {message: 'An analysis biopsy (sample_prefix) is required as part of the report upload'}});
+      }
+
       try {
         const newAnalysisObj = new Analysis(null, true);
         analysisObj = await newAnalysisObj.create(patientObj, createAnalysis);
