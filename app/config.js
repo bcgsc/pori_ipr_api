@@ -60,7 +60,9 @@ const DEFAULTS = {
     schema: 'public',
     prefix: '',
     username: 'ipr_service',
-    hostname: 'seqdevdb01.bcgsc.ca',
+    hostname: ENV === 'production'
+      ? 'seqdevdb01.bcgsc.ca'
+      : 'iprdevdb.bcgsc.ca',
     port: 5432,
     name: DEFAULT_DB_NAME,
   },
