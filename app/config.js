@@ -38,12 +38,12 @@ const DEFAULTS = {
     ssl: '/etc/ssl/certs/current/combinedcert.cert',
   },
   keycloak: {
-    uri: ['production', 'staging'].includes(ENV)
+    uri: ENV === 'production'
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
-    keyFile: ['production', 'staging'].includes(ENV)
+    keyFile: ENV === 'production'
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
