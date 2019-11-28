@@ -131,8 +131,8 @@ const listen = async (port = null) => {
   }
 
   //   console.log(routing.getRouter().stack);
-  http.createServer(app).listen(conf.get('web:port'));
-  logger.log('info', `started application server on port ${conf.get('web:port')}`);
+  http.createServer(app).listen(port || conf.get('web:port'));
+  logger.log('info', `started application server on port ${port || conf.get('web:port')}`);
 
   // list all the routes that are found from the express router
   const routes = fetchRoutes(routing.getRouter())
