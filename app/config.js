@@ -5,7 +5,7 @@ const {merge} = require('lodash');
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
-let DEFAULT_DB_NAME = 'ipr-dev';
+let DEFAULT_DB_NAME = 'ipr-sync-dev';
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (ENV === 'staging') {
@@ -38,12 +38,12 @@ const DEFAULTS = {
     ssl: '/etc/ssl/certs/current/combinedcert.cert',
   },
   keycloak: {
-    uri: ['production', 'staging'].includes(ENV)
+    uri: ENV === 'production'
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
-    keyFile: ['production', 'staging'].includes(ENV)
+    keyFile: ENV === 'production'
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
@@ -60,7 +60,9 @@ const DEFAULTS = {
     schema: 'public',
     prefix: '',
     username: 'ipr_service',
-    hostname: 'seqdevdb01.bcgsc.ca',
+    hostname: ENV === 'production'
+      ? 'seqdevdb01.bcgsc.ca'
+      : 'iprdevdb.bcgsc.ca',
     port: 5432,
     name: DEFAULT_DB_NAME,
   },
