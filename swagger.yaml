@@ -65,7 +65,6 @@ paths:
               type: object
               properties:
                 newUser:
-                  description: New user to be added to the database
                   $ref: "#/components/schemas/NewUser"
                 searchField:
                   description: Field to search for patient ids in (i.e originalSourceName)
@@ -107,7 +106,6 @@ paths:
               type: object
               properties:
                 user:
-                  description: The updated user object entry to be stored in the database
                   $ref: '#/components/schemas/NewUser'
               required:
                 - user
@@ -834,7 +832,6 @@ paths:
               type: object
               properties:
                 update:
-                  description: The updated patient information object
                   $ref: "#/components/schemas/summary_patientInformation_update"
               required:
                 - update
@@ -1599,18 +1596,19 @@ paths:
   # "/POG/{POG}/report/{report}/probe/alterations":
   # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{mutation}":
   # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{type}":
-  /patient/{POG}/biopsy/{analysis}:
-    security:
-      - basicAuth: []
-    parameters:
-      - $ref: '#components/parameters/POG'
-      - $ref: '#components/parameters/analysis'
+  "/patient/{POG}/biopsy/{analysis}":
     get:
       summary: Get the details of a Germline Report
       tags:
         - Germline Report
+      parameters:
+        - $ref: '#/components/parameters/POG'
+        - $ref: '#/components/parameters/analysis'
+      security:
+        - basicAuth: []
       responses:
-        200:
+        "200":
+          description: Returns 
           content:
             application/json:
               schema:
@@ -1619,7 +1617,7 @@ paths:
                   analysis:
                     type: object
                   biofx_assigned:
-                    $ref: '#components/schemas/User'
+                    $ref: '#/components/schemas/User'
                   reviews:
                     type: array
                     items:
@@ -1632,7 +1630,11 @@ paths:
       summary: Upload a Germline Report
       tags:
         - Germline Report
-
+      parameters:
+        - $ref: '#/components/parameters/POG'
+        - $ref: '#/components/parameters/analysis'
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -1726,7 +1728,7 @@ paths:
                       fc_bodymap:
                         type: string
                       gene_expression_rpkm:
-                          type: decimal
+                        type: number
                       additional_info:
                         type: string
                 project:
@@ -1737,9 +1739,9 @@ paths:
                   example: P12345
                   description: The germline/normal library name
       responses:
-        400:
+        "400":
           description: Missing Required Fields or the Report already Exists
-        200:
+        "200":
           description: The report was created
           content:
             application/json:
@@ -1752,9 +1754,9 @@ paths:
                     type: object
                     properties:
                       pog:
-                        $ref: '#components/schemas/POG'
+                        $ref: '#/components/schemas/POG'
                   biofx_assigned:
-                    $ref: '#components/schemas/User'
+                    $ref: '#/components/schemas/User'
 
 
 
@@ -1823,6 +1825,7 @@ components:
           $ref: "#/components/schemas/datetime"
     NewUser:
       type: object
+      description: New user to be added to the database
       properties:
         username:
           type: string
@@ -1855,22 +1858,45 @@ components:
         updatedAt:
           $ref: "#/components/schemas/datetime"
     POG:
+      allOf:
+        - $ref: "#/components/schemas/POGModel"
+        - type: object
+          properties:
+            patientInformation: 
+              $ref: "#/components/schemas/patientInformation"
+        - type: object
+          properties:
+            analysis_reports:
+              type: array
+              items:
+                $ref: "#/components/schemas/report"
+        - type: object
+          properties:
+            projects:
+              type: array
+              items:
+                $ref: "#/components/schemas/Project"
+    POGModel:
       type: object
       properties:
+        id:
+          type: integer
         ident:
           $ref: "#/components/schemas/ident"
-        POGID:
-          $ref: "#/components/schemas/POGID"
-        patientInformation:
-          $ref: "#/components/schemas/patientInformation"
-        POGUsers:
-          type: array
-          items:
-            $ref: "#/components/schemas/POGUser"
         createdAt:
           $ref: "#/components/schemas/datetime"
         updatedAt:
           $ref: "#/components/schemas/datetime"
+        POGID:
+          $ref: "#/components/schemas/POGID"
+        nonPOG:
+          type: boolean
+        project:
+          type: string
+        alternate_identifier:
+          $ref: "#/components/schemas/POGID"
+        age_of_consent:
+          type: integer
     POGUser:
       type: object
       properties:
@@ -1892,6 +1918,170 @@ components:
           $ref: "#/components/schemas/datetime"
         updatedAt:
           $ref: "#/components/schemas/datetime"
+    report:
+      allOf:
+        - $ref: "#/components/schemas/reportModel"
+        - type: object
+          properties:
+            patientInformation:
+              $ref: "#/components/schemas/patientInformation"
+        - type: object
+          properties:
+            tumourAnalysis:
+              $ref: "#/components/schemas/summary_tumourAnalysis"
+        - type: object
+          properties:
+            pog:
+              $ref: "#/components/schemas/POGModel"
+        - type: object
+          properties:
+            createdBy:
+              $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            analysis:
+              $ref: "#/components/schemas/analysis"
+        - type: object
+          properties:
+            users:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
+    reportModel:
+      type: object
+      description: Analysis Report model object
+      properties:
+        ident:
+          $ref: "#/components/schemas/reportIdent"
+        createdAt:
+          $ref: "#/components/schemas/datetime"
+        updatedAt:
+          $ref: "#/components/schemas/datetime"
+        type:
+          type: string
+          enum:
+            - genomic
+            - probe
+        sampleInfo:
+          type: array
+          items:
+            $ref: "#/components/schemas/summary_sampleInfo"
+        seqQC:
+          type: array
+          items:
+            $ref: "#/components/schemas/summary_seqQC"
+        config:
+          type: string
+        reportVersion:
+          type: string
+        kbVersion:
+          type: string
+        state:
+          type: string
+        expression_matrix:
+          type: string
+        analysis_id:
+          type: integer
+    analysis:
+      type: object
+      properties:
+        id:
+          type: integer
+        ident:
+          $ref: "#/components/schemas/ident"
+        libraries:
+          type: object
+          properties:
+            normal:
+              type: string
+            tumour:
+              type: string
+            transcriptome:
+              type: string
+        notes:
+          type: string
+        clinical_biopsy:
+          type: string
+        analysis_biopsy:
+          type: string
+        bioapps_source_id:
+          type: string
+        disease:
+          type: string
+        biopsy_notes:
+          type: string
+        priority:
+          type: integer
+        onco_panel_submitted:
+          $ref: "#/components/schemas/datetime"
+        comparator_disease:
+          type: object
+          properties:
+            all:
+              type: array
+              items:
+                type: string
+            analysis:
+              type: string
+            tumour_type_kb:
+              type: string
+            tumour_type_report:
+              type: string
+        comparator_normal:
+          type: object
+          properties:
+            gtex_biopsy:
+              type: array
+              items:
+                type: string
+            gtex_primary:
+              type: array
+              items:
+                type: string
+            normal_biopsy:
+              type: array
+              items:
+                type: string
+            normal_primary:
+              type: array
+              items:
+                type: string
+        biopsy_site:
+          type: string
+        biopsy_type:
+          type: string
+        biopsy_date:
+          $ref: "#/components/schemas/datetime"
+        date_analysis:
+          $ref: "#/components/schemas/datetime"
+        date_presentation:
+          $ref: "#/components/schemas/datetime"
+        threeLetterCode:
+          type: string
+        physician:
+          type: array
+          items:
+            type: object
+            properties:
+              last_name:
+                type: string
+              first_name:
+                type: string
+        pediatric_id:
+          type: string
+        createdAt:
+          $ref: "#/components/schemas/datetime"
+        updatedAt:
+          $ref: "#/components/schemas/datetime"
+        pog:
+          allOf:
+            - $ref: "#/components/schemas/POG"
+            - type: object
+              properties:
+                projects:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Project"
     Project:
       type: object
       properties:
@@ -2443,33 +2633,6 @@ components:
           $ref: "#/components/schemas/datetime"
         updatedAt:
           $ref: "#/components/schemas/datetime"
-    report:
-      type: object
-      description: Analysis Report object
-      properties:
-        ident:
-          $ref: "#/components/schemas/reportIdent"
-        type:
-          type: string
-          enum:
-            - genomic
-            - probe
-        sampleInfo:
-          $ref: "#/components/schemas/summary_sampleInfo"
-        config:
-          type: string
-        createdAt:
-          $ref: "#/components/schemas/datetime"
-        updatedAt:
-          $ref: "#/components/schemas/datetime"
-        patientInformation:
-          $ref: "#/components/schemas/patientInformation"
-        tumourAnalysis:
-          $ref: "#/components/schemas/summary_tumourAnalysis"
-        createdBy:
-          $ref: "#/components/schemas/User"
-        pog:
-          $ref: "#/components/schemas/POG"
     smallMut_mutation:
       type: object
       description: Detected small mutations
