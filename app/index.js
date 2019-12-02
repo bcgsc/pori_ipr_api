@@ -73,6 +73,8 @@ const fetchRoutes = (initialRouter) => {
 
 const listen = async (port = null) => {
   const app = express(); // define app using express
+  logger.info(`starting http server on port ${port || conf.get('web:port')}`);
+  const server = http.createServer(app).listen(port || conf.get('web:port'));
   app.use(bodyParser.json());
   app.use(cors());
   app.use(fileUpload());
@@ -130,8 +132,11 @@ const listen = async (port = null) => {
     throw error;
   }
 
-  //   console.log(routing.getRouter().stack);
-  http.createServer(app).listen(port || conf.get('web:port'));
+  app.close = async () => {
+    await app.io.close();
+    return server.close();
+  };
+
   logger.log('info', `started application server on port ${port || conf.get('web:port')}`);
 
   // list all the routes that are found from the express router
