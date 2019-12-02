@@ -8,6 +8,7 @@ const authMiddleware = require('../middleware/auth');
 
 // Get route files
 const pogRoute = require('./POG');
+const APIVersion = require('./version');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
 
@@ -71,6 +72,7 @@ class Routing extends RouterInterface {
     // Add Single Routes
     // Setup other routes
     this.router.use('/POG', pogRoute);
+    this.router.use('/version', APIVersion);
 
     this.router.use('/user', userRoute);
     this.router.use('/user/group', groupRoute);

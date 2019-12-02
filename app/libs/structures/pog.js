@@ -1,4 +1,5 @@
 const db = require('../../models');
+const Analysis = require('../../modules/analysis/analysis.object');
 
 class POG {
   /**
@@ -66,35 +67,9 @@ class POG {
     const pog = await this.model.create(data);
     this.instance = pog;
 
-    const analysis = {pog_id: pog.id};
-
-    // Optional Analysis settings that can be passed in
     if (options.analysis) {
-      if (options.analysis.clinical_biopsy) {
-        analysis.clinical_biopsy = options.analysis.clinical_biopsy;
-      }
-      if (options.analysis.analysis_biopsy) {
-        analysis.analysis_biopsy = options.analysis.analysis_biopsy;
-      }
-      if (options.analysis.priority) {
-        analysis.priority = options.analysis.priority;
-      }
-      if (options.analysis.disease) {
-        analysis.disease = options.analysis.disease;
-      }
-      if (options.analysis.biopsy_notes) {
-        analysis.biopsy_notes = options.analysis.biopsy_notes;
-      }
-      if (options.analysis.libraries) {
-        analysis.libraries = options.analysis.libraries;
-      }
-      if (options.analysis.bioapps_source_id) {
-        analysis.bioapps_source_id = options.analysis.bioapps_source_id;
-      }
-      analysis.name = (options.analysis.name) ? options.analysis.name : 'N/A';
-
-      const pogAnalysis = await db.models.pog_analysis.create(analysis);
-      pog.analysis = [pogAnalysis]; // Nest analysis inside POG
+      const analysis = new Analysis(null, true);
+      pog.analysis = await analysis.create(pog, options.analysis);
     }
 
     return pog;

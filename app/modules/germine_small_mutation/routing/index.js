@@ -5,7 +5,7 @@ const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
 
 const Patient = require('../../../libs/patient/patient.library');
-const Analysis = require('../../../libs/patient/analysis.library');
+const Analysis = require('../../analysis/analysis.object');
 const Variants = require('../germline_small_mutation_variant');
 const Review = require('../germline_small_mutation_review');
 const Report = require('../germline_small_mutation');
@@ -117,7 +117,7 @@ class GSMRouter extends RoutingInterface {
     let analysis;
     try {
       // Create or Retrieve Biopsy Analysis
-      analysis = await Analysis.retrieveOrCreate(patient.id, req.params.analysis, null, {libraries: {normal: req.body.normal_library}});
+      analysis = await Analysis.retrieveOrCreate(patient.id, {libraries: {normal: req.body.normal_library}, analysis_biopsy: req.params.analysis});
     } catch (error) {
       logger.error(`There was an error retrieving/creating analysis ${error}`);
       return res.status(500).json({message: 'There was an error retrieving/creating analysis'});
