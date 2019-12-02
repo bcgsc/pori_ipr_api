@@ -133,7 +133,6 @@ const listen = async (port = null) => {
   }
 
   app.close = async () => {
-    await app.io.close();
     return server.close();
   };
 
