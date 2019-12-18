@@ -70,4 +70,20 @@ module.exports = sequelize => sequelize.define('analysis_report', {
       ],
     },
   },
+  hooks: {
+    ...DEFAULT_OPTIONS.hooks,
+    beforeDestroy: async (instance) => {
+      // get associations from model
+      const {pog, analysis, ReportUserFilter, createdBy, ...associations} = sequelize.models.analysis_report.associations;
+      const promises = [];
+
+      // delete all report associations
+      Object.values(associations).forEach((association) => {
+        const model = association.target.name;
+        promises.push(sequelize.models[model].destroy({where: {pog_report_id: instance.id}}));
+      });
+
+      return Promise.all(promises);
+    },
+  },
 });
