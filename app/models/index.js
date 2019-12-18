@@ -66,13 +66,13 @@ analysisReports.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreig
 sequelize.models.pog_analysis.hasMany(analysisReports, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
 
 analysisReports.hasMany(analysisReportsUsers, {
-  as: 'users', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
+  as: 'users', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(analysisReportsUsers, {
-  as: 'ReportUserFilter', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
+  as: 'ReportUserFilter', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReportsUsers.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
+  as: 'report', foreignKey: 'pog_report_id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReportsUsers.belongsTo(user, {
   as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL', constraints: true,
@@ -82,7 +82,7 @@ analysisReportsUsers.belongsTo(user, {
 });
 
 user.belongsToMany(analysisReports, {
-  as: 'reports', through: {model: analysisReportsUsers, unique: false}, foreignKey: 'user_id', otherKey: 'report_id', onDelete: 'CASCADE',
+  as: 'reports', through: {model: analysisReportsUsers, unique: false}, foreignKey: 'user_id', otherKey: 'pog_report_id', onDelete: 'CASCADE',
 });
 
 const userGroup = sequelize.import('./user/userGroup.js');
