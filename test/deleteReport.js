@@ -21,6 +21,8 @@ const {username, password} = CONFIG.get('testing');
 
 // ident of report to delete
 // the report is from test patient, POGID: 'PATIENT001'
+// TODO: replace hardcoded report ident with test report
+// created when running tests
 const reportIdent = '3CUZR';
 const currentComponents = {};
 let server;
