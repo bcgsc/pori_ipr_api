@@ -142,7 +142,7 @@ class AnalysisReport {
         {
           model: db.models.analysis_reports_user,
           as: 'users',
-          attributes: {exclude: ['id', 'pog_id', 'report_id', 'user_id', 'addedBy_id', 'deletedAt']},
+          attributes: {exclude: ['id', 'pog_id', 'pog_report_id', 'user_id', 'addedBy_id', 'deletedAt']},
           include: [{
             model: db.models.user.scope('public'),
             as: 'user',
@@ -172,7 +172,7 @@ class AnalysisReport {
     const boundUser = await getUser(user);
 
     // Check if the attempting user is already bound in this role
-    const bound = await db.models.analysis_reports_user.findAll({where: {user_id: boundUser.id, report_id: report.id, role}});
+    const bound = await db.models.analysis_reports_user.findAll({where: {user_id: boundUser.id, pog_report_id: report.id, role}});
     // Check if the user is already bound in this role
     if (bound.length > 0) {
       throw new Error('The user is already bound in this role');
@@ -182,7 +182,7 @@ class AnalysisReport {
     // Create analysis reports user
     const result = await db.models.analysis_reports_user.create({
       user_id: boundUser.id,
-      report_id: report.id,
+      pog_report_id: report.id,
       role,
       addedBy_id: addedBy.id,
     });
@@ -209,7 +209,7 @@ class AnalysisReport {
   async unbindUser(user, role) {
     const unbindUser = await getUser(user);
     // Remove binding from DB (soft-delete)
-    const result = await db.models.analysis_reports_user.destroy({where: {report_id: this.instance.id, user_id: unbindUser.id, role}});
+    const result = await db.models.analysis_reports_user.destroy({where: {pog_report_id: this.instance.id, user_id: unbindUser.id, role}});
     if (result === 0) {
       throw new Error('No binding found');
     }
