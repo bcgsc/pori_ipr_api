@@ -216,6 +216,22 @@ router.route('/:report')
 
     return res.json(req.report);
   })
+  .delete(async (req, res) => {
+    // first check user permissions before delete
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error('User doesn\'t have correct permissions to delete report');
+      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
+    }
+
+    try {
+      await req.report.destroy();
+      return res.status(204).send();
+    } catch (error) {
+      logger.error(`Error trying to delete report ${error}`);
+      return res.status(500).json({error: {message: 'Error trying to delete report', cause: error}});
+    }
+  })
   .put(async (req, res) => {
     try {
       const result = await db.models.analysis_report.update(req.body, {
