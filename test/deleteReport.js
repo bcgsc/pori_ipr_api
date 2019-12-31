@@ -51,18 +51,29 @@ describe('Tests for deleting a report and all of its components', () => {
     // get report id from patient info. because it's excluded in public view
     reportId = res.body.patientInformation.pog_report_id;
 
+    const modelNames = [];
+    const promises = [];
+
     // get all current associations of the report and store
     // the ids of them in the currentComponents object
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      const results = await db.models[model].findAll({where: {pog_report_id: reportId}});
+      modelNames.push(model);
+      promises.push(db.models[model].findAll({where: {pog_report_id: reportId}}));
+    });
+
+    const results = await Promise.all(promises);
+
+    // parse all associated sections of report
+    results.forEach((models, i) => {
+      const modelName = modelNames[i];
 
       // add empty array of component ids
-      currentComponents[model] = [];
+      currentComponents[modelName] = [];
 
       // add ids of all model components
-      results.forEach((result) => {
-        currentComponents[model].push(result.id);
+      models.forEach((model) => {
+        currentComponents[modelName].push(model.id);
       });
     });
   });
