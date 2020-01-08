@@ -1,3 +1,4 @@
+const {Op} = require('sequelize');
 const db = require('../../models');
 
 class Analysis {
@@ -5,10 +6,9 @@ class Analysis {
    * Patient Analysis constructor
    *
    * @param {object} init - Optional initial value
-   * @param {object} opts - Optional arguments to pass into constructor
    * @param {boolean} newEntry - Creating a new entry
    */
-  constructor(init = undefined, opts = {}, newEntry = false) {
+  constructor(init = undefined, newEntry = false) {
     if (!init && !newEntry) {
       throw new Error('Existing patient analysis model object is required if not creating a new entry');
     }
@@ -77,7 +77,92 @@ class Analysis {
     const analysis = await this.model.create(data);
 
     this.instance = analysis;
-    return this.instance;
+    return this.getPublic();
+  }
+
+  /**
+   * Retrieve or create biopsy analysis record
+   *
+   * @param {integer} pogId - Internal pog_id identifier
+   * @param {object} options - Data to insert into new POG Analysis row
+   *
+   * Options:
+   *  {
+   *    libraries - json dict of libraries: {normal: A12345, tumour: B12345, transcriptome: C12345}
+   *    analysis_biopsy - string of bioapps biopsy: biop1
+   *    clinical_biopsy - string of clinical biopsy: clinspec1
+   *    notes - General notes
+   *    bioapps_source_id - source row id from BioApps
+   *    onco_panel_submitted - Date of data export for onco panel
+   *    comparator_disease(jsonb) - {}
+   *    comparator_normal(jsonb) - {disease_comparator_for_analysis: str, gtex_comparator_primary_site: str, normal_comparator_biopsy_site: str, normal_comparator_primary_site: str}
+   *    biopsy_site - String of biopsy site
+   *    biopsy_type - Type of biopsy
+   *    date_analysis - Date the BioFX analysis is due
+   *    date_presentation - Date the presentation is due
+   *    biopsy_date - Date of the biopsy
+   *    threeLetterCode - Three letter code: BRC
+   *    physician - A JSON array of {first_nane: str, last_name: str}
+   *    pediatric_id - A string name for pediatric POG cases: P012
+   *  }
+   *
+   * @returns {Promise.<object>} - Resolves with biopsy analysis model object
+   */
+  static async retrieveOrCreate(pogId, options = {}) {
+    if (!pogId) {
+      throw new Error('pogId is required');
+    }
+
+    // Create data object
+    const data = {};
+    const availableOptions = [];
+
+    // If Biopsy is specified
+    if (options.analysis_biopsy) {
+      availableOptions.push({
+        pog_id: pogId,
+        analysis_biopsy: options.analysis_biopsy,
+      });
+    }
+
+    // If a library is specified
+    if (options.libraries) {
+      const libwhere = {};
+      libwhere.pog_id = pogId;
+
+      if (options.libraries.normal) {
+        libwhere.libraries = {[Op.contains]: {normal: options.libraries.normal}};
+      }
+
+      if (Object.keys(libwhere).length > 1) {
+        availableOptions.push(libwhere);
+      }
+    }
+
+    // If the ident string is set
+    if (options.ident) {
+      availableOptions.ident = options.ident;
+    }
+
+    if (availableOptions.length === 0) {
+      throw new Error('Insufficient indexes to find or create new analysis entry');
+    }
+
+    const where = {
+      [Op.or]: availableOptions,
+    };
+
+    // Building data block for new entries
+    data.pog_id = pogId;
+    if (options.analysis_biopsy) {
+      data.analysis_biopsy = options.analysis_biopsy;
+    }
+    if (options.libraries) {
+      data.libraries = options.libraries;
+    }
+
+    const [result] = await db.models.pog_analysis.findOrCreate({where, defaults: data});
+    return result;
   }
 
   /**
@@ -142,41 +227,6 @@ class Analysis {
 
     await this.model.update(data, {where: {ident: this.instance.ident}});
     return this.getPublic();
-  }
-
-  /**
-   * Update data values from LIMS sync
-   *
-   * @param {object} libraries - Libraries hashmap
-   * @param {string} biopsyNotes - Confirmed biopsy notes from LIMS
-   * @param {string} disease - Confirmed disease name from LIMS
-   *
-   * @returns {Promise.<object>} - Returns updated and saved instance of model
-   */
-  async limsSync(libraries, biopsyNotes, disease) {
-    this.instance.libraryes = libraries;
-    this.instance.biopsy_notes = biopsyNotes;
-    this.instance.disease = disease;
-
-    return this.instance.save();
-  }
-
-  /**
-   *
-   * @param {object} libraries - Libraries hashmap
-   * @param {string} analysisBiopsy - The BioApps biopsy ident (eg biop1)
-   * @param {string} disease - The updated/filtered disease name
-   * @param {integer} bioappsSourceId - The BioApps source_id primary key
-   *
-   * @returns {Promise} - Returns updated and saved instance of model
-   */
-  async bioAppsSync(libraries, analysisBiopsy, disease, bioappsSourceId) {
-    this.instance.libraryes = libraries;
-    this.instance.analysis_biopsy = analysisBiopsy;
-    this.instance.disease = disease;
-    this.instance.bioapps_source_id = bioappsSourceId;
-
-    return this.instance.save();
   }
 
   /**

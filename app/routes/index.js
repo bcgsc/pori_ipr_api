@@ -5,29 +5,23 @@ const db = require('../models/');
 const pogMiddleware = require('../middleware/pog');
 const reportMiddleware = require('../middleware/analysis_report');
 const authMiddleware = require('../middleware/auth');
-const SocketAuth = require('../middleware/socketAuth');
 
 // Get route files
 const pogRoute = require('./POG');
 const APIVersion = require('./version');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
-const jiraRoute = require('./jira');
-const limsRoute = require('./lims');
 
 const loadPogRoute = require('./load_pog');
 const exportRoute = require('./POG/export');
 const patientInformationRoute = require('./patientInformation');
 const reportsRoute = require('./reports');
-const knowledgebaseRoute = require('./knowledgebase');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
-const Tracking = require('../modules/tracking/routing');
-const Notification = require('../modules/notification/routing');
 const GeneViewer = require('../modules/geneViewer/routing');
 const Analysis = require('../modules/analysis/routing');
 const GermlineReports = require('../modules/germine_small_mutation/routing');
@@ -41,12 +35,7 @@ class Routing extends RouterInterface {
   /**
    * Handles the loading of all the route files
    *
-   * @param {object} io - socket.io server
    */
-  constructor(io) {
-    super();
-    this.io = io;
-  }
 
   /**
    * Initialize routing
@@ -58,20 +47,6 @@ class Routing extends RouterInterface {
       files: ['POG.js', 'user.js', '.svn', 'user'],
       routes: ['loadPog', '.svn'],
     };
-
-    this.io.on('connect', async (socket) => {
-      const auth = new SocketAuth(socket, this.io);
-      try {
-        await auth.challenge();
-        logger.info(`Socket connected ${socket.id}`);
-      } catch (error) {
-        logger.error(`Challenge falied with this error: ${error}`);
-      }
-    });
-
-    this.io.on('disconnect', (socket) => {
-      logger.info(`Socket disconnected ${socket.id}`);
-    });
 
     // Add router to class
     this.router = router;
@@ -88,10 +63,6 @@ class Routing extends RouterInterface {
         '/user/*',
         '/user',
         '/project',
-        '/jira',
-        '/lims',
-        '/knowledgebase',
-        '/tracking',
         '/reports',
         '/analysis',
         '/analysis_reports',
@@ -105,8 +76,6 @@ class Routing extends RouterInterface {
 
     this.router.use('/user', userRoute);
     this.router.use('/user/group', groupRoute);
-    this.router.use('/jira', jiraRoute);
-    this.router.use('/lims', limsRoute);
 
     this.router.use('/POG/:POGID/load', loadPogRoute);
     this.router.use('/POG/:POG/report/:report/export', exportRoute);
@@ -114,37 +83,26 @@ class Routing extends RouterInterface {
 
     this.router.use('/reports', reportsRoute);
 
-    this.router.use('/knowledgebase', knowledgebaseRoute);
-
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
 
     // Register Get All Projects route
     this.getProjects();
 
-    // Get Tracking Routes
-    const TrackingRoutes = new Tracking(this.io);
-    this.router.use('/tracking', TrackingRoutes.getRouter());
-
-    // Get Notification Routes
-    const NotificationRoutes = new Notification(this.io);
-    this.router.use('/notification', NotificationRoutes.getRouter());
-
-
-    // Get Notification Routes
-    const GeneViewerRoutes = new GeneViewer(this.io);
+    // Get Gene Viewer Routes
+    const GeneViewerRoutes = new GeneViewer();
     this.router.use('/POG/:POG/report/:report/geneviewer', GeneViewerRoutes.getRouter());
 
-    // Get Notification Routes
-    const AnalysisRoutes = new Analysis(this.io);
+    // Get Analysis Routes
+    const AnalysisRoutes = new Analysis();
     this.router.use('/analysis', AnalysisRoutes.getRouter());
 
     // Get Germline Reports Routes
-    const GermlineReportsRoutes = new GermlineReports(this.io);
+    const GermlineReportsRoutes = new GermlineReports();
     this.router.use('/germline_small_mutation', GermlineReportsRoutes.getRouter());
 
     // Get Export Germline Reports Routes
-    const GermlineReportsExportRoutes = new GermlineReportsExport(this.io);
+    const GermlineReportsExportRoutes = new GermlineReportsExport();
     this.router.use('/export/germline_small_mutation', GermlineReportsExportRoutes.getRouter());
 
     // Get Project Routes
