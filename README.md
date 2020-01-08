@@ -137,7 +137,7 @@ psql -h iprdevdb.bcgsc.ca -U ipr_service -d DEVSU-777-temp-ipr-sync-dev
 Once you are done with testing, delete the temporary database
 
 ```bash
-dropdb -U ipr_service -h iprdevdb.bcgsc.ca creisle-temp-ipr-sync-dev
+dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
 
