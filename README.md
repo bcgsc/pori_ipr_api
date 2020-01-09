@@ -104,6 +104,43 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 
 Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
 
+##### Testing Migration Changes
+
+To avoid breaking the standard development setup or having your migrations overwritten by the sync
+crons. You can create a temporary copy of the database as follows
+
+```bash
+pg_dump -Fc -U ipr_service -h iprdevdb.bcgsc.ca -d ipr-sync-dev > ipr-sync-dev.dump
+```
+
+That creates the dump file. Then create the new temp database. Add temp or the ticket number to the db name to make it
+obvious later that it can be deleted
+
+```bash
+createdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+```
+
+This then needs to be restored as a new database.
+
+**WARNING: DO NOT RESTORE TO THE PRODUCTION DB SERVER**
+
+```bash
+pg_restore -Fc -U ipr_service -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
+```
+
+Finally connect to the newly created database
+
+```bash
+psql -h iprdevdb.bcgsc.ca -U ipr_service -d DEVSU-777-temp-ipr-sync-dev
+```
+
+Once you are done with testing, delete the temporary database
+
+```bash
+dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+```
+
+
 #### Process Manager
 ======================================
 
