@@ -49,7 +49,7 @@ class PatientLoader {
    * @returns {Promise.<object>} - Returns the found patient information or null
    */
   async checkPatientInformationExists() {
-    return db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id, pog_report_id: this.report.id}});
+    return db.models.patientInformation.findOne({where: {pog_id: this.report.pog_id, report_id: this.report.id}});
   }
 
   /**
@@ -84,7 +84,7 @@ class PatientLoader {
 
     // Map needed DB column values
     entry.pog_id = this.report.pog_id;
-    entry.pog_report_id = this.report.id;
+    entry.report_id = this.report.id;
 
     // Add to Database
     const result = await db.models.patientInformation.create(entry);

@@ -41,7 +41,7 @@ const parseAlterationsFile = async (report, alterationFile, alterationType) => {
   entries.forEach((entry) => {
     // Map needed DB column values
     entry.pog_id = report.pog_id;
-    entry.pog_report_id = report.id;
+    entry.report_id = report.id;
     entry.alterationType = alterationType;
     entry.newEntry = false;
     if (report.type === 'probe') {

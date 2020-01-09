@@ -11,7 +11,7 @@ module.exports = sequelize => sequelize.define('pathwayAnalysis', {
       key: 'id',
     },
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',

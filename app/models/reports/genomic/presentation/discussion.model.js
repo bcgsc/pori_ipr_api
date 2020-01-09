@@ -12,7 +12,7 @@ module.exports = sequelize => sequelize.define('presentation_discussion',
       unique: false,
       defaultValue: Sq.UUIDV4,
     },
-    pog_report_id: {
+    report_id: {
       type: Sq.INTEGER,
       references: {
         model: 'pog_analysis_reports',

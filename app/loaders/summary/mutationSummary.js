@@ -100,7 +100,7 @@ class MutationSummaryLoader {
     const mappedResults = results.map((value) => {
       const newValue = pyToSql(value, ['snv', 'snv_truncating', 'indels', 'indels_frameshift', 'sv', 'sv_expressed', 'snv_percentile', 'indel_percentile', 'sv_percentile']); // Clean out Python Na/NaN/None values
       newValue.pog_id = this.report.pog_id;
-      newValue.pog_report_id = this.report.id;
+      newValue.report_id = this.report.id;
       return newValue;
     });
 
@@ -147,7 +147,7 @@ class MutationSummaryLoader {
         indel_percentile: pyToSql(row.INDEL_percentile_amongst_specificDisease),
         sv_percentile: null,
         pog_id: this.report.pog_id,
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
       average: {
         comparator: 'average',
@@ -161,7 +161,7 @@ class MutationSummaryLoader {
         indel_percentile: pyToSql(row.INDEL_percentile_amongst_allTCGA),
         sv_percentile: pyToSql(row.SV_percentile_amongst_allPOG),
         pog_id: this.report.pog_id,
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
     return result;

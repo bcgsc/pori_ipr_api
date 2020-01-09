@@ -34,7 +34,7 @@ const parseExpressionOutlierFile = async (report, expressionOutlierFile, outlier
     // Map needed DB column values
     const newValue = p2s(value, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
     newValue.pog_id = report.pog_id;
-    newValue.pog_report_id = report.id;
+    newValue.report_id = report.id;
     newValue.outlierType = outlierType;
     newValue.expType = 'rna';
     return newValue;

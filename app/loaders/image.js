@@ -33,7 +33,7 @@ const processExpDensityImages = async (report, img) => {
   // Add to database
   await db.models.imageData.create({
     pog_id: report.pog_id,
-    pog_report_id: report.id,
+    report_id: report.id,
     format: 'PNG',
     filename: img.split('/').pop(),
     key: `expDensity.${geneName}`,
@@ -104,7 +104,7 @@ const processSubtypePlotImages = async (report, img) => {
   // Add to database
   await db.models.imageData.create({
     pog_id: report.pog_id,
-    pog_report_id: report.id,
+    report_id: report.id,
     format: 'PNG',
     filename,
     key: `subtypePlot.${imageString}`,
@@ -163,7 +163,7 @@ const processSummaryImage = async (report, file) => {
   // Write result to DB
   await db.models.imageData.create({
     pog_id: report.pog_id,
-    pog_report_id: report.id,
+    report_id: report.id,
     format: 'PNG',
     filename,
     key: `mutation_summary.${imageString}`,
@@ -225,7 +225,7 @@ const processImage = async (report, image) => {
     // Add to database
     await db.models.imageData.create({
       pog_id: report.pog_id,
-      pog_report_id: report.id,
+      report_id: report.id,
       format,
       filename: image.file.split('/').pop(),
       key: image.name,

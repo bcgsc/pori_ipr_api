@@ -37,7 +37,7 @@ const parseStructuralVariantFile = async (report, structuralVariationFile, varia
   entries.forEach((entry) => {
     // Map needed DB column values
     entry.pog_id = report.pog_id;
-    entry.pog_report_id = report.id;
+    entry.report_id = report.id;
     entry.svVariant = variantType;
     entry.mavis_product_id = entry.MAVIS_product_id.split(';')[0];
 

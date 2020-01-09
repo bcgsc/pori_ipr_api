@@ -63,7 +63,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -80,7 +80,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -97,7 +97,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -114,7 +114,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -131,7 +131,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -148,7 +148,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -165,7 +165,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 
@@ -182,7 +182,7 @@ class GeneViewer {
     const opts = {
       where: {
         key: {[Op.iLike]: `%expDensity.${this.gene}%`},
-        pog_report_id: this.report.id,
+        report_id: this.report.id,
       },
     };
 

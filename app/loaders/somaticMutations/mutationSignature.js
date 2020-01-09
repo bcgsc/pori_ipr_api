@@ -37,7 +37,7 @@ module.exports = async (report, baseDir, options = {}) => {
   // Loop over entries
   entries.forEach((value) => {
     value.pog_id = report.pog_id;
-    value.pog_report_id = report.id;
+    value.report_id = report.id;
     value.signature = value.signature.match(/[0-9]{1,2}/g)[0];
   });
 

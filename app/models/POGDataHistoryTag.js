@@ -19,7 +19,7 @@ module.exports = sequelize => sequelize.define('history_tag', {
       key: 'id',
     },
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     unique: false,
     references: {

@@ -44,7 +44,7 @@ router.route('/:alteration([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
+        id, pog_id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -70,7 +70,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
   .get(async (req, res) => {
     // Setup where clause
     const where = {
-      pog_report_id: req.report.id,
+      report_id: req.report.id,
       reportType: 'probe',
     };
 
@@ -105,7 +105,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
   .post(async (req, res) => {
     // Setup new data entry from vanilla
     req.body.pog_id = req.POG.id;
-    req.body.pog_report_id = req.report.id;
+    req.body.report_id = req.report.id;
 
     try {
       const result = await db.models.alterations.create(req.body);

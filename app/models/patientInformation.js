@@ -50,7 +50,7 @@ module.exports = sequelize => sequelize.define('patientInformation', {
   constitutionalProtocol: {
     type: Sq.STRING,
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     allowNull: false,
     references: {
@@ -64,7 +64,7 @@ module.exports = sequelize => sequelize.define('patientInformation', {
   tableName: 'pog_patient_information',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'report_id', 'pog_id']},
     },
   },
 });
