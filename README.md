@@ -4,12 +4,7 @@
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
 The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
-The API is responsible for providing all data for GSC genomic and probe reports, POG sample tracking,
-POG Biopsy tracking, Germline Small Mutation reports, and legacy Knowledgebase.
-
-An integrated data synchronization application runs concurrently with the API in a separate process.
-The sync-worker is responsible for regularly checking in with LIMS and BioApps to keep sample tracking
-tasks up to date.
+The API is responsible for providing all data for GSC genomic, probe reports, and Germline Small Mutation reports.
 
 #### Installation
 ======================================
@@ -23,11 +18,6 @@ This process can take between 1-5 minutes depending on caches, and connection sp
 all required dependencies, the server can be started with the following command:
 ```
 NODE_ENV=[local|development|production|staging|test] npm start
-```
-
-To start the synchronizer server, run the following command:
-```
-NODE_ENV=[local|development|production] npm run sync
 ```
 
 If NPM is not available, the application server can be booted by executing through node directly:
@@ -114,6 +104,43 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 
 Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
 
+##### Testing Migration Changes
+
+To avoid breaking the standard development setup or having your migrations overwritten by the sync
+crons. You can create a temporary copy of the database as follows
+
+```bash
+pg_dump -Fc -U ipr_service -h iprdevdb.bcgsc.ca -d ipr-sync-dev > ipr-sync-dev.dump
+```
+
+That creates the dump file. Then create the new temp database. Add temp or the ticket number to the db name to make it
+obvious later that it can be deleted
+
+```bash
+createdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+```
+
+This then needs to be restored as a new database.
+
+**WARNING: DO NOT RESTORE TO THE PRODUCTION DB SERVER**
+
+```bash
+pg_restore -Fc -U ipr_service -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
+```
+
+Finally connect to the newly created database
+
+```bash
+psql -h iprdevdb.bcgsc.ca -U ipr_service -d DEVSU-777-temp-ipr-sync-dev
+```
+
+Once you are done with testing, delete the temporary database
+
+```bash
+dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+```
+
+
 #### Process Manager
 ======================================
 
@@ -129,7 +156,6 @@ bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
 │ App name           │ id  │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ watching │
 ├────────────────────┼─────┼──────┼───────┼────────┼─────────┼────────┼─────┼───────────┼──────────┤
 │ IPR-API            │ 101 │ fork │ 23409 │ online │ 0       │ 23h    │ 0%  │ 92.7 MB   │ disabled │
-│ IPR-API-syncWorker │ 102 │ fork │ 23691 │ online │ 152     │ 9h     │ 0%  │ 62.5 MB   │ disabled │
 └────────────────────┴─────┴──────┴───────┴────────┴─────────┴────────┴─────┴───────────┴──────────┘
  Module activated
 ┌───────────────┬─────────┬────────────┬────────┬─────────┬─────┬─────────────┐
@@ -141,10 +167,8 @@ bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
 ```
 
 `IPR-API` is the main, production application server running on port 8001 on iprweb03.
-`IPR-API-syncWorker` is the synchronizer task that works to keep the tracking data in sync with LIMS and BioApps on iprweb03.
 `IPR-API-dev` is the development API server running on port 8081 on iprdev01.
 `IPR-API-test` is the test API server running on port 8081 on iprweb01.
-Note: It is exepcted for the syncWorker to have restarts - it's mean to fail-safe by crashing and restarting.
 
 It is possible to use pm2 to actively monitor the console of the applications by using `pm2 monit`.
 
@@ -168,7 +192,7 @@ pm2 start current/pm2.config.js --env production
 ```
 ┌─ Process list ──────────────────────┐┌─ Global Logs ───────────────────────────────────────────────────────────────────────────┐
 │[101] IPR-API        Mem:  88 MB     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Retrieved     │
-│[102] IPR-API-syncWorker      Mem:   ││ assembly results                                                                        │
+│                                     ││ assembly results                                                                        │
 │[ 0] pm2-logrotate     Mem:  91 MB   ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Checked in    │
 │                                     ││ assembly for 0 tasks.                                                                   │
 │                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Querying DB   │
@@ -201,42 +225,6 @@ pm2 start current/pm2.config.js --env production
 │                                     ││ Interpreter args      N/A                                                               │
 └─────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
-In the above screenshot, the syncWorker task is busy running a job against LIMS API.
-
-
-#### Synchronizer tasks
-======================================
-
-IPR's Tracking system has three primary synchronizer tasks:
-
-1. LIMS Pathology Sync
-2. LIMS Sequencing Sync
-3. BioApps Sync
-
-###### LIMS Pathology Sync
-Attempts to retrieve pathology passed information, as well as library details for a POG. Effectively it starts with 1 data point: POGID.
-It contacts the LIMS `/libraries/search` endpoint and collects all libraries associated with the POGID. Through a few more library endpoints, it uses
-the protocol detail for each library to determine normal vs. tumour vs. transcriptome. It is assumed by the presence of an entry in LIMS
-that pathology has passed.
-
-###### LIMS Sequencing Sync
-This task characterizes the sequencing state of pending POG cases in tracking. First POGs pending sequencing submission are queried against the
-`/sequencer-runs/search` endpoint to see which have entries. If _any_ entry is existent, the "sequencing started" task is satisfied.
-
-Next, sequencing completed status is checked for at the same endpoint. As are QC passed and Validation.
-
-###### BioApps Sync
-The tracking system seeks to answer four states/questions from BioApps:
-1. Were early assumptions about libraries correct & what is the biop# in BioApps
-2. Has symlinking been completed?
-3. Is a merged BAM available?
-4. Has assembly completed?
-
-The `/patient_analysis` endpoints in BioApps satisfy (1.) - Comparators, biop#, libaries, disease details, and more are pulled from BioApps.
-Symlinking completed requires checking to see if the total number of aligned libcores is equal to the number of target lane for each library.
-Merged BAMs have their own endpoint, and are easy to check via this endpoint. The same is true for Assembly completed.
-
-
 
 
 
@@ -276,7 +264,7 @@ Merged BAMs have their own endpoint, and are easy to check via this endpoint. Th
 │   │
 │   │
 │   ├── modules                         # Modules
-│   │   │                               Isolated, independant application modules. Tracking, germline reports, biopsy/analysis, knowledgebase.
+│   │   │                               Isolated, independant application modules. Germline reports, biopsy/analysis.
 │   │   │                                Most logic for these modules is kept within the /module/ directory. There might be a few exceptions to this rule.
 │   │   │
 │   │   ├── module_a                      An individual model component. Each module has packing for exceptions, middleware, models, routing, and
@@ -300,16 +288,13 @@ Merged BAMs have their own endpoint, and are easy to check via this endpoint. Th
 │   │   └── module_n
 │   │
 │   │
-│   ├── routes                          # Routes
-│   │   ├── dir                         Subdirectories contain .js files that return Express.router implementations that handle defined routes.
-│   │   │                                Routes are namespaced into the Express route handler based on parent directory structure.
-│   │   │
-│   │   └── index.js                    Routing index file. Loads special routing files first, then recursively loads child folder structure
-│   │                                    routes. Route namespaces are defined on their nested directory structure.
-│   │
-│   └── synchronizer                    # Synchronizer clock
-│                                       Application library/function that supports cron-like repeating timed events for synchronizing
-│                                        data with other API services.
+│   └── routes                          # Routes
+│       ├── dir                         Subdirectories contain .js files that return Express.router implementations that handle defined routes.
+│       │                                Routes are namespaced into the Express route handler based on parent directory structure.
+│       │
+│       └── index.js                    Routing index file. Loads special routing files first, then recursively loads child folder structure
+│                                       routes. Route namespaces are defined on their nested directory structure.
+│
 │
 │
 ├── config                              # Other Configuration files
