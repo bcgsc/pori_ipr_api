@@ -29,7 +29,7 @@ module.exports = async (report, dir) => {
   // Loop over returned rows, and read in each column value
   entries.forEach((entry) => {
     entry.pog_id = report.pog_id;
-    entry.pog_report_id = report.id;
+    entry.report_id = report.id;
     if (report.type === 'probe') {
       entry.reportType = 'probe';
     }

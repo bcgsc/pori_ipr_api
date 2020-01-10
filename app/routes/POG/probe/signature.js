@@ -9,7 +9,7 @@ const router = express.Router({mergeParams: true});
 router.use('/', async (req, res, next) => {
   try {
     // Get Patient Information for this POG
-    req.signature = await db.models.probe_signature.scope('public').findOne({where: {pog_report_id: req.report.id}});
+    req.signature = await db.models.probe_signature.scope('public').findOne({where: {report_id: req.report.id}});
     return next();
   } catch (error) {
     logger.error(`Unable to query Analyst Comments ${error}`);
@@ -41,7 +41,7 @@ router.route('/:role(ready|reviewer)')
     data[`${role}By_id`] = req.user.id;
     data[`${role}At`] = moment().toISOString();
     data.pog_id = req.POG.id;
-    data.pog_report_id = req.report.id;
+    data.report_id = req.report.id;
 
     // Is there a signature entry yet? If not, create one.
     if (!req.signature) {
@@ -65,7 +65,7 @@ router.route('/:role(ready|reviewer)')
     }
 
     try {
-      const result = await db.models.probe_signature.scope('public').findOne({where: {pog_report_id: req.report.id}});
+      const result = await db.models.probe_signature.scope('public').findOne({where: {report_id: req.report.id}});
       return res.json(result);
     } catch (error) {
       logger.error(`Error while trying to find updated probe signature ${error}`);
@@ -105,7 +105,7 @@ router.route('/revoke/:role(ready|reviewer)')
     }
 
     try {
-      const result = await db.models.probe_signature.scope('public').findOne({where: {pog_report_id: req.report.id}});
+      const result = await db.models.probe_signature.scope('public').findOne({where: {report_id: req.report.id}});
       return res.json(result);
     } catch (error) {
       logger.error(`Error while trying to find updated probe signature ${error}`);

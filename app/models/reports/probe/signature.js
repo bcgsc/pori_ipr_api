@@ -10,7 +10,7 @@ module.exports = sequelize => sequelize.define('probe_signature', {
       key: 'id',
     },
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -46,7 +46,7 @@ module.exports = sequelize => sequelize.define('probe_signature', {
   tableName: 'pog_analysis_reports_probe_signature',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'pog_report_id', 'pog_id', 'deletedAt', 'readySignedBy_id', 'reviewerSignedBy_id']},
+      attributes: {exclude: ['id', 'report_id', 'pog_id', 'deletedAt', 'readySignedBy_id', 'reviewerSignedBy_id']},
       include: [
         {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
         {model: sequelize.models.user.scope('public'), as: 'readySignature'},

@@ -38,7 +38,7 @@ const parseSmallMutationFile = async (report, smallMutationFile, mutationType) =
   entries.forEach((value) => {
     // Map needed DB column values
     value.pog_id = report.pog_id;
-    value.pog_report_id = report.id;
+    value.report_id = report.id;
     value.mutationType = mutationType;
     value.TCGAPerc = p2s(value.TCGAPerc);
   });

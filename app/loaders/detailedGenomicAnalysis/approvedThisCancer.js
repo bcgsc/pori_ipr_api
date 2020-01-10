@@ -27,7 +27,7 @@ module.exports = async (report, dir) => {
   entries.forEach((entry) => {
     // Map needed DB column values
     entry.pog_id = report.pog_id;
-    entry.pog_report_id = report.id;
+    entry.report_id = report.id;
     entry.alterationType = 'therapeutic';
     entry.approvedTherapy = 'thisCancer';
     entry.newEntry = false;

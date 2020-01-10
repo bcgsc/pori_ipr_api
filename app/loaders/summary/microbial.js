@@ -61,7 +61,7 @@ class MicrobialLoader {
     const entry = remapKeys(entries, nconf.get('summary:microbial')).shift();
 
     // Map needed DB column values
-    entry.pog_report_id = this.report.id;
+    entry.report_id = this.report.id;
 
     // Add to Database
     const result = await db.models.summary_microbial.create(entry);

@@ -49,7 +49,7 @@ describe('Tests for deleting a report and all of its components', () => {
     expect(res).to.have.status(200);
 
     // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.pog_report_id;
+    reportId = res.body.patientInformation.report_id;
 
     const modelNames = [];
     const promises = [];
@@ -59,7 +59,7 @@ describe('Tests for deleting a report and all of its components', () => {
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
       modelNames.push(model);
-      promises.push(db.models[model].findAll({where: {pog_report_id: reportId}}));
+      promises.push(db.models[model].findAll({where: {report_id: reportId}}));
     });
 
     const results = await Promise.all(promises);
@@ -99,7 +99,7 @@ describe('Tests for deleting a report and all of its components', () => {
     // verify report components are also soft deleted
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      const results = await db.models[model].findAll({where: {pog_report_id: reportId}});
+      const results = await db.models[model].findAll({where: {report_id: reportId}});
       // results should be an empty array
       expect(results).to.be.an('array').that.is.empty;
     });
