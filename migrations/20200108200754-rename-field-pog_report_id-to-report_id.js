@@ -1,5 +1,3 @@
-'use strict';
-
 const tables = [
   'pog_analysis_reports_users',
   'pog_analysis_reports_copy_number_analysis_cnv',

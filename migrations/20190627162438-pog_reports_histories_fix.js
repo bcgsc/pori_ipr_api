@@ -1,5 +1,3 @@
-'use strict';
-
 const tables = ['pog_analysis_reports_therapeutic_targets', 'pog_patient_information',
   'pog_analysis_reports_summary_genomic_alterations_identified', 'pog_analysis_reports_summary_analyst_comments',
   'pog_analysis_reports_dga_alterations', 'pog_analysis_reports_summary_tumour_analysis',
