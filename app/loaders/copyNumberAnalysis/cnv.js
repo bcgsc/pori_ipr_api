@@ -36,7 +36,7 @@ const parseCnvFile = async (report, cnvFile, cnvVariant) => {
   entries.forEach((entry) => {
     // Map needed DB column values
     entry.pog_id = report.pog_id;
-    entry.pog_report_id = report.id;
+    entry.report_id = report.id;
     entry.cnvVariant = cnvVariant;
   });
 

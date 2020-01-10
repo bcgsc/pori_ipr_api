@@ -31,7 +31,7 @@ module.exports = async (report, dir) => {
 
     const entry = {
       pog_id: report.pog_id,
-      pog_report_id: report.id,
+      report_id: report.id,
       gene: value.Gene,
       variant: value.Variant,
       sample: value.Sample,

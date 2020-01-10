@@ -30,7 +30,7 @@ const parseAlterationsFile = async (report, probeFile, probeDir) => {
   entries.forEach((value) => {
     // Map needed DB column values
     value.pog_id = report.pog_id;
-    value.pog_report_id = report.id;
+    value.report_id = report.id;
     value.newEntry = false;
   });
 
@@ -104,7 +104,7 @@ module.exports = async (report, basedir, options) => {
         variant: value.variant,
         sample: value.sample,
         pog_id: report.pog_id,
-        pog_report_id: report.id,
+        report_id: report.id,
       });
     }
   });

@@ -46,7 +46,7 @@ router.route('/:target([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
+        id, pog_id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -72,7 +72,7 @@ router.route('/:target([A-z0-9-]{36})')
 router.route('/')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {pog_report_id: req.report.id};
+    const where = {report_id: req.report.id};
     const options = {
       where,
       order: [['rank', 'ASC']],
@@ -90,7 +90,7 @@ router.route('/')
   .post(async (req, res) => {
     // Create new entry
     req.body.pog_id = req.POG.id;
-    req.body.pog_report_id = req.report.id;
+    req.body.report_id = req.report.id;
 
     try {
       const result = await db.models.therapeuticTarget.create(req.body);

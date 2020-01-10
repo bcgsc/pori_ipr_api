@@ -11,7 +11,7 @@ module.exports = sequelize => sequelize.define('analystComments', {
       key: 'id',
     },
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -52,7 +52,7 @@ module.exports = sequelize => sequelize.define('analystComments', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['id', 'pog_id', 'pog_report_id', 'deletedAt', 'authorSignedBy_id', 'reviewerSignedBy_id'],
+        exclude: ['id', 'pog_id', 'report_id', 'deletedAt', 'authorSignedBy_id', 'reviewerSignedBy_id'],
       },
       include: [
         {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},

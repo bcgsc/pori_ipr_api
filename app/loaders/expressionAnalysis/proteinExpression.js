@@ -66,7 +66,7 @@ class ProteinExpressionLoader {
     const newEntryData = entries.map((entry) => {
       const newEntry = p2s(entry, ['rnaReads', 'foldChange', 'ptxPogPerc', 'ptxTotSampObs', 'ptxkIQR', 'ptxPerc']);
       newEntry.pog_id = this.report.pog_id;
-      newEntry.pog_report_id = this.report.id;
+      newEntry.report_id = this.report.id;
       newEntry.outlierType = type;
       newEntry.expType = expType;
       return newEntry;

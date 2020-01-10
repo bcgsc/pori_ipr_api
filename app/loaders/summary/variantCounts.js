@@ -32,7 +32,7 @@ module.exports = async (report, dir) => {
 
   // Map needed DB column values
   entry.pog_id = report.pog_id;
-  entry.pog_report_id = report.id;
+  entry.report_id = report.id;
 
   // Add to Database
   await db.models.variantCounts.create(entry);

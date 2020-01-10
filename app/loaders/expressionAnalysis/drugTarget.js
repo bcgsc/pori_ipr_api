@@ -30,7 +30,7 @@ module.exports = async (report, dir) => {
   const drugTargetEntries = entries.map((value) => {
     const newValue = p2s(value, ['kIQR', 'kIQRNormal', 'copy']);
     newValue.pog_id = report.pog_id;
-    newValue.pog_report_id = report.id;
+    newValue.report_id = report.id;
     return newValue;
   });
 

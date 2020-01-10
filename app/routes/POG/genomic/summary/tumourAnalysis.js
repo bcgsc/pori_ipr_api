@@ -10,7 +10,7 @@ router.use('/', async (req, res, next) => {
   // Get Mutation Summary for this POG
   let result;
   try {
-    result = await db.models.tumourAnalysis.scope('public').findOne({where: {pog_report_id: req.report.id}});
+    result = await db.models.tumourAnalysis.scope('public').findOne({where: {report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup the tumour analysis for ${req.POG.POGID} error: ${error}`);
     return res.status(500).json({error: {message: `Unable to lookup the tumour analysis for ${req.POG.POGID}`, code: 'failedTumourAnalysisQuery'}});
@@ -49,7 +49,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
+        id, pog_id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

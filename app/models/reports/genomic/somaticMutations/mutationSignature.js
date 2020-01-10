@@ -11,7 +11,7 @@ module.exports = sequelize => sequelize.define('mutationSignature', {
       key: 'id',
     },
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -45,7 +45,7 @@ module.exports = sequelize => sequelize.define('mutationSignature', {
   tableName: 'pog_analysis_reports_somatic_mutations_mutation_signature',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'report_id', 'pog_id']},
     },
   },
 });

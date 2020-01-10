@@ -9,7 +9,7 @@ router.use('/', async (req, res, next) => {
   // Get Patient Information for this POG
   let result;
   try {
-    result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id, pog_report_id: req.report.id}});
+    result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id, report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to query Patient Information ${error}`);
     return res.status(500).json({error: {message: `Unable to lookup the patient information for ${req.POG.POGID}.`, code: 'failedPatientInformationQuery'}});
@@ -34,7 +34,7 @@ router.route('/')
   .put(async (req, res) => {
     try {
       const result = await db.models.patientInformation.update(req.body, {
-        where: {pog_id: req.POG.id, pog_report_id: req.report.id},
+        where: {pog_id: req.POG.id, report_id: req.report.id},
         individualHooks: true,
         paranoid: true,
         returning: true,
@@ -45,7 +45,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
+        id, pog_id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

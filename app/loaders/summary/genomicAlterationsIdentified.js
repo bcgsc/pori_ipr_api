@@ -30,7 +30,7 @@ module.exports = async (report, dir) => {
     if (value !== '') {
       entries.push({
         pog_id: report.pog_id,
-        pog_report_id: report.id,
+        report_id: report.id,
         geneVariant: value,
       });
     }

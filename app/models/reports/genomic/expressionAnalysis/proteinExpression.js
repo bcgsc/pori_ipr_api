@@ -11,7 +11,7 @@ module.exports = sequelize => sequelize.define('proteinExpression', {
       key: 'id',
     },
   },
-  pog_report_id: {
+  report_id: {
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -78,7 +78,7 @@ module.exports = sequelize => sequelize.define('proteinExpression', {
   tableName: 'pog_analysis_reports_expression_protein',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'deletedAt', 'pog_report_id', 'pog_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'report_id', 'pog_id']},
     },
   },
 });

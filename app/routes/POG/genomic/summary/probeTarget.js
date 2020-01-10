@@ -45,7 +45,7 @@ router.route('/:target([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, pog_report_id, deletedAt, ...publicModel
+        id, pog_id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -69,7 +69,7 @@ router.route('/:target([A-z0-9-]{36})')
 router.route('/')
   .get(async (req, res) => {
     const options = {
-      where: {pog_report_id: req.report.id},
+      where: {report_id: req.report.id},
     };
 
     // Get all rows for this POG
