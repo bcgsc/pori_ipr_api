@@ -10,25 +10,33 @@ module.exports = {
   collectCoverageFrom: [
     'app/**.js',
     'app/**/*.js',
-    'app/**/**/*.js'],
+    'app/**/**/*.js'
+  ],
   coverageReporters: [
     'clover',
     'text',
     'json',
     'json-summary',
-    'lcov'],
+    'lcov'
+  ],
   reporters: [
     'default',
     [
       'jest-junit',
-      {output: '<rootDir>/coverage/junit.xml'}]],
+      {
+        output: '<rootDir>/coverage/xunit.xml'
+      }
+    ]
+  ],
   testRegex: 'test/.*\\.js',
   testEnvironment: 'node',
   testPathIgnorePatterns: [
     '/node_modules/',
     'test/repo/query/util.js',
-    'test/util.js'],
+    'test/util.js'
+  ],
   moduleFileExtensions: [
     'js',
-    'json'],
+    'json'
+  ]
 };
