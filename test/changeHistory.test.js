@@ -66,7 +66,7 @@ describe('Tests for update changes', () => {
   // Test update changes
   test('Test update changes', async () => {
     // update project name for given ident
-    let res = await request(server)
+    await request(server)
       .put(`/api/1.0/project/${ident}`)
       .auth(username, password)
       .type('json')
@@ -74,7 +74,7 @@ describe('Tests for update changes', () => {
       .expect(200);
 
     // get updated project and compare to update values
-    res = await request(server)
+    const res = await request(server)
       .get(`/api/1.0/project/search?query=${update.name}`)
       .auth(username, password)
       .type('json')
@@ -90,14 +90,14 @@ describe('Tests for update changes', () => {
   // Remove newly created/updated project
   afterAll(async () => {
     // delete newly created project
-    let res = await request(server)
+    await request(server)
       .delete(`/api/1.0/project/${ident}`)
       .auth(username, password)
       .type('json')
       .expect(204);
 
     // verify project is deleted
-    res = await request(server)
+    await request(server)
       .get(`/api/1.0/POG/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')

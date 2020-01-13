@@ -38,9 +38,8 @@ describe('Tests for deleting a report and all of its components', () => {
     const res = await request(server)
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
-      .type('json');
-
-    expect(res.status).toBe(200);
+      .type('json')
+      .expect(200);
 
     // get report id from patient info. because it's excluded in public view
     reportId = res.body.patientInformation.report_id;
@@ -75,7 +74,7 @@ describe('Tests for deleting a report and all of its components', () => {
   // Test paranoid report delete that cascade's
   test('Test paranoid report delete', async () => {
     // delete the report
-    let res = await request(server)
+    await request(server)
       .delete(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
@@ -83,7 +82,7 @@ describe('Tests for deleting a report and all of its components', () => {
 
 
     // verify report is deleted
-    res = await request(server)
+    await request(server)
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
@@ -96,7 +95,6 @@ describe('Tests for deleting a report and all of its components', () => {
       const results = await db.models[model].findAll({where: {report_id: reportId}});
       // results should be an empty array
       expect(results).toEqual([]);
-
     });
   });
 
@@ -106,7 +104,7 @@ describe('Tests for deleting a report and all of its components', () => {
     await db.models.analysis_report.restore({where: {id: reportId}});
 
     // verify report was restored
-    const res = await request(server)
+    await request(server)
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
