@@ -76,11 +76,14 @@
     "eslint-plugin-react": "~7.11.1",
     "get-port": "^5.0.0",
     "istanbul": "^0.4.5",
+    "jest": "^24.9.0",
+    "jest-bamboo-formatter": "^1.0.1",
+    "jest-junit": "^10.0.0",
     "jsdoc": "^3.6.3",
     "mocha": "^6.1.4",
     "mocha-bamboo-reporter": "~1.1.1",
     "mocha-multi-reporters": "~1.1.7",
     "nyc": "~13.0.1",
-    "supertest": "~3.0.0"
+    "supertest": "^3.0.0"
   }
 }
