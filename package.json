@@ -63,10 +63,6 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "chai": "~4.2.0",
-    "chai-as-promised": "~7.1.1",
-    "chai-http": "~4.3.0",
-    "chai-things": "~0.2.0",
     "docdash": "~1.0.0",
     "eslint": "~5.12.0",
     "eslint-config-airbnb": "~17.1.0",
@@ -80,10 +76,6 @@
     "jest-bamboo-formatter": "^1.0.1",
     "jest-junit": "^10.0.0",
     "jsdoc": "^3.6.3",
-    "mocha": "^6.1.4",
-    "mocha-bamboo-reporter": "~1.1.1",
-    "mocha-multi-reporters": "~1.1.7",
-    "nyc": "~13.0.1",
     "supertest": "^3.0.0"
   }
 }
