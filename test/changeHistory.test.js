@@ -1,9 +1,8 @@
 process.env.NODE_ENV = 'test';
 
-const request = require('supertest');
+const supertest = require('supertest');
 const uuidv4 = require('uuid/v4');
 const getPort = require('get-port');
-
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -25,10 +24,12 @@ const update = {
 };
 
 let server;
+let request;
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
+  request = supertest(server);
 });
 
 // Tests history changes and update changes
@@ -37,7 +38,7 @@ describe('Tests for update changes', () => {
 
   beforeAll(async () => {
     // create project record
-    let res = await request(server)
+    let res = await request
       .post('/api/1.0/project')
       .auth(username, password)
       .type('json')
@@ -47,7 +48,7 @@ describe('Tests for update changes', () => {
 
 
     // check that the created project record exists
-    res = await request(server)
+    res = await request
       .get(`/api/1.0/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')
@@ -66,7 +67,7 @@ describe('Tests for update changes', () => {
   // Test update changes
   test('Test update changes', async () => {
     // update project name for given ident
-    await request(server)
+    await request
       .put(`/api/1.0/project/${ident}`)
       .auth(username, password)
       .type('json')
@@ -74,7 +75,7 @@ describe('Tests for update changes', () => {
       .expect(200);
 
     // get updated project and compare to update values
-    const res = await request(server)
+    const res = await request
       .get(`/api/1.0/project/search?query=${update.name}`)
       .auth(username, password)
       .type('json')
@@ -90,14 +91,14 @@ describe('Tests for update changes', () => {
   // Remove newly created/updated project
   afterAll(async () => {
     // delete newly created project
-    await request(server)
+    await request
       .delete(`/api/1.0/project/${ident}`)
       .auth(username, password)
       .type('json')
       .expect(204);
 
     // verify project is deleted
-    await request(server)
+    await request
       .get(`/api/1.0/POG/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')

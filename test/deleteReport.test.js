@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 
-const request = require('supertest');
+const supertest = require('supertest');
 const getPort = require('get-port');
 const {Op} = require('sequelize');
 const db = require('../app/models');
@@ -20,11 +20,13 @@ const {username, password} = CONFIG.get('testing');
 const reportIdent = '3CUZR';
 const currentComponents = {};
 let server;
+let request;
 
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
+  request = supertest(server);
 });
 
 // Tests for deleting a report and all of its components
@@ -35,7 +37,7 @@ describe('Tests for deleting a report and all of its components', () => {
 
   beforeAll(async () => {
     // check that report exists
-    const res = await request(server)
+    const res = await request
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
@@ -74,7 +76,7 @@ describe('Tests for deleting a report and all of its components', () => {
   // Test paranoid report delete that cascade's
   test('Test paranoid report delete', async () => {
     // delete the report
-    await request(server)
+    await request
       .delete(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
@@ -82,7 +84,7 @@ describe('Tests for deleting a report and all of its components', () => {
 
 
     // verify report is deleted
-    await request(server)
+    await request
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
@@ -104,12 +106,11 @@ describe('Tests for deleting a report and all of its components', () => {
     await db.models.analysis_report.restore({where: {id: reportId}});
 
     // verify report was restored
-    await request(server)
+    await request
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(200);
-
 
     // restore all report components
     const promises = [];
