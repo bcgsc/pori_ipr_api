@@ -24,7 +24,7 @@ module.exports = {
     [
       'jest-junit',
       {
-        output: '<rootDir>/coverage/junit.xml'
+        outputDirectory: '<rootDir>/coverage'
       }
     ]
   ],
