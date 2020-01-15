@@ -63,14 +63,7 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
-                newUser:
-                  $ref: "#/components/schemas/NewUser"
-                searchField:
-                  description: Field to search for patient ids in (i.e originalSourceName)
-                  type: string
-              required:
-                - newUser
+              $ref: "#/components/schemas/NewUser"
       responses:
         "200":
           description: User has been successfully added to the system
