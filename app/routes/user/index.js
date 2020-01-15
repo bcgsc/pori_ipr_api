@@ -1,3 +1,4 @@
+const ajv = require('ajv');
 const validator = require('validator');
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -7,6 +8,21 @@ const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
+
+// Schema for validating POST /user format
+const newUserSchema = ajv.compile({
+  type: 'object',
+  required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
+  properties: {
+    username: {type: 'string', minLength: 2},
+    password: {type: 'string', minLength: 8},
+    type: {type: 'string'},
+    email: {type: 'string'},
+    firstName: {type: 'string', minLength: 1},
+    lastName: {type: 'string', minLength: 1}
+  }
+});
+
 
 // Route for getting a POG
 router.route('/')
