@@ -118,33 +118,6 @@ paths:
                 $ref: "#/components/schemas/User"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-    get:
-      summary: Get single user
-      description: Return full user description from ident key.
-      tags:
-        - User
-      security:
-        - basicAuth: []
-      parameters:
-        - name: user
-          in: path
-          required: true
-          description: User's UUID string
-          schema:
-            type: string
-      responses:
-        "200":
-          description: A user account has been found and returned
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          description: Insufficient access to view user records
-        "404":
-          description: Unable to find the specified user
     delete:
       summary: Remove a single user
       description: Delete a user's access to the API. This does not remove the record from
