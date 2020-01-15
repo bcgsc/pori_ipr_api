@@ -44,7 +44,7 @@ router.route('/')
 
     // Inputs set
     requiredInputs.forEach((value) => {
-      // Password can be null if type is ldap
+      // Password can be null if type is bcsgc
       if (req.body[value] === undefined) {
         inputErrors.push({
           input: value,
@@ -125,8 +125,6 @@ router.route('/')
     // Hash password
     if (req.body.type === 'local') {
       req.body.password = bcrypt.hashSync(req.body.password, 10);
-    } else if (req.body.type === 'ldap') {
-      req.body.password = null;
     }
 
     try {
