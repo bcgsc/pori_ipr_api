@@ -24,9 +24,20 @@ const newUserSchema = ajv.compile({
 });
 
 // Validates the request
-const parseNewUser = (request) {
-  
-}
+const parseNewUser = (request) => {
+  if (!newUserSchema(request)) {
+    throw new Error(`failed to parse new user (${newUserSchema.errors[0].message})`);
+  }
+  return {
+    username: request.username,
+    password: request.password,
+    type: request.type,
+    email: request.email,
+    firstName: request.firstName,
+    lastName: request.lastName,
+    access: 'clinician'
+  };
+};
 
 // Route for getting a POG
 router.route('/')
