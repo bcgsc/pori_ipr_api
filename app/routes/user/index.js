@@ -17,11 +17,13 @@ const newUserSchema = ajv.compile({
   properties: {
     username: {type: 'string', minLength: 2},
     password: {type: 'string'},
+    // type must be either 'local' or 'bcgsc'
     type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
     email: {type: 'string', format: 'email'},
     firstName: {type: 'string', minLength: 1},
     lastName: {type: 'string', minLength: 1}
   },
+  // password can be null if type is bcgsc
   if: {
     properties: {type: {const: 'bcgsc'}}
   },
@@ -29,8 +31,9 @@ const newUserSchema = ajv.compile({
     properties: {password: {default: null}}
   },
   else: {
+    // password need to have minimum length of 8
     required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
-    properties: {passowrd: {minLength: 8}}
+    properties: {password: {minLength: 8}}
   }
 });
 
@@ -80,20 +83,14 @@ router.route('/')
   })
   .post(async (req, res) => {
     // Add new user
-    // Validate input
-    const requiredInputs = ['username', 'password', 'type', 'firstName', 'lastName', 'email'];
-    const inputErrors = [];
 
-    // Inputs set
-    requiredInputs.forEach((value) => {
-      // Password can be null if type is bcsgc
-      if (req.body[value] === undefined) {
-        inputErrors.push({
-          input: value,
-          message: `${value} is a required input`,
-        });
-      }
-    });
+    try {
+      // Validate input
+      req.body = parseNewUser(req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(400).json({error: {message: error.message}});
+    }
 
     let existCheck;
     try {
@@ -130,38 +127,6 @@ router.route('/')
         logger.error(`Unable to restore username ${error}`);
         return res.status(500).json({error: {message: 'Unable to restore existing username', code: 'failedUsernameCheckQuery'}});
       }
-    }
-
-    // Check if email password is valid only if type=local
-    if (req.body.type === 'local' && req.body.password.length < 8) {
-      inputErrors.push({input: 'password', message: 'password must be at least 8 characters'});
-    }
-
-    if (!validator.isEmail(req.body.email)) {
-      inputErrors.push({input: 'email', message: 'email address must be valid'});
-    }
-
-    if (req.body.firstName.length < 1) {
-      inputErrors.push({input: 'firstName', message: 'first name must be set'});
-    }
-
-    if (req.body.lastName.length < 1) {
-      inputErrors.push({input: 'lastName', message: 'last name must be set'});
-    }
-
-    if (req.body.username.length < 2) {
-      inputErrors.push({input: 'username', message: 'username must be set'});
-    }
-
-    req.body.access = 'clinician';
-
-    if (validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) {
-      inputErrors.push({input: 'type', message: 'user type must be one of: bcgsc, local'});
-    }
-
-    if (inputErrors.length > 0) {
-      logger.error(`Input contains this/these error(s) ${inputErrors}`);
-      return res.status(400).json({errors: inputErrors});
     }
 
     // Hash password
