@@ -23,6 +23,10 @@ const newUserSchema = ajv.compile({
   }
 });
 
+// Validates the request
+const parseNewUser = (request) {
+  
+}
 
 // Route for getting a POG
 router.route('/')
