@@ -1,4 +1,4 @@
-const ajv = require('ajv');
+const Ajv = require('ajv');
 const validator = require('validator');
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -8,25 +8,36 @@ const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
+const ajv = new Ajv({useDefaults: true});
 
 // Schema for validating POST /user format
 const newUserSchema = ajv.compile({
   type: 'object',
-  required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
+  required: ['username', 'type', 'firstName', 'lastName', 'email'],
   properties: {
     username: {type: 'string', minLength: 2},
-    password: {type: 'string', minLength: 8},
-    type: {type: 'string'},
-    email: {type: 'string'},
+    password: {type: 'string'},
+    type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
+    email: {type: 'string', format: 'email'},
     firstName: {type: 'string', minLength: 1},
     lastName: {type: 'string', minLength: 1}
+  },
+  if: {
+    properties: {type: {const: 'bcgsc'}}
+  },
+  then: {
+    properties: {password: {default: null}}
+  },
+  else: {
+    required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
+    properties: {passowrd: {minLength: 8}}
   }
 });
 
 // Validates the request
 const parseNewUser = (request) => {
   if (!newUserSchema(request)) {
-    throw new Error(`failed to parse new user (${newUserSchema.errors[0].message})`);
+    throw new Error(`Failed to parse New User: (${newUserSchema.errors[0].dataPath} ${newUserSchema.errors[0].message})`);
   }
   return {
     username: request.username,
