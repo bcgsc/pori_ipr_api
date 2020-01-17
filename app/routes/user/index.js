@@ -1,5 +1,4 @@
 const Ajv = require('ajv');
-const validator = require('validator');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
