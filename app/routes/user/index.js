@@ -95,11 +95,11 @@ router.route('/')
       return res.status(400).json({error: {message: error.message}});
     }
 
-    let existCheck;
+    let deletedUserExists;
     let userExists;
     try {
       // Check for existing account.
-      existCheck = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
+      deletedUserExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
       userExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.eq]: null}}, paranoid: false});
     } catch (error) {
       logger.error(`SQL Error unable to check for existing username ${error}`);
@@ -111,14 +111,14 @@ router.route('/')
       return res.status(409).json({error: {message: 'Username already exists'}});
     }
 
-    if (existCheck) {
+    if (deletedUserExists) {
       // set up user to restore with updated field values
       const restoreUser = req.body;
       restoreUser.deletedAt = null;
 
       try {
         const result = await db.models.user.update(restoreUser, {
-          where: {ident: existCheck.ident},
+          where: {ident: deletedUserExists.ident},
           individualHooks: true,
           paranoid: true,
           returning: true,
