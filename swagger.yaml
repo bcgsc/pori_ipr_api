@@ -53,7 +53,7 @@ paths:
                 $ref: "#/components/schemas/ACLDenied"
     post:
       summary: Authorize new account
-      description: Authorize a new user to access IPR
+      description: Authorize a new user to access IPR. Field 'type' should be equal 'local' or 'bcgsc'.
       tags:
         - User
       security:
@@ -1628,7 +1628,7 @@ components:
           type: string
           description: The location authentication details are stored in.
           enum:
-            - BCGSC
+            - bcgsc
             - local
         email:
           type: string
@@ -1655,7 +1655,7 @@ components:
           type: string
           description: The location authentication details are stored in.
           enum:
-            - BCGSC
+            - bcgsc
             - local
         email:
           type: string
