@@ -40,7 +40,11 @@ const newUserSchema = ajv.compile({
 // Validates the request
 const parseNewUser = (request) => {
   if (!newUserSchema(request)) {
-    throw new Error(`Failed to parse New User: (${newUserSchema.errors[0].dataPath} ${newUserSchema.errors[0].message})`);
+    if (newUserSchema.errors[0].dataPath) {
+      throw new Error(`${newUserSchema.errors[0].dataPath} ${newUserSchema.errors[0].message}`);
+    } else {
+      throw new Error(`New Users ${newUserSchema.errors[0].message}`);
+    }
   }
   return {
     username: request.username,
