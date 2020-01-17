@@ -10,7 +10,7 @@
     "start:dev": "NODE_ENV=development node bin/server.js",
     "migrate": "node bin/server.js --database.migrate",
     "hardMigrate": "node bin/server.js --database.migrate --database.hardMigrate",
-    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha -R mocha-multi-reporters --reporter-options configFile=config/coverage.json --timeout 10000 --exclude ['**/test/*.js'] --include ['**/test/changeHistory.js']",
+    "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js",
     "sync": "node ./bin/syncWorker"
   },
@@ -64,10 +64,6 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "chai": "~4.2.0",
-    "chai-as-promised": "~7.1.1",
-    "chai-http": "~4.3.0",
-    "chai-things": "~0.2.0",
     "docdash": "~1.0.0",
     "eslint": "~5.12.0",
     "eslint-config-airbnb": "~17.1.0",
@@ -77,11 +73,10 @@
     "eslint-plugin-react": "~7.11.1",
     "get-port": "^5.0.0",
     "istanbul": "^0.4.5",
+    "jest": "^24.9.0",
+    "jest-bamboo-formatter": "^1.0.1",
+    "jest-junit": "^10.0.0",
     "jsdoc": "^3.6.3",
-    "mocha": "^6.1.4",
-    "mocha-bamboo-reporter": "~1.1.1",
-    "mocha-multi-reporters": "~1.1.7",
-    "nyc": "~13.0.1",
-    "supertest": "~3.0.0"
+    "supertest": "^3.0.0"
   }
 }

@@ -1,9 +1,8 @@
-const {assert} = require('chai');
 const {Op} = require('sequelize');
 const tableFilter = require('../../app/libs/tableFilter');
 
 describe('tableFilter tests with missing or invalid options', () => {
-  it('Does not mutate opts when the query property is not set', () => {
+  test('Does not mutate opts when the query property is not set', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -13,11 +12,10 @@ describe('tableFilter tests with missing or invalid options', () => {
 
     opts = tableFilter(req, opts, columnDef);
 
-    assert.isEmpty(opts.where);
-    assert.deepEqual(opts, {where: {}});
+    expect(opts).toEqual({where: {}});
   });
 
-  it('Does not mutate opts when there is no valid column mapping', () => {
+  test('Does not mutate opts when there is no valid column mapping', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -27,13 +25,12 @@ describe('tableFilter tests with missing or invalid options', () => {
 
     opts = tableFilter(req, opts, columnDef);
 
-    assert.isEmpty(opts.where);
-    assert.deepEqual(opts, {where: {}});
+    expect(opts).toEqual({where: {}});
   });
 });
 
 describe('Basic tableFilter tests with no boolean operators', () => {
-  it('Adds a where clause when the table is null', () => {
+  test('Adds a where clause when the table is null', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -43,13 +40,12 @@ describe('Basic tableFilter tests with no boolean operators', () => {
 
     opts = tableFilter(req, opts, columnDef);
 
-    assert.isObject(opts.where);
-    assert.property(opts.where, '$actualCol$');
-    assert.isNotEmpty(opts.where);
-    assert.deepEqual(opts, {where: {$actualCol$: {[Op.eq]: 90}}});
+    expect(typeof (opts.where)).toBe('object');
+    expect(opts.where).toHaveProperty('$actualCol$');
+    expect(opts).toEqual({where: {$actualCol$: {[Op.eq]: '90'}}});
   });
 
-  it('Adds a where clause when the table is defined', () => {
+  test('Adds a where clause when the table is defined', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: 'table1'},
     };
@@ -59,15 +55,14 @@ describe('Basic tableFilter tests with no boolean operators', () => {
 
     opts = tableFilter(req, opts, columnDef);
 
-    assert.isObject(opts.where);
-    assert.property(opts.where, '$table1.actualCol$');
-    assert.isNotEmpty(opts.where);
-    assert.deepEqual(opts, {where: {'$table1.actualCol$': {[Op.eq]: 90}}});
+    expect(typeof (opts.where)).toBe('object');
+    expect(opts.where).toHaveProperty(['$table1.actualCol$']);
+    expect(opts).toEqual({where: {'$table1.actualCol$': {[Op.eq]: '90'}}});
   });
 });
 
 describe('tableFilter tests with boolean operators', () => {
-  it('Adds a where clause with an AND operator when the table is null', () => {
+  test('Adds a where clause with an AND operator when the table is null', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: null},
     };
@@ -77,39 +72,39 @@ describe('tableFilter tests with boolean operators', () => {
 
     opts = tableFilter(req, opts, columnDef);
 
-    assert.isObject(opts.where);
-    assert.property(opts.where, Op.and);
-    assert.deepEqual(opts, {
+    expect(typeof (opts.where)).toBe('object');
+    expect(opts.where).toHaveProperty([Op.and]);
+    expect(opts).toEqual({
       where: {
         [Op.and]: [{
-          $actualCol$: {[Op.neq]: 90},
+          $actualCol$: {[Op.ne]: '90'},
         },
         {
-          $actualCol$: {[Op.neq]: 91},
+          $actualCol$: {[Op.ne]: '91'},
         }],
       },
     });
   });
 
-  it('Adds a where clause with an OR operator when the table is defined', () => {
+  test('Adds a where clause with an OR operator when the table is defined', () => {
     const columnDef = {
       mapCol: {column: 'actualCol', table: 'table1'},
     };
 
-    const req = {query: {mapCol: 'equal:90||equal:91'}};
+    const req = {query: {mapCol: 'equals:90||equals:91'}};
     let opts = {where: {}};
 
     opts = tableFilter(req, opts, columnDef);
 
-    assert.isObject(opts.where);
-    assert.property(opts.where, Op.or);
-    assert.deepEqual(opts, {
+    expect(typeof (opts.where)).toBe('object');
+    expect(opts.where).toHaveProperty([Op.or]);
+    expect(opts).toEqual({
       where: {
         [Op.or]: [{
-          '$table1.$actualCol$': {[Op.eq]: 90},
+          '$table1.actualCol$': {[Op.eq]: '90'},
         },
         {
-          '$table1.$actualCol$': {[Op.eq]: 91},
+          '$table1.actualCol$': {[Op.eq]: '91'},
         }],
       },
     });
