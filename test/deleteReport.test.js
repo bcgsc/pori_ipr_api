@@ -1,15 +1,9 @@
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
-const chaiHttp = require('chai-http');
+const supertest = require('supertest');
 const getPort = require('get-port');
 const {Op} = require('sequelize');
 const db = require('../app/models');
-
-const {expect} = chai;
-
-chai.use(chaiHttp);
-chai.use(require('chai-things'));
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -26,11 +20,13 @@ const {username, password} = CONFIG.get('testing');
 const reportIdent = '3CUZR';
 const currentComponents = {};
 let server;
+let request;
 
 // Start API
-before(async () => {
+beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
+  request = supertest(server);
 });
 
 // Tests for deleting a report and all of its components
@@ -39,14 +35,13 @@ describe('Tests for deleting a report and all of its components', () => {
   // get analysis report associations
   const {pog, analysis, ReportUserFilter, createdBy, ...associations} = db.models.analysis_report.associations;
 
-  before(async () => {
+  beforeAll(async () => {
     // check that report exists
-    const res = await chai.request(server)
+    const res = await request
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
-      .type('json');
-
-    expect(res).to.have.status(200);
+      .type('json')
+      .expect(200);
 
     // get report id from patient info. because it's excluded in public view
     reportId = res.body.patientInformation.report_id;
@@ -79,44 +74,43 @@ describe('Tests for deleting a report and all of its components', () => {
   });
 
   // Test paranoid report delete that cascade's
-  it('Test paranoid report delete', async () => {
+  test('Test paranoid report delete', async () => {
     // delete the report
-    let res = await chai.request(server)
+    await request
       .delete(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
-      .type('json');
+      .type('json')
+      .expect(204);
 
-    expect(res).to.have.status(204);
 
     // verify report is deleted
-    res = await chai.request(server)
+    await request
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
-      .type('json');
+      .type('json')
+      .expect(404);
 
-    expect(res).to.have.status(404);
 
     // verify report components are also soft deleted
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
       const results = await db.models[model].findAll({where: {report_id: reportId}});
       // results should be an empty array
-      expect(results).to.be.an('array').that.is.empty;
+      expect(results).toEqual([]);
     });
   });
 
   // Restore report and all of its deleted components
-  after(async () => {
+  afterAll(async () => {
     // restore report
     await db.models.analysis_report.restore({where: {id: reportId}});
 
     // verify report was restored
-    const res = await chai.request(server)
+    await request
       .get(`/api/1.0/reports/${reportIdent}`)
       .auth(username, password)
-      .type('json');
-
-    expect(res).to.have.status(200);
+      .type('json')
+      .expect(200);
 
     // restore all report components
     const promises = [];
@@ -130,13 +124,13 @@ describe('Tests for deleting a report and all of its components', () => {
       ids.forEach(async (id) => {
         const result = await db.models[model].findOne({where: {id}});
 
-        expect(result).to.be.an('object');
-        expect(result).to.not.be.null;
+        expect(typeof (result)).toBe('object');
+        expect(result).not.toBeNull;
       });
     });
   });
 });
 
-after(async () => {
+afterAll(async () => {
   await server.close();
 });
