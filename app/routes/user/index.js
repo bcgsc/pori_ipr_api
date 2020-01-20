@@ -110,7 +110,7 @@ router.route('/')
     try {
       // Check for existing account.
       deletedUserExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
-      userExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.eq]: null}}, paranoid: false});
+      userExists = await db.models.user.findOne({where: {username: req.body.username}});
     } catch (error) {
       logger.error(`SQL Error unable to check for existing username ${error}`);
       return res.status(500).json({error: {message: 'Unable to check if this username has been taken', code: 'failedUserNameExistsQuery'}});
