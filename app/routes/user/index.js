@@ -7,7 +7,7 @@ const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
-const ajv = new Ajv({useDefaults: true});
+const ajv = new Ajv({useDefaults: true, logger});
 
 // Schema for validating POST /user format
 const newUserSchema = ajv.compile({
