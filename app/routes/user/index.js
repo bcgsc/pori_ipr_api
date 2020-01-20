@@ -9,8 +9,8 @@ const logger = require('../../log');
 const router = express.Router({mergeParams: true});
 const ajv = new Ajv({useDefaults: true, logger});
 
-// Schema for validating POST /user format
-const newUserSchema = ajv.compile({
+// POST new user json schema
+const newUserSchema = {
   type: 'object',
   required: ['username', 'type', 'firstName', 'lastName', 'email'],
   properties: {
@@ -34,15 +34,18 @@ const newUserSchema = ajv.compile({
     required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
     properties: {password: {minLength: 8}}
   }
-});
+};
+
+// Compile schema to be used in validator
+const validate = ajv.compile(newUserSchema);
 
 // Validates the request
 const parseNewUser = (request) => {
-  if (!newUserSchema(request)) {
-    if (newUserSchema.errors[0].dataPath) {
-      throw new Error(`${newUserSchema.errors[0].dataPath} ${newUserSchema.errors[0].message}`);
+  if (!validate(request)) {
+    if (validate.errors[0].dataPath) {
+      throw new Error(`${validate.errors[0].dataPath} ${validate.errors[0].message}`);
     } else {
-      throw new Error(`New Users ${newUserSchema.errors[0].message}`);
+      throw new Error(`New Users ${validate.errors[0].message}`);
     }
   }
   return {
