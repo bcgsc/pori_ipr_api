@@ -90,6 +90,13 @@ router.route('/')
   .post(async (req, res) => {
     // Add new user
 
+    // Checks if the person is authorized to add new users
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error('User isn\'t allowed to add a new user');
+      return res.status(403).send();
+    }
+
     try {
       // Validate input
       req.body = parseNewUser(req.body);
