@@ -17,6 +17,7 @@
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
   "license": "GPL-3.0",
   "dependencies": {
+    "ajv": "^6.10.2",
     "bcryptjs": "~2.4.3",
     "body-parser": "^1.19.0",
     "btoa": "~1.1.2",
