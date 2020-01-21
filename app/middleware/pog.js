@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const {Op} = require('sequelize');
 const db = require('../models');
 
@@ -37,13 +38,13 @@ module.exports = async (req, res, next, pogID) => {
     });
 
     if (!patient) { // no patient found
-      return res.status(404).json({error: {message: `Cannot find patient: ${pogID}`}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Cannot find patient: ${pogID}`}});
     }
 
     // patient found, set request param
     req.POG = patient;
     return next();
   } catch (err) {
-    return res.status(500).json(err);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
   }
 };
