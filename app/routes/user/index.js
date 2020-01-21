@@ -94,7 +94,7 @@ router.route('/')
     const access = new Acl(req, res);
     if (!access.check()) {
       logger.error('User isn\'t allowed to add a new user');
-      return res.status(403).send();
+      return res.status(403).send({error: {message: 'You are not allowed to perform this action'}});
     }
 
     try {
