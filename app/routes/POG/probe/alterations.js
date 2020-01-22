@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 const db = require('../../../models');
@@ -11,12 +12,12 @@ router.param('alteration', async (req, res, next, altIdent) => {
     result = await db.models.alterations.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.error(`Unable to find alteration ${error}`);
-    return res.status(500).json({error: {message: 'Unable to find alteration', code: 'failedMiddlewareAlterationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find alteration', code: 'failedMiddlewareAlterationQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate alteration');
-    return res.status(404).json({error: {message: 'Unable to locate alteration', code: 'failedMiddlewareAlterationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate alteration', code: 'failedMiddlewareAlterationLookup'}});
   }
 
   req.alteration = result;
@@ -50,7 +51,7 @@ router.route('/:alteration([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update genomic alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update genomic alterations', code: 'failedAPCDestroy'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update genomic alterations', code: 'failedAPCDestroy'}});
     }
   })
   .delete(async (req, res) => {
@@ -61,7 +62,7 @@ router.route('/:alteration([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove alterations', code: 'failedAPCremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove alterations', code: 'failedAPCremove'}});
     }
   });
 
@@ -94,12 +95,10 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
     };
 
     // Get all rows for this POG
-    try {
-      const results = await db.models.alterations.scope('public').findAll(options);
-      return res.json(results);
+    try {500ts);
     } catch (error) {
       logger.error(`Unable to retrieve alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve alterations', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve alterations', code: 'failedAPClookup'}});
     }
   })
   .post(async (req, res) => {
@@ -112,7 +111,7 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to create alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to create alterations', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create alterations', code: 'failedAPClookup'}});
     }
   });
 
