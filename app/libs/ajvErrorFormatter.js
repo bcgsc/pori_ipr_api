@@ -7,11 +7,7 @@
  */
 const errorFormatter = (ajvErrors, logger) => {
   ajvErrors.forEach((error) => {
-    logger.error(`Message: ${error.message}`);
-    logger.error('params:');
-    Object.entries(error.params).forEach(([key, value]) => {
-      logger.error(`${key}: ${value}`);
-    });
+    logger.error(error);
   });
 };
 
