@@ -6,7 +6,7 @@ const schemaManager = new JsonSchemaManager();
 
 /**
  * Converts a Sequelize model into a draft-07 JSON schema with
- * some started report options set
+ * some report options set
  *
  * @param {object} model - Sequelize model
  * @returns {object} - Returns a schema for the given
@@ -18,6 +18,7 @@ const schemaGenerator = (model) => {
   });
 
   schema.$schema = schemaConfig.version;
+  schema.additionalProperties = false;
   return schema;
 };
 
