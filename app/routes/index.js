@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../models/');
 
@@ -128,7 +129,7 @@ class Routing extends RouterInterface {
         return res.json(mappedResult);
       } catch (error) {
         logger.error(error);
-        return res.status(500).json({message: 'Unable to retrieve list of projects'});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Unable to retrieve list of projects'});
       }
     });
   }
