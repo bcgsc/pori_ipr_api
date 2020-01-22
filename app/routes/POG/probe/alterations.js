@@ -95,7 +95,9 @@ router.route('/:type(therapeutic|biological|prognostic|diagnostic|unknown|thisCa
     };
 
     // Get all rows for this POG
-    try {500ts);
+    try {
+      const results = await db.models.alterations.scope('public').findAll(options);
+      return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve alterations ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve alterations', code: 'failedAPClookup'}});
