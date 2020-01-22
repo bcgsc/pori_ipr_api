@@ -17,7 +17,7 @@
   "author": "Brandon Pierce <bpierce@bcgsc.ca>",
   "license": "GPL-3.0",
   "dependencies": {
-    "@alt3/sequelize-to-json-schemas": "^0.3.36",
+    "@alt3/sequelize-to-json-schemas": "^0.3.42",
     "ajv": "^6.10.2",
     "bcryptjs": "~2.4.3",
     "body-parser": "^1.19.0",
