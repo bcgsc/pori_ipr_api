@@ -1,9 +1,13 @@
+const Ajv = require('ajv');
 const express = require('express');
+const db = require('../../../../models');
+const logger = require('../../../../log');
+
+const ajvErrorFormatter = require('../../../../libs/ajvErrorFormatter');
+const schemaGenerator = require('../../../../schemas/report/basicReportSchemaGenerator');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../../../models');
-
-const logger = require('../../../../log');
+const ajv = new Ajv({useDefaults: true, coerceTypes: true, logger});
 
 // Middleware for Mutation Summary
 router.use('/', async (req, res, next) => {
@@ -56,6 +60,29 @@ router.route('/')
     } catch (error) {
       logger.error(`Unable to update mutation summary ${error}`);
       return res.status(500).json({error: {message: 'Unable to update mutation summary', code: 'failedMutationSummaryVersion'}});
+    }
+  })
+  .post(async (req, res) => {
+    // generate mutation summary schema
+    const schema = schemaGenerator(db.models.mutationSummaryv2);
+
+    // validate mutation summary data
+    const valid = await ajv.validate(schema, req.body);
+
+    if (!valid) {
+      ajvErrorFormatter(ajv.errors, logger);
+      return res.status(400).json({error: {message: 'The provided mutation summary data is not valid', cause: ajv.errors}});
+    }
+
+    // add report id to new entry
+    req.body.report_id = req.report.id;
+
+    try {
+      const result = await db.models.mutationSummaryv2.create(req.body);
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Unable to create mutational summary entry ${error}`);
+      return res.status(500).json({error: {message: 'Unable to create mutational summary entry'}, cause: error.errors});
     }
   });
 
