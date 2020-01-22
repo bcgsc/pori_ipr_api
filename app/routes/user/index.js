@@ -1,4 +1,4 @@
-const validator = require('validator');
+const Ajv = require('ajv');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
@@ -7,6 +7,57 @@ const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
+const ajv = new Ajv({useDefaults: true, logger});
+
+// POST new user json schema
+const newUserSchema = {
+  type: 'object',
+  required: ['username', 'type', 'firstName', 'lastName', 'email'],
+  properties: {
+    username: {type: 'string', minLength: 2},
+    password: {type: 'string'},
+    // type must be either 'local' or 'bcgsc'
+    type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
+    email: {type: 'string', format: 'email'},
+    firstName: {type: 'string', minLength: 1},
+    lastName: {type: 'string', minLength: 1}
+  },
+  // password can be null if type is bcgsc
+  if: {
+    properties: {type: {const: 'bcgsc'}}
+  },
+  then: {
+    properties: {password: {default: null}}
+  },
+  else: {
+    // password need to have minimum length of 8
+    required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
+    properties: {password: {minLength: 8}}
+  }
+};
+
+// Compile schema to be used in validator
+const validate = ajv.compile(newUserSchema);
+
+// Validates the request
+const parseNewUser = (request) => {
+  if (!validate(request)) {
+    if (validate.errors[0].dataPath) {
+      throw new Error(`${validate.errors[0].dataPath} ${validate.errors[0].message}`);
+    } else {
+      throw new Error(`New Users ${validate.errors[0].message}`);
+    }
+  }
+  return {
+    username: request.username,
+    password: request.password,
+    type: request.type,
+    email: request.email,
+    firstName: request.firstName,
+    lastName: request.lastName,
+    access: 'clinician'
+  };
+};
 
 // Route for getting a POG
 router.route('/')
@@ -38,38 +89,46 @@ router.route('/')
   })
   .post(async (req, res) => {
     // Add new user
-    // Validate input
-    const requiredInputs = ['username', 'password', 'type', 'firstName', 'lastName', 'email'];
-    const inputErrors = [];
 
-    // Inputs set
-    requiredInputs.forEach((value) => {
-      // Password can be null if type is ldap
-      if (req.body[value] === undefined) {
-        inputErrors.push({
-          input: value,
-          message: `${value} is a required input`,
-        });
-      }
-    });
+    // Checks if the person is authorized to add new users
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error('User isn\'t allowed to add a new user');
+      return res.status(403).send({error: {message: 'You are not allowed to perform this action'}});
+    }
 
-    let existCheck;
+    try {
+      // Validate input
+      req.body = parseNewUser(req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(400).json({error: {message: error.message}});
+    }
+
+    let deletedUserExists;
+    let userExists;
     try {
       // Check for existing account.
-      existCheck = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
+      deletedUserExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
+      userExists = await db.models.user.findOne({where: {username: req.body.username}});
     } catch (error) {
       logger.error(`SQL Error unable to check for existing username ${error}`);
       return res.status(500).json({error: {message: 'Unable to check if this username has been taken', code: 'failedUserNameExistsQuery'}});
     }
 
-    if (existCheck) {
+    // if username exists and is not a deleted user return 409
+    if (userExists) {
+      return res.status(409).json({error: {message: 'Username already exists'}});
+    }
+
+    if (deletedUserExists) {
       // set up user to restore with updated field values
       const restoreUser = req.body;
       restoreUser.deletedAt = null;
 
       try {
         const result = await db.models.user.update(restoreUser, {
-          where: {ident: existCheck.ident},
+          where: {ident: deletedUserExists.ident},
           individualHooks: true,
           paranoid: true,
           returning: true,
@@ -90,43 +149,9 @@ router.route('/')
       }
     }
 
-    // Check if email password is valid only if type=local
-    if (req.body.type === 'local' && req.body.password.length < 8) {
-      inputErrors.push({input: 'password', message: 'password must be at least 8 characters'});
-    }
-
-    if (!validator.isEmail(req.body.email)) {
-      inputErrors.push({input: 'email', message: 'email address must be valid'});
-    }
-
-    if (req.body.firstName.length < 1) {
-      inputErrors.push({input: 'firstName', message: 'first name must be set'});
-    }
-
-    if (req.body.lastName.length < 1) {
-      inputErrors.push({input: 'lastName', message: 'last name must be set'});
-    }
-
-    if (req.body.username.length < 2) {
-      inputErrors.push({input: 'username', message: 'username must be set'});
-    }
-
-    req.body.access = 'clinician';
-
-    if (validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) {
-      inputErrors.push({input: 'type', message: 'user type must be one of: bcgsc, local'});
-    }
-
-    if (inputErrors.length > 0) {
-      logger.error(`Input contains this/these error(s) ${inputErrors}`);
-      return res.status(400).json({errors: inputErrors});
-    }
-
     // Hash password
     if (req.body.type === 'local') {
       req.body.password = bcrypt.hashSync(req.body.password, 10);
-    } else if (req.body.type === 'ldap') {
-      req.body.password = null;
     }
 
     try {
