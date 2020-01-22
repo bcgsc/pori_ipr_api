@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const Excel = require('exceljs');
 const moment = require('moment');
 const {Op} = require('sequelize');
@@ -22,7 +23,7 @@ const logger = require('../../../log');
 const tokenAuth = async (req, res, next) => {
   // Check for authentication token
   if (!req.query.flash_token) {
-    return res.status(403).json({message: 'A flash token is required in the url parameter: flash_token'});
+    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'A flash token is required in the url parameter: flash_token'});
   }
 
   try {
@@ -33,7 +34,7 @@ const tokenAuth = async (req, res, next) => {
 
     if (!flashToken) {
       logger.error('A valid flash token is required to download reports');
-      return res.status(403).json({message: 'A valid flash token is required to download reports'});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'A valid flash token is required to download reports'});
     }
 
     req.user = flashToken.user;
@@ -44,7 +45,7 @@ const tokenAuth = async (req, res, next) => {
     return flashToken.destroy();
   } catch (error) {
     logger.error(error);
-    return res.status(500).json({error: {message: 'Failed to query for flash token provided'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to query for flash token provided'}});
   }
 };
 
@@ -66,7 +67,7 @@ const tokenAuth = async (req, res, next) => {
 const batchExport = async (req, res) => {
   if (!req.flash_token) {
     logger.error('Missing flash token');
-    return res.status(403).send();
+    return res.status(HTTP_STATUS.FORBIDDEN).send({message: 'A flash token is required in the url parameter: flash_token'});
   }
 
   // Where clauses
@@ -93,7 +94,7 @@ const batchExport = async (req, res) => {
     reports = await db.models.germline_small_mutation.findAll(opts);
   } catch (error) {
     logger.error(`Error while finding germline small mutation ${error}`);
-    return res.status(500).json({error: {message: 'Error while finding germline small mutation'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while finding germline small mutation'}});
   }
 
   const opts2 = {
@@ -115,7 +116,7 @@ const batchExport = async (req, res) => {
     landscapes = await db.models.tumourAnalysis.findAll(opts2);
   } catch (error) {
     logger.error(`Error while trying to get tumour analysis ${error}`);
-    return res.status(500).json({error: {message: 'Error while trying to get tumour analysis'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get tumour analysis'}});
   }
 
   let variants = [];
@@ -180,7 +181,7 @@ const batchExport = async (req, res) => {
     await workbook.xlsx.write(res);
   } catch (error) {
     logger.error(`There was an error while creating xlsx export ${error}`);
-    return res.status(500).json({message: 'There was an error while creating xlsx export'});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating xlsx export'});
   }
 
   try {
@@ -197,7 +198,7 @@ const batchExport = async (req, res) => {
     return res.end();
   } catch (error) {
     logger.error(`There was an error while saving updated reports ${error}`);
-    return res.status(500).json({message: 'There was an error while saving updated reports'});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while saving updated reports'});
   }
 };
 
