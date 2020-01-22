@@ -83,7 +83,7 @@ router.route('/:alteration([A-z0-9-]{36})')
     // Cascade removal of variant through Detailed Genomic Analysis
     try {
       await db.models.alterations.destroy({where});
-      return res.status(HTTP_STATUS.NO_CONTENT).json();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to cascade removal into detailed genomic analysis ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: true, message: 'Unable to cascade removal into detailed genomic analysis'});

@@ -62,7 +62,7 @@ router.route('/:gene([A-z0-9-]{36})')
     // Update result
     try {
       await model.destroy({where: {ident: req.event.ident}});
-      return res.status(HTTP_STATUS.NO_CONTENT);
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove genomic events therapeutic ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicEventsTherapeuticRemove'}});
