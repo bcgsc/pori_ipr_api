@@ -9,7 +9,7 @@ const schemaManager = new JsonSchemaManager();
  * some report options set
  *
  * @param {object} model - Sequelize model
- * @returns {object} - Returns a schema for the given
+ * @returns {object} - Returns a schema based on the given model
  */
 const schemaGenerator = (model) => {
   const schema = schemaManager.generate(model, new JsonSchema7Strategy(), {
