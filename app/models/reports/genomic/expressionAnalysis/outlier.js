@@ -51,6 +51,7 @@ module.exports = sequelize => sequelize.define('outlier', {
   },
   expression_class: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaPerc: {
@@ -58,94 +59,117 @@ module.exports = sequelize => sequelize.define('outlier', {
   },
   tcgaPercCol: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgakIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaQC: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaQCCol: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaAvgPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaAvgkIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaAvgQC: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaAvgQCCol: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaNormPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaNormkIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxkIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxQC: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxPercCol: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxTotSampObs: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   ptxPogPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexComp: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexFC: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexkIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexAvgPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexAvgFC: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   gtexAvgkIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
 }, {

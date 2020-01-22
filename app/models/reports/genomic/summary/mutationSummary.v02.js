@@ -20,42 +20,52 @@ module.exports = sequelize => sequelize.define('mutationSummaryv2', {
   },
   comparator: {
     type: Sq.TEXT,
+    allowNull: true,
     defaultValue: null,
   },
   snv: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   snv_truncating: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   indels: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   indels_frameshift: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   sv: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   sv_expressed: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   snv_percentile: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   indel_percentile: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
   sv_percentile: {
     type: Sq.INTEGER,
+    allowNull: true,
     defaultValue: null,
   },
 }, {

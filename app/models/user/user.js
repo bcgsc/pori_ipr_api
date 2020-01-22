@@ -48,8 +48,8 @@ module.exports = sequelize => sequelize.define('user', {
   },
   lastLogin: {
     type: Sq.DATE,
-    defaultValue: null,
     allowNull: true,
+    defaultValue: null,
   },
 },
 {

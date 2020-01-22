@@ -50,26 +50,32 @@ module.exports = sequelize => sequelize.define('proteinExpression', {
   },
   kIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaQC: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   tcgaNormPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   kIQRNormal: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxPerc: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
   ptxkIQR: {
     type: Sq.FLOAT,
+    allowNull: true,
     defaultValue: null,
   },
 }, {
