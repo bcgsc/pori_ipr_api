@@ -1,6 +1,4 @@
 const Sq = require('sequelize');
-const colors = require('colors');
-const bcrypt = require('bcryptjs');
 const nconf = require('../config');
 const logger = require('../log'); // Load logging library
 
@@ -49,9 +47,6 @@ project.belongsToMany(user, {
 user.belongsToMany(project, {
   as: 'projects', through: {model: userProject, unique: false}, foreignKey: 'user_id', otherKey: 'project_id', onDelete: 'CASCADE',
 });
-
-// Analysis
-const analysis = require('../modules/analysis/models')(sequelize);
 
 POG.hasMany(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
@@ -368,8 +363,5 @@ const flashToken = sequelize.import('./flashtoken.model');
 flashToken.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
 });
-
-// Germline Small Mutations
-const gsm = require('../modules/germine_small_mutation/models')(sequelize);
 
 module.exports = sequelize;
