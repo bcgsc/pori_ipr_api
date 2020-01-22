@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../models');
 const ExportDataTables = require('../../exporters/index');
@@ -21,7 +22,7 @@ router.route('/all')
       return res.json(results);
     } catch (error) {
       logger.error(`Failed to get pog exports ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get the list of export entries for this POG.', code: 'failedGetPOGDataExportsQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get the list of export entries for this POG.', code: 'failedGetPOGDataExportsQuery'}});
     }
   });
 
@@ -35,7 +36,7 @@ router.route('/csv')
       pogExportData = await db.models.POGDataExport.create({pog_id: req.POG.id, user_id: req.user.id});
     } catch (error) {
       logger.error(`Failed to create POG Data Export ${error}`);
-      return res.status(500).json({error: {message: 'Unable to create new data export entry.', code: 'failedPOGDataExportCreate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new data export entry.', code: 'failedPOGDataExportCreate'}});
     }
 
     const exporter = new ExportDataTables(req.POG, pogExportData);
@@ -48,7 +49,7 @@ router.route('/csv')
       pogExportData.save();
 
       logger.error(`Failed to run exporters ${error}`);
-      return res.status(500).json({error: {message: 'Failed to run exporters.', code: 'failedPOGDataExport'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to run exporters.', code: 'failedPOGDataExport'}});
     }
 
     // Save Log entry
@@ -64,7 +65,7 @@ router.route('/csv')
       return res.json({command: expResult.command, export: pogExportData});
     } catch (error) {
       logger.error(`There was an error while trying to save exportEntry ${error}`);
-      return res.status(500).json({error: {message: 'Unable to save export results.', code: 'failedUpdatePOGExportEntry'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to save export results.', code: 'failedUpdatePOGExportEntry'}});
     }
   });
 
