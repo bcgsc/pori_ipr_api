@@ -11,5 +11,6 @@ const schema = schemaManager.generate(db.models.project, new JsonSchema7Strategy
 });
 
 schema.$schema = schemaConfig.version;
+schema.additionalProperties = false;
 
 module.exports = schema;
