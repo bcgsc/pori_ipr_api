@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -10,12 +11,12 @@ router.param('target', async (req, res, next, target) => {
     result = await db.models.therapeuticTarget.scope('public').findOne({where: {ident: target}});
   } catch (error) {
     logger.error(`Unable to find therapeutic target ${error}`);
-    return res.status(500).json({error: {message: 'Unable to find therapeutic target', code: 'failedMiddlewareTherapeuticTargetQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find therapeutic target', code: 'failedMiddlewareTherapeuticTargetQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate therapeutic target');
-    return res.status(404).json({error: {message: 'Unable to locate therapeutic target', code: 'failedMiddlewareTherapeuticTargetLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate therapeutic target', code: 'failedMiddlewareTherapeuticTargetLookup'}});
   }
 
   req.target = result;
@@ -52,7 +53,7 @@ router.route('/:target([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update therapeutic target', code: 'failedTherapeuticTargetVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target', code: 'failedTherapeuticTargetVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -64,7 +65,7 @@ router.route('/:target([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove therapeutic target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove therapeutic target', code: 'failedTherapeuticTargetRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove therapeutic target', code: 'failedTherapeuticTargetRemove'}});
     }
   });
 
@@ -84,7 +85,7 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve therapeutic targets ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve therapeutic targets', code: 'failedTherapeuticTargetlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve therapeutic targets', code: 'failedTherapeuticTargetlookup'}});
     }
   })
   .post(async (req, res) => {
@@ -97,7 +98,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
-      return res.status(500).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
     }
   });
 
