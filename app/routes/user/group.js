@@ -225,6 +225,14 @@ router.route('/:group([A-z0-9-]{36})/member')
   })
   .post(async (req, res) => {
     // Add Group Member
+    try {
+      // Validate input
+      req.body = parseMember(req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(400).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Lookup User
@@ -266,6 +274,14 @@ router.route('/:group([A-z0-9-]{36})/member')
   })
   .delete(async (req, res) => {
     // Remove Group Member
+    try {
+      // Validate input
+      req.body = parseMember(req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(400).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Lookup User
