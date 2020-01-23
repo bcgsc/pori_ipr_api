@@ -16,9 +16,17 @@ const groupSchema = {
     owner: {type: 'string', format: 'uuid'},
   },
 };
+const memberSchema = {
+  type: 'object',
+  required: ['user'],
+  properties: {
+    user: {type: 'string', format: 'uuid'},
+  },
+};
 
 // Compile schema to be used in validator
 const validateGroup = ajv.compile(groupSchema);
+const validateMember = ajv.compile(memberSchema);
 
 // Validates the request
 const parseGroup = (request) => {
@@ -31,6 +39,17 @@ const parseGroup = (request) => {
   }
   return request;
 };
+const parseMember = (request) => {
+  if (!validateMember(request)) {
+    if (validateMember.errors[0].dataPath) {
+      throw new Error(`${validateMember.errors[0].dataPath} ${validateMember.errors[0].message}`);
+    } else {
+      throw new Error(`New Members ${validateMember.errors[0].message}`);
+    }
+  }
+  return request;
+};
+
 
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
