@@ -89,6 +89,14 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
+    try {
+      // Validate input
+      req.body = parseGroup(req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(400).json({error: {message: error.message}});
+    }
+
     const newGroup = {name: req.body.name};
     let user;
     try {
@@ -142,6 +150,14 @@ router.route('/:group([A-z0-9-]{36})')
     return res.json(req.group);
   })
   .put(async (req, res) => {
+    try {
+      // Validate input
+      req.body = parseGroup(req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(400).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Get Owner/User ID resolve
