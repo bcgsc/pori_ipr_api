@@ -10,8 +10,10 @@ const router = express.Router({mergeParams: true});
 // Group json schema
 const groupSchema = {
   type: 'object',
-  required: [],
+  required: ['name', 'owner'],
   properties: {
+    name: {type: 'string'},
+    owner: {type: 'string', format: 'uuid'},
   },
 };
 
@@ -21,9 +23,13 @@ const validateGroup = ajv.compile(groupSchema);
 // Validates the request
 const parseGroup = (request) => {
   if (!validateGroup(request)) {
+    if (validateGroup.errors[0].dataPath) {
+      throw new Error(`${validateGroup.errors[0].dataPath} ${validateGroup.errors[0].message}`);
+    } else {
+      throw new Error(`New Groups ${validateGroup.errors[0].message}`);
+    }
   }
-  return {
-  };
+  return request;
 };
 
 // Middleware for all group functions
