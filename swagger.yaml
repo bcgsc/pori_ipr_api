@@ -436,13 +436,13 @@ paths:
           application/json:
             schema:
               type: object
-                properties:
-                  user:
-                    type: string
-                    description: UUID ident string belonging to the user
-                    example: 8cd64045-7e68-4455-bcc2-e750c4372974
-                  required:
-                    - user
+              properties:
+                user:
+                  type: string
+                  description: UUID ident string belonging to the user
+                  example: 8cd64045-7e68-4455-bcc2-e750c4372974
+              required:
+                - user
       responses:
         "200":
           description: The user was successfully added to the group.
