@@ -34,7 +34,7 @@ const parseGroup = (request) => {
     if (validateGroup.errors[0].dataPath) {
       throw new Error(`${validateGroup.errors[0].dataPath} ${validateGroup.errors[0].message}`);
     } else {
-      throw new Error(`New Groups ${validateGroup.errors[0].message}`);
+      throw new Error(`Groups ${validateGroup.errors[0].message}`);
     }
   }
   return request;
@@ -44,7 +44,7 @@ const parseMember = (request) => {
     if (validateMember.errors[0].dataPath) {
       throw new Error(`${validateMember.errors[0].dataPath} ${validateMember.errors[0].message}`);
     } else {
-      throw new Error(`New Members ${validateMember.errors[0].message}`);
+      throw new Error(`Members ${validateMember.errors[0].message}`);
     }
   }
   return request;
