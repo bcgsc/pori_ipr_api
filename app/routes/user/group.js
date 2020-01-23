@@ -138,6 +138,7 @@ router.route('/:group([A-z0-9-]{36})')
     req.group.name = req.body.name;
     try {
       const save = await req.group.save();
+      await save.reload();
       return res.json(save);
     } catch (error) {
       logger.error(`SQL Error trying to update group ${error}`);
