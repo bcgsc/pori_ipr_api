@@ -270,11 +270,15 @@ paths:
             schema:
               type: object
               properties:
-                newGroup:
-                  description: New group objects to be created
+                name:
+                  description: Name of the new group
+                  type: string
+                owner:
+                  description: UUID of the owner of the new group
                   type: string
               required:
-                - newGroup
+                - name
+                - owner
       responses:
         "200":
           description: Group successfully added to database
@@ -334,14 +338,15 @@ paths:
             schema:
               type: object
               properties:
-                newGroup:
-                  description: New group object to be created
-                  type: object
-                  properties:
-                    name:
-                      type: string
-              required:
-                - newGroup
+                name:
+                  description: Name of the new group
+                  type: string
+                owner:
+                  description: UUID of the owner of the new group
+                  type: string
+                required:
+                  - name
+                  - owner
       responses:
         "200":
           description: Successfully updated the group.
@@ -1669,18 +1674,24 @@ components:
     Group:
       type: object
       properties:
+        id:
+          type: int
         ident:
           $ref: "#/components/schemas/ident"
         name:
           type: string
-        users:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
+        owner_id:
+          type: int
         createdAt:
           $ref: "#/components/schemas/datetime"
         updatedAt:
           $ref: "#/components/schemas/datetime"
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        owner: 
+          $ref: "#/components/schemas/User"
     POG:
       allOf:
         - $ref: "#/components/schemas/POGModel"
