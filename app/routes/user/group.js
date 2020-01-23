@@ -1,10 +1,30 @@
+const Ajv = require('ajv');
 const express = require('express');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
+const ajv = new Ajv({useDefaults: true, logger});
 const router = express.Router({mergeParams: true});
 
+// Group json schema
+const groupSchema = {
+  type: 'object',
+  required: [],
+  properties: {
+  },
+};
+
+// Compile schema to be used in validator
+const validateGroup = ajv.compile(groupSchema);
+
+// Validates the request
+const parseGroup = (request) => {
+  if (!validateGroup(request)) {
+  }
+  return {
+  };
+};
 
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
