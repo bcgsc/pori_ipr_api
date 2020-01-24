@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const Excel = require('exceljs');
 const _ = require('lodash');
 const {Op} = require('sequelize');
@@ -102,7 +103,7 @@ class GSMRouter extends RoutingInterface {
 
     if (Object.keys(required).length > 0) {
       logger.error('Required fields were missing');
-      return res.status(400).json({message: 'Required fields were missing.', fields: required});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Required fields were missing.', fields: required});
     }
 
     let patient;
@@ -111,7 +112,7 @@ class GSMRouter extends RoutingInterface {
       patient = await Patient.retrieveOrCreate(req.params.patient, req.body.project);
     } catch (error) {
       logger.error(`There was an error while retrieving patient ${error}`);
-      return res.status(500).json({message: 'There was an error while retrieving patient'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while retrieving patient'});
     }
 
     let analysis;
@@ -120,7 +121,7 @@ class GSMRouter extends RoutingInterface {
       analysis = await Analysis.retrieveOrCreate(patient.id, {libraries: {normal: req.body.normal_library}, analysis_biopsy: req.params.analysis});
     } catch (error) {
       logger.error(`There was an error retrieving/creating analysis ${error}`);
-      return res.status(500).json({message: 'There was an error retrieving/creating analysis'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error retrieving/creating analysis'});
     }
 
     // Begin creating Report
@@ -137,7 +138,7 @@ class GSMRouter extends RoutingInterface {
       report = await db.models.germline_small_mutation.create(reportOpt);
     } catch (error) {
       logger.error(`There was an error creating germline small mutation report ${error}`);
-      return res.status(500).json({message: 'There was an error creating germline small mutation report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error creating germline small mutation report'});
     }
 
     try {
@@ -158,11 +159,11 @@ class GSMRouter extends RoutingInterface {
       await db.models.germline_small_mutation.destroy({where: {pog_analysis_id: analysis.id}});
       if (_.find(error.errors, {type: 'unique violation'})) {
         logger.error(`A report for ${patient.POGID} with version ${req.body.version} already exists`);
-        return res.status(400).json({message: `A report for ${patient.POGID} with version ${req.body.version} already exists`});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({message: `A report for ${patient.POGID} with version ${req.body.version} already exists`});
       }
 
       logger.error(`There was an error while creating germline reports ${error}`);
-      return res.status(500).json({message: `Failed to import report: ${error.message}`, error});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: `Failed to import report: ${error.message}`, error});
     }
   }
 
@@ -199,7 +200,7 @@ class GSMRouter extends RoutingInterface {
       gsmReports = await db.models.germline_small_mutation.scope('public').findAndCountAll(opts);
     } catch (error) {
       logger.error(`There was an error while finding all germline reports ${error}`);
-      return res.status(500).json({message: 'There was an error while finding all germline reports'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while finding all germline reports'});
     }
 
     let reports = gsmReports.rows;
@@ -270,7 +271,7 @@ class GSMRouter extends RoutingInterface {
       return res.json(reports);
     } catch (error) {
       logger.error(`There was an error while trying to find all germline reports ${error}`);
-      return res.status(500).json({message: 'There was an error while trying to find all germline reports'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
     }
   }
 
@@ -289,7 +290,7 @@ class GSMRouter extends RoutingInterface {
   async addReview(req, res) {
     if (!req.body.type) {
       logger.error('A review type is required in the body');
-      return res.status(400).json({message: 'A review type is required in the body'});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'A review type is required in the body'});
     }
 
     const opts = {
@@ -306,11 +307,11 @@ class GSMRouter extends RoutingInterface {
       review = await db.models.germline_small_mutation_review.scope('public').findOne(opts);
     } catch (error) {
       logger.error(`There was an error while trying to find germline review ${error}`);
-      return res.status(500).json({message: 'There was an error while trying to find germline review'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find germline review'});
     }
 
     if (review) {
-      return res.status(400).json({message: `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`});
     }
 
     // Create new review
@@ -326,12 +327,12 @@ class GSMRouter extends RoutingInterface {
       createdReview = await db.models.germline_small_mutation_review.create(data);
     } catch (error) {
       logger.error(`There was an error while creating germline review ${error}`);
-      return res.status(500).json({message: 'There was an error while creating germline review'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating germline review'});
     }
 
     if (res.finished) {
       logger.error('Response finished can\'t review report');
-      return res.status(500).json({message: 'Reponse finished can\'t review report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Reponse finished can\'t review report'});
     }
 
     try {
@@ -339,7 +340,7 @@ class GSMRouter extends RoutingInterface {
       return res.json(newReview);
     } catch (error) {
       logger.error(`There was an error while creating a review for this report ${error}`);
-      return res.status(500).json({message: 'There was an error while creating a review for this report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating a review for this report'});
     }
   }
 
@@ -356,10 +357,10 @@ class GSMRouter extends RoutingInterface {
   async removeReview(req, res) {
     try {
       await req.review.destroy();
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`There was an error while trying to remove the requested germline report ${error}`);
-      return res.status(500).json({message: 'Error while trying to remove the requested germline report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline report'});
     }
   }
 
@@ -413,7 +414,7 @@ class GSMRouter extends RoutingInterface {
           return res.json(req.variant);
         } catch (error) {
           logger.error(`Error while trying to update variant ${error}`);
-          return res.status(500).json({message: 'Error while trying to update variant'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update variant'});
         }
       });
   }
@@ -457,7 +458,7 @@ class GSMRouter extends RoutingInterface {
           report = await Report.updateReport(req.report, req.body);
         } catch (error) {
           logger.error(`There was an error updating the germline report ${error}`);
-          return res.status(500).json({message: 'There was an error updating the germline report'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error updating the germline report'});
         }
 
         try {
@@ -465,7 +466,7 @@ class GSMRouter extends RoutingInterface {
           return res.json(publicReport);
         } catch (error) {
           logger.error(`There was an error while updating the germline report ${error}`);
-          return res.status(500).json({message: 'There was an error while updating the germline report'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while updating the germline report'});
         }
       })
 
@@ -486,10 +487,10 @@ class GSMRouter extends RoutingInterface {
       .delete(async (req, res) => {
         try {
           await req.report.destroy();
-          return res.status(204).send();
+          return res.status(HTTP_STATUS.NO_CONTENT).send();
         } catch (error) {
           logger.error(`Error while removing requested germline report ${error}`);
-          return res.status(500).json({message: 'Error while removing requested germline report'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while removing requested germline report'});
         }
       });
   }
@@ -527,7 +528,7 @@ class GSMRouter extends RoutingInterface {
       smallMutations = await db.models.germline_small_mutation.scope('public').findAll(opts);
     } catch (error) {
       logger.error(`Error while finding germline small mutations ${error}`);
-      return res.status(500).json({message: 'Error while finding germline small mutations'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while finding germline small mutations'});
     }
 
     let variants = [];
@@ -571,7 +572,7 @@ class GSMRouter extends RoutingInterface {
       return res.end();
     } catch (error) {
       logger.error(`Error while writing xlsx export of recent reports ${error}`);
-      return res.status(500).json({message: 'Error while writing xlsx export of recent reports'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while writing xlsx export of recent reports'});
     }
   }
 
@@ -595,7 +596,7 @@ class GSMRouter extends RoutingInterface {
       return res.json({token: flashToken.token});
     } catch (error) {
       logger.error(`Error while trying to create flash token ${error}`);
-      return res.status(500).json({message: 'Error while trying to create flash token'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to create flash token'});
     }
   }
 }
