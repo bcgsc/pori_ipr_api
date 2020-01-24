@@ -37,7 +37,6 @@ module.exports = sequelize => sequelize.define('pog_analysis',
     },
     bioapps_source_id: {
       type: Sq.INTEGER,
-      allowNull: true,
       defaultValue: null,
     },
     disease: {
@@ -55,12 +54,10 @@ module.exports = sequelize => sequelize.define('pog_analysis',
     },
     onco_panel_submitted: {
       type: Sq.DATE,
-      allowNull: true,
       defaultValue: null,
     },
     comparator_disease: {
       type: Sq.JSONB,
-      allowNull: true,
       defaultValue: '[]',
     },
     comparator_normal: {
@@ -70,42 +67,34 @@ module.exports = sequelize => sequelize.define('pog_analysis',
     },
     biopsy_site: {
       type: Sq.STRING,
-      allowNull: true,
       defaultValue: null,
     },
     biopsy_type: {
       type: Sq.STRING,
-      allowNull: true,
       defaultValue: null,
     },
     biopsy_date: {
       type: Sq.DATE,
-      allowNull: true,
       defaultValue: null,
     },
     date_analysis: {
       type: Sq.DATE,
-      allowNull: true,
       defaultValue: null,
     },
     date_presentation: {
       type: Sq.DATE,
-      allowNull: true,
       defaultValue: null,
     },
     threeLetterCode: {
       type: Sq.STRING,
-      allowNull: true,
       defaultValue: null,
     },
     physician: {
       type: Sq.JSONB,
-      allowNull: true,
       defaultValue: null,
     },
     pediatric_id: {
       type: Sq.STRING,
-      allowNull: true,
       defaultValue: null,
     },
   },

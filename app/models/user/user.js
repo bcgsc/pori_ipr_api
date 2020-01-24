@@ -29,12 +29,10 @@ module.exports = sequelize => sequelize.define('user', {
   },
   jiraToken: {
     type: Sq.STRING,
-    allowNull: true,
     defaultValue: null,
   },
   jiraXsrf: {
     type: Sq.STRING,
-    allowNull: true,
     defaultValue: null,
   },
   access: {
@@ -48,7 +46,6 @@ module.exports = sequelize => sequelize.define('user', {
   },
   lastLogin: {
     type: Sq.DATE,
-    allowNull: true,
     defaultValue: null,
   },
 },
