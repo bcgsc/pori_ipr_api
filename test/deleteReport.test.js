@@ -33,7 +33,9 @@ beforeAll(async () => {
 describe('Tests for deleting a report and all of its components', () => {
   let reportId;
   // get analysis report associations
-  const {pog, analysis, ReportUserFilter, createdBy, ...associations} = db.models.analysis_report.associations;
+  const {
+    pog, analysis, ReportUserFilter, createdBy, ...associations
+  } = db.models.analysis_report.associations;
 
   beforeAll(async () => {
     // check that report exists

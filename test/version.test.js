@@ -13,6 +13,7 @@ const {username, password} = CONFIG.get('testing');
 
 let server;
 let request;
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
