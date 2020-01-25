@@ -74,7 +74,6 @@
     "eslint-plugin-jsx-a11y": "~6.1.1",
     "eslint-plugin-react": "~7.11.1",
     "get-port": "^5.0.0",
-    "istanbul": "^0.4.5",
     "jest": "^24.9.0",
     "jest-bamboo-formatter": "^1.0.1",
     "jest-junit": "^10.0.0",
