@@ -6,7 +6,9 @@
     },
     "extends": [
         "eslint:recommended",
-        "airbnb"
+        "airbnb",
+        "plugin:jest/recommended",
+        "plugin:jest-formatting/recommended"
     ],
     "rules": {
         "indent": [
@@ -14,6 +16,12 @@
             2,
             {
                 "SwitchCase": 1
+            }
+        ],
+        "jest/consistent-test-it": [
+            "error",
+            {
+                "fn": "test"
             }
         ],
         "linebreak-style": [
