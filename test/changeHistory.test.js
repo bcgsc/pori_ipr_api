@@ -82,7 +82,7 @@ describe('Tests for update changes', () => {
       .type('json')
       .expect(200);
 
-    expect(Array.isArray(res.body));
+    expect(Array.isArray(res.body)).toBe(true);
     res.body = res.body[0];
 
     // Should equal updated values

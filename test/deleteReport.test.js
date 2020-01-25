@@ -127,7 +127,7 @@ describe('Tests for deleting a report and all of its components', () => {
         const result = await db.models[model].findOne({where: {id}});
 
         expect(typeof (result)).toBe('object');
-        expect(result).not.toBeNull;
+        expect(result).not.toBe(null);
       });
     });
   });
