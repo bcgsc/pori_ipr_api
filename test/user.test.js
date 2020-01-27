@@ -181,6 +181,27 @@ describe('/user', () => {
       .type('json')
       .expect(404);
   });
+  // Test for GET /user/settings 200 endpoint
+  test('GET user settings', async () => {
+    const res = await request
+      .get('/api/1.0/user/settings')
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(typeof res).toBe('object');
+  });
+  // Test for GET /user/search 200 endpoint
+  test('GET search user', async () => {
+    const res = await request
+      .get('/api/1.0/user/search')
+      .query({query: username})
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(res.body.length >= 1);
+  });
 });
 
 afterAll(async () => {
