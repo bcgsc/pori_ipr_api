@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 const getPort = require('get-port');
 const supertest = require('supertest');
 const uuidv4 = require('uuid/v4');
+const HTTP_STATUS = require('http-status-codes');
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -40,7 +41,7 @@ describe('/user', () => {
       .get('/api/1.0/user')
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(Array.isArray(res.body));
     expect(res.body[0]).toHaveProperty('ident');
@@ -56,7 +57,7 @@ describe('/user', () => {
       .get('/api/1.0/user/me')
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(typeof (res.body)).toBe('object');
     expect(res.body).toHaveProperty('id');
@@ -74,7 +75,7 @@ describe('/user', () => {
       .auth(username, password)
       .type('json')
       .send(newUser)
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     newUserIdent = res.body.ident;
   });
@@ -85,7 +86,7 @@ describe('/user', () => {
       .auth(username, password)
       .type('json')
       .send(newUser)
-      .expect(409);
+      .expect(HTTP_STATUS.CONFLICT);
   });
   // Test for POST /user 400 endpoint
   test('POST new user - Password is required for local', async () => {
@@ -100,7 +101,7 @@ describe('/user', () => {
         firstName: 'FirstNameTest',
         lastName: 'LastNameTest',
       })
-      .expect(400);
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
   // Test for POST /user 400 endpoint
   test('POST new user - Password longer than 8 characters', async () => {
@@ -116,7 +117,7 @@ describe('/user', () => {
         firstName: 'FirstNameTest',
         lastName: 'LastNameTest',
       })
-      .expect(400);
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
   // Test for POST /user 400 endpoint
   test('POST new user - Email should be valid', async () => {
@@ -131,7 +132,7 @@ describe('/user', () => {
         firstName: 'FirstNameTest',
         lastName: 'LastNameTest',
       })
-      .expect(400);
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
   // Test for POST /user 400 endpoint
   test('POST new user - Type should be eitheir local or bcgsc', async () => {
@@ -146,7 +147,7 @@ describe('/user', () => {
         firstName: 'FirstNameTest',
         lastName: 'LastNameTest',
       })
-      .expect(400);
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
   // Test for POST /user 400 endpoint
   test('POST new user - All fields are required', async () => {
@@ -159,11 +160,11 @@ describe('/user', () => {
         type: 'bcgsc',
         email: 'testuser@test.com',
       })
-      .expect(400);
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
   // Tests for PUT /user/ident endpoint
   test('PUT user tests', async () => {
-    // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831
+    // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831 - Implement when it is merged
   });
   // Test for DELETE /user/ident 204 endpoint
   test('DELETE user - Success', async () => {
@@ -171,7 +172,7 @@ describe('/user', () => {
       .delete(`/api/1.0/user/${newUserIdent}`)
       .auth(username, password)
       .type('json')
-      .expect(204);
+      .expect(HTTP_STATUS.NO_CONTENT);
   });
   // Test for DELETE /user/ident 404 endpoint
   test('DELETE user - Not Found', async () => {
@@ -179,7 +180,7 @@ describe('/user', () => {
       .delete('/api/1.0/user/PROBABLY_NOT_A_USER')
       .auth(username, password)
       .type('json')
-      .expect(404);
+      .expect(HTTP_STATUS.NOT_FOUND);
   });
   // Test for GET /user/settings 200 endpoint
   test('GET user settings', async () => {
@@ -187,7 +188,7 @@ describe('/user', () => {
       .get('/api/1.0/user/settings')
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(typeof res).toBe('object');
   });
@@ -198,7 +199,7 @@ describe('/user', () => {
       .query({query: username})
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(res.body.length >= 1);
   });
