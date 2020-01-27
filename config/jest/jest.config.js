@@ -10,14 +10,14 @@ module.exports = {
   collectCoverageFrom: [
     'app/**.js',
     'app/**/*.js',
-    'app/**/**/*.js'
+    'app/**/**/*.js',
   ],
   coverageReporters: [
     'clover',
     'text',
     'json',
     'json-summary',
-    'lcov'
+    'lcov',
   ],
   reporters: [
     'default',
@@ -25,18 +25,19 @@ module.exports = {
       'jest-junit',
       {
         outputDirectory: '<rootDir>/coverage'
-      }
-    ]
+      },
+    ],
   ],
   testRegex: 'test/.*\\.js',
   testEnvironment: 'node',
   testPathIgnorePatterns: [
     '/node_modules/',
     'test/repo/query/util.js',
-    'test/util.js'
+    'test/util.js',
+    'test/testData/',
   ],
   moduleFileExtensions: [
     'js',
-    'json'
-  ]
+    'json',
+  ],
 };
