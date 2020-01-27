@@ -114,7 +114,7 @@ router.route('/')
       req.body = parseGroup(req.body);
     } catch (error) {
       // if input is invalid return 400
-      return res.status(400).json({error: {message: error.message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
     const newGroup = {name: req.body.name};
@@ -175,7 +175,7 @@ router.route('/:group([A-z0-9-]{36})')
       req.body = parseGroup(req.body);
     } catch (error) {
       // if input is invalid return 400
-      return res.status(400).json({error: {message: error.message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
     let user;
@@ -231,7 +231,7 @@ router.route('/:group([A-z0-9-]{36})/member')
       req.body = parseMember(req.body);
     } catch (error) {
       // if input is invalid return 400
-      return res.status(400).json({error: {message: error.message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
     let user;
@@ -280,7 +280,7 @@ router.route('/:group([A-z0-9-]{36})/member')
       req.body = parseMember(req.body);
     } catch (error) {
       // if input is invalid return 400
-      return res.status(400).json({error: {message: error.message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
     let user;
