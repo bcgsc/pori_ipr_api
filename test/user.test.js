@@ -161,6 +161,10 @@ describe('/user', () => {
       })
       .expect(400);
   });
+  // Tests for PUT /user/ident endpoint
+  test('PUT user tests', async () => {
+    // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831
+  });
   // Test for DELETE /user/ident 204 endpoint
   test('DELETE user - Success', async () => {
     await request
