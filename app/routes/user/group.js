@@ -30,27 +30,16 @@ const validateGroup = ajv.compile(groupSchema);
 const validateMember = ajv.compile(memberSchema);
 
 // Validates the request
-const parseGroup = (request) => {
-  if (!validateGroup(request)) {
-    if (validateGroup.errors[0].dataPath) {
-      throw new Error(`${validateGroup.errors[0].dataPath} ${validateGroup.errors[0].message}`);
+const parseRequest = (schemaValidator, request) => {
+  if (!schemaValidator(request)) {
+    if (schemaValidator.errors[0].dataPath) {
+      throw new Error(`${schemaValidator.errors[0].dataPath} ${schemaValidator.errors[0].message}`);
     } else {
-      throw new Error(`Groups ${validateGroup.errors[0].message}`);
+      throw new Error(`${schemaValidator.errors[0].message}`);
     }
   }
   return request;
 };
-const parseMember = (request) => {
-  if (!validateMember(request)) {
-    if (validateMember.errors[0].dataPath) {
-      throw new Error(`${validateMember.errors[0].dataPath} ${validateMember.errors[0].message}`);
-    } else {
-      throw new Error(`Members ${validateMember.errors[0].message}`);
-    }
-  }
-  return request;
-};
-
 
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
@@ -111,7 +100,7 @@ router.route('/')
   .post(async (req, res) => {
     try {
       // Validate input
-      req.body = parseGroup(req.body);
+      req.body = parseRequest(validateGroup, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -172,7 +161,7 @@ router.route('/:group([A-z0-9-]{36})')
   .put(async (req, res) => {
     try {
       // Validate input
-      req.body = parseGroup(req.body);
+      req.body = parseRequest(validateGroup, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -228,7 +217,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Add Group Member
     try {
       // Validate input
-      req.body = parseMember(req.body);
+      req.body = parseRequest(validateMember, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -277,7 +266,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Remove Group Member
     try {
       // Validate input
-      req.body = parseMember(req.body);
+      req.body = parseRequest(validateMember, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
