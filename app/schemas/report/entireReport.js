@@ -1,7 +1,7 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../models');
 const {BASE_EXCLUDE} = require('../exclude');
-const schemaGenerator = require('./basicReportSchemaGenerator');
+const schemaGenerator = require('./basicReportComponentSchemaGenerator');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
