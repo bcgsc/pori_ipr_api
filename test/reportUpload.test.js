@@ -13,9 +13,10 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
+const LONGER_TIMEOUT = 50000;
+
 let server;
 let request;
-
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -51,7 +52,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // get report id from patient info. because it's excluded in public view
     reportId = res.body.patientInformation.report_id;
-  });
+  }, LONGER_TIMEOUT);
 
   // Test that all components were created
   test('Test that all components were created', async () => {
@@ -86,10 +87,10 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // results should be a non-empty array
     components.forEach((component) => {
-      expect(typeof component).toBe('array');
+      expect(Array.isArray(component)).toBe(true);
       expect(component.length).toBeGreaterThan(0);
     });
-  });
+  }, LONGER_TIMEOUT);
 
   // delete report
   afterAll(async () => {
@@ -103,7 +104,7 @@ describe('Tests for uploading a report and all of its components', () => {
       .auth(username, password)
       .type('json')
       .expect(404);
-  });
+  }, LONGER_TIMEOUT);
 });
 
 afterAll(async () => {
