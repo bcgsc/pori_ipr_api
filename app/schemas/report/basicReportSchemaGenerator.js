@@ -1,8 +1,7 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const {REPORT_EXCLUDE} = require('../exclude');
-const schemaConfig = require('../../../config/schema');
 
-const schemaManager = new JsonSchemaManager();
+const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 /**
  * Converts a Sequelize model into a draft-07 JSON schema with
@@ -17,7 +16,6 @@ const schemaGenerator = (model) => {
     associations: false,
   });
 
-  schema.$schema = schemaConfig.version;
   schema.additionalProperties = false;
   return schema;
 };

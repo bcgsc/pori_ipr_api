@@ -2,9 +2,8 @@ const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-jso
 const db = require('../../models');
 const {BASE_EXCLUDE} = require('../exclude');
 const schemaGenerator = require('./basicReportSchemaGenerator');
-const schemaConfig = require('../../../config/schema');
 
-const schemaManager = new JsonSchemaManager();
+const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const REPORT_EXCLUDE = ['pog_id', 'analysis_id', 'createdBy_id'];
 const exclude = BASE_EXCLUDE.concat(REPORT_EXCLUDE);
@@ -16,7 +15,6 @@ const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7
 });
 
 // set schema version and don't allow additional properties
-schema.$schema = schemaConfig.version;
 schema.additionalProperties = false;
 
 // inject all required associations into schema
