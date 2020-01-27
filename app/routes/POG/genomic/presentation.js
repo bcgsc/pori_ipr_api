@@ -1,4 +1,4 @@
-'use strict';
+const HTTP_STATUS = require('http-status-codes');
 
 const express = require('express');
 
@@ -14,11 +14,11 @@ const _ = require('lodash');
 router.param('discussion', async (req, res, next, ident) => {
   try {
     const result = await db.models.presentation_discussion.scope('public').findOne({where: {ident}});
-    if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
+    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
     req.discussion = result;
     return next();
   } catch (error) {
-    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareDiscussionQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareDiscussionQuery'}});
   }
 });
 
@@ -38,7 +38,7 @@ router.route('/discussion')
       res.json(results);
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to retrieve presentation discussion notes'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to retrieve presentation discussion notes'});
     }
   })
   .post(async (req, res) => {
@@ -54,7 +54,7 @@ router.route('/discussion')
       res.json(result);
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to create new discussion entry'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion entry'});
     }
   });
 
@@ -63,10 +63,10 @@ router.route('/discussion/:discussion')
   .delete(async (req, res) => {
     try {
       await db.models.presentation_discussion.destroy({where: {ident: req.discussion.ident}});
-      res.status(204).send();
+      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to remove the requested discussion entry'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to remove the requested discussion entry'});
     }
   })
   .get((req, res) => {
@@ -84,7 +84,7 @@ router.route('/discussion/:discussion')
       res.json(req.discussion);
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to update the discussion entry for server-side reasons.'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to update the discussion entry for server-side reasons.'});
     }
   });
 
@@ -96,12 +96,12 @@ router.route('/discussion/:discussion')
 router.param('slide', async (req, res, next, ident) => {
   try {
     const result = await db.models.presentation_slides.scope('public').findOne({where: {ident}});
-    if (result === null) return res.status(404).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
+    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
     req.slide = result;
     return next();
   } catch (error) {
     console.log(error);
-    return res.status(500).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareSlideQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareSlideQuery'}});
   }
 });
 
@@ -127,7 +127,7 @@ router.route('/slide')
       res.json(slides);
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to retrieve presentation slides'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to retrieve presentation slides'});
     }
   })
   .post(async (req, res) => {
@@ -145,7 +145,7 @@ router.route('/slide')
       res.json(result);
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to create new presentation slides'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new presentation slides'});
     }
   });
 
@@ -154,10 +154,10 @@ router.route('/slide/:slide')
   .delete(async (req, res) => {
     try {
       await db.models.presentation_slides.destroy({where: {ident: req.slide.ident}});
-      res.status(204).send();
+      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       console.log(error);
-      res.status(500).json({message: 'Failed to remove the requested slide'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to remove the requested slide'});
     }
   })
   .get((req, res) => {

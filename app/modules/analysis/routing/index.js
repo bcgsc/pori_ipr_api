@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const {Op} = require('sequelize');
 const db = require('../../../models');
 const RoutingInterface = require('../../../routes/routingInterface');
@@ -73,7 +74,7 @@ class TrackingRouter extends RoutingInterface {
           pogAnalyses = await db.models.pog_analysis.findAndCountAll(opts);
         } catch (error) {
           logger.error(`Error while trying to find all pog analyses ${error}`);
-          return res.status(500).json({message: 'Error while trying to find all pog analyses'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to find all pog analyses'});
         }
 
         let {rows, count} = pogAnalyses;
@@ -118,7 +119,7 @@ class TrackingRouter extends RoutingInterface {
           validationErr.push('At least one physician is required');
         }
         if (validationErr.length > 0) {
-          return res.status(400).json({message: 'Invalid inputs supplied', cause: validationErr});
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Invalid inputs supplied', cause: validationErr});
         }
 
         const pogFields = {
@@ -131,7 +132,7 @@ class TrackingRouter extends RoutingInterface {
           POG = await Patient.retrieveOrCreate(req.body.POGID, req.body.project, pogFields);
         } catch (error) {
           logger.error(`Error will trying to retrieve/create patient ${error}`);
-          return res.status(500).json({message: 'Error while trying to retrieve/create patient'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to retrieve/create patient'});
         }
 
         const analysis = {
@@ -179,7 +180,7 @@ class TrackingRouter extends RoutingInterface {
           pogAnalysis = await db.models.pog_analysis.create(analysis);
         } catch (error) {
           logger.error(`Error while trying to create POG analysis ${error}`);
-          return res.status(500).json({message: 'Error while trying to create POG analysis'});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to create POG analysis'});
         }
 
         pogAnalysis = pogAnalysis.toJSON();
@@ -198,14 +199,14 @@ class TrackingRouter extends RoutingInterface {
           return res.json(updatedAnalysis);
         } catch (error) {
           logger.error(`Error while updating analysis settings ${error}`);
-          return res.status(500).json({message: `Error while updating analysis settings ${error}`});
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: `Error while updating analysis settings ${error}`});
         }
       })
       .get((req, res) => {
         return res.json(req.analysis);
       })
       .delete((req, res) => {
-        return res.status(204).send();
+        return res.status(HTTP_STATUS.NO_CONTENT).send();
       });
   }
 }

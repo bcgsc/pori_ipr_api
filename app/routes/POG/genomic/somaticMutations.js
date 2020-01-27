@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -11,12 +12,12 @@ router.param('mutation', async (req, res, next, mutIdent) => {
     result = await db.models.somaticMutations.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
     logger.error(`Unable to get somatic mutations ${error}`);
-    return res.status(500).json({error: {message: 'Unable to get somatic mutations', code: 'failedMiddlewareSomaticMutationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get somatic mutations', code: 'failedMiddlewareSomaticMutationQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate somatic mutations');
-    return res.status(404).json({error: {message: 'Unable to locate somatic mutations', code: 'failedMiddlewareSomaticMutationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate somatic mutations', code: 'failedMiddlewareSomaticMutationLookup'}});
   }
 
   req.mutation = result;
@@ -51,7 +52,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update somatic mutations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update somatic mutations', code: 'failedOutlierVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update somatic mutations', code: 'failedOutlierVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -62,7 +63,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove somatic mutations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove somatic mutations', code: 'failedSomaticMutationremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove somatic mutations', code: 'failedSomaticMutationremove'}});
     }
   });
 
@@ -89,7 +90,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve small mutations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve small mutations', code: 'failedSomaticMutationlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve small mutations', code: 'failedSomaticMutationlookup'}});
     }
   });
 
@@ -107,7 +108,7 @@ router.route('/mutationSignature')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve mutation signatures ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve mutation signatures', code: 'failedMutationSignaturelookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve mutation signatures', code: 'failedMutationSignaturelookup'}});
     }
   });
 

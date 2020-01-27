@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -11,12 +12,12 @@ router.param('target', async (req, res, next, altIdent) => {
     result = await db.models.probeTarget.findOne({where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}});
   } catch (error) {
     logger.error(`Unable to find probe target ${error}`);
-    return res.status(500).json({error: {message: 'Unable to find probe target', code: 'failedMiddlewareProbeTargetQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find probe target', code: 'failedMiddlewareProbeTargetQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate probe target');
-    return res.status(404).json({error: {message: 'Unable to locate probe target', code: 'failedMiddlewareProbeTargetLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate probe target', code: 'failedMiddlewareProbeTargetLookup'}});
   }
 
   req.target = result;
@@ -51,17 +52,17 @@ router.route('/:target([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update probe target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update probe target', code: 'failedMutationSummaryVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update probe target', code: 'failedMutationSummaryVersion'}});
     }
   })
   .delete(async (req, res) => {
     // Soft delete the entry
     try {
       await db.models.probeTarget.destroy({where: {ident: req.target.ident}});
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove probe target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove probe target', code: 'failedProbeTargetremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove probe target', code: 'failedProbeTargetremove'}});
     }
   });
 
@@ -78,7 +79,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to get probe targets ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get probe targets', code: 'failedProbeTargetlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get probe targets', code: 'failedProbeTargetlookup'}});
     }
   });
 

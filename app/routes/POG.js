@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 const db = require('../models');
@@ -84,7 +85,7 @@ router.route('/')
       return res.json(pogs);
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: error.message, code: error.code}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message, code: error.code}});
     }
   })
   .put(() => {
@@ -102,7 +103,7 @@ router.route('/:POG')
     access.isPog = true;
     if (!access.check()) {
       logger.error('You don\'t have the required permissions to access this/these file(s)');
-      return res.status(401).json({error: {message: 'You don\'t have the required permissions to access this/these file(s)'}});
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'You don\'t have the required permissions to access this/these file(s)'}});
     }
 
     return res.json(req.POG);
@@ -114,7 +115,7 @@ router.route('/:POG')
     access.pogEdit = ['analyst', 'reviewer', 'admin', 'superUser', 'Projects'];
     if (!access.check()) {
       logger.error('You don\'t have the required permissions to alter this/these file(s)');
-      return res.status(401).json({error: {message: 'You don\'t have the required permissions to alter this/these file(s)'}});
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'You don\'t have the required permissions to alter this/these file(s)'}});
     }
 
     // Update POG
@@ -143,7 +144,7 @@ router.route('/:POG')
       return res.json(publicModel);
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update patient. Please try again', code: 'failedPOGUpdateQuery'}});
     }
   });
 
@@ -158,7 +159,7 @@ router.route('/:POG/user')
       // Convert user to ID
       const user = await db.models.user.findOne({where: {ident: req.body.user}});
       if (!user) {
-        return res.status(400).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
       }
       // Create POGUser entry
       const pogUser = await db.models.POGUser.create(
@@ -179,7 +180,7 @@ router.route('/:POG/user')
       return res.json(POGUser);
     } catch (error) {
       logger.error(`SQL Error ${error}`);
-      return res.status(500).json({error: {message: error.message, code: error.message}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message, code: error.message}});
     }
   })
   .delete(async (req, res) => {
@@ -187,18 +188,18 @@ router.route('/:POG/user')
       // Convert user to ID
       const user = await db.models.user.findOne({where: {ident: req.body.user}});
       if (!user) {
-        return res.status(400).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'invalid user reference', code: 'failedUserLookupBinding'}});
       }
       // Create POGUser entry
       const poguser = await db.models.POGUser.destroy({where: {user_id: user.id, pog_id: req.POG.id, role: req.body.role}});
       if (poguser > 0) {
-        return res.status(204).send();
+        return res.status(HTTP_STATUS.NO_CONTENT).send();
       }
 
-      return res.status(400).json({error: {message: 'Unable to find a user to remove that fits the provided criteria'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to find a user to remove that fits the provided criteria'}});
     } catch (error) {
       logger.error(`SQL Error ${error}`);
-      return res.status(500).json({error: {message: error.message, code: error.code}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message, code: error.code}});
     }
   });
 
@@ -227,7 +228,7 @@ router.route('/:POG/reports')
       return res.json(reports);
     } catch (error) {
       logger.error(`Unable to lookup analysis reports for POG ${error}`);
-      return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup analysis reports.'}});
     }
   });
 

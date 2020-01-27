@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 // app/routes/genomic/somaticMutation.js
 let express = require('express'),
   router = express.Router({mergeParams: true}),
@@ -18,7 +19,7 @@ router.route('/')
       },
       (error) => {
         console.log(error);
-        res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedMAVISSummarylookup'} });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedMAVISSummarylookup'} });
       }
     );
 

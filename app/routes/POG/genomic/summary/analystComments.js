@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const moment = require('moment');
 
@@ -14,7 +15,7 @@ router.use('/', async (req, res, next) => {
     result = await db.models.analystComments.scope('public').findOne({where: {report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to query analyst comments ${error}`);
-    return res.status(500).json({error: {message: `Unable to query analyst comments for ${req.POG.POGID}`, code: 'failedAnalystCommentsQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.POG.POGID}`, code: 'failedAnalystCommentsQuery'}});
   }
 
   // Not found is allowed!
@@ -41,7 +42,7 @@ router.route('/')
         return res.json(result);
       } catch (error) {
         logger.error(`Unable to create new analysis comments ${error}`);
-        return res.status(500).json({error: {message: 'Unable to create new analysis comments', code: 'failedAnalystCommentCreate'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new analysis comments', code: 'failedAnalystCommentCreate'}});
       }
     } else {
       // Update DB Version for Entry
@@ -66,7 +67,7 @@ router.route('/')
         return res.json(publicModel);
       } catch (error) {
         logger.error(`Unable to update analysis comments ${error}`);
-        return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedAnalystCommentVersion'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedAnalystCommentVersion'}});
       }
     }
   });
@@ -83,7 +84,7 @@ router.route('/sign/:role(author|reviewer)')
 
     if (!role) {
       logger.error('A valid signing role must be specified');
-      return res.status(401).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
     }
 
     // Update Comments
@@ -112,7 +113,7 @@ router.route('/sign/:role(author|reviewer)')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update analysis comments ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
     }
   });
 
@@ -128,7 +129,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
 
     if (!role) {
       logger.error('A valid signing role must be specified');
-      return res.status(401).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
     }
 
     // Update Comments
@@ -157,7 +158,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update analysis comments ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
     }
   });
 
