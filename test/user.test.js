@@ -173,6 +173,14 @@ describe('/user', () => {
       .type('json')
       .expect(204);
   });
+  // Test for DELETE /user/ident 404 endpoint
+  test('DELETE user - Not Found', async () => {
+    await request
+      .delete('/api/1.0/user/PROBABLY_NOT_A_USER')
+      .auth(username, password)
+      .type('json')
+      .expect(404);
+  });
 });
 
 afterAll(async () => {
