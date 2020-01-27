@@ -290,10 +290,13 @@ pm2 start current/pm2.config.js --env production
 │
 ├── server.js                           Main application file. Run node server.js to initialize the API server
 │
-└── test                                # Testing
-    ├── exclude                         Folder exlcuded from recursively auto-loading test files.
-    │
-    ├── dir                             Directory containing namespace'd test definitions
-    │
-    └── tests.js                        Root test file, recursive test loader.
+├── test                                # Testing
+│    ├── exclude                        Folder exlcuded from recursively auto-loading test files.
+│    │
+│    ├── dir                            Directory containing namespace'd test definitions
+│    │
+│    └── tests.js                       Root test file, recursive test loader.
+│
+└── migrations                          # Migrations
+                                        Special one-use functions used to migrate data, and models to updated schemas.
 ```
