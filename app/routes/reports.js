@@ -11,6 +11,7 @@ const logger = require('../log');
 const pogMiddleware = require('../middleware/pog');
 const reportMiddleware = require('../middleware/analysis_report');
 const ajvErrorFormatter = require('../libs/ajvErrorFormatter');
+const deleteModelEntries = require('../libs/deleteModelEntries');
 
 const router = express.Router({mergeParams: true});
 const ajv = new Ajv({useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger});
@@ -247,32 +248,72 @@ router.route('/')
       return res.status(400).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
     }
 
+    const createdComponents = {};
+
     // find or create POG
     let patient;
+    let createdPatient;
     try {
-      [patient] = await db.models.POG.findOrCreate({where: {POGID: req.body.pog.POGID}, defaults: req.body.pog});
+      [patient, createdPatient] = await db.models.POG.findOrCreate({where: {POGID: req.body.pog.POGID}, defaults: req.body.pog});
+
+      if (createdPatient) {
+        createdComponents.POG = patient.id;
+      }
     } catch (error) {
       logger.error(`Unable to find or create patient ${req.body.pog.POGID} with this error ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
       return res.status(500).json({error: {message: 'Unable to find or create patient', cause: error}});
     }
 
     // find or create patient-project association
     try {
       const patientProject = {pog_id: patient.id, project_id: project.id};
-      await db.models.pog_project.findOrCreate({where: patientProject, defaults: patientProject});
+      const [pogProject, createdPogProject] = await db.models.pog_project.findOrCreate({where: patientProject, defaults: patientProject});
+
+      if (createdPogProject) {
+        createdComponents.pog_project = pogProject.id;
+      }
     } catch (error) {
       logger.error(`Unable to create an association between patient and project ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
       return res.status(500).json({error: {message: 'Unable to create an association between patient and project', cause: error}});
     }
 
     // find or create Analysis
     let patientAnalysis;
+    let patientAnalysisCreated;
     try {
       req.body.analysis.pog_id = patient.id;
 
-      [patientAnalysis] = await db.models.pog_analysis.findOrCreate({where: {pog_id: patient.id, analysis_biopsy: req.body.analysis.analysis_biopsy}, defaults: req.body.analysis});
+      [patientAnalysis, patientAnalysisCreated] = await db.models.pog_analysis.findOrCreate({where: {pog_id: patient.id, analysis_biopsy: req.body.analysis.analysis_biopsy}, defaults: req.body.analysis});
+
+      if (patientAnalysisCreated) {
+        createdComponents.pog_analysis = patientAnalysis.id;
+      }
     } catch (error) {
       logger.error(`Unable to find or create patient analysis ${req.body.analysis.analysis_biopsy} with error ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
       return res.status(500).json({error: {message: 'Unable to find or create patient analysis', cause: error}});
     }
 
@@ -284,8 +325,18 @@ router.route('/')
       req.body.createdBy_id = req.user.id;
 
       report = await db.models.analysis_report.create(req.body);
+
+      createdComponents.analysis_report = report.id;
     } catch (error) {
       logger.error(`Unable to create report ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
       return res.status(500).json({error: {message: 'Unable to create report', cause: error}});
     }
 
@@ -317,8 +368,16 @@ router.route('/')
     try {
       await Promise.all(promises);
     } catch (error) {
-      logger.error(`Unable to create all report associations ${error}`);
-      return res.status(400).json({error: {message: 'Unable to create all report associations', cause: error}});
+      logger.error(`Unable to create all report components ${error}`);
+
+      // delete already created report/report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created report/components of the report ${err}`);
+      }
+
+      return res.status(400).json({error: {message: 'Unable to create all report components', cause: error}});
     }
 
     // add images to db
@@ -326,6 +385,14 @@ router.route('/')
       await imageLoader(report, req.body.imagesDirectory);
     } catch (error) {
       logger.error(`Unable to load images ${error}`);
+
+      // delete already created report/report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created report/components of the report ${err}`);
+      }
+
       return res.status(500).json({error: {message: 'Unable to load images', cause: error}});
     }
 
