@@ -25,20 +25,6 @@ If NPM is not available, the application server can be booted by executing throu
 NODE_ENV=[local|development|production] node bin/www
 ```
 
-If a new database installation is required:
-```
-npm run migrate --database.migrate --database.hardMigrate
-```
-
-WARNING: Using the `--database.hardMigrate` flag will overwrite any existing data in the database. This flag will not
-execute in production mode.
-
-To create *new* tables only, run with the `--database.migrate` flag only or `npm run migrate` with the appropriate
-environment flag set.
-
-Please note that database migration will not execute alter statements (e.g. adding/editing columns on an existing table). These changes will need to be applied in the sequelize model as well as directly in the database itself to take effect.
-
-
 #### Configuration
 ======================================
 
@@ -256,13 +242,8 @@ pm2 start current/pm2.config.js --env production
 │   │                                   Location for all globally required middleware definitions.
 │   │
 │   ├── models                          # Models
-│   │                                   Application DB models. Sequelizejs models describe table schemas. On load, system reads in schemas
-│   │                                    and if --database.hardMigrate is defined on init, all current tables are dropped and redefined.
-│   │
-│   ├── migrations                      # Migrations
-│   │                                   Special one-use functions used to migrate data, and models to updated schemas.
-│   │
-│   │
+│   │                                   Application DB models. Sequelizejs models describe table schemas.
+│   │   
 │   ├── modules                         # Modules
 │   │   │                               Isolated, independant application modules. Germline reports, biopsy/analysis.
 │   │   │                                Most logic for these modules is kept within the /module/ directory. There might be a few exceptions to this rule.
@@ -309,10 +290,13 @@ pm2 start current/pm2.config.js --env production
 │
 ├── server.js                           Main application file. Run node server.js to initialize the API server
 │
-└── test                                # Testing
-    ├── exclude                         Folder exlcuded from recursively auto-loading test files.
-    │
-    ├── dir                             Directory containing namespace'd test definitions
-    │
-    └── tests.js                        Root test file, recursive test loader.
+├── test                                # Testing
+│    ├── exclude                        Folder exlcuded from recursively auto-loading test files.
+│    │
+│    ├── dir                            Directory containing namespace'd test definitions
+│    │
+│    └── tests.js                       Root test file, recursive test loader.
+│
+└── migrations                          # Migrations
+                                        Special one-use functions used to migrate data, and models to updated schemas.
 ```
