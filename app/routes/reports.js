@@ -215,8 +215,8 @@ router.route('/')
     // verify user is allowed to upload a report
     const access = new Acl(req, res);
     if (!access.check()) {
-      logger.error('User isn\'t allowed to upload a report');
-      return res.status(403).send();
+      logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
+      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
     }
 
     // validate loaded report against schema
