@@ -66,6 +66,26 @@ describe('/user', () => {
     expect(res.body).toHaveProperty('email');
     expect(res.body).toHaveProperty('firstName');
     expect(res.body).toHaveProperty('lastName');
+  });
+  // Test for POST /user 200 endpoint
+  test('POST new user - Success', async () => {
+    const res = await request
+      .post('/api/1.0/user')
+      .auth(username, password)
+      .type('json')
+      .send(newUser)
+      .expect(200);
+
+    newUserIdent = res.body.ident;
+  });
+  // Test for DELETE /user/ident 204 endpoint
+  test('DELETE user - Success', async () => {
+    await request
+      .delete(`/api/1.0/user/${newUserIdent}`)
+      .auth(username, password)
+      .type('json')
+      .expect(204);
+  });
 });
 
 afterAll(async () => {
