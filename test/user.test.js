@@ -180,6 +180,30 @@ describe('/user', () => {
     expect(res.body.length >= 1);
   });
 
+  // Test for DELETE /user/ident 204 endpoint
+  test('DELETE user - Success', async () => {
+    const res = await request
+      .post('/api/1.0/user')
+      .auth(username, password)
+      .type('json')
+      .send({
+        username: `Testuser-${uuidv4()}`,
+        type: 'bcgsc',
+        email: 'testuser@test.com',
+        firstName: 'FirstNameTest',
+        lastName: 'LastNameTest',
+      })
+      .expect(HTTP_STATUS.OK);
+
+    newUserIdent = res.body.ident;
+
+    await request
+      .delete(`/api/1.0/user/${newUserIdent}`)
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.NO_CONTENT);
+  });
+
   describe('/user tests for new user dependent endpoints', () => {
     // Create a unique user for each of the tests
     beforeEach(async () => {
@@ -207,14 +231,6 @@ describe('/user', () => {
         .type('json')
         .send(newUser)
         .expect(HTTP_STATUS.CONFLICT);
-    });
-    // Test for DELETE /user/ident 204 endpoint
-    test('DELETE user - Success', async () => {
-      await request
-        .delete(`/api/1.0/user/${newUserIdent}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
     });
     // Tests for PUT /user/ident endpoint
     test.todo('PUT user tests - https://www.bcgsc.ca/jira/browse/DEVSU-831');
