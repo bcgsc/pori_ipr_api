@@ -36,6 +36,7 @@ describe('/user', () => {
       .expect(HTTP_STATUS.OK);
 
     expect(Array.isArray(res.body));
+    expect(res.body.length > 0).toBe(true);
     expect(res.body[0]).toHaveProperty('ident');
     expect(res.body[0]).toHaveProperty('username');
     expect(res.body[0]).toHaveProperty('type');
