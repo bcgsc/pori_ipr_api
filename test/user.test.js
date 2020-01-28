@@ -13,8 +13,6 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
-// New User account that will be used for tests
-
 let newUser;
 let newUserIdent;
 
@@ -64,7 +62,7 @@ describe('/user', () => {
   });
   // Test for POST /user 200 endpoint
   test('POST new user - Success', async () => {
-    const res = await request
+    await request
       .post('/api/1.0/user')
       .auth(username, password)
       .type('json')
@@ -151,10 +149,6 @@ describe('/user', () => {
       })
       .expect(HTTP_STATUS.BAD_REQUEST);
   });
-  // Tests for PUT /user/ident endpoint
-  test('PUT user tests', async () => {
-    // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831 - Implement when it is merged
-  });
   // Test for DELETE /user/ident 404 endpoint
   test('DELETE user - Not Found', async () => {
     await request
@@ -185,7 +179,7 @@ describe('/user', () => {
     expect(res.body.length >= 1);
   });
 
-  describe('/user', () => {
+  describe('/user tests for new user dependent endpoints', () => {
     // Create a unique user for each of the tests
     beforeEach(async () => {
       newUser = {
@@ -203,6 +197,7 @@ describe('/user', () => {
 
       newUserIdent = res.body.ident;
     });
+
     // Test for POST /user 409 endpoint
     test('POST new user - Already existing', async () => {
       await request
@@ -220,6 +215,11 @@ describe('/user', () => {
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
     });
+    // Tests for PUT /user/ident endpoint
+    test('PUT user tests', async () => {
+      // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831 - Implement when it is merged
+    });
+
     // Delete the user after each test
     afterEach(async () => {
       await request
