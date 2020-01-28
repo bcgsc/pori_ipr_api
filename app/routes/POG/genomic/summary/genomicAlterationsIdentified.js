@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -11,12 +12,12 @@ router.param('alteration', async (req, res, next, altIdent) => {
     result = await db.models.genomicAlterationsIdentified.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.error(`Unable to get genomic alterations ${error}`);
-    return res.status(500).json({error: {message: 'Unable to get genomic alterations', code: 'failedMiddlewareAlterationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get genomic alterations', code: 'failedMiddlewareAlterationQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate genomic alterations');
-    return res.status(404).json({error: {message: 'Unable to locate genomic alterations', code: 'failedMiddlewareAlterationLookup'} });
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate genomic alterations', code: 'failedMiddlewareAlterationLookup'} });
   }
 
   req.alteration = result;
@@ -51,7 +52,7 @@ router.route('/:alteration([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update genomic alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update genomic alterations', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update genomic alterations', code: 'failedAPClookup'}});
     }
   })
   .delete(async (req, res) => {
@@ -61,11 +62,11 @@ router.route('/:alteration([A-z0-9-]{36})')
       await db.models.genomicAlterationsIdentified.destroy({where: {ident: req.alteration.ident}});
     } catch (error) {
       logger.error(`Unable to remove genomic alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove genomic alterations', code: 'failedGenomicAlterationsIdentifiedRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic alterations', code: 'failedGenomicAlterationsIdentifiedRemove'}});
     }
 
     if (!req.query.cascade || req.query.cascade !== 'true') {
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     }
 
     // Check to see if we're propagating this down into Detailed Genomic
@@ -76,16 +77,16 @@ router.route('/:alteration([A-z0-9-]{36})')
       await db.models.genomicEventsTherapeutic.destroy({where: {genomicEvent: req.alteration.geneVariant, report_id: req.report.id}});
     } catch (error) {
       logger.error(`Unable to remove genomic events therapeutic ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicAlterationsIdentifiedRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicAlterationsIdentifiedRemove'}});
     }
 
     // Cascade removal of variant through Detailed Genomic Analysis
     try {
       await db.models.alterations.destroy({where});
-      return res.status(204).json();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to cascade removal into detailed genomic analysis ${error}`);
-      return res.status(500).json({status: true, message: 'Unable to cascade removal into detailed genomic analysis'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: true, message: 'Unable to cascade removal into detailed genomic analysis'});
     }
   });
 
@@ -104,7 +105,7 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to get all genomic alterations identified ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get all genomic alterations identified', code: 'failedGenomicAlterationsIdentifiedQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get all genomic alterations identified', code: 'failedGenomicAlterationsIdentifiedQuery'}});
     }
   })
   .post(async (req, res) => {
@@ -118,7 +119,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to create genomic alteration entry ${error}`);
-      return res.status(500).json({error: {message: 'Unable to create genomic alteration entry', code: 'failedKeyGenomicAlterationCreateEntry'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create genomic alteration entry', code: 'failedKeyGenomicAlterationCreateEntry'}});
     }
   });
 

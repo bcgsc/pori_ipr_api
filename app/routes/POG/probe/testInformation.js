@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../../models');
 const logger = require('../../../log');
@@ -13,7 +14,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedGenomicEventsTherapeuticQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedGenomicEventsTherapeuticQuery'}});
     }
   });
 

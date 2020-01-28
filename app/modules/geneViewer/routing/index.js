@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const RoutingInterface = require('../../../routes/routingInterface');
 const GeneViewer = require('../geneViewer');
 const reportMiddleware = require('../../../middleware/analysis_report');
@@ -26,7 +27,7 @@ class GeneViewRouter extends RoutingInterface {
         return res.json(result);
       } catch (error) {
         logger.error(`There was an error when getting the viewer results ${error}`);
-        return res.status(500).json({error: {message: 'There was an error when getting the viewer results'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error when getting the viewer results'}});
       }
     });
   }

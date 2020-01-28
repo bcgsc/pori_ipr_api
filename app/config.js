@@ -46,8 +46,6 @@ const DEFAULTS = {
   },
   database: {
     engine: 'postgres',
-    migrate: false,
-    hardMigration: false,
     schema: 'public',
     prefix: '',
     username: 'ipr_service',

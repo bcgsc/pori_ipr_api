@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../../../models');
 const logger = require('../../../../log');
@@ -12,12 +13,12 @@ router.use('/', async (req, res, next) => {
     result = await db.models.mutationSummaryv2.scope('public').findAll({where: {report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup mutation summaries for ${req.POG.POGID} error: ${error}`);
-    return res.status(500).json({error: {message: `Unable to lookup the mutation summaries for ${req.POG.POGID}`, code: 'failedMutationSummaryQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.POG.POGID}`, code: 'failedMutationSummaryQuery'}});
   }
 
   if (!result) {
     logger.error(`Unable to find mutation summary for ${req.POG.POGID}`);
-    return res.status(404).json({error: {message: `Unable to find mutation summary for ${req.POG.POGID}`, code: 'failedMutationSummaryLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find mutation summary for ${req.POG.POGID}`, code: 'failedMutationSummaryLookup'}});
   }
 
   // Found the patient information
@@ -54,7 +55,7 @@ router.route('/')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update mutation summary ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update mutation summary', code: 'failedMutationSummaryVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutation summary', code: 'failedMutationSummaryVersion'}});
     }
   });
 

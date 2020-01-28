@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../../../models');
 const logger = require('../../../../log');
@@ -12,7 +13,7 @@ router.use('/', async (req, res, next) => {
     result = await db.models.summary_microbial.scope('public').findOne({where: {report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup microbial data for ${req.POG.POGID} error: ${error}`);
-    return res.status(500).json({error: {message: `Unable to lookup the microbial data for ${req.POG.POGID}`, code: 'failedMicrobialQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the microbial data for ${req.POG.POGID}`, code: 'failedMicrobialQuery'}});
   }
 
   req.microbial = result;

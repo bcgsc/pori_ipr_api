@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const _ = require('lodash');
 const db = require('../models');
 
@@ -128,7 +129,7 @@ class ACL {
     // Access is not allowed
     if (!allowed) {
       if (!skipStatus) {
-        this.res.status(403).json({status: false, message: 'You are not authorized to view this resource.'});
+        this.res.status(HTTP_STATUS.FORBIDDEN).json({status: false, message: 'You are not authorized to view this resource.'});
       }
       return false;
     }

@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -11,12 +12,12 @@ router.param('sv', async (req, res, next, svIdent) => {
     result = await db.models.sv.scope('public').findOne({where: {ident: svIdent}});
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);
-    return res.status(500).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate structural variant');
-    return res.status(404).json({error: {message: 'Unable to locate structural variant', code: 'failedMiddlewareStructuralVariationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate structural variant', code: 'failedMiddlewareStructuralVariationLookup'}});
   }
   req.variation = result;
   return next();
@@ -49,7 +50,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update structural variant ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update structural variant', code: 'failedOutlierVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update structural variant', code: 'failedOutlierVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -60,7 +61,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove structural variant ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove structural variant', code: 'failedStructuralVariationremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove structural variant', code: 'failedStructuralVariationremove'}});
     }
   });
 
@@ -86,7 +87,7 @@ router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport|uncharacter
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve structural variants', code: 'failedStructuralVariationlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve structural variants', code: 'failedStructuralVariationlookup'}});
     }
   });
 

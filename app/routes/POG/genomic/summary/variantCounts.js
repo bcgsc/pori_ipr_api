@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -17,12 +18,12 @@ router.use('/', async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Unable to lookup variant counts for ${req.POG.POGID} error: ${error}`);
-    return res.status(500).json({error: {message: `Unable to lookup variant counts for ${req.POG.POGID}`, code: 'failedVariantCountsQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup variant counts for ${req.POG.POGID}`, code: 'failedVariantCountsQuery'}});
   }
 
   if (!result) {
     logger.error(`Unable to find variant counts for ${req.POG.POGID}`);
-    return res.status(404).json({error: {message: `Unable to find variant counts for ${req.POG.POGID}`, code: 'failedVariantCountsLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find variant counts for ${req.POG.POGID}`, code: 'failedVariantCountsLookup'}});
   }
 
   // Found the patient information
@@ -58,7 +59,7 @@ router.route('/')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update variant counts ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update variant counts', code: 'failedVariantCountsVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update variant counts', code: 'failedVariantCountsVersion'}});
     }
   });
 
