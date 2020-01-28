@@ -14,7 +14,9 @@ const ajvErrorFormatter = require('../libs/ajvErrorFormatter');
 const deleteModelEntries = require('../libs/deleteModelEntries');
 
 const router = express.Router({mergeParams: true});
-const ajv = new Ajv({useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger});
+const ajv = new Ajv({
+  useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger,
+});
 
 const reportSchema = require('../schemas/report/entireReport');
 
@@ -340,7 +342,11 @@ router.route('/')
       return res.status(500).json({error: {message: 'Unable to create report', cause: error}});
     }
 
-    const {pog, analysis, ReportUserFilter, createdBy, probe_signature, presentation_discussion, presentation_slides, users, analystComments, ...associations} = db.models.analysis_report.associations;
+    const {
+      pog, analysis, ReportUserFilter, createdBy, probe_signature,
+      presentation_discussion, presentation_slides, users,
+      analystComments, ...associations
+    } = db.models.analysis_report.associations;
     const promises = [];
     // for all associations create new entry based on the
     // included associations in req.body
@@ -461,7 +467,6 @@ router.route('/:report')
  */
 router.route('/:report/user')
   .post(async (req, res) => {
-
     const access = new Acl(req, res);
     if (!access.check()) {
       logger.error(
@@ -492,7 +497,6 @@ router.route('/:report/user')
     }
   })
   .delete(async (req, res) => {
-
     const access = new Acl(req, res);
     if (!access.check()) {
       logger.error(

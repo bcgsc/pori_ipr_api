@@ -2,7 +2,7 @@
     "env": {
         "es6": true,
         "node": true,
-        "mocha": true
+        "jest": true
     },
     "extends": [
         "eslint:recommended",
@@ -73,6 +73,10 @@
         "valid-jsdoc": "warn",
         "require-jsdoc": "warn",
         "import/no-dynamic-require": "warn",
-        "class-methods-use-this": "off"
+        "class-methods-use-this": "off",
+        "camelcase": ["error", {
+            "ignoreDestructuring": true,
+            "properties": "never"
+        }]
     }
 }

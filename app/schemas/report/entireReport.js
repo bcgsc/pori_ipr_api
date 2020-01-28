@@ -31,7 +31,10 @@ schema.properties.imagesDirectory = {
 };
 
 // get report associations
-const {ReportUserFilter, createdBy, probe_signature, presentation_discussion, presentation_slides, users, analystComments, ...associations} = db.models.analysis_report.associations;
+const {
+  ReportUserFilter, createdBy, probe_signature, presentation_discussion,
+  presentation_slides, users, analystComments, ...associations
+} = db.models.analysis_report.associations;
 
 schema.definitions = {};
 // add all associated schemas

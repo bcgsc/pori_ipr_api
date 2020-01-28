@@ -74,7 +74,11 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // for all components, do a find where report_id
     // is the same as the created report id
-    const {pog, analysis, ReportUserFilter, createdBy, probe_signature, presentation_discussion, presentation_slides, users, analystComments, ...associations} = db.models.analysis_report.associations;
+    const {
+      pog, analysis, ReportUserFilter, createdBy, probe_signature,
+      presentation_discussion, presentation_slides,
+      users, analystComments, ...associations
+    } = db.models.analysis_report.associations;
 
     const promises = [];
     // verify all report components were created
