@@ -217,9 +217,7 @@ describe('/user', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
     });
     // Tests for PUT /user/ident endpoint
-    test('PUT user tests', async () => {
-      // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831 - Implement when it is merged
-    });
+    test.todo('PUT user tests - https://www.bcgsc.ca/jira/browse/DEVSU-831');
 
     // Delete the user after each test
     afterEach(async () => {
