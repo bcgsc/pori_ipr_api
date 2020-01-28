@@ -240,7 +240,8 @@ describe('/user', () => {
       await request
         .delete(`/api/1.0/user/${newUserIdent}`)
         .auth(username, password)
-        .type('json');
+        .type('json')
+        .expect(204);
     });
   });
 });
