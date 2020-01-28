@@ -30,7 +30,7 @@ const validateGroup = ajv.compile(groupSchema);
 const validateMember = ajv.compile(memberSchema);
 
 // Validates the request
-const parseRequest = (schemaValidator, request) => {
+const applySchemaValidator = (schemaValidator, request) => {
   if (!schemaValidator(request)) {
     if (schemaValidator.errors[0].dataPath) {
       throw new Error(`${schemaValidator.errors[0].dataPath} ${schemaValidator.errors[0].message}`);
@@ -100,7 +100,7 @@ router.route('/')
   .post(async (req, res) => {
     try {
       // Validate input
-      req.body = parseRequest(validateGroup, req.body);
+      req.body = applySchemaValidator(validateGroup, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -161,7 +161,7 @@ router.route('/:group([A-z0-9-]{36})')
   .put(async (req, res) => {
     try {
       // Validate input
-      req.body = parseRequest(validateGroup, req.body);
+      req.body = applySchemaValidator(validateGroup, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -217,7 +217,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Add Group Member
     try {
       // Validate input
-      req.body = parseRequest(validateMember, req.body);
+      req.body = applySchemaValidator(validateMember, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -266,7 +266,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Remove Group Member
     try {
       // Validate input
-      req.body = parseRequest(validateMember, req.body);
+      req.body = applySchemaValidator(validateMember, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
