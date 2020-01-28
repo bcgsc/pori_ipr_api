@@ -14,14 +14,8 @@ CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
 // New User account that will be used for tests
-const newUser = {
-  username: `Testuser-${uuidv4()}`,
-  type: 'bcgsc',
-  email: 'testuser@test.com',
-  firstName: 'FirstNameTest',
-  lastName: 'LastNameTest',
-};
 
+let newUser;
 let newUserIdent;
 
 let server;
@@ -74,19 +68,14 @@ describe('/user', () => {
       .post('/api/1.0/user')
       .auth(username, password)
       .type('json')
-      .send(newUser)
+      .send({
+        username: `Testuser-${uuidv4()}`,
+        type: 'bcgsc',
+        email: 'testuser@test.com',
+        firstName: 'FirstNameTest',
+        lastName: 'LastNameTest',
+      })
       .expect(HTTP_STATUS.OK);
-
-    newUserIdent = res.body.ident;
-  });
-  // Test for POST /user 409 endpoint
-  test('POST new user - Already existing', async () => {
-    await request
-      .post('/api/1.0/user')
-      .auth(username, password)
-      .type('json')
-      .send(newUser)
-      .expect(HTTP_STATUS.CONFLICT);
   });
   // Test for POST /user 400 endpoint
   test('POST new user - Password is required for local', async () => {
@@ -166,14 +155,6 @@ describe('/user', () => {
   test('PUT user tests', async () => {
     // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-831 - Implement when it is merged
   });
-  // Test for DELETE /user/ident 204 endpoint
-  test('DELETE user - Success', async () => {
-    await request
-      .delete(`/api/1.0/user/${newUserIdent}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NO_CONTENT);
-  });
   // Test for DELETE /user/ident 404 endpoint
   test('DELETE user - Not Found', async () => {
     await request
@@ -202,6 +183,50 @@ describe('/user', () => {
       .expect(HTTP_STATUS.OK);
 
     expect(res.body.length >= 1);
+  });
+
+  describe('/user', () => {
+    // Create a unique user for each of the tests
+    beforeEach(async () => {
+      newUser = {
+        username: `Testuser-${uuidv4()}`,
+        type: 'bcgsc',
+        email: 'testuser@test.com',
+        firstName: 'FirstNameTest',
+        lastName: 'LastNameTest',
+      };
+      const res = await request
+        .post('/api/1.0/user')
+        .auth(username, password)
+        .type('json')
+        .send(newUser);
+
+      newUserIdent = res.body.ident;
+    });
+    // Test for POST /user 409 endpoint
+    test('POST new user - Already existing', async () => {
+      await request
+        .post('/api/1.0/user')
+        .auth(username, password)
+        .type('json')
+        .send(newUser)
+        .expect(HTTP_STATUS.CONFLICT);
+    });
+    // Test for DELETE /user/ident 204 endpoint
+    test('DELETE user - Success', async () => {
+      await request
+        .delete(`/api/1.0/user/${newUserIdent}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+    });
+    // Delete the user after each test
+    afterEach(async () => {
+      await request
+        .delete(`/api/1.0/user/${newUserIdent}`)
+        .auth(username, password)
+        .type('json');
+    });
   });
 });
 
