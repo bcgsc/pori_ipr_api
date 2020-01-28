@@ -33,7 +33,9 @@ beforeAll(async () => {
 describe('Tests for deleting a report and all of its components', () => {
   let reportId;
   // get analysis report associations
-  const {pog, analysis, ReportUserFilter, createdBy, ...associations} = db.models.analysis_report.associations;
+  const {
+    pog, analysis, ReportUserFilter, createdBy, ...associations
+  } = db.models.analysis_report.associations;
 
   beforeAll(async () => {
     // check that report exists
@@ -125,7 +127,7 @@ describe('Tests for deleting a report and all of its components', () => {
         const result = await db.models[model].findOne({where: {id}});
 
         expect(typeof (result)).toBe('object');
-        expect(result).not.toBeNull;
+        expect(result).not.toBe(null);
       });
     });
   });
