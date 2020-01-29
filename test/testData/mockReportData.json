@@ -163,20 +163,13 @@
     "therapeuticTarget": [
         {
             "type": "therapeutic",
-            "rank": 0,
-            "target": [
-                "MCL1"
-            ],
-            "targetContext": "anti-apoptosis",
-            "resistance": null,
-            "biomarker": [
-                {
-                    "entry": "MCL1",
-                    "context": [
-                        "copy gain"
-                    ]
-                }
-            ]
+            "variant": "p.G12D",
+            "gene": "KRASSS",
+            "geneGraphkbId": "#2:3",
+            "context": "resistance",
+            "therapy": "EGFR inhibitors",
+            "rank": 1,
+            "evidenceLevel": "OncoKB 1",
         }
     ],
     "summary_microbial": {
