@@ -218,7 +218,8 @@ describe('/user', () => {
         .post('/api/1.0/user')
         .auth(username, password)
         .type('json')
-        .send(newUser);
+        .send(newUser)
+        .expect(200);
 
       newUserIdent = res.body.ident;
     });
