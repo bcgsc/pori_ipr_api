@@ -30,8 +30,8 @@ const validateGroup = ajv.compile(groupSchema);
 const validateMember = ajv.compile(memberSchema);
 
 // Validates the request
-const applySchemaValidator = (schemaValidator, request) => {
-  if (!schemaValidator(request)) {
+const applySchemaValidator = (schemaValidator, requestBody) => {
+  if (!schemaValidator(requestBody)) {
     if (schemaValidator.errors[0].dataPath) {
       throw new Error(`${schemaValidator.errors[0].dataPath} ${schemaValidator.errors[0].message}`);
     } else {
