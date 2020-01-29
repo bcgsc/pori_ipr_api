@@ -225,7 +225,7 @@ describe('/user', () => {
         .auth(username, password)
         .type('json')
         .send(newUser)
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       newUserIdent = res.body.ident;
     });
@@ -248,7 +248,7 @@ describe('/user', () => {
         .delete(`/api/1.0/user/${newUserIdent}`)
         .auth(username, password)
         .type('json')
-        .expect(204);
+        .expect(HTTP_STATUS.NO_CONTENT);
     });
   });
 });
