@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 const logger = require('../../../log');
 
+// Fetch the therapeutic target if found as URL param
 router.param('target', async (req, res, next, target) => {
   let result;
   try {
@@ -33,7 +34,7 @@ router.route('/:target([A-z0-9-]{36})')
   .put(async (req, res) => {
     const {target: {ident}, body} = req;
 
-    // Update DB Version for Entry
+    // update the record with the new content
     try {
       const [, [{dataValues}]] = await db.models.therapeuticTarget.update(
         {...body, ident},
