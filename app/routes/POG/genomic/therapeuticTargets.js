@@ -26,24 +26,26 @@ router.param('target', async (req, res, next, target) => {
 // Handle requests for alterations
 router.route('/:target([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.target);
+    // Get a specific Target by ID
+    const {target} = req;
+    return res.json(target);
   })
   .put(async (req, res) => {
-    req.body.ident = req.target.ident;
+    const {target: {ident}, body} = req;
 
     // Update DB Version for Entry
     try {
-      const result = await db.models.therapeuticTarget.update(req.body, {
-        where: {
-          ident: req.target.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
+      const [, [{dataValues}]] = await db.models.therapeuticTarget.update(
+        {...body, ident},
+        {
+          where: {
+            ident,
+          },
+          individualHooks: true,
+          paranoid: true,
+          returning: true,
+        }
+      );
 
       // Remove id's and deletedAt properties from returned model
       const {
@@ -57,10 +59,11 @@ router.route('/:target([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
+    const {target: {ident}} = req;
     // Soft delete the entry
     // Update result
     try {
-      await db.models.therapeuticTarget.destroy({where: {ident: req.target.ident}});
+      await db.models.therapeuticTarget.destroy({where: {ident}});
 
       return res.json({success: true});
     } catch (error) {
@@ -72,16 +75,14 @@ router.route('/:target([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    // Setup where clause
-    const where = {report_id: req.report.id};
-    const options = {
-      where,
-      order: [['rank', 'ASC']],
-    };
+    const {report: {id: reportId}} = req;
 
     // Get all rows for this POG
     try {
-      const results = await db.models.therapeuticTarget.scope('public').findAll(options);
+      const results = await db.models.therapeuticTarget.scope('public').findAll({
+        where: {report_id: reportId},
+        order: [['rank', 'ASC']],
+      });
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve therapeutic targets ${error}`);
@@ -90,8 +91,7 @@ router.route('/')
   })
   .post(async (req, res) => {
     // Create new entry
-    req.body.pog_id = req.POG.id;
-    req.body.report_id = req.report.id;
+    const {report: {id: reportId}, body} = req;
 
     try {
       const result = await db.models.therapeuticTarget.create(req.body);
