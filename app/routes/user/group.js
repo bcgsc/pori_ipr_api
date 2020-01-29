@@ -38,7 +38,6 @@ const applySchemaValidator = (schemaValidator, request) => {
       throw new Error(`${schemaValidator.errors[0].message}`);
     }
   }
-  return request;
 };
 
 // Middleware for all group functions
@@ -100,7 +99,7 @@ router.route('/')
   .post(async (req, res) => {
     try {
       // Validate input
-      req.body = applySchemaValidator(validateGroup, req.body);
+      applySchemaValidator(validateGroup, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -161,7 +160,7 @@ router.route('/:group([A-z0-9-]{36})')
   .put(async (req, res) => {
     try {
       // Validate input
-      req.body = applySchemaValidator(validateGroup, req.body);
+      applySchemaValidator(validateGroup, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -217,7 +216,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Add Group Member
     try {
       // Validate input
-      req.body = applySchemaValidator(validateMember, req.body);
+      applySchemaValidator(validateMember, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -266,7 +265,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Remove Group Member
     try {
       // Validate input
-      req.body = applySchemaValidator(validateMember, req.body);
+      applySchemaValidator(validateMember, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
