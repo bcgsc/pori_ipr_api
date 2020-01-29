@@ -15,7 +15,7 @@ const {username, password} = CONFIG.get('testing');
 const FAKE_TARGET = {
   type: 'therapeutic',
   variant: 'p.G12D',
-  gene: 'KRAS',
+  gene: 'KRASSS',
   geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
@@ -26,7 +26,7 @@ const FAKE_TARGET = {
 describe('/therapeuticTargets', () => {
   let server;
   let request;
-  let reportIdent;
+  let report;
   let createdIdent;
 
   beforeAll(async () => {
@@ -35,11 +35,10 @@ describe('/therapeuticTargets', () => {
     request = supertest(server);
     // connect to the db
     // find a report (any report)
-    const {ident} = await db.models.analysis_report.findOne({
-      attributes: ['ident'],
+    report = await db.models.analysis_report.findOne({
+      attributes: ['ident', 'id'],
       where: {deletedAt: null},
     });
-    reportIdent = ident;
   });
 
   afterAll(async () => {
@@ -60,10 +59,17 @@ describe('/therapeuticTargets', () => {
     }
   });
 
+  test('beforeAll ok', () => {
+    expect(report).toHaveProperty('id');
+    expect(report).toHaveProperty('ident');
+    expect(report.id).not.toBe(null);
+    expect(report.ident).not.toBe(null);
+  });
+
   describe('create new', () => {
     test('valid input', async () => {
       const {body: record} = await request
-        .post(`/api/1.0/POG/FAKE/report/${reportIdent}/genomic/therapeuticTargets`)
+        .post(`/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets`)
         .auth(username, password)
         .type('json')
         .send({...FAKE_TARGET})
@@ -78,8 +84,7 @@ describe('/therapeuticTargets', () => {
     test.todo('Bad request on missing required parameter (gene)');
   });
 
-
-  describe('modify existing', () => {
+  describe('existing', () => {
     let original;
     let url;
 
@@ -87,8 +92,9 @@ describe('/therapeuticTargets', () => {
       // create a new therapeutic target
       ({dataValues: original} = await db.models.therapeuticTarget.create({
         ...FAKE_TARGET,
+        report_id: report.id,
       }));
-      url = `/api/1.0/POG/FAKE/report/${reportIdent}/genomic/therapeuticTargets/${original.ident}`;
+      url = `/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets/${original.ident}`;
     });
 
     afterEach(async () => {
@@ -101,8 +107,32 @@ describe('/therapeuticTargets', () => {
       }
     });
 
-    test('setup ok', () => {
+    test('beforeEach ok', () => {
       expect(original).toHaveProperty('ident');
+      expect(original).toHaveProperty('id');
+    });
+
+    test('get all targets for report', async () => {
+      const {body: result} = await request
+        .get(`/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.map((r) => { return r.gene; })).toContain(original.gene); // easier to debug failures
+      expect(result.map((r) => { return r.ident; })).toContain(original.ident);
+    });
+
+    test('get target by ID', async () => {
+      const {body: result} = await request
+        .get(url)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+      expect(result).toHaveProperty('ident', original.ident);
+      expect(result).toHaveProperty('gene', original.gene);
+      expect(result).not.toHaveProperty('deletedAt');
+      expect(result).not.toHaveProperty('id');
     });
 
     test('update with valid input', async () => {
