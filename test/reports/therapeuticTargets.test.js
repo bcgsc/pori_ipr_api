@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const {Op} = require('sequelize');
@@ -62,7 +63,7 @@ describe('/therapeuticTargets', () => {
         .auth(username, password)
         .type('json')
         .send({...FAKE_TARGET})
-        .expect(201);
+        .expect(HTTP_STATUS.CREATED);
       // check that expected property not present in request body is added by create method
       expect(record).toHaveProperty('variantGraphkbId', null);
       expect(record).toHaveProperty('ident');
@@ -106,7 +107,7 @@ describe('/therapeuticTargets', () => {
         .auth(username, password)
         .send({gene: 'BRAF'})
         .type('json')
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(record).toHaveProperty('gene', 'BRAF');
 
@@ -125,7 +126,7 @@ describe('/therapeuticTargets', () => {
         .delete(url)
         .auth(username, password)
         .type('json')
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
       // should now find a deleted record with this ident
       const result = await db.models.therapeuticTarget.findOne({
         paranoid: false,
