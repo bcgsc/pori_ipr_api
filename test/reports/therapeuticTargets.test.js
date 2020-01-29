@@ -64,8 +64,8 @@ describe('/therapeuticTargets', () => {
     }
   });
 
-  describe('create new', () => {
-    test('valid input', async () => {
+  describe('POST (create)', () => {
+    test('create new with valid input', async () => {
       const {body: record} = await request
         .post(`/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets`)
         .auth(username, password)
@@ -82,7 +82,7 @@ describe('/therapeuticTargets', () => {
     test.todo('Bad request on missing required parameter (gene)');
   });
 
-  describe('existing', () => {
+  describe('tests dependent on an existing therapeutic target', () => {
     let original;
     let url;
 
@@ -108,50 +108,54 @@ describe('/therapeuticTargets', () => {
       }
     });
 
-    test('get all targets for report', async () => {
-      const {body: result} = await request
-        .get(`/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.map((r) => { return r.gene; })).toContain(original.gene); // easier to debug failures
-      expect(result.map((r) => { return r.ident; })).toContain(original.ident);
-    });
-
-    test('get target by ID', async () => {
-      const {body: result} = await request
-        .get(url)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      expect(result).toHaveProperty('ident', original.ident);
-      expect(result).toHaveProperty('gene', original.gene);
-      expect(result).not.toHaveProperty('deletedAt');
-      expect(result).not.toHaveProperty('id');
-    });
-
-    test('update with valid input', async () => {
-      const {body: record} = await request
-        .put(url)
-        .auth(username, password)
-        .send({gene: 'BRAF'})
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      expect(record).toHaveProperty('gene', 'BRAF');
-
-      // should now find a deleted record with this ident
-      const result = await db.models.therapeuticTarget.findOne({
-        paranoid: false,
-        where: {ident: original.ident, deletedAt: {[Op.not]: null}},
+    describe('GET', () => {
+      test('all targets for a report', async () => {
+        const {body: result} = await request
+          .get(`/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+        expect(Array.isArray(result)).toBe(true);
+        expect(result.map((r) => { return r.gene; })).toContain(original.gene); // easier to debug failures
+        expect(result.map((r) => { return r.ident; })).toContain(original.ident);
       });
-      expect(result).toHaveProperty('deletedAt');
+
+      test('a single target by ID', async () => {
+        const {body: result} = await request
+          .get(url)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+        expect(result).toHaveProperty('ident', original.ident);
+        expect(result).toHaveProperty('gene', original.gene);
+        expect(result).not.toHaveProperty('deletedAt');
+        expect(result).not.toHaveProperty('id');
+      });
     });
 
-    test.todo('Bad request on update and set gene to null');
+    describe('UPDATE', () => {
+      test('update with valid input', async () => {
+        const {body: record} = await request
+          .put(url)
+          .auth(username, password)
+          .send({gene: 'BRAF'})
+          .type('json')
+          .expect(HTTP_STATUS.OK);
 
-    test('delete', async () => {
+        expect(record).toHaveProperty('gene', 'BRAF');
+
+        // should now find a deleted record with this ident
+        const result = await db.models.therapeuticTarget.findOne({
+          paranoid: false,
+          where: {ident: original.ident, deletedAt: {[Op.not]: null}},
+        });
+        expect(result).toHaveProperty('deletedAt');
+      });
+
+      test.todo('Bad request on update and set gene to null');
+    });
+
+    test('DELETE', async () => {
       await request
         .delete(url)
         .auth(username, password)
