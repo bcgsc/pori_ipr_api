@@ -160,13 +160,7 @@ module.exports = {
     }
   },
 
-  down: (queryInterface, Sequelize) => {
-    /*
-      Add reverting commands here.
-      Return a promise to correctly handle asynchronicity.
-
-      Example:
-      return queryInterface.dropTable('users');
-    */
+  down: () => {
+    throw new Error('The downgrade is not implemented as it is inherently a lossy transformation');
   },
 };
