@@ -6,6 +6,7 @@ module.exports = sequelize => sequelize.define('POG', {
   POGID: {
     type: Sq.STRING,
     unique: false,
+    allowNull: false,
   },
   nonPOG: {
     type: Sq.BOOLEAN,

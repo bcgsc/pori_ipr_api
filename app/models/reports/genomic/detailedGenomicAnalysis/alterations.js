@@ -32,7 +32,6 @@ module.exports = sequelize => sequelize.define('alterations', {
   },
   approvedTherapy: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   gene: {

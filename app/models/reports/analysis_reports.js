@@ -35,12 +35,10 @@ module.exports = sequelize => sequelize.define('analysis_report', {
   reportVersion: {
     type: Sq.STRING,
     defaultValue: null,
-    allowNull: true,
   },
   kbVersion: {
     type: Sq.STRING,
     defaultValue: null,
-    allowNull: true,
   },
   state: {
     type: Sq.STRING,

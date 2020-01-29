@@ -58,7 +58,6 @@ module.exports = sequelize => sequelize.define('pog_analysis',
     },
     comparator_disease: {
       type: Sq.JSONB,
-      allowNull: true,
       defaultValue: '[]',
     },
     comparator_normal: {

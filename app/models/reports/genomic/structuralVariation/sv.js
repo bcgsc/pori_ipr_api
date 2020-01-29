@@ -53,42 +53,34 @@ module.exports = sequelize => sequelize.define('sv', {
   },
   svg: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   svgTitle: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   name: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   frame: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   ctermGene: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   ntermGene: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   ctermTranscript: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   ntermTranscript: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
 }, {
