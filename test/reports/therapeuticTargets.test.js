@@ -39,6 +39,11 @@ describe('/therapeuticTargets', () => {
       attributes: ['ident', 'id'],
       where: {deletedAt: null},
     });
+
+    expect(report).toHaveProperty('id');
+    expect(report).toHaveProperty('ident');
+    expect(report.id).not.toBe(null);
+    expect(report.ident).not.toBe(null);
   });
 
   afterAll(async () => {
@@ -57,13 +62,6 @@ describe('/therapeuticTargets', () => {
         force: true,
       });
     }
-  });
-
-  test('beforeAll ok', () => {
-    expect(report).toHaveProperty('id');
-    expect(report).toHaveProperty('ident');
-    expect(report.id).not.toBe(null);
-    expect(report.ident).not.toBe(null);
   });
 
   describe('create new', () => {
@@ -95,6 +93,9 @@ describe('/therapeuticTargets', () => {
         report_id: report.id,
       }));
       url = `/api/1.0/POG/FAKE/report/${report.ident}/genomic/therapeuticTargets/${original.ident}`;
+
+      expect(original).toHaveProperty('ident');
+      expect(original).toHaveProperty('id');
     });
 
     afterEach(async () => {
@@ -105,11 +106,6 @@ describe('/therapeuticTargets', () => {
           force: true,
         });
       }
-    });
-
-    test('beforeEach ok', () => {
-      expect(original).toHaveProperty('ident');
-      expect(original).toHaveProperty('id');
     });
 
     test('get all targets for report', async () => {
