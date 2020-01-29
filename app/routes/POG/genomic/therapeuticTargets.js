@@ -99,7 +99,7 @@ router.route('/')
         ...body,
         report_id: reportId,
       });
-      return res.status(201).json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
