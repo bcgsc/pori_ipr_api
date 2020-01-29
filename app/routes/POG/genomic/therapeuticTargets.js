@@ -49,7 +49,7 @@ router.route('/:target([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, pog_id: pogId, report_id: reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
