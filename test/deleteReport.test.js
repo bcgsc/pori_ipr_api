@@ -17,7 +17,6 @@ const {username, password} = CONFIG.get('testing');
 // the report is from test patient, POGID: 'PATIENT001'
 // TODO: replace hardcoded report ident with test report
 // created when running tests
-const reportIdent = '3CUZR';
 const currentComponents = {};
 let server;
 let request;
@@ -31,23 +30,18 @@ beforeAll(async () => {
 
 // Tests for deleting a report and all of its components
 describe('Tests for deleting a report and all of its components', () => {
-  let reportId;
+  let report;
   // get analysis report associations
   const {
     pog, analysis, ReportUserFilter, createdBy, ...associations
   } = db.models.analysis_report.associations;
 
   beforeAll(async () => {
-    // check that report exists
-    const res = await request
-      .get(`/api/1.0/reports/${reportIdent}`)
-      .auth(username, password)
-      .type('json')
-      .expect(200);
-
-    // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.report_id;
-
+    // find a report (any report not deleted)
+    report = await db.models.analysis_report.findOne({
+      attributes: ['ident', 'id'],
+      where: {deletedAt: null},
+    });
     const modelNames = [];
     const promises = [];
 
@@ -56,7 +50,7 @@ describe('Tests for deleting a report and all of its components', () => {
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
       modelNames.push(model);
-      promises.push(db.models[model].findAll({where: {report_id: reportId}}));
+      promises.push(db.models[model].findAll({where: {report_id: report.id}}));
     });
 
     const results = await Promise.all(promises);
@@ -79,7 +73,7 @@ describe('Tests for deleting a report and all of its components', () => {
   test('Test paranoid report delete', async () => {
     // delete the report
     await request
-      .delete(`/api/1.0/reports/${reportIdent}`)
+      .delete(`/api/1.0/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(204);
@@ -87,7 +81,7 @@ describe('Tests for deleting a report and all of its components', () => {
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/1.0/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(404);
@@ -96,7 +90,7 @@ describe('Tests for deleting a report and all of its components', () => {
     // verify report components are also soft deleted
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      const results = await db.models[model].findAll({where: {report_id: reportId}});
+      const results = await db.models[model].findAll({where: {report_id: report.id}});
       // results should be an empty array
       expect(results).toEqual([]);
     });
@@ -105,11 +99,11 @@ describe('Tests for deleting a report and all of its components', () => {
   // Restore report and all of its deleted components
   afterAll(async () => {
     // restore report
-    await db.models.analysis_report.restore({where: {id: reportId}});
+    await db.models.analysis_report.restore({where: {id: report.id}});
 
     // verify report was restored
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/1.0/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(200);
