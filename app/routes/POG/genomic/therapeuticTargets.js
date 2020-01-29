@@ -94,8 +94,11 @@ router.route('/')
     const {report: {id: reportId}, body} = req;
 
     try {
-      const result = await db.models.therapeuticTarget.create(req.body);
-      return res.json(result);
+      const result = await db.models.therapeuticTarget.create({
+        ...body,
+        report_id: reportId,
+      });
+      return res.status(201).json(result);
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
