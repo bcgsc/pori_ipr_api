@@ -24,6 +24,7 @@
                 "fn": "test"
             }
         ],
+        "jest/no-standalone-expect": "off",
         "linebreak-style": [
             "error",
             "unix"
