@@ -21,50 +21,56 @@ module.exports = (sequelize) => {
       defaultValue: 0,
     },
     gene: {
-      type: Sq.STRING,
-      allowNull: true,
+      type: Sq.TEXT,
       defaultValue: null,
     },
-    gene_graphkb_id: {
-      type: Sq.STRING,
+    geneGraphkbId: {
+      name: 'geneGraphkbId',
+      field: 'gene_graphkb_id',
+      type: Sq.TEXT,
       defaultValue: null,
-      allowNull: true,
     },
     variant: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
-    variant_graphkb_id: {
-      type: Sq.STRING,
+    variantGraphkbId: {
+      name: 'variantGraphkbId',
+      type: Sq.TEXT,
       defaultValue: null,
-      allowNull: true,
+      field: 'variant_graphkb_id',
     },
     therapy: {
       type: Sq.STRING,
       allowNull: false,
     },
-    therapy_graphkb_id: {
-      type: Sq.STRING,
+    therapyGraphkbId: {
+      name: 'therapyGraphkbId',
+      type: Sq.TEXT,
+      field: 'therapy_graphkb_id',
       defaultValue: null,
-      allowNull: true,
     },
     context: {
-      type: Sq.STRING,
+      type: Sq.TEXT,
       allowNull: false,
     },
-    context_graphkb_id: {
-      type: Sq.STRING,
-      allowNull: true,
+    contextGraphkbId: {
+      name: 'contextGraphkbId',
+      field: 'context_graphkb_id',
+      type: Sq.TEXT,
       defaultValue: null,
     },
-    evidence_level: {
-      type: Sq.STRING,
-      allowNull: false,
-    },
-    evidence_level_graphkb_id: {
-      type: Sq.STRING,
-      allowNull: true,
+    evidenceLevel: {
+      name: 'evidenceLevel',
+      field: 'evidence_level',
+      type: Sq.TEXT,
       defaultValue: null,
+    },
+    evidenceLevelGraphkbId: {
+      name: 'evidenceLevelGraphkbId',
+      type: Sq.TEXT,
+      defaultValue: null,
+      field: 'evidence_level_graphkb_id',
     },
     notes: {
       type: Sq.TEXT,
