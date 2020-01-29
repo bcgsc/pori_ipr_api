@@ -160,7 +160,7 @@ analysisReports.hasOne(summary.microbial, {
   as: 'summary_microbial', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(summary.mutationSummaryv2, {
-  as: 'mutationSummary', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
+  as: 'mutationSummaryv2', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
 });
 
 summary.genomicEventsTherapeutic.belongsTo(analysisReports, {

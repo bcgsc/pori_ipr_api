@@ -34,7 +34,6 @@ module.exports = sequelize => sequelize.define('tumourAnalysis', {
   },
   subtyping: {
     type: Sq.TEXT,
-    allowNull: true,
     defaultValue: null,
   },
   tcgaColor: {
