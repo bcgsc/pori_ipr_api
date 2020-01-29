@@ -35,14 +35,18 @@ describe('/user', () => {
       .type('json')
       .expect(HTTP_STATUS.OK);
 
-    expect(Array.isArray(res.body));
-    expect(res.body.length > 0).toBe(true);
-    expect(res.body[0]).toHaveProperty('ident');
-    expect(res.body[0]).toHaveProperty('username');
-    expect(res.body[0]).toHaveProperty('type');
-    expect(res.body[0]).toHaveProperty('email');
-    expect(res.body[0]).toHaveProperty('firstName');
-    expect(res.body[0]).toHaveProperty('lastName');
+    expect(res.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ident: expect.any(String),
+          username: expect.any(String),
+          type: expect.any(String),
+          email: expect.any(String),
+          firstName: expect.any(String),
+          lastName: expect.any(String),
+        }),
+      ])
+    );
   });
   // Test for GET /user/me 200 endpoint
   test('GET current user /me', async () => {
@@ -52,14 +56,15 @@ describe('/user', () => {
       .type('json')
       .expect(HTTP_STATUS.OK);
 
-    expect(typeof (res.body)).toBe('object');
-    expect(res.body).toHaveProperty('id');
-    expect(res.body).toHaveProperty('ident');
-    expect(res.body).toHaveProperty('username');
-    expect(res.body).toHaveProperty('type');
-    expect(res.body).toHaveProperty('email');
-    expect(res.body).toHaveProperty('firstName');
-    expect(res.body).toHaveProperty('lastName');
+    expect.objectContaining({
+      id: expect.any(String),
+      ident: expect.any(String),
+      username: expect.any(String),
+      type: expect.any(String),
+      email: expect.any(String),
+      firstName: expect.any(String),
+      lastName: expect.any(String),
+    });
   });
   // Test for POST /user 200 endpoint
   test('POST new user - Success', async () => {
