@@ -42,6 +42,10 @@ describe('/therapeuticTargets', () => {
     reportIdent = ident;
   });
 
+  afterAll(async () => {
+    await server.close();
+  });
+
   beforeEach(() => {
     createdIdent = null;
   });
@@ -134,9 +138,5 @@ describe('/therapeuticTargets', () => {
       });
       expect(result).toHaveProperty('deletedAt');
     });
-  });
-
-  afterAll(async () => {
-    // tear down the server
   });
 });
