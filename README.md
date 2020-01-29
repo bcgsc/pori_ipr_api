@@ -86,7 +86,12 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 * Create a migration: `npx sequelize migration:create --name name_of_migratrion`
 * Write up and down functions in your migration file
 * According to your changes in migration file, change your Sequelize models manually
-* Run: `npx sequelize-cli db:migrate` or `npx sequelize-cli db:migrate --url 'mysql://root:password@mysql_host.com/database_name'`
+* Run: `npx sequelize-cli db:migrate` or
+
+```bash
+export IPR_SERVICE_PASS=<PASSWORD>
+npx sequelize-cli db:migrate --url "postgres://ipr_service:$IPR_SERVICE_PASS@iprdevdb:5432/ipr-sync-dev"
+```
 
 Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
 
