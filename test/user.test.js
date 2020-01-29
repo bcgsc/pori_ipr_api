@@ -56,15 +56,16 @@ describe('/user', () => {
       .type('json')
       .expect(HTTP_STATUS.OK);
 
-    expect.objectContaining({
-      id: expect.any(String),
-      ident: expect.any(String),
-      username: expect.any(String),
-      type: expect.any(String),
-      email: expect.any(String),
-      firstName: expect.any(String),
-      lastName: expect.any(String),
-    });
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        ident: expect.any(String),
+        username: expect.any(String),
+        type: expect.any(String),
+        email: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
+      })
+    );
   });
   // Test for POST /user 200 endpoint
   test('POST new user - Success', async () => {
