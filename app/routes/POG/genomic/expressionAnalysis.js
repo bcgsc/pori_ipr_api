@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
@@ -16,12 +17,12 @@ router.param('outlier', async (req, res, next, oIdent) => {
     result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: {[Op.in]: ['rna', 'protein']}}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
-    return res.status(500).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
   }
 
   if (!result) {
     logger.error(`Unable to find outlier, ident: ${oIdent}`);
-    return res.status(404).json({error: {message: 'Unable to find outlier', code: 'failedMiddlewareOutlierLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find outlier', code: 'failedMiddlewareOutlierLookup'}});
   }
 
   req.outlier = result;
@@ -56,7 +57,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update outlier ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update outlier', code: 'failedOutlierVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update outlier', code: 'failedOutlierVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -66,7 +67,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove outlier ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove outlier', code: 'failedOutlierRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove outlier', code: 'failedOutlierRemove'}});
     }
   });
 
@@ -90,7 +91,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve outliers ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve outliers', code: 'failedOutlierlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve outliers', code: 'failedOutlierlookup'}});
     }
   });
 
@@ -104,12 +105,12 @@ router.param('drugTarget', async (req, res, next, oIdent) => {
     result = await db.models.drugTarget.scope('public').findOne({where: {ident: oIdent}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
-    return res.status(500).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate drug target');
-    return res.status(404).json({error: {message: 'Unable to locate drug target', code: 'failedMiddlewareOutlierLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate drug target', code: 'failedMiddlewareOutlierLookup'}});
   }
 
   req.drugTarget = result;
@@ -144,7 +145,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update drug target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update drug target', code: 'failedMutationSummaryVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update drug target', code: 'failedMutationSummaryVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -154,7 +155,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove drug target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove drug target', code: 'failedOutlierRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove drug target', code: 'failedOutlierRemove'}});
     }
   });
 
@@ -172,7 +173,7 @@ router.route('/drugTarget')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve drug target ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve drug target', code: 'failedOutlierlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve drug target', code: 'failedOutlierlookup'}});
     }
   });
 
@@ -185,12 +186,12 @@ router.param('protein', async (req, res, next, oIdent) => {
     result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: 'protein'}});
   } catch (error) {
     logger.error(`Unable to get outlier ${error}`);
-    return res.status(500).json({error: {message: 'Unable to get outlier', code: 'failedMiddlewareProteinQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get outlier', code: 'failedMiddlewareProteinQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate requested outlier');
-    return res.status(404).json({error: {message: 'Unable to locate requested outlier', code: 'failedMiddlewareProteinLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate requested outlier', code: 'failedMiddlewareProteinLookup'}});
   }
 
   req.outlier = result;
@@ -225,7 +226,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update outlier ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update outlier', code: 'failedProteinVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update outlier', code: 'failedProteinVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -235,7 +236,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove outlier ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove outlier', code: 'failedProteinRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove outlier', code: 'failedProteinRemove'}});
     }
   });
 
@@ -259,7 +260,7 @@ router.route('/protein/:type(clinical|nostic|biological)?')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve outliers ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve outliers', code: 'failedProteinlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve outliers', code: 'failedProteinlookup'}});
     }
   });
 

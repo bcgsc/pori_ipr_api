@@ -1,3 +1,5 @@
+const HTTP_STATUS = require('http-status-codes');
+
 class MiddlewareNotFound extends Error {
   constructor(m, req, res, code = '') {
     const response = {error: {message: m, exception: 'MiddlewareNotFound'}};
@@ -6,7 +8,7 @@ class MiddlewareNotFound extends Error {
     }
 
     // Send Response Message
-    res.status(404).json(response);
+    res.status(HTTP_STATUS.NOT_FOUND).json(response);
 
     // Invoke stderr response
     super(m);

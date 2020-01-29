@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -13,12 +14,12 @@ router.use('/', async (req, res, next) => {
     result = await db.models.tumourAnalysis.scope('public').findOne({where: {report_id: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup the tumour analysis for ${req.POG.POGID} error: ${error}`);
-    return res.status(500).json({error: {message: `Unable to lookup the tumour analysis for ${req.POG.POGID}`, code: 'failedTumourAnalysisQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the tumour analysis for ${req.POG.POGID}`, code: 'failedTumourAnalysisQuery'}});
   }
 
   if (!result) {
     logger.error(`Unable to find tumour analysis for ${req.POG.POGID}`);
-    return res.status(404).json({error: {message: `Unable to find tumour analysis for ${req.POG.POGID}`, code: 'failedTumourAnalysisLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find tumour analysis for ${req.POG.POGID}`, code: 'failedTumourAnalysisLookup'}});
   }
 
   // Found the patient information
@@ -55,7 +56,7 @@ router.route('/')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update tumour analysis ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update tumour analysis', code: 'failedTumourAnalysisVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update tumour analysis', code: 'failedTumourAnalysisVersion'}});
     }
   });
 

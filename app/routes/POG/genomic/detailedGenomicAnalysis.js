@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
@@ -12,12 +13,12 @@ router.param('alteration', async (req, res, next, altIdent) => {
     result = await db.models.alterations.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.log(`Unable to process the request ${error}`);
-    return res.status(500).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareAlterationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareAlterationQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate the requested resource');
-    return res.status(404).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareAlterationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareAlterationLookup'}});
   }
 
   req.alteration = result;
@@ -61,7 +62,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update the resource ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update the resource', code: 'failedAPCDestroy'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update the resource', code: 'failedAPCDestroy'}});
     }
   })
   .delete(async (req, res) => {
@@ -72,7 +73,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
     }
   });
 
@@ -110,7 +111,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
     }
   })
 
@@ -133,7 +134,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to update alterations ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update alterations', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update alterations', code: 'failedAPClookup'}});
     }
   });
 
@@ -143,12 +144,12 @@ router.param('gene', async (req, res, next, geneIdent) => {
     result = await db.models.targetedGenes.scope('public').findOne({where: {ident: geneIdent}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
-    return res.status(500).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareTargetedGeneQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareTargetedGeneQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate the requested resource');
-    return res.status(404).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareTargetedGeneLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareTargetedGeneLookup'}});
   }
 
   req.alteration = result;
@@ -187,7 +188,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update resource ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update resource', code: 'failedTargetedGenelookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update resource', code: 'failedTargetedGenelookup'}});
     }
   })
   .delete(async (req, res) => {
@@ -198,7 +199,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove resource', code: 'failedTargetedGeneremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove resource', code: 'failedTargetedGeneremove'}});
     }
   });
 
@@ -219,7 +220,7 @@ router.route('/targetedGenes')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve resource', code: 'failedTargetedGenelookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedTargetedGenelookup'}});
     }
   });
 

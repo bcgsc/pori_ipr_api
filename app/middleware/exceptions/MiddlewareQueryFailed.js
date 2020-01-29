@@ -1,3 +1,5 @@
+const HTTP_STATUS = require('http-status-codes');
+
 class MiddlewareQueryFailed extends Error {
   constructor(m, req, res, code = '') {
     const response = {error: {message: m, exception: 'MiddlewareQueryFailed'}};
@@ -6,7 +8,7 @@ class MiddlewareQueryFailed extends Error {
     }
 
     // Send Response Message
-    res.status(500).json(response);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(response);
 
     // Invoke stderr response
     super(m);

@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -13,12 +14,12 @@ router.param('gene', async (req, res, next, altIdent) => {
     result = await model.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.error(`Unable to get genomic events therapeutic ${error}`);
-    return res.status(500).json({error: {message: 'Unable to get genomic events therapeutic', code: 'failedGenomicEventsTherapeuticQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get genomic events therapeutic', code: 'failedGenomicEventsTherapeuticQuery'}});
   }
 
   if (!result) {
     logger.error('Unable to locate requested genomic events therapeutic');
-    return res.status(404).json({error: {message: 'Unable to locate the requested genomic events therapeutic', code: 'failedGenomicEventsTherapeuticLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested genomic events therapeutic', code: 'failedGenomicEventsTherapeuticLookup'}});
   }
 
   req.event = result;
@@ -53,7 +54,7 @@ router.route('/:gene([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update genomic events therapeutic ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update genomic events therapeutic', code: 'failedMutationSummaryVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update genomic events therapeutic', code: 'failedMutationSummaryVersion'}});
     }
   })
   .delete(async (req, res) => {
@@ -61,10 +62,10 @@ router.route('/:gene([A-z0-9-]{36})')
     // Update result
     try {
       await model.destroy({where: {ident: req.event.ident}});
-      return res.status(204);
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove genomic events therapeutic ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicEventsTherapeuticRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicEventsTherapeuticRemove'}});
     }
   });
 
@@ -83,7 +84,7 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve all genomic events therapeutic ${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve all genomic events therapeutic', code: 'failedGenomicEventsTherapeuticQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve all genomic events therapeutic', code: 'failedGenomicEventsTherapeuticQuery'}});
     }
   });
 

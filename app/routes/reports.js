@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 const tableFilter = require('../libs/tableFilter');
@@ -30,7 +31,7 @@ router.route('/')
       logger.info('Successfully got project access');
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: error.message, code: error.code}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message, code: error.code}});
     }
     let opts = {
       where: {},
@@ -121,7 +122,7 @@ router.route('/')
       if (projectAccessNames.includes(req.query.project)) {
         opts.where['$pog.projects.name$'] = req.query.project;
       } else {
-        return res.status(403).json({
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
           error: {message: 'You do not have access to the selected project'},
         });
       }
@@ -202,7 +203,7 @@ router.route('/')
       return res.json({total, reports});
     } catch (error) {
       logger.error(`Unable to lookup analysis reports ${error}`);
-      return res.status(500).json({error: {message: 'Unable to lookup analysis reports.'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup analysis reports.'}});
     }
   });
 
@@ -221,15 +222,15 @@ router.route('/:report')
     const access = new Acl(req, res);
     if (!access.check()) {
       logger.error('User doesn\'t have correct permissions to delete report');
-      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
     }
 
     try {
       await req.report.destroy();
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error trying to delete report ${error}`);
-      return res.status(500).json({error: {message: 'Error trying to delete report', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report', cause: error}});
     }
   })
   .put(async (req, res) => {
@@ -259,7 +260,7 @@ router.route('/:report')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update analysis report ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update analysis report', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis report', cause: error}});
     }
   });
 
@@ -274,16 +275,16 @@ router.route('/:report/user')
       logger.error(
         `User doesn't have correct permissions to add a user binding ${req.user.username}`,
       );
-      return res.status(403).json(
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
         {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
       );
     }
 
     if (!req.body.user) {
-      return res.status(400).json({error: {message: 'No user provided for binding'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided for binding'}});
     }
     if (!req.body.role) {
-      return res.status(400).json({error: {message: 'No role provided for binding'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for binding'}});
     }
 
     const report = new Report(req.report);
@@ -294,7 +295,7 @@ router.route('/:report/user')
       return res.json(result);
     } catch (error) {
       logger.error(error);
-      const code = (error.code === 'userNotFound') ? 404 : 400;
+      const code = (error.code === 'userNotFound') ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
       return res.status(code).json(error);
     }
   })
@@ -305,16 +306,16 @@ router.route('/:report/user')
       logger.error(
         `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
       );
-      return res.status(403).json(
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
         {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
       );
     }
 
     if (!req.body.user) {
-      return res.status(400).json({error: {message: 'No user provided for binding'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided for binding'}});
     }
     if (!req.body.role) {
-      return res.status(400).json({error: {message: 'No role provided for binding'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for binding'}});
     }
 
     const report = new Report(req.report);
@@ -325,7 +326,7 @@ router.route('/:report/user')
       return res.json(result);
     } catch (error) {
       logger.error(error);
-      const code = ['userNotFound', 'noBindingFound'].includes(error.code) ? 404 : 400;
+      const code = ['userNotFound', 'noBindingFound'].includes(error.code) ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
       return res.status(code).json(error);
     }
   });

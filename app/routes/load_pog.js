@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const util = require('util');
 const pyconf = util.promisify(require('pyconf').parse);
 const _ = require('lodash');
@@ -91,11 +92,11 @@ router.route('/:type(genomic|probe)')
     // Check for required fields
     if (!req.body.project) {
       logger.error('Project name is required in POST body');
-      return res.status(400).json({message: 'Project name is required in POST body.'});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Project name is required in POST body.'});
     }
     if (!req.body.directory && !req.body.baseDir) {
       logger.error('Report root folder is required in POST body');
-      return res.status(400).json({message: 'Report root folder is required in POST body.'});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Report root folder is required in POST body.'});
     }
 
     // Setup Patient Detection
@@ -116,7 +117,7 @@ router.route('/:type(genomic|probe)')
       conf = await getConfig(directory);
     } catch (error) {
       logger.error(`Unable to get config ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get config'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get config'}});
     }
 
     // Save Config
@@ -128,7 +129,7 @@ router.route('/:type(genomic|probe)')
       libraries = await getLibraries(conf);
     } catch (error) {
       logger.error(`Unable to get libraries ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get libraries'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get libraries'}});
     }
 
     const opts = {
@@ -146,7 +147,7 @@ router.route('/:type(genomic|probe)')
       pogAnalysis = await db.models.pog_analysis.findOne(opts);
     } catch (error) {
       logger.error(`SQL Error unable to get POG analysis ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get POG analysis'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get POG analysis'}});
     }
 
     // If a result is found, set to analysis and pog
@@ -177,7 +178,7 @@ router.route('/:type(genomic|probe)')
         flatFile = await Promise.all(promises);
       } catch (error) {
         logger.error(`Error resolving array of flatline files ${error}`);
-        return res.status(500).json({error: {message: 'Unable to resolve all flatline files'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to resolve all flatline files'}});
       }
 
       if (flatFile) {
@@ -221,12 +222,12 @@ router.route('/:type(genomic|probe)')
         patientObj = await Patient.retrieveOrCreate(patient, project);
       } catch (error) {
         logger.error(`SQL Error unable to retrieve or create patient ${patient} in project ${project} ${error}`);
-        return res.status(500).json({error: {message: 'Unable to retrieve or create a patient'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve or create a patient'}});
       }
 
       if (!createAnalysis.analysis_biopsy) {
         logger.error('An analysis biopsy (sample_prefix) is required as part of the report upload');
-        return res.status(400).json({error: {message: 'An analysis biopsy (sample_prefix) is required as part of the report upload'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'An analysis biopsy (sample_prefix) is required as part of the report upload'}});
       }
 
       try {
@@ -234,7 +235,7 @@ router.route('/:type(genomic|probe)')
         analysisObj = await newAnalysisObj.create(patientObj, createAnalysis);
       } catch (error) {
         logger.error(`SQL Error unable to create analysis. Patient id ${patientObj.id} analysis ${createAnalysis} ${error}`);
-        return res.status(500).json({error: {message: 'Unable to create analysis'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create analysis'}});
       }
     }
 
@@ -268,7 +269,7 @@ router.route('/:type(genomic|probe)')
       reportObj.pog = patientObj;
     } catch (error) {
       logger.error(`SQL Error unable to create report ${error}`);
-      return res.status(500).json({error: {message: 'Unable to create report'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report'}});
     }
 
     // Setup up loader configuration
@@ -341,7 +342,7 @@ router.route('/:type(genomic|probe)')
     if (!loader) {
       // No matching loader scenario found
       logger.error('No loader configuration matched request');
-      return res.status(400).json({error: {message: 'Unable to invoke loading mechanism - no loader configuration matched request'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to invoke loading mechanism - no loader configuration matched request'}});
     }
 
     let loaderMessages;
@@ -349,7 +350,7 @@ router.route('/:type(genomic|probe)')
       loaderMessages = await loader.load();
     } catch (error) {
       logger.error(`Error unable to load loader ${error}`);
-      return res.status(500).json({error: {message: 'Unable to load loader', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to load loader', cause: error}});
     }
 
     // Retrieve results from loaders, and ask for public report object
@@ -358,10 +359,10 @@ router.route('/:type(genomic|probe)')
       // Send public copy of report object
       const publicReport = await reportLibrary.public();
       publicReport.loaderMessages = loaderMessages;
-      return res.status(200).json(publicReport);
+      return res.status(HTTP_STATUS.OK).json(publicReport);
     } catch (error) {
       logger.error(`Error unable to get public interface of report library ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get public interface of report library'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get public interface of report library'}});
     }
   });
 

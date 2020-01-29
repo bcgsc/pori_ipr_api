@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 
 // Lookup POG middleware
@@ -25,7 +26,7 @@ module.exports = async (req, res, next, ident) => {
 
   // Nothing found?
   if (!result) {
-    return res.status(404).json({error: {message: 'Unable to find the requested report', code: 'reportMiddlewareLookupFail'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report', code: 'reportMiddlewareLookupFail'}});
   }
 
   // POG found, next()

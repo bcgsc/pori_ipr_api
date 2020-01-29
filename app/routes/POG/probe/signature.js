@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const moment = require('moment');
 const db = require('../../../models');
@@ -13,8 +14,7 @@ router.use('/', async (req, res, next) => {
     return next();
   } catch (error) {
     logger.error(`Unable to query Analyst Comments ${error}`);
-    res.status(500).json({error: {message: `Unable to lookup the analyst comments for ${req.POG.POGID}.`, code: 'failedAnalystCommentsQuery'}});
-    return res.end();
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the analyst comments for ${req.POG.POGID}.`, code: 'failedAnalystCommentsQuery'}});
   }
 });
 
@@ -33,7 +33,7 @@ router.route('/:role(ready|reviewer)')
       role = 'reviewerSigned';
     } else {
       logger.error('A valid signing role must be specified');
-      return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidSignRole'}});
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'A valid signing role must be specified.', code: 'invalidSignRole'}});
     }
 
     // Update Comments
@@ -49,7 +49,7 @@ router.route('/:role(ready|reviewer)')
         await db.models.probe_signature.create(data);
       } catch (error) {
         logger.error(`Create Signature Error ${error}`);
-        return res.status(500).json({error: {message: 'Unable to create probe signature', code: 'failedCreateProbeSignature'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create probe signature', code: 'failedCreateProbeSignature'}});
       }
     } else {
       try {
@@ -60,7 +60,7 @@ router.route('/:role(ready|reviewer)')
         });
       } catch (error) {
         logger.error(`Unable to update prob signature ${error}`);
-        return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
       }
     }
 
@@ -69,7 +69,7 @@ router.route('/:role(ready|reviewer)')
       return res.json(result);
     } catch (error) {
       logger.error(`Error while trying to find updated probe signature ${error}`);
-      return res.status().json({error: {message: 'Error while trying to find updated probe signature', code: 'failedUpdateProbeSignature', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find updated probe signature', code: 'failedUpdateProbeSignature', cause: error}});
     }
   });
 
@@ -85,7 +85,7 @@ router.route('/revoke/:role(ready|reviewer)')
 
     if (!role) {
       logger.error('A valid signing role must be specified');
-      return res.status(401).json({error: {message: 'A valid signing role must be specified.', code: 'invalidCommentSignRole'}});
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'A valid signing role must be specified.', code: 'invalidCommentSignRole'}});
     }
 
     // Update Comments
@@ -101,7 +101,7 @@ router.route('/revoke/:role(ready|reviewer)')
       });
     } catch (error) {
       logger.error(`Unable to update prob signature ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update probe signature', code: 'failedUpdateProbeSignature'}});
     }
 
     try {
@@ -109,7 +109,7 @@ router.route('/revoke/:role(ready|reviewer)')
       return res.json(result);
     } catch (error) {
       logger.error(`Error while trying to find updated probe signature ${error}`);
-      return res.status().json({error: {message: 'Error while trying to find updated probe signature', code: 'failedUpdateProbeSignature', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find updated probe signature', code: 'failedUpdateProbeSignature', cause: error}});
     }
   });
 

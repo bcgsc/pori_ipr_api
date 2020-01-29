@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 const db = require('../../../models');
@@ -39,7 +40,7 @@ router.route('/retrieve/:key')
       return res.json(output);
     } catch (error) {
       logger.error(`There was an error finding image data ${error}`);
-      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 
@@ -66,7 +67,7 @@ router.route('/expressionDensityGraphs')
       return res.json(output);
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 
@@ -95,7 +96,7 @@ router.route('/mutationSummary')
       return res.json(output);
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 
@@ -122,7 +123,7 @@ router.route('/subtypePlots')
       return res.json(output);
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
     }
   });
 
