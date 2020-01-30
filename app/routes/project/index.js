@@ -57,7 +57,7 @@ router.route('/')
     // Access Control
     const includeOpts = [];
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
 
     if (access.check(true) && req.query.admin === 'true') {
       includeOpts.push({as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}});
@@ -94,7 +94,7 @@ router.route('/')
     // Add new project
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add new project');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -185,7 +185,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add new project');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -231,7 +231,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove projects');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -288,7 +288,7 @@ router.route('/:project([A-z0-9-]{36})/user')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to get project users');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -300,7 +300,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     // Add Project User
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add project users');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -372,7 +372,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     // Remove Project User
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove project user');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -411,7 +411,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to get project POGs');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -424,7 +424,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
     // Add Project POG
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser', 'Full Project Access'];
+    access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add project POGs');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
@@ -467,7 +467,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
     // Remove Project POG
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser', 'Full Project Access'];
+    access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to delete project POGs');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
