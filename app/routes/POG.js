@@ -112,7 +112,7 @@ router.route('/:POG')
     // Access Control
     const access = new Acl(req, res);
     access.isPog = true;
-    access.pogEdit = ['analyst', 'reviewer', 'admin', 'superUser', 'Projects'];
+    access.pogEdit = ['analyst', 'reviewer', 'admin', 'Projects'];
     if (!access.check()) {
       logger.error('You don\'t have the required permissions to alter this/these file(s)');
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'You don\'t have the required permissions to alter this/these file(s)'}});
