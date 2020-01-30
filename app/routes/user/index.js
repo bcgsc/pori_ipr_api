@@ -208,7 +208,7 @@ router.route('/:ident([A-z0-9-]{36})')
     }
 
     // Check Access
-    if (req.user.access !== 'superUser') {
+    if (!(access.check())) {
       if (req.body.access && req.body.access !== req.user.access) {
         logger.error('User is not able to update own access');
         return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your own access', code: 'failUpdateAccess'}});
