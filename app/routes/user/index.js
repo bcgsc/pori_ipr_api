@@ -199,14 +199,10 @@ router.route('/:ident([A-z0-9-]{36})')
     // Update current user
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['*']; // Anyone is allowed to edit their account details. Controller later protects non-self edits.
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to update current user');
-      return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
-    }
+    access.write = ['admin']; // Anyone is allowed to edit their account details. Controller later protects non-self edits.
 
-    // Editing someone other than self?
-    if (req.user.ident !== req.body.ident && req.user.access !== 'superUser') {
+    // Is the user neither itself or admin?
+    if (!(req.user.ident === req.params.ident || access.check())) {
       logger.error('User is not allowed to edit someone other than self');
       return res.status(HTTP_STATUS.FORBIDDEN).json({status: false, message: 'You are not allowed to perform this action'});
     }
@@ -249,7 +245,7 @@ router.route('/:ident([A-z0-9-]{36})')
     // Attempt user model update
     try {
       await db.models.user.update(updateBody, {
-        where: {ident: req.body.ident},
+        where: {ident: req.params.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
@@ -261,7 +257,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     try {
       const user = await db.models.user.findOne({
-        where: {ident: req.body.ident},
+        where: {ident: req.params.ident},
         attributes: {exclude: ['id', 'password', 'deletedAt']},
         include: [
           {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
@@ -278,7 +274,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Remove a user
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove a user');
       return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
