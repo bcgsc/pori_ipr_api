@@ -66,7 +66,7 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to access this');
       return res.status(HTTP_STATUS.FORBIDDEN).send();
