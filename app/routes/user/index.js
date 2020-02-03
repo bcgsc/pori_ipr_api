@@ -199,7 +199,7 @@ router.route('/:ident([A-z0-9-]{36})')
     // Update current user
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin']; // Anyone is allowed to edit their account details. Controller later protects non-self edits.
+    access.write = ['admin']; // Admins can update any user, users can only update themselves
 
     // Is the user neither itself or admin?
     if (!(req.user.ident === req.params.ident || access.check())) {
