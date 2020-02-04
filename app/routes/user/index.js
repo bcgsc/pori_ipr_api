@@ -247,7 +247,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Attempt user model update
     try {
-      await db.models.user.update(updateBody, {
+      await db.models.user.update({...updateBody, ident: req.params.ident}, {
         where: {ident: req.params.ident},
         individualHooks: true,
         paranoid: true,
