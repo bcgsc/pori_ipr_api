@@ -36,7 +36,7 @@ module.exports = sequelize => sequelize.define('user', {
     defaultValue: null,
   },
   access: {
-    type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'administration', 'admin'),
+    type: Sq.ENUM('clinician', 'bioinformatician', 'analyst'),
     allowNull: false,
   },
   settings: {
