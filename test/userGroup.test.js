@@ -23,6 +23,14 @@ beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
   request = supertest(server);
+
+  const res = await request
+    .get('/api/1.0/user/me')
+    .auth(username, password)
+    .type('json')
+    .expect(HTTP_STATUS.OK);
+
+  testUserUUID = res.body.ident;
 });
 
 // Tests for user related endpoints
@@ -51,18 +59,58 @@ describe('/user/group', () => {
     });
   });
 
+  describe('POST', () => {
+    // Test for POST /user/group 200 endpoint
+    test('POST /user/group - 200 Success', async () => {
+      const res = await request
+        .post('/api/1.0/user/group')
+        .auth(username, password)
+        .type('json')
+        .send({name: 'testGroup', owner: testUserUUID})
+        .expect(HTTP_STATUS.OK);
+
+      groupIdent = res.body.ident;
+
+      expect(res.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        name: expect.any(String),
+        owner_id: expect.any(Number),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        users: expect.any(Array),
+        owner: expect.any(Object),
+      }));
+
+      await request
+        .delete(`/api/1.0/user/group/${groupIdent}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+    });
+
+    test('POST /user/group - 400 name is required', async () => {
+      await request
+        .post('/api/1.0/user/group')
+        .auth(username, password)
+        .type('json')
+        .send({owner: testUserUUID})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('POST /user/group - 400 owner should have UUID format', async () => {
+      await request
+        .post('/api/1.0/user/group')
+        .auth(username, password)
+        .type('json')
+        .send({name: 'testGroup', owner: 'NOT_UUID'})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+  });
+
   describe('DELETE', () => {
     // Test for DELETE /user/group/:ident 204 endpoint
     test('DELETE /ident group', async () => {
-      let res = await request
-        .get('/api/1.0/user/me')
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      testUserUUID = res.body.ident;
-
-      res = await request
+      const res = await request
         .post('/api/1.0/user/group')
         .auth(username, password)
         .type('json')
