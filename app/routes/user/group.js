@@ -1,11 +1,44 @@
+const Ajv = require('ajv');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
+const ajv = new Ajv({useDefaults: true, logger});
 const router = express.Router({mergeParams: true});
 
+// Group json schema
+const groupSchema = {
+  type: 'object',
+  required: ['name', 'owner'],
+  properties: {
+    name: {type: 'string'},
+    owner: {type: 'string', format: 'uuid'},
+  },
+};
+const memberSchema = {
+  type: 'object',
+  required: ['user'],
+  properties: {
+    user: {type: 'string', format: 'uuid'},
+  },
+};
+
+// Compile schema to be used in validator
+const validateGroup = ajv.compile(groupSchema);
+const validateMember = ajv.compile(memberSchema);
+
+// Validates the request
+const applySchemaValidator = (schemaValidator, requestBody) => {
+  if (!schemaValidator(requestBody)) {
+    if (schemaValidator.errors[0].dataPath) {
+      throw new Error(`${schemaValidator.errors[0].dataPath} ${schemaValidator.errors[0].message}`);
+    } else {
+      throw new Error(`${schemaValidator.errors[0].message}`);
+    }
+  }
+};
 
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
@@ -64,6 +97,14 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
+    try {
+      // Validate input
+      applySchemaValidator(validateGroup, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     const newGroup = {name: req.body.name};
     let user;
     try {
@@ -117,6 +158,14 @@ router.route('/:group([A-z0-9-]{36})')
     return res.json(req.group);
   })
   .put(async (req, res) => {
+    try {
+      // Validate input
+      applySchemaValidator(validateGroup, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Get Owner/User ID resolve
@@ -139,6 +188,7 @@ router.route('/:group([A-z0-9-]{36})')
     req.group.name = req.body.name;
     try {
       const save = await req.group.save();
+      await save.reload();
       return res.json(save);
     } catch (error) {
       logger.error(`SQL Error trying to update group ${error}`);
@@ -164,6 +214,14 @@ router.route('/:group([A-z0-9-]{36})/member')
   })
   .post(async (req, res) => {
     // Add Group Member
+    try {
+      // Validate input
+      applySchemaValidator(validateMember, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Lookup User
@@ -205,6 +263,14 @@ router.route('/:group([A-z0-9-]{36})/member')
   })
   .delete(async (req, res) => {
     // Remove Group Member
+    try {
+      // Validate input
+      applySchemaValidator(validateMember, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Lookup User
