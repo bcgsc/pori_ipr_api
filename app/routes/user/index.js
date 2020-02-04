@@ -60,7 +60,7 @@ const parseNewUser = (request) => {
   };
 };
 
-const isAdmin = (user) => { return user.get('groups').some((group) => { return group.name === 'admin'; }).length > 0; };
+const isAdmin = (user) => { return user.get('groups').some((group) => { return group.name === 'admin'; }); };
 
 // Route for getting a POG
 router.route('/')
