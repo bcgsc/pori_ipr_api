@@ -6,7 +6,7 @@ const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
-const imageLoader = require('../../loaders/image');
+const {loadImage} = require('./images');
 const logger = require('../../log');
 
 const pogMiddleware = require('../../middleware/pog');
@@ -391,7 +391,9 @@ router.route('/')
 
     // add images to db
     try {
-      await imageLoader(report, req.body.imagesDirectory);
+      await Promise.all(req.body.images.map(async ({path, key}) => {
+        return loadImage(report.id, key, path);
+      }));
     } catch (error) {
       logger.error(`Unable to load images ${error}`);
 
