@@ -32,19 +32,21 @@ schema.properties.images = {
     required: ['path', 'key'],
     properties: {
       path: {
-        type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user',
+        type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user)',
       },
       key: {
         type: 'string',
         pattern: `^${[
+          'mutSignature\\.(corPcors|snvsAllStrelka)',
           'subtypePlot\\.\\S+',
           '(cnv|loh)\\.[12345]',
-          'mutation_summary\\.(barplot|density_plot)_(sv|snv|indel)',
+          'cnvLoh.circos',
+          'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel)(\\.\\w+)?',
           'circosSv\\.(genome|transcriptome)',
           'expDensity\\.\\S+',
           'expression\\.(chart|legend)',
           'microbial\\.circos\\.(genome|transcriptome)',
-        ].join('|')}$`,
+        ].map((patt) => { return `(${patt})`; }).join('|')}$`,
       },
     },
   },
