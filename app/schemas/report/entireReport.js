@@ -25,9 +25,29 @@ schema.properties.project = {
 schema.required.push('project');
 
 // inject image directory
-schema.properties.imagesDirectory = {
-  type: 'string',
-  description: 'Absolute path to images directory',
+schema.properties.images = {
+  type: 'array',
+  items: {
+    type: 'object',
+    required: ['path', 'key'],
+    properties: {
+      path: {
+        type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user',
+      },
+      key: {
+        type: 'string',
+        pattern: `^${[
+          'subtypePlot\\.\\S+',
+          '(cnv|loh)\\.[12345]',
+          'mutation_summary\\.(barplot|density_plot)_(sv|snv|indel)',
+          'circosSv\\.(genome|transcriptome)',
+          'expDensity\\.\\S+',
+          'expression\\.(chart|legend)',
+          'microbial\\.circos\\.(genome|transcriptome)',
+        ].join('|')}$`,
+      },
+    },
+  },
 };
 
 // get report associations
