@@ -1,18 +1,19 @@
 const {spawn} = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const logger = require('../../log');
 const db = require('../../models');
 
-const DEFAULT_WIDTH = 1000;
-const DEFAULT_HEIGHT = 1000;
+const DEFAULT_WIDTH = 500;
+const DEFAULT_HEIGHT = 500;
 const DEFAULT_FORMAT = 'PNG';
 
 const IMAGES_CONFIG = {
   'subtypePlot\\.\\S+': 'TODO',
   '(cnv|loh)\\.[1]': {height: 166, width: 1000, format: 'PNG'},
   '(cnv|loh)\\.[2345]': {height: 161, width: 1000, format: 'PNG'},
-  'mutation_summary\\.(barplot|density_plot)_(sv|snv|indel)': {
+  'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)(\\.\\w+)?': {
     width: 560, height: 151, format: 'PNG',
   },
   'cnvLoh.circos': {width: 1000, height: 1000, format: 'JPG'},
@@ -69,6 +70,20 @@ const processImage = (imagePath, width, height, format = 'PNG') => {
 };
 
 
+const imagePathExists = (imagePath) => {
+  return new Promise((resolve, reject) => {
+    fs.access(imagePath, fs.F_OK, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        // file exists
+        resolve();
+      }
+    });
+  });
+};
+
+
 const loadImage = async (reportId, key, imagePath) => {
   logger.verbose(`loading (${key}) image: ${imagePath}`);
 
@@ -84,7 +99,15 @@ const loadImage = async (reportId, key, imagePath) => {
     }
   }
   if (!config) {
+    logger.warn(`no format/size configuration for ${key}. Using default values`);
     config = {format: DEFAULT_FORMAT, height: DEFAULT_HEIGHT, width: DEFAULT_WIDTH};
+  }
+
+  try {
+    await imagePathExists(imagePath);
+  } catch (err) {
+    logger.error(`file not found: ${imagePath}`);
+    throw err;
   }
 
   const imageData = await processImage(imagePath, config.width, config.height, config.format);
