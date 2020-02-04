@@ -37,12 +37,13 @@ const IMAGES_CONFIG = {
 /**
  * Read, Resize, and Insert Image Data
  *
- * @param {string} imagePath - absolute path to the image file
- * @param {Number} width - width of the final image in pixels
- * @param {Number} height - heigh of the final image in pixels
- * @param {string} format - format of the output image (default: PNG)
+ * @param {string} imagePath absolute path to the image file
+ * @param {Number} width width of the final image in pixels
+ * @param {Number} height height of the final image in pixels
+ * @param {string} format format of the output image (default: PNG)
  *
- * @returns {Promise.<boolean>} - Returns true if processing image was successfull
+ * @returns {Promise.<string>} Returns the image data
+ * @throws {Promise.<Error>} if the image fails to load/read
  */
 const processImage = (imagePath, width, height, format = 'PNG') => {
   return new Promise((resolve, reject) => {
@@ -70,6 +71,14 @@ const processImage = (imagePath, width, height, format = 'PNG') => {
 };
 
 
+/**
+ * Throws an error if a given image path does not exist
+ *
+ * @param {string} imagePath the absolute path to the image file
+ *
+ * @throws {Promise.<Error>} if the image path does not exist
+ * @returns {Promise} if the image exists
+ */
 const imagePathExists = (imagePath) => {
   return new Promise((resolve, reject) => {
     fs.access(imagePath, fs.F_OK, (err) => {
@@ -84,6 +93,14 @@ const imagePathExists = (imagePath) => {
 };
 
 
+/**
+ * @param {Number} reportId the primary key for the report these images belong to (to create FK relationship)
+ * @param {string} key the image key, defines what type of image is being loaded
+ * @param {string} imagePath the absolute path to the image file
+ *
+ * @returns {Promise} the image has been loaded successfully
+ * @throws {Promise.<Error>} the image does not exist or did not load correctly
+ */
 const loadImage = async (reportId, key, imagePath) => {
   logger.verbose(`loading (${key}) image: ${imagePath}`);
 
