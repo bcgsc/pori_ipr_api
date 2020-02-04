@@ -21,20 +21,20 @@ const newUserSchema = {
     type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
     email: {type: 'string', format: 'email'},
     firstName: {type: 'string', minLength: 1},
-    lastName: {type: 'string', minLength: 1}
+    lastName: {type: 'string', minLength: 1},
   },
   // password can be null if type is bcgsc
   if: {
-    properties: {type: {const: 'bcgsc'}}
+    properties: {type: {const: 'bcgsc'}},
   },
   then: {
-    properties: {password: {default: null}}
+    properties: {password: {default: null}},
   },
   else: {
     // password need to have minimum length of 8
     required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
-    properties: {password: {minLength: 8}}
-  }
+    properties: {password: {minLength: 8}},
+  },
 };
 
 // Compile schema to be used in validator
@@ -56,7 +56,7 @@ const parseNewUser = (request) => {
     email: request.email,
     firstName: request.firstName,
     lastName: request.lastName,
-    access: 'clinician'
+    access: 'clinician',
   };
 };
 
@@ -199,17 +199,17 @@ router.route('/:ident([A-z0-9-]{36})')
     // Update current user
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin']; // Admins can update any user, users can only update themselves
+    access.write = ['*']; // Admins can update any user, users can only update themselves
     access.read = ['*']; // Any user should be able to read itself after updating its info
 
     // Is the user neither itself or admin?
-    if (!(req.user.ident === req.params.ident || access.check())) {
+    if (!(req.user.ident === req.params.ident || req.user.get('groups').filter((user) => { return user.name === 'admin'; }).length > 0)) {
       logger.error('User is not allowed to edit someone other than self');
       return res.status(HTTP_STATUS.FORBIDDEN).json({status: false, message: 'You are not allowed to perform this action'});
     }
 
     // Check Access
-    if (!(access.check())) {
+    if (!(req.user.get('groups').filter((user) => { return user.name === 'admin'; }).length > 0)) {
       if (req.body.access && req.body.access !== req.user.access) {
         logger.error('User is not able to update own access');
         return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your own access', code: 'failUpdateAccess'}});
