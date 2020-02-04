@@ -60,6 +60,8 @@ const parseNewUser = (request) => {
   };
 };
 
+const isAdmin = (user) => { return user.get('groups').some((group) => { return group.name === 'admin'; }).length > 0; };
+
 // Route for getting a POG
 router.route('/')
   // Get All Users
@@ -203,13 +205,13 @@ router.route('/:ident([A-z0-9-]{36})')
     access.read = ['*']; // Any user should be able to read itself after updating its info
 
     // Is the user neither itself or admin?
-    if (!(req.user.ident === req.params.ident || req.user.get('groups').filter((group) => { return group.name === 'admin'; }).length > 0)) {
+    if (!(req.user.ident === req.params.ident || isAdmin(req.user))) {
       logger.error('User is not allowed to edit someone other than self');
       return res.status(HTTP_STATUS.FORBIDDEN).json({status: false, message: 'You are not allowed to perform this action'});
     }
 
     // Check Access
-    if (!(req.user.get('groups').filter((group) => { return group.name === 'admin'; }).length > 0)) {
+    if (!(isAdmin(req.user))) {
       if (req.body.access && req.body.access !== req.user.access) {
         logger.error('User is not able to update own access');
         return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your own access', code: 'failUpdateAccess'}});
