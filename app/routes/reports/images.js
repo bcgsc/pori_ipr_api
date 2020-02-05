@@ -9,30 +9,87 @@ const DEFAULT_WIDTH = 500;
 const DEFAULT_HEIGHT = 500;
 const DEFAULT_FORMAT = 'PNG';
 
-const IMAGES_CONFIG = {
-  'subtypePlot\\.\\S+': 'TODO',
-  '(cnv|loh)\\.[1]': {height: 166, width: 1000, format: 'PNG'},
-  '(cnv|loh)\\.[2345]': {height: 161, width: 1000, format: 'PNG'},
-  'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)(\\.\\w+)?': {
-    width: 560, height: 151, format: 'PNG',
+// takes first pattern match (order matters)
+const IMAGES_CONFIG = [
+  {
+    pattern: 'subtypePlot\\.ped_\\S+',
+    width: 420,
+    height: 900,
+    format: 'PNG',
   },
-  'cnvLoh.circos': {width: 1000, height: 1000, format: 'JPG'},
-  'mutSignature.corPcors': {width: 1000, height: 2000, format: 'JPG'},
-  'mutSignature.snvsAllStrelka': {width: 480, height: 480, format: 'PNG'},
-  'circosSv\\.(genome|transcriptome)': {
+  {
+    pattern: 'subtypePlot\\.\\S+',
+    width: 600,
+    height: 375,
+    format: 'PNG',
+  },
+  {
+    pattern: '(cnv|loh)\\.[1]',
+    height: 166,
+    width: 1000,
+    format: 'PNG',
+  },
+  {
+    pattern: '(cnv|loh)\\.[2345]',
+    height: 161,
+    width: 1000,
+    format: 'PNG',
+  },
+  {
+    pattern: 'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)(\\.\\w+)?',
+    width: 560,
+    height: 151,
+    format: 'PNG',
+  },
+  {
+    pattern: 'cnvLoh.circos',
+    width: 1000,
+    height: 1000,
+    format: 'JPG',
+  },
+  {
+    pattern: 'mutSignature.corPcors',
+    width: 1000,
+    height: 2000,
+    format: 'JPG',
+  },
+  {
+    pattern: 'mutSignature.snvsAllStrelka',
+    width: 480,
+    height: 480,
+    format: 'PNG',
+  },
+  {
+    pattern: 'circosSv\\.(genome|transcriptome)',
     width: 1001,
     height: 900,
     format: 'PNG',
   },
-  'expDensity\\.\\S+': {
-    width: 450, height: 450, format: 'PNG',
+  {
+    pattern: 'expDensity\\.\\S+',
+    width: 450,
+    height: 450,
+    format: 'PNG',
   },
-  'expression\\.chart': {width: 1000, height: 900, format: 'JPG'},
-  'expression\\.legend': {width: 500, height: 500, format: 'JPG'},
-  'microbial\\.circos\\.(genome|transcriptome)': {
-    width: 900, height: 900, format: 'PNG',
+  {
+    pattern: 'expression\\.chart',
+    width: 1000,
+    height: 900,
+    format: 'JPG',
   },
-};
+  {
+    pattern: 'expression\\.legend',
+    width: 500,
+    height: 500,
+    format: 'JPG',
+  },
+  {
+    pattern: 'microbial\\.circos\\.(genome|transcriptome)',
+    width: 900,
+    height: 900,
+    format: 'PNG',
+  },
+];
 
 /**
  * Read, Resize, and Insert Image Data
@@ -104,17 +161,16 @@ const imagePathExists = (imagePath) => {
 const loadImage = async (reportId, key, imagePath) => {
   logger.verbose(`loading (${key}) image: ${imagePath}`);
 
-  let config = IMAGES_CONFIG[key];
+  let config;
 
-  if (!config) {
-    for (const pattern of Object.keys(IMAGES_CONFIG)) {
-      const regexp = new RegExp(`^${pattern}$`);
-      if (regexp.exec(key)) {
-        config = IMAGES_CONFIG[pattern];
-        break;
-      }
+  for (const {pattern, ...conf} of IMAGES_CONFIG) {
+    const regexp = new RegExp(`^${pattern}$`);
+    if (regexp.exec(key)) {
+      config = conf;
+      break;
     }
   }
+
   if (!config) {
     logger.warn(`no format/size configuration for ${key}. Using default values`);
     config = {format: DEFAULT_FORMAT, height: DEFAULT_HEIGHT, width: DEFAULT_WIDTH};
