@@ -190,7 +190,8 @@ describe('/user/group', () => {
     describe('PUT', () => {
       test('PUT /{group} specific group', async () => {
         const res = await request
-          .get(`/api/1.0/user/group/${groupIdent}`)
+          .put(`/api/1.0/user/group/${groupIdent}`)
+          .send({name: 'newGroupName', owner: newMemberIdent})
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
@@ -204,6 +205,9 @@ describe('/user/group', () => {
           users: expect.any(Array),
           owner: expect.any(Object),
         }));
+        expect(res.body.name).toEqual('newGroupName');
+        expect(res.body.owner.ident).toEqual(newMemberIdent);
+        expect(res.body.owner.username).toEqual(newMemberUsername);
       });
     });
 
