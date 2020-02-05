@@ -57,6 +57,15 @@ describe('/user/group', () => {
         ])
       );
     });
+
+    // Test for GET /user/group/:ident 404 endpoint
+    test('GET /ident group - Not Found', async () => {
+      const res = await request
+        .get('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
   });
 
   describe('POST', () => {
