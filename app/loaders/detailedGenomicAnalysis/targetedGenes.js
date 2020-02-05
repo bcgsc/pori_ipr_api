@@ -42,7 +42,7 @@ module.exports = async (report, dir) => {
   });
 
   // Add to Database
-  const createdEntries = await db.models.targetedGenes.bulkCreate(entries);
+  const createdEntries = await db.models.probeResults.bulkCreate(entries);
   logger.info('Finished Targeted Gene Report.');
 
   return createdEntries;

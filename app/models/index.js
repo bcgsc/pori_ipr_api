@@ -116,7 +116,7 @@ summary.genomicAlterationsIdentified = sequelize.import('./reports/genomic/summa
 summary.genomicEventsTherapeutic = sequelize.import('./reports/genomic/summary/genomicEventsTherapeutic');
 summary.analystComments = sequelize.import('./reports/genomic/summary/analystComments');
 summary.pathwayAnalysis = sequelize.import('./reports/genomic/summary/pathwayAnalysis');
-summary.probeTarget = sequelize.import('./reports/genomic/summary/probeTarget');
+summary.probeResults = sequelize.import('./reports/probeResults');
 summary.therapeuticTargets = sequelize.import('./reports/genomic/summary/therapeuticTargets');
 summary.microbial = sequelize.import('./reports/genomic/summary/microbial');
 
@@ -147,8 +147,8 @@ analysisReports.hasOne(summary.analystComments, {
 analysisReports.hasOne(summary.pathwayAnalysis, {
   as: 'pathwayAnalysis', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(summary.probeTarget, {
-  as: 'probeTarget', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(summary.probeResults, {
+  as: 'probeResults', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(summary.therapeuticTargets, {
   as: 'therapeuticTarget', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
@@ -178,7 +178,7 @@ summary.analystComments.belongsTo(analysisReports, {
 summary.pathwayAnalysis.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-summary.probeTarget.belongsTo(analysisReports, {
+summary.probeResults.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 summary.therapeuticTargets.belongsTo(analysisReports, {
@@ -205,19 +205,12 @@ summary.analystComments.belongsTo(user, {
 
 // DetailedGenomicAnalysis
 const alterations = sequelize.import('./reports/genomic/detailedGenomicAnalysis/alterations');
-const targetedGenes = sequelize.import('./reports/genomic/detailedGenomicAnalysis/targetedGenes');
 
 alterations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-targetedGenes.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 analysisReports.hasMany(alterations, {
   as: 'alterations', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(targetedGenes, {
-  as: 'targetedGenes', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Somatic Mutations
