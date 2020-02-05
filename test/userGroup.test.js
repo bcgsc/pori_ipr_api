@@ -185,6 +185,30 @@ describe('/user/group', () => {
           owner: expect.any(Object),
         }));
       });
+
+      test('GET /{group}/member member of a group', async () => {
+        const res = await request
+          .get(`/api/1.0/user/group/${groupIdent}/member`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              ident: expect.any(String),
+              username: expect.any(String),
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+              type: expect.any(String),
+              firstName: expect.any(String),
+              lastName: expect.any(String),
+              email: expect.any(String),
+              userGroupMember: expect.any(Object),
+            }),
+          ])
+        );
+      });
     });
 
     describe('PUT', () => {
