@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 const getPort = require('get-port');
 const supertest = require('supertest');
 const HTTP_STATUS = require('http-status-codes');
+const uuidv4 = require('uuid/v4');
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -279,6 +280,24 @@ describe('/user/group endpoint testing', () => {
           email: expect.any(String),
           userGroupMember: expect.any(Object),
         }));
+      });
+
+      test('POST /{group}/member new group member - 400 Member should have uuid format', async () => {
+        await request
+          .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .send({user: 'NOT_UUID'})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
+      test('POST /{group}/member new group member - 404 Member does not exist', async () => {
+        await request
+          .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .send({user: uuidv4()})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
       });
     });
 
