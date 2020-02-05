@@ -153,7 +153,7 @@
         "original": null,
         "pathway": "Test pathway string"
     },
-    "probeTarget": [
+    "probeResults": [
         {
             "gene": "KRAS",
             "variant": "p.G12V",
@@ -215,13 +215,6 @@
             "pmid_ref": "yes",
             "kb_entry_type": "prognostic",
             "kb_entry_key": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
-        }
-    ],
-    "targetedGenes": [
-        {
-            "gene": "KRAS",
-            "variant": "p.G12V",
-            "sample": "UPLOADPAT01-OCT-1; UPLOADPAT01-OCT-1_trans"
         }
     ],
     "smallMutations": [
