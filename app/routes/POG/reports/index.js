@@ -22,7 +22,6 @@ router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
 
 router.use('/appendices', appendices);
 router.use('/copyNumberAnalyses', copyNumberAnalyses);
-router.use('/detailedGenomicAnalysis', detailedGenomicAnalysis); // TODO: remove line when the client has been updated to match
 router.use('/expressionAnalysis', expressionAnalysis);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
@@ -34,5 +33,9 @@ router.use('/therapeuticTargets', therapeuticTargets);
 router.use('/testInformation', probeTestInformation);
 
 router.use('/probeTestInformation', probeTestInformation);
+
+// TODO: modify 2 lines below when the client has been updated to match
+router.use('/detailedGenomicAnalysis', detailedGenomicAnalysis); // genomic report pattern
+router.use('/', detailedGenomicAnalysis); // probe report pattern
 
 module.exports = router;
