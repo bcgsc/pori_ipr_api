@@ -16,7 +16,7 @@ let server;
 let request;
 
 let groupIdent;
-let testUserUUID;
+let testUserIdent;
 let newMemberIdent;
 let newMemberUsername;
 
@@ -32,11 +32,11 @@ beforeAll(async () => {
     .type('json')
     .expect(HTTP_STATUS.OK);
 
-  testUserUUID = res.body.ident;
+  testUserIdent = res.body.ident;
 });
 
 // Tests for user related endpoints
-describe('/user/group', () => {
+describe('/user/group endpoint testing', () => {
   describe('GET', () => {
     // Test for GET /user/group 200 endpoint
     test('GET / list of groups', async () => {
@@ -77,7 +77,7 @@ describe('/user/group', () => {
         .post('/api/1.0/user/group')
         .auth(username, password)
         .type('json')
-        .send({name: 'testGroup', owner: testUserUUID})
+        .send({name: 'testGroup', owner: testUserIdent})
         .expect(HTTP_STATUS.OK);
 
       groupIdent = res.body.ident;
@@ -104,7 +104,7 @@ describe('/user/group', () => {
         .post('/api/1.0/user/group')
         .auth(username, password)
         .type('json')
-        .send({owner: testUserUUID})
+        .send({owner: testUserIdent})
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -125,7 +125,7 @@ describe('/user/group', () => {
         .post('/api/1.0/user/group')
         .auth(username, password)
         .type('json')
-        .send({name: 'testGroup', owner: testUserUUID})
+        .send({name: 'testGroup', owner: testUserIdent})
         .expect(HTTP_STATUS.OK);
 
       groupIdent = res.body.ident;
@@ -144,7 +144,7 @@ describe('/user/group', () => {
         .post('/api/1.0/user/group')
         .auth(username, password)
         .type('json')
-        .send({name: 'testGroup', owner: testUserUUID})
+        .send({name: 'testGroup', owner: testUserIdent})
         .expect(HTTP_STATUS.OK);
 
       groupIdent = res.body.ident;
@@ -164,6 +164,12 @@ describe('/user/group', () => {
         .auth(username, password)
         .type('json')
         .send({user: newMemberIdent})
+        .expect(HTTP_STATUS.OK);
+      await request
+        .post(`/api/1.0/user/group/${groupIdent}/member`)
+        .auth(username, password)
+        .type('json')
+        .send({user: testUserIdent})
         .expect(HTTP_STATUS.OK);
     });
 
@@ -250,6 +256,29 @@ describe('/user/group', () => {
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+    });
+
+    describe('POST', () => {
+      test('POST /{group}/member new group member - 200 Success', async () => {
+        const res = await request
+          .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .send({user: newMemberIdent})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(expect.objectContaining({
+          ident: expect.any(String),
+          username: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          type: expect.any(String),
+          firstName: expect.any(String),
+          lastName: expect.any(String),
+          email: expect.any(String),
+          userGroupMember: expect.any(Object),
+        }));
       });
     });
 
