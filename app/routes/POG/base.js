@@ -7,8 +7,8 @@ const _export = require('./export');
 
 const router = express.Router({mergeParams: true});
 
-router.use('/genomic', genomic);
 router.use('/probe', probe);
+router.use('/:reportType(genomic|probe)', genomic);
 router.use('/image', image);
 router.use('/export', _export);
 
