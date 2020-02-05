@@ -18,6 +18,7 @@ let request;
 let groupIdent;
 let testUserUUID;
 let newMemberIdent;
+let newMemberUsername;
 
 // Start API
 beforeAll(async () => {
@@ -156,6 +157,7 @@ describe('/user/group', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       newMemberIdent = res.body[0].ident;
+      newMemberUsername = res.body[0].username;
 
       await request
         .post(`/api/1.0/user/group/${groupIdent}/member`)
@@ -165,8 +167,24 @@ describe('/user/group', () => {
         .expect(HTTP_STATUS.OK);
     });
 
-    test('', async () => {
-      
+    describe('GET', () => {
+      test('GET /ident specific group', async () => {
+        const res = await request
+          .get(`/api/1.0/user/group/${groupIdent}`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(expect.objectContaining({
+          ident: expect.any(String),
+          name: expect.any(String),
+          owner_id: expect.any(Number),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          users: expect.any(Array),
+          owner: expect.any(Object),
+        }));
+      });
     });
 
     afterAll(async () => {
