@@ -62,7 +62,7 @@ describe('/user/group endpoint testing', () => {
     });
 
     // Test for GET /user/group/:ident 404 endpoint
-    test('GET /{group} group - Not Found', async () => {
+    test('GET /{group} group - 404 Not Found', async () => {
       await request
         .get('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
         .auth(username, password)
@@ -73,7 +73,7 @@ describe('/user/group endpoint testing', () => {
 
   describe('POST', () => {
     // Test for POST /user/group 200 endpoint
-    test('POST /user/group - 200 Success', async () => {
+    test('POST / - 200 Success', async () => {
       const res = await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -100,7 +100,7 @@ describe('/user/group endpoint testing', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
     });
 
-    test('POST /user/group - 400 name is required', async () => {
+    test('POST / - 400 name is required', async () => {
       await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -109,7 +109,7 @@ describe('/user/group endpoint testing', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /user/group - 400 owner is required', async () => {
+    test('POST / - 400 owner is required', async () => {
       await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -118,7 +118,7 @@ describe('/user/group endpoint testing', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /user/group - 400 owner should have uuid format', async () => {
+    test('POST / - 400 owner should have uuid format', async () => {
       await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -130,7 +130,7 @@ describe('/user/group endpoint testing', () => {
 
   describe('DELETE', () => {
     // Test for DELETE /user/group/:ident 204 endpoint
-    test('DELETE /{group} group', async () => {
+    test('DELETE /{group} group - 200 Success', async () => {
       const res = await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -145,6 +145,14 @@ describe('/user/group endpoint testing', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
+    });
+
+    test('DELETE /{group} group - 404 Group not found', async () => {
+      await request
+        .delete('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
     });
   });
 
@@ -184,7 +192,7 @@ describe('/user/group endpoint testing', () => {
     });
 
     describe('GET', () => {
-      test('GET /{group} specific group', async () => {
+      test('GET /{group} specific group - 200 Success', async () => {
         const res = await request
           .get(`/api/1.0/user/group/${groupIdent}`)
           .auth(username, password)
@@ -202,7 +210,7 @@ describe('/user/group endpoint testing', () => {
         }));
       });
 
-      test('GET /{group}/member member of a group', async () => {
+      test('GET /{group}/member member of a group - 200 Success', async () => {
         const res = await request
           .get(`/api/1.0/user/group/${groupIdent}/member`)
           .auth(username, password)
@@ -250,7 +258,7 @@ describe('/user/group endpoint testing', () => {
         expect(res.body.owner.username).toEqual(newMemberUsername);
       });
 
-      test('PUT /{group} specific group - 400 name required', async () => {
+      test('PUT /{group} specific group - 400 name is required', async () => {
         await request
           .put(`/api/1.0/user/group/${groupIdent}`)
           .send({owner: newMemberIdent})
@@ -259,7 +267,7 @@ describe('/user/group endpoint testing', () => {
           .expect(HTTP_STATUS.BAD_REQUEST);
       });
 
-      test('PUT /{group} specific group - 400 owner required', async () => {
+      test('PUT /{group} specific group - 400 owner is required', async () => {
         await request
           .put(`/api/1.0/user/group/${groupIdent}`)
           .send({name: 'newGroupName'})
