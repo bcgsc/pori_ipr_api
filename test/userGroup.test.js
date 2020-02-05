@@ -62,7 +62,7 @@ describe('/user/group', () => {
 
     // Test for GET /user/group/:ident 404 endpoint
     test('GET /{group} group - Not Found', async () => {
-      const res = await request
+      await request
         .get('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
         .auth(username, password)
         .type('json')
@@ -188,7 +188,7 @@ describe('/user/group', () => {
     });
 
     describe('PUT', () => {
-      test('PUT /{group} specific group', async () => {
+      test('PUT /{group} specific group - 200 Success', async () => {
         const res = await request
           .put(`/api/1.0/user/group/${groupIdent}`)
           .send({name: 'newGroupName', owner: newMemberIdent})
@@ -208,6 +208,24 @@ describe('/user/group', () => {
         expect(res.body.name).toEqual('newGroupName');
         expect(res.body.owner.ident).toEqual(newMemberIdent);
         expect(res.body.owner.username).toEqual(newMemberUsername);
+      });
+
+      test('PUT /{group} specific group - 400 name required', async () => {
+        await request
+          .put(`/api/1.0/user/group/${groupIdent}`)
+          .send({owner: newMemberIdent})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
+      test('PUT /{group} specific group - 400 owner required', async () => {
+        await request
+          .put(`/api/1.0/user/group/${groupIdent}`)
+          .send({name: 'newGroupName'})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
       });
     });
 
