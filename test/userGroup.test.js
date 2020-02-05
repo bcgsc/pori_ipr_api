@@ -17,6 +17,7 @@ let request;
 
 let groupIdent;
 let testUserUUID;
+let newMemberIdent;
 
 // Start API
 beforeAll(async () => {
@@ -138,7 +139,7 @@ describe('/user/group', () => {
 
   describe('/user/group tests for new group dependent endpoints', () => {
     beforeAll(async () => {
-      const res = await request
+      let res = await request
         .post('/api/1.0/user/group')
         .auth(username, password)
         .type('json')
@@ -146,10 +147,25 @@ describe('/user/group', () => {
         .expect(HTTP_STATUS.OK);
 
       groupIdent = res.body.ident;
+
+      res = await request
+        .get('/api/1.0/user')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      newMemberIdent = res.body[0].ident;
+
+      await request
+        .post(`/api/1.0/user/group/${groupIdent}/member`)
+        .auth(username, password)
+        .type('json')
+        .send({user: newMemberIdent})
+        .expect(HTTP_STATUS.OK);
     });
 
-    // Test for DELETE /user/group/:ident 204 endpoint
-    test('DELETE /ident group', async () => {
+    test('', async () => {
       
     });
 
