@@ -109,7 +109,16 @@ describe('/user/group endpoint testing', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /user/group - 400 owner should have UUID format', async () => {
+    test('POST /user/group - 400 owner is required', async () => {
+      await request
+        .post('/api/1.0/user/group')
+        .auth(username, password)
+        .type('json')
+        .send({name: 'testGroup'})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('POST /user/group - 400 owner should have uuid format', async () => {
       await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -258,6 +267,15 @@ describe('/user/group endpoint testing', () => {
           .type('json')
           .expect(HTTP_STATUS.BAD_REQUEST);
       });
+
+      test('PUT /{group} specific group - 400 owner should have uuid format', async () => {
+        await request
+          .put(`/api/1.0/user/group/${groupIdent}`)
+          .send({name: 'newGroupName', owner: 'NOT_UUID'})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
     });
 
     describe('POST', () => {
@@ -294,6 +312,35 @@ describe('/user/group endpoint testing', () => {
       test('POST /{group}/member new group member - 404 Member does not exist', async () => {
         await request
           .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .send({user: uuidv4()})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
+      });
+    });
+
+    describe('DELETE', () => {
+      test('DELETE /{group}/member delete group member - 200 Success', async () => {
+        await request
+          .delete(`/api/1.0/user/group/${groupIdent}/member`)
+          .send({user: newMemberIdent})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NO_CONTENT);
+      });
+
+      test('DELETE /{group}/member delete group member - 400 Member should have uuid format', async () => {
+        await request
+          .delete(`/api/1.0/user/group/${groupIdent}/member`)
+          .send({user: 'NOT_UUID'})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
+      test('DELETE /{group}/member delete group member - 404 Member does not exist', async () => {
+        await request
+          .delete(`/api/1.0/user/group/${groupIdent}/member`)
           .send({user: uuidv4()})
           .auth(username, password)
           .type('json')
