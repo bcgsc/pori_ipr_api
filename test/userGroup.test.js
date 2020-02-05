@@ -61,7 +61,7 @@ describe('/user/group', () => {
     });
 
     // Test for GET /user/group/:ident 404 endpoint
-    test('GET /ident group - Not Found', async () => {
+    test('GET /{group} group - Not Found', async () => {
       const res = await request
         .get('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
         .auth(username, password)
@@ -120,7 +120,7 @@ describe('/user/group', () => {
 
   describe('DELETE', () => {
     // Test for DELETE /user/group/:ident 204 endpoint
-    test('DELETE /ident group', async () => {
+    test('DELETE /{group} group', async () => {
       const res = await request
         .post('/api/1.0/user/group')
         .auth(username, password)
@@ -168,7 +168,27 @@ describe('/user/group', () => {
     });
 
     describe('GET', () => {
-      test('GET /ident specific group', async () => {
+      test('GET /{group} specific group', async () => {
+        const res = await request
+          .get(`/api/1.0/user/group/${groupIdent}`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(expect.objectContaining({
+          ident: expect.any(String),
+          name: expect.any(String),
+          owner_id: expect.any(Number),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          users: expect.any(Array),
+          owner: expect.any(Object),
+        }));
+      });
+    });
+
+    describe('PUT', () => {
+      test('PUT /{group} specific group', async () => {
         const res = await request
           .get(`/api/1.0/user/group/${groupIdent}`)
           .auth(username, password)
