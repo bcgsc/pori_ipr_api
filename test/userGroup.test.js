@@ -135,6 +135,32 @@ describe('/user/group', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
     });
   });
+
+  describe('/user/group tests for new group dependent endpoints', () => {
+    beforeAll(async () => {
+      const res = await request
+        .post('/api/1.0/user/group')
+        .auth(username, password)
+        .type('json')
+        .send({name: 'testGroup', owner: testUserUUID})
+        .expect(HTTP_STATUS.OK);
+
+      groupIdent = res.body.ident;
+    });
+
+    // Test for DELETE /user/group/:ident 204 endpoint
+    test('DELETE /ident group', async () => {
+      
+    });
+
+    afterAll(async () => {
+      await request
+        .delete(`/api/1.0/user/group/${groupIdent}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+    });
+  });
 });
 
 afterAll(async () => {
