@@ -13,7 +13,6 @@ const APIVersion = require('./version');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
 
-const loadPogRoute = require('./load_pog');
 const exportRoute = require('./POG/export');
 const patientInformationRoute = require('./patientInformation');
 const reportsRoute = require('./reports');
@@ -78,7 +77,6 @@ class Routing extends RouterInterface {
     this.router.use('/user', userRoute);
     this.router.use('/user/group', groupRoute);
 
-    this.router.use('/POG/:POGID/load', loadPogRoute);
     this.router.use('/POG/:POG/report/:report/export', exportRoute);
     this.router.use('/POG/:POG/report/:report/patientInformation', patientInformationRoute);
 
