@@ -130,14 +130,8 @@ describe('/user/group endpoint testing', () => {
     // Test for DELETE /user/group/:ident 204 endpoint
     test('DELETE /{group} group - 204 Success', async () => {
       // Create a group to be deleted in the same test
-      const res = await request
-        .post('/api/1.0/user/group')
-        .auth(username, password)
-        .type('json')
-        .send({name: 'testGroup', owner: users[1].ident})
-        .expect(HTTP_STATUS.OK);
-
-      groupIdent = res.body.ident;
+      const userGroup = await db.models.userGroup.create({name: 'testGroup', owner_id: users[0].id});
+      groupIdent = userGroup.ident;
 
       await request
         .delete(`/api/1.0/user/group/${groupIdent}`)
