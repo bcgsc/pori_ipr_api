@@ -371,11 +371,7 @@ describe('/user/group endpoint testing', () => {
 
     // Delete group used for tests
     afterAll(async () => {
-      await request
-        .delete(`/api/1.0/user/group/${groupIdent}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
+      await db.models.userGroup.destroy({where: {ident: groupIdent}});
     });
   });
 });
