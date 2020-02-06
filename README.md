@@ -163,18 +163,12 @@ using PM2 and Bamboo
 │   │                                   Libraries for exporting data from IPR to csv or tsv files.
 │   │
 │   │
-│   ├── loaders                         # Loaders
-│   │   ├── dir                         Subdirectories contain namespace'd loader files for scraping text files to be read into DB.
-│   │   │
-│   │   └── index.js                    All loaders are defined in the loaders/index.js file for inclusion in the POG loading process.
-│   │
-│   │
 │   ├── middleware                      # Middleware
 │   │                                   Location for all globally required middleware definitions.
 │   │
 │   ├── models                          # Models
 │   │                                   Application DB models. Sequelizejs models describe table schemas.
-│   │   
+│   │
 │   ├── modules                         # Modules
 │   │   │                               Isolated, independant application modules. Germline reports, biopsy/analysis.
 │   │   │                                Most logic for these modules is kept within the /module/ directory. There might be a few exceptions to this rule.

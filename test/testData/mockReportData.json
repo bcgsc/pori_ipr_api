@@ -355,5 +355,114 @@
         }
     ],
     "project": "TEST",
-    "imagesDirectory": "/projects/vardb/integration_testing/ipr/gsc20_test_report"
+    "images": [
+        {
+            "key": "mutSignature.corPcors",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors.png"
+        },
+        {
+            "key": "mutSignature.snvsAllStrelka",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png"
+        },
+        {
+            "key": "cnvLoh.circos",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png"
+        },
+        {
+            "key": "cnv.1",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png"
+        },
+        {
+            "key": "cnv.2",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_2.png"
+        },
+        {
+            "key": "cnv.3",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_3.png"
+        },
+        {
+            "key": "cnv.4",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_4.png"
+        },
+        {
+            "key": "cnv.5",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_5.png"
+        },
+        {
+            "key": "loh.1",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_1.png"
+        },
+        {
+            "key": "loh.2",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_2.png"
+        },
+        {
+            "key": "loh.3",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_3.png"
+        },
+        {
+            "key": "loh.4",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_4.png"
+        },
+        {
+            "key": "loh.5",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_5.png"
+        },
+        {
+            "key": "circosSv.genome",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_strct_var/circos_strct_var_genome.png"
+        },
+        {
+            "key": "circosSv.transcriptome",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_strct_var/circos_strct_var_transcriptome.png"
+        },
+        {
+            "key": "expression.chart",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expression/expression.png"
+        },
+        {
+            "key": "expression.legend",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expression/expression_legend.png"
+        },
+        {
+            "key": "expDensity.MYC_ENSG00000136997",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/MYC_ENSG00000136997.png"
+        },
+        {
+            "key": "expDensity.CES2",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/CES2_ENSG00000172831.png"
+        },
+        {
+            "key": "mutation_summary.barplot_sv",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_sv.png"
+        },
+        {
+            "key": "mutation_summary.barplot_snv.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_snv.paad.png"
+        },
+        {
+            "key": "mutation_summary.barplot_indel.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_indel.paad.png"
+        },
+        {
+            "key": "mutation_summary.density_sv",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_sv.png"
+        },
+        {
+            "key": "mutation_summary.density_snv.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_snv.paad.png"
+        },
+        {
+            "key": "mutation_summary.density_indel.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_indel.paad.png"
+        },
+        {
+            "key": "mutation_summary.legend_sv",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_sv.png"
+        },
+        {
+            "key": "mutation_summary.legend_snv_indel.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+        }
+    ]
 }
