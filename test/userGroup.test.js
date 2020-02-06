@@ -132,7 +132,7 @@ describe('/user/group endpoint testing', () => {
   // Tests for DELETE endpoint
   describe('DELETE', () => {
     // Test for DELETE /user/group/:ident 204 endpoint
-    test('DELETE /{group} group - 200 Success', async () => {
+    test('DELETE /{group} group - 204 Success', async () => {
       // Create a group to be deleted in the same test
       const res = await request
         .post('/api/1.0/user/group')
@@ -345,7 +345,7 @@ describe('/user/group endpoint testing', () => {
           .expect(HTTP_STATUS.NO_CONTENT);
       });
 
-      // Test for PUT /user/group/:ident/member 400 endpoint
+      // Test for DELETE /user/group/:ident/member 400 endpoint
       test('DELETE /{group}/member delete group member - 400 Member should have uuid format', async () => {
         await request
           .delete(`/api/1.0/user/group/${groupIdent}/member`)
@@ -355,7 +355,7 @@ describe('/user/group endpoint testing', () => {
           .expect(HTTP_STATUS.BAD_REQUEST);
       });
 
-      // Test for PUT /user/group/:ident/member 404 endpoint
+      // Test for DELETE /user/group/:ident/member 404 endpoint
       test('DELETE /{group}/member delete group member - 404 Member does not exist', async () => {
         await request
           .delete(`/api/1.0/user/group/${groupIdent}/member`)
