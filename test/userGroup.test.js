@@ -93,11 +93,7 @@ describe('/user/group endpoint testing', () => {
         owner: expect.any(Object),
       }));
 
-      await request
-        .delete(`/api/1.0/user/group/${groupIdent}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
+      await db.models.userGroup.destroy({where: {ident: groupIdent}, force: true});
     });
 
     // Test for POST /user/group 400 endpoint
