@@ -4,6 +4,7 @@ const getPort = require('get-port');
 const supertest = require('supertest');
 const HTTP_STATUS = require('http-status-codes');
 const uuidv4 = require('uuid/v4');
+const db = require('../app/models');
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -17,10 +18,10 @@ let server;
 let request;
 
 // Variables to be used for group tests
+const TEST_USER_ID = 1734;
 let groupIdent;
 let testUserIdent;
-let newMemberIdent;
-let newMemberUsername;
+let newMember;
 
 // Start API
 beforeAll(async () => {
@@ -168,39 +169,16 @@ describe('/user/group endpoint testing', () => {
     // Create the group and add two team members
     beforeAll(async () => {
       // Create the group
-      let res = await request
-        .post('/api/1.0/user/group')
-        .auth(username, password)
-        .type('json')
-        .send({name: 'testGroup', owner: testUserIdent})
-        .expect(HTTP_STATUS.OK);
-
-      groupIdent = res.body.ident;
+      const userGroup = await db.models.userGroup.create({name: 'testGroup', owner_id: TEST_USER_ID});
+      groupIdent = userGroup.ident;
 
       // Get the first user in the Database
-      res = await request
-        .get('/api/1.0/user')
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      expect(Array.isArray(res.body)).toBe(true);
-      newMemberIdent = res.body[0].ident;
-      newMemberUsername = res.body[0].username;
+      const users = await db.models.user.findAll();
+      newMember = users[0];
 
       // Add the first user and the test user to the group
-      await request
-        .post(`/api/1.0/user/group/${groupIdent}/member`)
-        .auth(username, password)
-        .type('json')
-        .send({user: newMemberIdent})
-        .expect(HTTP_STATUS.OK);
-      await request
-        .post(`/api/1.0/user/group/${groupIdent}/member`)
-        .auth(username, password)
-        .type('json')
-        .send({user: testUserIdent})
-        .expect(HTTP_STATUS.OK);
+      await db.models.userGroupMember.create({group_id: userGroup.id, user_id: TEST_USER_ID});
+      await db.models.userGroupMember.create({group_id: userGroup.id, user_id: newMember.id});
     });
 
     // Tests for GET endpoint
@@ -265,7 +243,7 @@ describe('/user/group endpoint testing', () => {
       test('PUT /{group} specific group - 200 Success', async () => {
         const res = await request
           .put(`/api/1.0/user/group/${groupIdent}`)
-          .send({name: 'newGroupName', owner: newMemberIdent})
+          .send({name: 'newGroupName', owner: newMember.ident})
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
@@ -280,15 +258,15 @@ describe('/user/group endpoint testing', () => {
           owner: expect.any(Object),
         }));
         expect(res.body.name).toEqual('newGroupName');
-        expect(res.body.owner.ident).toEqual(newMemberIdent);
-        expect(res.body.owner.username).toEqual(newMemberUsername);
+        expect(res.body.owner.ident).toEqual(newMember.ident);
+        expect(res.body.owner.username).toEqual(newMember.username);
       });
 
       // Test for PUT /user/group/:ident 400 endpoint
       test('PUT /{group} specific group - 400 name is required', async () => {
         await request
           .put(`/api/1.0/user/group/${groupIdent}`)
-          .send({owner: newMemberIdent})
+          .send({owner: newMember.ident})
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.BAD_REQUEST);
@@ -319,7 +297,7 @@ describe('/user/group endpoint testing', () => {
       test('POST /{group}/member new group member - 200 Success', async () => {
         const res = await request
           .post(`/api/1.0/user/group/${groupIdent}/member`)
-          .send({user: newMemberIdent})
+          .send({user: newMember.ident})
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
@@ -364,7 +342,7 @@ describe('/user/group endpoint testing', () => {
       test('DELETE /{group}/member delete group member - 200 Success', async () => {
         await request
           .delete(`/api/1.0/user/group/${groupIdent}/member`)
-          .send({user: newMemberIdent})
+          .send({user: newMember.ident})
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NO_CONTENT);
