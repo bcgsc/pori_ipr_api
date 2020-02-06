@@ -4,33 +4,25 @@ module.exports = {
     try {
       // copy all the data from pog_analysis_reports_dga_targeted_genes to pog_analysis_reports_summary_probe_target
       console.log('copying (non duplicate) records from pog_analysis_reports_dga_targeted_genes to pog_analysis_reports_summary_probe_target');
+
+      // select only records that are not duplicated in the other equivalent table
       const recordsToMove = await queryInterface.sequelize.query(
-        'SELECT * FROM pog_analysis_reports_dga_targeted_genes',
+        `SELECT * FROM pog_analysis_reports_dga_targeted_genes genet WHERE NOT EXISTS (
+          SELECT * FROM pog_analysis_reports_summary_probe_target probet WHERE (
+            probet.gene = genet.gene
+            AND probet.variant = genet.variant
+            AND probet.sample = genet.sample
+            AND probet.report_id = genet.report_id
+          )
+        )`,
         {type: queryInterface.sequelize.QueryTypes.SELECT, transaction}
       );
-      const delim = '____';
-      const rowKey = (row) => {
-        return [row.report_id, row.gene, row.variant, row.sample]
-          .map((c) => { return c.toString(); })
-          .join(delim);
-      };
 
-      const currentRecords = (await queryInterface.sequelize.query(
-        'SELECT * FROM pog_analysis_reports_summary_probe_target',
-        {type: queryInterface.sequelize.QueryTypes.SELECT, transaction}
-      )).map(rowKey);
-
-      const dupsFiltered = recordsToMove.filter((row) => {
-        return !currentRecords.includes(rowKey(row));
-      }).map(({id, ...row}) => {
-        return row;
-      });
-
-      console.log(`Inserting ${dupsFiltered.length} records into pog_analysis_reports_summary_probe_target`);
+      console.log(`Inserting ${recordsToMove.length} records into pog_analysis_reports_summary_probe_target`);
 
       await queryInterface.bulkInsert(
         'pog_analysis_reports_summary_probe_target',
-        dupsFiltered,
+        recordsToMove.map(({id, ...row}) => { return row; }), // remove the id, let the table re-generate PK
         {transaction}
       );
 
