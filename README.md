@@ -89,8 +89,8 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 * Run: `npx sequelize-cli db:migrate` or
 
 ```bash
-export IPR_SERVICE_PASS=<PASSWORD>
-npx sequelize-cli db:migrate --url "postgres://ipr_service:$IPR_SERVICE_PASS@iprdevdb:5432/ipr-sync-dev"
+export PGPASSWORD='PASSWORD'
+npx sequelize-cli db:migrate --url "postgres://ipr_service@iprdevdb:5432/ipr-sync-dev"
 ```
 
 Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
@@ -131,92 +131,18 @@ Once you are done with testing, delete the temporary database
 dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
+To see the current list of databases
 
-#### Process Manager
+```bash
+psql -l -U ipr_service -h iprdevdb.bcgsc.ca
+```
+
+
+#### Deployment
 ======================================
 
-The production installation of IPR is run & managed by a [pm2](http://pm2.keymetrics.io/) instance on `iprweb03.bcgsc.ca`. The test API is run off of iprweb01 and the development API is run off of iprdev01.
-
-As of this writing, pm2 is instantiated by bpierce, and as a result, the processes it manages execute as bpierce.
-
-To interact with pm2, ssh to iprweb03 and cd to `/var/www/ipr/api/[production]`. From here, running pm2 will list the running instances:
-
-```
-bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
-┌────────────────────┬─────┬──────┬───────┬────────┬─────────┬────────┬─────┬───────────┬──────────┐
-│ App name           │ id  │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ watching │
-├────────────────────┼─────┼──────┼───────┼────────┼─────────┼────────┼─────┼───────────┼──────────┤
-│ IPR-API            │ 101 │ fork │ 23409 │ online │ 0       │ 23h    │ 0%  │ 92.7 MB   │ disabled │
-└────────────────────┴─────┴──────┴───────┴────────┴─────────┴────────┴─────┴───────────┴──────────┘
- Module activated
-┌───────────────┬─────────┬────────────┬────────┬─────────┬─────┬─────────────┐
-│ Module        │ version │ target PID │ status │ restart │ cpu │ memory      │
-├───────────────┼─────────┼────────────┼────────┼─────────┼─────┼─────────────┤
-│ pm2-logrotate │ 2.2.0   │ N/A        │ online │ 5       │ 0%  │ 91.727 MB   │
-└───────────────┴─────────┴────────────┴────────┴─────────┴─────┴─────────────┘
- Use `pm2 show <id|name>` to get more details about an app
-```
-
-`IPR-API` is the main, production application server running on port 8001 on iprweb03.
-`IPR-API-dev` is the development API server running on port 8081 on iprdev01.
-`IPR-API-test` is the test API server running on port 8081 on iprweb01.
-
-It is possible to use pm2 to actively monitor the console of the applications by using `pm2 monit`.
-
-Note: The pm2 daemon will sometimes launch a new instance of pm2 when running pm2 commands as opposed to accessing the currently running version of pm2. You can tell if there are multiple instances running by executing the command `ps aux | grep pm2`
-```
-[nmartin@iprweb03 ~]$ ps aux | grep pm2
-bpierce  13787  0.1  1.2 952276 50004 ?        Ssl  Jul20   9:28 PM2 v3.0.0: God Daemon (/home/bpierce/.pm2)
-bpierce  13800  0.1  1.5 1224456 61028 ?       Ssl  Jul20   9:49 node /home/bpierce/.pm2/node_modules/pm2-logrotate/app.js
-nmartin  18162  0.0  0.0 103312   856 pts/0    S+   10:55   0:00 grep pm2
-```
-At any given time, there should only be three processes listed in this command: one for the daemon, one for the node pm2 instance, and one for the grep command. If there are additional instances running (usually in a pair of a daemon process and node process) you should execute the kill command as bpierce for any daemon instances that are not the most recent one. Note that the logs are streamed in from the most recently activated instance of pm2 - therefore, if you have multiple instances running off of the same port, the logs will only indicate that the API initialization has failed due to the port already being in use until you kill old instances and allow the newest one to connect.
-
-It is also important to note that the issue mentioned above will sometimes cause the production API deployment to fail. Before deploying a new production build of the API, you should instantiate a new pm2 instance by running the following on the production API server and then killing any old pm2 instances:
-```
-cd /var/www/ipr/api/production
-
-pm2 start current/pm2.config.js --env production
-```
-
-
-```
-┌─ Process list ──────────────────────┐┌─ Global Logs ───────────────────────────────────────────────────────────────────────────┐
-│[101] IPR-API        Mem:  88 MB     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Retrieved     │
-│                                     ││ assembly results                                                                        │
-│[ 0] pm2-logrotate     Mem:  91 MB   ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Checked in    │
-│                                     ││ assembly for 0 tasks.                                                                   │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Querying DB   │
-│                                     ││ for all tracking tasks with symlinks pending                                            │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Tasks         │
-│                                     ││ requiring symlink lookup 17                                                             │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Starting      │
-│                                     ││ query for retrieving library lane targets for 51 libraries                              │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Target        │
-│                                     ││ lanes determined for each library. Querying for aligned libcores                        │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Checked in    │
-│                                     ││ symlinks for 0 tasks.                                                                   │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Finished      │
-│                                     ││ processing BioApps syncing.                                                             │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Found 7       │
-│                                     ││ results from LIMS sample endpoint.                                                      │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Starting to   │
-│                                     ││ process sample results.                                                                 │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Resulting     │
-│                                     ││ in 7 disease libraries that have pathology information and need additional library      │
-│                                     ││ details to differentiate RNA vs DNA.                                                    │
-└─────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────────────────┘
-┌─ Custom metrics (http://bit.ly/code─┐┌─ Metadata ──────────────────────────────────────────────────────────────────────────────┐
-│ Loop delay                  0.81ms  ││ App Name              IPR-API                                                           │
-│                                     ││ Restarts              0                                                                 │
-│                                     ││ Uptime                23h                                                               │
-│                                     ││ Script path           /var/www/ipr/api/production/current/bin/www                       │
-│                                     ││ Script args           N/A                                                               │
-│                                     ││ Interpreter           node                                                              │
-│                                     ││ Interpreter args      N/A                                                               │
-└─────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
+The deployment follows our standard web application stack set up (https://www.bcgsc.ca/wiki/display/DEVSU/Web+Applications+Server+Stack)
+using PM2 and Bamboo
 
 
 #### Structure
