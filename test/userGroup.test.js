@@ -175,7 +175,7 @@ describe('/user/group endpoint testing', () => {
 
     // Delete group used for tests
     afterAll(async () => {
-      await db.models.userGroup.destroy({where: {ident: groupIdent}});
+      await db.models.userGroup.destroy({where: {ident: groupIdent}, force: true});
     });
 
     // Tests for GET endpoint
