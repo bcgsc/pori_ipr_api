@@ -38,6 +38,10 @@ beforeAll(async () => {
   testUserIdent = res.body.ident;
 });
 
+afterAll(async () => {
+  await server.close();
+});
+
 // Tests for user group related endpoints
 describe('/user/group endpoint testing', () => {
   // Tests for GET endpoints
@@ -179,6 +183,11 @@ describe('/user/group endpoint testing', () => {
       // Add the first user and the test user to the group
       await db.models.userGroupMember.create({group_id: userGroup.id, user_id: TEST_USER_ID});
       await db.models.userGroupMember.create({group_id: userGroup.id, user_id: newMember.id});
+    });
+
+    // Delete group used for tests
+    afterAll(async () => {
+      await db.models.userGroup.destroy({where: {ident: groupIdent}});
     });
 
     // Tests for GET endpoint
@@ -368,14 +377,5 @@ describe('/user/group endpoint testing', () => {
           .expect(HTTP_STATUS.NOT_FOUND);
       });
     });
-
-    // Delete group used for tests
-    afterAll(async () => {
-      await db.models.userGroup.destroy({where: {ident: groupIdent}});
-    });
   });
-});
-
-afterAll(async () => {
-  await server.close();
 });
