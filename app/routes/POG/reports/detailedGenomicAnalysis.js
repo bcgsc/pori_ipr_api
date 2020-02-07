@@ -80,10 +80,11 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get(async (req, res) => {
+    const {params: {reportType}} = req;
     // Setup where clause
     const where = {
       report_id: req.report.id,
-      reportType: 'genomic',
+      reportType,
     };
 
     // Searching for specific type of alterations
@@ -116,18 +117,21 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
   })
 
   .post(async (req, res) => {
+    const {params: {reportType}, report: {id: reportId}, POG: {id: patientId}} = req;
     // Setup new data entry from vanilla
-    req.body.pog_id = req.POG.id;
-    req.body.report_id = req.report.id;
-    req.body.reportType = 'genomic';
 
     try {
-      const result = await db.models.alterations.create(req.body);
+      const result = await db.models.alterations.create({
+        ...req.body,
+        report_id: reportId,
+        pog_id: patientId,
+        reportType,
+      });
 
       // Create new entry for Key Genomic Identified
       await db.models.genomicAlterationsIdentified.scope('public').create({
-        report_id: req.report.id,
-        pog_id: req.POG.id,
+        report_id: reportId,
+        pog_id: patientId,
         geneVariant: `${req.body.gene} (${req.body.variant})`,
       });
 

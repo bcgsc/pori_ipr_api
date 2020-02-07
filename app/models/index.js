@@ -122,9 +122,6 @@ summary.microbial = sequelize.import('./reports/genomic/summary/microbial');
 
 summary.mutationSummaryv2 = sequelize.import('./reports/genomic/summary/mutationSummary.v02');
 
-POG.hasMany(summary.therapeuticTargets, {
-  as: 'therapeuticTargets', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true,
-});
 
 POG.hasOne(patientInformation, {
   as: 'patientInformation', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true,

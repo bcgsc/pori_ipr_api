@@ -86,7 +86,12 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 * Create a migration: `npx sequelize migration:create --name name_of_migratrion`
 * Write up and down functions in your migration file
 * According to your changes in migration file, change your Sequelize models manually
-* Run: `npx sequelize-cli db:migrate` or `npx sequelize-cli db:migrate --url 'mysql://root:password@mysql_host.com/database_name'`
+* Run: `npx sequelize-cli db:migrate` or
+
+```bash
+export IPR_SERVICE_PASS=<PASSWORD>
+npx sequelize-cli db:migrate --url "postgres://ipr_service:$IPR_SERVICE_PASS@iprdevdb:5432/ipr-sync-dev"
+```
 
 Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
 
@@ -232,18 +237,12 @@ pm2 start current/pm2.config.js --env production
 │   │                                   Libraries for exporting data from IPR to csv or tsv files.
 │   │
 │   │
-│   ├── loaders                         # Loaders
-│   │   ├── dir                         Subdirectories contain namespace'd loader files for scraping text files to be read into DB.
-│   │   │
-│   │   └── index.js                    All loaders are defined in the loaders/index.js file for inclusion in the POG loading process.
-│   │
-│   │
 │   ├── middleware                      # Middleware
 │   │                                   Location for all globally required middleware definitions.
 │   │
 │   ├── models                          # Models
 │   │                                   Application DB models. Sequelizejs models describe table schemas.
-│   │   
+│   │
 │   ├── modules                         # Modules
 │   │   │                               Isolated, independant application modules. Germline reports, biopsy/analysis.
 │   │   │                                Most logic for these modules is kept within the /module/ directory. There might be a few exceptions to this rule.

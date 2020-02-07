@@ -50,7 +50,6 @@ router.route('/expressionDensityGraphs')
       const output = {};
       const results = await db.models.imageData.findAll({
         where: {
-          pog_id: req.POG.id,
           report_id: req.report.id,
           key: {
             [Op.like]: 'expDensity.%',
@@ -106,7 +105,6 @@ router.route('/subtypePlots')
       const output = {};
       const results = await db.models.imageData.findAll({
         where: {
-          pog_id: req.POG.id,
           report_id: req.report.id,
           key: {
             [Op.like]: 'subtypePlot.%',
