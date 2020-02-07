@@ -172,8 +172,8 @@ router.route('/:POG/user')
         where: {id: pogUser.id},
         attributes: {exclude: ['id', 'pog_id', 'user_id', 'addedBy_id', 'deletedAt']},
         include: [
-          {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}},
-          {as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'access', 'jiraToken']}},
+          {as: 'user', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'jiraToken']}},
+          {as: 'addedBy', model: db.models.user, attributes: {exclude: ['id', 'password', 'deletedAt', 'jiraToken']}},
         ],
       });
 

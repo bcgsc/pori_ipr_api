@@ -36,7 +36,7 @@ router.param('project', async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken']}},
+      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
       {as: 'pogs', model: db.models.POG.scope('public')},
     ],
   };
@@ -61,7 +61,7 @@ router.route('/')
 
     if (access.check(true) && req.query.admin === 'true') {
       includeOpts.push({as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
     }
 
     let projectAccess;
@@ -214,7 +214,7 @@ router.route('/:ident([A-z0-9-]{36})')
       where: {ident: req.params.ident},
       attributes: {exclude: ['id']},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
         {as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}},
       ],
     };
@@ -309,7 +309,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
@@ -381,7 +381,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
@@ -433,7 +433,7 @@ router.route('/:project([A-z0-9-]{36})/pog')
     let pog;
     try {
       // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
       if (!pog) {
         logger.error('Unable to find POG file');
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
