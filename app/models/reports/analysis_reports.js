@@ -4,13 +4,6 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = sequelize => sequelize.define('analysis_report', {
   ...DEFAULT_COLUMNS,
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   createdBy_id: {
     type: Sq.INTEGER,
     references: {
@@ -55,24 +48,20 @@ module.exports = sequelize => sequelize.define('analysis_report', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['id', 'pog_id', 'createdBy_id', 'deletedAt'],
+        exclude: ['id', 'createdBy_id', 'deletedAt'],
       },
     },
     extended: {
       attributes: {
-        exclude: ['id', 'pog_id', 'createdBy_id', 'deletedAt'],
+        exclude: ['id', 'createdBy_id', 'deletedAt'],
       },
-      include: [
-        {model: sequelize.models.POG, as: 'pog'},
-        {model: sequelize.models.pog_analysis, as: 'analysis'},
-      ],
     },
   },
   hooks: {
     ...DEFAULT_OPTIONS.hooks,
     afterDestroy: async (instance) => {
       // get associations from model
-      const {pog, analysis, ReportUserFilter, createdBy, ...associations} = sequelize.models.analysis_report.associations;
+      const {ReportUserFilter, createdBy, ...associations} = sequelize.models.analysis_report.associations;
       const promises = [];
 
       // delete all report associations

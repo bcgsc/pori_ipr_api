@@ -11,14 +11,6 @@ module.exports = sequelize => sequelize.define('germline_small_mutation', {
     unique: true,
     defaultValue: Sq.UUIDV4,
   },
-  pog_analysis_id: {
-    type: Sq.INTEGER,
-    required: true,
-    references: {
-      model: 'pog_analysis',
-      key: 'id',
-    },
-  },
   source_version: {
     type: Sq.TEXT,
     allowNull: false,
@@ -50,10 +42,9 @@ module.exports = sequelize => sequelize.define('germline_small_mutation', {
     public: {
       order: [['createdAt', 'desc']],
       attributes: {
-        exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id'],
+        exclude: ['deletedAt', 'id', 'biofx_assigned_id'],
       },
       include: [
-        {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
         {as: 'biofx_assigned', model: sequelize.models.user.scope('public')},
         {
           as: 'variants', model: sequelize.models.germline_small_mutation_variant, separate: true, order: [['gene', 'asc']],
