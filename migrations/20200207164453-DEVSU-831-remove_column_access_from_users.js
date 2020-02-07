@@ -1,6 +1,9 @@
 module.exports = {
-  up: (queryInterface) => {
-    return queryInterface.removeColumn('users', 'access');
+  up: async (queryInterface) => {
+    // By deleting the group the cascade effect will automatically remove all the groups in userGroups
+    await queryInterface.bulkDelete('userGroups', {id: 2});
+    await queryInterface.removeColumn('users', 'access');
+    return true;
   },
 
   down: () => {
