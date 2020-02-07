@@ -1,7 +1,7 @@
 module.exports = {
   up: async (queryInterface) => {
     // Deletes superUser group and its references in userGroupMembers (cascade effect)
-    await queryInterface.bulkDelete('userGroups', {id: 2});
+    await queryInterface.bulkDelete('userGroups', {id: 2, name: 'superUser'});
     await queryInterface.removeColumn('users', 'access');
     return true;
   },
