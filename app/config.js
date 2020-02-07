@@ -5,8 +5,7 @@ const {merge} = require('lodash');
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
-let DEFAULT_DB_NAME = 'DEVSU-848-merge-probe-tables'; // TODO: revert before PR merge
-
+let DEFAULT_DB_NAME = 'ipr-sync-dev';
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (ENV === 'staging') {
