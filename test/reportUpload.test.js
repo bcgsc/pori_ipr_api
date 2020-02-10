@@ -51,7 +51,7 @@ describe('Tests for uploading a report and all of its components', () => {
       .expect(200);
 
     // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.report_id;
+    reportId = res.body.patientInformation.reportId;
   }, LONGER_TIMEOUT);
 
   // Test that all components were created
@@ -72,7 +72,7 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(pogAnalysis).not.toBeNull();
     expect(typeof pogAnalysis).toBe('object');
 
-    // for all components, do a find where report_id
+    // for all components, do a find where reportId
     // is the same as the created report id
     const {
       pog, analysis, ReportUserFilter, createdBy, probe_signature,
@@ -84,7 +84,7 @@ describe('Tests for uploading a report and all of its components', () => {
     // verify all report components were created
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      promises.push(db.models[model].findAll({where: {report_id: reportId}}));
+      promises.push(db.models[model].findAll({where: {reportId}}));
     });
 
     const components = await Promise.all(promises);

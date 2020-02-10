@@ -9,7 +9,7 @@ router.route('/')
   .get((req,res,next) => {
 
     let options = {
-      where: {report_id: req.report.id},
+      where: {reportId: req.report.id},
     };
 
     // Get all rows for this POG

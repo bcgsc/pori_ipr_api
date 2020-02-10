@@ -10,7 +10,7 @@ router.route('/')
   .get(async (req, res) => {
     try {
       // Get all rows for this POG
-      const result = await db.models.probe_test_information.scope('public').findOne({where: {report_id: req.report.id}});
+      const result = await db.models.probe_test_information.scope('public').findOne({where: {reportId: req.report.id}});
       return res.json(result);
     } catch (error) {
       logger.error(error);

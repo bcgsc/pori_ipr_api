@@ -12,7 +12,7 @@ router.use('/', async (req, res, next) => {
   // Get Patient Information for this POG
   let result;
   try {
-    result = await db.models.analystComments.scope('public').findOne({where: {report_id: req.report.id}});
+    result = await db.models.analystComments.scope('public').findOne({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to query analyst comments ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.POG.POGID}`, code: 'failedAnalystCommentsQuery'}});
@@ -34,7 +34,7 @@ router.route('/')
     // First Comments
     if (!req.analystComments) {
       req.body.pog_id = req.POG.id;
-      req.body.report_id = req.report.id;
+      req.body.reportId = req.report.id;
 
       // Create new entry
       try {
@@ -61,7 +61,7 @@ router.route('/')
 
         // Remove id's and deletedAt properties from returned model
         const {
-          id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+          id, pog_id, reportId, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
         } = dataValues;
 
         return res.json(publicModel);
@@ -107,7 +107,7 @@ router.route('/sign/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        id, pog_id, reportId, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -152,7 +152,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        id, pog_id, reportId, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

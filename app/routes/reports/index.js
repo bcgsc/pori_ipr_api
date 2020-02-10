@@ -361,13 +361,13 @@ router.route('/')
           // update new model entries with pog and report id
           req.body[model].forEach((newEntry) => {
             newEntry.pog_id = patient.id;
-            newEntry.report_id = report.id;
+            newEntry.reportId = report.id;
           });
 
           promises.push(db.models[model].bulkCreate(req.body[model]));
         } else {
           req.body[model].pog_id = patient.id;
-          req.body[model].report_id = report.id;
+          req.body[model].reportId = report.id;
 
           promises.push(db.models[model].create(req.body[model]));
         }

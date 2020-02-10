@@ -10,7 +10,7 @@ router.use('/', async (req, res, next) => {
   // Get Mutation Summary for this POG
   let result;
   try {
-    result = await db.models.mutationSummaryv2.scope('public').findAll({where: {report_id: req.report.id}});
+    result = await db.models.mutationSummaryv2.scope('public').findAll({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup mutation summaries for ${req.POG.POGID} error: ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.POG.POGID}`, code: 'failedMutationSummaryQuery'}});
@@ -49,7 +49,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, pog_id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

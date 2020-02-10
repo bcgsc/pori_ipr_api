@@ -46,7 +46,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, pog_id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -71,7 +71,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
 router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {report_id: req.report.id};
+    const where = {reportId: req.report.id};
 
     // Searching for specific type of alterations
     if (req.params.type) {
@@ -98,7 +98,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
 router.route('/mutationSignature')
   .get(async (req, res) => {
     const options = {
-      where: {report_id: req.report.id},
+      where: {reportId: req.report.id},
       order: [['signature', 'ASC']],
     };
 

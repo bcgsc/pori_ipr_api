@@ -11,7 +11,8 @@ module.exports = sequelize => sequelize.define('cnv', {
       key: 'id',
     },
   },
-  report_id: {
+  reportId: {
+    field: 'report_id',
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -60,7 +61,7 @@ module.exports = sequelize => sequelize.define('cnv', {
   tableName: 'pog_analysis_reports_copy_number_analysis_cnv',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'deletedAt', 'report_id', 'pog_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'reportId', 'pog_id']},
     },
   },
 });

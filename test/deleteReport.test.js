@@ -47,7 +47,7 @@ describe('Tests for deleting a report and all of its components', () => {
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
       modelNames.push(model);
-      promises.push(db.models[model].findAll({where: {report_id: report.id}}));
+      promises.push(db.models[model].findAll({where: {reportId: report.id}}));
     });
 
     const results = await Promise.all(promises);
@@ -87,7 +87,7 @@ describe('Tests for deleting a report and all of its components', () => {
     // verify report components are also soft deleted
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      const results = await db.models[model].findAll({where: {report_id: report.id}});
+      const results = await db.models[model].findAll({where: {reportId: report.id}});
       // results should be an empty array
       expect(results).toEqual([]);
     });

@@ -12,7 +12,7 @@ router.use('/', async (req, res, next) => {
   try {
     result = await db.models.variantCounts.findOne({
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
       attributes: {exclude: ['id', '"deletedAt"']},
     });
@@ -53,7 +53,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, pog_id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

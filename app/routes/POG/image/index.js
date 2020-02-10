@@ -24,9 +24,9 @@ router.route('/retrieve/:key')
         key: {
           [Op.in]: keys,
         },
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
-      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'report_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'reportId']},
     };
 
     try {
@@ -50,7 +50,7 @@ router.route('/expressionDensityGraphs')
       const output = {};
       const results = await db.models.imageData.findAll({
         where: {
-          report_id: req.report.id,
+          reportId: req.report.id,
           key: {
             [Op.like]: 'expDensity.%',
           },
@@ -74,7 +74,7 @@ router.route('/mutationSummary')
   .get(async (req, res) => {
     const opts = {
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
         key: {
           [Op.or]: [
             {[Op.like]: 'mutation_summary.%'},
@@ -83,7 +83,7 @@ router.route('/mutationSummary')
         },
       },
       order: [['key', 'ASC']],
-      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'report_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'reportId']},
     };
 
     try {
@@ -105,7 +105,7 @@ router.route('/subtypePlots')
       const output = {};
       const results = await db.models.imageData.findAll({
         where: {
-          report_id: req.report.id,
+          reportId: req.report.id,
           key: {
             [Op.like]: 'subtypePlot.%',
           },
