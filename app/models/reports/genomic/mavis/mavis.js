@@ -23,6 +23,7 @@ module.exports = sequelize => sequelize.define('mavis', {
     },
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     references: {

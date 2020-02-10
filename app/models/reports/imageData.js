@@ -19,6 +19,7 @@ module.exports = sequelize => sequelize.define('imageData', {
     },
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     references: {

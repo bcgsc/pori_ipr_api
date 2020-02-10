@@ -13,6 +13,7 @@ module.exports = sequelize => sequelize.define('presentation_slides',
       defaultValue: Sq.UUIDV4,
     },
     reportId: {
+      name: 'reportId',
       field: 'report_id',
       type: Sq.INTEGER,
       references: {

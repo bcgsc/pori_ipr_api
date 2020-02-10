@@ -51,6 +51,7 @@ module.exports = sequelize => sequelize.define('patientInformation', {
     type: Sq.STRING,
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     allowNull: false,

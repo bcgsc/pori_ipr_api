@@ -6,6 +6,7 @@ module.exports = (sequelize) => {
   return sequelize.define('therapeuticTarget', {
     ...DEFAULT_COLUMNS,
     reportId: {
+      name: 'reportId',
       field: 'report_id',
       type: Sq.INTEGER,
       references: {

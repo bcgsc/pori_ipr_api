@@ -5,6 +5,7 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 module.exports = sequelize => sequelize.define('summary_microbial', {
   ...DEFAULT_COLUMNS,
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     references: {

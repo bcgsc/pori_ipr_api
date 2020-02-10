@@ -11,6 +11,7 @@ module.exports = sequelize => sequelize.define('probe_signature', {
     },
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     references: {

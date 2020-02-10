@@ -20,6 +20,7 @@ module.exports = sequelize => sequelize.define('history_tag', {
     },
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     unique: false,

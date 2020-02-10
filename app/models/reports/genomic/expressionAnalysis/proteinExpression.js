@@ -12,6 +12,7 @@ module.exports = sequelize => sequelize.define('proteinExpression', {
     },
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     references: {

@@ -10,6 +10,7 @@ module.exports = (sequelize) => {
   return sequelize.define('probeResults', {
     ...DEFAULT_COLUMNS,
     reportId: {
+      name: 'reportId',
       field: 'report_id',
       type: Sq.INTEGER,
       references: {

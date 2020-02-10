@@ -12,6 +12,7 @@ module.exports = sequelize => sequelize.define('mutationSummary', {
     },
   },
   reportId: {
+    name: 'reportId',
     field: 'report_id',
     type: Sq.INTEGER,
     references: {
