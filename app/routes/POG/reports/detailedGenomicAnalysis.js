@@ -220,7 +220,7 @@ router.route('/targetedGenes')
 
     // Get all rows for this POG
     try {
-      const result = await db.models.targetedGenes.scope('public').findAll(options);
+      const result = await db.models.probeResults.scope('public').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
