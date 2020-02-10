@@ -81,7 +81,7 @@ router.route('/')
     // Get all rows for this POG
     try {
       const results = await db.models.therapeuticTarget.scope('public').findAll({
-        where: {reportId: reportId},
+        where: {reportId},
         order: [['rank', 'ASC']],
       });
       return res.json(results);
@@ -97,7 +97,7 @@ router.route('/')
     try {
       const result = await db.models.therapeuticTarget.create({
         ...body,
-        reportId: reportId,
+        reportId,
       });
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {

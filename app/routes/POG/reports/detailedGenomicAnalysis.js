@@ -123,14 +123,14 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     try {
       const result = await db.models.alterations.create({
         ...req.body,
-        reportId: reportId,
+        reportId,
         pog_id: patientId,
         reportType,
       });
 
       // Create new entry for Key Genomic Identified
       await db.models.genomicAlterationsIdentified.scope('public').create({
-        reportId: reportId,
+        reportId,
         pog_id: patientId,
         geneVariant: `${req.body.gene} (${req.body.variant})`,
       });
