@@ -9,7 +9,7 @@ const logger = require('../../../../log');
 router.param('target', async (req, res, next, altIdent) => {
   let result;
   try {
-    result = await db.models.probeTarget.findOne({where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}});
+    result = await db.models.probeResults.findOne({where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}});
   } catch (error) {
     logger.error(`Unable to find probe target ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find probe target', code: 'failedMiddlewareProbeTargetQuery'}});
@@ -32,7 +32,7 @@ router.route('/:target([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.probeTarget.update(req.body, {
+      const result = await db.models.probeResults.update(req.body, {
         where: {
           ident: req.target.ident,
         },
@@ -58,7 +58,7 @@ router.route('/:target([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Soft delete the entry
     try {
-      await db.models.probeTarget.destroy({where: {ident: req.target.ident}});
+      await db.models.probeResults.destroy({where: {ident: req.target.ident}});
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove probe target ${error}`);
@@ -75,7 +75,7 @@ router.route('/')
 
     // Get all rows for this POG
     try {
-      const result = await db.models.probeTarget.scope('public').findAll(options);
+      const result = await db.models.probeResults.scope('public').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to get probe targets ${error}`);

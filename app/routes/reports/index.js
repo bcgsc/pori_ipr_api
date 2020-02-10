@@ -2,24 +2,24 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const Ajv = require('ajv');
 const {Op} = require('sequelize');
-const tableFilter = require('../libs/tableFilter');
-const db = require('../models');
-const Acl = require('../middleware/acl');
-const Report = require('../libs/structures/analysis_report');
-const imageLoader = require('../loaders/image');
-const logger = require('../log');
+const tableFilter = require('../../libs/tableFilter');
+const db = require('../../models');
+const Acl = require('../../middleware/acl');
+const Report = require('../../libs/structures/analysis_report');
+const {loadImage} = require('./images');
+const logger = require('../../log');
 
-const pogMiddleware = require('../middleware/pog');
-const reportMiddleware = require('../middleware/analysis_report');
-const ajvErrorFormatter = require('../libs/ajvErrorFormatter');
-const deleteModelEntries = require('../libs/deleteModelEntries');
+const pogMiddleware = require('../../middleware/pog');
+const reportMiddleware = require('../../middleware/analysis_report');
+const ajvErrorFormatter = require('../../libs/ajvErrorFormatter');
+const deleteModelEntries = require('../../libs/deleteModelEntries');
 
 const router = express.Router({mergeParams: true});
 const ajv = new Ajv({
   useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger,
 });
 
-const reportSchema = require('../schemas/report/entireReport');
+const reportSchema = require('../../schemas/report/entireReport');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -80,35 +80,37 @@ router.route('/')
      * where direction = asc or desc and column is one of:
      * patientID, analysisBiopsy, tumourType, physician, state, caseType, or alternateIdentifier */
     if (req.query.sort) {
-      const modelMapping = (index, order) => ({
-        patientID: [{model: db.models.POG, as: 'pog'}, 'POGID', order],
-        analysisBiopsy: [{model: db.models.pog_analysis, as: 'analysis'}, 'analysis_biopsy', order],
-        tumourType: [
-          {model: db.models.patientInformation, as: 'patientInformation'},
-          'tumour_type',
-          order,
-        ],
-        physician: [
-          {model: db.models.patientInformation, as: 'patientInformation'},
-          'physician',
-          order,
-        ],
-        state: ['state', order],
-        caseType: [
-          {model: db.models.patientInformation, as: 'patientInformation'},
-          'caseType',
-          order,
-        ],
-        alternateIdentifier: [
-          {model: db.models.pog_analysis, as: 'analysis'},
-          'pog.alternate_identifier',
-          order,
-        ],
-      }[index]);
+      const modelMapping = (index, order) => {
+        return {
+          patientID: [{model: db.models.POG, as: 'pog'}, 'POGID', order],
+          analysisBiopsy: [{model: db.models.pog_analysis, as: 'analysis'}, 'analysis_biopsy', order],
+          tumourType: [
+            {model: db.models.patientInformation, as: 'patientInformation'},
+            'tumour_type',
+            order,
+          ],
+          physician: [
+            {model: db.models.patientInformation, as: 'patientInformation'},
+            'physician',
+            order,
+          ],
+          state: ['state', order],
+          caseType: [
+            {model: db.models.patientInformation, as: 'patientInformation'},
+            'caseType',
+            order,
+          ],
+          alternateIdentifier: [
+            {model: db.models.pog_analysis, as: 'analysis'},
+            'pog.alternate_identifier',
+            order,
+          ],
+        }[index];
+      };
       let {sort} = req.query;
 
       sort = sort.split(',');
-      opts.order = sort.map(sortGroup => modelMapping(...sortGroup.split(':')));
+      opts.order = sort.map((sortGroup) => { return modelMapping(...sortGroup.split(':')); });
     } else {
       opts.order = [
         ['state', 'desc'],
@@ -389,7 +391,9 @@ router.route('/')
 
     // add images to db
     try {
-      await imageLoader(report, req.body.imagesDirectory);
+      await Promise.all(req.body.images.map(async ({path, key}) => {
+        return loadImage(report.id, key, path);
+      }));
     } catch (error) {
       logger.error(`Unable to load images ${error}`);
 
