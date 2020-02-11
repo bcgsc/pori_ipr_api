@@ -44,7 +44,6 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
   });
 
   test('PUT / new comment - 200 Success', async () => {
-    // check that the report was created
     const res = await request
       .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
       .auth(username, password)
@@ -59,6 +58,24 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       pog_id: expect.any(Number),
       report_id: expect.any(Number),
     }));
+  });
+
+  test('PUT / new comment - 404 POG not found', async () => {
+    await request
+      .put(`/api/1.0/POG/NOT_POG/report/${reportIdent}/genomic/summary/analystComments`)
+      .auth(username, password)
+      .type('json')
+      .send({comments: 'This is a sample comment'})
+      .expect(404);
+  });
+
+  test('PUT / new comment - 404 Report not found', async () => {
+    await request
+      .put(`/api/1.0/POG/${pogId}/report/NOT_REPORT/genomic/summary/analystComments`)
+      .auth(username, password)
+      .type('json')
+      .send({comments: 'This is a sample comment'})
+      .expect(404);
   });
 
   // delete report
