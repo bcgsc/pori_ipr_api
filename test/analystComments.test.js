@@ -125,6 +125,14 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
     }));
   });
 
+  test('PUT / sign comment as not existing role - 404 Not Found', async () => {
+    await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/NOT_EXISTENT_ROLE`)
+      .auth(username, password)
+      .type('json')
+      .expect(404);
+  });
+
   // delete report
   afterAll(async () => {
     // delete newly created report and all of it's components
