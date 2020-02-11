@@ -31,7 +31,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
   beforeAll(async () => {
     // create report
-    // TODO: Use models to create the report
+    // TODO: Use models to create the report, revert package.json to run all tests
     const res = await request
       .post('/api/1.0/reports')
       .auth(username, password)
