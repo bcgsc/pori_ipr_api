@@ -9,12 +9,12 @@ const router = express.Router({mergeParams: true});
 // Middleware for Analyst Comments
 router.use('/', async (req, res, next) => {
   try {
-    // Get Patient Information for this POG
+    // Get probe signature for report
     req.signature = await db.models.probe_signature.scope('public').findOne({where: {report_id: req.report.id}});
     return next();
   } catch (error) {
-    logger.error(`Unable to query Analyst Comments ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the analyst comments for ${req.POG.POGID}.`, code: 'failedAnalystCommentsQuery'}});
+    logger.error(`Unable to query Analyst Comments for report ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the analyst comments for report ${req.report.ident}`, code: 'failedAnalystCommentsQuery'}});
   }
 });
 
@@ -40,7 +40,6 @@ router.route('/:role(ready|reviewer)')
     const data = {};
     data[`${role}By_id`] = req.user.id;
     data[`${role}At`] = moment().toISOString();
-    data.pog_id = req.POG.id;
     data.report_id = req.report.id;
 
     // Is there a signature entry yet? If not, create one.

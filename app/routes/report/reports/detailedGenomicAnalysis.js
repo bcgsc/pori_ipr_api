@@ -35,7 +35,6 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
     if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
       await db.models.genomicAlterationsIdentified.scope('public').create({
         report_id: req.report.id,
-        pog_id: req.POG.id,
         geneVariant: `${req.alteration.gene} (${req.alteration.variant})`,
       });
     }
@@ -56,7 +55,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -107,7 +106,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     };
 
     try {
-      // Get all rows for this POG
+      // Get all alterations for this report
       const result = await db.models.alterations.scope('public').findAll(options);
       return res.json(result);
     } catch (error) {
@@ -117,21 +116,19 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
   })
 
   .post(async (req, res) => {
-    const {params: {reportType}, report: {id: reportId}, POG: {id: patientId}} = req;
+    const {params: {reportType}, report: {id: reportId}} = req;
     // Setup new data entry from vanilla
 
     try {
       const result = await db.models.alterations.create({
         ...req.body,
         report_id: reportId,
-        pog_id: patientId,
         reportType,
       });
 
       // Create new entry for Key Genomic Identified
       await db.models.genomicAlterationsIdentified.scope('public').create({
         report_id: reportId,
-        pog_id: patientId,
         geneVariant: `${req.body.gene} (${req.body.variant})`,
       });
 
@@ -168,7 +165,6 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Bump the version number for this entry
     req.body.ident = req.alteration.ident;
-    req.body.pog_id = req.POG.id;
     req.body.report_id = req.report.id;
 
     try {
@@ -186,7 +182,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -218,7 +214,7 @@ router.route('/targetedGenes')
       order: [['gene', 'ASC']],
     };
 
-    // Get all rows for this POG
+    // Get all targeted genes for this report
     try {
       const result = await db.models.targetedGenes.scope('public').findAll(options);
       return res.json(result);

@@ -50,7 +50,7 @@ router.route('/:target([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id: pogId, report_id: reportId, deletedAt, ...publicModel
+        id, report_id: reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -78,7 +78,7 @@ router.route('/')
   .get(async (req, res) => {
     const {report: {id: reportId}} = req;
 
-    // Get all rows for this POG
+    // Get all rows for this report
     try {
       const results = await db.models.therapeuticTarget.scope('public').findAll({
         where: {report_id: reportId},

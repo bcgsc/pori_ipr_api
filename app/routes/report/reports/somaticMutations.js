@@ -46,7 +46,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -84,7 +84,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
       order: [['gene', 'ASC']],
     };
 
-    // Get all rows for this POG
+    // Get all small mutations for this report
     try {
       const results = await db.models.smallMutations.scope('public').findAll(options);
       return res.json(results);
@@ -102,7 +102,7 @@ router.route('/mutationSignature')
       order: [['signature', 'ASC']],
     };
 
-    // Get all rows for this POG
+    // Get all small mutations for this report
     try {
       const results = await db.models.mutationSignature.scope('public').findAll(options);
       return res.json(results);

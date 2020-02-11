@@ -12,7 +12,7 @@ const router = express.Router({mergeParams: true});
 router.route('/retrieve/:key')
   .get(async (req, res) => {
     let keys = [];
-    // Get All Pogs
+
     if (!req.params.key.includes(',')) {
       keys.push(req.params.key);
     } else {
@@ -26,7 +26,7 @@ router.route('/retrieve/:key')
         },
         report_id: req.report.id,
       },
-      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'report_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'report_id']},
     };
 
     try {
@@ -56,7 +56,7 @@ router.route('/expressionDensityGraphs')
           },
         },
         order: [['key', 'ASC']],
-        attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
+        attributes: {exclude: ['id', 'deletedAt']},
       });
 
       results.forEach((value) => {
@@ -83,7 +83,7 @@ router.route('/mutationSummary')
         },
       },
       order: [['key', 'ASC']],
-      attributes: {exclude: ['id', 'deletedAt', 'pog_id', 'report_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'report_id']},
     };
 
     try {
@@ -111,7 +111,7 @@ router.route('/subtypePlots')
           },
         },
         order: [['key', 'ASC']],
-        attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
+        attributes: {exclude: ['id', 'deletedAt']},
       });
 
       results.forEach((value) => {

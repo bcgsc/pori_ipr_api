@@ -48,7 +48,7 @@ router.route('/:gene([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -78,7 +78,7 @@ router.route('/')
       },
     };
 
-    // Get all rows for this POG
+    // Get all genomic events therapeutic for this report
     try {
       const results = await model.scope('public').findAll(options);
       return res.json(results);

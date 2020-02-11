@@ -9,7 +9,7 @@ const router = express.Router({mergeParams: true});
 router.route('/')
   .get(async (req, res) => {
     try {
-      // Get all rows for this POG
+      // Get probe test information for this report
       const result = await db.models.probe_test_information.scope('public').findOne({where: {report_id: req.report.id}});
       return res.json(result);
     } catch (error) {

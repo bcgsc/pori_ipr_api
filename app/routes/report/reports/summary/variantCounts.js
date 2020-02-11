@@ -7,7 +7,7 @@ const logger = require('../../../../log');
 
 // Middleware for Variant Counts
 router.use('/', async (req, res, next) => {
-  // Get Mutation Summary for this POG
+  // Get variant counts for report
   let result;
   try {
     result = await db.models.variantCounts.findOne({
@@ -17,13 +17,13 @@ router.use('/', async (req, res, next) => {
       attributes: {exclude: ['id', '"deletedAt"']},
     });
   } catch (error) {
-    logger.error(`Unable to lookup variant counts for ${req.POG.POGID} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup variant counts for ${req.POG.POGID}`, code: 'failedVariantCountsQuery'}});
+    logger.error(`Unable to lookup variant counts for report: ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup variant counts for report: ${req.report.ident}`, code: 'failedVariantCountsQuery'}});
   }
 
   if (!result) {
-    logger.error(`Unable to find variant counts for ${req.POG.POGID}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find variant counts for ${req.POG.POGID}`, code: 'failedVariantCountsLookup'}});
+    logger.error(`Unable to find variant counts for report: ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find variant counts for ${req.report.ident}`, code: 'failedVariantCountsLookup'}});
   }
 
   // Found the patient information
@@ -53,7 +53,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

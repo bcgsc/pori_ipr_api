@@ -22,7 +22,7 @@ router.param('outlier', async (req, res, next, oIdent) => {
 
   if (!result) {
     logger.error(`Unable to find outlier, ident: ${oIdent}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find outlier', code: 'failedMiddlewareOutlierLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find outlier, ident: ${oIdent}`, code: 'failedMiddlewareOutlierLookup'}});
   }
 
   req.outlier = result;
@@ -51,7 +51,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -61,7 +61,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
-    // Soft delete the entry
+    // Soft delete outlier
     try {
       await db.models.outlier.destroy({where: {ident: req.outlier.ident}});
       return res.json({success: true});
@@ -139,7 +139,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -167,7 +167,7 @@ router.route('/drugTarget')
       order: [['gene', 'ASC']],
     };
 
-    // Get all rows for this POG
+    // Get all drug targets for this report
     try {
       const result = await db.models.drugTarget.scope('public').findAll(options);
       return res.json(result);
@@ -220,7 +220,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -254,7 +254,7 @@ router.route('/protein/:type(clinical|nostic|biological)?')
       where,
     };
 
-    // Get all rows for this POG
+    // Get all outlier's for this report
     try {
       const results = await db.models.outlier.scope('public').findAll(options);
       return res.json(results);

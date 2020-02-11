@@ -46,7 +46,7 @@ router.route('/:alteration([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -99,7 +99,7 @@ router.route('/')
       },
     };
 
-    // Get all rows for this POG
+    // Get all the genomic alterations for this report
     try {
       const results = await db.models.genomicAlterationsIdentified.scope('public').findAll(options);
       return res.json(results);
@@ -112,7 +112,6 @@ router.route('/')
     // Add a new Potential Clinical Alteration...
     const alteration = req.body;
     alteration.report_id = req.report.id;
-    alteration.pog_id = req.report.pog_id;
 
     try {
       const result = await db.models.genomicAlterationsIdentified.create(alteration);

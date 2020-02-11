@@ -10,7 +10,7 @@ const logger = require('../../../../log');
 // Middleware for Analyst Comments
 router.use('/', async (req, res, next) => {
   try {
-    // Get Patient Information for this POG
+    // Get pathway analysis for this report
     const result = await db.models.pathwayAnalysis.findOne({
       where: {
         report_id: req.report.id,
@@ -23,8 +23,8 @@ router.use('/', async (req, res, next) => {
     req.pathwayAnalysis = result;
     return next();
   } catch (error) {
-    logger.error(`Unable to lookup pathway analysis for ${req.POG.POGID} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup pathway analysis for ${req.POG.POGID}`, code: 'failedPathwayAnaylsisQuery'}});
+    logger.error(`Unable to lookup pathway analysis for report: ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup pathway analysis for report: ${req.report.ident}`, code: 'failedPathwayAnaylsisQuery'}});
   }
 });
 
@@ -58,7 +58,6 @@ router.route('/')
         report_id: req.report.id,
       };
       // Remove current
-      req.pathwayAnalysis.pog_id = req.POG.id;
       req.pathwayAnalysis.report_id = req.report.id;
 
       // Update DB Version for Entry
@@ -77,7 +76,7 @@ router.route('/')
 
         // Remove id's and deletedAt properties from returned model
         const {
-          id, pog_id, report_id, deletedAt, ...publicModel
+          id, report_id, deletedAt, ...publicModel
         } = dataValues;
 
         return res.json(publicModel);
@@ -97,7 +96,6 @@ router.route('/')
       onFileUploadComplete: async (file) => {
         // Is there an existing entry?
         if (req.pathwayAnalysis === null) {
-          req.body.pog_id = req.POG.id;
           req.body.report_id = req.report.id;
           req.body.pathway = file;
 

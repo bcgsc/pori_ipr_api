@@ -46,7 +46,7 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -83,7 +83,7 @@ router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourS
       where,
     };
 
-    // Get all rows for this POG
+    // Get all cnv's for this report
     try {
       const result = await db.models.cnv.scope('public').findAll(options);
       return res.json(result);

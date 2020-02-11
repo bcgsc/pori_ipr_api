@@ -7,18 +7,18 @@ const router = express.Router({mergeParams: true});
 
 // Middleware for Mutation Summary
 router.use('/', async (req, res, next) => {
-  // Get Mutation Summary for this POG
+  // Get Mutation Summary for this report
   let result;
   try {
     result = await db.models.mutationSummaryv2.scope('public').findAll({where: {report_id: req.report.id}});
   } catch (error) {
-    logger.error(`Unable to lookup mutation summaries for ${req.POG.POGID} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.POG.POGID}`, code: 'failedMutationSummaryQuery'}});
+    logger.error(`Unable to lookup mutation summaries for report ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.report.ident}`, code: 'failedMutationSummaryQuery'}});
   }
 
   if (!result) {
-    logger.error(`Unable to find mutation summary for ${req.POG.POGID}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find mutation summary for ${req.POG.POGID}`, code: 'failedMutationSummaryLookup'}});
+    logger.error(`Unable to find mutation summary for ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find mutation summary for ${req.report.ident}`, code: 'failedMutationSummaryLookup'}});
   }
 
   // Found the patient information
@@ -49,7 +49,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

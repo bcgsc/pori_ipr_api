@@ -9,13 +9,13 @@ const logger = require('../../../../log');
 
 // Middleware for Analyst Comments
 router.use('/', async (req, res, next) => {
-  // Get Patient Information for this POG
+  // Get Patient Information for report
   let result;
   try {
     result = await db.models.analystComments.scope('public').findOne({where: {report_id: req.report.id}});
   } catch (error) {
-    logger.error(`Unable to query analyst comments ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.POG.POGID}`, code: 'failedAnalystCommentsQuery'}});
+    logger.error(`Unable to query analyst comments for ${req.report.patientId} with error ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.report.patientId}`, code: 'failedAnalystCommentsQuery'}});
   }
 
   // Not found is allowed!
@@ -33,7 +33,6 @@ router.route('/')
   .put(async (req, res) => {
     // First Comments
     if (!req.analystComments) {
-      req.body.pog_id = req.POG.id;
       req.body.report_id = req.report.id;
 
       // Create new entry
@@ -61,7 +60,7 @@ router.route('/')
 
         // Remove id's and deletedAt properties from returned model
         const {
-          id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+          id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
         } = dataValues;
 
         return res.json(publicModel);
@@ -107,7 +106,7 @@ router.route('/sign/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -152,7 +151,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
