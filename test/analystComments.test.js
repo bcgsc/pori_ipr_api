@@ -97,7 +97,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       .expect(404);
   });
 
-  test('PUT / sign comment as author - 200 Success', async () => {
+  test('PUT /sign/author sign comment as author - 200 Success', async () => {
     const res = await request
       .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/author`)
       .auth(username, password)
@@ -111,7 +111,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
     }));
   });
 
-  test('PUT / sign comment as reviewer - 200 Success', async () => {
+  test('PUT /sign/reviewer sign comment as reviewer - 200 Success', async () => {
     const res = await request
       .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/reviewer`)
       .auth(username, password)
@@ -125,9 +125,45 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
     }));
   });
 
-  test('PUT / sign comment as not existing role - 404 Not Found', async () => {
+  test('PUT /sign/INVALID sign comment as not existing role - 404 Not Found', async () => {
     await request
       .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/NOT_EXISTENT_ROLE`)
+      .auth(username, password)
+      .type('json')
+      .expect(404);
+  });
+
+  test('PUT /sign/revoke/author revoke sign comment as author - 200 Success', async () => {
+    const res = await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/revoke/author`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(res.body).toEqual(expect.objectContaining({
+      ident: expect.any(String),
+      comments: expect.any(String),
+      authorSignedAt: null,
+    }));
+  });
+
+  test('PUT /sign/revoke/reviewer revoke sign comment as reviewer - 200 Success', async () => {
+    const res = await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/revoke/reviewer`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(res.body).toEqual(expect.objectContaining({
+      ident: expect.any(String),
+      comments: expect.any(String),
+      reviewerSignedAt: null,
+    }));
+  });
+
+  test('PUT /sign/revoke/INVALID comment as not existing role - 404 Not Found', async () => {
+    await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/revoke/NOT_EXISTENT_ROLECLEAR`)
       .auth(username, password)
       .type('json')
       .expect(404);
