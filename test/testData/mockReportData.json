@@ -64,48 +64,12 @@
     "kbVersion": "v2.8.3",
     "state": "ready",
     "expression_matrix": "v9",
-    "pog": {
-        "POGID": "UPLOADPAT01",
-        "nonPOG": false,
-        "project": "TEST",
-        "alternate_identifier": "UPLOADPATIENT01",
-        "age_of_consent": 20
-    },
-    "analysis": {
-        "libraries": {
-            "normal": "TEST123",
-            "tumour": "TEST123",
-            "transcriptome": "TEST123"
-        },
-        "notes": "This is a test analysis for the test upload",
-        "clinical_biopsy": "clinspec_1",
-        "analysis_biopsy": "biop1",
-        "disease": "Glioblastoma Multiforme",
-        "biopsy_notes": "Fake biopsy notes for report upload test",
-        "priority": "1",
-        "comparator_disease": {
-            "tcga": [
-                "GBM",
-                "LGG",
-                "PED_MB_SHH"
-            ],
-            "gtex_bioposy_site": "Cerebellum",
-            "gtex_primary_site": "Cerebellum"
-        },
-        "biopsy_site": "resection of brain (primary)",
-        "biopsy_type": null,
-        "biopsy_date": "2020-01-01T20:20:00+00:00",
-        "date_analysis": null,
-        "date_presentation": null,
-        "threeLetterCode": "SAR",
-        "physician": [
-            {
-                "last_name": "TEST",
-                "first_name": "UPLOAD"
-            }
-        ],
-        "pediatric_id": null
-    },
+    "patient_id": "UPLOADPAT01",
+    "age_of_consent": 20,
+    "alternate_identifier": "UPLOADPATIENT01",
+    "biopsy_name": "biop1",
+    "biopsy_date": "2020-01-01T20:20:00+00:00",
+    "presentation_date": null,
     "patientInformation": {
         "physician": "Dr. Test Upload",
         "gender": "Male",
