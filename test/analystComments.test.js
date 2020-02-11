@@ -65,7 +65,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
     }));
   });
 
-  test('PUT / new comment - 200 Success', async () => {
+  test('PUT / comment - 200 Success', async () => {
     const res = await request
       .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
       .auth(username, password)
@@ -79,7 +79,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
     }));
   });
 
-  test('PUT / new comment - 404 POG not found', async () => {
+  test('PUT / comment - 404 POG not found', async () => {
     await request
       .put(`/api/1.0/POG/NOT_POG/report/${reportIdent}/genomic/summary/analystComments`)
       .auth(username, password)
@@ -88,13 +88,41 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       .expect(404);
   });
 
-  test('PUT / new comment - 404 Report not found', async () => {
+  test('PUT / comment - 404 Report not found', async () => {
     await request
       .put(`/api/1.0/POG/${pogId}/report/NOT_REPORT/genomic/summary/analystComments`)
       .auth(username, password)
       .type('json')
       .send({comments: 'This is a sample comment'})
       .expect(404);
+  });
+
+  test('PUT / sign comment as author - 200 Success', async () => {
+    const res = await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/author`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(res.body).toEqual(expect.objectContaining({
+      ident: expect.any(String),
+      comments: expect.any(String),
+      authorSignedAt: expect.any(String),
+    }));
+  });
+
+  test('PUT / sign comment as reviewer - 200 Success', async () => {
+    const res = await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/reviewer`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(res.body).toEqual(expect.objectContaining({
+      ident: expect.any(String),
+      comments: expect.any(String),
+      reviewerSignedAt: expect.any(String),
+    }));
   });
 
   // delete report
