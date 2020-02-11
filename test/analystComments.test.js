@@ -41,6 +41,28 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
     expect(typeof res.body).toBe('object');
     reportIdent = res.body.ident;
+
+    await request
+      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
+      .auth(username, password)
+      .type('json')
+      .send({comments: 'This is the first comment'})
+      .expect(200);
+  });
+
+  test('GET / comment - 200 Success', async () => {
+    const res = await request
+      .get(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    expect(res.body).toEqual(expect.objectContaining({
+      ident: expect.any(String),
+      comments: expect.any(String),
+      reviewerSignature: expect.any(Object),
+      authorSignature: expect.any(Object),
+    }));
   });
 
   test('PUT / new comment - 200 Success', async () => {
@@ -48,15 +70,12 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
       .auth(username, password)
       .type('json')
-      .send({comments: 'This is a sample comment'})
+      .send({comments: 'This is another comment'})
       .expect(200);
 
     expect(res.body).toEqual(expect.objectContaining({
       ident: expect.any(String),
-      id: expect.any(Number),
-      comments: 'This is a sample comment',
-      pog_id: expect.any(Number),
-      report_id: expect.any(Number),
+      comments: 'This is another comment',
     }));
   });
 
