@@ -56,10 +56,10 @@ app.js --database.hostname someTestServerName
 ```
 
 
-#### Running Tests with Mocha
+#### Running Tests with Jest
 ======================================
 
-Unit and Integration tests are run and written using Mocha + Chai with code coverage reports generated using Istanbul/NYC and Clover. Tests are configured to run using a local environment variable - this currently cannot be overridden.
+Unit and Integration tests are run and written using Jest + Supertest with code coverage reports generated using Clover. Tests are configured to run using a local environment variable - this currently cannot be overridden.
 
 To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run
 
