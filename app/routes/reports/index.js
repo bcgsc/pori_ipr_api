@@ -9,7 +9,6 @@ const Report = require('../../libs/structures/analysis_report');
 const {loadImage} = require('./images');
 const logger = require('../../log');
 
-const pogMiddleware = require('../../middleware/pog');
 const reportMiddleware = require('../../middleware/analysis_report');
 const ajvErrorFormatter = require('../../libs/ajvErrorFormatter');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
@@ -26,7 +25,6 @@ const DEFAULT_PAGE_OFFSET = 0;
 
 
 // Register middleware
-router.param('POG', pogMiddleware);
 router.param('report', reportMiddleware);
 
 // Act on all reports
@@ -48,22 +46,10 @@ router.route('/')
         {
           model: db.models.patientInformation,
           as: 'patientInformation',
-          attributes: {exclude: ['id', 'deletedAt', 'pog_id']},
+          attributes: {exclude: ['id', 'deletedAt']},
         },
         {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
-        {
-          model: db.models.POG.scope('public'),
-          as: 'pog',
-          include: [
-            {
-              model: db.models.project,
-              as: 'projects',
-              attributes: {exclude: ['id', 'createdAt', 'updatedAt', 'deletedAt']},
-            },
-          ],
-        },
-        {model: db.models.pog_analysis.scope('public'), as: 'analysis'},
         {
           model: db.models.analysis_reports_user,
           as: 'users',
@@ -213,8 +199,8 @@ router.route('/')
       }
       return res.json({total, reports});
     } catch (error) {
-      logger.error(`Unable to lookup analysis reports ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup analysis reports.'}});
+      logger.error(`Unable to lookup reports ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup reports'}});
     }
   })
   .post(async (req, res) => {
@@ -255,78 +241,9 @@ router.route('/')
 
     const createdComponents = {};
 
-    // find or create POG
-    let patient;
-    let createdPatient;
-    try {
-      [patient, createdPatient] = await db.models.POG.findOrCreate({where: {POGID: req.body.pog.POGID}, defaults: req.body.pog});
-
-      if (createdPatient) {
-        createdComponents.POG = patient.id;
-      }
-    } catch (error) {
-      logger.error(`Unable to find or create patient ${req.body.pog.POGID} with this error ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to find or create patient', cause: error}});
-    }
-
-    // find or create patient-project association
-    try {
-      const patientProject = {pog_id: patient.id, project_id: project.id};
-      const [pogProject, createdPogProject] = await db.models.pog_project.findOrCreate({where: patientProject, defaults: patientProject});
-
-      if (createdPogProject) {
-        createdComponents.pog_project = pogProject.id;
-      }
-    } catch (error) {
-      logger.error(`Unable to create an association between patient and project ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to create an association between patient and project', cause: error}});
-    }
-
-    // find or create Analysis
-    let patientAnalysis;
-    let patientAnalysisCreated;
-    try {
-      req.body.analysis.pog_id = patient.id;
-
-      [patientAnalysis, patientAnalysisCreated] = await db.models.pog_analysis.findOrCreate({where: {pog_id: patient.id, analysis_biopsy: req.body.analysis.analysis_biopsy}, defaults: req.body.analysis});
-
-      if (patientAnalysisCreated) {
-        createdComponents.pog_analysis = patientAnalysis.id;
-      }
-    } catch (error) {
-      logger.error(`Unable to find or create patient analysis ${req.body.analysis.analysis_biopsy} with error ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to find or create patient analysis', cause: error}});
-    }
-
     // create report
     let report;
     try {
-      req.body.analysis_id = patientAnalysis.id;
-      req.body.pog_id = patient.id;
       req.body.createdBy_id = req.user.id;
 
       report = await db.models.analysis_report.create(req.body);
@@ -345,8 +262,29 @@ router.route('/')
       return res.status(500).json({error: {message: 'Unable to create report', cause: error}});
     }
 
+    // find or create report-project association
+    try {
+      const reportProjectData = {report_id: report.id, project_id: project.id};
+      const [reportProject, createdReportProject] = await db.models.report_project.findOrCreate({where: reportProjectData, defaults: reportProjectData});
+
+      if (createdReportProject) {
+        createdComponents.report_project = reportProject.id;
+      }
+    } catch (error) {
+      logger.error(`Unable to create an association between report and project ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
+      return res.status(500).json({error: {message: 'Unable to create an association between report and project', cause: error}});
+    }
+
     const {
-      pog, analysis, ReportUserFilter, createdBy, probe_signature,
+      ReportUserFilter, createdBy, probe_signature,
       presentation_discussion, presentation_slides, users,
       analystComments, ...associations
     } = db.models.analysis_report.associations;
@@ -358,15 +296,13 @@ router.route('/')
 
       if (req.body[model]) {
         if (Array.isArray(req.body[model])) {
-          // update new model entries with pog and report id
+          // update new model entries with report id
           req.body[model].forEach((newEntry) => {
-            newEntry.pog_id = patient.id;
             newEntry.report_id = report.id;
           });
 
           promises.push(db.models[model].bulkCreate(req.body[model]));
         } else {
-          req.body[model].pog_id = patient.id;
           req.body[model].report_id = report.id;
 
           promises.push(db.models[model].create(req.body[model]));
@@ -414,7 +350,6 @@ router.route('/:report')
   .get((req, res) => {
     const report = req.report.get();
     delete report.id;
-    delete report.pog_id;
     delete report.createdBy_id;
     delete report.deletedAt;
 
@@ -452,18 +387,16 @@ router.route('/:report')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, createdBy_id, deletedAt, ...publicModel
+        id, createdBy_id, deletedAt, ...publicModel
       } = dataValues;
 
       publicModel.patientInformation = req.report.patientInformation;
-      publicModel.analysis = req.report.analysis;
-      publicModel.pog = req.report.pog;
       publicModel.users = req.report.users;
 
       return res.json(publicModel);
     } catch (error) {
-      logger.error(`Unable to update analysis report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis report', cause: error}});
+      logger.error(`Unable to update report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report', cause: error}});
     }
   });
 
