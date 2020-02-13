@@ -21,20 +21,20 @@ const newUserSchema = {
     type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
     email: {type: 'string', format: 'email'},
     firstName: {type: 'string', minLength: 1},
-    lastName: {type: 'string', minLength: 1}
+    lastName: {type: 'string', minLength: 1},
   },
   // password can be null if type is bcgsc
   if: {
-    properties: {type: {const: 'bcgsc'}}
+    properties: {type: {const: 'bcgsc'}},
   },
   then: {
-    properties: {password: {default: null}}
+    properties: {password: {default: null}},
   },
   else: {
     // password need to have minimum length of 8
     required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
-    properties: {password: {minLength: 8}}
-  }
+    properties: {password: {minLength: 8}},
+  },
 };
 
 // Compile schema to be used in validator
@@ -56,11 +56,10 @@ const parseNewUser = (request) => {
     email: request.email,
     firstName: request.firstName,
     lastName: request.lastName,
-    access: 'clinician'
   };
 };
 
-// Route for getting a POG
+// User routes
 router.route('/')
   // Get All Users
   .get(async (req, res) => {
