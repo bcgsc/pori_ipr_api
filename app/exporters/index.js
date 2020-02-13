@@ -26,12 +26,12 @@ class ExportDataTables {
   /**
    * Constructor
    *
-   * @param {Object.<string>} pog - Pog ID
+   * @param {object} report - Report model object
    * @param {Object.<string, string>} exportEvent  - The data export slug
    */
-  constructor(pog, exportEvent) {
+  constructor(report, exportEvent) {
     this.log = '';
-    this.pog = pog;
+    this.report = report;
     this.exportEvent = exportEvent;
     this.config = {
       original: null,
@@ -124,17 +124,17 @@ class ExportDataTables {
    * @returns {Promise.<Object.<boolean, string, string>>} returns status, the log file, and the command
    */
   async export() {
-    this.logLine(`## Starting export for ${this.pog.POGID}`);
+    this.logLine(`## Starting export for report: ${this.report.ident}`);
     this.logLine(`## Key slug used for this export: ${this.exportEvent.key}`);
     this.logLine(`## DB Entry detailing this export: ${this.exportEvent.ident}`, 2);
 
     // Determine location to report base folder
-    const folder = glob.sync(`${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:reportRoot')}`);
+    const folder = glob.sync(`${nconf.get('paths:data:POGdata')}/${this.report.ident}${nconf.get('paths:data:reportRoot')}`);
 
     // Check for detection
     if (folder.length === 0) {
-      this.logLine('Unable to find the required existing POG folder.');
-      throw new Error(`Unable to find POG source folder in: ${nconf.get('paths:data:POGdata')}/${this.pog.POGID}${nconf.get('paths:data:dataDir')}`);
+      this.logLine('Unable to find the required existing report folder.');
+      throw new Error(`Unable to find report source folder in: ${nconf.get('paths:data:POGdata')}/${this.report.ident}${nconf.get('paths:data:dataDir')}`);
     }
 
     // Set Directory
