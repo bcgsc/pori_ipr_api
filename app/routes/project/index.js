@@ -37,7 +37,7 @@ router.param('project', async (req, res, next, ident) => {
     attributes: {exclude: ['deletedAt']},
     include: [
       {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken']}},
-      {as: 'pogs', model: db.models.POG.scope('public')},
+      {as: 'reports', model: db.models.analysis_report.scope('public')},
     ],
   };
 
@@ -60,7 +60,7 @@ router.route('/')
     access.read = ['admin', 'superUser'];
 
     if (access.check(true) && req.query.admin === 'true') {
-      includeOpts.push({as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}});
+      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}});
       includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
     }
 
@@ -215,7 +215,7 @@ router.route('/:ident([A-z0-9-]{36})')
       attributes: {exclude: ['id']},
       include: [
         {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
-        {as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}},
+        {as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}},
       ],
     };
 
@@ -406,96 +406,92 @@ router.route('/:project([A-z0-9-]{36})/user')
     }
   });
 
-// POG Binding Functions
-router.route('/:project([A-z0-9-]{36})/pog')
+// Report Binding Functions
+router.route('/:project([A-z0-9-]{36})/reports')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
     access.read = ['admin', 'superUser'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to get project POGs');
+      logger.error('User isn\'t allowed to get project reports');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    // Get Project POGs
-    return res.json(req.project.pogs);
+    // get project reports
+    return res.json(req.project.reports);
   })
   .post(async (req, res) => {
-    // Add Project POG
+    // Add Project report
     // Access Control
     const access = new Acl(req, res);
     access.write = ['admin', 'superUser', 'Full Project Access'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to add project POGs');
+      logger.error('User isn\'t allowed to add project reports');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    let pog;
+    let report;
     try {
-      // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
-      if (!pog) {
-        logger.error('Unable to find POG file');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+      // Lookup report
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}});
+      if (!report) {
+        logger.error('Unable to find report');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report', code: 'failedReportLookupReportProject'}});
       }
     } catch (error) {
-      logger.error(`Error while trying to find the POG file ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find the POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
     }
 
     try {
-      // Bind POG
-      const pogProject = await db.models.pog_project.create({project_id: req.project.id, pog_id: pog.id});
+      // Bind report
+      const reportProject = await db.models.report_project.create({project_id: req.project.id, report_id: report.id});
       const output = {
-        ident: pog.ident,
-        POGID: pog.POGID,
-        createdAt: pog.createdAt,
-        updatedAt: pog.updatedAt,
-        pog_project: {
-          updatedAt: pogProject.updatedAt,
-          createdAt: pogProject.createdAt,
-        },
+        report: report.ident,
+        project: req.project.name,
+        createdAt: reportProject.createdAt,
+        updatedAt: reportProject.updatedAt,
       };
 
       return res.json(output);
     } catch (error) {
-      logger.error(`Error while adding pog to project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding pog to project', code: 'failedPOGProjectCreateQuery'}});
+      logger.error(`Error while adding report to project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding report to project', code: 'failedReportProjectCreateQuery'}});
     }
   })
   .delete(async (req, res) => {
-    // Remove Project POG
+    // Remove project-report association
     // Access Control
     const access = new Acl(req, res);
     access.write = ['admin', 'superUser', 'Full Project Access'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to delete project POGs');
+      logger.error('User isn\'t allowed to delete project reports');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    let pog;
+    let report;
     try {
-      // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt']}});
-      if (!pog) {
-        logger.error('Unable to find the supplied pog');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+      // Lookup report
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: {exclude: ['deletedAt']}});
+      if (!report) {
+        logger.error(`Unable to find report ${req.body.report}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`, code: 'failedReportLookupReportProject'}});
       }
     } catch (error) {
-      logger.error(`Error while trying to find supplied POG ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
     }
 
     try {
-      // Unbind POG
-      const pogProject = await db.models.pog_project.destroy({where: {project_id: req.project.id, pog_id: pog.id}});
-      if (!pogProject) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove pog from project', code: 'failedPOGProjectDestroy'}});
+      // Unbind report
+      const reportProject = await db.models.report_project.destroy({where: {project_id: req.project.id, report_id: report.id}});
+      if (!reportProject) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove report from project', code: 'failedReportProjectDestroy'}});
       }
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
-      logger.error(`Error while trying to remove POG from project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove POG from project', code: 'failedGroupMemberRemoveQuery'}});
+      logger.error(`Error while trying to remove report from project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove Report from project', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 
