@@ -26,20 +26,10 @@ const userToken = sequelize.import('./user/userToken');
 user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
 userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 
-// POG
-const POG = sequelize.import('./POG');
-
 // Projects
 const project = sequelize.import('./project/project');
 const userProject = sequelize.import('./project/user_project');
-const pogProject = sequelize.import('./project/pog_project');
-
-project.belongsToMany(POG, {
-  as: 'pogs', through: {model: pogProject, unique: false}, foreignKey: 'project_id', otherKey: 'pog_id', onDelete: 'CASCADE',
-});
-POG.belongsToMany(project, {
-  as: 'projects', through: {model: pogProject, unique: false}, foreignKey: 'pog_id', otherKey: 'project_id', onDelete: 'CASCADE',
-});
+const reportProject = sequelize.import('./project/report_project');
 
 project.belongsToMany(user, {
   as: 'users', through: {model: userProject, unique: false}, foreignKey: 'project_id', otherKey: 'user_id', onDelete: 'CASCADE',
@@ -48,20 +38,16 @@ user.belongsToMany(project, {
   as: 'projects', through: {model: userProject, unique: false}, foreignKey: 'user_id', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
-// Analysis
-const analysis = require('../modules/analysis/models')(sequelize);
-
-POG.hasMany(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-
 // Pog Analysis Reports
 const analysisReports = sequelize.import('./reports/analysis_reports');
 const analysisReportsUsers = sequelize.import('./analysis_report_user');
 
-POG.hasMany(analysisReports, {as: 'analysis_reports', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-
-analysisReports.belongsTo(POG, {as: 'pog', foreignKey: 'pog_id', onDelete: 'CASCADE'});
-analysisReports.belongsTo(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
-sequelize.models.pog_analysis.hasMany(analysisReports, {as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE'});
+project.belongsToMany(analysisReports, {
+  as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'report_id', onDelete: 'CASCADE',
+});
+analysisReports.belongsToMany(project, {
+  as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'report_id', otherKey: 'project_id', onDelete: 'CASCADE',
+});
 
 analysisReports.hasMany(analysisReportsUsers, {
   as: 'users', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
@@ -123,9 +109,6 @@ summary.microbial = sequelize.import('./reports/genomic/summary/microbial');
 summary.mutationSummaryv2 = sequelize.import('./reports/genomic/summary/mutationSummary.v02');
 
 
-POG.hasOne(patientInformation, {
-  as: 'patientInformation', foreignKey: 'pog_id', onDelete: 'CASCADE', constraints: true,
-});
 analysisReports.belongsTo(user, {
   as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true,
 });
@@ -272,7 +255,6 @@ analysisReports.hasMany(structuralVariation.sv, {
 // Structural Variation
 const expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
-// expressionAnalysis.proteinExpression = sequelize.import(__dirname + '/reports/genomic/expressionAnalysis/proteinExpression');
 expressionAnalysis.drugTarget = sequelize.import('./reports/genomic/expressionAnalysis/drugTarget');
 
 expressionAnalysis.outlier.belongsTo(analysisReports, {
@@ -311,22 +293,10 @@ analysisReports.hasMany(presentation.slides, {
   as: 'presentation_slides', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
 });
 
-// Data Export
-const POGDataExport = sequelize.import('./POGDataExport');
-POGDataExport.belongsTo(POG, {
-  as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-POGDataExport.belongsTo(user, {
-  as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-
 // Probe Report
 const probeTestInformation = sequelize.import('./reports/probe/test_information');
 probeTestInformation.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-probeTestInformation.belongsTo(POG, {
-  as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(probeTestInformation, {
   as: 'probe_test_information', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
@@ -336,9 +306,6 @@ const probeSignature = sequelize.import('./reports/probe/signature');
 probeSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'report_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-probeSignature.belongsTo(POG, {
-  as: 'pog', foreignKey: 'pog_id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 probeSignature.belongsTo(user, {
   as: 'readySignature', foreignKey: 'readySignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
@@ -347,15 +314,6 @@ probeSignature.belongsTo(user, {
 });
 analysisReports.hasOne(probeSignature, {
   as: 'probe_signature', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,
-});
-
-// Subscription
-const subscription = sequelize.import('./pog_analysis_subscription');
-subscription.belongsTo(sequelize.models.pog_analysis, {
-  as: 'analysis', foreignKey: 'analysis_id', onDelete: 'CASCADE', constraints: true,
-});
-subscription.belongsTo(user, {
-  as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Flash Tokens
