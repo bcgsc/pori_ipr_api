@@ -18,6 +18,15 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
+const signatureProperties = ['ident', 'createdAt', 'updatedAt', 'username', 'type', 'firstName', 'lastName', 'email', 'lastLogin'];
+// Properties of res.body.reviewerSignature and res.body.authorSignature
+const checkSignatureProperties = (signature) => {
+  // Function for checking reviewer and author signatures
+  signatureProperties.forEach((property) => {
+    expect(signature).toHaveProperty(property);
+  });
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -59,12 +68,19 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       .type('json')
       .expect(200);
 
+    const {body: {reviewerSignature, authorSignature}} = res;
     expect(res.body).toEqual(expect.objectContaining({
       ident: expect.any(String),
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
       comments: expect.any(String),
       reviewerSignature: expect.any(Object),
       authorSignature: expect.any(Object),
     }));
+    expect(res.body).toHaveProperty('reviewerSignedAt');
+    expect(res.body).toHaveProperty('authorSignedAt');
+    checkSignatureProperties(reviewerSignature);
+    checkSignatureProperties(authorSignature);
   });
 
   describe('PUT', () => {
