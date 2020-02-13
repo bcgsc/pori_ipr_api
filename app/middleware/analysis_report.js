@@ -1,18 +1,15 @@
 const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 
-// Lookup POG middleware
+// Lookup report middleware
 module.exports = async (req, res, next, ident) => {
-  // Lookup POG first
   const result = await db.models.analysis_report.findOne({
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}},
+      {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt']}},
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
-      {model: db.models.POG.scope('public'), as: 'pog'},
       {model: db.models.user.scope('public'), as: 'createdBy'},
-      {model: db.models.pog_analysis.scope('public'), as: 'analysis'},
       {
         model: db.models.analysis_reports_user,
         as: 'users',
@@ -29,7 +26,7 @@ module.exports = async (req, res, next, ident) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report', code: 'reportMiddlewareLookupFail'}});
   }
 
-  // POG found, next()
+  // report found, next()
   req.report = result;
   return next();
 };

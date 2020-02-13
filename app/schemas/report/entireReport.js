@@ -5,7 +5,7 @@ const schemaGenerator = require('./basicReportComponentSchemaGenerator');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-const REPORT_EXCLUDE = ['pog_id', 'analysis_id', 'createdBy_id'];
+const REPORT_EXCLUDE = ['createdBy_id'];
 const exclude = BASE_EXCLUDE.concat(REPORT_EXCLUDE);
 
 const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
