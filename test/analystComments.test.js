@@ -31,6 +31,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
   beforeAll(async () => {
     // create a report to be used in tests
+    // TODO: Update report upload to report mocking once metadata is simplified
     const res = await request
       .post('/api/1.0/reports')
       .auth(username, password)
