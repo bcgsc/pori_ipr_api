@@ -1,4 +1,4 @@
-const p2s = require('../../libs/pyToSql');
+const p2s = require('../../../libs/pyToSql');
 
 /**
  * Process Germline small mutation variants

@@ -1,8 +1,8 @@
-const db = require('../../../models');
-const MiddlewareNotFound = require('../../../middleware/exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed = require('../../../middleware/exceptions/MiddlewareQueryFailed');
+const db = require('../../models');
+const MiddlewareNotFound = require('../exceptions/MiddlewareNotFound');
+const MiddlewareQueryFailed = require('../exceptions/MiddlewareQueryFailed');
 
-const logger = require('../../../log');
+const logger = require('../../log');
 
 // Lookup POG middleware
 module.exports = async (req, res, next, ident) => {

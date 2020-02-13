@@ -49,7 +49,7 @@ user.belongsToMany(project, {
 });
 
 // Analysis
-const analysis = require('../modules/analysis/models')(sequelize);
+require('../modules/analysis/models')(sequelize);
 
 POG.hasMany(sequelize.models.pog_analysis, {as: 'analysis', foreignKey: 'pog_id', onDelete: 'CASCADE'});
 
@@ -358,6 +358,6 @@ flashToken.belongsTo(user, {
 });
 
 // Germline Small Mutations
-const gsm = require('../modules/germine_small_mutation/models')(sequelize);
+require('./germlineSmallMutation')(sequelize);
 
 module.exports = sequelize;
