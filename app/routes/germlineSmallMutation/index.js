@@ -137,7 +137,7 @@ const loadReport = async (req, res) => {
     logger.error(`There was an error while creating germline reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: `Failed to import report: ${error.message}`, error});
   }
-}
+};
 
 /**
  * Get All Germline Reports
@@ -201,7 +201,7 @@ const getReports = async (req, res) => {
   const rows = reports.slice(start, finish);
 
   return res.json({total: gsmReports.count, reports: rows});
-}
+};
 
 /**
  * Get Germline reports for specific biopsy
@@ -245,7 +245,7 @@ const getAnalysisReport = async (req, res) => {
     logger.error(`There was an error while trying to find all germline reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
   }
-}
+};
 
 /**
  * Add review event for germline report
@@ -314,7 +314,7 @@ const addReview = async (req, res) => {
     logger.error(`There was an error while creating a review for this report ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating a review for this report'});
   }
-}
+};
 
 /**
  * Remove a review from a report
@@ -334,7 +334,7 @@ const removeReview = async (req, res) => {
     logger.error(`There was an error while trying to remove the requested germline report ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline report'});
   }
-}
+};
 
 // Resource endpoints for Variants
 router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant/:variant')
