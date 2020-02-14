@@ -2,7 +2,6 @@ const tables = [
   'pog_analysis_reports_users',
   'pog_analysis_reports_copy_number_analysis_cnv',
   'pog_analysis_reports_dga_alterations',
-  'pog_analysis_reports_dga_targeted_genes',
   'pog_analysis_reports_expression_drug_target',
   'pog_analysis_reports_expression_outlier',
   'pog_analysis_reports_image_data',
