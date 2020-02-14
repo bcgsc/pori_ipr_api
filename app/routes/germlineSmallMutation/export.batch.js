@@ -26,7 +26,7 @@ const router = express.Router({mergeParams: true});
  *
  * @returns {Promise.<object>} - Returns the finished response
  */
-const batchExport = async (req, res) => {
+router.get('/', async (req, res) => {
   const opts = {
     where: {
       exported: false,
@@ -89,7 +89,7 @@ const batchExport = async (req, res) => {
     logger.error(`Error while writing xlsx export of recent reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while writing xlsx export of recent reports'});
   }
-};
+});
 
 /**
  * Generate a flash token for exporting reports
@@ -105,7 +105,7 @@ const batchExport = async (req, res) => {
  *
  * @returns {Promise.<object>} - Returns the created flash token
  */
-const getExportFlashToken = async (req, res) => {
+router.get('/token', async (req, res) => {
   try {
     const flashToken = await db.models.flash_token.create({user_id: req.user.id, resource: 'gsm_export'});
     return res.json({token: flashToken.token});
@@ -113,10 +113,7 @@ const getExportFlashToken = async (req, res) => {
     logger.error(`Error while trying to create flash token ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to create flash token'});
   }
-};
+});
 
-// Export
-router.get('/token', getExportFlashToken);
-router.get('/', batchExport);
 
 module.exports = router;

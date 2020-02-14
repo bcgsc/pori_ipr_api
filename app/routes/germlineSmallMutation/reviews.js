@@ -23,7 +23,7 @@ router.param('review', reviewMiddleware);
  *
  * @returns {Promise.<object>} - Returns new review for germline report
  */
-const addReview = async (req, res) => {
+router.put('/', async (req, res) => {
   if (!req.body.type) {
     logger.error('A review type is required in the body');
     return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'A review type is required in the body'});
@@ -78,7 +78,7 @@ const addReview = async (req, res) => {
     logger.error(`There was an error while creating a review for this report ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating a review for this report'});
   }
-};
+});
 
 /**
  * Remove a review from a report
@@ -90,7 +90,7 @@ const addReview = async (req, res) => {
  *
  * @returns {Promise.<object>} - Returns 204 status
  */
-const removeReview = async (req, res) => {
+router.delete('/:review', async (req, res) => {
   try {
     await req.review.destroy();
     return res.status(HTTP_STATUS.NO_CONTENT).send();
@@ -98,9 +98,7 @@ const removeReview = async (req, res) => {
     logger.error(`There was an error while trying to remove the requested germline report ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline report'});
   }
-};
+});
 
-router.put('/', addReview); // Add review to report
-router.delete('/:review', removeReview); // Add review to report
 
 module.exports = router;

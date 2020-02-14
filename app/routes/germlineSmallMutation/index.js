@@ -1,5 +1,4 @@
 const HTTP_STATUS = require('http-status-codes');
-const Excel = require('exceljs');
 const _ = require('lodash');
 const {Op} = require('sequelize');
 const express = require('express');
@@ -19,6 +18,7 @@ const reviewRouter = require('./reviews');
 const batchExportRouter = require('./export.batch');
 
 const logger = require('../../log');
+
 const router = express.Router({mergeParams: true});
 
 const DEFAULT_PAGE_LIMIT = 25;
@@ -47,7 +47,7 @@ router.param('gsm_report', gsmMiddleware);
  *
  * @returns {Promise.<object>} - Returns the created report
  */
-const loadReport = async (req, res) => {
+router.post('/patient/:patient/biopsy/:analysis', async (req, res) => {
   // Check for required values
   const required = {};
   if (!req.params.analysis) {
@@ -136,7 +136,7 @@ const loadReport = async (req, res) => {
     logger.error(`There was an error while creating germline reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: `Failed to import report: ${error.message}`, error});
   }
-};
+});
 
 /**
  * Get All Germline Reports
@@ -153,7 +153,7 @@ const loadReport = async (req, res) => {
  *
  * @returns {Promise.<object>} - Returns the reports and number of reports
  */
-const getReports = async (req, res) => {
+router.get('/', async (req, res) => {
   const opts = {
     order: [['id', 'desc']],
     where: {},
@@ -200,7 +200,7 @@ const getReports = async (req, res) => {
   const rows = reports.slice(start, finish);
 
   return res.json({total: gsmReports.count, reports: rows});
-};
+});
 
 /**
  * Get Germline reports for specific biopsy
@@ -213,7 +213,7 @@ const getReports = async (req, res) => {
  *
  * @returns {Promise.<object>} - Returns the germline analysis reports
  */
-const getAnalysisReport = async (req, res) => {
+router.get('/patient/:patient/biopsy/:analysis', async (req, res) => {
   const opts = {
     order: [['createdAt', 'desc']],
     attributes: {
@@ -244,7 +244,7 @@ const getAnalysisReport = async (req, res) => {
     logger.error(`There was an error while trying to find all germline reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
   }
-};
+});
 
 
 router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', variantRouter);
@@ -327,17 +327,8 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
 
 router.use('/export/batch', batchExportRouter);
 
-
-// Load Report
-router.post('/patient/:patient/biopsy/:analysis', loadReport);
-
-// All Reports
-router.get('/', getReports); // All reports for all cases
-router.get('/patient/:patient/biopsy/:analysis', getAnalysisReport); // All reports for a biopsy
-
 // Reviews
 router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', reviewRouter);
-
 
 
 module.exports = router;

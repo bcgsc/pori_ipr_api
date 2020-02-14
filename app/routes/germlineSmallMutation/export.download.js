@@ -9,6 +9,8 @@ const db = require('../../models');
 const Variants = require('./util/germline_small_mutation_variant');
 const logger = require('../../log');
 
+const router = express.Router({mergeParams: true});
+
 /**
  * Flash Token Authentication and user injection
  *
@@ -20,7 +22,7 @@ const logger = require('../../log');
  *
  * @returns {Promise.<number>} - Returns number of destroyed rows by deleting flash token from db
  */
-const tokenAuth = async (req, res, next) => {
+router.get('/batch/download', async (req, res, next) => {
   // Check for authentication token
   if (!req.query.flash_token) {
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'A flash token is required in the url parameter: flash_token'});
@@ -47,7 +49,7 @@ const tokenAuth = async (req, res, next) => {
     logger.error(error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to query for flash token provided'}});
   }
-};
+});
 
 /**
  * Generate Batch Export
@@ -64,7 +66,7 @@ const tokenAuth = async (req, res, next) => {
  *
  * @returns {Promise.<object>} - Returns response object
  */
-const batchExport = async (req, res) => {
+router.get('/batch/download', async (req, res) => {
   if (!req.flash_token) {
     logger.error('Missing flash token');
     return res.status(HTTP_STATUS.FORBIDDEN).send({message: 'A flash token is required in the url parameter: flash_token'});
@@ -203,11 +205,6 @@ const batchExport = async (req, res) => {
     logger.error(`There was an error while saving updated reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while saving updated reports'});
   }
-};
-
-const router = express.Router({mergeParams: true});
-
-router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
-router.get('/batch/download', batchExport);
+});
 
 module.exports = router;
