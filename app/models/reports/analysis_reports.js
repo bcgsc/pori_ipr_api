@@ -4,6 +4,29 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = sequelize => sequelize.define('analysis_report', {
   ...DEFAULT_COLUMNS,
+  patient_id: {
+    type: Sq.STRING,
+    unique: false,
+    allowNull: false,
+  },
+  age_of_consent: {
+    type: Sq.INTEGER,
+  },
+  alternate_identifier: {
+    type: Sq.STRING,
+  },
+  biopsy_name: {
+    type: Sq.STRING,
+    allowNull: true,
+  },
+  biopsy_date: {
+    type: Sq.DATE,
+    defaultValue: null,
+  },
+  presentation_date: {
+    type: Sq.DATE,
+    defaultValue: null,
+  },
   createdBy_id: {
     type: Sq.INTEGER,
     references: {
