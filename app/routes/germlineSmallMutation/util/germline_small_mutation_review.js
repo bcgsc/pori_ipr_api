@@ -1,6 +1,6 @@
-const db = require('../../models');
+const db = require('../../../models');
 
-const logger = require('../../log');
+const logger = require('../../../log');
 
 /**
  * Get public version of record

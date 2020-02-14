@@ -3,11 +3,11 @@ const Excel = require('exceljs');
 const moment = require('moment');
 const {Op} = require('sequelize');
 const _ = require('lodash');
-const db = require('../../../models');
-const RoutingInterface = require('../../../routes/routingInterface');
-const Variants = require('../germline_small_mutation_variant');
 
-const logger = require('../../../log');
+const db = require('../../models');
+const RoutingInterface = require('../routingInterface');
+const Variants = require('./util/germline_small_mutation_variant');
+const logger = require('../../log');
 
 /**
  * Flash Token Authentication and user injection

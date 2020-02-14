@@ -2,20 +2,22 @@ const HTTP_STATUS = require('http-status-codes');
 const Excel = require('exceljs');
 const _ = require('lodash');
 const {Op} = require('sequelize');
-const db = require('../../../models');
-const RoutingInterface = require('../../../routes/routingInterface');
 
-const Patient = require('../../../libs/patient/patient.library');
-const Analysis = require('../../analysis/analysis.object');
-const Variants = require('../germline_small_mutation_variant');
-const Review = require('../germline_small_mutation_review');
-const Report = require('../germline_small_mutation');
 
-const gsmMiddleware = require('../middleware/germline_small_mutation.middleware');
-const reviewMiddleware = require('../middleware/germline_small_mutation_review.middleware');
-const variantMiddleware = require('../middleware/germline_small_mutation_variant.middleware');
+const db = require('../../models');
+const RoutingInterface = require('../routingInterface');
 
-const logger = require('../../../log');
+const Patient = require('../../libs/patient/patient.library');
+const Analysis = require('../../modules/analysis/analysis.object');
+const Variants = require('./util/germline_small_mutation_variant');
+const Review = require('./util/germline_small_mutation_review');
+const Report = require('./util/germline_small_mutation');
+
+const gsmMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation.middleware');
+const reviewMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_review.middleware');
+const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
+
+const logger = require('../../log');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
