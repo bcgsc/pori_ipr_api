@@ -199,7 +199,6 @@ router.route('/:ident([A-z0-9-]{36})')
     // Access Control
     const access = new Acl(req, res);
     access.write = ['*']; // Admins can update any user, users can only update themselves
-    access.read = ['*']; // Any user should be able to read itself after updating its info
 
     // Is the user neither itself or admin?
     if (!(req.user.ident === req.params.ident || access.isAdmin())) {
