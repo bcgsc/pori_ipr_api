@@ -18,8 +18,8 @@ const projectRoute = require('./project');
 // Get module route files
 const RouterInterface = require('./routingInterface');
 const GeneViewer = require('../modules/geneViewer/routing');
-const GermlineReports = require('../modules/germine_small_mutation/routing');
-const GermlineReportsExport = require('../modules/germine_small_mutation/routing/export.route');
+const GermlineReports = require('./germlineSmallMutation');
+const GermlineReportsExport = require('./germlineSmallMutation/export.route');
 const report = require('./report/base');
 
 const router = express.Router({mergeParams: true});

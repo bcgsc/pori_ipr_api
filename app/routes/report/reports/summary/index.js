@@ -5,7 +5,7 @@ const genomicEventsTherapeutic = require('./genomicEventsTherapeutic');
 const microbial = require('./microbial');
 const mutationSummary = require('./mutationSummary');
 const pathwayAnalysis = require('./pathwayAnalysis');
-const probeTarget = require('./probeTarget');
+const probeResults = require('./probeResults');
 const tumourAnalysis = require('./tumourAnalysis');
 const variantCounts = require('./variantCounts');
 
@@ -17,7 +17,7 @@ router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
 router.use('/microbial', microbial);
 router.use('/mutationSummary', mutationSummary);
 router.use('/pathwayAnalysis', pathwayAnalysis);
-router.use('/probeTarget', probeTarget);
+router.use('/probeResults', probeResults);
 router.use('/tumourAnalysis', tumourAnalysis);
 router.use('/variantCounts', variantCounts);
 
