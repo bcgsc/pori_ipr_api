@@ -25,7 +25,7 @@ const RouterInterface = require('./routingInterface');
 const GeneViewer = require('../modules/geneViewer/routing');
 const Analysis = require('../modules/analysis/routing');
 const GermlineReports = require('./germlineSmallMutation');
-const GermlineReportsExport = require('./germlineSmallMutation/export.route');
+const GermlineReportsExport = require('./germlineSmallMutation/export.download');
 const logger = require('../log');
 const POG = require('./POG/base');
 
