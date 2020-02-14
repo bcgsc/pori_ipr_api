@@ -10,13 +10,12 @@ const db = require('../../models');
 const Patient = require('../../libs/patient/patient.library');
 const Analysis = require('../../modules/analysis/analysis.object');
 const Variants = require('./util/germline_small_mutation_variant');
-const Review = require('./util/germline_small_mutation_review');
 const Report = require('./util/germline_small_mutation');
 
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation.middleware');
-const reviewMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_review.middleware');
 
 const variantRouter = require('./variants');
+const reviewRouter = require('./reviews');
 
 const logger = require('../../log');
 const router = express.Router({mergeParams: true});
@@ -26,8 +25,6 @@ const DEFAULT_PAGE_OFFSET = 0;
 
 // Register Middleware
 router.param('gsm_report', gsmMiddleware);
-router.param('review', reviewMiddleware);
-
 
 
 /**
@@ -248,94 +245,6 @@ const getAnalysisReport = async (req, res) => {
   }
 };
 
-/**
- * Add review event for germline report
- *
- * @param {object} req - Express request
- * @param {object} res - Express response
- *
- * @property {number} req.user.id - Current users id
- * @property {string} req.body.type - Type of request
- * @property {number} req.report.id - Germline report id
- *
- * @returns {Promise.<object>} - Returns new review for germline report
- */
-const addReview = async (req, res) => {
-  if (!req.body.type) {
-    logger.error('A review type is required in the body');
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'A review type is required in the body'});
-  }
-
-  const opts = {
-    where: {
-      reviewedBy_id: req.user.id,
-      type: req.body.type,
-      germline_report_id: req.report.id,
-    },
-  };
-
-  let review;
-  try {
-    // Make sure not already signed
-    review = await db.models.germline_small_mutation_review.scope('public').findOne(opts);
-  } catch (error) {
-    logger.error(`There was an error while trying to find germline review ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find germline review'});
-  }
-
-  if (review) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({message: `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`});
-  }
-
-  // Create new review
-  const data = {
-    germline_report_id: req.report.id,
-    reviewedBy_id: req.user.id,
-    type: req.body.type,
-    comment: req.body.comment,
-  };
-
-  let createdReview;
-  try {
-    createdReview = await db.models.germline_small_mutation_review.create(data);
-  } catch (error) {
-    logger.error(`There was an error while creating germline review ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating germline review'});
-  }
-
-  if (res.finished) {
-    logger.error('Response finished can\'t review report');
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Reponse finished can\'t review report'});
-  }
-
-  try {
-    const newReview = await Review.public(createdReview.ident);
-    return res.json(newReview);
-  } catch (error) {
-    logger.error(`There was an error while creating a review for this report ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while creating a review for this report'});
-  }
-};
-
-/**
- * Remove a review from a report
- *
- * @param {object} req - Express request
- * @param {object} res - Express response
- *
- * @property {object} req.review - Report review
- *
- * @returns {Promise.<object>} - Returns 204 status
- */
-const removeReview = async (req, res) => {
-  try {
-    await req.review.destroy();
-    return res.status(HTTP_STATUS.NO_CONTENT).send();
-  } catch (error) {
-    logger.error(`There was an error while trying to remove the requested germline report ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline report'});
-  }
-};
 
 router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', variantRouter);
 
@@ -528,8 +437,7 @@ router.get('/', getReports); // All reports for all cases
 router.get('/patient/:patient/biopsy/:analysis', getAnalysisReport); // All reports for a biopsy
 
 // Reviews
-router.put('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', addReview); // Add review to report
-router.delete('/patient/:patient/biopsy/:analysis/report/:gsm_report/review/:review', removeReview); // Add review to report
+router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', reviewRouter);
 
 // Export
 router.get('/export/batch/token', getExportFlashToken);
