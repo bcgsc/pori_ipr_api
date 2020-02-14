@@ -97,10 +97,10 @@ class Routing extends RouterInterface {
     this.router.use('/analysis', AnalysisRoutes.getRouter());
 
     // Get Germline Reports Routes
-    this.router.use('/germline_small_mutation', germlineReportsRoutes);
+    this.router.use('/germline_small_mutation', germlineReports);
 
     // Get Export Germline Reports Routes
-    this.router.use('/export/germline_small_mutation', germlineReportsExportRoutes);
+    this.router.use('/export/germline_small_mutation', germlineReportsExport);
 
     // Get Project Routes
     this.router.use('/project', projectRoute);
