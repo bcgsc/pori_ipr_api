@@ -3,11 +3,13 @@ const Excel = require('exceljs');
 const moment = require('moment');
 const {Op} = require('sequelize');
 const _ = require('lodash');
+const express = require('express');
 
 const db = require('../../models');
-const RoutingInterface = require('../routingInterface');
 const Variants = require('./util/germline_small_mutation_variant');
 const logger = require('../../log');
+
+const router = express.Router({mergeParams: true});
 
 /**
  * Flash Token Authentication and user injection
@@ -20,7 +22,7 @@ const logger = require('../../log');
  *
  * @returns {Promise.<number>} - Returns number of destroyed rows by deleting flash token from db
  */
-const tokenAuth = async (req, res, next) => {
+router.get('/batch/download', async (req, res, next) => {
   // Check for authentication token
   if (!req.query.flash_token) {
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'A flash token is required in the url parameter: flash_token'});
@@ -47,7 +49,7 @@ const tokenAuth = async (req, res, next) => {
     logger.error(error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to query for flash token provided'}});
   }
-};
+});
 
 /**
  * Generate Batch Export
@@ -64,7 +66,7 @@ const tokenAuth = async (req, res, next) => {
  *
  * @returns {Promise.<object>} - Returns response object
  */
-const batchExport = async (req, res) => {
+router.get('/batch/download', async (req, res) => {
   if (!req.flash_token) {
     logger.error('Missing flash token');
     return res.status(HTTP_STATUS.FORBIDDEN).send({message: 'A flash token is required in the url parameter: flash_token'});
@@ -77,8 +79,12 @@ const batchExport = async (req, res) => {
     },
     include: [
       {model: db.models.pog_analysis, as: 'analysis', include: [{as: 'pog', model: db.models.POG.scope('public')}]},
-      {model: db.models.germline_small_mutation_variant, as: 'variants', separate: true, order: [['gene', 'asc']]},
-      {model: db.models.germline_small_mutation_review, as: 'reviews', separate: true, include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}]},
+      {
+        model: db.models.germline_small_mutation_variant, as: 'variants', separate: true, order: [['gene', 'asc']],
+      },
+      {
+        model: db.models.germline_small_mutation_review, as: 'reviews', separate: true, include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+      },
     ],
   };
 
@@ -132,7 +138,6 @@ const batchExport = async (req, res) => {
 
     // Add samples name for each variant
     const parsedVariants = report.variants.map((variant) => {
-
       // Find mutation landscape
       const matchingLandscape = landscapes.find((landscape) => {
         return landscape.report.analysis_id === report.pog_analysis_id;
@@ -200,21 +205,6 @@ const batchExport = async (req, res) => {
     logger.error(`There was an error while saving updated reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while saving updated reports'});
   }
-};
+});
 
-class GSMDownloadRouter extends RoutingInterface {
-  /**
-   * Create and bind routes for Germline Small Mutations Module
-   *
-   * @type {TrackingRouter}
-   */
-  constructor() {
-    super();
-
-    // Export
-    this.router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
-    this.router.get('/batch/download', batchExport);
-  }
-}
-
-module.exports = GSMDownloadRouter;
+module.exports = router;
