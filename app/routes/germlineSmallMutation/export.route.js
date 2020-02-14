@@ -3,9 +3,9 @@ const Excel = require('exceljs');
 const moment = require('moment');
 const {Op} = require('sequelize');
 const _ = require('lodash');
+const express = require('express');
 
 const db = require('../../models');
-const RoutingInterface = require('../routingInterface');
 const Variants = require('./util/germline_small_mutation_variant');
 const logger = require('../../log');
 
@@ -77,8 +77,12 @@ const batchExport = async (req, res) => {
     },
     include: [
       {model: db.models.pog_analysis, as: 'analysis', include: [{as: 'pog', model: db.models.POG.scope('public')}]},
-      {model: db.models.germline_small_mutation_variant, as: 'variants', separate: true, order: [['gene', 'asc']]},
-      {model: db.models.germline_small_mutation_review, as: 'reviews', separate: true, include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}]},
+      {
+        model: db.models.germline_small_mutation_variant, as: 'variants', separate: true, order: [['gene', 'asc']],
+      },
+      {
+        model: db.models.germline_small_mutation_review, as: 'reviews', separate: true, include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+      },
     ],
   };
 
@@ -132,7 +136,6 @@ const batchExport = async (req, res) => {
 
     // Add samples name for each variant
     const parsedVariants = report.variants.map((variant) => {
-
       // Find mutation landscape
       const matchingLandscape = landscapes.find((landscape) => {
         return landscape.report.analysis_id === report.pog_analysis_id;
@@ -202,19 +205,9 @@ const batchExport = async (req, res) => {
   }
 };
 
-class GSMDownloadRouter extends RoutingInterface {
-  /**
-   * Create and bind routes for Germline Small Mutations Module
-   *
-   * @type {TrackingRouter}
-   */
-  constructor() {
-    super();
+const router = express.Router({mergeParams: true});
 
-    // Export
-    this.router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
-    this.router.get('/batch/download', batchExport);
-  }
-}
+router.get('/batch/download', tokenAuth); // Pseudo middleware. Runs before subsequent
+router.get('/batch/download', batchExport);
 
-module.exports = GSMDownloadRouter;
+module.exports = router;
