@@ -21,20 +21,20 @@ const newUserSchema = {
     type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
     email: {type: 'string', format: 'email'},
     firstName: {type: 'string', minLength: 1},
-    lastName: {type: 'string', minLength: 1}
+    lastName: {type: 'string', minLength: 1},
   },
   // password can be null if type is bcgsc
   if: {
-    properties: {type: {const: 'bcgsc'}}
+    properties: {type: {const: 'bcgsc'}},
   },
   then: {
-    properties: {password: {default: null}}
+    properties: {password: {default: null}},
   },
   else: {
     // password need to have minimum length of 8
     required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
-    properties: {password: {minLength: 8}}
-  }
+    properties: {password: {minLength: 8}},
+  },
 };
 
 // Compile schema to be used in validator
@@ -56,7 +56,6 @@ const parseNewUser = (request) => {
     email: request.email,
     firstName: request.firstName,
     lastName: request.lastName,
-    access: 'clinician'
   };
 };
 
@@ -66,7 +65,7 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to access this');
       return res.status(HTTP_STATUS.FORBIDDEN).send();
@@ -199,24 +198,16 @@ router.route('/:ident([A-z0-9-]{36})')
     // Update current user
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['*']; // Anyone is allowed to edit their account details. Controller later protects non-self edits.
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to update current user');
-      return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
-    }
+    access.write = ['*']; // Admins can update any user, users can only update themselves
 
-    // Editing someone other than self?
-    if (req.user.ident !== req.body.ident && req.user.access !== 'superUser') {
+    // Is the user neither itself or admin?
+    if (!(req.user.ident === req.params.ident || access.isAdmin())) {
       logger.error('User is not allowed to edit someone other than self');
       return res.status(HTTP_STATUS.FORBIDDEN).json({status: false, message: 'You are not allowed to perform this action'});
     }
 
     // Check Access
-    if (req.user.access !== 'superUser') {
-      if (req.body.access && req.body.access !== req.user.access) {
-        logger.error('User is not able to update own access');
-        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your own access', code: 'failUpdateAccess'}});
-      }
+    if (!(access.isAdmin())) {
       if (req.body.username && req.body.username !== req.user.username) {
         logger.error('User is not able to update username');
         return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your username', code: 'failUpdateUsername'}});
@@ -248,8 +239,8 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Attempt user model update
     try {
-      await db.models.user.update(updateBody, {
-        where: {ident: req.body.ident},
+      await db.models.user.update({...updateBody, ident: req.params.ident}, {
+        where: {ident: req.params.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
@@ -261,7 +252,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     try {
       const user = await db.models.user.findOne({
-        where: {ident: req.body.ident},
+        where: {ident: req.params.ident},
         attributes: {exclude: ['id', 'password', 'deletedAt']},
         include: [
           {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
@@ -278,7 +269,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Remove a user
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove a user');
       return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
