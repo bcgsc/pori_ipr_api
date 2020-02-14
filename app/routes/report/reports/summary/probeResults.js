@@ -46,7 +46,7 @@ router.route('/:target([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -73,7 +73,7 @@ router.route('/')
       where: {report_id: req.report.id},
     };
 
-    // Get all rows for this POG
+    // Get all probe results for this report
     try {
       const result = await db.models.probeResults.scope('public').findAll(options);
       return res.json(result);

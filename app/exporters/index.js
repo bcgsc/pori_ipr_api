@@ -112,7 +112,7 @@ class ExportDataTables {
     this.config.export.__lines[reportLine] = `Report_Folder = ${this.config.original.Report_Folder.replace(/(\/report)$/, `/report_IPR_export_${this.exportEvent.key}`)}`;
 
     // Create File
-    const data = `## This config file was generated as the result of an export from the Interactive POG Report API\n## Export ident: \n${this.config.export.__lines.join('\n')}`;
+    const data = `## This config file was generated as the result of an export from the Interactive Patient Report API\n## Export ident: \n${this.config.export.__lines.join('\n')}`;
 
     fs.writeFileSync(`${this.directory.exportReportBase}/IPR_Report_export_${this.exportEvent.key}.cfg`, data);
     this.logLine(`Successfully export config file: IPR_Report_export_${this.exportEvent.key}.cfg`);
@@ -165,7 +165,7 @@ class ExportDataTables {
     // validExporters is an object
     Object.entries(validExporters).forEach(([expLabel, expFunc]) => {
       this.logLine(`> Loaded exporter: ${expLabel}`);
-      promises.push(expFunc(this.pog, this.directory));
+      promises.push(expFunc(this.report, this.directory));
     });
 
     const result = await Promise.all(promises);
