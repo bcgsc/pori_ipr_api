@@ -138,7 +138,9 @@ class ACL {
   }
 
   // Check if the request user is admin
-  isAdmin() { return this.req.user.get('groups').some((group) => { return group.name === 'admin'; }); }
+  isAdmin() { 
+    return this.req.user.get('groups').some((group) => { return group.name === 'admin'; }); 
+  }
 }
 
 module.exports = ACL;
