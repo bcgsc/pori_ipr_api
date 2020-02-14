@@ -58,6 +58,7 @@ router.route('/')
             {model: db.models.user.scope('public'), as: 'user'},
           ],
         },
+        {model: db.models.project.scope('public'), as: 'projects'},
       ],
     };
 
@@ -68,8 +69,8 @@ router.route('/')
     if (req.query.sort) {
       const modelMapping = (index, order) => {
         return {
-          patientID: [{model: db.models.POG, as: 'pog'}, 'POGID', order],
-          analysisBiopsy: [{model: db.models.pog_analysis, as: 'analysis'}, 'analysis_biopsy', order],
+          patientID: ['patient_id', order],
+          analysisBiopsy: ['biopsy_name', order],
           tumourType: [
             {model: db.models.patientInformation, as: 'patientInformation'},
             'tumour_type',
@@ -86,11 +87,7 @@ router.route('/')
             'caseType',
             order,
           ],
-          alternateIdentifier: [
-            {model: db.models.pog_analysis, as: 'analysis'},
-            'pog.alternate_identifier',
-            order,
-          ],
+          alternateIdentifier: ['alternate_identifier', order],
         }[index];
       };
       let {sort} = req.query;
@@ -100,7 +97,7 @@ router.route('/')
     } else {
       opts.order = [
         ['state', 'desc'],
-        [{model: db.models.POG, as: 'pog'}, 'POGID', 'desc'],
+        ['patient_id', 'desc'],
       ];
     }
 
@@ -117,7 +114,7 @@ router.route('/')
         return project.name;
       });
       if (projectAccessNames.includes(req.query.project)) {
-        opts.where['$pog.projects.name$'] = req.query.project;
+        opts.where['$projects.name$'] = req.query.project;
       } else {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           error: {message: 'You do not have access to the selected project'},
@@ -128,7 +125,7 @@ router.route('/')
       const projectAccessIdent = projectAccess.map((project) => {
         return project.ident;
       });
-      opts.where['$pog.projects.ident$'] = {[Op.in]: projectAccessIdent};
+      opts.where['$projects.ident$'] = {[Op.in]: projectAccessIdent};
     }
 
     if (req.query.searchText) {
@@ -140,20 +137,20 @@ router.route('/')
           {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$pog.POGID$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {patient_id: {[Op.iLike]: `%${req.query.searchText}%`}},
         ],
       };
     }
 
     // Create mapping for available columns to filter on
     const columnMapping = {
-      patientID: {column: 'POGID', table: 'pog'},
-      analysisBiopsy: {column: 'analysis_biopsy', table: 'analysis'},
+      patientID: {column: 'patient_id', table: null},
+      analysisBiopsy: {column: 'biopsy_name', table: null},
       tumourType: {column: 'tumourType', table: 'patientInformation'},
       physician: {column: 'physician', table: 'patientInformation'},
       state: {column: 'state', table: null},
       caseType: {column: 'caseType', table: 'patientInformation'},
-      alternateIdentifier: {column: 'alternate_identifier', table: 'analysis'},
+      alternateIdentifier: {column: 'alternate_identifier', table: null},
     };
 
     // Add filters to query if available
