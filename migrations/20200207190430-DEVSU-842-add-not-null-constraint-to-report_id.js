@@ -39,6 +39,7 @@ module.exports = {
         // Add not null constraint to tables
         return queryInterface.changeColumn(table, 'report_id', {type: Sequelize.INTEGER, allowNull: false}, {transaction});
       }));
+      await transaction.commit();
     } catch (err) {
       // If transaction fails rollback and throw an error
       await transaction.rollback();
