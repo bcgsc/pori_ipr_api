@@ -3,14 +3,13 @@ const _ = require('lodash');
 const {Op} = require('sequelize');
 const express = require('express');
 
-
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const db = require('../../models');
 
-const Patient = require('../../libs/patient/patient.library');
-const Analysis = require('../../modules/analysis/analysis.object');
 const Variants = require('./util/germline_small_mutation_variant');
 const Report = require('./util/germline_small_mutation');
 
+const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload');
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation.middleware');
 
 const variantRouter = require('./variants');
@@ -47,94 +46,55 @@ router.param('gsm_report', gsmMiddleware);
  *
  * @returns {Promise.<object>} - Returns the created report
  */
-router.post('/patient/:patient/biopsy/:analysis', async (req, res) => {
-  // Check for required values
-  const required = {};
-  if (!req.params.analysis) {
-    required.analysis = 'A bioapps biopsy/analysis value is required. Eg: biop1';
-  }
-  if (!req.body.source) {
-    required.source = 'The source file path is required';
-  }
-  if (!req.body.version) {
-    required.version = 'The source file version is required. Eg: v0.0.1';
-  }
-  if (!req.params.patient) {
-    required.patient = 'The patient identifier is required. Eg: POG1234';
-  }
-  if (!req.body.rows) {
-    required.rows = 'Data rows are required for import. Empty arrays are valid.';
-  }
-  if (!req.body.project) {
-    required.project = 'Project name is required to load a report';
-  }
-  if (!req.body.normal_library) {
-    required.normal_library = 'The germline/normal library name is requried, Eg: P12345';
-  }
+router.post('/patient/:patient/biopsy/:biopsy', async (req, res) => {
+  const {params: {patient: patientId, biopsy: biopsyName}, user} = req;
 
-  if (Object.keys(required).length > 0) {
-    logger.error('Required fields were missing');
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Required fields were missing.', fields: required});
-  }
+  const content = {...req.body, patientId, biopsyName};
 
-  let patient;
   try {
-    // Create or retrieve patient object
-    patient = await Patient.retrieveOrCreate(req.params.patient, req.body.project);
-  } catch (error) {
-    logger.error(`There was an error while retrieving patient ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while retrieving patient'});
+    // fix for path names that do not current match model names
+    content.source_path = content.source;
+    content.source_version = content.version;
+    delete content.source;
+    delete content.version;
+    // validate against the model
+    validateAgainstSchema(germlineReportUploadSchema, content);
+  } catch (err) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json(err);
   }
-
-  let analysis;
-  try {
-    // Create or Retrieve Biopsy Analysis
-    analysis = await Analysis.retrieveOrCreate(patient.id, {libraries: {normal: req.body.normal_library}, analysis_biopsy: req.params.analysis});
-  } catch (error) {
-    logger.error(`There was an error retrieving/creating analysis ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error retrieving/creating analysis'});
-  }
-
-  // Begin creating Report
-  const reportOpt = {
-    pog_analysis_id: analysis.id,
-    source_version: req.body.version,
-    source_path: req.body.source,
-    biofx_assigned_id: req.user.id,
-  };
 
   let report;
+  let rawVariants;
   try {
-    // Create Small Mutation Report object
-    report = await db.models.germline_small_mutation.create(reportOpt);
-  } catch (error) {
-    logger.error(`There was an error creating germline small mutation report ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error creating germline small mutation report'});
+    const {rows: variants, ...rest} = content;
+    rawVariants = variants;
+
+    ({dataValues: report} = await db.models.germline_small_mutation.create(
+      {...rest, biofx_assigned: user.id},
+    ));
+  } catch (err) {
+    logger.error(`There was an error creating germline small mutation report ${err}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
   }
 
   try {
-    // Prepare Rows with processing
-    const processedVariants = await Variants.processVariants(report, req.body.rows);
-    const rows = await db.models.germline_small_mutation_variant.bulkCreate(processedVariants);
+    // create the variants for this report
+    const processedVariants = Variants.processVariants(report, rawVariants);
+    const rows = await db.models.germline_small_mutation_variant.bulkCreate(processedVariants.map((v) => {
+      return {...v, germline_report_id: report.id};
+    }));
 
-    const output = _.omit(report.toJSON(),
-      ['id', 'pog_analysis_id', 'biofx_assigned_id', 'deletedAt']);
-    output.analysis = analysis.toJSON();
-    output.analysis.pog = patient.toJSON();
-    output.variants = rows;
-    output.biofx_assigned = req.user;
+    const output = {
+      ..._.omit(report, ['id', 'biofx_assigned_id', 'deletedAt']),
+      variants: rows,
+      biofx_assigned: user,
+    };
 
-    return res.json(output);
-  } catch (error) {
-    // Cleanup
-    await db.models.germline_small_mutation.destroy({where: {pog_analysis_id: analysis.id}});
-    if (_.find(error.errors, {type: 'unique violation'})) {
-      logger.error(`A report for ${patient.POGID} with version ${req.body.version} already exists`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: `A report for ${patient.POGID} with version ${req.body.version} already exists`});
-    }
-
-    logger.error(`There was an error while creating germline reports ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: `Failed to import report: ${error.message}`, error});
+    return res.status(HTTP_STATUS.CREATED).json(output);
+  } catch (err) {
+    db.models.germline_small_mutation.destroy({where: {id: report.id}, force: true});
+    logger.error(`There was an error creating germline small mutation report variants ${err}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
   }
 });
 
@@ -154,16 +114,22 @@ router.post('/patient/:patient/biopsy/:analysis', async (req, res) => {
  * @returns {Promise.<object>} - Returns the reports and number of reports
  */
 router.get('/', async (req, res) => {
+  const {
+    query: {
+      limit, offset, search, project,
+    },
+  } = req;
+
   const opts = {
     order: [['id', 'desc']],
     where: {},
   };
 
-  if (req.query.search) {
-    opts.where['$analysis.pog.POGID$'] = {[Op.iLike]: `%${req.query.search}%`};
+  if (search) {
+    opts.where.patientId = {[Op.iLike]: `%${req.query.search}%`};
   }
-  if (req.query.project) {
-    opts.where['$analysis.pog.projects.name$'] = req.query.project;
+  if (project) {
+    opts.where['$projects.name$'] = project;
   }
 
   let gsmReports;
@@ -185,18 +151,14 @@ router.get('/', async (req, res) => {
     gsmReports.count = reports.length;
   }
 
-  // Need to take care of limits and offsets outside of query to support natural sorting
-  const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
-  const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
-
   // Reverse natural sort by POGID
   reports.sort((a, b) => {
-    return b.analysis.pog.POGID.localeCompare(a.analysis.pog.POGID, undefined, {numeric: true, sensitivity: 'base'});
+    return b.patientId.localeCompare(a.patientId, undefined, {numeric: true, sensitivity: 'base'});
   });
 
   // apply limit and offset to results
-  const start = offset;
-  const finish = offset + limit;
+  const start = parseInt(offset, 10) || DEFAULT_PAGE_OFFSET;
+  const finish = start + (parseInt(limit, 10) || DEFAULT_PAGE_LIMIT);
   const rows = reports.slice(start, finish);
 
   return res.json({total: gsmReports.count, reports: rows});
@@ -213,34 +175,30 @@ router.get('/', async (req, res) => {
  *
  * @returns {Promise.<object>} - Returns the germline analysis reports
  */
-router.get('/patient/:patient/biopsy/:analysis', async (req, res) => {
-  const opts = {
-    order: [['createdAt', 'desc']],
-    attributes: {
-      exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id'],
-    },
-    include: [
-      {
-        as: 'analysis',
-        model: db.models.pog_analysis.scope('public'),
-        where: {analysis_biopsy: req.params.analysis},
-        include: [{model: db.models.POG, as: 'pog', where: {POGID: req.params.patient}}],
-      },
-      {as: 'biofx_assigned', model: db.models.user.scope('public')},
-      {as: 'variants', model: db.models.germline_small_mutation_variant, separate: true},
-      {
-        as: 'reviews',
-        model: db.models.germline_small_mutation_review,
-        separate: true,
-        include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
-      },
-    ],
-  };
+router.get('/patient/:patientId/biopsy/:biopsyName', async (req, res) => {
+  const {params: {patientId, biopsyName}} = req;
 
   try {
-    const reports = await db.models.germline_small_mutation.scope('public').findAll(opts);
+    const reports = await db.models.germline_small_mutation.scope('public').findAll({
+      order: [['createdAt', 'desc']],
+      where: {patientId, biopsyName},
+      attributes: {
+        exclude: ['deletedAt', 'id', 'biofx_assigned_id'],
+      },
+      include: [
+        {as: 'biofx_assigned', model: db.models.user.scope('public')},
+        {as: 'variants', model: db.models.germline_small_mutation_variant, separate: true},
+        {
+          as: 'reviews',
+          model: db.models.germline_small_mutation_review,
+          separate: true,
+          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+        },
+      ],
+    });
     return res.json(reports);
   } catch (error) {
+    console.error(error);
     logger.error(`There was an error while trying to find all germline reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
   }
