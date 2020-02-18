@@ -35,7 +35,7 @@ module.exports = {
     try {
       // Delete all reports that have report_id equals null
       await queryInterface.bulkDelete('pog_analysis_reports_users', {report_id: null}, {transaction});
-      Promise.all(tables.map((table) => {
+      await Promise.all(tables.map((table) => {
         // Add not null constraint to tables
         return queryInterface.changeColumn(table, 'report_id', {type: Sequelize.INTEGER, allowNull: false}, {transaction});
       }));
