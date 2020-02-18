@@ -1,0 +1,42 @@
+{
+    "normal_library": "P0XXXXX",
+    "project": "TEST",
+    "rows": [
+        {
+            "additional_info": "Pour-over mumblecore kombucha fashion axe hot chicken keffiyeh tbh af plaid umami cornhole +1 tumblr kale chips",
+            "alteration": "T",
+            "cgl_category": "",
+            "chromosome": "3",
+            "clinvar": "3|0",
+            "dbSNP": "rs1234",
+            "family_history": "Normcore edison bulb vaporware, viral aesthetic sartorial ennui you probably haven't heard of them",
+            "fc_bodymap": "1.77",
+            "flagged": "HCP,CGL,VUS,UNKNOWN",
+            "gene_expression_rpkm": 5,
+            "gene_somatic_abberation": "biop1: nan,nan,DLOH,nan,Loss",
+            "genomic_variant_reads": "biop1: 22/80",
+            "gmaf": "",
+            "gtex_comp_percentile": "average: 32.0",
+            "hgvs_cdna": "NM_001234:c.2345G>T",
+            "hgvs_protein": "",
+            "impact": "MODERATE",
+            "notes": ";NA",
+            "patient_history": "Lorem ipsum dolor amet humblebrag enamel pin street art williamsburg hexagon",
+            "position": "1234",
+            "preferred_transcript": true,
+            "reference": "G",
+            "rna_variant_reads": "biop1: 7/46",
+            "score": "225.0",
+            "gene": "CDKN2A",
+            "tcga_comp_norm_percentile": "CHOL: 22.0, average: 35.0",
+            "tcga_comp_percentile": "CHOL: 8.0, average: 14.0",
+            "transcript": "NM_001234",
+            "type": "Primary of Unknown Origin",
+            "variant": "missense_variant",
+            "zygosity_germline": "HETEROZYGOUS",
+            "zygosity_tumour": "biop1: 0.00/1.00 (NOT_FOUND)"
+        }
+    ],
+    "source": "/some/file/path",
+    "version": "vX.X.X"
+}
