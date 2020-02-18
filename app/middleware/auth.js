@@ -45,7 +45,7 @@ module.exports = async (req, res, next) => {
     }
   }
   if (!token) {
-    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'Invalid authorization token'});
+    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'Missing required Authorization token'});
   }
 
   // Verify token using public key
