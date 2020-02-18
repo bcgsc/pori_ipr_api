@@ -1,3 +1,4 @@
+// Array of tables to be updated
 const tables = [
   'pog_analysis_reports_dga_alterations',
   'pog_analysis_reports_expression_drug_target',
@@ -32,11 +33,14 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
+      // Delete all reports that have report_id equals null
       await queryInterface.bulkDelete('pog_analysis_reports_users', {report_id: null}, {transaction});
       Promise.all(tables.map((table) => {
+        // Add not null constraint to tables
         return queryInterface.changeColumn(table, 'report_id', {type: Sequelize.INTEGER, allowNull: false}, {transaction});
       }));
     } catch (err) {
+      // If transaction fails rollback and throw an error
       await transaction.rollback();
       throw err;
     }
