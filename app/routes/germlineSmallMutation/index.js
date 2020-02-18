@@ -198,7 +198,6 @@ router.get('/patient/:patientId/biopsy/:biopsyName', async (req, res) => {
     });
     return res.json(reports);
   } catch (error) {
-    console.error(error);
     logger.error(`There was an error while trying to find all germline reports ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
   }
