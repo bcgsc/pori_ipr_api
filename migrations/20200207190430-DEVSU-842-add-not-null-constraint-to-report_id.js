@@ -30,10 +30,16 @@ const tables = [
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('pog_analysis_reports_users', {report_id: null});
-    Promise.all(tables.map((table) => {
-      return queryInterface.changeColumn(table, 'report_id', {type: Sequelize.INTEGER, allowNull: false});
-    }));
+    const transaction = await queryInterface.sequelize.transaction();
+    try {
+      await queryInterface.bulkDelete('pog_analysis_reports_users', {report_id: null}, {transaction});
+      Promise.all(tables.map((table) => {
+        return queryInterface.changeColumn(table, 'report_id', {type: Sequelize.INTEGER, allowNull: false}, {transaction});
+      }));
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
   },
 
   down: () => {
