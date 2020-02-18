@@ -35,10 +35,6 @@ module.exports = sequelize => sequelize.define('user', {
     type: Sq.STRING,
     defaultValue: null,
   },
-  access: {
-    type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'administration', 'superUser'),
-    allowNull: false,
-  },
   settings: {
     type: Sq.JSONB,
     allowNull: false,
@@ -66,7 +62,7 @@ module.exports = sequelize => sequelize.define('user', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf', 'settings', 'access'],
+        exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf', 'settings'],
       },
     },
   },

@@ -25,16 +25,16 @@ class ACL {
     this.isPog = false;
     this.authReq = true;
     this.read = ['*'];
-    this.write = ['manager', 'superUser', 'admin'];
-    this.delete = ['manager', 'superUser', 'admin'];
+    this.write = ['manager', 'admin'];
+    this.delete = ['manager', 'admin'];
     this.restrictedPogEdit = ['analyst', 'reviewer', 'bioinformatician'];
-    this.masterPogEdit = ['manager', 'superUser', 'admin'];
+    this.masterPogEdit = ['manager', 'admin'];
     this.pogEdit = this.restrictedPogEdit.concat(this.masterPogEdit);
   }
 
   // Get project access
   async getProjectAccess() {
-    const accessGroups = ['Full Project Access', 'admin', 'superUser'];
+    const accessGroups = ['Full Project Access', 'admin'];
     const userGroups = _.map(this.req.user.groups, 'name');
     const hasAccess = _.intersection(accessGroups, userGroups);
 
@@ -135,6 +135,11 @@ class ACL {
     }
     // Access is allowed
     return true;
+  }
+
+  // Check if the request user is admin
+  isAdmin() { 
+    return this.req.user.get('groups').some((group) => { return group.name === 'admin'; }); 
   }
 }
 
