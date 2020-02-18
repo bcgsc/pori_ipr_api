@@ -18,8 +18,8 @@ const projectRoute = require('./project');
 // Get module route files
 const RouterInterface = require('./routingInterface');
 const GeneViewer = require('../modules/geneViewer/routing');
-const GermlineReports = require('./germlineSmallMutation');
-const GermlineReportsExport = require('./germlineSmallMutation/export.route');
+const germlineReports = require('./germlineSmallMutation');
+const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const report = require('./report/base');
 
 const router = express.Router({mergeParams: true});
@@ -75,12 +75,10 @@ class Routing extends RouterInterface {
     this.router.use('/reports/:report/geneviewer', GeneViewerRoutes.getRouter());
 
     // Get Germline Reports Routes
-    const GermlineReportsRoutes = new GermlineReports();
-    this.router.use('/germline_small_mutation', GermlineReportsRoutes.getRouter());
+    this.router.use('/germline_small_mutation', germlineReports);
 
     // Get Export Germline Reports Routes
-    const GermlineReportsExportRoutes = new GermlineReportsExport();
-    this.router.use('/export/germline_small_mutation', GermlineReportsExportRoutes.getRouter());
+    this.router.use('/export/germline_small_mutation', germlineReportsExport);
 
     // Get Project Routes
     this.router.use('/project', projectRoute);
