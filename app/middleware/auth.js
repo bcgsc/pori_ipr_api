@@ -94,6 +94,7 @@ module.exports = async (req, res, next) => {
     req.user = respUser;
     return next();
   } catch (err) {
+    logger.error(err);
     return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Invalid authorization token'});
   }
 };
