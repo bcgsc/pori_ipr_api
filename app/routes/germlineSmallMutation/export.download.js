@@ -111,6 +111,8 @@ router.get('/batch/download', async (req, res) => {
   let matchedReportSummaries; // find the most recent genomic report for the same patient/sample
 
   try {
+    // TODO: filter patientId does not exist on the summary, must fitler by report. This is pending DEVSU-745
+    // https://www.bcgsc.ca/jira/browse/DEVSU-865
     matchedReportSummaries = await db.models.tumourAnalysis.findAll({
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
