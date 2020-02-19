@@ -3,36 +3,26 @@ const REPORT_TABLE_NAME = 'pog_analysis_germline_small_mutations';
 const MAPPING_TABLE = 'germline_reports_to_projects';
 
 module.exports = {
-  up: async (queryInterface, Sq) => {
+  up: async (queryInterface) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      console.log('create the table indicies');
-      await queryInterface.addIndex(
-        MAPPING_TABLE,
-        {
-          unique: true,
-          fields: ['ident'],
-          where: {
-            deleted_at: {
-              [Sq.Op.eq]: null,
-            },
-          },
-        },
-        {transaction},
-      );
-
       console.log('copy the project relationships from the analysis to the report table');
       const associations = await queryInterface.sequelize.query(
-        `SELECT gsm.id as germline_report_id, pp.project_id
+        `SELECT DISTINCT ON (gsm.id,  pp.project_id) gsm.id as germline_report_id, pp.project_id, pp."createdAt" as created_at, pp."updatedAt" as updated_at
           FROM ${REPORT_TABLE_NAME} gsm
           JOIN pog_analysis pa on (pa.id = gsm.pog_analysis_id)
           JOIN "POGs" pogs on (pogs.id = pa.pog_id)
           JOIN pog_projects pp on (pogs.id = pp.pog_id)
           WHERE pp."deletedAt" IS NULL
+          ORDER BY gsm.id,  pp.project_id, pp."updatedAt", pp."createdAt"
         `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
       );
       console.log(`inserting ${associations.length} associations`);
-      await queryInterface.bulkInsert(MAPPING_TABLE, associations, {transaction});
+      await queryInterface.bulkInsert(
+        MAPPING_TABLE,
+        associations,
+        {transaction}
+      );
 
       // copy the projects by name from the 'project' string field on the pogs table
       const missingProjectLinks = await queryInterface.sequelize.query(
@@ -66,6 +56,8 @@ module.exports = {
         return {
           germline_report_id: rec.id,
           project_id: newProjects.find((proj) => { return proj.name === rec.name; }).id,
+          created_at: rec.created_at,
+          updated_at: rec.created_at,
         };
       });
 

@@ -9,12 +9,6 @@ const NEW_TABLE_COLUMNS = {
     autoIncrement: true,
     primaryKey: true,
   },
-  ident: {
-    type: Sq.UUID,
-    unique: false,
-    defaultValue: Sq.UUIDV4,
-    notNull: true,
-  },
   createdAt: {
     type: Sq.DATE,
     defaultValue: Sq.NOW,

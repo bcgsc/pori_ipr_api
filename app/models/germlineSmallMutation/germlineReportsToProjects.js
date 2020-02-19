@@ -1,9 +1,9 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_MAPPING_COLUMNS, DEFAULT_MAPPING_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('germlineReportsToProjects', {
-    ...DEFAULT_COLUMNS,
+    ...DEFAULT_MAPPING_COLUMNS,
     germlineReportId: {
       field: 'germline_report_id',
       name: 'germlineReportId',
@@ -28,7 +28,7 @@ module.exports = (sequelize) => {
     },
   },
   {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_MAPPING_OPTIONS,
     tableName: 'germline_reports_to_projects',
     scopes: {
       public: {
