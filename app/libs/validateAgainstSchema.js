@@ -6,7 +6,15 @@ const ajv = new Ajv({
   useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger,
 });
 
-
+/**
+ * validate an input object/json using a JSON schema
+ *
+ * @param {object} schema the JSON schema to use in validating the input object
+ * @param {object} testInputObject the object/JSON to be tested for schema compliance
+ *
+ * @throws {Error} when the input object does not comply to the input schema
+ * @returns {undefined}
+ */
 const validateAgainstSchema = (schema, testInputObject) => {
   if (!ajv.validate(schema, testInputObject)) {
     const errors = [];
