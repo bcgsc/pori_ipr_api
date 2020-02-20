@@ -12,13 +12,19 @@ module.exports = (sequelize) => {
       unique: true,
       defaultValue: Sq.UUIDV4,
     },
-    pog_analysis_id: {
-      type: Sq.INTEGER,
+    patientId: {
+      type: Sq.TEXT,
+      allowNull: false,
       required: true,
-      references: {
-        model: 'pog_analysis',
-        key: 'id',
-      },
+      name: 'patientId',
+      field: 'patient_id',
+    },
+    biopsyName: {
+      type: Sq.TEXT,
+      allowNull: false,
+      required: true,
+      name: 'biopsyName',
+      field: 'biopsy_name',
     },
     source_version: {
       type: Sq.TEXT,
@@ -51,11 +57,11 @@ module.exports = (sequelize) => {
       public: {
         order: [['createdAt', 'desc']],
         attributes: {
-          exclude: ['deletedAt', 'id', 'pog_analysis_id', 'biofx_assigned_id'],
+          exclude: ['deletedAt', 'id', 'biofx_assigned_id'],
         },
         include: [
-          {as: 'analysis', model: sequelize.models.pog_analysis.scope('public')},
           {as: 'biofx_assigned', model: sequelize.models.user.scope('public')},
+          {as: 'projects', model: sequelize.models.project},
           {
             as: 'variants', model: sequelize.models.germline_small_mutation_variant, separate: true, order: [['gene', 'asc']],
           },

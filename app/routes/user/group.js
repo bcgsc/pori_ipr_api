@@ -1,11 +1,11 @@
-const Ajv = require('ajv');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 
-const ajv = new Ajv({useDefaults: true, logger});
+
 const router = express.Router({mergeParams: true});
 
 // Group json schema
@@ -23,21 +23,6 @@ const memberSchema = {
   properties: {
     user: {type: 'string', format: 'uuid'},
   },
-};
-
-// Compile schema to be used in validator
-const validateGroup = ajv.compile(groupSchema);
-const validateMember = ajv.compile(memberSchema);
-
-// Validates the request
-const applySchemaValidator = (schemaValidator, requestBody) => {
-  if (!schemaValidator(requestBody)) {
-    if (schemaValidator.errors[0].dataPath) {
-      throw new Error(`${schemaValidator.errors[0].dataPath} ${schemaValidator.errors[0].message}`);
-    } else {
-      throw new Error(`${schemaValidator.errors[0].message}`);
-    }
-  }
 };
 
 // Middleware for all group functions
@@ -99,7 +84,7 @@ router.route('/')
   .post(async (req, res) => {
     try {
       // Validate input
-      applySchemaValidator(validateGroup, req.body);
+      validateAgainstSchema(groupSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -160,7 +145,7 @@ router.route('/:group([A-z0-9-]{36})')
   .put(async (req, res) => {
     try {
       // Validate input
-      applySchemaValidator(validateGroup, req.body);
+      validateAgainstSchema(groupSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -216,7 +201,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Add Group Member
     try {
       // Validate input
-      applySchemaValidator(validateMember, req.body);
+      validateAgainstSchema(memberSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -265,7 +250,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Remove Group Member
     try {
       // Validate input
-      applySchemaValidator(validateMember, req.body);
+      validateAgainstSchema(memberSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
