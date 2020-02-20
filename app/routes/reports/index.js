@@ -1,6 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const Ajv = require('ajv');
 const {Op} = require('sequelize');
 const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
@@ -11,13 +10,10 @@ const logger = require('../../log');
 
 const pogMiddleware = require('../../middleware/pog');
 const reportMiddleware = require('../../middleware/analysis_report');
-const ajvErrorFormatter = require('../../libs/ajvErrorFormatter');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
 
 const router = express.Router({mergeParams: true});
-const ajv = new Ajv({
-  useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger,
-});
 
 const reportSchema = require('../../schemas/report/entireReport');
 
@@ -226,17 +222,11 @@ router.route('/')
     }
 
     // validate loaded report against schema
-    let valid;
     try {
-      valid = await ajv.validate(reportSchema, req.body);
+      validateAgainstSchema(reportSchema, req.body);
     } catch (error) {
       logger.error(`User while validating ${error}`);
       return res.status(400).json({error: {message: 'There was an error validating', cause: error}});
-    }
-
-    if (!valid) {
-      ajvErrorFormatter(ajv.errors, logger);
-      return res.status(400).json({error: {message: 'The provided report data is not valid', cause: ajv.errors}});
     }
 
     // get project
