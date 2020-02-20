@@ -151,7 +151,7 @@ describe('/germline_small_mutation', () => {
   describe('tests dependent on existing report', () => {
     let record;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       record = await db.models.germline_small_mutation.create({
         source_version: 'vX.X.X',
         source_path: '/some/random/source/path',
@@ -186,9 +186,33 @@ describe('/germline_small_mutation', () => {
           }),
         ]));
       });
+
+      test('GET /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 success', async () => {
+        const res = await request
+          .get(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            ident: expect.any(String),
+            source_version: expect.any(String),
+            source_path: expect.any(String),
+            exported: expect.any(Boolean),
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            id: expect.any(Number),
+            biofx_assigned: expect.any(Object),
+            projects: expect.any(Array),
+            reviews: expect.any(Array),
+            variants: expect.any(Array),
+          })
+        );
+      });
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
       await db.models.germline_small_mutation.destroy({
         where: {ident: record.ident},
         force: true,
