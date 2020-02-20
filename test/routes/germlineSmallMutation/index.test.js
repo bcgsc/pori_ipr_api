@@ -28,8 +28,8 @@ const checkGermlineReport = (res) => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         id: expect.any(Number),
-        analysis: expect.any(Object),
         biofx_assigned: expect.any(Object),
+        projects: expect.any(Array),
         reviews: expect.any(Array),
         variants: expect.any(Array),
       }),
@@ -54,6 +54,7 @@ describe('/germline_small_mutation', () => {
 
 
   describe('POST (create) /patient/:patient/biopsy/:biopsy', () => {
+    // TODO: Add invalid input tests
     test('valid input - ok', async () => {
       const {body: record} = await request
         .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
@@ -117,7 +118,7 @@ describe('/germline_small_mutation', () => {
         .expect(HTTP_STATUS.OK);
 
       checkGermlineReport(res);
-      expect(res.body.reports[0].analysis.pog.projects[0].name).toEqual('POG');
+      expect(res.body.reports[0].projects[0].name).toEqual('POG');
     });
 
     test('GET / all reports + not existing project query - 200 success', async () => {
