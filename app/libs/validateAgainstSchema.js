@@ -10,13 +10,13 @@ const ajv = new Ajv({
  * validate an input object/json using a JSON schema
  *
  * @param {object} schema the JSON schema to use in validating the input object
- * @param {object} testInputObject the object/JSON to be tested for schema compliance
+ * @param {object} data the object/JSON to be tested for schema compliance
  *
  * @throws {Error} when the input object does not comply to the input schema
  * @returns {undefined}
  */
-const validateAgainstSchema = (schema, testInputObject) => {
-  if (!ajv.validate(schema, testInputObject)) {
+const validateAgainstSchema = (schema, data) => {
+  if (!ajv.validate(schema, data)) {
     const errors = [];
 
     ajv.errors.forEach((error) => {
