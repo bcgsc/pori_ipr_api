@@ -5,7 +5,7 @@ const {merge} = require('lodash');
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
-let DEFAULT_DB_NAME = 'DEVSU-779-convert-loader-to-using-json';
+let DEFAULT_DB_NAME = 'DEVSU-745-clean-up-patient-metadata-tables';
 
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
