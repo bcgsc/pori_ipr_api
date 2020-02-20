@@ -15,6 +15,29 @@ const {username, password} = CONFIG.get('testing');
 
 const BASE_URL = '/api/1.0/germline_small_mutation';
 
+
+const checkGermlineReport = (res) => {
+  expect(res.body).toEqual(expect.objectContaining({
+    total: expect.any(Number),
+    reports: expect.arrayContaining([
+      expect.objectContaining({
+        ident: expect.any(String),
+        source_version: expect.any(String),
+        source_path: expect.any(String),
+        exported: expect.any(Boolean),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        id: expect.any(Number),
+        analysis: expect.any(Object),
+        biofx_assigned: expect.any(Object),
+        reviews: expect.any(Array),
+        variants: expect.any(Array),
+      }),
+    ]),
+  }));
+};
+
+
 describe('/germline_small_mutation', () => {
   let server;
   let request;
@@ -48,28 +71,80 @@ describe('/germline_small_mutation', () => {
     });
   });
 
-  test('GET / search reports', async () => {
-    const {body} = await request
-      .get(BASE_URL)
-      .auth(username, password)
-      .type('json')
-      .send({...mockData})
-      .expect(HTTP_STATUS.OK);
-    expect(body).toHaveProperty('reports');
-    const {reports} = body;
-    expect(Array.isArray(reports)).toBe(true);
-    // NOTE: depends on at least 1 germline report existing in the DB
-    expect(reports.length).toBeGreaterThan(0);
-    const [sample] = reports;
-    expect(sample).toHaveProperty('ident');
-    expect(sample).toHaveProperty('biopsyName');
-    expect(sample).toHaveProperty('patientId');
-    expect(sample).toHaveProperty('reviews');
-    expect(sample).toHaveProperty('variants');
-    expect(sample).toHaveProperty('projects');
-    // all reports should be associated with 1+ projects
-    expect(sample.projects).toBeInstanceOf(Array);
-    expect(sample.projects.length).toBeGreaterThan(0);
+  describe('GET', () => {
+    test('GET / all reports - 200 success', async () => {
+      const res = await request
+        .get(BASE_URL)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReport(res);
+    });
+
+    test('GET / all reports + search query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URL)
+        .query({search: 'POG'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+  
+      checkGermlineReport(res);
+      // TODO: Implement specific check for checking if it actually searched
+    });
+
+    test('GET / all reports + not existing search query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URL)
+        .query({project: 'PROBABLY_THIS_IS_NOT_A_POG_ID'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(expect.objectContaining({
+        total: 0,
+        reports: expect.arrayContaining([]),
+      }));
+    });
+
+    test('GET / all reports + project query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URL)
+        .query({search: 'POG'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReport(res);
+      expect(res.body.reports[0].analysis.pog.projects[0].name).toEqual('POG');
+    });
+
+    test('GET / all reports + not existing project query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URL)
+        .query({project: 'PROBABLY_THIS_IS_NOT_A_VALID_PROJECT_NAME'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(expect.objectContaining({
+        total: 0,
+        reports: expect.arrayContaining([]),
+      }));
+    });
+
+    test('GET / all reports + limit and offset - 200 success', async () => {
+      const res = await request
+        .get(BASE_URL)
+        .query({limit: 3, offset: 5})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReport(res);
+      expect(res.body.reports.length).toEqual(3);
+    });
   });
 
   describe('tests dependent on existing report', () => {
