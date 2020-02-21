@@ -7,8 +7,6 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
-const mockData = require('../../testData/mockGermlineReportData.json');
-
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
@@ -16,7 +14,7 @@ const {username, password} = CONFIG.get('testing');
 const BASE_URL = '/api/1.0/germline_small_mutation';
 
 
-describe('tests dependent on existing report', () => {
+describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm_report/review', () => {
   let record;
   let server;
   let request;
@@ -50,8 +48,50 @@ describe('tests dependent on existing report', () => {
     });
   });
 
-  describe('', () => {
-    test('', async () => {
+  describe('PUT', () => {
+    test('PUT / - 200 Success', async () => {
+      const res = await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .send({type: 'test_type', comment: 'This is an example of a comment'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          ident: expect.any(String),
+          type: expect.any(String),
+          comment: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          reviewedBy: expect.any(Object),
+        }),
+      ]));
+    });
+
+    test('PUT / type is required - 400 Bad Request', async () => {
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .send({})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('PUT / report is already reviewed - 400 Bad Request', async () => {
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .send({type: 'test_type'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .send({type: 'test_type'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });
