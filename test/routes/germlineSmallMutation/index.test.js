@@ -55,7 +55,7 @@ describe('/germline_small_mutation', () => {
 
   describe('POST (create) /patient/:patient/biopsy/:biopsy', () => {
     // TODO: Add invalid input tests
-    test('valid input - ok', async () => {
+    test('POST /patient/:patient/biopsy/:biopsy - 201 Created', async () => {
       const {body: record} = await request
         .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
         .auth(username, password)
@@ -70,7 +70,6 @@ describe('/germline_small_mutation', () => {
         force: true,
       });
     });
-  });
 
   describe('GET', () => {
     test('GET / all reports - 200 success', async () => {
@@ -153,12 +152,19 @@ describe('/germline_small_mutation', () => {
 
     beforeEach(async () => {
       record = await db.models.germline_small_mutation.create({
-        source_version: 'vX.X.X',
+        source_version: 'v1.0.0',
         source_path: '/some/random/source/path',
         biofx_assigned: 0,
         exported: false,
         patientId: 'TESTPAT01',
         biopsyName: 'TEST123',
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.germline_small_mutation.destroy({
+        where: {ident: record.ident},
+        force: true,
       });
     });
 
@@ -212,10 +218,28 @@ describe('/germline_small_mutation', () => {
       });
     });
 
-    afterEach(async () => {
-      await db.models.germline_small_mutation.destroy({
-        where: {ident: record.ident},
-        force: true,
+    describe('PUT', () => {
+      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 success', async () => {
+        // TODO: Fix this test
+        const NEW_EXPORTED = true;
+        const res = await request
+          .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
+          .send({exported: NEW_EXPORTED})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body.exported).toBe(NEW_EXPORTED);
+      });
+    });
+
+    describe('DELETE', () => {
+      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 204 success', async () => {
+        await request
+          .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NO_CONTENT);
       });
     });
   });
