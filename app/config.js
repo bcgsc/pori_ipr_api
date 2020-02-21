@@ -37,6 +37,12 @@ const DEFAULTS = {
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
+  graphkb: {
+    uri: ENV === 'production'
+      ? 'https://graphkb-api.bcgsc.ca/api'
+      : 'https://graphkbstaging-api.bcgsc.ca/api',
+    username: 'ipr_gkb_link',
+  },
   testing: {
     username: DEFAULT_TEST_USER,
   },
@@ -124,6 +130,9 @@ const CONFIG = nconf
     'database.password': {
       alias: 'database:password',
     },
+    'graphkb.password': {
+      alias: 'graphkb:password',
+    },
     port: {
       alias: 'web:port',
     },
@@ -131,9 +140,9 @@ const CONFIG = nconf
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
 if (ENV === 'test') {
-  CONFIG.required(['database:password', 'testing:password']);
+  CONFIG.required(['database:password', 'graphkb:password', 'testing:password']);
 } else {
-  CONFIG.required(['database:password']);
+  CONFIG.required(['database:password', 'graphkb:password']);
 }
 
 module.exports = CONFIG;
