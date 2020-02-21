@@ -28,6 +28,7 @@ const germlineReports = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const logger = require('../log');
 const POG = require('./POG/base');
+const graphkbRouter = require('./graphkb');
 
 const router = express.Router({mergeParams: true});
 
@@ -71,6 +72,7 @@ class Routing extends RouterInterface {
 
     // Add Single Routes
     // Setup other routes
+    this.router.use('/graphkb', graphkbRouter);
     this.router.use('/POG', pogRoute);
     this.router.use('/version', APIVersion);
 
