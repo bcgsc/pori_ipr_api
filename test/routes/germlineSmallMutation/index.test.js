@@ -71,6 +71,16 @@ describe('/germline_small_mutation', () => {
       });
     });
 
+    test('POST /patient/:patient/biopsy/:biopsy - 400 Bad Request', async () => {
+      await request
+        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .auth(username, password)
+        .type('json')
+        .send({})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+  });
+
   describe('GET', () => {
     test('GET / all reports - 200 success', async () => {
       const res = await request
@@ -219,7 +229,7 @@ describe('/germline_small_mutation', () => {
     });
 
     describe('PUT', () => {
-      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 success', async () => {
+      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 Success', async () => {
         // TODO: Fix this test
         const NEW_EXPORTED = true;
         const res = await request
@@ -231,15 +241,34 @@ describe('/germline_small_mutation', () => {
 
         expect(res.body.exported).toBe(NEW_EXPORTED);
       });
+
+      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+        // TODO: Fix this test
+        const NEW_EXPORTED = true;
+        const res = await request
+          .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_A_EXISTING_RECORD`)
+          .send({exported: NEW_EXPORTED})
+          .auth(username, password)
+          .type('json');
+        console.log(res.body);
+      });
     });
 
     describe('DELETE', () => {
-      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 204 success', async () => {
+      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 204 Success', async () => {
         await request
           .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NO_CONTENT);
+      });
+
+      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+        await request
+          .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_AN_EXISTING_RECORD`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
       });
     });
   });
