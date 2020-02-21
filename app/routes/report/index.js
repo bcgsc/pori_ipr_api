@@ -208,7 +208,7 @@ router.route('/')
     try {
       validateAgainstSchema(reportSchema, req.body);
     } catch (error) {
-      logger.error(`User while validating ${error}`);
+      logger.error(`Error while validating ${error}`);
       return res.status(400).json({error: {message: 'There was an error validating', cause: error}});
     }
 
@@ -273,7 +273,7 @@ router.route('/')
     const {
       ReportUserFilter, createdBy, probe_signature,
       presentation_discussion, presentation_slides, users,
-      analystComments, ...associations
+      analystComments, projects, ...associations
     } = db.models.analysis_report.associations;
     const promises = [];
     // for all associations create new entry based on the
