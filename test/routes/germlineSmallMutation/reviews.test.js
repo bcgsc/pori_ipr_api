@@ -94,4 +94,32 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
+
+  describe('DELETE', () => {
+    let review;
+
+    beforeEach(async () => {
+      review = await db.models.germline_small_mutation_review.create({
+        germline_report_id: record.id,
+        reviewedBy_id: 1,
+        type: 'test_type',
+        comment: 'This is an example of a comment',
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.germline_small_mutation_review.destroy({
+        where: {ident: review.ident},
+        force: true,
+      });
+    });
+
+    test('DELETE /{review} - 200 Success', async () => {
+      await request
+        .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review/${review.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+    });
+  });
 });

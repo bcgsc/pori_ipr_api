@@ -242,16 +242,15 @@ describe('/germline_small_mutation', () => {
         expect(res.body.exported).toBe(NEW_EXPORTED);
       });
 
-    //   test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
-    //     // TODO: Fix this test
-    //     const NEW_EXPORTED = true;
-    //     const res = await request
-    //       .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_A_EXISTING_RECORD`)
-    //       .send({exported: NEW_EXPORTED})
-    //       .auth(username, password)
-    //       .type('json');
-    //     console.log(res.body);
-    //   });
+      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+        const NEW_EXPORTED = true;
+        await request
+          .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_A_EXISTING_RECORD`)
+          .send({exported: NEW_EXPORTED})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
+      });
     });
 
     describe('DELETE', () => {
@@ -263,14 +262,13 @@ describe('/germline_small_mutation', () => {
           .expect(HTTP_STATUS.NO_CONTENT);
       });
 
-      // test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
-      //     // TODO: Fix this test
-      //   await request
-      //     .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_AN_EXISTING_RECORD`)
-      //     .auth(username, password)
-      //     .type('json')
-      //     .expect(HTTP_STATUS.NOT_FOUND);
-      // });
+      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+        await request
+          .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_AN_EXISTING_RECORD`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
+      });
     });
   });
 });
