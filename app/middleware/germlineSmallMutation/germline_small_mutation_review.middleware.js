@@ -1,6 +1,5 @@
 const db = require('../../models');
 const MiddlewareNotFound = require('../exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed = require('../exceptions/MiddlewareQueryFailed');
 
 const logger = require('../../log');
 
