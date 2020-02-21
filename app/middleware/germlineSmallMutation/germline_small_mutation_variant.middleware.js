@@ -24,7 +24,7 @@ module.exports = async (req, res, next, ident) => {
     req.variant = result;
     return next();
   } catch (error) {
-    logger.error(error);
-    throw new MiddlewareQueryFailed('Unable to find the requested germline report variant.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+    logger.error('Unable to find the requested germline report.');
+    res.status(404).json({error: 'Unable to find the requested germline report.'});
   }
 };

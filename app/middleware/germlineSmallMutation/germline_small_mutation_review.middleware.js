@@ -23,7 +23,7 @@ module.exports = async (req, res, next, ident) => {
     req.review = result;
     return next();
   } catch (error) {
-    logger.error(error);
-    throw new MiddlewareQueryFailed('Unable to find the requested germline report review.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+    logger.error('Unable to find the requested germline report.');
+    res.status(404).json({error: 'Unable to find the requested germline report.'});
   }
 };
