@@ -52,7 +52,7 @@ describe('/reports/{REPORTID}/genomic/summary/analystComments endpoint testing',
 
     // Create initial comment to be tested
     await request
-      .put(`/reports/${reportIdent}/genomic/summary/analystComments`)
+      .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analystComments`)
       .auth(username, password)
       .type('json')
       .send({comments: 'This is the first comment'})
