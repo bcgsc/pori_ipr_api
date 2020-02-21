@@ -84,7 +84,9 @@ module.exports = sequelize => sequelize.define('analysis_report', {
     ...DEFAULT_OPTIONS.hooks,
     afterDestroy: async (instance) => {
       // get associations from model
-      const {ReportUserFilter, createdBy, ...associations} = sequelize.models.analysis_report.associations;
+      const {
+        ReportUserFilter, createdBy, projects, users, ...associations
+      } = sequelize.models.analysis_report.associations;
       const promises = [];
 
       // delete all report associations
