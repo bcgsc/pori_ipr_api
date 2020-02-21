@@ -11,7 +11,7 @@ const exclude = BASE_EXCLUDE.concat(REPORT_EXCLUDE);
 const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
   exclude,
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments'],
+  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
 
 // set schema version and don't allow additional properties
@@ -55,7 +55,7 @@ schema.properties.images = {
 // get report associations
 const {
   ReportUserFilter, createdBy, probe_signature, presentation_discussion,
-  presentation_slides, users, analystComments, ...associations
+  presentation_slides, users, analystComments, projects, ...associations
 } = db.models.analysis_report.associations;
 
 schema.definitions = {};
