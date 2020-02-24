@@ -445,7 +445,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
 
     try {
       // Bind report
-      const reportProject = await db.models.report_project.create({project_id: req.project.id, report_id: report.id});
+      const reportProject = await db.models.reportProject.create({project_id: req.project.id, report_id: report.id});
       const output = {
         report: report.ident,
         project: req.project.name,
@@ -484,7 +484,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
 
     try {
       // Unbind report
-      const reportProject = await db.models.report_project.destroy({where: {project_id: req.project.id, report_id: report.id}});
+      const reportProject = await db.models.reportProject.destroy({where: {project_id: req.project.id, report_id: report.id}});
       if (!reportProject) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove report from project', code: 'failedReportProjectDestroy'}});
       }
