@@ -10,7 +10,7 @@ const userRoute = require('./user');
 const groupRoute = require('./user/group');
 
 const patientInformationRoute = require('./patientInformation');
-const reportsRoute = require('./report');
+const reportsRoute = require('./report/report');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
