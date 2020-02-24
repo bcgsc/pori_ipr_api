@@ -65,7 +65,7 @@ router.route('/')
     if (req.query.sort) {
       const modelMapping = (index, order) => {
         return {
-          patientID: ['patient_id', order],
+          patientID: ['patientId', order],
           analysisBiopsy: ['biopsy_name', order],
           tumourType: [
             {model: db.models.patientInformation, as: 'patientInformation'},
@@ -93,7 +93,7 @@ router.route('/')
     } else {
       opts.order = [
         ['state', 'desc'],
-        ['patient_id', 'desc'],
+        ['patientId', 'desc'],
       ];
     }
 
@@ -133,14 +133,14 @@ router.route('/')
           {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {patient_id: {[Op.iLike]: `%${req.query.searchText}%`}},
+          {patientId: {[Op.iLike]: `%${req.query.searchText}%`}},
         ],
       };
     }
 
     // Create mapping for available columns to filter on
     const columnMapping = {
-      patientID: {column: 'patient_id', table: null},
+      patientID: {column: 'patientId', table: null},
       analysisBiopsy: {column: 'biopsy_name', table: null},
       tumourType: {column: 'tumourType', table: 'patientInformation'},
       physician: {column: 'physician', table: 'patientInformation'},

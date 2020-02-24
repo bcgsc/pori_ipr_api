@@ -64,7 +64,7 @@
     "kbVersion": "v2.8.3",
     "state": "ready",
     "expression_matrix": "v9",
-    "patient_id": "UPLOADPAT01",
+    "patientId": "UPLOADPAT01",
     "age_of_consent": 20,
     "alternate_identifier": "UPLOADPATIENT01",
     "biopsy_name": "biop1",
