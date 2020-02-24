@@ -29,7 +29,7 @@ userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
 // Projects
 const project = sequelize.import('./project/project');
 const userProject = sequelize.import('./project/user_project');
-const reportProject = sequelize.import('./project/report_project');
+const reportProject = sequelize.import('./project/reportProject');
 
 project.belongsToMany(user, {
   as: 'users', through: {model: userProject, unique: false}, foreignKey: 'project_id', otherKey: 'user_id', onDelete: 'CASCADE',
