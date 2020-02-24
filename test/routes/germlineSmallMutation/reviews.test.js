@@ -31,6 +31,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
 
   beforeEach(async () => {
+    // Create a report through models to avoid using endpoints
     record = await db.models.germline_small_mutation.create({
       source_version: 'v1.0.0',
       source_path: '/some/random/source/path',
@@ -42,6 +43,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
   });
 
   afterEach(async () => {
+    // Hard delete recent created report
     await db.models.germline_small_mutation.destroy({
       where: {ident: record.ident},
       force: true,
@@ -99,6 +101,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
     let review;
 
     beforeEach(async () => {
+      // Create a review and assigns it to the report
       review = await db.models.germline_small_mutation_review.create({
         germline_report_id: record.id,
         reviewedBy_id: 1,
@@ -108,6 +111,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
     });
 
     afterEach(async () => {
+      // Hard deletes the review
       await db.models.germline_small_mutation_review.destroy({
         where: {ident: review.ident},
         force: true,
@@ -120,6 +124,14 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
+    });
+
+    test('DELETE /{review} - 404 Not found', async () => {
+      await request
+        .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review/NOT_EXISTING_ID`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
     });
   });
 });

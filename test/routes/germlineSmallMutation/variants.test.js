@@ -32,6 +32,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
 
   beforeEach(async () => {
+    // Create a report through models to avoid using endpoints
     record = await db.models.germline_small_mutation.create({
       source_version: 'v1.0.0',
       source_path: '/some/random/source/path',
@@ -41,6 +42,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
       biopsyName: 'TEST123',
     });
 
+    // Create a Variant in the newly created report
     variant = await db.models.germline_small_mutation_variant.create({
       germline_report_id: record.id,
       gene: 'ARTBAN',
@@ -48,6 +50,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
   });
 
   afterEach(async () => {
+    // Hard deletes both the record and the variant
     await db.models.germline_small_mutation.destroy({
       where: {ident: record.ident},
       force: true,
@@ -121,7 +124,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
     });
 
     test('PUT /{variant} - 404 Not Found', async () => {
-      const res = await request
+      await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
         .send({patient_history: 'Patient_history', family_history: 'Family_history', hidden: true})
         .auth(username, password)

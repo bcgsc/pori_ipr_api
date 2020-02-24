@@ -15,6 +15,7 @@ const {username, password} = CONFIG.get('testing');
 
 const BASE_URL = '/api/1.0/germline_small_mutation';
 
+// Template of a germline report for testing
 const checkGermlineReport = expect.objectContaining({
   ident: expect.any(String),
   source_version: expect.any(String),
@@ -29,6 +30,7 @@ const checkGermlineReport = expect.objectContaining({
   variants: expect.any(Array),
 });
 
+// Template of a GET all reports query for tests
 const checkGermlineReportList = expect.objectContaining({
   total: expect.any(Number),
   reports: expect.arrayContaining([
@@ -208,6 +210,7 @@ describe('/germline_small_mutation', () => {
     let record;
 
     beforeEach(async () => {
+      // Create a report through models to avoid using endpoints
       record = await db.models.germline_small_mutation.create({
         source_version: 'v1.0.0',
         source_path: '/some/random/source/path',
@@ -219,6 +222,7 @@ describe('/germline_small_mutation', () => {
     });
 
     afterEach(async () => {
+      // Hard delete recent created report
       await db.models.germline_small_mutation.destroy({
         where: {ident: record.ident},
         force: true,
