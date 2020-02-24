@@ -3,8 +3,19 @@ const express = require('express');
 
 const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 
 const router = express.Router({mergeParams: true});
+
+const variantSchema = {
+  type: 'object',
+  required: ['patient_history', 'family_history', 'hidden'],
+  properties: {
+    patient_history: {type: 'string'},
+    family_history: {type: 'string'},
+    hidden: {type: 'boolean'},
+  },
+};
 
 router.param('variant', variantMiddleware);
 
@@ -53,6 +64,7 @@ router.route('/:variant')
     req.variant.hidden = req.body.hidden;
 
     try {
+      validateAgainstSchema(variantSchema, req.body);
       await req.variant.save();
       return res.json(req.variant);
     } catch (error) {
