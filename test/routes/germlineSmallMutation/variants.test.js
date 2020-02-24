@@ -93,6 +93,33 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
       }));
     });
 
+    test('PUT /{variant} patient_history required - 400 Bad Request', async () => {
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .send({family_history: 'Family_history', hidden: true})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('PUT /{variant} family_history required - 400 Bad Request', async () => {
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .send({patient_history: 'Patient_history', hidden: true})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('PUT /{variant} hidden is boolean - 400 Bad Request', async () => {
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .send({patient_history: 'Patient_history', family_history: 'Family_history', hidden: 'NOT_BOOLEAN'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     test('PUT /{variant} - 404 Not Found', async () => {
       const res = await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)

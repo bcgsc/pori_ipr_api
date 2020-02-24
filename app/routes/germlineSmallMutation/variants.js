@@ -64,7 +64,14 @@ router.route('/:variant')
     req.variant.hidden = req.body.hidden;
 
     try {
+      // Validate input
       validateAgainstSchema(variantSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
+    try {
       await req.variant.save();
       return res.json(req.variant);
     } catch (error) {
