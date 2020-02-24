@@ -1,6 +1,6 @@
 const express = require('express');
 
-const reports = require('./reports');
+const reports = require('./index');
 const image = require('./image');
 const signature = require('./probe/signature');
 
