@@ -15,7 +15,7 @@ module.exports = async (req, res, next, ident) => {
   };
 
   try {
-    const result = await db.models.germline_small_mutation_review.scope('public').findOne(opts);
+    const result = await db.models.germline_small_mutation_review.findOne(opts);
     if (!result) {
       throw new MiddlewareNotFound('Unable to find the germline report review', req, res, 'germlineReportReview');
     }

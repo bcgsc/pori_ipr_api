@@ -114,13 +114,12 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
       });
     });
 
-    test('DELETE /{review} - 200 Success', async () => {
-      // TODO: Fix this test
-      const test = await request
+    test('DELETE /{review} - 204 No content', async () => {
+      await request
         .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review/${review.ident}`)
         .auth(username, password)
-        .type('json');
-      console.log(test.body);
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
     });
   });
 });
