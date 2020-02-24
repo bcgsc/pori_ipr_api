@@ -8,7 +8,7 @@
     "start": "node bin/server.js",
     "start:prod": "NODE_ENV=production node bin/server.js",
     "start:dev": "NODE_ENV=development node bin/server.js",
-    "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit germlineSmallMutation/ --verbose",
+    "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js",
     "sync": "node ./bin/syncWorker"
   },
