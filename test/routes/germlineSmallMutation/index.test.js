@@ -15,27 +15,26 @@ const {username, password} = CONFIG.get('testing');
 
 const BASE_URL = '/api/1.0/germline_small_mutation';
 
+const checkGermlineReport = expect.objectContaining({
+  ident: expect.any(String),
+  source_version: expect.any(String),
+  source_path: expect.any(String),
+  exported: expect.any(Boolean),
+  createdAt: expect.any(String),
+  updatedAt: expect.any(String),
+  id: expect.any(Number),
+  biofx_assigned: expect.any(Object),
+  projects: expect.any(Array),
+  reviews: expect.any(Array),
+  variants: expect.any(Array),
+});
 
-const checkGermlineReport = (res) => {
-  expect(res.body).toEqual(expect.objectContaining({
-    total: expect.any(Number),
-    reports: expect.arrayContaining([
-      expect.objectContaining({
-        ident: expect.any(String),
-        source_version: expect.any(String),
-        source_path: expect.any(String),
-        exported: expect.any(Boolean),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        id: expect.any(Number),
-        biofx_assigned: expect.any(Object),
-        projects: expect.any(Array),
-        reviews: expect.any(Array),
-        variants: expect.any(Array),
-      }),
-    ]),
-  }));
-};
+const checkGermlineReportList = expect.objectContaining({
+  total: expect.any(Number),
+  reports: expect.arrayContaining([
+    checkGermlineReport,
+  ]),
+});
 
 
 describe('/germline_small_mutation', () => {
@@ -54,7 +53,6 @@ describe('/germline_small_mutation', () => {
 
 
   describe('POST (create) /patient/:patient/biopsy/:biopsy', () => {
-    // TODO: Add invalid input tests
     test('POST /patient/:patient/biopsy/:biopsy - 201 Created', async () => {
       const {body: record} = await request
         .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
@@ -89,7 +87,7 @@ describe('/germline_small_mutation', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkGermlineReport(res);
+      expect(res.body).toEqual(checkGermlineReportList);
     });
 
     test('GET / all reports + search query - 200 success', async () => {
@@ -99,9 +97,11 @@ describe('/germline_small_mutation', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-  
-      checkGermlineReport(res);
-      // TODO: Implement specific check for checking if it actually searched
+
+      expect(res.body).toEqual(checkGermlineReportList);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({patientId: expect.stringContaining('POG')}),
+      ]));
     });
 
     test('GET / all reports + not existing search query - 200 success', async () => {
@@ -126,7 +126,7 @@ describe('/germline_small_mutation', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkGermlineReport(res);
+      expect(res.body).toEqual(checkGermlineReportList);
       expect(res.body.reports[0].projects[0].name).toEqual('POG');
     });
 
@@ -152,7 +152,7 @@ describe('/germline_small_mutation', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkGermlineReport(res);
+      expect(res.body).toEqual(checkGermlineReportList);
       expect(res.body.reports.length).toEqual(3);
     });
   });
@@ -187,19 +187,7 @@ describe('/germline_small_mutation', () => {
           .expect(HTTP_STATUS.OK);
 
         expect(res.body).toEqual(expect.arrayContaining([
-          expect.objectContaining({
-            ident: expect.any(String),
-            source_version: expect.any(String),
-            source_path: expect.any(String),
-            exported: expect.any(Boolean),
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String),
-            id: expect.any(Number),
-            biofx_assigned: expect.any(Object),
-            projects: expect.any(Array),
-            reviews: expect.any(Array),
-            variants: expect.any(Array),
-          }),
+          checkGermlineReport,
         ]));
       });
 
@@ -211,19 +199,7 @@ describe('/germline_small_mutation', () => {
           .expect(HTTP_STATUS.OK);
 
         expect(res.body).toEqual(
-          expect.objectContaining({
-            ident: expect.any(String),
-            source_version: expect.any(String),
-            source_path: expect.any(String),
-            exported: expect.any(Boolean),
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String),
-            id: expect.any(Number),
-            biofx_assigned: expect.any(Object),
-            projects: expect.any(Array),
-            reviews: expect.any(Array),
-            variants: expect.any(Array),
-          })
+          checkGermlineReport,
         );
       });
     });
