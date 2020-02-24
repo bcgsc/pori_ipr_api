@@ -2,9 +2,9 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../../../models');
+const db = require('../../../models');
 
-const logger = require('../../../../log');
+const logger = require('../../../log');
 
 router.param('alteration', async (req, res, next, altIdent) => {
   let result;
@@ -17,7 +17,7 @@ router.param('alteration', async (req, res, next, altIdent) => {
 
   if (!result) {
     logger.error('Unable to locate genomic alterations');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate genomic alterations', code: 'failedMiddlewareAlterationLookup'} });
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate genomic alterations', code: 'failedMiddlewareAlterationLookup'}});
   }
 
   req.alteration = result;

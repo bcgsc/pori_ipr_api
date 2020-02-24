@@ -2,8 +2,8 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../../models');
-const logger = require('../../../log');
+const db = require('../../models');
+const logger = require('../../log');
 
 // Fetch the therapeutic target if found as URL param
 router.param('target', async (req, res, next, target) => {

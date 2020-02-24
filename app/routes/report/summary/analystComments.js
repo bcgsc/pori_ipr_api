@@ -3,9 +3,9 @@ const express = require('express');
 const moment = require('moment');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../../../models');
+const db = require('../../../models');
 
-const logger = require('../../../../log');
+const logger = require('../../../log');
 
 // Middleware for Analyst Comments
 router.use('/', async (req, res, next) => {
