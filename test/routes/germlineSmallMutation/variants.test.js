@@ -93,7 +93,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
       }));
     });
 
-    test('PUT /{variant} patient_history required - 400 Bad Request', async () => {
+    test('PUT /{variant} patient_history is required - 400 Bad Request', async () => {
       await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
         .send({family_history: 'Family_history', hidden: true})
@@ -102,7 +102,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('PUT /{variant} family_history required - 400 Bad Request', async () => {
+    test('PUT /{variant} family_history is required - 400 Bad Request', async () => {
       await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
         .send({patient_history: 'Patient_history', hidden: true})
@@ -111,7 +111,7 @@ describe('/germline_small_mutation/patient/:patient/biopsy/:analysis/report/:gsm
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('PUT /{variant} hidden is boolean - 400 Bad Request', async () => {
+    test('PUT /{variant} hidden should be boolean - 400 Bad Request', async () => {
       await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
         .send({patient_history: 'Patient_history', family_history: 'Family_history', hidden: 'NOT_BOOLEAN'})

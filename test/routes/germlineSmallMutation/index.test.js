@@ -69,12 +69,59 @@ describe('/germline_small_mutation', () => {
       });
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy - 400 Bad Request', async () => {
+    test('POST /patient/:patient/biopsy/:biopsy version is required - 400 Bad Request', async () => {
       await request
         .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
         .auth(username, password)
         .type('json')
-        .send({})
+        .send({
+          normal_library: 'P0XXXXX',
+          project: 'TEST',
+          rows: [{}],
+          source: '/some/file/path',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('POST /patient/:patient/biopsy/:biopsy source is required - 400 Bad Request', async () => {
+      await request
+        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          normal_library: 'P0XXXXX',
+          project: 'TEST',
+          rows: [{}],
+          version: 'vX.X.X',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('POST /patient/:patient/biopsy/:biopsy project is required - 400 Bad Request', async () => {
+      await request
+        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          normal_library: 'P0XXXXX',
+          rows: [{}],
+          source: '/some/file/path',
+          version: 'vX.X.X',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('POST /patient/:patient/biopsy/:biopsy normal_library is required - 400 Bad Request', async () => {
+      await request
+        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          project: 'TEST',
+          rows: [{}],
+          source: '/some/file/path',
+          version: 'vX.X.X',
+        })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
