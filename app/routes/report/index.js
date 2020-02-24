@@ -66,7 +66,7 @@ router.route('/')
       const modelMapping = (index, order) => {
         return {
           patientID: ['patientId', order],
-          analysisBiopsy: ['biopsy_name', order],
+          analysisBiopsy: ['biopsyName', order],
           tumourType: [
             {model: db.models.patientInformation, as: 'patientInformation'},
             'tumour_type',
@@ -83,7 +83,7 @@ router.route('/')
             'caseType',
             order,
           ],
-          alternateIdentifier: ['alternate_identifier', order],
+          alternateIdentifier: ['alternateIdentifier', order],
         }[index];
       };
       let {sort} = req.query;
@@ -141,12 +141,12 @@ router.route('/')
     // Create mapping for available columns to filter on
     const columnMapping = {
       patientID: {column: 'patientId', table: null},
-      analysisBiopsy: {column: 'biopsy_name', table: null},
+      analysisBiopsy: {column: 'biopsyName', table: null},
       tumourType: {column: 'tumourType', table: 'patientInformation'},
       physician: {column: 'physician', table: 'patientInformation'},
       state: {column: 'state', table: null},
       caseType: {column: 'caseType', table: 'patientInformation'},
-      alternateIdentifier: {column: 'alternate_identifier', table: null},
+      alternateIdentifier: {column: 'alternateIdentifier', table: null},
     };
 
     // Add filters to query if available

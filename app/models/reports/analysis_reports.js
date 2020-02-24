@@ -12,21 +12,31 @@ module.exports = (sequelize) => {
       unique: false,
       allowNull: false,
     },
-    age_of_consent: {
+    ageOfConsent: {
+      name: 'ageOfConsent',
+      field: 'age_of_consent',
       type: Sq.INTEGER,
     },
-    alternate_identifier: {
+    alternateIdentifier: {
+      name: 'alternateIdentifier',
+      field: 'alternate_identifier',
       type: Sq.STRING,
     },
-    biopsy_name: {
+    biopsyName: {
+      name: 'biopsyName',
+      field: 'biopsy_name',
       type: Sq.STRING,
       allowNull: true,
     },
-    biopsy_date: {
+    biopsyDate: {
+      name: 'biopsyDate',
+      field: 'biopsy_date',
       type: Sq.DATE,
       defaultValue: null,
     },
-    presentation_date: {
+    presentationDate: {
+      name: 'presentationDate',
+      field: 'presentation_date',
       type: Sq.DATE,
       defaultValue: null,
     },
