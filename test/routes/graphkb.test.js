@@ -22,6 +22,7 @@ const testAutocompleteWithKeyword = async (request, type, keyword) => {
     expect.objectContaining({
       result: expect.arrayContaining([
         expect.objectContaining({
+          // expect rid format to match graphkb pattern ex. #3:4
           '@rid': expect.stringMatching(/^#-?\d+:-?\d+$/),
           displayName: expect.anything(),
           '@class': expect.anything(),
