@@ -230,7 +230,6 @@ describe('/germline_small_mutation', () => {
 
     describe('PUT', () => {
       test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 Success', async () => {
-        // TODO: Fix this test
         const NEW_EXPORTED = true;
         const res = await request
           .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
