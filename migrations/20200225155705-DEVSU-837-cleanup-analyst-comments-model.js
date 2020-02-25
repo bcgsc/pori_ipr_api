@@ -1,23 +1,27 @@
-'use strict';
+const COMMENTS_TABLE = 'pog_analysis_reports_summary_analyst_comments';
 
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    /*
-      Add altering commands here.
-      Return a promise to correctly handle asynchronicity.
+  up: async (queryInterface) => {
+    const transaction = await queryInterface.sequelize.transaction();
+    try {
+      console.log('Removing unused columns');
+      await queryInterface.removeColumn(COMMENTS_TABLE, 'reviewedBy', {transaction});
+      await queryInterface.removeColumn(COMMENTS_TABLE, 'reviewedAt', {transaction});
 
-      Example:
-      return queryInterface.createTable('users', { id: Sequelize.INTEGER });
-    */
+      console.log('Renaming columns');
+      await queryInterface.renameColumn(COMMENTS_TABLE, 'reviewerSignedBy_id', 'reviewer_id', {transaction});
+      await queryInterface.renameColumn(COMMENTS_TABLE, 'reviewerSignedAt', 'reviewer_signed_at', {transaction});
+      await queryInterface.renameColumn(COMMENTS_TABLE, 'authorSignedBy_id', 'author_id', {transaction});
+      await queryInterface.renameColumn(COMMENTS_TABLE, 'authorSignedAt', 'author_signed_at', {transaction});
+
+      await transaction.commit();
+    } catch (error) {
+      transaction.rollback();
+      throw error;
+    }
   },
 
-  down: (queryInterface, Sequelize) => {
-    /*
-      Add reverting commands here.
-      Return a promise to correctly handle asynchronicity.
-
-      Example:
-      return queryInterface.dropTable('users');
-    */
+  down: () => {
+    throw new Error('Not Implemented');
   }
 };
