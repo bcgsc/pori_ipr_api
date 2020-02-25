@@ -35,14 +35,17 @@ module.exports = {
         // insert report-project associations not in current pog-project mappings
         await queryInterface.sequelize.query(`
           INSERT INTO report_projects (report_id, project_id, created_at, updated_at) 
-            SELECT rep.id, proj.id, NOW(), NOW() 
+            SELECT rep.id, proj.id, pog.created_at, NOW() 
             FROM (
-              SELECT id, pog_id FROM pog_analysis_reports 
+              SELECT id, pog_id, deleted_at FROM pog_analysis_reports 
               WHERE pog_id NOT IN (
                 SELECT DISTINCT pog_id 
                 FROM pog_projects)) AS rep 
-              INNER JOIN "POGs" AS pog ON rep.pog_id = pog.id 
-              INNER JOIN projects AS proj ON pog.project = proj.name`, {transaction});
+            INNER JOIN "POGs" AS pog ON rep.pog_id = pog.id 
+            INNER JOIN projects AS proj ON pog.project = proj.name 
+            WHERE rep.deleted_at IS NULL 
+            AND pog.deleted_at IS NULL 
+            AND proj.deleted_at IS NULL`, {transaction});
 
         // delete old pog_projects table
         await queryInterface.dropTable('pog_projects', {transaction});
