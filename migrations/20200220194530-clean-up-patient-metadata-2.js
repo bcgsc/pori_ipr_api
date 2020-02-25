@@ -32,6 +32,18 @@ module.exports = {
         // add missing ident for Marco Research project
         await queryInterface.bulkUpdate('projects', {ident: uuidv4()}, {name: 'Marco_Research'}, {transaction});
 
+        // insert report-project associations not in current pog-project mappings
+        await queryInterface.sequelize.query(`
+          INSERT INTO report_projects (report_id, project_id, created_at, updated_at) 
+            SELECT rep.id, proj.id, NOW(), NOW() 
+            FROM (
+              SELECT id, pog_id FROM pog_analysis_reports 
+              WHERE pog_id NOT IN (
+                SELECT DISTINCT pog_id 
+                FROM pog_projects)) AS rep 
+              INNER JOIN "POGs" AS pog ON rep.pog_id = pog.id 
+              INNER JOIN projects AS proj ON pog.project = proj.name`, {transaction});
+
         // delete old pog_projects table
         await queryInterface.dropTable('pog_projects', {transaction});
 
