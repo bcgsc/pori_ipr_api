@@ -30,7 +30,7 @@ module.exports = {
             WHERE proj."deletedAt" IS NULL AND rep.deleted_at IS NULL`, {transaction});
 
         // add missing ident for Marco Research project
-        await queryInterface.bulkUpdate('projects', {ident: uuidv4()}, {name: 'Marco_Research'}, {transaction});
+        await queryInterface.bulkUpdate('projects', {ident: uuidv4()}, {ident: null, name: 'Marco_Research'}, {transaction});
 
         // insert report-project associations not in current pog-project mappings
         await queryInterface.sequelize.query(`
