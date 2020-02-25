@@ -61,7 +61,7 @@ router.route('/')
 
         // Remove id's and deletedAt properties from returned model
         const {
-          id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+          id, pog_id, report_id, deletedAt, authorId, reviewerId, ...publicModel
         } = dataValues;
 
         return res.json(publicModel);
@@ -107,7 +107,7 @@ router.route('/sign/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        id, pog_id, report_id, deletedAt, authorId, reviewerId, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -152,7 +152,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, authorSignedBy_id, reviewerSignedBy_id, ...publicModel
+        id, pog_id, report_id, deletedAt, authorId, reviewerId, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
