@@ -336,7 +336,7 @@ probeSignature.belongsTo(user, {
   as: 'readySignature', foreignKey: 'readySignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 probeSignature.belongsTo(user, {
-  as: 'reviewerSignature', foreignKey: 'reviewerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+  as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 analysisReports.hasOne(probeSignature, {
   as: 'probe_signature', foreignKey: 'report_id', onDelete: 'CASCADE', constraints: true,

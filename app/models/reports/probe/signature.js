@@ -17,7 +17,7 @@ module.exports = sequelize => sequelize.define('probe_signature', {
       key: 'id',
     },
   },
-  reviewerId: {
+  reviewerSignedBy_id: {
     type: Sq.INTEGER,
     references: {
       model: 'users',
