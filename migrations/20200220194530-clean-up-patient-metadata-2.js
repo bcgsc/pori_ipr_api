@@ -1,3 +1,4 @@
+const uuidv4 = require('uuid/v4');
 // all tables that have a pog_id
 // excluding pog_analysis_report which is removed later
 // because the pog_id is used in a latter query
@@ -27,6 +28,9 @@ module.exports = {
             FROM pog_projects AS proj INNER JOIN pog_analysis_reports AS rep 
             ON proj.pog_id = rep.pog_id 
             WHERE proj."deletedAt" IS NULL AND rep.deleted_at IS NULL`, {transaction});
+
+        // add missing ident for Marco Research project
+        await queryInterface.bulkUpdate('projects', {ident: uuidv4()}, {name: 'Marco_Research'}, {transaction});
 
         // delete old pog_projects table
         await queryInterface.dropTable('pog_projects', {transaction});
