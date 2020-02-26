@@ -32,7 +32,7 @@ router.use('/therapeutic-targets', therapeuticTargets);
 // TODO: remove line below when the client has updated to match
 router.use('/testInformation', probeTestInformation);
 
-router.use('/probeTestInformation', probeTestInformation);
+router.use('/probe-test-information', probeTestInformation);
 
 // TODO: modify 2 lines below when the client has been updated to match
 router.use('/detailedGenomicAnalysis', detailedGenomicAnalysis); // genomic report pattern
