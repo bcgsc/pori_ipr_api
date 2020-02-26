@@ -955,7 +955,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified":
+  "/POG/{POG}/report/{report}/genomic/summary/genomic-alterations-identified":
     get:
       summary: Get key genomic alterations
       description: Retrieve list of key identified genomic alterations
@@ -1000,7 +1000,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User is not authorized to add key genomic alterations
-  "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}":
+  "/POG/{POG}/report/{report}/genomic/summary/genomic-alterations-identified/{alteration}":
     delete:
       summary: Remove key genomic alterations
       description: Remove a key identified genomic alteration entry.
