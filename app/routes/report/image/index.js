@@ -70,7 +70,7 @@ router.route('/expression-density-graphs')
     }
   });
 
-router.route('/mutationSummary')
+router.route('/mutation-summary')
   .get(async (req, res) => {
     const opts = {
       where: {
