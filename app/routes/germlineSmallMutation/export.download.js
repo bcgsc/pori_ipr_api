@@ -11,6 +11,12 @@ const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
 
+
+// Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
+const parseMutationSignature = (arr) => {
+  return arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
+};
+
 /**
  * Flash Token Authentication and user injection
  *
@@ -72,95 +78,87 @@ router.get('/batch/download', async (req, res) => {
     return res.status(HTTP_STATUS.FORBIDDEN).send({message: 'A flash token is required in the url parameter: flash_token'});
   }
 
-  // Where clauses
-  const opts = {
-    where: {
-      exported: false,
-    },
-    include: [
-      {model: db.models.pog_analysis, as: 'analysis', include: [{as: 'pog', model: db.models.POG.scope('public')}]},
-      {
-        model: db.models.germline_small_mutation_variant, as: 'variants', separate: true, order: [['gene', 'asc']],
-      },
-      {
-        model: db.models.germline_small_mutation_review, as: 'reviews', separate: true, include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
-      },
-    ],
-  };
+  const requiredReviews = req.query.reviews.split(',');
 
-  let reports;
-  let landscapes;
-
-  if (!req.query.reviews) {
-    req.query.reviews = '';
-  }
+  let germlineReports;
 
   try {
     // Build list of reports that have been reviewed by both projects and biofx
-    reports = await db.models.germline_small_mutation.findAll(opts);
+    germlineReports = await db.models.germline_small_mutation.findAll({
+      where: {
+        exported: false,
+      },
+      include: [
+        {
+          model: db.models.germline_small_mutation_variant,
+          as: 'variants',
+          separate: true,
+          order: [['gene', 'asc']],
+        },
+        {
+          model: db.models.germline_small_mutation_review,
+          as: 'reviews',
+          separate: true,
+          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+        },
+      ],
+    });
   } catch (error) {
     logger.error(`Error while finding germline small mutation ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while finding germline small mutation'}});
   }
 
-  const opts2 = {
-    order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
-    include: [
-      {model: db.models.analysis_report, as: 'report'},
-    ],
-    where: {
-      '$report.analysis_id$': {
-        [Op.in]: reports.map((report) => { return report.analysis.id; }),
-      },
-      '$report.state$': {
-        [Op.in]: ['presented', 'active', 'archived'],
-      },
-    },
-  };
+  let matchedReportSummaries; // find the most recent genomic report for the same patient/sample
 
   try {
-    landscapes = await db.models.tumourAnalysis.findAll(opts2);
+    // TODO: filter patientId does not exist on the summary, must fitler by report. This is pending DEVSU-745
+    // https://www.bcgsc.ca/jira/browse/DEVSU-865
+    matchedReportSummaries = await db.models.tumourAnalysis.findAll({
+      order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
+      include: [
+        {model: db.models.analysis_report, as: 'report'},
+      ],
+      where: {
+        patientId: {
+          [Op.in]: germlineReports.map((report) => { return report.patientId; }),
+        },
+        '$report.state$': {
+          [Op.in]: ['presented', 'active', 'archived'],
+        },
+      },
+    });
   } catch (error) {
     logger.error(`Error while trying to get tumour analysis ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get tumour analysis'}});
   }
 
-  let variants = [];
+  const variants = [];
 
   // Loop through reports, and ensure they have all required reviews
-  reports.forEach((report) => {
+  for (const report of germlineReports) {
     // Ensure all required reviews are present on report
-    if (_.intersection(req.query.reviews.split(','),
-      report.reviews.map((review) => { return review.type; })).length !== req.query.reviews.split(',').length) {
-      return;
-    }
+    const reportReviews = report.reviews.map((review) => { return review.type; });
 
-
-    // Add samples name for each variant
-    const parsedVariants = report.variants.map((variant) => {
-      // Find mutation landscape
-      const matchingLandscape = landscapes.find((landscape) => {
-        return landscape.report.analysis_id === report.pog_analysis_id;
+    if (requiredReviews.every((state) => { return reportReviews.include(state); })) {
+      // contains all the required reviews
+      const summaryMatch = matchedReportSummaries.find((summary) => {
+        return summary.report.patientId === report.patientId;
       });
 
-      // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
-      const parseMl = (arr) => {
-        return arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
-      };
+      const mutationSignature = summaryMatch
+        ? parseMutationSignature(summaryMatch.mutationSignature)
+        : 'N/A';
 
-      const ml = (matchingLandscape) ? parseMl(matchingLandscape.mutationSignature) : 'N/A';
-
-      // Watch for hidden rows
-      if (!variant.hidden) {
-        return Object.assign({sample: `${report.analysis.pog.POGID}_${report.analysis.libraries.normal}`, biopsy: report.analysis.analysis_biopsy, mutation_landscape: ml}, variant.toJSON());
+      for (const variant of report.variants.filter((v) => { return !v.hidden; })) {
+        variants.push({
+          ...variant.toJSON(),
+          sample: `${report.patientId}_${report.normalLibrary}`,
+          biopsy: report.biopsyName,
+          mutation_landscape: mutationSignature,
+        });
       }
-    });
-
-    variants = variants.concat(parsedVariants);
-  });
-
-  // Removes skipped rows
-  variants = variants.filter((variant) => { return (variant); });
+    }
+  }
 
   // Prepare export
   const workbook = new Excel.Workbook();
@@ -190,13 +188,8 @@ router.get('/batch/download', async (req, res) => {
   }
 
   try {
-    reports = reports.filter((report) => {
-      // Check if report was exported
-      return !(_.intersection(req.query.reviews.split(','),
-        report.reviews.map((review) => { return review.type; })).length !== req.query.reviews.split(',').length);
-    });
     // Mark all exported reports in DB
-    await Promise.all(reports.map(async (report) => {
+    await Promise.all(germlineReports.map(async (report) => {
       report.exported = true;
       return report.save();
     }));

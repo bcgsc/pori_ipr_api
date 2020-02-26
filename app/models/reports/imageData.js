@@ -11,13 +11,6 @@ module.exports = sequelize => sequelize.define('imageData', {
     unique: false,
     defaultValue: Sq.UUIDV4,
   },
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   reportId: {
     name: 'reportId',
     field: 'report_id',

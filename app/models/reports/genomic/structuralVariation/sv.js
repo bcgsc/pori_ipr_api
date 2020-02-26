@@ -4,13 +4,6 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = sequelize => sequelize.define('sv', {
   ...DEFAULT_COLUMNS,
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   reportId: {
     name: 'reportId',
     field: 'report_id',
@@ -91,7 +84,7 @@ module.exports = sequelize => sequelize.define('sv', {
   tableName: 'pog_analysis_reports_structural_variation_sv',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'deletedAt', 'reportId', 'pog_id']},
+      attributes: {exclude: ['id', 'deletedAt', 'reportId']},
     },
   },
 });

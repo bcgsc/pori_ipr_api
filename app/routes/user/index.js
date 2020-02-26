@@ -1,14 +1,13 @@
 const HTTP_STATUS = require('http-status-codes');
-const Ajv = require('ajv');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 
 const router = express.Router({mergeParams: true});
-const ajv = new Ajv({useDefaults: true, logger});
 
 // POST new user json schema
 const newUserSchema = {
@@ -35,28 +34,6 @@ const newUserSchema = {
     required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
     properties: {password: {minLength: 8}},
   },
-};
-
-// Compile schema to be used in validator
-const validate = ajv.compile(newUserSchema);
-
-// Validates the request
-const parseNewUser = (request) => {
-  if (!validate(request)) {
-    if (validate.errors[0].dataPath) {
-      throw new Error(`${validate.errors[0].dataPath} ${validate.errors[0].message}`);
-    } else {
-      throw new Error(`New Users ${validate.errors[0].message}`);
-    }
-  }
-  return {
-    username: request.username,
-    password: request.password,
-    type: request.type,
-    email: request.email,
-    firstName: request.firstName,
-    lastName: request.lastName,
-  };
 };
 
 // Route for getting a POG
@@ -99,7 +76,7 @@ router.route('/')
 
     try {
       // Validate input
-      req.body = parseNewUser(req.body);
+      validateAgainstSchema(newUserSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});

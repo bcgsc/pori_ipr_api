@@ -4,13 +4,6 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = sequelize => sequelize.define('tumourAnalysis', {
   ...DEFAULT_COLUMNS,
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   reportId: {
     name: 'reportId',
     field: 'report_id',
@@ -52,7 +45,7 @@ module.exports = sequelize => sequelize.define('tumourAnalysis', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['deletedAt', 'reportId', 'id', 'pog_id'],
+        exclude: ['deletedAt', 'reportId', 'id'],
       },
     },
   },

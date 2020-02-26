@@ -1,0 +1,41 @@
+const Sq = require('sequelize');
+const {DEFAULT_MAPPING_COLUMNS, DEFAULT_MAPPING_OPTIONS} = require('../base');
+
+module.exports = (sequelize) => {
+  return sequelize.define('germlineReportsToProjects', {
+    ...DEFAULT_MAPPING_COLUMNS,
+    germlineReportId: {
+      field: 'germline_report_id',
+      name: 'germlineReportId',
+      type: Sq.INTEGER,
+      unique: false,
+      allowNull: false,
+      references: {
+        model: 'germline_small_mutation',
+        key: 'id',
+      },
+    },
+    projectId: {
+      field: 'project_id',
+      name: 'projectId',
+      type: Sq.INTEGER,
+      unique: false,
+      allowNull: false,
+      references: {
+        model: 'projects',
+        key: 'id',
+      },
+    },
+  },
+  {
+    ...DEFAULT_MAPPING_OPTIONS,
+    tableName: 'germline_reports_to_projects',
+    scopes: {
+      public: {
+        attributes: {
+          exclude: ['deletedAt', 'id'],
+        },
+      },
+    },
+  });
+};

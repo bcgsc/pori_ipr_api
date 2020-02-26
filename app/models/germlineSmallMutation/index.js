@@ -3,10 +3,18 @@ module.exports = (sequelize) => {
   const variant = sequelize.import('./germline_small_mutations_variant.model');
 
   const report = sequelize.import('./germline_small_mutations.model'); // Order is important
+  const germlineReportsToProjects = sequelize.import('./germlineReportsToProjects');
+  const {models: {project}} = sequelize;
 
-  report.belongsTo(sequelize.models.pog_analysis, {
-    as: 'analysis', foreignKey: 'pog_analysis_id', sourceKey: 'id', onDelete: 'CASCADE', constraints: true,
+  // M2M relationship between reports and projects
+  report.belongsToMany(project, {
+    as: 'projects',
+    through: {model: germlineReportsToProjects, unique: false},
+    foreignKey: 'germline_report_id',
+    otherKey: 'project_id',
+    onDelete: 'CASCADE',
   });
+
   report.belongsTo(sequelize.models.user, {
     as: 'biofx_assigned', foreignKey: 'biofx_assigned_id', onDelete: 'SET NULL', constraints: true,
   });

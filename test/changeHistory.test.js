@@ -100,7 +100,7 @@ describe('Tests for update changes', () => {
 
     // verify project is deleted
     await request
-      .get(`/api/1.0/POG/project/search?query=${projectData.name}`)
+      .get(`/api/1.0/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')
       .expect(404);

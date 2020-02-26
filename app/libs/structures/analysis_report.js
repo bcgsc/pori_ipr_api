@@ -1,20 +1,6 @@
+const uuidv4 = require('uuid/v4');
 const validate = require('uuid-validate');
 const db = require('../../models');
-
-/**
- * Create ident string
- *
- * @returns {string} - Returns a string of an ident (not unique)
- */
-const makeReportIdent = () => {
-  let ident = '';
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVQXYZ0123456789';
-
-  for (let i = 0; i < 5; i++) {
-    ident += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return ident;
-};
 
 // Get user if string
 const getUser = async (user) => {
@@ -49,10 +35,10 @@ class AnalysisReport {
   /**
    * Construct Report
    *
-   * @param {string|object} ident - identification string or instance of AnalysisReport
+   * @param {string|object} ident - identification string or instance of a report
    */
   constructor(ident = null) {
-    this.ident = ident; // Store POGID
+    this.ident = ident; // Store report ident
     this.instance = null;
     this.model = db.models.analysis_report;
     this.allowedStates = ['nonproduction', 'ready', 'active', 'presented', 'archived', 'reviewed', 'uploaded', 'signedoff'];
@@ -74,14 +60,14 @@ class AnalysisReport {
     }
 
     // Lookup in Database
-    const report = await this.model.findOne({where: {ident: this.ident}, include: {model: db.models.pog, as: 'pog'}});
+    const report = await this.model.findOne({where: {ident: this.ident}});
 
-    // POG not found
+    // report not found
     if (!report) {
       throw new Error(`Report not found for ident: ${this.ident}`);
     }
 
-    // POG found
+    // report found
     this.instance = report;
     return this.instance;
   }
@@ -89,24 +75,16 @@ class AnalysisReport {
   /**
    * Create new entry in database
    *
-   * @param {object} pog - POG model instance
-   * @param {object} analysis - Patient Analysis model instance
    * @param {user} user - Owning user for the report creation event
    * @param {type} type - report type to be created (genomic vs probe)
    * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived; expression_matrix: v8, v9)
    *
-   * @returns {Promise.<object>} - Returns a new POG Analysis Report
+   * @returns {Promise.<object>} - Returns a new report
    */
-  async create(pog, analysis, user, type, options) {
-    if (!options.analysis && !analysis.id) {
-      throw new Error('No analysis entry on pog object or analysis object passed');
-    }
-
+  async create(user, type, options) {
     const report = {
-      ident: makeReportIdent(),
+      ident: uuidv4(),
       createdBy_id: user.id,
-      pog_id: pog.id,
-      analysis_id: analysis.id,
       type,
     };
 
@@ -135,14 +113,13 @@ class AnalysisReport {
       where: {ident: this.instance.ident},
       attributes: {exclude: ['deletedAt']},
       include: [
-        {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt', 'pog_id']}},
+        {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt']}},
         {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
-        {model: db.models.POG.scope('public'), as: 'pog'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
           model: db.models.analysis_reports_user,
           as: 'users',
-          attributes: {exclude: ['id', 'pog_id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt']},
+          attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt']},
           include: [{
             model: db.models.user.scope('public'),
             as: 'user',

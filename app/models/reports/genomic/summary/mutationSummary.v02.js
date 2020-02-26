@@ -4,13 +4,6 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = sequelize => sequelize.define('mutationSummaryv2', {
   ...DEFAULT_COLUMNS,
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   reportId: {
     name: 'reportId',
     field: 'report_id',
@@ -67,7 +60,7 @@ module.exports = sequelize => sequelize.define('mutationSummaryv2', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['id', 'pog_id', 'reportId', 'deletedAt'],
+        exclude: ['id', 'reportId', 'deletedAt'],
       },
     },
   },
