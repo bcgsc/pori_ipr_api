@@ -19,6 +19,6 @@ router.use('/mutationSummary', mutationSummary);
 router.use('/pathway-analysis', pathwayAnalysis);
 router.use('/probe-results', probeResults);
 router.use('/tumourAnalysis', tumourAnalysis);
-router.use('/variantCounts', variantCounts);
+router.use('/variant-counts', variantCounts);
 
 module.exports = router;
