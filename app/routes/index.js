@@ -54,7 +54,7 @@ class Routing extends RouterInterface {
         '/user',
         '/project',
         '/reports',
-        '/germline_small_mutation',
+        '/germline-small-mutation',
       ].join('|')})`, authMiddleware);
 
     // Add Single Routes
@@ -75,10 +75,10 @@ class Routing extends RouterInterface {
     this.router.use('/reports/:report/gene-viewer', GeneViewerRoutes.getRouter());
 
     // Get Germline Reports Routes
-    this.router.use('/germline_small_mutation', germlineReports);
+    this.router.use('/germline-small-mutation', germlineReports);
 
     // Get Export Germline Reports Routes
-    this.router.use('/export/germline_small_mutation', germlineReportsExport);
+    this.router.use('/export/germline-small-mutation', germlineReportsExport);
 
     // Get Project Routes
     this.router.use('/project', projectRoute);
