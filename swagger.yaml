@@ -1219,7 +1219,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User isn't allowed to add a project
-  "/POG/{POG}/report/{report}/genomic/therapeuticTargets":
+  "/POG/{POG}/report/{report}/genomic/therapeutic-targets":
     get:
       summary: Get therapeutic targets
       description: Returns all therapeutic targets for an analysis report

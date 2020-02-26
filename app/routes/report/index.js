@@ -27,7 +27,7 @@ router.use('/mavis', mavis);
 router.use('/presentation', presentation);
 router.use('/somaticMutations', somaticMutations);
 router.use('/structuralVariation', structuralVariation);
-router.use('/therapeuticTargets', therapeuticTargets);
+router.use('/therapeutic-targets', therapeuticTargets);
 
 // TODO: remove line below when the client has updated to match
 router.use('/testInformation', probeTestInformation);
