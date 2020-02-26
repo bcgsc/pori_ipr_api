@@ -16,7 +16,7 @@ router.use('/genomicAlterationsIdentified', genomicAlterationsIdentified);
 router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
 router.use('/microbial', microbial);
 router.use('/mutationSummary', mutationSummary);
-router.use('/pathwayAnalysis', pathwayAnalysis);
+router.use('/pathway-analysis', pathwayAnalysis);
 router.use('/probe-results', probeResults);
 router.use('/tumourAnalysis', tumourAnalysis);
 router.use('/variantCounts', variantCounts);

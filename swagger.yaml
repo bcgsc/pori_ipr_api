@@ -1266,7 +1266,7 @@ paths:
                 $ref: "#/components/schemas/therapeuticTarget"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-  "/POG/{POG}/report/{report}/genomic/summary/pathwayAnalysis":
+  "/POG/{POG}/report/{report}/genomic/summary/pathway-analysis":
     get:
       summary: Get report pathway analysis
       description: Get a reports pathway analysis image
