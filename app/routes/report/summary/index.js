@@ -11,7 +11,7 @@ const variantCounts = require('./variantCounts');
 
 const router = express.Router({mergeParams: true});
 
-router.use('/analystComments', analystComments);
+router.use('/analyst-comments', analystComments);
 router.use('/genomicAlterationsIdentified', genomicAlterationsIdentified);
 router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
 router.use('/microbial', microbial);
