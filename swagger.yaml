@@ -1330,7 +1330,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to upload pathway analysis image
-  "/POG/{POG}/report/{report}/genomic/somaticMutations/small-mutations":
+  "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations":
     get:
       summary: Get somatic small mutations
       description: Returns an analysis reports somatic small mutations
@@ -1413,8 +1413,8 @@ paths:
   # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}":
   # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}/variant/{variant}":
   # "/POG/{POG}/report/{report}/probe/alterations":
-  # "/POG/{POG}/report/{report}/genomic/somaticMutations/small-mutations/{mutation}":
-  # "/POG/{POG}/report/{report}/genomic/somaticMutations/small-mutations/{type}":
+  # "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations/{mutation}":
+  # "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations/{type}":
   "/patient/{POG}/biopsy/{analysis}":
     get:
       summary: Get the details of a Germline Report

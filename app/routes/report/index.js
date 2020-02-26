@@ -25,7 +25,7 @@ router.use('/copyNumberAnalyses', copyNumberAnalyses);
 router.use('/expressionAnalysis', expressionAnalysis);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
-router.use('/somaticMutations', somaticMutations);
+router.use('/somatic-mutations', somaticMutations);
 router.use('/structural-variation', structuralVariation);
 router.use('/therapeutic-targets', therapeuticTargets);
 
