@@ -61,46 +61,55 @@ class ACL {
       throw new Error('Group(s) in both allowed and not allowed');
     }
 
+    // *TODO: This needs to be swapped from isPog to isReport
+    // and if the access is to do with an individual report
+    // it will now take this route. Else if it is just
+    // access not related to an individual report it will
+    // skip it.*
+    // **This is just being commented out here because most
+    // of the logic for the isReport is here already**
+
+
     // Check for access to POG
-    if (this.isPog) {
-      // Check this pog for user permissions specific to pog roles
+    // if (this.isPog) {
+    //   // Check this pog for user permissions specific to pog roles
 
-      // Get this users roles for this POG
-      const pogRole = [];
-      _.forEach(this.req.POG.POGUsers, (value) => {
-        if (value.user.ident === this.req.user.ident) {
-          pogRole.push(value.role);
-        }
-      });
+    //   // Get this users roles for this POG
+    //   const pogRole = [];
+    //   _.forEach(this.req.POG.POGUsers, (value) => {
+    //     if (value.user.ident === this.req.user.ident) {
+    //       pogRole.push(value.role);
+    //     }
+    //   });
 
-      // Check if this is a write endpoint
-      if (['POST', 'PUT', 'DELETE'].includes(this.req.method)
-        && (_.intersection(pogRole, this.pogEdit).length > 0
-          || _.intersection(userGroups, this.pogEdit).length > 0)
-      ) {
-        // Get bound user ids from analysis report
-        // *Note: both report user id and request user id need to be of type number
-        const [analysisReport] = this.req.POG.analysis_reports;
-        const boundUserIds = analysisReport.users.reduce((accum, user) => {
-          if (user.user_id) {
-            return accum.add(user.user_id);
-          }
-          return accum;
-        }, new Set());
+    //   // Check if this is a write endpoint
+    //   if (['POST', 'PUT', 'DELETE'].includes(this.req.method)
+    //     && (_.intersection(pogRole, this.pogEdit).length > 0
+    //       || _.intersection(userGroups, this.pogEdit).length > 0)
+    //   ) {
+    //     // Get bound user ids from analysis report
+    //     // *Note: both report user id and request user id need to be of type number
+    //     const [analysisReport] = this.req.POG.analysis_reports;
+    //     const boundUserIds = analysisReport.users.reduce((accum, user) => {
+    //       if (user.user_id) {
+    //         return accum.add(user.user_id);
+    //       }
+    //       return accum;
+    //     }, new Set());
 
-        if (boundUserIds.has(this.req.user.id) || _.intersection(userGroups, this.masterPogEdit).length > 0) {
-          allowed = true;
-        }
-      }
+    //     if (boundUserIds.has(this.req.user.id) || _.intersection(userGroups, this.masterPogEdit).length > 0) {
+    //       allowed = true;
+    //     }
+    //   }
 
-      // If read is not set to allow all, run check for pogRole access
-      if (this.req.method === 'GET'
-        && !this.read.includes('*')
-        && (_.intersection(pogRole, this.read).length > 0)
-      ) {
-        allowed = true;
-      }
-    }
+    //   // If read is not set to allow all, run check for pogRole access
+    //   if (this.req.method === 'GET'
+    //     && !this.read.includes('*')
+    //     && (_.intersection(pogRole, this.read).length > 0)
+    //   ) {
+    //     allowed = true;
+    //   }
+    // }
 
     // If method is GET and
     if (this.req.method === 'GET'

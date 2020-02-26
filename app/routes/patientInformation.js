@@ -7,18 +7,18 @@ const logger = require('../log');
 
 // Middleware for Patient Information
 router.use('/', async (req, res, next) => {
-  // Get Patient Information for this POG
+  // Get Patient Information for this report
   let result;
   try {
-    result = await db.models.patientInformation.scope('public').findOne({where: {pog_id: req.POG.id, report_id: req.report.id}});
+    result = await db.models.patientInformation.scope('public').findOne({where: {report_id: req.report.id}});
   } catch (error) {
-    logger.error(`Unable to query Patient Information ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the patient information for ${req.POG.POGID}.`, code: 'failedPatientInformationQuery'}});
+    logger.error(`Unable to query Patient Information for report ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the patient information for report ${req.report.ident}`, code: 'failedPatientInformationQuery'}});
   }
 
   if (!result) {
-    logger.error(`Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find the patient information for ${req.POG.POGID} and report ${req.report.ident}`, code: 'failedPatientInformationLookup'}});
+    logger.error(`Unable to find the patient information for report ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find the patient information for report ${req.report.ident}`, code: 'failedPatientInformationLookup'}});
   }
 
   // Found the patient information
@@ -35,7 +35,7 @@ router.route('/')
   .put(async (req, res) => {
     try {
       const result = await db.models.patientInformation.update(req.body, {
-        where: {pog_id: req.POG.id, report_id: req.report.id},
+        where: {report_id: req.report.id},
         individualHooks: true,
         paranoid: true,
         returning: true,
@@ -46,7 +46,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, pog_id, report_id, deletedAt, ...publicModel
+        id, report_id, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
