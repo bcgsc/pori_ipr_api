@@ -65,7 +65,7 @@ class Routing extends RouterInterface {
     this.router.use('/user/group', groupRoute);
 
     this.router.use('/reports', reportsRoute);
-    this.router.use('/reports/:report/patientInformation', patientInformationRoute);
+    this.router.use('/reports/:report/patient-information', patientInformationRoute);
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);

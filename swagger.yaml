@@ -756,7 +756,7 @@ paths:
         "404":
           description: Unable to find a provided user and/or unable to remove a user from a
             POG
-  "/POG/{POG}/report/{report}/genomic/summary/patientInformation":
+  "/POG/{POG}/report/{report}/genomic/summary/patient-information":
     get:
       summary: Get Patient Summary
       description: Retrieve basic metadata patient details for a POG
