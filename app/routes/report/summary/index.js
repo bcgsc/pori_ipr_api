@@ -13,7 +13,7 @@ const router = express.Router({mergeParams: true});
 
 router.use('/analyst-comments', analystComments);
 router.use('/genomicAlterationsIdentified', genomicAlterationsIdentified);
-router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
+router.use('/genomic-events-therapeutic', genomicEventsTherapeutic);
 router.use('/microbial', microbial);
 router.use('/mutationSummary', mutationSummary);
 router.use('/pathway-analysis', pathwayAnalysis);

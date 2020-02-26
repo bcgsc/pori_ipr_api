@@ -18,7 +18,7 @@ const router = express.Router({mergeParams: true});
 router.use('/summary', summary);
 
 // TODO: remove line below when the client has updated to match
-router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
+router.use('/genomic-events-therapeutic', genomicEventsTherapeutic);
 
 router.use('/appendices', appendices);
 router.use('/copy-number-analyses', copyNumberAnalyses);
