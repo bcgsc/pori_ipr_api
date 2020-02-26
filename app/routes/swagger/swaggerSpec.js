@@ -1,8 +1,7 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
+const swaggerDocument = require('../../../swagger.json');
 
-const swaggerDocument = YAML.load('./swagger.yaml');
 // Add API version info to swagger doc
 swaggerDocument.info.version = process.env.npm_package_version;
 
