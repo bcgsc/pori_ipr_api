@@ -95,7 +95,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
   });
 
 // Routing for Alteration
-router.route('/mutationSignature')
+router.route('/mutation-signature')
   .get(async (req, res) => {
     const options = {
       where: {report_id: req.report.id},
