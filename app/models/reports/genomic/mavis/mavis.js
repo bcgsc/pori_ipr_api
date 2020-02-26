@@ -15,13 +15,6 @@ module.exports = sequelize => sequelize.define('mavis', {
     type: Sq.TEXT,
     allowNull: false,
   },
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   report_id: {
     type: Sq.INTEGER,
     references: {

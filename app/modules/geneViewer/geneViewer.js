@@ -7,13 +7,11 @@ class GeneViewer {
   /**
    * Constructor
    *
-   * @param {object} pog - POGID
    * @param {object} report - Report ident
    * @param {string} gene - Gene symbol to search for
    *
    */
-  constructor(pog, report, gene) {
-    this.pog = pog;
+  constructor(report, gene) {
     this.report = report;
     this.gene = gene;
   }

@@ -3,13 +3,6 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../base');
 
 module.exports = sequelize => sequelize.define('probe_signature', {
   ...DEFAULT_COLUMNS,
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   report_id: {
     type: Sq.INTEGER,
     references: {
@@ -46,7 +39,7 @@ module.exports = sequelize => sequelize.define('probe_signature', {
   tableName: 'pog_analysis_reports_probe_signature',
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'report_id', 'pog_id', 'deletedAt', 'readySignedBy_id', 'reviewerId']},
+      attributes: {exclude: ['id', 'report_id', 'deletedAt', 'readySignedBy_id', 'reviewerId']},
       include: [
         {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
         {model: sequelize.models.user.scope('public'), as: 'readySignature'},

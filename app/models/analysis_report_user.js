@@ -15,13 +15,6 @@ module.exports = sequelize => sequelize.define('analysis_reports_user', {
     type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'reviewer', 'admin'),
     allowNull: false,
   },
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
-    },
-  },
   report_id: {
     type: Sq.INTEGER,
     references: {

@@ -6,6 +6,7 @@ const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'DEVSU-837-temp-ipr-sync-dev'; // TODO: POINT BACK TO DEV
+
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (ENV === 'staging') {
