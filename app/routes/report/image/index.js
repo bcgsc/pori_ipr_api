@@ -99,7 +99,7 @@ router.route('/mutationSummary')
     }
   });
 
-router.route('/subtypePlots')
+router.route('/subtype-plots')
   .get(async (req, res) => {
     try {
       const output = {};
