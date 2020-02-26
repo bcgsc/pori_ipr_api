@@ -26,7 +26,7 @@ router.use('/expressionAnalysis', expressionAnalysis);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
 router.use('/somaticMutations', somaticMutations);
-router.use('/structuralVariation', structuralVariation);
+router.use('/structural-variation', structuralVariation);
 router.use('/therapeutic-targets', therapeuticTargets);
 
 // TODO: remove line below when the client has updated to match
