@@ -22,7 +22,7 @@ router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
 
 router.use('/appendices', appendices);
 router.use('/copyNumberAnalyses', copyNumberAnalyses);
-router.use('/expressionAnalysis', expressionAnalysis);
+router.use('/expression-analysis', expressionAnalysis);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
 router.use('/somatic-mutations', somaticMutations);
