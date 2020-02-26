@@ -72,7 +72,7 @@ class Routing extends RouterInterface {
 
     // Get Gene Viewer Routes
     const GeneViewerRoutes = new GeneViewer();
-    this.router.use('/reports/:report/geneviewer', GeneViewerRoutes.getRouter());
+    this.router.use('/reports/:report/gene-viewer', GeneViewerRoutes.getRouter());
 
     // Get Germline Reports Routes
     this.router.use('/germline_small_mutation', germlineReports);
