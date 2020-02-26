@@ -21,7 +21,7 @@ router.use('/summary', summary);
 router.use('/genomicEventsTherapeutic', genomicEventsTherapeutic);
 
 router.use('/appendices', appendices);
-router.use('/copyNumberAnalyses', copyNumberAnalyses);
+router.use('/copy-number-analyses', copyNumberAnalyses);
 router.use('/expression-analysis', expressionAnalysis);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
