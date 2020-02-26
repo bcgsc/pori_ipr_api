@@ -811,7 +811,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/mutationSummary":
+  "/POG/{POG}/report/{report}/genomic/summary/mutation-summary":
     get:
       summary: Get Mutation Summary
       description: Retrieve summary of mutation details for the POG
@@ -1407,7 +1407,7 @@ paths:
         "403":
           description: User doesn't have permissions to access germline small mutations
   # Below are all skeleton routes, with no details added
-  # "/POG/{POG}/report/{report}/image/mutationSummary":
+  # "/POG/{POG}/report/{report}/image/mutation-summary":
   # "/POG/{POG}/report/{report}/genomic/mavis":
   # "/POG/{POG}/load/genomic":
   # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}":
