@@ -44,7 +44,7 @@ router.route('/retrieve/:key')
     }
   });
 
-router.route('/expressionDensityGraphs')
+router.route('/expression-density-graphs')
   .get(async (req, res) => {
     try {
       const output = {};
