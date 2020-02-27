@@ -25,7 +25,7 @@ const parseMavisFile = async (report, mavisFile) => {
   const mavisRecords = parsedMavisSummary.map((record) => {
     return {
       product_id: record.product_id.split(';')[0],
-      report_id: report.id,
+      reportId: report.id,
       summary: JSON.stringify(record),
     };
   });

@@ -34,7 +34,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
     // Promoting from unknown to another state.
     if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
       await db.models.genomicAlterationsIdentified.scope('public').create({
-        report_id: req.report.id,
+        reportId: req.report.id,
         geneVariant: `${req.alteration.gene} (${req.alteration.variant})`,
       });
     }
@@ -55,7 +55,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -82,7 +82,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     const {params: {reportType}} = req;
     // Setup where clause
     const where = {
-      report_id: req.report.id,
+      reportId: req.report.id,
       reportType,
     };
 
@@ -122,13 +122,13 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     try {
       const result = await db.models.alterations.create({
         ...req.body,
-        report_id: reportId,
+        reportId,
         reportType,
       });
 
       // Create new entry for Key Genomic Identified
       await db.models.genomicAlterationsIdentified.scope('public').create({
-        report_id: reportId,
+        reportId,
         geneVariant: `${req.body.gene} (${req.body.variant})`,
       });
 
@@ -165,7 +165,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Bump the version number for this entry
     req.body.ident = req.alteration.ident;
-    req.body.report_id = req.report.id;
+    req.body.reportId = req.report.id;
 
     try {
       const result = await db.models.alterations.update(req.body, {
@@ -182,7 +182,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -207,7 +207,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
 router.route('/targetedGenes')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {report_id: req.report.id};
+    const where = {reportId: req.report.id};
 
     const options = {
       where,

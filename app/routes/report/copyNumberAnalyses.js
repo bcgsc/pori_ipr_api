@@ -46,7 +46,7 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -71,7 +71,7 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
 router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourSupress|highlyExpOncoGain|lowlyExpTSloss)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {report_id: req.report.id};
+    const where = {reportId: req.report.id};
 
     // Searching for specific type of alterations
     if (req.params.type) {

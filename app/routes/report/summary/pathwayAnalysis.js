@@ -13,7 +13,7 @@ router.use('/', async (req, res, next) => {
     // Get pathway analysis for this report
     const result = await db.models.pathwayAnalysis.findOne({
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
       attributes: {exclude: ['id', 'deletedAt']},
     });
@@ -40,7 +40,7 @@ router.route('/')
       // Create
       const request = {
         pathway: req.files.pathway.data.toString(),
-        report_id: req.report.id,
+        reportId: req.report.id,
       };
 
       // Create entry
@@ -55,10 +55,10 @@ router.route('/')
       // Updating
       const request = {
         pathway: req.files.pathway.data.toString(),
-        report_id: req.report.id,
+        reportId: req.report.id,
       };
       // Remove current
-      req.pathwayAnalysis.report_id = req.report.id;
+      req.pathwayAnalysis.reportId = req.report.id;
 
       // Update DB Version for Entry
       try {
@@ -76,7 +76,7 @@ router.route('/')
 
         // Remove id's and deletedAt properties from returned model
         const {
-          id, report_id, deletedAt, ...publicModel
+          id, reportId, deletedAt, ...publicModel
         } = dataValues;
 
         return res.json(publicModel);
@@ -96,7 +96,7 @@ router.route('/')
       onFileUploadComplete: async (file) => {
         // Is there an existing entry?
         if (req.pathwayAnalysis === null) {
-          req.body.report_id = req.report.id;
+          req.body.reportId = req.report.id;
           req.body.pathway = file;
 
           // Create new entry

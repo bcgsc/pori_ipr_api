@@ -46,7 +46,7 @@ router.route('/:alteration([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -71,10 +71,10 @@ router.route('/:alteration([A-z0-9-]{36})')
 
     // Check to see if we're propagating this down into Detailed Genomic
     const gene = req.alteration.geneVariant.split(/\s(.+)/);
-    const where = {gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), report_id: req.report.id};
+    const where = {gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), reportId: req.report.id};
 
     try {
-      await db.models.genomicEventsTherapeutic.destroy({where: {genomicEvent: req.alteration.geneVariant, report_id: req.report.id}});
+      await db.models.genomicEventsTherapeutic.destroy({where: {genomicEvent: req.alteration.geneVariant, reportId: req.report.id}});
     } catch (error) {
       logger.error(`Unable to remove genomic events therapeutic ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicAlterationsIdentifiedRemove'}});
@@ -95,7 +95,7 @@ router.route('/')
   .get(async (req, res) => {
     const options = {
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
     };
 
@@ -111,7 +111,7 @@ router.route('/')
   .post(async (req, res) => {
     // Add a new Potential Clinical Alteration...
     const alteration = req.body;
-    alteration.report_id = req.report.id;
+    alteration.reportId = req.report.id;
 
     try {
       const result = await db.models.genomicAlterationsIdentified.create(alteration);

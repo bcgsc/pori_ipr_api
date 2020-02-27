@@ -12,7 +12,7 @@ router.use('/', async (req, res, next) => {
   // Get Patient Information for report
   let result;
   try {
-    result = await db.models.analystComments.scope('public').findOne({where: {report_id: req.report.id}});
+    result = await db.models.analystComments.scope('public').findOne({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to query analyst comments for ${req.report.patientId} with error ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.report.patientId}`, code: 'failedAnalystCommentsQuery'}});
@@ -33,7 +33,7 @@ router.route('/')
   .put(async (req, res) => {
     // First Comments
     if (!req.analystComments) {
-      req.body.report_id = req.report.id;
+      req.body.reportId = req.report.id;
 
       // Create new entry
       try {
@@ -60,7 +60,7 @@ router.route('/')
 
         // Remove id's and deletedAt properties from returned model
         const {
-          id, report_id, deletedAt, authorId, reviewerId, ...publicModel
+          id, reportId, deletedAt, authorId, reviewerId, ...publicModel
         } = dataValues;
 
         return res.json(publicModel);
@@ -106,7 +106,7 @@ router.route('/sign/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, authorId, reviewerId, ...publicModel
+        id, reportId, deletedAt, authorId, reviewerId, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -151,7 +151,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, authorId, reviewerId, ...publicModel
+        id, reportId, deletedAt, authorId, reviewerId, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

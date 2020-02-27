@@ -251,7 +251,7 @@ router.route('/')
 
     // find or create report-project association
     try {
-      const reportProjectData = {report_id: report.id, project_id: project.id};
+      const reportProjectData = {reportId: report.id, project_id: project.id};
       const [reportProject, createdReportProject] = await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData});
 
       if (createdReportProject) {
@@ -285,12 +285,12 @@ router.route('/')
         if (Array.isArray(req.body[model])) {
           // update new model entries with report id
           req.body[model].forEach((newEntry) => {
-            newEntry.report_id = report.id;
+            newEntry.reportId = report.id;
           });
 
           promises.push(db.models[model].bulkCreate(req.body[model]));
         } else {
-          req.body[model].report_id = report.id;
+          req.body[model].reportId = report.id;
 
           promises.push(db.models[model].create(req.body[model]));
         }

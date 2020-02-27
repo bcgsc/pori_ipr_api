@@ -90,7 +90,7 @@ describe('/therapeuticTargets', () => {
       // create a new therapeutic target
       ({dataValues: original} = await db.models.therapeuticTarget.create({
         ...FAKE_TARGET,
-        report_id: report.id,
+        reportId: report.id,
       }));
       url = `/api/1.0/reports/${report.ident}/genomic/therapeuticTargets/${original.ident}`;
 
