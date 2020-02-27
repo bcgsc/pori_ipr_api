@@ -11,7 +11,9 @@ module.exports = sequelize => sequelize.define('probe_test_information', {
     unique: false,
     defaultValue: Sq.UUIDV4,
   },
-  report_id: {
+  reportId: {
+    name: 'reportId',
+    field: 'report_id',
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -55,7 +57,7 @@ module.exports = sequelize => sequelize.define('probe_test_information', {
   paranoid: true,
   scopes: {
     public: {
-      attributes: {exclude: ['id', 'report_id', 'deletedAt']},
+      attributes: {exclude: ['id', 'reportId', 'deletedAt']},
     },
   },
 });

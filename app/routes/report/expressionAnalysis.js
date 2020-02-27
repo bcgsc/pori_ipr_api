@@ -51,7 +51,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -75,7 +75,7 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 router.route('/outlier/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {report_id: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
+    const where = {reportId: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
     // Searching for specific type of outlier
     if (req.params.type) {
       // Are we looking for approved types?
@@ -139,7 +139,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -163,7 +163,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
 router.route('/drugTarget')
   .get(async (req, res) => {
     const options = {
-      where: {report_id: req.report.id},
+      where: {reportId: req.report.id},
       order: [['gene', 'ASC']],
     };
 
@@ -220,7 +220,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -244,7 +244,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
 router.route('/protein/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {report_id: req.report.id, expType: 'protein'};
+    const where = {reportId: req.report.id, expType: 'protein'};
     // Searching for specific type of outlier
     if (req.params.type) {
       // Are we looking for approved types?

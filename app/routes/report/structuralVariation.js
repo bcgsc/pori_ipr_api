@@ -44,7 +44,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -69,7 +69,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
 router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {report_id: req.report.id};
+    const where = {reportId: req.report.id};
 
     // Searching for specific type of alterations
     if (req.params.type) {

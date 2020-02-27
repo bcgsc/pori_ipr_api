@@ -10,7 +10,7 @@ router.use('/', async (req, res, next) => {
   // Get microbial summary for this report
   let result;
   try {
-    result = await db.models.summary_microbial.scope('public').findOne({where: {report_id: req.report.id}});
+    result = await db.models.summary_microbial.scope('public').findOne({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup microbial data for report ${req.report.ident} error: ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the microbial data for report ${req.report.ident}`, code: 'failedMicrobialQuery'}});

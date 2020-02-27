@@ -15,7 +15,9 @@ module.exports = sequelize => sequelize.define('analysis_reports_user', {
     type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'reviewer', 'admin'),
     allowNull: false,
   },
-  report_id: {
+  reportId: {
+    name: 'reportId',
+    field: 'report_id',
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
@@ -48,7 +50,7 @@ module.exports = sequelize => sequelize.define('analysis_reports_user', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['id', 'report_id', 'user_id'],
+        exclude: ['id', 'reportId', 'user_id'],
       },
       include: [
         {model: sequelize.models.user.scope('public'), as: 'user'},

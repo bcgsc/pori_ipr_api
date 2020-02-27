@@ -4,7 +4,9 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = sequelize => sequelize.define('pathwayAnalysis', {
   ...DEFAULT_COLUMNS,
-  report_id: {
+  reportId: {
+    name: 'reportId',
+    field: 'report_id',
     type: Sq.INTEGER,
     references: {
       model: 'pog_analysis_reports',
