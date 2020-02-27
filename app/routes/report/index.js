@@ -3,6 +3,7 @@ const express = require('express');
 const summary = require('./summary');
 const appendices = require('./appendices');
 const copyNumberAnalyses = require('./copyNumberAnalyses');
+const detailedGenomicAnalysis = require('./detailedGenomicAnalysis');
 const expressionAnalysis = require('./expressionAnalysis');
 const mavis = require('./mavis');
 const presentation = require('./presentation');
@@ -25,5 +26,6 @@ router.use('/structural-variation', structuralVariation);
 router.use('/therapeutic-targets', therapeuticTargets);
 
 router.use('/probe-test-information', probeTestInformation);
+router.use('/detailed-genomic-analysis', detailedGenomicAnalysis); // genomic report pattern
 
 module.exports = router;
