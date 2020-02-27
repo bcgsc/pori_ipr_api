@@ -4,13 +4,13 @@ const {unlinkAndWrite} = require('../utils');
 module.exports = async (report, directory) => {
   const opts = {
     where: {
-      report_id: report.id,
+      reportId: report.id,
     },
     attributes: {
       exclude: [
         'id',
         'ident',
-        'report_id',
+        'reportId',
         'createdAt',
         'updatedAt',
         'deletedAt',
