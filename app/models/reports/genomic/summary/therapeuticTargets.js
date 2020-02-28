@@ -1,5 +1,4 @@
 const Sq = require('sequelize');
-
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
@@ -8,7 +7,7 @@ module.exports = (sequelize) => {
     report_id: {
       type: Sq.INTEGER,
       references: {
-        model: 'pog_analysis_reports',
+        model: 'reports',
         key: 'id',
       },
     },
@@ -78,10 +77,10 @@ module.exports = (sequelize) => {
   },
   {
     ...DEFAULT_OPTIONS,
-    tableName: 'pog_analysis_reports_therapeutic_targets',
+    tableName: 'reports_therapeutic_targets',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'deletedAt', 'report_id']},
+        attributes: {exclude: ['id', 'report_id', 'deletedAt']},
       },
     },
   });

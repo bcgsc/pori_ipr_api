@@ -1,37 +1,32 @@
 const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
-module.exports = sequelize => sequelize.define('mavis', {
-  id: {
-    type: Sq.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  ident: {
-    type: Sq.UUID,
-    unique: false,
-    defaultValue: Sq.UUIDV4,
-  },
-  product_id: {
-    type: Sq.TEXT,
-    allowNull: false,
-  },
-  report_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'pog_analysis_reports',
-      key: 'id',
+module.exports = (sequelize) => {
+  return sequelize.define('mavis', {
+    ...DEFAULT_COLUMNS,
+    product_id: {
+      type: Sq.TEXT,
+      allowNull: false,
     },
-  },
-  summary: {
-    type: Sq.JSONB,
-    allowNull: false,
-    defaultValue: {},
-  },
-}, {
-  // Table Name
-  tableName: 'pog_analysis_reports_mavis_summary',
-  // Automatically create createdAt, updatedAt, deletedAt
-  timestamps: true,
-  // Use soft-deletes!
-  paranoid: true,
-});
+    report_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports',
+        key: 'id',
+      },
+    },
+    summary: {
+      type: Sq.JSONB,
+      allowNull: false,
+      defaultValue: {},
+    },
+  }, {
+    ...DEFAULT_OPTIONS,
+    tableName: 'pog_analysis_reports_mavis_summary',
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'report_id', 'product_id', 'deletedAt']},
+      },
+    },
+  });
+};
