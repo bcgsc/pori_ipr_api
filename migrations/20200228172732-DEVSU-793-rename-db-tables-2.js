@@ -4,6 +4,14 @@ const camelCaseTables = ['germline_small_mutations', 'germline_small_mutations_r
   'reports_users', 'user_group_members', 'user_groups', 'user_projects',
 ];
 
+const objectsToRemoveUniqueIdent = [
+  {table: 'germline_small_mutations', constraint: 'pog_analysis_germline_small_mutations_ident_key'}, 
+  {table: 'germline_small_mutations_review', constraint: 'pog_analysis_germline_small_mutations_review_ident_key'},
+  {table: 'germline_small_mutations_variant', constraint: 'pog_analysis_germline_small_mutations_variant_ident_key'},
+  {table: 'user_groups', constraint: 'userGroups_ident_key'},
+  {table: 'reports_users', constraint: 'POGUsers_ident_key'},
+];
+
 const tablesToDelete = ['notifications', 'pog_recent_reports', 'user_tokens'];
 
 module.exports = {
@@ -14,6 +22,13 @@ module.exports = {
         await Promise.all(
           tablesToDelete.map((table) => {
             return queryInterface.dropTable(table, {transaction});
+          })
+        );
+
+        // remove unique ident from tables
+        await Promise.all(
+          objectsToRemoveUniqueIdent.map((entry) => {
+            return queryInterface.removeConstraint(entry.table, entry.constraint, {transaction});
           })
         );
 
