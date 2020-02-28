@@ -158,7 +158,7 @@ router.param('gene', async (req, res, next, geneIdent) => {
 });
 
 // Handle requests for alterations
-router.route('/targetedGenes/:gene([A-z0-9-]{36})')
+router.route('/targeted-genes/:gene([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.alteration);
   })
@@ -204,7 +204,7 @@ router.route('/targetedGenes/:gene([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/targetedGenes')
+router.route('/targeted-genes')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id};
