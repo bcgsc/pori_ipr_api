@@ -11,7 +11,7 @@ router.use('/', async (req, res, next) => {
   // Get Mutation Summary for this report
   let result;
   try {
-    result = await db.models.tumourAnalysis.scope('public').findOne({where: {report_id: req.report.id}});
+    result = await db.models.tumourAnalysis.scope('public').findOne({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup the tumour analysis for ${req.report.ident} error: ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the tumour analysis for ${req.report.ident}`, code: 'failedTumourAnalysisQuery'}});
@@ -50,7 +50,7 @@ router.route('/')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);

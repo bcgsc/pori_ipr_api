@@ -4,7 +4,9 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 module.exports = (sequelize) => {
   return sequelize.define('analystComments', {
     ...DEFAULT_COLUMNS,
-    report_id: {
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports',
@@ -44,7 +46,7 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'report_id', 'deletedAt', 'authorSignedBy_id', 'reviewerSignedBy_id'],
+          exclude: ['id', 'reportId', 'deletedAt', 'authorSignedBy_id', 'reviewerSignedBy_id'],
         },
         include: [
           {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},

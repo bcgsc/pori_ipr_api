@@ -28,7 +28,7 @@ router.route('/discussion')
   .get(async (req, res) => {
     const opts = {
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
       order: [['createdAt', 'ASC']],
     };
@@ -45,7 +45,7 @@ router.route('/discussion')
     const data = {
       body: req.body.body,
       user_id: req.user.id,
-      report_id: req.report.id,
+      reportId: req.report.id,
     };
 
     try {
@@ -111,7 +111,7 @@ router.route('/slide')
   .get(async (req, res) => {
     const opts = {
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
     };
 
@@ -134,7 +134,7 @@ router.route('/slide')
     const data = {
       object: req.files.file.data.toString('base64'),
       user_id: req.user.id,
-      report_id: req.report.id,
+      reportId: req.report.id,
       name: req.body.name,
       object_type: req.files.file.mimetype,
     };

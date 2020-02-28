@@ -8,7 +8,9 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
-    report_id: {
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports',
@@ -22,10 +24,10 @@ module.exports = (sequelize) => {
     },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'pog_analysis_reports_mavis_summary',
+    tableName: 'reports_mavis_summary',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'report_id', 'product_id', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'product_id', 'deletedAt']},
       },
     },
   });

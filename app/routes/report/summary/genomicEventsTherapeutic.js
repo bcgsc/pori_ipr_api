@@ -48,7 +48,7 @@ router.route('/:gene([A-z0-9-]{36})')
 
       // Remove id's and deletedAt properties from returned model
       const {
-        id, report_id, deletedAt, ...publicModel
+        id, reportId, deletedAt, ...publicModel
       } = dataValues;
 
       return res.json(publicModel);
@@ -74,7 +74,7 @@ router.route('/')
   .get(async (req, res) => {
     const options = {
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
       },
     };
 

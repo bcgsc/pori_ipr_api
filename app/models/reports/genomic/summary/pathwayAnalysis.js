@@ -4,7 +4,9 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 module.exports = (sequelize) => {
   return sequelize.define('pathwayAnalysis', {
     ...DEFAULT_COLUMNS,
-    report_id: {
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports',
@@ -26,7 +28,7 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'report_id', 'deletedAt'],
+          exclude: ['id', 'reportId', 'deletedAt'],
         },
       },
     },

@@ -185,7 +185,7 @@ const loadImage = async (reportId, key, imagePath) => {
 
   const imageData = await processImage(imagePath, config.width, config.height, config.format);
   await db.models.imageData.create({
-    report_id: reportId,
+    reportId,
     format: config.format,
     filename: path.basename(imagePath),
     key,
