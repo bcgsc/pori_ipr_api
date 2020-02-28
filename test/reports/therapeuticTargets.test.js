@@ -23,7 +23,7 @@ const FAKE_TARGET = {
   evidenceLevel: 'OncoKB 1',
 };
 
-describe('/therapeuticTargets', () => {
+describe('/therapeutic-targets', () => {
   let server;
   let request;
   let report;
@@ -67,7 +67,7 @@ describe('/therapeuticTargets', () => {
   describe('POST (create)', () => {
     test('create new with valid input', async () => {
       const {body: record} = await request
-        .post(`/api/1.0/reports/${report.ident}/genomic/therapeuticTargets`)
+        .post(`/api/1.0/reports/${report.ident}/genomic/therapeutic-targets`)
         .auth(username, password)
         .type('json')
         .send({...FAKE_TARGET})
@@ -92,7 +92,7 @@ describe('/therapeuticTargets', () => {
         ...FAKE_TARGET,
         reportId: report.id,
       }));
-      url = `/api/1.0/reports/${report.ident}/genomic/therapeuticTargets/${original.ident}`;
+      url = `/api/1.0/reports/${report.ident}/genomic/therapeutic-targets/${original.ident}`;
 
       expect(original).toHaveProperty('ident');
       expect(original).toHaveProperty('id');
@@ -111,7 +111,7 @@ describe('/therapeuticTargets', () => {
     describe('GET', () => {
       test('all targets for a report', async () => {
         const {body: result} = await request
-          .get(`/api/1.0/reports/${report.ident}/genomic/therapeuticTargets`)
+          .get(`/api/1.0/reports/${report.ident}/genomic/therapeutic-targets`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
