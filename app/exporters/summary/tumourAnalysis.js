@@ -4,16 +4,16 @@ const reverseMapKeys = require('../../../app/libs/reverseMapKeys');
 const WriteCSV = require('../../../lib/writeCSV');
 const {unlinkAndWrite} = require('../utils');
 
-module.exports = async (pog, directory) => {
+module.exports = async (report, directory) => {
   const opts = {
     where: {
-      pog_id: pog.id,
+      reportId: report.id,
     },
     attributes: {
       exclude: [
         'id',
         'ident',
-        'pog_id',
+        'reportId',
         'subtyping',
         'createdAt',
         'updatedAt',
