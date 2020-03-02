@@ -55,7 +55,7 @@ module.exports = sequelize => sequelize.define('analystComments', {
   scopes: {
     public: {
       attributes: {
-        exclude: ['id', 'reportId', 'deletedAt', 'authorSignedBy_id', 'reviewerSignedBy_id'],
+        exclude: ['id', 'reportId', 'deletedAt', 'authorId', 'reviewerId'],
       },
       include: [
         {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
