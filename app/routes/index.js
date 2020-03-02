@@ -20,6 +20,7 @@ const RouterInterface = require('./routingInterface');
 const GeneViewer = require('../modules/geneViewer/routing');
 const germlineReports = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
+const graphkbRouter = require('./graphkb');
 const report = require('./report/base');
 
 const router = express.Router({mergeParams: true});
@@ -59,6 +60,7 @@ class Routing extends RouterInterface {
 
     // Add Single Routes
     // Setup other routes
+    this.router.use('/graphkb', graphkbRouter);
     this.router.use('/version', APIVersion);
 
     this.router.use('/user', userRoute);
