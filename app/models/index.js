@@ -196,6 +196,14 @@ analysisReports.hasMany(alterations, {
   as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+const genes = sequelize.import('./reports/genes');
+genes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(genes, {
+  as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 // Somatic Mutations
 const somaticMutations = {};
 somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
@@ -225,6 +233,7 @@ analysisReports.hasMany(copyNumberAnalyses.cnv, {
   as: 'cnv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+
 // MAVIS Summary
 const mavis = sequelize.import('./reports/genomic/mavis/mavis');
 mavis.belongsTo(analysisReports, {
@@ -245,7 +254,21 @@ analysisReports.hasMany(structuralVariation.sv, {
   as: 'sv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-// Structural Variation
+structuralVariation.sv.belongsTo(genes, {
+  as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+structuralVariation.sv.belongsTo(genes, {
+  as: 'gene2', foreignKey: 'gene2Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+genes.hasMany(structuralVariation.sv, {
+  as: 'structuralVariants', foreignKey: 'gene1Id', onDelete: 'CASCADE', constraints: true,
+});
+genes.hasMany(structuralVariation.sv, {
+  as: 'structuralVariants', foreignKey: 'gene2Id', onDelete: 'CASCADE', constraints: true,
+});
+
+
+// expression variants
 const expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
 expressionAnalysis.drugTarget = sequelize.import('./reports/genomic/expressionAnalysis/drugTarget');
@@ -262,6 +285,22 @@ analysisReports.hasMany(expressionAnalysis.outlier, {
 analysisReports.hasMany(expressionAnalysis.drugTarget, {
   as: 'drugTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
+
+
+for (const [variantModel, alias] of [
+  [expressionAnalysis.outlier, 'expressionOutliers'],
+  [expressionAnalysis.drugTarget, 'targetableExpressionOutliers'],
+  [copyNumberAnalyses.cnv, 'copyVariants'],
+  [somaticMutations.smallMutations, 'smallMutations'],
+]) {
+  // Link variants to the gene model
+  variantModel.belongsTo(genes, {
+    as: 'gene', foreignKey: 'geneId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+  });
+  genes.hasMany(variantModel, {
+    as: alias, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+  });
+}
 
 // Presentation Data
 const presentation = {};
