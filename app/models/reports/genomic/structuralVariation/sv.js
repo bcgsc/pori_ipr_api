@@ -2,89 +2,109 @@ const Sq = require('sequelize');
 
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
-module.exports = sequelize => sequelize.define('sv', {
-  ...DEFAULT_COLUMNS,
-  reportId: {
-    name: 'reportId',
-    field: 'report_id',
-    type: Sq.INTEGER,
-    references: {
-      model: 'pog_analysis_reports',
-      key: 'id',
+module.exports = (sequelize) => {
+  return sequelize.define('sv', {
+    ...DEFAULT_COLUMNS,
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'pog_analysis_reports',
+        key: 'id',
+      },
     },
-  },
-  mavis_product_id: {
-    type: Sq.TEXT,
-  },
-  svVariant: {
-    type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
-  },
-  genes: {
-    type: Sq.TEXT,
-  },
-  exons: {
-    type: Sq.TEXT,
-  },
-  breakpoint: {
-    type: Sq.TEXT,
-  },
-  eventType: {
-    type: Sq.TEXT,
-  },
-  detectedIn: {
-    type: Sq.TEXT,
-  },
-  conventionalName: {
-    type: Sq.TEXT,
-  },
-  rpkm: {
-    type: Sq.TEXT,
-  },
-  foldChange: {
-    type: Sq.TEXT,
-  },
-  tcgaPerc: {
-    type: Sq.TEXT,
-  },
-  svg: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  svgTitle: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  name: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  frame: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  ctermGene: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  ntermGene: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  ctermTranscript: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-  ntermTranscript: {
-    type: Sq.TEXT,
-    defaultValue: null,
-  },
-}, {
-  ...DEFAULT_OPTIONS,
-  // Table Name
-  tableName: 'pog_analysis_reports_structural_variation_sv',
-  scopes: {
-    public: {
-      attributes: {exclude: ['id', 'deletedAt', 'reportId']},
+    mavis_product_id: {
+      type: Sq.TEXT,
     },
-  },
-});
+    svVariant: {
+      type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
+    },
+    gene1Id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      field: 'gene1_id',
+      name: 'gene1Id',
+    },
+    gene2Id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      field: 'gene2_id',
+      name: 'gene2Id',
+    },
+    exon1: {
+      type: Sq.TEXT,
+    },
+    exon2: {
+      type: Sq.TEXT,
+    },
+    breakpoint: {
+      type: Sq.TEXT,
+    },
+    eventType: {
+      type: Sq.TEXT,
+    },
+    detectedIn: {
+      type: Sq.TEXT,
+    },
+    conventionalName: {
+      type: Sq.TEXT,
+    },
+    rpkm: {
+      type: Sq.TEXT,
+    },
+    foldChange: {
+      type: Sq.TEXT,
+    },
+    tcgaPerc: {
+      type: Sq.TEXT,
+    },
+    svg: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    svgTitle: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    name: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    frame: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    ctermGene: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    ntermGene: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    ctermTranscript: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    ntermTranscript: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+  }, {
+    ...DEFAULT_OPTIONS,
+    // Table Name
+    tableName: 'pog_analysis_reports_structural_variation_sv',
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'deletedAt', 'reportId']},
+      },
+    },
+  });
+};
