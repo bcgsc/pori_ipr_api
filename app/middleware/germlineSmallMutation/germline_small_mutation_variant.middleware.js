@@ -24,7 +24,7 @@ module.exports = async (req, res, next, ident) => {
     req.variant = result;
     return next();
   } catch (error) {
-    logger.error('Unable to find the requested germline report.');
+    logger.error(error);
     res.status(HTTP_STATUS.NOT_FOUND).json({error: 'Unable to find the requested germline report.'});
   }
 };
