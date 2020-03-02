@@ -44,7 +44,7 @@ router.route('/retrieve/:key')
     }
   });
 
-router.route('/expressionDensityGraphs')
+router.route('/expression-density-graphs')
   .get(async (req, res) => {
     try {
       const output = {};
@@ -70,7 +70,7 @@ router.route('/expressionDensityGraphs')
     }
   });
 
-router.route('/mutationSummary')
+router.route('/mutation-summary')
   .get(async (req, res) => {
     const opts = {
       where: {
@@ -99,7 +99,7 @@ router.route('/mutationSummary')
     }
   });
 
-router.route('/subtypePlots')
+router.route('/subtype-plots')
   .get(async (req, res) => {
     try {
       const output = {};

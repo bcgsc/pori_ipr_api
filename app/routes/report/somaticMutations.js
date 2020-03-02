@@ -25,7 +25,7 @@ router.param('mutation', async (req, res, next, mutIdent) => {
 });
 
 // Handle requests for alterations
-router.route('/smallMutations/:mutation([A-z0-9-]{36})')
+router.route('/small-mutations/:mutation([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.mutation);
   })
@@ -68,7 +68,7 @@ router.route('/smallMutations/:mutation([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
+router.route('/small-mutations/:type(clinical|nostic|biological|unknown)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id};
@@ -95,7 +95,7 @@ router.route('/smallMutations/:type(clinical|nostic|biological|unknown)?')
   });
 
 // Routing for Alteration
-router.route('/mutationSignature')
+router.route('/mutation-signature')
   .get(async (req, res) => {
     const options = {
       where: {reportId: req.report.id},

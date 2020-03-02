@@ -118,7 +118,7 @@ router.param('drugTarget', async (req, res, next, oIdent) => {
 });
 
 // Handle requests for drugTarget
-router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
+router.route('/drug-target/:drugTarget([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.drugTarget);
   })
@@ -160,7 +160,7 @@ router.route('/drugTarget/:drugTarget([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/drugTarget')
+router.route('/drug-target')
   .get(async (req, res) => {
     const options = {
       where: {reportId: req.report.id},
