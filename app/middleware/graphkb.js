@@ -17,7 +17,7 @@ const graphkbLoginMiddleware = async (req, res, next) => {
   if (currentToken) {
     // check if the current token is valid still
     try {
-      const {exp} = await jwt.decode(currentToken);
+      const {exp} = jwt.decode(currentToken);
       if (Date.now() < exp * 1000) {
         validToken = true;
       }
