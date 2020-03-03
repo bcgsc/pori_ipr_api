@@ -204,7 +204,7 @@ router.route('/')
     const access = new Acl(req, res);
     if (!access.check()) {
       logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
-      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
     }
 
     // validate loaded report against schema
@@ -212,7 +212,7 @@ router.route('/')
       validateAgainstSchema(reportSchema, req.body);
     } catch (error) {
       logger.error(`Error while validating ${error}`);
-      return res.status(400).json({error: {message: 'There was an error validating', cause: error}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'There was an error validating', cause: error}});
     }
 
     // get project
@@ -221,15 +221,27 @@ router.route('/')
       project = await db.models.project.findOne({where: {name: req.body.project}});
     } catch (error) {
       logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-      return res.status(500).json({error: {message: 'Unable to find project', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
     }
 
     if (!project) {
       logger.error(`Project ${req.body.project} doesn't currently exist`);
-      return res.status(400).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
     }
 
     const createdComponents = {};
+    const cleanUpReport = async (error) => {
+      logger.error(`Unable to create report ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report', cause: error}});
+    };
 
     // create report
     let report;
@@ -240,16 +252,7 @@ router.route('/')
 
       createdComponents.analysis_report = report.id;
     } catch (error) {
-      logger.error(`Unable to create report ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to create report', cause: error}});
+      return cleanUpReport(error);
     }
 
     // find or create report-project association
@@ -261,42 +264,107 @@ router.route('/')
         createdComponents.reportProject = reportProject.id;
       }
     } catch (error) {
-      logger.error(`Unable to create an association between report and project ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to create an association between report and project', cause: error}});
+      return cleanUpReport(error);
     }
 
-    const {
-      ReportUserFilter, createdBy, probe_signature,
-      presentation_discussion, presentation_slides, users,
-      analystComments, projects, ...associations
-    } = db.models.analysis_report.associations;
+    // create the genes first since they will need to be linked to the variant records
+    const geneDefns = {};
+    for (const model of GENE_LINKED_VARIANT_MODELS) {
+      for (const variant of req.body[model] || []) {
+        if (model === 'sv') {
+          if (variant.gene1) {
+            geneDefns[variant.gene1] = {name: variant.gene1};
+          }
+          if (variant.gene2) {
+            geneDefns[variant.gene2] = {name: variant.gene2};
+          }
+        } else {
+          geneDefns[variant.gene] = {name: variant.gene};
+        }
+      }
+    }
+
+    for (const gene of req.body.genes || []) {
+      geneDefns[gene.name] = gene;
+    }
+
+    try {
+      logger.debug(`creating gene definitions for the report ${report.ident}`);
+      const genes = await db.models.genes.bulkCreate(Object.values(geneDefns).map((newEntry) => {
+        return {...newEntry, reportId: report.id};
+      }));
+      for (const gene of genes) {
+        geneDefns[gene.name] = gene.id;
+      }
+    } catch (error) {
+      return cleanUpReport(error);
+    }
+
+    const createAssociatedRecords = async (model, records) => {
+      try {
+        if (model === 'sv') {
+          // add the gene FK associations
+          await db.models[model].bulkCreate(
+            records.map(({gene1, gene2, ...newEntry}) => {
+              return {
+                ...newEntry,
+                reportId: report.id,
+                gene1Id: geneDefns[gene1],
+                gene2Id: geneDefns[gene2],
+              };
+            })
+          );
+        } else if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
+          // add the gene FK association
+          await db.models[model].bulkCreate(
+            records.map(({gene, ...newEntry}) => {
+              return {
+                ...newEntry,
+                reportId: report.id,
+                geneId: geneDefns[gene],
+              };
+            })
+          );
+        } else {
+          await db.models[model].bulkCreate(
+            records.map((newEntry) => {
+              return {...newEntry, reportId: report.id};
+            })
+          );
+        }
+      } catch (err) {
+        logger.error(`Error creating section (${model}): ${err}`);
+        throw err;
+      }
+    };
+
+    const associations = _.omit(
+      db.models.analysis_report.associations,
+      [
+        'ReportUserFilter',
+        'createdBy',
+        'probe_signature',
+        'presentation_discussion',
+        'presentation_slides',
+        'users',
+        'analystComments',
+        'projects',
+        'genes',
+      ]
+    );
+
     const promises = [];
     // for all associations create new entry based on the
     // included associations in req.body
     Object.values(associations).forEach((association) => {
       const model = association.target.name;
-
+      logger.debug(`creating report (${model}) section (${report.ident})`);
       if (req.body[model]) {
-        if (Array.isArray(req.body[model])) {
-          // update new model entries with report id
-          req.body[model].forEach((newEntry) => {
-            newEntry.reportId = report.id;
-          });
+        const content = Array.isArray(req.body[model])
+          ? req.body[model]
+          : [req.body[model]];
 
-          promises.push(db.models[model].bulkCreate(req.body[model]));
-        } else {
-          req.body[model].reportId = report.id;
-
-          promises.push(db.models[model].create(req.body[model]));
-        }
+        promises.push(createAssociatedRecords(model, content));
       }
     });
 
