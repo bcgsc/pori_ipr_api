@@ -32,9 +32,9 @@ module.exports = (sequelize) => {
         type: Sq.BOOLEAN,
         defaultValue: false,
       },
-      cancerGene: {
-        name: 'cancerGene',
-        field: 'cancer_gene',
+      cancerRelated: {
+        name: 'cancerRelated',
+        field: 'cancer_related',
         type: Sq.BOOLEAN,
         defaultValue: false,
       },

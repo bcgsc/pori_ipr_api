@@ -128,6 +128,72 @@ module.exports = {
       );
 
       // determine the annotations for each gene based on the sections their variant is in currently
+      // copy number: (cnvVariant) lowlyExpTSloss, highlyExpOncoGain,  homodTumourSupress, commonAmplified
+      // expression: (outlierType)  downreg_tsg, upreg_onco
+      // sv: none; small mut: none; probe: none
+      console.log('annotate genes as oncogenes based on their values in variant tables');
+      await queryInterface.sequelize.query(
+        `UPDATE ${GENE_TABLE} gene set oncogene = TRUE
+        WHERE EXISTS (
+          SELECT *
+          FROM ${CNV_TABLE} cnv
+          WHERE cnv.report_id = gene.report_id
+            AND cnv.gene_id = gene.id
+            AND (cnv."cnvVariant" = 'highlyExpOncoGain' OR cnv."cnvVariant" = 'commonAmplified')
+        ) OR EXISTS (
+          SELECT *
+          FROM ${EXPRESSION_TABLE} exp
+          WHERE exp.report_id = gene.report_id
+            AND exp.gene_id = gene.id
+            AND exp."outlierType" = 'upreg_onco'
+        )`,
+        {transaction}
+      );
+
+      console.log('annotate genes as tumour suppressors based on their values in variant tables');
+      await queryInterface.sequelize.query(
+        `UPDATE ${GENE_TABLE} gene set tumour_suppressor = TRUE
+        WHERE EXISTS (
+          SELECT *
+          FROM ${CNV_TABLE} cnv
+          WHERE cnv.report_id = gene.report_id
+            AND cnv.gene_id = gene.id
+            AND (cnv."cnvVariant" = 'homodTumourSupress' OR cnv."cnvVariant" = 'lowlyExpTSloss')
+        ) OR EXISTS (
+          SELECT *
+          FROM ${EXPRESSION_TABLE} exp
+          WHERE exp.report_id = gene.report_id
+            AND exp.gene_id = gene.id
+            AND exp."outlierType" = 'downreg_tsg'
+        )`,
+        {transaction}
+      );
+
+      console.log('annotate genes as drug targetable based on presence in the drug targetable table');
+      await queryInterface.sequelize.query(
+        `UPDATE ${GENE_TABLE} gene set drug_targetable = TRUE
+        WHERE EXISTS (
+          SELECT *
+          FROM ${EXP_DRUG_TARGET_TABLE} target
+          WHERE target.report_id = gene.report_id
+            AND target.gene_id = gene.id
+        )`,
+        {transaction}
+      );
+
+      // currently all 'unknown' small mutations genes are 'cancer related'
+      console.log('annotate genes as cancer related based on presence in the small mutations table');
+      await queryInterface.sequelize.query(
+        `UPDATE ${GENE_TABLE} gene set cancer_related = TRUE
+        WHERE EXISTS (
+          SELECT *
+          FROM ${SMALL_MUTATIONS_TABLE} target
+          WHERE target.report_id = gene.report_id
+            AND target.gene_id = gene.id
+        )`,
+        {transaction}
+      );
+
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();
