@@ -85,10 +85,10 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(genes).toHaveProperty('length', 6);
 
     // gene flags should be added from genes section if given
-    expect(genes).toEqual(expect.arrayContaining(expect.ObjectContaining({
+    expect(genes).toEqual(expect.arrayContaining([expect.objectContaining({
       name: 'ZFP36L2',
       oncogene: true,
-    })));
+    })]));
   });
 
   // delete report
