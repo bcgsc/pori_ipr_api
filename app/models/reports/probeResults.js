@@ -18,8 +18,14 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    gene: {
-      type: Sq.TEXT,
+    geneId: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      field: 'gene_id',
+      name: 'geneId',
       allowNull: false,
     },
     variant: {
