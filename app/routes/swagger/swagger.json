@@ -63,7 +63,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -100,7 +100,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "$ref": "#/components/schemas/NewUser"
+                "$ref": "#/components/schemas/newUser"
               }
             }
           }
@@ -111,7 +111,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -161,7 +161,7 @@
                 "type": "object",
                 "properties": {
                   "user": {
-                    "$ref": "#/components/schemas/NewUser"
+                    "$ref": "#/components/schemas/newUser"
                   }
                 },
                 "required": [
@@ -177,7 +177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -243,7 +243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -325,7 +325,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "$ref": "#/components/schemas/User"
+                          "$ref": "#/components/schemas/user"
                         }
                       }
                     ]
@@ -371,7 +371,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -655,7 +655,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -720,7 +720,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -2388,7 +2388,7 @@
                       "type": "object"
                     },
                     "biofx_assigned": {
-                      "$ref": "#/components/schemas/User"
+                      "$ref": "#/components/schemas/user"
                     },
                     "reviews": {
                       "type": "array",
@@ -2596,7 +2596,7 @@
                       }
                     },
                     "biofx_assigned": {
-                      "$ref": "#/components/schemas/User"
+                      "$ref": "#/components/schemas/user"
                     }
                   }
                 }
@@ -2662,44 +2662,6 @@
       }
     },
     "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "username": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "description": "The location authentication details are stored in.",
-            "enum": [
-              "bcgsc",
-              "local"
-            ]
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "lastLogin": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "NewUser": {
         "type": "object",
         "description": "New user to be added to the database",
@@ -2754,11 +2716,11 @@
           "users": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/User"
+              "$ref": "#/components/schemas/user"
             }
           },
           "owner": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/user"
           }
         }
       },
@@ -2848,10 +2810,10 @@
             ]
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/user"
           },
           "addedBy": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/user"
           },
           "createdAt": {
             "$ref": "#/components/schemas/datetime"
@@ -2894,7 +2856,7 @@
             "type": "object",
             "properties": {
               "createdBy": {
-                "$ref": "#/components/schemas/User"
+                "$ref": "#/components/schemas/user"
               }
             }
           },
@@ -2912,7 +2874,7 @@
               "users": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
