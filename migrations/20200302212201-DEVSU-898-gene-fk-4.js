@@ -5,16 +5,22 @@ const uuidv4 = require('uuid/v4');
 
 const GENE_TABLE = 'reports_genes';
 const SV_TABLE = 'pog_analysis_reports_structural_variation_sv';
+const CNV_TABLE = 'pog_analysis_reports_copy_number_analysis_cnv';
 const EXPRESSION_TABLE = 'pog_analysis_reports_expression_outlier';
-const EXPRESSION_DRUG_TARGET_TABLE = 'pog_analysis_reports_expression_drug_target';
-const MUTATIONS_TABLE = 'pog_analysis_reports_somatic_mutations_small_mutations';
-const COPY_VARIANTS_TABLE = 'pog_analysis_reports_copy_number_analysis_cnv';
+const EXP_DRUG_TARGET_TABLE = 'pog_analysis_reports_expression_drug_target';
+const SMALL_MUTATIONS_TABLE = 'pog_analysis_reports_somatic_mutations_small_mutations';
 
 const addIdent = (rec) => {
   return {...rec, ident: uuidv4()};
 };
 
-const GENE_VARIANT_TABLES = [EXPRESSION_TABLE, COPY_VARIANTS_TABLE, MUTATIONS_TABLE, EXPRESSION_DRUG_TARGET_TABLE];
+const GENE_LINKED_VARIANT_TABLES = [
+  EXPRESSION_TABLE,
+  CNV_TABLE,
+  SMALL_MUTATIONS_TABLE,
+  EXP_DRUG_TARGET_TABLE,
+  'pog_analysis_reports_probe_results',
+];
 
 module.exports = {
   up: async (queryInterface, Sq) => {
@@ -22,10 +28,7 @@ module.exports = {
     try {
       console.log('Copy the genes from each variant to the genes table');
 
-      // copy number: (cnvVariant) lowlyExpTSloss, highlyExpOncoGain,  homodTumourSupress, commonAmplified
-      // expression: (outlierType)  downreg_tsg, upreg_onco
-
-      for (const table of GENE_VARIANT_TABLES) {
+      for (const table of GENE_LINKED_VARIANT_TABLES) {
         console.log(`copy genes from ${table}`);
         const records = await queryInterface.sequelize.query(
           `SELECT DISTINCT ON (report_id, name) report_id,
@@ -73,7 +76,7 @@ module.exports = {
       }
 
       // now that all the genes have been created. Add the FKs to each variant table
-      for (const table of GENE_VARIANT_TABLES) {
+      for (const table of GENE_LINKED_VARIANT_TABLES) {
         console.log(`Add value for gene_id FK to ${table}`);
         await queryInterface.sequelize.query(
           `UPDATE ${table} mut set gene_id = gene.id
@@ -93,7 +96,7 @@ module.exports = {
         );
       }
       // add FK not null constraint
-      for (const table of GENE_VARIANT_TABLES) {
+      for (const table of GENE_LINKED_VARIANT_TABLES) {
         console.log(`Set not NULL on ${table}.gene_id`);
         // Add not null constraint to tables
         await queryInterface.changeColumn(
@@ -103,7 +106,7 @@ module.exports = {
           {transaction}
         );
       }
-      for (const table of GENE_VARIANT_TABLES) {
+      for (const table of GENE_LINKED_VARIANT_TABLES) {
         console.log(`Dropping column ${table}.gene`);
         await queryInterface.removeColumn(
           table,
