@@ -202,7 +202,7 @@ genes.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(genes, {
-  as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Somatic Mutations

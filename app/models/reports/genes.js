@@ -4,7 +4,7 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define(
-    'reports_genes',
+    'genes',
     {
       ...DEFAULT_COLUMNS,
       reportId: {
@@ -47,6 +47,7 @@ module.exports = (sequelize) => {
     },
     {
       ...DEFAULT_OPTIONS,
+      tableName: 'reports_genes',
       indexes: [
         ...DEFAULT_OPTIONS.indexes,
         {
