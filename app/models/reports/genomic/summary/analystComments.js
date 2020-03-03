@@ -33,8 +33,8 @@ module.exports = (sequelize) => {
       allowNull: true,
     },
     authorId: {
-      field: 'author_id',
       name: 'authorId',
+      field: 'author_id',
       type: Sq.INTEGER,
       references: {
         model: 'users',
