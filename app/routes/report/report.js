@@ -1,12 +1,15 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
+const _ = require('lodash');
+
 const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
 const {loadImage} = require('./images');
 const logger = require('../../log');
+const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
 
 const reportMiddleware = require('../../middleware/analysis_report');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');

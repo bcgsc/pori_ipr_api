@@ -1,6 +1,7 @@
 const Sq = require('sequelize');
 const nconf = require('../config');
 const logger = require('../log'); // Load logging library
+const {GENE_LINKED_VARIANT_MODELS} = require('../constants');
 
 // Load database
 const dbSettings = nconf.get('database');
@@ -254,19 +255,6 @@ analysisReports.hasMany(structuralVariation.sv, {
   as: 'sv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-structuralVariation.sv.belongsTo(genes, {
-  as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-structuralVariation.sv.belongsTo(genes, {
-  as: 'gene2', foreignKey: 'gene2Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-genes.hasMany(structuralVariation.sv, {
-  as: 'structuralVariants', foreignKey: 'gene1Id', onDelete: 'CASCADE', constraints: true,
-});
-genes.hasMany(structuralVariation.sv, {
-  as: 'structuralVariants', foreignKey: 'gene2Id', onDelete: 'CASCADE', constraints: true,
-});
-
 
 // expression variants
 const expressionAnalysis = {};
@@ -287,19 +275,31 @@ analysisReports.hasMany(expressionAnalysis.drugTarget, {
 });
 
 
-for (const [variantModel, alias] of [
-  [expressionAnalysis.outlier, 'expressionOutliers'],
-  [expressionAnalysis.drugTarget, 'targetableExpressionOutliers'],
-  [copyNumberAnalyses.cnv, 'copyVariants'],
-  [somaticMutations.smallMutations, 'smallMutations'],
-]) {
-  // Link variants to the gene model
-  variantModel.belongsTo(genes, {
-    as: 'gene', foreignKey: 'geneId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-  });
-  genes.hasMany(variantModel, {
-    as: alias, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
-  });
+for (const name of GENE_LINKED_VARIANT_MODELS) {
+  const variantModel = sequelize.models[name];
+  if (name === 'sv') {
+    // sequelize can't handle union-ing these so they require separate alias names
+    variantModel.belongsTo(genes, {
+      as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+    });
+    variantModel.belongsTo(genes, {
+      as: 'gene2', foreignKey: 'gene2Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: `${name}1`, foreignKey: 'gene1Id', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: `${name}2`, foreignKey: 'gene2Id', onDelete: 'CASCADE', constraints: true,
+    });
+  } else {
+    // Link variants to the gene model
+    variantModel.belongsTo(genes, {
+      as: 'gene', foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+    });
+  }
 }
 
 // Presentation Data
