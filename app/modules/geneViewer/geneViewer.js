@@ -7,13 +7,11 @@ class GeneViewer {
   /**
    * Constructor
    *
-   * @param {object} pog - POGID
    * @param {object} report - Report ident
    * @param {string} gene - Gene symbol to search for
    *
    */
-  constructor(pog, report, gene) {
-    this.pog = pog;
+  constructor(report, gene) {
     this.report = report;
     this.gene = gene;
   }
@@ -63,7 +61,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -80,7 +78,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -97,7 +95,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -114,7 +112,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -131,7 +129,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -148,7 +146,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -165,7 +163,7 @@ class GeneViewer {
     const opts = {
       where: {
         gene: {[Op.iLike]: `%${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
@@ -182,7 +180,7 @@ class GeneViewer {
     const opts = {
       where: {
         key: {[Op.iLike]: `%expDensity.${this.gene}%`},
-        report_id: this.report.id,
+        reportId: this.report.id,
       },
     };
 
