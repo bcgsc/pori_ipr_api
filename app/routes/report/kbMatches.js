@@ -7,10 +7,10 @@ const db = require('../../models');
 
 const logger = require('../../log');
 
-router.param('kbMatch', async (req, res, next, altIdent) => {
+router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
   let result;
   try {
-    result = await db.models.kbMatches.scope('public').findOne({where: {ident: altIdent}});
+    result = await db.models.kbMatches.scope('public').findOne({where: {ident: kbMatchIdent}});
   } catch (error) {
     logger.log(`Unable to process the request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareAlterationQuery'}});
