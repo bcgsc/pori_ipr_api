@@ -18,6 +18,7 @@ const COLUMN_RENAMES = {
   approvedTherapy: 'approved_therapy',
   LOHRegion: 'loh_region',
   evidence: 'evidence_level',
+  copyNumber: 'copy_number',
 };
 
 module.exports = {

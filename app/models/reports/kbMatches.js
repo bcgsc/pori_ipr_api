@@ -61,6 +61,8 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     copyNumber: {
+      field: 'copy_number',
+      name: 'copyNumber',
       type: Sq.TEXT,
     },
     sample: {
