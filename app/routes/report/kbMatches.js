@@ -47,12 +47,12 @@ router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|no
       if (category.includes('Cancer')) {
         where.approvedTherapy = category;
       } else {
-        where.alterationType = category;
+        where.category = category;
         where.approvedTherapy = null;
       }
     } else {
       where.approvedTherapy = null;
-      where.alterationType = {[Op.notIn]: ['unknown', 'novel']};
+      where.category = {[Op.notIn]: ['unknown', 'novel']};
     }
 
     const options = {
