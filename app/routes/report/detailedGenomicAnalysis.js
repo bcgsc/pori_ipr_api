@@ -7,7 +7,7 @@ const db = require('../../models');
 
 const logger = require('../../log');
 
-router.param('alteration', async (req, res, next, altIdent) => {
+router.param('kbMatch', async (req, res, next, altIdent) => {
   let result;
   try {
     result = await db.models.kbMatches.scope('public').findOne({where: {ident: altIdent}});
@@ -21,59 +21,14 @@ router.param('alteration', async (req, res, next, altIdent) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareAlterationLookup'}});
   }
 
-  req.alteration = result;
+  req.kbMatch = result;
   return next();
 });
 
 // Handle requests for alterations
-router.route('/alterations/:alteration([A-z0-9-]{36})')
+router.route('/alterations/:kbMatch([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.alteration);
-  })
-  .put(async (req, res) => {
-    // Promoting from unknown to another state.
-    if (req.alteration.alterationType === 'unknown' && req.body.alterationType !== 'unknown') {
-      await db.models.genomicAlterationsIdentified.scope('public').create({
-        reportId: req.report.id,
-        geneVariant: `${req.alteration.gene} (${req.alteration.variant})`,
-      });
-    }
-
-    // Update DB Version for Entry
-    try {
-      const result = await db.models.kbMatches.update(req.body, {
-        where: {
-          ident: req.alteration.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
-    } catch (error) {
-      logger.error(`Unable to update the resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update the resource', code: 'failedAPCDestroy'}});
-    }
-  })
-  .delete(async (req, res) => {
-    // Soft delete the entry
-    // Update result
-    try {
-      await db.models.kbMatches.destroy({where: {ident: req.alteration.ident}});
-      return res.json({success: true});
-    } catch (error) {
-      logger.error(`Unable to remove resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove resource', code: 'failedAPCremove'}});
-    }
+    return res.json(req.kbMatch);
   });
 
 // Routing for Alteration
@@ -112,30 +67,6 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
-    }
-  })
-
-  .post(async (req, res) => {
-    const {params: {reportType}, report: {id: reportId}} = req;
-    // Setup new data entry from vanilla
-
-    try {
-      const result = await db.models.kbMatches.create({
-        ...req.body,
-        reportId,
-        reportType,
-      });
-
-      // Create new entry for Key Genomic Identified
-      await db.models.genomicAlterationsIdentified.scope('public').create({
-        reportId,
-        geneVariant: `${req.body.gene} (${req.body.variant})`,
-      });
-
-      return res.json(result);
-    } catch (error) {
-      logger.error(`Unable to update alterations ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update alterations', code: 'failedAPClookup'}});
     }
   });
 
