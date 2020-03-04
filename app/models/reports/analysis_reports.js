@@ -1,5 +1,4 @@
 const Sq = require('sequelize');
-
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
@@ -80,7 +79,7 @@ module.exports = (sequelize) => {
   },
   {
     ...DEFAULT_OPTIONS,
-    tableName: 'pog_analysis_reports',
+    tableName: 'reports',
     scopes: {
       public: {
         attributes: {
