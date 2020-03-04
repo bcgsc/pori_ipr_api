@@ -42,6 +42,7 @@ module.exports = {
     } catch (e) {
       console.error(e);
       await transaction.rollback();
+      throw e;
     }
   },
 
