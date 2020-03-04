@@ -4,11 +4,11 @@
 const uuidv4 = require('uuid/v4');
 
 const GENE_TABLE = 'reports_genes';
-const SV_TABLE = 'pog_analysis_reports_structural_variation_sv';
-const CNV_TABLE = 'pog_analysis_reports_copy_number_analysis_cnv';
-const EXPRESSION_TABLE = 'pog_analysis_reports_expression_outlier';
-const EXP_DRUG_TARGET_TABLE = 'pog_analysis_reports_expression_drug_target';
-const SMALL_MUTATIONS_TABLE = 'pog_analysis_reports_somatic_mutations_small_mutations';
+const SV_TABLE = 'reports_structural_variation_sv';
+const CNV_TABLE = 'reports_copy_number_analysis_cnv';
+const EXPRESSION_TABLE = 'reports_expression_outlier';
+const EXP_DRUG_TARGET_TABLE = 'reports_expression_drug_target';
+const SMALL_MUTATIONS_TABLE = 'reports_somatic_mutations_small_mutations';
 
 const addIdent = (rec) => {
   return {...rec, ident: uuidv4()};
@@ -19,7 +19,7 @@ const GENE_LINKED_VARIANT_TABLES = [
   CNV_TABLE,
   SMALL_MUTATIONS_TABLE,
   EXP_DRUG_TARGET_TABLE,
-  'pog_analysis_reports_probe_results',
+  'reports_probe_results',
 ];
 
 module.exports = {

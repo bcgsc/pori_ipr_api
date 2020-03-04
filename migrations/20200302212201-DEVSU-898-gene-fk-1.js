@@ -1,4 +1,4 @@
-const SV_TABLE = 'pog_analysis_reports_structural_variation_sv';
+const SV_TABLE = 'reports_structural_variation_sv';
 const GENE_TABLE = 'reports_genes';
 
 module.exports = {
@@ -27,7 +27,7 @@ module.exports = {
             field: 'report_id',
             name: 'reportId',
             references: {
-              model: 'pog_analysis_reports',
+              model: 'reports',
               key: 'id',
             },
           },

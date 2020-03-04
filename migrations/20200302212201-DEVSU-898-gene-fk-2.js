@@ -1,5 +1,5 @@
 const GENE_TABLE = 'reports_genes';
-const SV_TABLE = 'pog_analysis_reports_structural_variation_sv';
+const SV_TABLE = 'reports_structural_variation_sv';
 
 module.exports = {
   up: async (queryInterface, Sq) => {
