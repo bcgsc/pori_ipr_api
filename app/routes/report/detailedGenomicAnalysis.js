@@ -10,7 +10,7 @@ const logger = require('../../log');
 router.param('alteration', async (req, res, next, altIdent) => {
   let result;
   try {
-    result = await db.models.alterations.scope('public').findOne({where: {ident: altIdent}});
+    result = await db.models.kbMatches.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.log(`Unable to process the request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareAlterationQuery'}});
@@ -41,7 +41,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 
     // Update DB Version for Entry
     try {
-      const result = await db.models.alterations.update(req.body, {
+      const result = await db.models.kbMatches.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
@@ -68,7 +68,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
     // Soft delete the entry
     // Update result
     try {
-      await db.models.alterations.destroy({where: {ident: req.alteration.ident}});
+      await db.models.kbMatches.destroy({where: {ident: req.alteration.ident}});
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);
@@ -107,7 +107,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
 
     try {
       // Get all alterations for this report
-      const result = await db.models.alterations.scope('public').findAll(options);
+      const result = await db.models.kbMatches.scope('public').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
@@ -120,7 +120,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     // Setup new data entry from vanilla
 
     try {
-      const result = await db.models.alterations.create({
+      const result = await db.models.kbMatches.create({
         ...req.body,
         reportId,
         reportType,
@@ -168,7 +168,7 @@ router.route('/targeted-genes/:gene([A-z0-9-]{36})')
     req.body.reportId = req.report.id;
 
     try {
-      const result = await db.models.alterations.update(req.body, {
+      const result = await db.models.kbMatches.update(req.body, {
         where: {
           ident: req.alteration.ident,
         },
@@ -195,7 +195,7 @@ router.route('/targeted-genes/:gene([A-z0-9-]{36})')
     // Soft delete the entry
     // Update result
     try {
-      await db.models.alterations.destroy({where: {ident: req.alteration.ident}});
+      await db.models.kbMatches.destroy({where: {ident: req.alteration.ident}});
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);
