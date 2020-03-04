@@ -32,7 +32,7 @@ router.route('/alterations/:kbMatch([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/alterations/:category(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
+router.route('/kb-matches/:category(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get(async (req, res) => {
     const {params: {reportType, category}} = req;
     // Setup where clause
