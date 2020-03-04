@@ -32,9 +32,9 @@ router.route('/alterations/:kbMatch([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
+router.route('/alterations/:category(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get(async (req, res) => {
-    const {params: {reportType}} = req;
+    const {params: {reportType, category}} = req;
     // Setup where clause
     const where = {
       reportId: req.report.id,
@@ -42,12 +42,12 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
     };
 
     // Searching for specific type of alterations
-    if (req.params.type) {
+    if (category) {
       // Are we looking for approved types?
-      if (req.params.type.includes('Cancer')) {
-        where.approvedTherapy = req.params.type;
+      if (category.includes('Cancer')) {
+        where.approvedTherapy = category;
       } else {
-        where.alterationType = req.params.type;
+        where.alterationType = category;
         where.approvedTherapy = null;
       }
     } else {
