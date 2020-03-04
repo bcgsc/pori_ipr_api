@@ -1,30 +1,22 @@
 const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('germline_small_mutation', {
-    id: {
-      type: Sq.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    ident: {
-      type: Sq.UUID,
-      unique: true,
-      defaultValue: Sq.UUIDV4,
-    },
+    ...DEFAULT_COLUMNS,
     patientId: {
-      type: Sq.TEXT,
-      allowNull: false,
-      required: true,
       name: 'patientId',
       field: 'patient_id',
-    },
-    biopsyName: {
       type: Sq.TEXT,
       allowNull: false,
       required: true,
+    },
+    biopsyName: {
       name: 'biopsyName',
       field: 'biopsy_name',
+      type: Sq.TEXT,
+      allowNull: false,
+      required: true,
     },
     source_version: {
       type: Sq.TEXT,
@@ -48,16 +40,13 @@ module.exports = (sequelize) => {
     },
   },
   {
-    tableName: 'pog_analysis_germline_small_mutations',
-    // Automatically create createdAt, updatedAt, deletedAt
-    timestamps: true,
-    // Use soft-deletes!
-    paranoid: true,
+    ...DEFAULT_OPTIONS,
+    tableName: 'germline_small_mutations',
     scopes: {
       public: {
         order: [['createdAt', 'desc']],
         attributes: {
-          exclude: ['deletedAt', 'id', 'biofx_assigned_id'],
+          exclude: ['id', 'biofx_assigned_id', 'deletedAt'],
         },
         include: [
           {as: 'biofx_assigned', model: sequelize.models.user.scope('public')},

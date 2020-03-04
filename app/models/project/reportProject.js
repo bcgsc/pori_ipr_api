@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
       unique: false,
       allowNull: false,
       references: {
-        model: 'pog_analysis_reports',
+        model: 'reports',
         key: 'id',
       },
     },
