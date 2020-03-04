@@ -41,7 +41,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
     // create a report to be used in tests
     // TODO: Update report upload to report mocking once metadata is simplified
     const res = await request
-      .post('/api/1.0/reports')
+      .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
       .type('json')
@@ -52,7 +52,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
     // Create initial comment to be tested
     await request
-      .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments`)
+      .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments`)
       .auth(username, password)
       .type('json')
       .send({comments: 'This is the first comment'})
@@ -62,7 +62,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
   test('GET / comment - 200 Success', async () => {
     // Test GET endpoint and also if comment was created successfully
     const res = await request
-      .get(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments`)
+      .get(`/api/reports/${reportIdent}/genomic/summary/analyst-comments`)
       .auth(username, password)
       .type('json')
       .expect(200);
@@ -88,7 +88,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
       // Tests for adding/editing comments
       test('PUT / comment - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments`)
           .auth(username, password)
           .type('json')
           .send({comments: 'This is another comment'})
@@ -102,7 +102,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
       test('PUT / comment - 404 Report not found', async () => {
         await request
-          .put('/api/1.0/reports/NOT_REPORT/genomic/summary/analyst-comments')
+          .put('/api/reports/NOT_REPORT/genomic/summary/analyst-comments')
           .auth(username, password)
           .type('json')
           .send({comments: 'This is a sample comment'})
@@ -114,7 +114,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
       // Tests for signing comments and invalid inputs
       test('PUT /sign/author sign comment as author - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments/sign/author`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments/sign/author`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -128,7 +128,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
       test('PUT /sign/reviewer sign comment as reviewer - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments/sign/reviewer`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments/sign/reviewer`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -142,7 +142,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
       test('PUT /sign/INVALID sign comment as not existing role - 404 Not Found', async () => {
         await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments/sign/NOT_EXISTENT_ROLE`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments/sign/NOT_EXISTENT_ROLE`)
           .auth(username, password)
           .type('json')
           .expect(404);
@@ -153,7 +153,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
       // Tests for revoking signatures and invalid inputs
       test('PUT /sign/revoke/author revoke sign comment as author - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments/sign/revoke/author`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments/sign/revoke/author`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -167,7 +167,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
       test('PUT /sign/revoke/reviewer revoke sign comment as reviewer - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments/sign/revoke/reviewer`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments/sign/revoke/reviewer`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -181,7 +181,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
       test('PUT /sign/revoke/INVALID comment as not existing role - 404 Not Found', async () => {
         await request
-          .put(`/api/1.0/reports/${reportIdent}/genomic/summary/analyst-comments/sign/revoke/NOT_EXISTENT_ROLECLEAR`)
+          .put(`/api/reports/${reportIdent}/genomic/summary/analyst-comments/sign/revoke/NOT_EXISTENT_ROLECLEAR`)
           .auth(username, password)
           .type('json')
           .expect(404);
@@ -197,7 +197,7 @@ describe('/reports/{REPORTID}/genomic/summary/analyst-comments endpoint testing'
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(404);
