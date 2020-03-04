@@ -21,11 +21,6 @@ const sequelize = new Sq(
 // Import Application Models
 const user = sequelize.import('./user/user');
 
-const userToken = sequelize.import('./user/userToken');
-
-user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
-userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
-
 // Projects
 const project = sequelize.import('./project/project');
 const userProject = sequelize.import('./project/user_project');
@@ -180,10 +175,10 @@ summary.mutationSummaryv2.belongsTo(analysisReports, {
 
 
 summary.analystComments.belongsTo(user, {
-  as: 'authorSignature', foreignKey: 'authorSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+  as: 'authorSignature', foreignKey: 'authorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 summary.analystComments.belongsTo(user, {
-  as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+  as: 'reviewerSignature', foreignKey: 'reviewerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
 // DetailedGenomicAnalysis

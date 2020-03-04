@@ -5,19 +5,19 @@ module.exports = (sequelize) => {
   return sequelize.define('germlineReportsToProjects', {
     ...DEFAULT_MAPPING_COLUMNS,
     germlineReportId: {
-      field: 'germline_report_id',
       name: 'germlineReportId',
+      field: 'germline_report_id',
       type: Sq.INTEGER,
       unique: false,
       allowNull: false,
       references: {
-        model: 'germline_small_mutation',
+        model: 'germline_small_mutations',
         key: 'id',
       },
     },
     projectId: {
-      field: 'project_id',
       name: 'projectId',
+      field: 'project_id',
       type: Sq.INTEGER,
       unique: false,
       allowNull: false,
@@ -33,7 +33,7 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['deletedAt', 'id'],
+          exclude: ['id', 'deletedAt'],
         },
       },
     },
