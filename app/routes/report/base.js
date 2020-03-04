@@ -6,7 +6,7 @@ const signature = require('./probe/signature');
 
 const router = express.Router({mergeParams: true});
 
-router.use('/:reportType(genomic|probe)', reports);
+router.use('/', reports);
 router.use('/probe/signature', signature);
 router.use('/image', image);
 
