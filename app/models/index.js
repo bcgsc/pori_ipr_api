@@ -22,11 +22,6 @@ const sequelize = new Sq(
 // Import Application Models
 const user = sequelize.import('./user/user');
 
-const userToken = sequelize.import('./user/userToken');
-
-user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
-userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
-
 // Projects
 const project = sequelize.import('./project/project');
 const userProject = sequelize.import('./project/user_project');

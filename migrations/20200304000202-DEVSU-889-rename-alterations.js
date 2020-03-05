@@ -1,4 +1,4 @@
-const TABLE_NAME = 'pog_analysis_reports_dga_alterations';
+const TABLE_NAME = 'reports_dga_alterations';
 
 const COLUMNS_TO_DROP = [
   'reportType',

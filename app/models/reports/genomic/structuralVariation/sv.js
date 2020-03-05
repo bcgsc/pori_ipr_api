@@ -1,5 +1,4 @@
 const Sq = require('sequelize');
-
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
@@ -10,7 +9,7 @@ module.exports = (sequelize) => {
       field: 'report_id',
       type: Sq.INTEGER,
       references: {
-        model: 'pog_analysis_reports',
+        model: 'reports',
         key: 'id',
       },
     },
@@ -21,22 +20,22 @@ module.exports = (sequelize) => {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
     },
     gene1Id: {
+      name: 'gene1Id',
+      field: 'gene1_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports_genes',
         key: 'id',
       },
-      field: 'gene1_id',
-      name: 'gene1Id',
     },
     gene2Id: {
+      name: 'gene2Id',
+      field: 'gene2_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports_genes',
         key: 'id',
       },
-      field: 'gene2_id',
-      name: 'gene2Id',
     },
     exon1: {
       type: Sq.TEXT,
@@ -99,11 +98,10 @@ module.exports = (sequelize) => {
     },
   }, {
     ...DEFAULT_OPTIONS,
-    // Table Name
-    tableName: 'pog_analysis_reports_structural_variation_sv',
+    tableName: 'reports_structural_variation_sv',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'deletedAt', 'reportId']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
       },
     },
   });

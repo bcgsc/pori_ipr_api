@@ -30,7 +30,7 @@ const DEFAULT_COLUMNS = {
     type: Sq.UUID,
     unique: false,
     defaultValue: Sq.UUIDV4,
-    notNull: true,
+    allowNull: false,
   },
   ...DEFAULT_MAPPING_COLUMNS,
 };

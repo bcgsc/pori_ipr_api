@@ -2,13 +2,13 @@
  * Add the FK column gene_id to each of the variant tables
  */
 const GENE_TABLE = 'reports_genes';
-const SV_TABLE = 'pog_analysis_reports_structural_variation_sv';
+const SV_TABLE = 'reports_structural_variation_sv';
 const GENE_LINKED_VARIANT_TABLES = [
-  'pog_analysis_reports_expression_outlier',
-  'pog_analysis_reports_copy_number_analysis_cnv',
-  'pog_analysis_reports_somatic_mutations_small_mutations',
-  'pog_analysis_reports_expression_drug_target',
-  'pog_analysis_reports_probe_results',
+  'reports_expression_outlier',
+  'reports_copy_number_analysis_cnv',
+  'reports_somatic_mutations_small_mutations',
+  'reports_expression_drug_target',
+  'reports_probe_results',
 ];
 
 module.exports = {

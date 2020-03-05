@@ -1,5 +1,4 @@
 const Sq = require('sequelize');
-
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
@@ -10,7 +9,7 @@ module.exports = (sequelize) => {
       field: 'report_id',
       type: Sq.INTEGER,
       references: {
-        model: 'pog_analysis_reports',
+        model: 'reports',
         key: 'id',
       },
     },
@@ -18,13 +17,13 @@ module.exports = (sequelize) => {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss'),
     },
     geneId: {
+      name: 'geneId',
+      field: 'gene_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports_genes',
         key: 'id',
       },
-      field: 'gene_id',
-      name: 'geneId',
       allowNull: false,
     },
     ploidyCorrCpChange: {
@@ -59,11 +58,10 @@ module.exports = (sequelize) => {
     },
   }, {
     ...DEFAULT_OPTIONS,
-    // Table Name
-    tableName: 'pog_analysis_reports_copy_number_analysis_cnv',
+    tableName: 'reports_copy_number_analysis_cnv',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'deletedAt', 'reportId']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
       },
     },
   });
