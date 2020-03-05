@@ -77,11 +77,6 @@ Object.values(associations).forEach((association) => {
     generatedSchema.properties.gene2 = {
       type: 'string', description: 'The gene name for the second breakpoint',
     };
-    if (!generatedSchema.required) {
-      generatedSchema.required = [];
-    }
-    generatedSchema.required.push('gene1');
-    generatedSchema.required.push('gene2');
   } else if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
     generatedSchema.properties.gene = {
       type: 'string', description: 'The gene name for this variant',
