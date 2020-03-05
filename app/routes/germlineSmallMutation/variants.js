@@ -1,9 +1,11 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
+const _ = require('lodash');
 const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const db = require('../../models');
 
 const router = express.Router({mergeParams: true});
 
@@ -72,8 +74,16 @@ router.route('/:variant')
     }
 
     try {
-      await req.variant.save();
-      return res.json(req.variant);
+      const update = await db.models.germline_small_mutation_variant.update(req.variant.dataValues, {
+        where: {
+          ident: req.variant.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+      });
+      let variant = update[1][0].dataValues;
+      variant = _.omit(variant, ['id']);
+      return res.json(variant);
     } catch (error) {
       logger.error(`Error while trying to update variant ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update variant'});

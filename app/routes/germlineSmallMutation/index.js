@@ -249,7 +249,7 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
     }
 
     try {
-      const [publicReport] = await Report.public(report.ident);
+      const [publicReport] = await Report.public(report[1][0].ident);
       return res.json(publicReport);
     } catch (error) {
       logger.error(`There was an error while updating the germline report ${error}`);

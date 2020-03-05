@@ -52,7 +52,10 @@ const updateReport = async (report, data) => {
       updateData.biofx_assigned_id = _.find(users, {ident: data.biofx_assigned}).id;
     }
 
-    return report.update(updateData, {
+    return await db.models.germline_small_mutation.update(updateData, {
+      where: {
+        ident: report.ident,
+      },
       individualHooks: true,
       paranoid: true,
     });
