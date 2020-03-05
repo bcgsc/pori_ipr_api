@@ -1,29 +1,16 @@
 const GENE_TABLE = 'reports_genes';
 const SV_TABLE = 'reports_structural_variation_sv';
 
+const {addUniqueActiveFieldIndex} = require('../migrationTools');
+
+
 module.exports = {
   up: async (queryInterface, Sq) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      console.log(`add the unique report + gene index and the unique report + ident index to the ${GENE_TABLE} table`);
-      queryInterface.addConstraint(GENE_TABLE, ['report_id', 'name'], {
-        type: 'unique',
-        where: {
-          deleted_at: {
-            [Sq.Op.eq]: null,
-          },
-        },
-      });
+      await addUniqueActiveFieldIndex(queryInterface, Sq, transaction, GENE_TABLE, ['report_id', 'name']);
 
-      console.log('add the unique ident constraint');
-      queryInterface.addConstraint(GENE_TABLE, ['ident'], {
-        type: 'unique',
-        where: {
-          deleted_at: {
-            [Sq.Op.eq]: null,
-          },
-        },
-      });
+      await addUniqueActiveFieldIndex(queryInterface, Sq, transaction, GENE_TABLE, ['ident']);
 
       console.log('transfer the content from the genes/exons to the split versions');
       await queryInterface.sequelize.query(
