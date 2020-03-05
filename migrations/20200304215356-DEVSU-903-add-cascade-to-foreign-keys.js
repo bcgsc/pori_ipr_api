@@ -1,20 +1,27 @@
+const GERMLINE_REPORTS_TO_PROJECTS_TABLE = 'germline_reports_to_projects';
+const REPORT_PROJECTS_TABLE = 'report_projects';
+const GERMLINE_REP_TO_PROJ_REPORT_ID_FK = 'germline_reports_to_projects_germline_report_id_fkey';
+const GERMLINE_REP_TO_PROJ_PROJECT_ID_FK = 'germline_reports_to_projects_project_id_fkey';
+const REP_PROJ_PROJECT_ID_FK = 'report_projects_project_id_fkey';
+const REP_PROJ_REPORT_ID_FK = 'report_projects_report_id_fkey';
+
 module.exports = {
   up: async (queryInterface) => {
     try {
       await queryInterface.sequelize.transaction(async (transaction) => {
         // Remove old incorrect foreign keys
         await Promise.all([
-          queryInterface.removeConstraint('germline_reports_to_projects', 'germline_reports_to_projects_germline_report_id_fkey', {transaction}),
-          queryInterface.removeConstraint('germline_reports_to_projects', 'germline_reports_to_projects_project_id_fkey', {transaction}),
-          queryInterface.removeConstraint('report_projects', 'report_projects_project_id_fkey', {transaction}),
-          queryInterface.removeConstraint('report_projects', 'report_projects_report_id_fkey', {transaction}),
+          queryInterface.removeConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, GERMLINE_REP_TO_PROJ_REPORT_ID_FK, {transaction}),
+          queryInterface.removeConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, GERMLINE_REP_TO_PROJ_PROJECT_ID_FK, {transaction}),
+          queryInterface.removeConstraint(REPORT_PROJECTS_TABLE, REP_PROJ_PROJECT_ID_FK, {transaction}),
+          queryInterface.removeConstraint(REPORT_PROJECTS_TABLE, REP_PROJ_REPORT_ID_FK, {transaction}),
         ]);
 
         // Add new correct foreign keys
         return Promise.all([
-          queryInterface.addConstraint('germline_reports_to_projects', ['germline_report_id'], {
+          queryInterface.addConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, ['germline_report_id'], {
             type: 'foreign key',
-            name: 'germline_reports_to_projects_germline_report_id_fkey',
+            name: GERMLINE_REP_TO_PROJ_REPORT_ID_FK,
             references: {
               table: 'germline_small_mutations',
               field: 'id',
@@ -23,9 +30,9 @@ module.exports = {
             onUpdate: 'cascade',
             transaction,
           }),
-          queryInterface.addConstraint('germline_reports_to_projects', ['project_id'], {
+          queryInterface.addConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, ['project_id'], {
             type: 'foreign key',
-            name: 'germline_reports_to_projects_project_id_fkey',
+            name: GERMLINE_REP_TO_PROJ_PROJECT_ID_FK,
             references: {
               table: 'projects',
               field: 'id',
@@ -34,9 +41,9 @@ module.exports = {
             onUpdate: 'cascade',
             transaction,
           }),
-          queryInterface.addConstraint('report_projects', ['project_id'], {
+          queryInterface.addConstraint(REPORT_PROJECTS_TABLE, ['project_id'], {
             type: 'foreign key',
-            name: 'report_projects_project_id_fkey',
+            name: REP_PROJ_PROJECT_ID_FK,
             references: {
               table: 'projects',
               field: 'id',
@@ -45,9 +52,9 @@ module.exports = {
             onUpdate: 'cascade',
             transaction,
           }),
-          queryInterface.addConstraint('report_projects', ['report_id'], {
+          queryInterface.addConstraint(REPORT_PROJECTS_TABLE, ['report_id'], {
             type: 'foreign key',
-            name: 'report_projects_report_id_fkey',
+            name: REP_PROJ_REPORT_ID_FK,
             references: {
               table: 'reports',
               field: 'id',
