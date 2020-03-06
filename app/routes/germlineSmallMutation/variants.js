@@ -74,16 +74,14 @@ router.route('/:variant')
     }
 
     try {
-      const update = await db.models.germline_small_mutation_variant.update(req.variant.dataValues, {
+      await db.models.germline_small_mutation_variant.update(req.variant.dataValues, {
         where: {
           ident: req.variant.ident,
         },
         individualHooks: true,
         paranoid: true,
       });
-      let variant = update[1][0].dataValues;
-      variant = _.omit(variant, ['id']);
-      return res.json(variant);
+      return res.json(await req.variant.reload());
     } catch (error) {
       logger.error(`Error while trying to update variant ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update variant'});
