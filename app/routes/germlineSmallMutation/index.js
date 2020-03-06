@@ -273,7 +273,7 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
    */
   .delete(async (req, res) => {
     try {
-      await req.report.destroy();
+      await db.models.germline_small_mutation.destroy({where: {id: req.report.id}, force: true});
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while removing requested germline report ${error}`);
