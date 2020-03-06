@@ -27,13 +27,12 @@ class GeneViewer {
       this._getSmallMutations(),
       this._getCopyNumber(),
       this._getExpRNA(),
-      this._getExpDrugTarget(),
       this._getExpDensityGraph(),
     ];
 
     try {
       const [kbMatches, smallMutations, copyNumber,
-        expRNA, expDrugTarget, expDensityGraph] = await Promise.all(promises);
+        expRNA, expDensityGraph] = await Promise.all(promises);
 
       return {
         kbMatches,
@@ -42,7 +41,6 @@ class GeneViewer {
         structuralVariants: [],
         expRNA,
         expProtein: [],
-        expDrugTarget,
         expDensityGraph,
       };
     } catch (error) {
@@ -151,23 +149,6 @@ class GeneViewer {
     };
 
     return db.models.proteinExpression.scope('public').findAll(opts);
-  }
-
-  /**
-   * Expression - Drug Targetable
-   *
-   * @returns {Promise.<Array.<object>>} - Returns all drug targets for gene and report
-   * @private
-   */
-  async _getExpDrugTarget() {
-    const opts = {
-      where: {
-        gene: {[Op.iLike]: `%${this.gene}%`},
-        reportId: this.report.id,
-      },
-    };
-
-    return db.models.drugTarget.scope('public').findAll(opts);
   }
 
   /**
