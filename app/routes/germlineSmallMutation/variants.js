@@ -6,17 +6,23 @@ const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const db = require('../../models');
+const variantSchema = require('../../schemas/germlineSmallMutation/variants');
 
 const router = express.Router({mergeParams: true});
 
-const variantSchema = {
-  type: 'object',
-  required: ['patient_history', 'family_history', 'hidden'],
-  properties: {
-    patient_history: {type: 'string'},
-    family_history: {type: 'string'},
-    hidden: {type: 'boolean'},
-  },
+const removeUndefinedProperties = (obj) => {
+  if (obj && Array.isArray(obj)) {
+    return obj.map((o) => { return removeUndefinedProperties(o); });
+  } if (typeof obj === 'object') {
+    const copy = {};
+    for (const [prop, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        copy[prop] = removeUndefinedProperties(value);
+      }
+    }
+    return copy;
+  }
+  return obj;
 };
 
 router.param('variant', variantMiddleware);
@@ -61,13 +67,23 @@ router.route('/:variant')
    */
   .put(async (req, res) => {
     // Update Variant details
-    req.variant.patient_history = req.body.patient_history;
-    req.variant.family_history = req.body.family_history;
-    req.variant.hidden = req.body.hidden;
+
+    // Enforce that only family_history, patient_history and hidden should be updated
+    let updateData = {};
+    updateData.family_history = req.body.family_history;
+    updateData.patient_history = req.body.patient_history;
+    updateData.hidden = req.body.hidden;
+    updateData = removeUndefinedProperties(updateData);
+
+    // Update current Datavalues with the cleaned Data
+    req.variant.dataValues = {
+      ...req.variant.dataValues,
+      ...updateData,
+    };
 
     try {
       // Validate input
-      validateAgainstSchema(variantSchema, req.body);
+      validateAgainstSchema(variantSchema, req.variant.dataValues);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -80,6 +96,7 @@ router.route('/:variant')
         },
         individualHooks: true,
         paranoid: true,
+        additionalProperties: false,
       });
       return res.json(await req.variant.reload());
     } catch (error) {
