@@ -11,7 +11,7 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/1.0/germline-small-mutation';
+const BASE_URL = '/api/germline-small-mutation';
 
 
 describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm_report/review', () => {
