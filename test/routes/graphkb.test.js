@@ -9,7 +9,7 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/1.0/graphkb';
+const BASE_URL = '/api/graphkb';
 
 const testAutocompleteWithKeyword = async (request, type, keyword) => {
   const {body} = await request

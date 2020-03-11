@@ -33,7 +33,7 @@ describe('Tests for uploading a report and all of its components', () => {
   beforeAll(async () => {
     // create report
     let res = await request
-      .post('/api/1.0/reports')
+      .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
       .type('json')
@@ -45,7 +45,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // check that the report was created
     res = await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(200);
@@ -82,7 +82,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
   test('genes entries were created from variant and gene rows', async () => {
     const genes = await db.models.genes.findAll({where: {reportId}});
-    expect(genes).toHaveProperty('length', 6);
+    expect(genes).toHaveProperty('length', 5);
 
     // gene flags should be added from genes section if given
     expect(genes).toEqual(expect.arrayContaining([expect.objectContaining({
@@ -99,7 +99,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(404);

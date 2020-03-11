@@ -27,7 +27,7 @@ describe('Tests API version endpoint', () => {
   test('Test API version', async () => {
     // get API version
     const res = await request
-      .get('/api/1.0/version')
+      .get('/api/version')
       .auth(username, password)
       .type('json')
       .expect(200);

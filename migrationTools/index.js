@@ -1,9 +1,9 @@
 /**
  * Add a partial unique constraint to a table during a migration
  *
- * @param queryInterface queryInterface provided by the migration
- * @param Sequelize Sequelize instance provided by the migration
- * @param transaction Sequelize trnasaction instance
+ * @param {Object} queryInterface queryInterface provided by the migration
+ * @param {Object} Sequelize Sequelize instance provided by the migration
+ * @param {Object} transaction Sequelize transaction instance
  * @param {string} table the table name
  * @param {Array.<string>} fields the field names
  */
