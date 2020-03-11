@@ -254,19 +254,12 @@ analysisReports.hasMany(structuralVariation.sv, {
 // expression variants
 const expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
-expressionAnalysis.drugTarget = sequelize.import('./reports/genomic/expressionAnalysis/drugTarget');
 
 expressionAnalysis.outlier.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-expressionAnalysis.drugTarget.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 analysisReports.hasMany(expressionAnalysis.outlier, {
   as: 'outlier', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(expressionAnalysis.drugTarget, {
-  as: 'drugTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 

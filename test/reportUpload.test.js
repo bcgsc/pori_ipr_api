@@ -33,7 +33,7 @@ describe('Tests for uploading a report and all of its components', () => {
   beforeAll(async () => {
     // create report
     let res = await request
-      .post('/api/1.0/reports')
+      .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
       .type('json')
@@ -45,7 +45,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // check that the report was created
     res = await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(200);
@@ -99,7 +99,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(404);

@@ -79,7 +79,7 @@ router.route('/alterations/:alteration([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get(async (req, res) => {
-    const {params: {reportType}} = req;
+    const reportType = req.report.type;
     // Setup where clause
     const where = {
       reportId: req.report.id,
@@ -116,7 +116,7 @@ router.route('/alterations/:type(therapeutic|biological|prognostic|diagnostic|un
   })
 
   .post(async (req, res) => {
-    const {params: {reportType}, report: {id: reportId}} = req;
+    const {report: {id: reportId, type: reportType}} = req;
     // Setup new data entry from vanilla
 
     try {

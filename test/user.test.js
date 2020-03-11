@@ -31,7 +31,7 @@ describe('/user', () => {
     // Test for GET /user 200 endpoint
     test('GET list of users', async () => {
       const res = await request
-        .get('/api/1.0/user')
+        .get('/api/user')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -52,7 +52,7 @@ describe('/user', () => {
     // Test for GET /user/me 200 endpoint
     test('GET current user /me', async () => {
       const res = await request
-        .get('/api/1.0/user/me')
+        .get('/api/user/me')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -71,7 +71,7 @@ describe('/user', () => {
     // Test for GET /user/settings 200 endpoint
     test('GET user settings', async () => {
       const res = await request
-        .get('/api/1.0/user/settings')
+        .get('/api/user/settings')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -81,7 +81,7 @@ describe('/user', () => {
     // Test for GET /user/search 200 endpoint
     test('GET search user', async () => {
       const res = await request
-        .get('/api/1.0/user/search')
+        .get('/api/user/search')
         .query({query: username})
         .auth(username, password)
         .type('json')
@@ -95,7 +95,7 @@ describe('/user', () => {
     // Test for POST /user 200 endpoint
     test('POST new user - Success', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -110,7 +110,7 @@ describe('/user', () => {
     // Test for POST /user 400 endpoint
     test('POST new user - Password is required for local', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -125,7 +125,7 @@ describe('/user', () => {
     // Test for POST /user 400 endpoint
     test('POST new user - Password longer than 8 characters', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -141,7 +141,7 @@ describe('/user', () => {
     // Test for POST /user 400 endpoint
     test('POST new user - Email should be valid', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -156,7 +156,7 @@ describe('/user', () => {
     // Test for POST /user 400 endpoint
     test('POST new user - Type should be either local or bcgsc', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -171,7 +171,7 @@ describe('/user', () => {
     // Test for POST /user 400 endpoint
     test('POST new user - All fields are required', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -187,7 +187,7 @@ describe('/user', () => {
     // Test for DELETE /user/ident 404 endpoint
     test('DELETE user - Not Found', async () => {
       await request
-        .delete('/api/1.0/user/PROBABLY_NOT_A_USER')
+        .delete('/api/user/PROBABLY_NOT_A_USER')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
@@ -196,7 +196,7 @@ describe('/user', () => {
     // Test for DELETE /user/ident 204 endpoint
     test('DELETE user - Success', async () => {
       const res = await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send({
@@ -211,7 +211,7 @@ describe('/user', () => {
       newUserIdent = res.body.ident;
 
       await request
-        .delete(`/api/1.0/user/${newUserIdent}`)
+        .delete(`/api/user/${newUserIdent}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -229,7 +229,7 @@ describe('/user', () => {
         lastName: 'LastNameTest',
       };
       const res = await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send(newUser)
@@ -241,7 +241,7 @@ describe('/user', () => {
     // Test for POST /user 409 endpoint
     test('POST new user - Already existing', async () => {
       await request
-        .post('/api/1.0/user')
+        .post('/api/user')
         .auth(username, password)
         .type('json')
         .send(newUser)
@@ -256,7 +256,7 @@ describe('/user', () => {
     // Delete the user after each test
     afterEach(async () => {
       await request
-        .delete(`/api/1.0/user/${newUserIdent}`)
+        .delete(`/api/user/${newUserIdent}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
