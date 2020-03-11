@@ -6,18 +6,9 @@ const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const db = require('../../models');
+const variantSchema = require('../../schemas/germlineSmallMutation/updateVariant');
 
 const router = express.Router({mergeParams: true});
-
-const variantSchema = {
-  type: 'object',
-  properties: {
-    patient_history: {type: 'string'},
-    family_history: {type: 'string'},
-    hidden: {type: 'boolean'},
-  },
-  additionalProperties: false,
-};
 
 router.param('variant', variantMiddleware);
 
