@@ -263,6 +263,7 @@ analysisReports.hasMany(expressionAnalysis.outlier, {
 });
 
 
+// This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
   if (name === 'sv') {
