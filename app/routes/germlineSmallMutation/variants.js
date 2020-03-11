@@ -6,23 +6,17 @@ const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const db = require('../../models');
-const variantSchema = require('../../schemas/germlineSmallMutation/variants');
 
 const router = express.Router({mergeParams: true});
 
-const removeUndefinedProperties = (obj) => {
-  if (obj && Array.isArray(obj)) {
-    return obj.map((o) => { return removeUndefinedProperties(o); });
-  } if (typeof obj === 'object') {
-    const copy = {};
-    for (const [prop, value] of Object.entries(obj)) {
-      if (value !== undefined) {
-        copy[prop] = removeUndefinedProperties(value);
-      }
-    }
-    return copy;
-  }
-  return obj;
+const variantSchema = {
+  type: 'object',
+  properties: {
+    patient_history: {type: 'string'},
+    family_history: {type: 'string'},
+    hidden: {type: 'boolean'},
+  },
+  additionalProperties: false,
 };
 
 router.param('variant', variantMiddleware);
@@ -67,36 +61,21 @@ router.route('/:variant')
    */
   .put(async (req, res) => {
     // Update Variant details
-
-    // Enforce that only family_history, patient_history and hidden should be updated
-    let updateData = {};
-    updateData.family_history = req.body.family_history;
-    updateData.patient_history = req.body.patient_history;
-    updateData.hidden = req.body.hidden;
-    updateData = removeUndefinedProperties(updateData);
-
-    // Update current Datavalues with the cleaned Data
-    req.variant.dataValues = {
-      ...req.variant.dataValues,
-      ...updateData,
-    };
-
     try {
       // Validate input
-      validateAgainstSchema(variantSchema, req.variant.dataValues);
+      validateAgainstSchema(variantSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
     try {
-      await db.models.germline_small_mutation_variant.update(req.variant.dataValues, {
+      await db.models.germline_small_mutation_variant.update(req.body, {
         where: {
           ident: req.variant.ident,
         },
         individualHooks: true,
         paranoid: true,
-        additionalProperties: false,
       });
       return res.json(await req.variant.reload());
     } catch (error) {
