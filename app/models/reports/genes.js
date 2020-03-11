@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
       },
       name: {
         type: Sq.TEXT,
-        notNull: true,
+        allowNull: false,
       },
       tumourSuppressor: {
         type: Sq.BOOLEAN,
