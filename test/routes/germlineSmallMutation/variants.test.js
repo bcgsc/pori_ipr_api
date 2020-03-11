@@ -138,6 +138,17 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
+    test('PUT /{variant} Adding an additional property should return error - 400 Bad Request', async () => {
+      await request
+        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .send({
+          patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: 'NOT_BOOLEAN', chromosome: 'NOT_ALLOWED_CHROMOSOME',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     test('PUT /{variant} - 404 Not Found', async () => {
       await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
