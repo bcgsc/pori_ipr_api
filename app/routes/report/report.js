@@ -1,7 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
-const _ = require('lodash');
 
 const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
