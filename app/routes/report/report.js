@@ -9,11 +9,11 @@ const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
 const {loadImage} = require('./images');
 const logger = require('../../log');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
 
 const reportMiddleware = require('../../middleware/analysis_report');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
+const {createReportSection, createReportGenes} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
@@ -267,108 +267,34 @@ router.route('/')
       return cleanUpReport(error);
     }
 
-    // create the genes first since they will need to be linked to the variant records
-    const geneDefns = {};
-    for (const model of GENE_LINKED_VARIANT_MODELS) {
-      for (const variant of req.body[model] || []) {
-        if (model === 'sv') {
-          if (variant.gene1) {
-            geneDefns[variant.gene1] = {name: variant.gene1};
-          }
-          if (variant.gene2) {
-            geneDefns[variant.gene2] = {name: variant.gene2};
-          }
-        } else {
-          geneDefns[variant.gene] = {name: variant.gene};
-        }
-      }
-    }
-
-    for (const gene of req.body.genes || []) {
-      geneDefns[gene.name] = gene;
-    }
-
     try {
-      logger.debug(`creating gene definitions for the report ${report.ident}`);
-      const genes = await db.models.genes.bulkCreate(Object.values(geneDefns).map((newEntry) => {
-        return {...newEntry, reportId: report.id};
-      }));
-      for (const gene of genes) {
-        geneDefns[gene.name] = gene.id;
-      }
-    } catch (error) {
-      return cleanUpReport(error);
-    }
+      // create the genes first since they will need to be linked to the variant records
+      const geneDefns = await createReportGenes(report, req.body);
 
-    const createAssociatedRecords = async (model, records) => {
-      try {
-        if (model === 'sv') {
-          // add the gene FK associations
-          await db.models[model].bulkCreate(
-            records.map(({gene1, gene2, ...newEntry}) => {
-              return {
-                ...newEntry,
-                reportId: report.id,
-                gene1Id: geneDefns[gene1],
-                gene2Id: geneDefns[gene2],
-              };
-            })
-          );
-        } else if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
-          // add the gene FK association
-          await db.models[model].bulkCreate(
-            records.map(({gene, ...newEntry}) => {
-              return {
-                ...newEntry,
-                reportId: report.id,
-                geneId: geneDefns[gene],
-              };
-            })
-          );
-        } else {
-          await db.models[model].bulkCreate(
-            records.map((newEntry) => {
-              return {...newEntry, reportId: report.id};
-            })
-          );
+      const promises = [];
+      // for all associations create new entry based on the
+      // included associations in req.body
+      const associations = _.omit(
+        db.models.analysis_report.associations,
+        [
+          'ReportUserFilter',
+          'createdBy',
+          'probe_signature',
+          'presentation_discussion',
+          'presentation_slides',
+          'users',
+          'analystComments',
+          'projects',
+          'genes',
+        ]
+      );
+      Object.values(associations).forEach((association) => {
+        const model = association.target.name;
+        logger.debug(`creating report (${model}) section (${report.ident})`);
+        if (req.body[model]) {
+          promises.push(createReportSection(report.id, geneDefns, model, req.body[model]));
         }
-      } catch (err) {
-        logger.error(`Error creating section (${model}): ${err}`);
-        throw err;
-      }
-    };
-
-    const associations = _.omit(
-      db.models.analysis_report.associations,
-      [
-        'ReportUserFilter',
-        'createdBy',
-        'probe_signature',
-        'presentation_discussion',
-        'presentation_slides',
-        'users',
-        'analystComments',
-        'projects',
-        'genes',
-      ]
-    );
-
-    const promises = [];
-    // for all associations create new entry based on the
-    // included associations in req.body
-    Object.values(associations).forEach((association) => {
-      const model = association.target.name;
-      logger.debug(`creating report (${model}) section (${report.ident})`);
-      if (req.body[model]) {
-        const content = Array.isArray(req.body[model])
-          ? req.body[model]
-          : [req.body[model]];
-
-        promises.push(createAssociatedRecords(model, content));
-      }
-    });
-
-    try {
+      });
       await Promise.all(promises);
     } catch (error) {
       logger.error(`Unable to create all report components ${error}`);
@@ -390,15 +316,7 @@ router.route('/')
       }));
     } catch (error) {
       logger.error(`Unable to load images ${error}`);
-
-      // delete already created report/report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created report/components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to load images', cause: error}});
+      return cleanUpReport(error);
     }
 
     return res.json({message: 'Report upload was successful', ident: report.ident});
