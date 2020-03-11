@@ -82,7 +82,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
   test('genes entries were created from variant and gene rows', async () => {
     const genes = await db.models.genes.findAll({where: {reportId}});
-    expect(genes).toHaveProperty('length', 6);
+    expect(genes).toHaveProperty('length', 5);
 
     // gene flags should be added from genes section if given
     expect(genes).toEqual(expect.arrayContaining([expect.objectContaining({
