@@ -1583,9 +1583,9 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: https://ipr-api.bcgsc.ca/api/1.0
+  - url: https://ipr-api.bcgsc.ca/api
     description: Production server (uses live data)
-  - url: https://dev-ipr.bcgsc.ca:8081/api/1.0
+  - url: https://dev-ipr.bcgsc.ca:8081/api
     description: Development server
 components:
   parameters:

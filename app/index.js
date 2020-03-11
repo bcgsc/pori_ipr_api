@@ -85,7 +85,7 @@ const listen = async (port = null) => {
   });
 
   // log http request information
-  // ex. "GET /api/1.0/project 200 username 173.095 ms"
+  // ex. "GET /api/project 200 username 173.095 ms"
   if (logger.levels[logger.level] >= logger.levels.info) {
     app.use(morgan((tokens, req, res) => {
       const token = req.header('Authorization');
@@ -125,7 +125,7 @@ const listen = async (port = null) => {
     await routing.init();
 
     // Expose routing
-    app.use('/api/1.0', routing.getRouter());
+    app.use('/api', routing.getRouter());
     logger.info('Routing Started!');
   } catch (error) {
     logger.error(`Unable to initialize routing ${error}`);
