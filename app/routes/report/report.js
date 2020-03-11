@@ -274,20 +274,19 @@ router.route('/')
       const promises = [];
       // for all associations create new entry based on the
       // included associations in req.body
-      const associations = _.omit(
-        db.models.analysis_report.associations,
-        [
-          'ReportUserFilter',
-          'createdBy',
-          'probe_signature',
-          'presentation_discussion',
-          'presentation_slides',
-          'users',
-          'analystComments',
-          'projects',
-          'genes',
-        ]
-      );
+      const {
+        ReportUserFilter,
+        createdBy,
+        probe_signature,
+        presentation_discussion,
+        presentation_slides,
+        users,
+        analystComments,
+        projects,
+        genes,
+        ...associations
+      } = db.models.analysis_report.associations;
+
       Object.values(associations).forEach((association) => {
         const model = association.target.name;
         logger.debug(`creating report (${model}) section (${report.ident})`);
