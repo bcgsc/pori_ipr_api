@@ -67,7 +67,7 @@ describe('/therapeutic-targets', () => {
   describe('POST (create)', () => {
     test('create new with valid input', async () => {
       const {body: record} = await request
-        .post(`/api/1.0/reports/${report.ident}/genomic/therapeutic-targets`)
+        .post(`/api/reports/${report.ident}/therapeutic-targets`)
         .auth(username, password)
         .type('json')
         .send({...FAKE_TARGET})
@@ -92,7 +92,7 @@ describe('/therapeutic-targets', () => {
         ...FAKE_TARGET,
         reportId: report.id,
       }));
-      url = `/api/1.0/reports/${report.ident}/genomic/therapeutic-targets/${original.ident}`;
+      url = `/api/reports/${report.ident}/therapeutic-targets/${original.ident}`;
 
       expect(original).toHaveProperty('ident');
       expect(original).toHaveProperty('id');
@@ -111,7 +111,7 @@ describe('/therapeutic-targets', () => {
     describe('GET', () => {
       test('all targets for a report', async () => {
         const {body: result} = await request
-          .get(`/api/1.0/reports/${report.ident}/genomic/therapeutic-targets`)
+          .get(`/api/reports/${report.ident}/therapeutic-targets`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);

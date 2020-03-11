@@ -254,22 +254,16 @@ analysisReports.hasMany(structuralVariation.sv, {
 // expression variants
 const expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
-expressionAnalysis.drugTarget = sequelize.import('./reports/genomic/expressionAnalysis/drugTarget');
 
 expressionAnalysis.outlier.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-expressionAnalysis.drugTarget.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(expressionAnalysis.outlier, {
   as: 'outlier', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(expressionAnalysis.drugTarget, {
-  as: 'drugTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
 
 
+// This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
   if (name === 'sv') {

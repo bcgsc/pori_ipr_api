@@ -7,7 +7,6 @@ const GENE_TABLE = 'reports_genes';
 const SV_TABLE = 'reports_structural_variation_sv';
 const CNV_TABLE = 'reports_copy_number_analysis_cnv';
 const EXPRESSION_TABLE = 'reports_expression_outlier';
-const EXP_DRUG_TARGET_TABLE = 'reports_expression_drug_target';
 const SMALL_MUTATIONS_TABLE = 'reports_somatic_mutations_small_mutations';
 
 const addIdent = (rec) => {
@@ -18,7 +17,6 @@ const GENE_LINKED_VARIANT_TABLES = [
   EXPRESSION_TABLE,
   CNV_TABLE,
   SMALL_MUTATIONS_TABLE,
-  EXP_DRUG_TARGET_TABLE,
   'reports_probe_results',
 ];
 
@@ -165,18 +163,6 @@ module.exports = {
           WHERE exp.report_id = gene.report_id
             AND exp.gene_id = gene.id
             AND exp."outlierType" = 'downreg_tsg'
-        )`,
-        {transaction}
-      );
-
-      console.log('annotate genes as drug targetable based on presence in the drug targetable table');
-      await queryInterface.sequelize.query(
-        `UPDATE ${GENE_TABLE} gene set drug_targetable = TRUE
-        WHERE EXISTS (
-          SELECT *
-          FROM ${EXP_DRUG_TARGET_TABLE} target
-          WHERE target.report_id = gene.report_id
-            AND target.gene_id = gene.id
         )`,
         {transaction}
       );

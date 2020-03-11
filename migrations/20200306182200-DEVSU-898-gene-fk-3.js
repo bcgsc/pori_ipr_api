@@ -7,7 +7,6 @@ const GENE_LINKED_VARIANT_TABLES = [
   'reports_expression_outlier',
   'reports_copy_number_analysis_cnv',
   'reports_somatic_mutations_small_mutations',
-  'reports_expression_drug_target',
   'reports_probe_results',
 ];
 

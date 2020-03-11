@@ -14,13 +14,13 @@ module.exports = (sequelize) => {
         field: 'report_id',
         name: 'reportId',
         references: {
-          model: 'pog_analysis_reports',
+          model: 'reports',
           key: 'id',
         },
       },
       name: {
         type: Sq.TEXT,
-        notNull: true,
+        allowNull: false,
       },
       tumourSuppressor: {
         type: Sq.BOOLEAN,

@@ -66,18 +66,6 @@
       "gtex_comp_average_percentile": "gtexAvgPerc",
       "gtex_comp_average_FC": "gtexAvgFC",
       "gtex_comp_average_kIQR": "gtexAvgkIQR"
-    },
-    "drugTarget": {
-      "Gene": "gene",
-      "Copy #": "copy",
-      "LOH Region": "lohRegion",
-      "Fold Change": "foldChange",
-      "TCGA percentile": "tcgaPerc",
-      "Drug Options": "drugOptions",
-      "kIQR": "kIQR",
-      "kIQR_column": "kIQRColumn",
-      "kIQR_normal": "kIQRNormal",
-      "kIQR_normal_column": "kIQRNormalColumn"
     }
   },
   "structuralVariation": {

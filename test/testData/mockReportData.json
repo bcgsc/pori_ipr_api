@@ -297,20 +297,6 @@
             "gtexAvgkIQR": 16
         }
     ],
-    "drugTarget": [
-        {
-            "gene": "DDR1",
-            "copy": 3,
-            "lohRegion": "HET",
-            "foldChange": 1.85,
-            "tcgaPerc": 100,
-            "drugOptions": "IMATINIB",
-            "kIQR": 3.65,
-            "kIQRColumn": "tcga_comp_TARGET_RHD_kIQR",
-            "kIQRNormal": 3.7,
-            "kIQRNormalColumn": "tcga_comp_TARGET_RHD_norm_kIQR"
-        }
-    ],
     "probe_test_information": [
         {
             "kbVersion": "v2.8.3",
