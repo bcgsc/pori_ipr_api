@@ -27,7 +27,7 @@ router.use('/structural-variation', structuralVariation);
 router.use('/therapeutic-targets', therapeuticTargets);
 
 router.use('/probe-test-information', probeTestInformation);
-router.use('/detailed-genomic-analysis/alterations', kbMatches);
-router.use('/detailed-genomic-analysis/targeted-genes', probeResults);
+router.use('/kb-matches', kbMatches);
+router.use('/probe-results', probeResults);
 
 module.exports = router;
