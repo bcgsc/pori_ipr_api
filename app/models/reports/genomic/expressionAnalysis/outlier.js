@@ -40,7 +40,7 @@ module.exports = (sequelize) => {
       defaultValue: null,
     },
     tcgaPerc: {
-      type: Sq.INTEGER,
+      type: Sq.FLOAT,
     },
     tcgaPercCol: {
       type: Sq.TEXT,
