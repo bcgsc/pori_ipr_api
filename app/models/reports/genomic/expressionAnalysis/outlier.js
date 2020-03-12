@@ -20,8 +20,15 @@ module.exports = (sequelize) => {
     outlierType: {
       type: Sq.STRING,
     },
-    gene: {
-      type: Sq.TEXT,
+    geneId: {
+      name: 'geneId',
+      field: 'gene_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      allowNull: false,
     },
     location: {
       type: Sq.TEXT,

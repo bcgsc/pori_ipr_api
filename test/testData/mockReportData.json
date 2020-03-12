@@ -181,6 +181,12 @@
             "kb_entry_key": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
         }
     ],
+    "genes": [
+        {
+            "name": "ZFP36L2",
+            "oncogene": true
+        }
+    ],
     "smallMutations": [
         {
             "mutationType": "unknown",
@@ -235,8 +241,10 @@
     "sv": [
         {
             "svVariant": "uncharacterized",
-            "genes": "FN1::FN1",
-            "exons": "e39:e37",
+            "gene1": "FN1",
+            "gene2": "FN1",
+            "exon1": "e39",
+            "exon2": "e37",
             "breakpoint": "2:216238066|2:216240359",
             "eventType": "duplication",
             "detectedIn": "DNA",

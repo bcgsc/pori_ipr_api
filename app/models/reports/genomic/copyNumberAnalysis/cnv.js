@@ -16,8 +16,15 @@ module.exports = (sequelize) => {
     cnvVariant: {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss'),
     },
-    gene: {
-      type: Sq.TEXT,
+    geneId: {
+      name: 'geneId',
+      field: 'gene_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      allowNull: false,
     },
     ploidyCorrCpChange: {
       type: Sq.INTEGER,

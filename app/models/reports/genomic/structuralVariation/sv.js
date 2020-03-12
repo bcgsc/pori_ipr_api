@@ -19,10 +19,28 @@ module.exports = (sequelize) => {
     svVariant: {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
     },
-    genes: {
+    gene1Id: {
+      name: 'gene1Id',
+      field: 'gene1_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+    },
+    gene2Id: {
+      name: 'gene2Id',
+      field: 'gene2_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+    },
+    exon1: {
       type: Sq.TEXT,
     },
-    exons: {
+    exon2: {
       type: Sq.TEXT,
     },
     breakpoint: {

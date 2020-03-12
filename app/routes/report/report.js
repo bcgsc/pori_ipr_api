@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
+
 const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
@@ -11,6 +12,7 @@ const logger = require('../../log');
 const reportMiddleware = require('../../middleware/analysis_report');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
+const {createReportSection, createReportGenes} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
@@ -201,7 +203,7 @@ router.route('/')
     const access = new Acl(req, res);
     if (!access.check()) {
       logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
-      return res.status(403).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
     }
 
     // validate loaded report against schema
@@ -209,7 +211,7 @@ router.route('/')
       validateAgainstSchema(reportSchema, req.body);
     } catch (error) {
       logger.error(`Error while validating ${error}`);
-      return res.status(400).json({error: {message: 'There was an error validating', cause: error}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'There was an error validating', cause: error}});
     }
 
     // get project
@@ -218,15 +220,27 @@ router.route('/')
       project = await db.models.project.findOne({where: {name: req.body.project}});
     } catch (error) {
       logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-      return res.status(500).json({error: {message: 'Unable to find project', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
     }
 
     if (!project) {
       logger.error(`Project ${req.body.project} doesn't currently exist`);
-      return res.status(400).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
     }
 
     const createdComponents = {};
+    const cleanUpReport = async (error) => {
+      logger.error(`Unable to create report ${error}`);
+
+      // delete already created report components
+      try {
+        await deleteModelEntries(createdComponents);
+      } catch (err) {
+        logger.error(`Unable to delete the already created components of the report ${err}`);
+      }
+
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report', cause: error}});
+    };
 
     // create report
     let report;
@@ -237,16 +251,7 @@ router.route('/')
 
       createdComponents.analysis_report = report.id;
     } catch (error) {
-      logger.error(`Unable to create report ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to create report', cause: error}});
+      return cleanUpReport(error);
     }
 
     // find or create report-project association
@@ -258,46 +263,36 @@ router.route('/')
         createdComponents.reportProject = reportProject.id;
       }
     } catch (error) {
-      logger.error(`Unable to create an association between report and project ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to create an association between report and project', cause: error}});
+      return cleanUpReport(error);
     }
 
-    const {
-      ReportUserFilter, createdBy, probe_signature,
-      presentation_discussion, presentation_slides, users,
-      analystComments, projects, ...associations
-    } = db.models.analysis_report.associations;
-    const promises = [];
-    // for all associations create new entry based on the
-    // included associations in req.body
-    Object.values(associations).forEach((association) => {
-      const model = association.target.name;
-
-      if (req.body[model]) {
-        if (Array.isArray(req.body[model])) {
-          // update new model entries with report id
-          req.body[model].forEach((newEntry) => {
-            newEntry.reportId = report.id;
-          });
-
-          promises.push(db.models[model].bulkCreate(req.body[model]));
-        } else {
-          req.body[model].reportId = report.id;
-
-          promises.push(db.models[model].create(req.body[model]));
-        }
-      }
-    });
-
     try {
+      // create the genes first since they will need to be linked to the variant records
+      const geneDefns = await createReportGenes(report, req.body);
+
+      const promises = [];
+      // for all associations create new entry based on the
+      // included associations in req.body
+      const {
+        ReportUserFilter,
+        createdBy,
+        probe_signature,
+        presentation_discussion,
+        presentation_slides,
+        users,
+        analystComments,
+        projects,
+        genes,
+        ...associations
+      } = db.models.analysis_report.associations;
+
+      Object.values(associations).forEach((association) => {
+        const model = association.target.name;
+        logger.debug(`creating report (${model}) section (${report.ident})`);
+        if (req.body[model]) {
+          promises.push(createReportSection(report.id, geneDefns, model, req.body[model]));
+        }
+      });
       await Promise.all(promises);
     } catch (error) {
       logger.error(`Unable to create all report components ${error}`);
@@ -319,15 +314,7 @@ router.route('/')
       }));
     } catch (error) {
       logger.error(`Unable to load images ${error}`);
-
-      // delete already created report/report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created report/components of the report ${err}`);
-      }
-
-      return res.status(500).json({error: {message: 'Unable to load images', cause: error}});
+      return cleanUpReport(error);
     }
 
     return res.json({message: 'Report upload was successful', ident: report.ident});
