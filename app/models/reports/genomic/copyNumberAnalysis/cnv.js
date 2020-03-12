@@ -13,9 +13,6 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    cnvVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss'),
-    },
     geneId: {
       name: 'geneId',
       field: 'gene_id',
@@ -47,18 +44,9 @@ module.exports = (sequelize) => {
     size: {
       type: Sq.FLOAT,
     },
-    expressionRpkm: {
-      type: Sq.FLOAT,
-    },
-    foldChange: {
-      type: Sq.FLOAT,
-    },
-    tcgaPerc: {
-      type: Sq.FLOAT,
-    },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_copy_number_analysis_cnv',
+    tableName: 'reports_copy_variants',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt']},
