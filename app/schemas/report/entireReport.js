@@ -1,5 +1,6 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../models');
+const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
 const {BASE_EXCLUDE} = require('../exclude');
 const schemaGenerator = require('./basicReportComponentSchemaGenerator');
 
@@ -59,6 +60,7 @@ const {
 } = db.models.analysis_report.associations;
 
 schema.definitions = {};
+
 // add all associated schemas
 Object.values(associations).forEach((association) => {
   const model = association.target.name;
@@ -66,6 +68,24 @@ Object.values(associations).forEach((association) => {
   const generatedSchema = schemaGenerator(db.models[model]);
   // remove association schema draft versions
   delete generatedSchema.$schema;
+
+  // if this is a variant model, add the gene property and remove the gene_id property
+  if (model === 'sv') {
+    generatedSchema.properties.gene1 = {
+      type: 'string', description: 'The gene name for the first breakpoint',
+    };
+    generatedSchema.properties.gene2 = {
+      type: 'string', description: 'The gene name for the second breakpoint',
+    };
+  } else if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
+    generatedSchema.properties.gene = {
+      type: 'string', description: 'The gene name for this variant',
+    };
+    if (!generatedSchema.required) {
+      generatedSchema.required = [];
+    }
+    generatedSchema.required.push('gene');
+  }
 
   schema.definitions[model] = generatedSchema;
 });

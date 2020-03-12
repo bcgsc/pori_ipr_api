@@ -1,6 +1,7 @@
 const Sq = require('sequelize');
 const nconf = require('../config');
 const logger = require('../log'); // Load logging library
+const {GENE_LINKED_VARIANT_MODELS} = require('../constants');
 
 // Load database
 const dbSettings = nconf.get('database');
@@ -191,6 +192,14 @@ analysisReports.hasMany(alterations, {
   as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+const genes = sequelize.import('./reports/genes');
+genes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(genes, {
+  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 // Somatic Mutations
 const somaticMutations = {};
 somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
@@ -220,6 +229,7 @@ analysisReports.hasMany(copyNumberAnalyses.cnv, {
   as: 'cnv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+
 // MAVIS Summary
 const mavis = sequelize.import('./reports/genomic/mavis/mavis');
 mavis.belongsTo(analysisReports, {
@@ -240,7 +250,8 @@ analysisReports.hasMany(structuralVariation.sv, {
   as: 'sv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-// Structural Variation
+
+// expression variants
 const expressionAnalysis = {};
 expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
 
@@ -250,6 +261,35 @@ expressionAnalysis.outlier.belongsTo(analysisReports, {
 analysisReports.hasMany(expressionAnalysis.outlier, {
   as: 'outlier', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
+
+
+// This adds the gene to variant relationships to the table which have a foreign key to the genes table
+for (const name of GENE_LINKED_VARIANT_MODELS) {
+  const variantModel = sequelize.models[name];
+  if (name === 'sv') {
+    // sequelize can't handle union-ing these so they require separate alias names
+    variantModel.belongsTo(genes, {
+      as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+    });
+    variantModel.belongsTo(genes, {
+      as: 'gene2', foreignKey: 'gene2Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: `${name}1`, foreignKey: 'gene1Id', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: `${name}2`, foreignKey: 'gene2Id', onDelete: 'CASCADE', constraints: true,
+    });
+  } else {
+    // Link variants to the gene model
+    variantModel.belongsTo(genes, {
+      as: 'gene', foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+    });
+  }
+}
 
 // Presentation Data
 const presentation = {};

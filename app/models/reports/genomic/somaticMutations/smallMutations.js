@@ -16,8 +16,15 @@ module.exports = (sequelize) => {
     mutationType: {
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'unknown'),
     },
-    gene: {
-      type: Sq.TEXT,
+    geneId: {
+      name: 'geneId',
+      field: 'gene_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      allowNull: false,
     },
     transcript: {
       type: Sq.TEXT,
