@@ -142,7 +142,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
       await request
         .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
         .send({
-          patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: 'NOT_BOOLEAN', chromosome: 'NOT_ALLOWED_CHROMOSOME',
+          patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: true, chromosome: 'NOT_ALLOWED_CHROMOSOME',
         })
         .auth(username, password)
         .type('json')

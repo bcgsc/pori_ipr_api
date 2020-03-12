@@ -13,4 +13,6 @@ const schema = schemaManager.generate(
   }
 );
 
+schema.additionalProperties = false;
+
 module.exports = schema;
