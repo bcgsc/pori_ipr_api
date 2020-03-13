@@ -4,12 +4,9 @@ const express = require('express');
 
 const db = require('../../models/');
 const {getGeneRelatedContent} = require('./db');
-const reportMiddleware = require('../../middleware/analysis_report');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
-
-router.param('report', reportMiddleware);
 
 router.get('/:geneName', async (req, res) => {
   const {report, params: {geneName}} = req;
