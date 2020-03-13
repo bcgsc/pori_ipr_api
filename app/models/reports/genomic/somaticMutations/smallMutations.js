@@ -67,7 +67,10 @@ module.exports = (sequelize) => {
     tableName: 'reports_somatic_mutations_small_mutations',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+        include: [
+          {model: sequelize.models.genes, as: 'gene', attributes: ['name']},
+        ],
       },
     },
   });
