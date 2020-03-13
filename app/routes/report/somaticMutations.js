@@ -81,7 +81,7 @@ router.route('/small-mutations/:type(clinical|nostic|biological|unknown)?')
 
     const options = {
       where,
-      order: [['gene', 'ASC']],
+      order: [['geneId', 'ASC']],
     };
 
     // Get all small mutations for this report
