@@ -3,7 +3,6 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models/');
-const RoutingInterface = require('../../routes/routingInterface');
 const reportMiddleware = require('../../middleware/analysis_report');
 const logger = require('../../log');
 
@@ -177,30 +176,18 @@ class GeneViewer {
 }
 
 
-class GeneViewRouter extends RoutingInterface {
-  /**
-   * Create and bind routes for Tracking
-   *
-   * @type {TrackingRouter}
-   */
-  constructor() {
-    super();
+router.param('report', reportMiddleware);
 
-    // Register Middleware
-    this.router.param('report', reportMiddleware);
+router.get('/:geneName', async (req, res) => {
+  const viewer = new GeneViewer(req.report, req.params.geneName);
 
-    this.router.get('/:geneName', async (req, res) => {
-      const viewer = new GeneViewer(req.report, req.params.geneName);
-
-      try {
-        const result = await viewer.getAll();
-        return res.json(result);
-      } catch (error) {
-        logger.error(`There was an error when getting the viewer results ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error when getting the viewer results'}});
-      }
-    });
+  try {
+    const result = await viewer.getAll();
+    return res.json(result);
+  } catch (error) {
+    logger.error(`There was an error when getting the viewer results ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error when getting the viewer results'}});
   }
-}
+});
 
-module.exports = GeneViewRouter;
+module.exports = router;
