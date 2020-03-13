@@ -1,3 +1,5 @@
+const {Op} = require('sequelize');
+
 const db = require('../../../models');
 const logger = require('../../../log');
 const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
@@ -97,6 +99,53 @@ const createReportGenes = async (report, content) => {
 };
 
 
+const getGeneRelatedContent = async ({reportId, name, id}) => {
+  const [
+    kbMatches,
+    smallMutations,
+    copyNumber,
+    expRNA,
+    expDensityGraph,
+  ] = await Promise.all([
+    db.models.kbMatches.scope('public').findAll({
+      where: {
+        reportId,
+        gene: {[Op.iLike]: `%${name}%`},
+      },
+    }),
+    db.models.smallMutations.scope('public').findAll({
+      where: {
+        geneId: id,
+      },
+    }),
+    db.models.cnv.scope('public').findAll({
+      where: {
+        geneId: id,
+      },
+    }),
+    db.models.outlier.scope('public').findAll({
+      where: {
+        geneId: id,
+      },
+    }),
+    db.models.imageData.scope('public').findAll({
+      where: {
+        key: {[Op.iLike]: `%expDensity.${name}%`},
+        reportId,
+      },
+    }),
+  ]);
+
+  return {
+    kbMatches,
+    smallMutations,
+    copyNumber,
+    expRNA,
+    expDensityGraph,
+  };
+};
+
+
 module.exports = {
-  createReportGenes, createReportSection,
+  createReportGenes, createReportSection, getGeneRelatedContent,
 };
