@@ -104,10 +104,10 @@ module.exports = (sequelize) => {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'gene1Id', 'gene2Id']},
         include: [
           {
-            model: sequelize.models.genes, foreignKey: 'gene1Id', as: 'gene1', attributes: ['name'],
+            model: sequelize.models.genes, foreignKey: 'gene1Id', as: 'gene1', attributes: ['ident', 'name'],
           },
           {
-            model: sequelize.models.genes, foreignKey: 'gene2Id', as: 'gene2', attributes: ['name'],
+            model: sequelize.models.genes, foreignKey: 'gene2Id', as: 'gene2', attributes: ['ident', 'name'],
           },
         ],
       },
