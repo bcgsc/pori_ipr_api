@@ -141,23 +141,6 @@ class GeneViewer {
   }
 
   /**
-   * Expression - Protein
-   *
-   * @returns {Promise.<Array.<object>>} - Returns all protein expression for gene and report
-   * @private
-   */
-  async _getExpProtein() {
-    const opts = {
-      where: {
-        gene: {[Op.iLike]: `%${this.gene}%`},
-        reportId: this.report.id,
-      },
-    };
-
-    return db.models.proteinExpression.scope('public').findAll(opts);
-  }
-
-  /**
    * Expression - Density Graph
    *
    * @returns {Promise.<Array.<object>>} - Returns all density graphs for gene and report
