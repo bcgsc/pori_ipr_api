@@ -16,6 +16,9 @@ router.get('/:geneName', async (req, res) => {
     gene = await db.models.genes.findOne({
       where: {reportId: report.id, name: geneName},
     });
+    if (!gene) {
+      throw new Error(`gene (${geneName}) not found`);
+    }
   } catch (error) {
     logger.error(error);
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: error.message}});
