@@ -24,12 +24,6 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       defaultValue: null,
     },
-    gene: {
-      type: Sq.TEXT,
-    },
-    variant: {
-      type: Sq.TEXT,
-    },
     kbVariant: {
       field: 'kb_variant',
       name: 'kbVariant',
@@ -50,30 +44,7 @@ module.exports = (sequelize) => {
     reference: {
       type: Sq.TEXT,
     },
-    expressionTissueFc: {
-      field: 'expression_tissue_fc',
-      name: 'expressionTissueFc',
-      type: Sq.TEXT,
-    },
-    expressionCancerPercentile: {
-      field: 'expression_cancer_percentile',
-      name: 'expressionCancerPercentile',
-      type: Sq.TEXT,
-    },
-    copyNumber: {
-      field: 'copy_number',
-      name: 'copyNumber',
-      type: Sq.TEXT,
-    },
     sample: {
-      type: Sq.TEXT,
-    },
-    lohRegion: {
-      type: Sq.TEXT,
-      field: 'loh_region',
-      name: 'lohRegion',
-    },
-    zygosity: {
       type: Sq.TEXT,
     },
     evidenceLevel: {
@@ -94,7 +65,14 @@ module.exports = (sequelize) => {
     variantType: {
       field: 'variant_type',
       name: 'variantType',
-      type: Sq.TEXT,
+      type: Sq.ENUM('sv', 'mut', 'cnv', 'exp'),
+      allowNull: false,
+    },
+    variantId: {
+      name: 'variantId',
+      field: 'variant_id',
+      type: Sq.INTEGER,
+      allowNull: false,
     },
     kbVariantId: {
       name: 'kbVariantId',
