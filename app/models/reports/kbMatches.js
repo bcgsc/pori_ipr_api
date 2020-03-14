@@ -1,9 +1,19 @@
 const Sq = require('sequelize');
 
+const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
+class KbMatches extends Sq.Model {
+  getVariant(options) {
+    const targetModel = this.experimentalVariantType;
+    if (!targetModel) return Promise.resolve(null);
+    const mixinMethodName = `get${targetModel[0].toUpperCase()}${targetModel.slice(1)}`;
+    return this[mixinMethodName](options);
+  }
+}
+
 module.exports = (sequelize) => {
-  return sequelize.define('kbMatches', {
+  return KbMatches.init({
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -64,11 +74,12 @@ module.exports = (sequelize) => {
     },
     variantType: {
       field: 'variant_type',
-      name: 'variantType',
-      type: Sq.ENUM('sv', 'mut', 'cnv', 'exp'),
+      name: KB_PIVOT_COLUMN,
+      type: Sq.ENUM(...Object.keys(KB_PIVOT_MAPPING)),
       allowNull: false,
     },
     variantId: {
+      // the 'FK' top the individual variant tables, cannot enforce constraints b/c it is polymorphic
       name: 'variantId',
       field: 'variant_id',
       type: Sq.INTEGER,
@@ -94,8 +105,36 @@ module.exports = (sequelize) => {
     tableName: 'reports_kb_matches',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'deletedAt', 'reportId']},
+        attributes: {exclude: ['id', 'deletedAt', 'reportId', 'variantId']},
+        include: Object.values(KB_PIVOT_MAPPING).map((m) => {
+          return {model: sequelize.models[m].scope('public'), as: m};
+        }),
       },
     },
+    hooks: {
+      ...DEFAULT_OPTIONS.hooks,
+      afterFind: (findResult) => {
+        if (!Array.isArray(findResult)) {
+          findResult = [findResult];
+        }
+        for (const instance of findResult) {
+          const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
+
+          for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
+            const modelName = KB_PIVOT_MAPPING[pivotType];
+
+            if (pivotType === currentPivotValue) {
+              instance.variant = instance[modelName];
+              instance.dataValues.variant = instance[modelName].dataValues;
+            }
+            // To prevent mistakes:
+            delete instance[modelName];
+            delete instance.dataValues[modelName];
+          }
+        }
+      },
+    },
+    modelName: 'kbMatches',
+    sequelize,
   });
 };

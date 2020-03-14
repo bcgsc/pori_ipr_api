@@ -1,7 +1,7 @@
 const Sq = require('sequelize');
 const nconf = require('../config');
 const logger = require('../log'); // Load logging library
-const {GENE_LINKED_VARIANT_MODELS} = require('../constants');
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING, KB_PIVOT_COLUMN} = require('../constants');
 
 // Load database
 const dbSettings = nconf.get('database');
@@ -191,16 +191,6 @@ summary.analystComments.belongsTo(user, {
   as: 'reviewerSignature', foreignKey: 'reviewerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
-// DetailedGenomicAnalysis
-const kbMatches = sequelize.import('./reports/kbMatches');
-
-kbMatches.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(kbMatches, {
-  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-
 // Somatic Mutations
 const somaticMutations = {};
 somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
@@ -290,6 +280,32 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
       as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
     });
   }
+}
+
+// IMPORTANT: Must be defined after variant models so that the includes can be found
+const kbMatches = sequelize.import('./reports/kbMatches');
+
+kbMatches.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(kbMatches, {
+  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
+for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
+  console.log('alias', KB_PIVOT_COLUMN, pivotValue, modelName);
+  sequelize.models[modelName].hasMany(kbMatches, {
+    foreignKey: 'variantId',
+    constraints: false,
+    scope: {
+      [KB_PIVOT_COLUMN]: pivotValue,
+    },
+  });
+  kbMatches.belongsTo(sequelize.models[modelName], {
+    foreignKey: 'variantId',
+    constraints: false,
+    as: modelName,
+  });
 }
 
 // Presentation Data
