@@ -13,9 +13,6 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    cnvVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss'),
-    },
     geneId: {
       name: 'geneId',
       field: 'gene_id',

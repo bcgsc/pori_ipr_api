@@ -17,9 +17,6 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       defaultValue: 'rna',
     },
-    outlierType: {
-      type: Sq.STRING,
-    },
     geneId: {
       name: 'geneId',
       field: 'gene_id',

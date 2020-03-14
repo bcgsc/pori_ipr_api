@@ -34,11 +34,10 @@ router.route('/:kbMatch([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get(async (req, res) => {
-    const {params: {reportType, category}} = req;
+    const {params: {category}, report: {id: reportId}} = req;
     // Setup where clause
     const where = {
-      reportId: req.report.id,
-      reportType,
+      reportId,
     };
 
     // Searching for specific type of alterations
@@ -57,7 +56,7 @@ router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|no
 
     const options = {
       where,
-      order: [['gene', 'ASC']],
+      order: [['variantType', 'ASC'], ['variantId', 'ASC']],
     };
 
     try {

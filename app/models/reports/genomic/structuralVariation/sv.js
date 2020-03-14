@@ -16,9 +16,6 @@ module.exports = (sequelize) => {
     mavis_product_id: {
       type: Sq.TEXT,
     },
-    svVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
-    },
     gene1Id: {
       name: 'gene1Id',
       field: 'gene1_id',
