@@ -106,6 +106,7 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
     copyNumber,
     expRNA,
     expDensityGraph,
+    structuralVariants,
   ] = await Promise.all([
     db.models.alterations.scope('public').findAll({
       where: {
@@ -134,6 +135,11 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
         reportId,
       },
     }),
+    db.models.sv.scope('public').findAll({
+      where: {
+        [Op.or]: [{gene1Id: id}, {gene2Id: id}],
+      },
+    }),
   ]);
 
   return {
@@ -142,6 +148,7 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
     copyNumber,
     expRNA,
     expDensityGraph,
+    structuralVariants,
   };
 };
 
