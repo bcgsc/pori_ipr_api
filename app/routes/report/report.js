@@ -268,32 +268,7 @@ router.route('/')
 
     try {
       // create the genes first since they will need to be linked to the variant records
-      const geneDefns = await createReportGenes(report, req.body);
-
-      const promises = [];
-      // for all associations create new entry based on the
-      // included associations in req.body
-      const {
-        ReportUserFilter,
-        createdBy,
-        probe_signature,
-        presentation_discussion,
-        presentation_slides,
-        users,
-        analystComments,
-        projects,
-        genes,
-        ...associations
-      } = db.models.analysis_report.associations;
-
-      Object.values(associations).forEach((association) => {
-        const model = association.target.name;
-        logger.debug(`creating report (${model}) section (${report.ident})`);
-        if (req.body[model]) {
-          promises.push(createReportSection(report.id, geneDefns, model, req.body[model]));
-        }
-      });
-      await Promise.all(promises);
+      await createReportContent(report, req.body);
     } catch (error) {
       logger.error(`Unable to create all report components ${error}`);
 
@@ -305,16 +280,6 @@ router.route('/')
       }
 
       return res.status(400).json({error: {message: 'Unable to create all report components', cause: error}});
-    }
-
-    // add images to db
-    try {
-      await Promise.all(req.body.images.map(async ({path, key}) => {
-        return loadImage(report.id, key, path);
-      }));
-    } catch (error) {
-      logger.error(`Unable to load images ${error}`);
-      return cleanUpReport(error);
     }
 
     return res.json({message: 'Report upload was successful', ident: report.ident});
