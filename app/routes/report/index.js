@@ -11,6 +11,7 @@ const somaticMutations = require('./somaticMutations');
 const structuralVariation = require('./structuralVariation');
 const therapeuticTargets = require('./therapeuticTargets');
 const probeTestInformation = require('./probeTestInformation');
+const geneViewer = require('./geneViewer');
 
 const router = express.Router({mergeParams: true});
 
@@ -27,5 +28,6 @@ router.use('/therapeutic-targets', therapeuticTargets);
 
 router.use('/probe-test-information', probeTestInformation);
 router.use('/detailed-genomic-analysis', detailedGenomicAnalysis); // genomic report pattern
+router.use('/gene-viewer', geneViewer);
 
 module.exports = router;
