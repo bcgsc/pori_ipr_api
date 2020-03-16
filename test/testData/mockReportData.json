@@ -154,31 +154,27 @@
             "sv_percentile": 60
         }
     ],
-    "alterations": [
+    "kbMatches": [
         {
-            "reportType": "genomic",
-            "alterationType": "unknown",
-            "newEntry": true,
+            "category": "unknown",
             "gene": "ZNF703",
             "variant": "p.A514del",
             "kbVariant": "protein increased expression",
             "disease": "colorectal cancer",
-            "effect": "not specified",
-            "association": "unfavourable",
-            "therapeuticContext": "lower overall survival",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "expression_tissue_fc": "Neutral",
-            "expression_cancer_percentile": "Mid",
+            "expressionTissueFc": "Neutral",
+            "expressionCancerPercentile": "Mid",
             "copyNumber": "Neutral",
             "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
-            "LOHRegion": "No",
+            "lohRegion": "No",
             "zygosity": "sub",
-            "evidence": "reported",
-            "matched_cancer": "False",
-            "pmid_ref": "yes",
-            "kb_entry_type": "prognostic",
-            "kb_entry_key": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
         }
     ],
     "genes": [

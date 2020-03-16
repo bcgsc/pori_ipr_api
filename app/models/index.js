@@ -192,13 +192,13 @@ summary.analystComments.belongsTo(user, {
 });
 
 // DetailedGenomicAnalysis
-const alterations = sequelize.import('./reports/genomic/detailedGenomicAnalysis/alterations');
+const kbMatches = sequelize.import('./reports/kbMatches');
 
-alterations.belongsTo(analysisReports, {
+kbMatches.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(alterations, {
-  as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(kbMatches, {
+  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Somatic Mutations
