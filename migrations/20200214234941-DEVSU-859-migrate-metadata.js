@@ -55,28 +55,26 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       // add the new columns patientId and biopsyName
-      console.log(`Add new new column ${REPORT_TABLE_NAME}.patient_id`);
-      await queryInterface.addColumn(
-        REPORT_TABLE_NAME,
-        'patient_id',
-        {type: Sq.TEXT},
-        {transaction}
-      );
-      console.log(`Add new new column ${REPORT_TABLE_NAME}.biopsy_name`);
-      await queryInterface.addColumn(
-        REPORT_TABLE_NAME,
-        'biopsy_name',
-        {type: Sq.TEXT},
-        {transaction}
-      );
+      for (const col of ['patient_id', 'biopsy_name', 'normal_library']) {
+        console.log(`Add new new column ${REPORT_TABLE_NAME}.${col}`);
+        await queryInterface.addColumn(
+          REPORT_TABLE_NAME,
+          col,
+          {type: Sq.TEXT},
+          {transaction}
+        );
+      }
 
-      console.log('copy the patientId and biopsyName from the analysis');
+      console.log('copy the patientId, biopsyName, and normalLibrary from the analysis');
       await queryInterface.sequelize.query(
         `UPDATE ${REPORT_TABLE_NAME} as gsm SET (
           patient_id,
-          biopsy_name
+          biopsy_name,
+          normal_library
         ) = (
-          SELECT pogs."POGID" as patient_id, pa.analysis_biopsy as biopsy_name
+          SELECT pogs."POGID" as patient_id,
+            pa.analysis_biopsy as biopsy_name,
+            pa.libraries->>'normal' as normal_library
           FROM pog_analysis pa
           JOIN "POGs" pogs on (pogs.id = pa.pog_id)
           WHERE pa.id = gsm.pog_analysis_id

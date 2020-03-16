@@ -77,6 +77,15 @@ userGroup.belongsTo(user, {
   as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL',
 });
 
+// IMPORTANT must be done before the variant models are defined
+const genes = sequelize.import('./reports/genes');
+genes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(genes, {
+  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 const imageData = sequelize.import('./reports/imageData');
 imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
@@ -190,14 +199,6 @@ kbMatches.belongsTo(analysisReports, {
 });
 analysisReports.hasMany(kbMatches, {
   as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-
-const genes = sequelize.import('./reports/genes');
-genes.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(genes, {
-  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Somatic Mutations
