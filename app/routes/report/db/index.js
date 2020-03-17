@@ -1,6 +1,7 @@
 const {Op} = require('sequelize');
 
 const db = require('../../../models');
+const {loadImage} = require('./../images');
 const logger = require('../../../log');
 const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../../constants');
 
@@ -132,15 +133,17 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   let records;
   // check the 'key' is unique
   for (const {key} of sectionContent) {
-    if (keyCheck.has(key)) {
-      throw new Error(`bad input. variant key violated unique constraint (key=${key})`);
+    if (key) {
+      if (keyCheck.has(key)) {
+        throw new Error(`bad input. variant key violated unique constraint (key=${key})`);
+      }
+      keyCheck.add(key);
     }
-    keyCheck.add(key);
   }
   if (modelName === 'sv') {
     // add the gene FK associations
     records = await db.models[modelName].bulkCreate(
-      records.map(({
+      sectionContent.map(({
         key, gene1, gene2, ...newEntry
       }) => {
         return {
@@ -154,7 +157,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   } else {
     // add the gene FK association
     records = await db.models[modelName].bulkCreate(
-      records.map(({key, gene, ...newEntry}) => {
+      sectionContent.map(({key, gene, ...newEntry}) => {
         return {
           ...newEntry,
           reportId,
@@ -166,7 +169,9 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   const mapping = {};
 
   for (let i = 0; i < sectionContent.length; i++) {
-    mapping[sectionContent[i].key] = records[i].id;
+    if (sectionContent[i].key) {
+      mapping[sectionContent[i].key] = records[i].id;
+    }
   }
   return mapping;
 };
@@ -180,14 +185,20 @@ const createReportContent = async (report, content) => {
 
   // create the variants and create a mapping from their input 'key' value to the new records
   const variantMapping = {};
-  await Promise.all(Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
+  const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
     const mapping = await createReportVariantsSection(
       report.id, geneDefns, variantModel, content[variantModel] || []
     );
     variantMapping[variantType] = mapping;
-  }));
+  });
 
+  // create the probe results (linked to gene but not to kbMatches)
+  variantPromises.push(createReportVariantsSection(
+    report.id, geneDefns, 'probeResults', content.probeResults || []
+  ));
+
+  await Promise.all(variantPromises);
   // then the kb matches which must be linked to the variants
   const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
     if (variantMapping[variantType] === undefined) {
