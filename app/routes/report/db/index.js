@@ -214,39 +214,34 @@ const createReportContent = async (report, content) => {
 
   // finally all other sections can be built
   const excludeSections = new Set([
-    ...Object.values(KB_PIVOT_MAPPING),
-    'ReportUserFilter',
+    ...GENE_LINKED_VARIANT_MODELS,
+    'analystComments',
     'createdBy',
-    'probe_signature',
+    'genes',
+    'kbMatches',
     'presentation_discussion',
     'presentation_slides',
-    'users',
-    'analystComments',
+    'probe_signature',
     'projects',
-    'genes',
+    'ReportUserFilter',
+    'users',
   ]);
 
-  const promises = [];
-  db.models.analysis_report.associations.filter((assc) => {
-    return !excludeSections.has(assc.target.name);
-  }).forEach((association) => {
-    const model = association.target.name;
+  // add images to db
+  const promises = (content.images || []).map(async ({path, key}) => {
+    return loadImage(report.id, key, path);
+  });
+
+  // add the other sections
+  Object.keys(db.models.analysis_report.associations).filter((model) => {
+    return !excludeSections.has(model);
+  }).forEach((model) => {
     logger.debug(`creating report (${model}) section (${report.ident})`);
     if (content[model]) {
-      promises.push(createReportSection(report.id, geneDefns, model, content[model]));
+      promises.push(createReportSection(report.id, model, content[model]));
     }
   });
   await Promise.all(promises);
-
-  // add images to db
-  try {
-    await Promise.all(req.body.images.map(async ({path, key}) => {
-      return loadImage(report.id, key, path);
-    }));
-  } catch (error) {
-    logger.error(`Unable to load images ${error}`);
-    return cleanUpReport(error);
-  }
 };
 
 

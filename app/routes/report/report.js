@@ -6,13 +6,12 @@ const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
-const {loadImage} = require('./images');
 const logger = require('../../log');
 
 const reportMiddleware = require('../../middleware/analysis_report');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
-const {createReportSection, createReportGenes} = require('./db');
+const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
@@ -267,7 +266,6 @@ router.route('/')
     }
 
     try {
-      // create the genes first since they will need to be linked to the variant records
       await createReportContent(report, req.body);
     } catch (error) {
       logger.error(`Unable to create all report components ${error}`);
