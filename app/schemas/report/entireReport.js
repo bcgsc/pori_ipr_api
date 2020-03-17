@@ -59,35 +59,55 @@ const {
   presentation_slides, users, analystComments, projects, ...associations
 } = db.models.analysis_report.associations;
 
-schema.definitions = {};
+schema.definitions = {
+  kbMatches: schemaGenerator(db.models.kbMatches, ['variantId']),
+};
 
 // add all associated schemas
 Object.values(associations).forEach((association) => {
   const model = association.target.name;
-
   const generatedSchema = schemaGenerator(db.models[model]);
-  // remove association schema draft versions
-  delete generatedSchema.$schema;
 
-  // if this is a variant model, add the gene property and remove the gene_id property
-  if (model === 'sv') {
-    generatedSchema.properties.gene1 = {
-      type: 'string', description: 'The gene name for the first breakpoint',
-    };
-    generatedSchema.properties.gene2 = {
-      type: 'string', description: 'The gene name for the second breakpoint',
-    };
-  } else if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
-    generatedSchema.properties.gene = {
-      type: 'string', description: 'The gene name for this variant',
-    };
-    if (!generatedSchema.required) {
-      generatedSchema.required = [];
-    }
-    generatedSchema.required.push('gene');
+  if (!generatedSchema.required) {
+    generatedSchema.required = [];
   }
-
   schema.definitions[model] = generatedSchema;
+});
+
+
+schema.definitions.kbMatches = schemaGenerator(db.models.kbMatches, ['variantId']);
+schema.definitions.kbMatches.properties.variant = {
+  type: 'string', description: 'the variant key linking this to one of the variant records',
+};
+schema.definitions.kbMatches.required = schema.definitions.kbMatches.required || [];
+schema.definitions.kbMatches.required.push('variant');
+
+schema.definitions;
+schema.definitions.sv.properties = {
+  ...schema.definitions.sv.properties,
+  gene1: {
+    type: 'string', description: 'The gene name for the first breakpoint',
+  },
+  gene2: {
+    type: 'string', description: 'The gene name for the second breakpoint',
+  },
+  key: {
+    type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
+  },
+};
+schema.definitions.sv.required.push(...['gene1', 'gene2']);
+
+GENE_LINKED_VARIANT_MODELS.filter((model) => { return model !== 'sv'; }).forEach((model) => {
+  schema.definitions[model].properties = {
+    ...schema.definitions[model].properties,
+    gene: {
+      type: 'string', description: 'The gene name for this variant',
+    },
+    key: {
+      type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
+    },
+  };
+  schema.definitions[model].required.push('gene');
 });
 
 module.exports = schema;
