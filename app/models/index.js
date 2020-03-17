@@ -293,7 +293,6 @@ analysisReports.hasMany(kbMatches, {
 });
 
 for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
-  console.log('alias', KB_PIVOT_COLUMN, pivotValue, modelName);
   sequelize.models[modelName].hasMany(kbMatches, {
     foreignKey: 'variantId',
     constraints: false,

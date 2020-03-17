@@ -123,13 +123,15 @@ module.exports = (sequelize) => {
           for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
             const modelName = KB_PIVOT_MAPPING[pivotType];
 
-            if (pivotType === currentPivotValue) {
-              instance.variant = instance[modelName];
-              instance.dataValues.variant = instance[modelName].dataValues;
+            if (instance[modelName] !== undefined) {
+              if (pivotType === currentPivotValue) {
+                instance.variant = instance[modelName];
+                instance.dataValues.variant = instance[modelName].dataValues;
+              }
+              // To prevent mistakes:
+              delete instance[modelName];
+              delete instance.dataValues[modelName];
             }
-            // To prevent mistakes:
-            delete instance[modelName];
-            delete instance.dataValues[modelName];
           }
         }
       },
