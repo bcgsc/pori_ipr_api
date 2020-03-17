@@ -202,20 +202,19 @@ analysisReports.hasMany(kbMatches, {
 });
 
 // Somatic Mutations
-const somaticMutations = {};
-somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
-somaticMutations.mutationSignature = sequelize.import('./reports/genomic/somaticMutations/mutationSignature');
+const smallMutations = sequelize.import('./reports/smallMutations');
+const mutationSignature = sequelize.import('./reports/mutationSignature');
 
-somaticMutations.smallMutations.belongsTo(analysisReports, {
+smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-somaticMutations.mutationSignature.belongsTo(analysisReports, {
+mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.smallMutations, {
+analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.mutationSignature, {
+analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
