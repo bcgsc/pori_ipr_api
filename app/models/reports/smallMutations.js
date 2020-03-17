@@ -14,6 +14,8 @@ module.exports = (sequelize) => {
       },
     },
     mutationType: {
+      field: 'mutation_type',
+      name: 'mutationType',
       type: Sq.ENUM('clinical', 'nostic', 'biological', 'unknown'),
     },
     geneId: {
@@ -30,41 +32,34 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     proteinChange: {
+      field: 'protein_change',
+      name: 'proteinChange',
       type: Sq.TEXT,
     },
     location: {
       type: Sq.TEXT,
     },
     refAlt: {
+      field: 'ref_alt',
+      name: 'refAlt',
       type: Sq.TEXT,
     },
     zygosity: {
       type: Sq.TEXT,
     },
-    ploidyCorrCpChange: {
-      type: Sq.TEXT,
-    },
-    lohState: {
-      type: Sq.TEXT,
-    },
     tumourReads: {
+      field: 'tumour_reads',
+      name: 'tumourReads',
       type: Sq.TEXT,
     },
-    RNAReads: {
+    rnaReads: {
+      field: 'rna_reads',
+      name: 'rnaReads',
       type: Sq.TEXT,
-    },
-    expressionRpkm: {
-      type: Sq.FLOAT,
-    },
-    foldChange: {
-      type: Sq.FLOAT,
-    },
-    TCGAPerc: {
-      type: Sq.INTEGER,
     },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_somatic_mutations_small_mutations',
+    tableName: 'reports_small_mutations',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
