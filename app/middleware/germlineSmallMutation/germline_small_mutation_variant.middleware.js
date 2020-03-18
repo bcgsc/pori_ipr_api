@@ -25,6 +25,6 @@ module.exports = async (req, res, next, ident) => {
     return next();
   } catch (error) {
     logger.error(error);
-    res.status(HTTP_STATUS.NOT_FOUND).json({error: 'Unable to find the requested germline report.'});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: 'Unable to find the requested germline report.'});
   }
 };
