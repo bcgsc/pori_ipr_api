@@ -24,7 +24,7 @@ router.param('sv', async (req, res, next, svIdent) => {
 });
 
 // Handle requests for alterations
-router.route('/sv/:sv([A-z0-9-]{36})')
+router.route('/:sv([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.variation);
   })
@@ -66,7 +66,7 @@ router.route('/sv/:sv([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/sv/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
+router.route('/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id};
