@@ -83,8 +83,8 @@ schema.definitions.kbMatches.required = schema.definitions.kbMatches.required ||
 schema.definitions.kbMatches.required.push('variant');
 
 schema.definitions;
-schema.definitions.sv.properties = {
-  ...schema.definitions.sv.properties,
+schema.definitions.structuralVariants.properties = {
+  ...schema.definitions.structuralVariants.properties,
   gene1: {
     type: 'string', description: 'The gene name for the first breakpoint',
   },
@@ -95,9 +95,9 @@ schema.definitions.sv.properties = {
     type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
   },
 };
-schema.definitions.sv.required.push(...['gene1', 'gene2']);
+schema.definitions.structuralVariants.required.push(...['gene1', 'gene2']);
 
-GENE_LINKED_VARIANT_MODELS.filter((model) => { return model !== 'sv'; }).forEach((model) => {
+GENE_LINKED_VARIANT_MODELS.filter((model) => { return model !== 'structuralVariants'; }).forEach((model) => {
   schema.definitions[model].properties = {
     ...schema.definitions[model].properties,
     gene: {

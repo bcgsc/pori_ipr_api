@@ -140,7 +140,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
       keyCheck.add(key);
     }
   }
-  if (modelName === 'sv') {
+  if (modelName === 'structuralVariants') {
     // add the gene FK associations
     records = await db.models[modelName].bulkCreate(
       sectionContent.map(({
