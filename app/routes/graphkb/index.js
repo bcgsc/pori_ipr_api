@@ -15,8 +15,8 @@ router.use(loginMiddleware);
  * Autocomplete endpoint for interfacing with GraphKB. This endpoint is used by the client
  * for the therapeutic options input forms
  */
-router.get('/:targetType(variant|therapy|evidence|context)', async (req, res) => {
-  const {query: {keyword}, params: {targetType}, graphkbToken} = req;
+router.post('/:targetType(variant|therapy|evidence|context)', async (req, res) => {
+  const {body: {keyword}, params: {targetType}, graphkbToken} = req;
   try {
     const data = await graphkbAutocomplete(targetType, graphkbToken, keyword);
     return res.status(HTTP_STATUS.OK).json(data);
