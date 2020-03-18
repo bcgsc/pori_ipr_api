@@ -192,13 +192,8 @@
             "location": "2:43451739",
             "refAlt": "CCTG>C",
             "zygosity": "sub [0/3]",
-            "ploidyCorrCpChange": "+1_int",
-            "lohState": "HET",
             "tumourReads": "583/4",
-            "RNAReads": "400/15",
-            "expressionRpkm": 28.3,
-            "foldChange": -3.92,
-            "TCGAPerc": 32
+            "rnaReads": "400/15"
         }
     ],
     "mutationSignature": [
