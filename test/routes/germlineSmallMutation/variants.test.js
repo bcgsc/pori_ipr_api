@@ -67,11 +67,12 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
   describe('GET', () => {
     test('GET /{variant} - 200 Success', async () => {
-      await request
+      const result = await request
         .get(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
+      expect(result.body).not.toHaveProperty('id');
     });
 
     test('GET /{variant} - 404 Not Found', async () => {
