@@ -10,14 +10,10 @@ module.exports = async (req, res, next, ident) => {
     where: {
       ident,
     },
-    attributes: {
-      exclude: ['deletedAt', 'germline_report_id'],
-    },
   };
 
   try {
-    const variantModel = db.models.germline_small_mutation_variant.scope('public');
-    const result = await variantModel.bind(variantModel).findOne(opts);
+    const result = await db.models.germline_small_mutation_variant.scope('public').findOne(opts);
     if (!result) {
       throw new MiddlewareNotFound('Unable to find the germline report variant', req, res, 'germlineReportVariant');
     }
