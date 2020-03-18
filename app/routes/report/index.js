@@ -8,11 +8,12 @@ const probeResults = require('./probeResults');
 const expressionAnalysis = require('./expressionAnalysis');
 const mavis = require('./mavis');
 const presentation = require('./presentation');
-const somaticMutations = require('./somaticMutations');
+const smallMutations = require('./smallMutations');
 const structuralVariation = require('./structuralVariation');
 const therapeuticTargets = require('./therapeuticTargets');
 const probeTestInformation = require('./probeTestInformation');
 const geneViewer = require('./geneViewer');
+const mutationSignatures = require('./mutationSignatures');
 
 const router = express.Router({mergeParams: true});
 
@@ -23,7 +24,8 @@ router.use('/copy-number-analyses', copyNumberAnalyses);
 router.use('/expression-analysis', expressionAnalysis);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
-router.use('/somatic-mutations', somaticMutations);
+router.use('/small-mutations', smallMutations);
+router.use('/mutation-signatures', mutationSignatures);
 router.use('/structural-variation', structuralVariation);
 router.use('/therapeutic-targets', therapeuticTargets);
 
