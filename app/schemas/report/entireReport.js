@@ -70,7 +70,7 @@ Object.values(associations).forEach((association) => {
   delete generatedSchema.$schema;
 
   // if this is a variant model, add the gene property and remove the gene_id property
-  if (model === 'sv') {
+  if (model === 'structuralVariants') {
     generatedSchema.properties.gene1 = {
       type: 'string', description: 'The gene name for the first breakpoint',
     };

@@ -74,7 +74,7 @@ router.route('/')
 
     const options = {
       where,
-      order: [['gene', 'ASC']],
+      order: [['geneId', 'ASC']],
     };
 
     // Get all targeted genes for this report
