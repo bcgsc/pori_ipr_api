@@ -17,7 +17,6 @@ const projectRoute = require('./project');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
-const GeneViewer = require('../modules/geneViewer/routing');
 const germlineReports = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const graphkbRouter = require('./graphkb');
@@ -71,10 +70,6 @@ class Routing extends RouterInterface {
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
-
-    // Get Gene Viewer Routes
-    const GeneViewerRoutes = new GeneViewer();
-    this.router.use('/reports/:report/gene-viewer', GeneViewerRoutes.getRouter());
 
     // Get Germline Reports Routes
     this.router.use('/germline-small-mutation', germlineReports);

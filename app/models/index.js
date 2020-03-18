@@ -77,6 +77,15 @@ userGroup.belongsTo(user, {
   as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL',
 });
 
+// IMPORTANT must be done before the variant models are defined
+const genes = sequelize.import('./reports/genes');
+genes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(genes, {
+  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 const imageData = sequelize.import('./reports/imageData');
 imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
@@ -183,38 +192,29 @@ summary.analystComments.belongsTo(user, {
 });
 
 // DetailedGenomicAnalysis
-const alterations = sequelize.import('./reports/genomic/detailedGenomicAnalysis/alterations');
+const kbMatches = sequelize.import('./reports/kbMatches');
 
-alterations.belongsTo(analysisReports, {
+kbMatches.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(alterations, {
-  as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-
-const genes = sequelize.import('./reports/genes');
-genes.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(genes, {
-  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(kbMatches, {
+  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Somatic Mutations
-const somaticMutations = {};
-somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
-somaticMutations.mutationSignature = sequelize.import('./reports/genomic/somaticMutations/mutationSignature');
+const smallMutations = sequelize.import('./reports/smallMutations');
+const mutationSignature = sequelize.import('./reports/mutationSignature');
 
-somaticMutations.smallMutations.belongsTo(analysisReports, {
+smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-somaticMutations.mutationSignature.belongsTo(analysisReports, {
+mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.smallMutations, {
+analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.mutationSignature, {
+analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
