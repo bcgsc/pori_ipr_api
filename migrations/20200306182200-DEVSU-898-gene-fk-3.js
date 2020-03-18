@@ -23,6 +23,8 @@ module.exports = {
           'gene_id', {
             type: Sq.INTEGER,
             references: {model: GENE_TABLE, key: 'id'},
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
           },
           {transaction}
         );
@@ -33,6 +35,8 @@ module.exports = {
         'gene1_id', {
           type: Sq.INTEGER,
           references: {model: GENE_TABLE, key: 'id'},
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE',
         },
         {transaction}
       );
@@ -41,6 +45,8 @@ module.exports = {
         'gene2_id', {
           type: Sq.INTEGER,
           references: {model: GENE_TABLE, key: 'id'},
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE',
         },
         {transaction}
       );

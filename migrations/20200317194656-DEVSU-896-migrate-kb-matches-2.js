@@ -1,5 +1,5 @@
 const TABLE_NAME = 'reports_kb_matches';
-const SV_TABLE = 'reports_structural_variation_sv';
+const SV_TABLE = 'reports_structural_variants';
 
 module.exports = {
   up: async (queryInterface, Sq) => {

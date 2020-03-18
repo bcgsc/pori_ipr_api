@@ -9,8 +9,8 @@ const {
 
 const EXP_TABLE = 'reports_expression_outlier';
 const CNV_TABLE = 'reports_copy_number_analysis_cnv';
-const MUT_TABLE = 'reports_somatic_mutations_small_mutations';
-const SV_TABLE = 'reports_structural_variation_sv';
+const MUT_TABLE = 'reports_small_mutations';
+const SV_TABLE = 'reports_structural_variants';
 
 
 const cleanExpressionData = async (queryInterface, Sq, transaction) => {
@@ -75,10 +75,10 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
       transaction,
     }
   );
-  console.log(`standardize ${MUT_TABLE} refAlt NULL values`);
+  console.log(`standardize ${MUT_TABLE} ref_alt NULL values`);
   await queryInterface.sequelize.query(
-    `UPDATE ${MUT_TABLE} SET "refAlt" = NULL
-        WHERE "refAlt" = 'na'`,
+    `UPDATE ${MUT_TABLE} SET "ref_alt" = NULL
+        WHERE "ref_alt" = 'na'`,
     {
       transaction,
     }
@@ -118,12 +118,12 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
       FROM (
         SELECT
           id,
-          split_part(split_part("tumourReads", '/', 2), ';', 1) tumour_alt1,
-          split_part("tumourReads", '/', 3) tumour_alt2,
-          split_part(split_part("RNAReads", '/', 2), ';', 1) rna_alt1,
-          split_part("RNAReads", '/', 3) rna_alt2,
-          "tumourReads" as tumour_reads,
-          "RNAReads" as rna_reads
+          split_part(split_part("tumour_reads", '/', 2), ';', 1) tumour_alt1,
+          split_part("tumour_reads", '/', 3) tumour_alt2,
+          split_part(split_part("rna_reads", '/', 2), ';', 1) rna_alt1,
+          split_part("rna_reads", '/', 3) rna_alt2,
+          "tumour_reads" as tumour_reads,
+          "rna_reads" as rna_reads
         FROM ${MUT_TABLE}
       ) raw_counts
     ) alt_counts
@@ -133,7 +133,7 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
     }
   );
 
-  const distinguishingColumns = ['gene_id', 'transcript', 'proteinChange', 'location', 'refAlt', 'zygosity'];
+  const distinguishingColumns = ['gene_id', 'transcript', 'protein_change', 'location', 'ref_alt', 'zygosity'];
 
   console.log(`delete fs notation duplicates from the ${MUT_TABLE} table`);
   await queryInterface.sequelize.query(
@@ -144,12 +144,12 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
         mut1.gene_id = mut2.gene_id
         AND mut1.transcript = mut2.transcript
         AND mut1.location = mut2.location
-        AND mut1."refAlt" = mut2."refAlt"
+        AND mut1."ref_alt" = mut2."ref_alt"
         AND mut1.zygosity = mut2.zygosity
         AND mut1.id != mut2.id
-        AND mut2."proteinChange" LIKE REPLACE(mut1."proteinChange", 'fs', '%fs%')
+        AND mut2."protein_change" LIKE REPLACE(mut1."protein_change", 'fs', '%fs%')
       )
-      WHERE mut1."proteinChange" LIKE '%fs%'
+      WHERE mut1."protein_change" LIKE '%fs%'
     )`,
     {
       transaction,
@@ -165,8 +165,6 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
 
   // collapse duplicates that only differed on non-essential information
   await removeActiveDuplicates(queryInterface, transaction, MUT_TABLE, distinguishingColumns);
-
-  await queryInterface.removeColumn(MUT_TABLE, 'mutationType', {transaction});
 
   const genesAfter = await countDistinctRowFrequency(
     queryInterface,

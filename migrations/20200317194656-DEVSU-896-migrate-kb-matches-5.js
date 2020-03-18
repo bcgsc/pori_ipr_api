@@ -1,7 +1,7 @@
 /**
  * Change the exon column type (separate b/c very slow otherwise)
  */
-const SV_TABLE = 'reports_structural_variation_sv';
+const SV_TABLE = 'reports_structural_variants';
 const KB_TABLE = 'reports_kb_matches';
 
 

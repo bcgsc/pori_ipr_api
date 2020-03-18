@@ -10,8 +10,8 @@ const KB_TABLE = 'reports_kb_matches';
 const GENE_TABLE = 'reports_genes';
 const EXP_TABLE = 'reports_expression_outlier';
 const CNV_TABLE = 'reports_copy_number_analysis_cnv';
-const MUT_TABLE = 'reports_somatic_mutations_small_mutations';
-const SV_TABLE = 'reports_structural_variation_sv';
+const MUT_TABLE = 'reports_small_mutations';
+const SV_TABLE = 'reports_structural_variants';
 
 const VARIANT_TABLES_MAP = {
   sv: SV_TABLE,
@@ -176,12 +176,12 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
     LEFT JOIN ${MUT_TABLE} mut ON (
       mut.gene_id = gene.id
       AND (
-        kb.variant = mut."proteinChange"
+        kb.variant = mut."protein_change"
         OR (
           kb.variant LIKE '%fs%'
           AND (
-            kb.variant LIKE REPLACE(mut."proteinChange", 'fs', '%fs%')
-            OR mut."proteinChange" LIKE REPLACE(kb.variant, 'fs', '%fs%')
+            kb.variant LIKE REPLACE(mut."protein_change", 'fs', '%fs%')
+            OR mut."protein_change" LIKE REPLACE(kb.variant, 'fs', '%fs%')
           )
         )
       )
@@ -190,7 +190,7 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
         OR kb.zygosity = split_part(mut.zygosity, ' ', 1)
       )
     ) WHERE variant_type = :variantType
-    ORDER BY kb.id, mut."refAlt", mut.transcript, mut.location DESC, mut.id`, // prefer non-null refAlt
+    ORDER BY kb.id, mut."ref_alt", mut.transcript, mut.location DESC, mut.id`, // prefer non-null ref_alt
     {
       transaction,
       replacements: {variantType},
@@ -202,9 +202,9 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
 
   // find the values which do not have an equivalent representation in the individual variant tables
   const missingVariants = await queryInterface.sequelize.query(
-    `SELECT DISTINCT ON (gene_id, report_id, "proteinChange", zygosity) gene_id,
+    `SELECT DISTINCT ON (gene_id, report_id, "protein_change", zygosity) gene_id,
         report_id,
-        variant as "proteinChange",
+        variant as "protein_change",
         zygosity,
         created_at,
         updated_at,
@@ -357,7 +357,7 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
           ELSE 0
         END as event_type_rank
       FROM ${svFromKbView} kb
-      LEFT JOIN reports_structural_variation_sv sv ON (
+      LEFT JOIN ${SV_TABLE} sv ON (
         sv.report_id = kb.report_id
         AND (${equalOrBothNull('sv.gene1_id', 'kb.gene1_id')})
         AND (${equalOrBothNull('sv.gene2_id', 'kb.gene2_id')})

@@ -2,7 +2,7 @@
  * Does the initial data cleaning on the kb matches table
  */
 const KB_TABLE = 'reports_kb_matches';
-const MUT_TABLE = 'reports_somatic_mutations_small_mutations';
+const MUT_TABLE = 'reports_small_mutations';
 
 
 module.exports = {

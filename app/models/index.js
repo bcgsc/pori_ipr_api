@@ -192,20 +192,19 @@ summary.analystComments.belongsTo(user, {
 });
 
 // Somatic Mutations
-const somaticMutations = {};
-somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
-somaticMutations.mutationSignature = sequelize.import('./reports/genomic/somaticMutations/mutationSignature');
+const smallMutations = sequelize.import('./reports/smallMutations');
+const mutationSignature = sequelize.import('./reports/mutationSignature');
 
-somaticMutations.smallMutations.belongsTo(analysisReports, {
+smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-somaticMutations.mutationSignature.belongsTo(analysisReports, {
+mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.smallMutations, {
+analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.mutationSignature, {
+analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
@@ -231,14 +230,13 @@ analysisReports.hasMany(mavis, {
 });
 
 // Structural Variation
-const structuralVariation = {};
-structuralVariation.sv = sequelize.import('./reports/genomic/structuralVariation/sv');
+const structuralVariants = sequelize.import('./reports/structuralVariants');
 
-structuralVariation.sv.belongsTo(analysisReports, {
+structuralVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(structuralVariation.sv, {
-  as: 'sv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(structuralVariants, {
+  as: 'structuralVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 
@@ -257,7 +255,7 @@ analysisReports.hasMany(expressionAnalysis.outlier, {
 // This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
-  if (name === 'sv') {
+  if (name === 'structuralVariants') {
     // sequelize can't handle union-ing these so they require separate alias names
     variantModel.belongsTo(genes, {
       as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,

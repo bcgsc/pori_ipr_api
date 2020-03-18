@@ -1,8 +1,8 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('sv', {
+  return sequelize.define('structuralVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -52,15 +52,6 @@ module.exports = (sequelize) => {
     conventionalName: {
       type: Sq.TEXT,
     },
-    rpkm: {
-      type: Sq.TEXT,
-    },
-    foldChange: {
-      type: Sq.TEXT,
-    },
-    tcgaPerc: {
-      type: Sq.TEXT,
-    },
     svg: {
       type: Sq.TEXT,
       defaultValue: null,
@@ -95,7 +86,7 @@ module.exports = (sequelize) => {
     },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_structural_variation_sv',
+    tableName: 'reports_structural_variants',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'gene1Id', 'gene2Id']},
