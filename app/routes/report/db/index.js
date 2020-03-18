@@ -108,7 +108,7 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
     expDensityGraph,
     structuralVariants,
   ] = await Promise.all([
-    db.models.alterations.scope('public').findAll({
+    db.models.kbMatches.scope('public').findAll({
       where: {
         reportId,
         gene: {[Op.iLike]: `%${name}%`},
