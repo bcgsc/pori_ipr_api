@@ -11,7 +11,7 @@ module.exports = async (req, res, next, ident) => {
       ident,
     },
     attributes: {
-      exclude: ['deletedAt'],
+      exclude: ['deletedAt', 'id'],
     },
   };
 
