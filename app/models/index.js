@@ -240,14 +240,13 @@ analysisReports.hasMany(mavis, {
 });
 
 // Structural Variation
-const structuralVariation = {};
-structuralVariation.sv = sequelize.import('./reports/genomic/structuralVariation/sv');
+const structuralVariants = sequelize.import('./reports/structuralVariants');
 
-structuralVariation.sv.belongsTo(analysisReports, {
+structuralVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(structuralVariation.sv, {
-  as: 'sv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(structuralVariants, {
+  as: 'structuralVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 
@@ -266,7 +265,7 @@ analysisReports.hasMany(expressionAnalysis.outlier, {
 // This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
-  if (name === 'sv') {
+  if (name === 'structuralVariants') {
     // sequelize can't handle union-ing these so they require separate alias names
     variantModel.belongsTo(genes, {
       as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,

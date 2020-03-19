@@ -229,7 +229,7 @@
             "summary": "{\"#tracking_id\":\"transabyss-135.1;transabyss-135.2\",\"library\":\"UPLOADPAT01\",\"annotation_id\":\"PyheRHP5qMYxDKZqnQeUu7-v3-a1\",\"product_id\":\"UPLOADPAT01_transcriptome_PyheRHP5qMYxDKZqnQeUu7-v3-a1_None_None_None\",\"event_type\":\"translocation\",\"gene1\":\"None\",\"gene1_direction\":\"None\",\"gene2\":\"TESTVALUE001\",\"gene2_direction\":\"3\",\"gene1_aliases\":\"None\",\"gene2_aliases\":\"NUDT4\",\"gene_product_type\":\"None\",\"transcript1\":\"1:145139602_145139602+\",\"transcript2\":\"TESTVALUE02\",\"fusion_splicing_pattern\":\"None\",\"fusion_cdna_coding_start\":\"None\",\"fusion_cdna_coding_end\":\"None\",\"fusion_mapped_domains\":\"None\",\"fusion_protein_hgvs\":\"None\",\"annotation_figure\":\"None\",\"genes_encompassed\":\"\",\"break1_chromosome\":\"1\",\"break1_position_start\":\"145139602\",\"break1_position_end\":\"145139602\",\"break1_orientation\":\"L\",\"exon_last_5prime\":\"None\",\"exon_first_3prime\":\"None\",\"break1_strand\":\"?\",\"break2_chromosome\":\"12\",\"break2_position_start\":\"93771723\",\"break2_position_end\":\"93771723\",\"break2_orientation\":\"R\",\"break2_strand\":\"?\",\"protocol\":\"transcriptome\",\"tools\":\"transabyss\",\"call_method\":\"split reads\",\"break1_homologous_seq\":\"TGCTGCTGCTC\",\"break1_split_reads\":\"30\",\"break2_homologous_seq\":\"\",\"break2_split_reads\":\"2\",\"contig_alignment_score\":\"None\",\"contig_remapped_reads\":\"None\",\"contig_seq\":\"None\",\"spanning_reads\":\"0\",\"flanking_pairs\":\"16\",\"linking_split_reads\":\"7\",\"untemplated_seq\":\"\",\"cdna_synon\":\"None\",\"protein_synon\":\"None\",\"supplementary_call\":\"False\",\"net_size\":\"0-0\",\"assumed_untemplated\":\"False\",\"P02376_diseased_genome\":\"no genomic support\",\"P02387_normal_genome\":\"somatic\",\"P02389_diseased_transcriptome\":\"Not Applicable\",\"dgv\":\"None\"}"
         }
     ],
-    "sv": [
+    "structuralVariants": [
         {
             "svVariant": "uncharacterized",
             "gene1": "FN1",
@@ -240,9 +240,6 @@
             "eventType": "duplication",
             "detectedIn": "DNA",
             "conventionalName": "d(2)(q35)",
-            "rpkm": "811.3/811.3",
-            "foldChange": "15.98/15.98",
-            "tcgaPerc": "98/98",
             "svg": null,
             "svgTitle": "Figure 1. Putative Fusion-duplication event. The original transcript UPLOADPAT01 from the gene UPLOADPAT01 on the reverse strand is drawn twice above. The 5' portion that contributes to the fusion gene is shown top left, the 3' portion is drawn top right. Breakpoints are at 2:216238066 and 2:216240359. Exons are drawn to scale relative to other exons in the same drawing. Introns are scaled to make up approximately 1/4th of the final drawing. This is predicted to be an OUT-of-frame fusion. Domain(s) featured in the above figure(s) are labelled by their various external identifiers as follows: FN_type2_col-bd(UPLOADPAT01), Fibronectin_type1(UPLOADPAT01), Fibronectin_type3(UPLOADPAT01).",
             "name": "FN1::FN1",
