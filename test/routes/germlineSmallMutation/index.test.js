@@ -251,7 +251,7 @@ describe('/germline-small-mutation', () => {
 
         expect(res.body).toEqual(
           checkGermlineReport,
-      
+        );
       });
     });
 
