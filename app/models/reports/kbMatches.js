@@ -1,8 +1,9 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('alterations', {
+  return sequelize.define('kbMatches', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -13,19 +14,13 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    reportType: {
-      type: Sq.ENUM('genomic', 'probe'),
-      defaultValue: 'genomic',
-    },
-    alterationType: {
+    category: {
       type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel'),
       allowNull: false,
     },
-    newEntry: {
-      type: Sq.BOOLEAN,
-      defaultValue: true,
-    },
     approvedTherapy: {
+      field: 'approved_therapy',
+      name: 'approvedTherapy',
       type: Sq.TEXT,
       defaultValue: null,
     },
@@ -36,18 +31,17 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     kbVariant: {
+      field: 'kb_variant',
+      name: 'kbVariant',
       type: Sq.TEXT,
     },
     disease: {
       type: Sq.TEXT,
     },
-    effect: {
+    relevance: {
       type: Sq.TEXT,
     },
-    association: {
-      type: Sq.TEXT,
-    },
-    therapeuticContext: {
+    context: {
       type: Sq.TEXT,
     },
     status: {
@@ -56,57 +50,73 @@ module.exports = (sequelize) => {
     reference: {
       type: Sq.TEXT,
     },
-    expression_tissue_fc: {
+    expressionTissueFc: {
+      field: 'expression_tissue_fc',
+      name: 'expressionTissueFc',
       type: Sq.TEXT,
     },
-    expression_cancer_percentile: {
+    expressionCancerPercentile: {
+      field: 'expression_cancer_percentile',
+      name: 'expressionCancerPercentile',
       type: Sq.TEXT,
     },
     copyNumber: {
+      field: 'copy_number',
+      name: 'copyNumber',
       type: Sq.TEXT,
     },
     sample: {
       type: Sq.TEXT,
     },
-    LOHRegion: {
+    lohRegion: {
       type: Sq.TEXT,
+      field: 'loh_region',
+      name: 'lohRegion',
     },
     zygosity: {
       type: Sq.TEXT,
     },
-    evidence: {
+    evidenceLevel: {
+      field: 'evidence_level',
+      name: 'evidenceLevel',
       type: Sq.TEXT,
     },
-    matched_cancer: {
+    matchedCancer: {
+      field: 'matched_cancer',
+      name: 'matchedCancer',
       type: Sq.TEXT,
     },
-    pmid_ref: {
+    pmidRef: {
+      field: 'pmid_ref',
+      name: 'pmidRef',
       type: Sq.TEXT,
     },
-    variant_type: {
+    variantType: {
+      field: 'variant_type',
+      name: 'variantType',
       type: Sq.TEXT,
     },
-    kb_type: {
+    kbVariantId: {
+      name: 'kbVariantId',
+      field: 'kb_variant_id',
       type: Sq.TEXT,
     },
-    kb_entry_type: {
+    kbStatementId: {
+      field: 'kb_statement_id',
+      name: 'kbStatementId',
       type: Sq.TEXT,
     },
-    kb_event_key: {
-      type: Sq.TEXT,
-    },
-    kb_entry_key: {
-      type: Sq.TEXT,
-    },
-    kb_data: {
+    kbData: {
+      field: 'kb_data',
+      name: 'kbData',
       type: Sq.JSONB,
     },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_dga_alterations',
+    tableName: 'reports_kb_matches',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'deletedAt', 'reportId']},
       },
     },
   });

@@ -18,6 +18,11 @@ module.exports = (sequelize) => {
       allowNull: false,
       required: true,
     },
+    normalLibrary: {
+      name: 'normalLibrary',
+      field: 'normal_library',
+      type: Sq.TEXT,
+    },
     source_version: {
       type: Sq.TEXT,
       allowNull: false,
