@@ -51,7 +51,7 @@ module.exports = (sequelize) => {
       public: {
         order: [['createdAt', 'desc']],
         attributes: {
-          exclude: ['id', 'biofx_assigned_id', 'deletedAt'],
+          exclude: ['id', 'biofx_assigned_id', 'deletedAt', 'germline_report_id'],
         },
         include: [
           {as: 'biofx_assigned', model: sequelize.models.user.scope('public')},

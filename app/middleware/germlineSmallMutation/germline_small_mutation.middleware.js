@@ -10,9 +10,6 @@ module.exports = async (req, res, next, ident) => {
     where: {
       ident,
     },
-    attributes: {
-      exclude: ['deletedAt', 'id'],
-    },
   };
 
   try {
