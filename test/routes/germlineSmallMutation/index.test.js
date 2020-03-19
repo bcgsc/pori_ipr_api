@@ -23,7 +23,6 @@ const checkGermlineReport = expect.objectContaining({
   exported: expect.any(Boolean),
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
-  id: expect.any(Number),
   biofx_assigned: expect.any(Object),
   projects: expect.any(Array),
   reviews: expect.any(Array),
@@ -40,6 +39,7 @@ const checkGermlineReportList = expect.objectContaining({
 
 
 describe('/germline-small-mutation', () => {
+  // TODO:Add checks to ensure is not returning id
   let server;
   let request;
 
@@ -251,7 +251,7 @@ describe('/germline-small-mutation', () => {
 
         expect(res.body).toEqual(
           checkGermlineReport,
-        );
+      
       });
     });
 
