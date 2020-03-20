@@ -32,7 +32,7 @@ router.route('/:mutation([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.somaticMutations.update(req.body, {
+      const result = await db.models.smallMutations.update(req.body, {
         where: {
           ident: req.mutation.ident,
         },
@@ -59,7 +59,7 @@ router.route('/:mutation([A-z0-9-]{36})')
     // Soft delete the entry
     // Update result
     try {
-      await db.models.somaticMutations.destroy({where: {ident: req.mutation.ident}});
+      await db.models.smallMutations.destroy({where: {ident: req.mutation.ident}});
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove somatic mutations ${error}`);
@@ -86,7 +86,7 @@ router.route('/:type(clinical|nostic|biological|unknown)?')
 
     // Get all small mutations for this report
     try {
-      const results = await db.models.smallMutations.scope('public').findAll(options);
+      const results = await db.models.smallMutations.scope('extended').findAll(options);
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve small mutations ${error}`);
