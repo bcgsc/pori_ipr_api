@@ -85,7 +85,7 @@ router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourS
 
     // Get all cnv's for this report
     try {
-      const result = await db.models.cnv.scope('public').findAll(options);
+      const result = await db.models.cnv.scope('extended').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
