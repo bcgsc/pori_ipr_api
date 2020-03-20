@@ -31,11 +31,16 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   } else {
     if (targetType === 'evidence') {
       query.target = 'EvidenceLevel';
+      delete query.limit; // short list with short names, just return all
     } else if (targetType === 'therapy') {
       query.target = 'Therapy';
     } else {
       query.target = 'Variant';
-      query.returnProperties.push(...['reference1.displayName', 'reference2.displayName']);
+      query.returnProperties.push(...[
+        'reference1.displayName',
+        'reference2.displayName',
+        'type.displayName',
+      ]);
     }
 
     if (keyword) {
