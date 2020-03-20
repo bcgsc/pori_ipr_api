@@ -157,7 +157,7 @@ module.exports = (sequelize) => {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
         include: [
-          {model: sequelize.models.genes, as: 'gene', attributes: ['ident', 'name']},
+          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
       },
     },
