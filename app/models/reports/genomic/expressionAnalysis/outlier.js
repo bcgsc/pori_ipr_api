@@ -160,6 +160,9 @@ module.exports = (sequelize) => {
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
       },
+      minimal: {
+        attributes: ['expression_class', 'rpkm', 'tcgaPerc', 'foldChange'],
+      },
     },
   });
 };

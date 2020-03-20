@@ -69,6 +69,9 @@ module.exports = (sequelize) => {
           },
         ],
       },
+      minimal: {
+        attributes: ['cnvState', 'lohState', 'ploidyCorrCpChange'],
+      },
     },
   });
 };
