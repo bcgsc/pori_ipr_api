@@ -84,6 +84,12 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       defaultValue: null,
     },
+    omicSupport: {
+      type: Sq.BOOLEAN,
+      field: 'omic_support',
+      name: 'omicSupport',
+      defaultValue: false,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'reports_structural_variants',
