@@ -1,4 +1,4 @@
-# move migration
+# rename some migration files to have the latest timestamps so they are applied after all current migrations
 
 target=$1
 

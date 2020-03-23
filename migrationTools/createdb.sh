@@ -1,5 +1,4 @@
-
-
+# create a new test database from ipr-sync-dev with the current branch as name
 
 export PGPASSWORD=$IPR_SERVICE_PASS
 TEMP_DB_NAME=$( git branch | grep '*' | cut -f 2 -d/ )

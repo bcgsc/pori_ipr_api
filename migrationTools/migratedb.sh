@@ -1,5 +1,4 @@
-
-
+# Run the current migrations against the test DB
 
 export PGPASSWORD=$IPR_SERVICE_PASS
 TEMP_DB_NAME=$( git branch | grep '*' | cut -f 2 -d/ )
