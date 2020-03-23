@@ -108,7 +108,7 @@ That creates the dump file. Then create the new temp database. Add temp or the t
 obvious later that it can be deleted
 
 ```bash
-createdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+createdb -U ipr_service -T templateipr -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
 This then needs to be restored as a new database.
@@ -116,7 +116,7 @@ This then needs to be restored as a new database.
 **WARNING: DO NOT RESTORE TO THE PRODUCTION DB SERVER**
 
 ```bash
-pg_restore -Fc -U ipr_service -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
+pg_restore -Fc -U ipr_service -T templateipr -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
 ```
 
 Finally connect to the newly created database
