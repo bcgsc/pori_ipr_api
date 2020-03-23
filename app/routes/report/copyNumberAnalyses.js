@@ -25,7 +25,7 @@ router.param('cnv', async (req, res, next, mutIdent) => {
 });
 
 // Handle requests for alterations
-router.route('/cnv/:cnv([A-z0-9-]{36})')
+router.route('/:cnv([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.cnv);
   })
@@ -68,7 +68,7 @@ router.route('/cnv/:cnv([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/cnv/:type(clinical|nostic|biological|commonAmplified|homodTumourSupress|highlyExpOncoGain|lowlyExpTSloss)?')
+router.route('/:type(clinical|nostic|biological|commonAmplified|homodTumourSupress|highlyExpOncoGain|lowlyExpTSloss)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id};
