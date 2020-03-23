@@ -250,7 +250,7 @@
             "ntermTranscript": "UPLOADPAT01"
         }
     ],
-    "outlier": [
+    "expressionVariants": [
         {
             "expType": "rna",
             "outlierType": "upreg_onco",
