@@ -7,8 +7,8 @@ const {
   removeActiveDuplicates,
 } = require('../migrationTools');
 
-const EXP_TABLE = 'reports_expression_outlier';
-const CNV_TABLE = 'reports_copy_number_analysis_cnv';
+const EXP_TABLE = 'reports_expression_variants';
+const CNV_TABLE = 'reports_copy_variants';
 const MUT_TABLE = 'reports_small_mutations';
 const SV_TABLE = 'reports_structural_variants';
 
@@ -43,8 +43,6 @@ const cleanExpressionData = async (queryInterface, Sq, transaction) => {
   // add unique constraint on: report_id, gene_id, expression_class
   // if this fails there is something in the data that needs to be manually reviewed
   await addUniqueActiveFieldIndex(queryInterface, Sq, transaction, EXP_TABLE, ['gene_id']);
-  // remove expression outlierType column
-  await queryInterface.removeColumn(EXP_TABLE, 'outlierType', {transaction});
 };
 
 const cleanCopyNumberData = async (queryInterface, Sq, transaction) => {
@@ -54,7 +52,6 @@ const cleanCopyNumberData = async (queryInterface, Sq, transaction) => {
   // collapse duplicates that only differed on non-essential information
   await removeActiveDuplicates(queryInterface, transaction, CNV_TABLE, ['gene_id', 'cnvState', 'lohState', 'start', 'end', 'chromosomeBand']);
 
-  await queryInterface.removeColumn(CNV_TABLE, 'cnvVariant', {transaction});
   await addUniqueActiveFieldIndex(queryInterface, Sq, transaction, CNV_TABLE, ['gene_id']);
 
   const genesAfter = await countDistinctRowFrequency(queryInterface, transaction, CNV_TABLE, ['gene_id']);

@@ -8,8 +8,8 @@ const {equalOrBothNull} = require('../migrationTools');
 
 const KB_TABLE = 'reports_kb_matches';
 const GENE_TABLE = 'reports_genes';
-const EXP_TABLE = 'reports_expression_outlier';
-const CNV_TABLE = 'reports_copy_number_analysis_cnv';
+const EXP_TABLE = 'reports_expression_variants';
+const CNV_TABLE = 'reports_copy_variants';
 const MUT_TABLE = 'reports_small_mutations';
 const SV_TABLE = 'reports_structural_variants';
 

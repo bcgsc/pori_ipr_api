@@ -15,11 +15,6 @@ module.exports = {
       console.log('create the variant_id column');
       await queryInterface.addColumn(KB_TABLE, 'variant_id', {type: Sq.INTEGER});
 
-      console.log('Delete test records');
-      await queryInterface.sequelize.query(
-        `DELETE FROM ${KB_TABLE} WHERE variant = 'Gene'`, // TODO: remove after datafix done on prod
-        {transaction}
-      );
       // add new enum type: SV, MUT, EXP, CNV
       // map empty varianType values to their correct values
       console.log('Fill in missing variantType values. Initialize to NULL');
