@@ -87,7 +87,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
     };
 
     try {
-      const results = await db.models.outlier.scope('public').findAll(options);
+      const results = await db.models.outlier.scope('extended').findAll(options);
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve outliers ${error}`);

@@ -9,7 +9,7 @@ const logger = require('../../log');
 router.param('sv', async (req, res, next, svIdent) => {
   let result;
   try {
-    result = await db.models.sv.scope('public').findOne({where: {ident: svIdent}});
+    result = await db.models.structuralVariants.scope('public').findOne({where: {ident: svIdent}});
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'}});
@@ -31,7 +31,7 @@ router.route('/:sv([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.sv.update(req.body, {
+      const result = await db.models.structuralVariants.update(req.body, {
         where: {
           ident: req.variation.ident,
         },
@@ -57,7 +57,7 @@ router.route('/:sv([A-z0-9-]{36})')
     // Soft delete the entry
     // Update result
     try {
-      await db.models.sv.destroy({where: {ident: req.sv.ident}});
+      await db.models.structuralVariants.destroy({where: {ident: req.sv.ident}});
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove structural variant ${error}`);
@@ -83,7 +83,7 @@ router.route('/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterize
 
     // Get all structural variants (sv) for this report
     try {
-      const results = await db.models.sv.scope('public').findAll(options);
+      const results = await db.models.structuralVariants.scope('extended').findAll(options);
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
