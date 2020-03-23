@@ -11,7 +11,7 @@ module.exports = {
           queryInterface.renameTable('reports_expression_outlier', EXPRESSION_VARIANTS_TABLE, {transaction}),
         ]);
 
-        // change column type from text to integer
+        // change column type from integer to float
         await queryInterface.changeColumn(EXPRESSION_VARIANTS_TABLE, 'tcgaPerc', {
           type: Sequelize.FLOAT,
         }, {transaction});
@@ -20,12 +20,13 @@ module.exports = {
         // into the expression outlier table
         await queryInterface.sequelize.query(`
           INSERT INTO ${EXPRESSION_VARIANTS_TABLE} (ident, rpkm, "foldChange", "tcgaPerc", gene_id, report_id, created_at, updated_at, deleted_at) 
-            SELECT ident, "expressionRpkm", "foldChange", "tcgaPerc", gene_id, report_id, created_at, updated_at, deleted_at 
-            FROM ${COPY_VARIANTS_TABLE} WHERE id NOT IN (
-              SELECT DISTINCT cnv.id 
-              FROM ${EXPRESSION_VARIANTS_TABLE} AS outlier INNER JOIN ${COPY_VARIANTS_TABLE} AS cnv 
-              ON outlier.rpkm = cnv."expressionRpkm" AND outlier."foldChange" = cnv."foldChange" 
-              AND outlier."tcgaPerc" = cnv."tcgaPerc" AND outlier.gene_id = cnv.gene_id AND outlier.report_id = cnv.report_id)`,
+            SELECT DISTINCT ON (gene_id) uuid_generate_v4(), "expressionRpkm", "foldChange", "tcgaPerc", gene_id, report_id, created_at, updated_at, deleted_at 
+            FROM ${COPY_VARIANTS_TABLE} AS cnv 
+            WHERE NOT EXISTS (
+              SELECT * FROM ${EXPRESSION_VARIANTS_TABLE} AS exp 
+              WHERE exp.gene_id = cnv.gene_id
+            ) 
+            AND NOT (cnv."expressionRpkm" IS NULL AND cnv."foldChange" IS NULL AND cnv."tcgaPerc" IS NULL)`,
         {transaction});
 
         // replace all na's with null
@@ -40,12 +41,13 @@ module.exports = {
         // table into the cnv table
         await queryInterface.sequelize.query(`
           INSERT INTO ${COPY_VARIANTS_TABLE} (ident, "ploidyCorrCpChange", "lohState", "cnvState", gene_id, report_id, created_at, updated_at, deleted_at) 
-            SELECT ident, "copyChange", "lohState", "cnvState", gene_id, report_id, created_at, updated_at, deleted_at 
-            FROM ${EXPRESSION_VARIANTS_TABLE} WHERE id NOT IN (
-              SELECT DISTINCT outlier.id 
-              FROM ${EXPRESSION_VARIANTS_TABLE} AS outlier INNER JOIN ${COPY_VARIANTS_TABLE} AS cnv 
-              ON outlier."copyChange" = cnv."ploidyCorrCpChange" AND outlier."lohState" = cnv."lohState" 
-              AND outlier."cnvState" = cnv."cnvState" AND outlier.gene_id = cnv.gene_id AND outlier.report_id = cnv.report_id)`,
+            SELECT DISTINCT ON (gene_id) uuid_generate_v4(), "copyChange", "lohState", "cnvState", gene_id, report_id, created_at, updated_at, deleted_at
+            FROM ${EXPRESSION_VARIANTS_TABLE} AS exp 
+            WHERE NOT EXISTS (
+              SELECT * FROM ${COPY_VARIANTS_TABLE} AS cnv 
+              WHERE exp.gene_id = cnv.gene_id
+            ) 
+            AND NOT (exp."copyChange" IS NULL AND exp."lohState" IS NULL AND exp."cnvState" IS NULL)`,
         {transaction});
 
         return Promise.all([
