@@ -219,14 +219,13 @@ analysisReports.hasMany(mutationSignature, {
 });
 
 // Copy Number Analysis
-const copyNumberAnalyses = {};
-copyNumberAnalyses.cnv = sequelize.import('./reports/genomic/copyNumberAnalysis/cnv');
+const copyVariants = sequelize.import('./reports/genomic/copyNumberAnalysis/copyVariants');
 
-copyNumberAnalyses.cnv.belongsTo(analysisReports, {
+copyVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(copyNumberAnalyses.cnv, {
-  as: 'cnv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(copyVariants, {
+  as: 'copyVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 
@@ -303,7 +302,7 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
     variantModel.belongsTo(genes, {
       as: 'gene', foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
     });
-    if (['expressionVariants', 'cnv'].includes(name)) {
+    if (['expressionVariants', 'copyVariants'].includes(name)) {
       genes.hasOne(variantModel, {
         as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
       });
@@ -324,7 +323,7 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
   }
 
   // add the linked scope
-  for (const link of ['expressionVariants', 'cnv']) {
+  for (const link of ['expressionVariants', 'copyVariants']) {
     if (link !== name) {
       extendedScope.include.forEach((geneInclude) => {
         geneInclude.include.push({

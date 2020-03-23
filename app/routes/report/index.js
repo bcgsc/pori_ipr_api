@@ -2,7 +2,7 @@ const express = require('express');
 
 const summary = require('./summary');
 const appendices = require('./appendices');
-const copyNumberAnalyses = require('./copyNumberAnalyses');
+const copyVariants = require('./copyVariants');
 const kbMatches = require('./kbMatches');
 const probeResults = require('./probeResults');
 const expressionVariants = require('./expressionVariants');
@@ -20,7 +20,7 @@ const router = express.Router({mergeParams: true});
 router.use('/summary', summary);
 
 router.use('/appendices', appendices);
-router.use('/copy-number-analyses', copyNumberAnalyses);
+router.use('/copy-variants', copyVariants);
 router.use('/expression-variants', expressionVariants);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);

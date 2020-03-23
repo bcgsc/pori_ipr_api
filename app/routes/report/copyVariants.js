@@ -9,7 +9,7 @@ const logger = require('../../log');
 router.param('cnv', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.cnv.scope('public').findOne({where: {ident: mutIdent}});
+    result = await db.models.copyVariants.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
     logger.error(`Error while processing request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareCNVQuery'}});
@@ -32,7 +32,7 @@ router.route('/:cnv([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.cnv.update(req.body, {
+      const result = await db.models.copyVariants.update(req.body, {
         where: {
           ident: req.cnv.ident,
         },
@@ -59,7 +59,7 @@ router.route('/:cnv([A-z0-9-]{36})')
     // Soft delete the entry
     // Update result
     try {
-      await db.models.cnv.destroy({where: {ident: req.cnv.ident}});
+      await db.models.copyVariants.destroy({where: {ident: req.copyVariants.ident}});
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);
@@ -85,7 +85,7 @@ router.route('/:type(clinical|nostic|biological|commonAmplified|homodTumourSupre
 
     // Get all cnv's for this report
     try {
-      const result = await db.models.cnv.scope('extended').findAll(options);
+      const result = await db.models.copyVariants.scope('extended').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);

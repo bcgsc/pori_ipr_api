@@ -207,7 +207,7 @@
             "cancerTypes": "stomach cancer"
         }
     ],
-    "cnv": [
+    "copyVariants": [
         {
             "cnvVariant": "clinical",
             "gene": "MYCN",

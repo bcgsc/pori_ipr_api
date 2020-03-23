@@ -119,7 +119,7 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
         geneId: id,
       },
     }),
-    db.models.cnv.scope('public').findAll({
+    db.models.copyVariants.scope('public').findAll({
       where: {
         geneId: id,
       },
