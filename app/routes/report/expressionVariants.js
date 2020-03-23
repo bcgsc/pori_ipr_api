@@ -11,35 +11,35 @@ const logger = require('../../log');
  * Outliers
  *
  */
-router.param('outlier', async (req, res, next, oIdent) => {
+router.param('expressionVariants', async (req, res, next, oIdent) => {
   let result;
   try {
-    result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: {[Op.in]: ['rna', 'protein']}}});
+    result = await db.models.expressionVariants.scope('public').findOne({where: {ident: oIdent, expType: {[Op.in]: ['rna', 'protein']}}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
   }
 
   if (!result) {
-    logger.error(`Unable to find outlier, ident: ${oIdent}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find outlier, ident: ${oIdent}`, code: 'failedMiddlewareOutlierLookup'}});
+    logger.error(`Unable to find expressionVariants, ident: ${oIdent}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find expressionVariants, ident: ${oIdent}`, code: 'failedMiddlewareOutlierLookup'}});
   }
 
-  req.outlier = result;
+  req.expressionVariants = result;
   return next();
 });
 
 // Handle requests for outliers
-router.route('/outlier/:outlier([A-z0-9-]{36})')
+router.route('/expressionVariants/:expressionVariants([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.outlier);
+    return res.json(req.expressionVariants);
   })
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.outlier.update(req.body, {
+      const result = await db.models.expressionVariants.update(req.body, {
         where: {
-          ident: req.outlier.ident,
+          ident: req.expressionVariants.ident,
         },
         individualHooks: true,
         paranoid: true,
@@ -56,27 +56,27 @@ router.route('/outlier/:outlier([A-z0-9-]{36})')
 
       return res.json(publicModel);
     } catch (error) {
-      logger.error(`Unable to update outlier ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update outlier', code: 'failedOutlierVersion'}});
+      logger.error(`Unable to update expressionVariants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update expressionVariants', code: 'failedOutlierVersion'}});
     }
   })
   .delete(async (req, res) => {
-    // Soft delete outlier
+    // Soft delete expressionVariants
     try {
-      await db.models.outlier.destroy({where: {ident: req.outlier.ident}});
+      await db.models.expressionVariants.destroy({where: {ident: req.expressionVariants.ident}});
       return res.json({success: true});
     } catch (error) {
-      logger.error(`Unable to remove outlier ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove outlier', code: 'failedOutlierRemove'}});
+      logger.error(`Unable to remove expressionVariants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove expressionVariants', code: 'failedOutlierRemove'}});
     }
   });
 
 // Routing for all Outliers
-router.route('/outlier/:type(clinical|nostic|biological)?')
+router.route('/expressionVariants/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
-    // Searching for specific type of outlier
+    // Searching for specific type of expressionVariants
     if (req.params.type) {
       // Are we looking for approved types?
       where.outlierType = req.params.type;
@@ -87,7 +87,7 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
     };
 
     try {
-      const results = await db.models.outlier.scope('extended').findAll(options);
+      const results = await db.models.expressionVariants.scope('extended').findAll(options);
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve outliers ${error}`);
@@ -99,18 +99,18 @@ router.route('/outlier/:type(clinical|nostic|biological)?')
 router.param('protein', async (req, res, next, oIdent) => {
   let result;
   try {
-    result = await db.models.outlier.scope('public').findOne({where: {ident: oIdent, expType: 'protein'}});
+    result = await db.models.expressionVariants.scope('public').findOne({where: {ident: oIdent, expType: 'protein'}});
   } catch (error) {
-    logger.error(`Unable to get outlier ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get outlier', code: 'failedMiddlewareProteinQuery'}});
+    logger.error(`Unable to get expressionVariants ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get expressionVariants', code: 'failedMiddlewareProteinQuery'}});
   }
 
   if (!result) {
-    logger.error('Unable to locate requested outlier');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate requested outlier', code: 'failedMiddlewareProteinLookup'}});
+    logger.error('Unable to locate requested expressionVariants');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate requested expressionVariants', code: 'failedMiddlewareProteinLookup'}});
   }
 
-  req.outlier = result;
+  req.expressionVariants = result;
   return next();
 });
 
@@ -122,7 +122,7 @@ router.route('/protein/:protein([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update DB Version for Entry
     try {
-      const result = await db.models.outlier.update(req.body, {
+      const result = await db.models.expressionVariants.update(req.body, {
         where: {
           ident: req.protein.ident,
         },
@@ -141,18 +141,18 @@ router.route('/protein/:protein([A-z0-9-]{36})')
 
       return res.json(publicModel);
     } catch (error) {
-      logger.error(`Unable to update outlier ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update outlier', code: 'failedProteinVersion'}});
+      logger.error(`Unable to update expressionVariants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update expressionVariants', code: 'failedProteinVersion'}});
     }
   })
   .delete(async (req, res) => {
     // Soft delete the entry
     try {
-      await db.models.outlier.destroy({where: {ident: req.outlier.ident}});
+      await db.models.expressionVariants.destroy({where: {ident: req.expressionVariants.ident}});
       return res.json({success: true});
     } catch (error) {
-      logger.error(`Unable to remove outlier ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove outlier', code: 'failedProteinRemove'}});
+      logger.error(`Unable to remove expressionVariants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove expressionVariants', code: 'failedProteinRemove'}});
     }
   });
 
@@ -161,7 +161,7 @@ router.route('/protein/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id, expType: 'protein'};
-    // Searching for specific type of outlier
+    // Searching for specific type of expressionVariants
     if (req.params.type) {
       // Are we looking for approved types?
       where.proteinType = req.params.type;
@@ -170,9 +170,9 @@ router.route('/protein/:type(clinical|nostic|biological)?')
       where,
     };
 
-    // Get all outlier's for this report
+    // Get all expressionVariants's for this report
     try {
-      const results = await db.models.outlier.scope('public').findAll(options);
+      const results = await db.models.expressionVariants.scope('public').findAll(options);
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve outliers ${error}`);

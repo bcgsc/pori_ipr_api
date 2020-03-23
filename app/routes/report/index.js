@@ -5,7 +5,7 @@ const appendices = require('./appendices');
 const copyNumberAnalyses = require('./copyNumberAnalyses');
 const kbMatches = require('./kbMatches');
 const probeResults = require('./probeResults');
-const expressionAnalysis = require('./expressionAnalysis');
+const expressionVariants = require('./expressionVariants');
 const mavis = require('./mavis');
 const presentation = require('./presentation');
 const structuralVariants = require('./structuralVariants');
@@ -21,7 +21,7 @@ router.use('/summary', summary);
 
 router.use('/appendices', appendices);
 router.use('/copy-number-analyses', copyNumberAnalyses);
-router.use('/expression-analysis', expressionAnalysis);
+router.use('/expression-variants', expressionVariants);
 router.use('/mavis', mavis);
 router.use('/presentation', presentation);
 router.use('/structural-variants', structuralVariants);

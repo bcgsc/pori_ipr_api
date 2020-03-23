@@ -251,14 +251,13 @@ analysisReports.hasMany(structuralVariants, {
 
 
 // expression variants
-const expressionAnalysis = {};
-expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
+const expressionVariants = sequelize.import('./reports/expressionVariants');
 
-expressionAnalysis.outlier.belongsTo(analysisReports, {
+expressionVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(expressionAnalysis.outlier, {
-  as: 'outlier', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(expressionVariants, {
+  as: 'expressionVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 
@@ -304,7 +303,7 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
     variantModel.belongsTo(genes, {
       as: 'gene', foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
     });
-    if (['outlier', 'cnv'].includes(name)) {
+    if (['expressionVariants', 'cnv'].includes(name)) {
       genes.hasOne(variantModel, {
         as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
       });
@@ -325,7 +324,7 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
   }
 
   // add the linked scope
-  for (const link of ['outlier', 'cnv']) {
+  for (const link of ['expressionVariants', 'cnv']) {
     if (link !== name) {
       extendedScope.include.forEach((geneInclude) => {
         geneInclude.include.push({

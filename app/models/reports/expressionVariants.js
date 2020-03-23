@@ -1,8 +1,8 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('outlier', {
+  return sequelize.define('expressionVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
