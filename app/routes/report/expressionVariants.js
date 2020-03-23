@@ -11,18 +11,18 @@ const logger = require('../../log');
  * Outliers
  *
  */
-router.param('expressionVariants', async (req, res, next, oIdent) => {
+router.param('expressionVariant', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.expressionVariants.scope('public').findOne({where: {ident: oIdent, expType: {[Op.in]: ['rna', 'protein']}}});
+    result = await db.models.expressionVariants.scope('public').findOne({where: {ident, expType: {[Op.in]: ['rna', 'protein']}}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
   }
 
   if (!result) {
-    logger.error(`Unable to find expressionVariants, ident: ${oIdent}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find expressionVariants, ident: ${oIdent}`, code: 'failedMiddlewareOutlierLookup'}});
+    logger.error(`Unable to find expressionVariants, ident: ${ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find expressionVariants, ident: ${ident}`, code: 'failedMiddlewareOutlierLookup'}});
   }
 
   req.expressionVariants = result;
@@ -30,7 +30,7 @@ router.param('expressionVariants', async (req, res, next, oIdent) => {
 });
 
 // Handle requests for outliers
-router.route('/expressionVariants/:expressionVariants([A-z0-9-]{36})')
+router.route('/:expressionVariant([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.expressionVariants);
   })
@@ -72,7 +72,7 @@ router.route('/expressionVariants/:expressionVariants([A-z0-9-]{36})')
   });
 
 // Routing for all Outliers
-router.route('/expressionVariants/:type(clinical|nostic|biological)?')
+router.route('/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
