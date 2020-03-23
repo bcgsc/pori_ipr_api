@@ -219,7 +219,7 @@ analysisReports.hasMany(mutationSignature, {
 });
 
 // Copy Number Analysis
-const copyVariants = sequelize.import('./reports/genomic/copyNumberAnalysis/copyVariants');
+const copyVariants = sequelize.import('./reports/copyVariants');
 
 copyVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
