@@ -8,6 +8,7 @@ TEMP_DB_NAME="${TEMP_DB_NAME}"
 HOST=iprdevdb.bcgsc.ca
 USERNAME=ipr_service
 SOURCE_DB=ipr-sync-dev
+TEMPLTE_DB_NAME=templateipr
 #SOURCE_DB=DEVSU-889-rename-alterations
 echo "db to create: $TEMP_DB_NAME"
 
@@ -25,12 +26,12 @@ echo ">>> dropdb -U $USERNAME -h $HOST $TEMP_DB_NAME"
 dropdb -U $USERNAME -h $HOST $TEMP_DB_NAME
 
 echo "creating empty db $TEMP_DB_NAME"
-echo ">>> createdb -U $USERNAME -h $HOST $TEMP_DB_NAME"
-createdb -U $USERNAME -h $HOST $TEMP_DB_NAME
+echo ">>> createdb -U $USERNAME -T $TEMPLTE_DB_NAME -h $HOST $TEMP_DB_NAME"
+createdb -U $USERNAME -T $TEMPLTE_DB_NAME -h $HOST $TEMP_DB_NAME
 
 echo "restoring dump ($SOURCE_DB.dump) to new empty db ($TEMP_DB_NAME)"
-echo ">>> pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -T new_template -d $TEMP_DB_NAME "
-pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -T new_template -d $TEMP_DB_NAME
+echo ">>> pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -T $TEMPLTE_DB_NAME -d $TEMP_DB_NAME "
+pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -T $TEMPLTE_DB_NAME -d $TEMP_DB_NAME
 
 echo "listing current db's"
 echo ">>> psql -h $HOST -U $USERNAME -l"
