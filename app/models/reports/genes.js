@@ -60,6 +60,14 @@ module.exports = (sequelize) => {
           },
         },
       ],
+      scopes: {
+        public: {
+          attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        },
+        minimal: {
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'createdAt', 'updatedAt', 'ident']},
+        },
+      },
     }
   );
 };

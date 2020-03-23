@@ -1,8 +1,8 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('outlier', {
+  return sequelize.define('expressionVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -12,10 +12,6 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
-    },
-    expType: {
-      type: Sq.TEXT,
-      defaultValue: 'rna',
     },
     geneId: {
       name: 'geneId',
@@ -28,15 +24,6 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     location: {
-      type: Sq.TEXT,
-    },
-    copyChange: {
-      type: Sq.TEXT,
-    },
-    lohState: {
-      type: Sq.TEXT,
-    },
-    cnvState: {
       type: Sq.TEXT,
     },
     rnaReads: {
@@ -53,7 +40,7 @@ module.exports = (sequelize) => {
       defaultValue: null,
     },
     tcgaPerc: {
-      type: Sq.INTEGER,
+      type: Sq.FLOAT,
     },
     tcgaPercCol: {
       type: Sq.TEXT,
@@ -149,13 +136,16 @@ module.exports = (sequelize) => {
     },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_expression_outlier',
+    tableName: 'reports_expression_variants',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
         include: [
-          {model: sequelize.models.genes, as: 'gene', attributes: ['ident', 'name']},
+          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
+      },
+      minimal: {
+        attributes: ['expression_class', 'rpkm', 'tcgaPerc', 'foldChange'],
       },
     },
   });

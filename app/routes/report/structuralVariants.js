@@ -83,7 +83,7 @@ router.route('/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterize
 
     // Get all structural variants (sv) for this report
     try {
-      const results = await db.models.structuralVariants.scope('public').findAll(options);
+      const results = await db.models.structuralVariants.scope('extended').findAll(options);
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
