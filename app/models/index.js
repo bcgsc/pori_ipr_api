@@ -265,6 +265,11 @@ analysisReports.hasMany(expressionAnalysis.outlier, {
 // This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
+  const extendedScope = {
+    attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+    include: [],
+  };
+
   if (name === 'structuralVariants') {
     // sequelize can't handle union-ing these so they require separate alias names
     variantModel.belongsTo(genes, {
@@ -279,15 +284,59 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
     genes.hasMany(variantModel, {
       as: `${name}2`, foreignKey: 'gene2Id', onDelete: 'CASCADE', constraints: true,
     });
+    extendedScope.attributes.exclude.push(...['gene1Id', 'gene2Id']);
+    extendedScope.include = [
+      {
+        model: sequelize.models.genes.scope('minimal'),
+        foreignKey: 'gene1Id',
+        as: 'gene1',
+        include: [],
+      },
+      {
+        model: sequelize.models.genes.scope('minimal'),
+        foreignKey: 'gene2Id',
+        as: 'gene2',
+        include: [],
+      },
+    ];
   } else {
     // Link variants to the gene model
     variantModel.belongsTo(genes, {
       as: 'gene', foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
     });
-    genes.hasMany(variantModel, {
-      as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
-    });
+    if (['outlier', 'cnv'].includes(name)) {
+      genes.hasOne(variantModel, {
+        as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+      });
+    } else {
+      genes.hasMany(variantModel, {
+        as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+      });
+    }
+    extendedScope.attributes.exclude.push(...['geneId']);
+    extendedScope.include = [
+      {
+        model: sequelize.models.genes.scope('minimal'),
+        foreignKey: 'geneId',
+        as: 'gene',
+        include: [],
+      },
+    ];
   }
+
+  // add the linked scope
+  for (const link of ['outlier', 'cnv']) {
+    if (link !== name) {
+      extendedScope.include.forEach((geneInclude) => {
+        geneInclude.include.push({
+          model: sequelize.models[link].scope('minimal'),
+          foreignKey: 'geneId',
+          as: link,
+        });
+      });
+    }
+  }
+  variantModel.addScope('extended', extendedScope);
 }
 
 // Presentation Data
