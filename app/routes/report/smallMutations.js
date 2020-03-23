@@ -25,7 +25,7 @@ router.param('mutation', async (req, res, next, mutIdent) => {
 });
 
 // Handle requests for alterations
-router.route('/small-mutations/:mutation([A-z0-9-]{36})')
+router.route('/:mutation([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.mutation);
   })
@@ -68,7 +68,7 @@ router.route('/small-mutations/:mutation([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/small-mutations/:type(clinical|nostic|biological|unknown)?')
+router.route('/:type(clinical|nostic|biological|unknown)?')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id};
@@ -81,7 +81,7 @@ router.route('/small-mutations/:type(clinical|nostic|biological|unknown)?')
 
     const options = {
       where,
-      order: [['gene', 'ASC']],
+      order: [['geneId', 'ASC']],
     };
 
     // Get all small mutations for this report
@@ -91,24 +91,6 @@ router.route('/small-mutations/:type(clinical|nostic|biological|unknown)?')
     } catch (error) {
       logger.error(`Unable to retrieve small mutations ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve small mutations', code: 'failedSomaticMutationlookup'}});
-    }
-  });
-
-// Routing for Alteration
-router.route('/mutation-signature')
-  .get(async (req, res) => {
-    const options = {
-      where: {reportId: req.report.id},
-      order: [['signature', 'ASC']],
-    };
-
-    // Get all small mutations for this report
-    try {
-      const results = await db.models.mutationSignature.scope('public').findAll(options);
-      return res.json(results);
-    } catch (error) {
-      logger.error(`Unable to retrieve mutation signatures ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve mutation signatures', code: 'failedMutationSignaturelookup'}});
     }
   });
 

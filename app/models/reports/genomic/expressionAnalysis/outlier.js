@@ -139,7 +139,10 @@ module.exports = (sequelize) => {
     tableName: 'reports_expression_variants',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+        include: [
+          {model: sequelize.models.genes, as: 'gene', attributes: ['ident', 'name']},
+        ],
       },
     },
   });

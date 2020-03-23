@@ -17,21 +17,32 @@ const AUTOCOMPLETE_LIMIT = 50;
 const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => {
   const {uri} = CONFIG.get('graphkb');
 
-  let query;
-  const mapping = {
-    evidence: 'EvidenceLevel',
-    variant: 'Variant',
-    therapy: 'Therapy',
+  const query = {
+    returnProperties: ['@class', '@rid', 'displayName'],
+    neighbors: 1,
+    limit: AUTOCOMPLETE_LIMIT,
+    orderBy: ['@class', 'displayName'],
   };
 
   if (targetType === 'context') {
-    query = {
-      target: 'Vocabulary',
-      queryType: 'ancestors',
-      filters: {name: 'therapeutic efficacy'},
-    };
+    query.target = 'Vocabulary';
+    query.queryType = 'ancestors';
+    query.filters = {name: 'therapeutic efficacy'};
   } else {
-    query = {target: mapping[targetType], limit: AUTOCOMPLETE_LIMIT};
+    if (targetType === 'evidence') {
+      query.target = 'EvidenceLevel';
+      delete query.limit; // short list with short names, just return all
+    } else if (targetType === 'therapy') {
+      query.target = 'Therapy';
+    } else {
+      query.target = 'Variant';
+      query.returnProperties.push(...[
+        'reference1.displayName',
+        'reference2.displayName',
+        'type.displayName',
+      ]);
+    }
+
     if (keyword) {
       query.keyword = keyword;
       query.queryType = 'keyword';
@@ -40,13 +51,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   const data = await request({
     uri: `${uri}/query`,
     method: 'POST',
-    body: {
-      ...query,
-      neighbors: 1,
-      limit: AUTOCOMPLETE_LIMIT,
-      returnProperties: ['@class', '@rid', 'displayName'],
-      orderBy: ['@class', 'displayName'],
-    },
+    body: query,
     json: true,
     headers: {
       Authorization: graphkbToken,

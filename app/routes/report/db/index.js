@@ -1,3 +1,5 @@
+const {Op} = require('sequelize');
+
 const db = require('../../../models');
 const logger = require('../../../log');
 const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
@@ -18,7 +20,7 @@ const createReportSection = async (reportId, genesRecordsByName, modelName, sect
     : [sectionContent];
 
   try {
-    if (modelName === 'sv') {
+    if (modelName === 'structuralVariants') {
       // add the gene FK associations
       await db.models[modelName].bulkCreate(
         records.map(({gene1, gene2, ...newEntry}) => {
@@ -69,7 +71,7 @@ const createReportGenes = async (report, content) => {
   const geneDefns = {};
   for (const model of GENE_LINKED_VARIANT_MODELS) {
     for (const variant of content[model] || []) {
-      if (model === 'sv') {
+      if (model === 'structuralVariants') {
         if (variant.gene1) {
           geneDefns[variant.gene1] = {name: variant.gene1};
         }
@@ -97,6 +99,60 @@ const createReportGenes = async (report, content) => {
 };
 
 
+const getGeneRelatedContent = async ({reportId, name, id}) => {
+  const [
+    kbMatches,
+    smallMutations,
+    copyNumber,
+    expRNA,
+    expDensityGraph,
+    structuralVariants,
+  ] = await Promise.all([
+    db.models.kbMatches.scope('public').findAll({
+      where: {
+        reportId,
+        gene: {[Op.iLike]: `%${name}%`},
+      },
+    }),
+    db.models.smallMutations.scope('public').findAll({
+      where: {
+        geneId: id,
+      },
+    }),
+    db.models.cnv.scope('public').findAll({
+      where: {
+        geneId: id,
+      },
+    }),
+    db.models.outlier.scope('public').findAll({
+      where: {
+        geneId: id,
+      },
+    }),
+    db.models.imageData.scope('public').findAll({
+      where: {
+        key: {[Op.iLike]: `%expDensity.${name}%`},
+        reportId,
+      },
+    }),
+    db.models.structuralVariants.scope('public').findAll({
+      where: {
+        [Op.or]: [{gene1Id: id}, {gene2Id: id}],
+      },
+    }),
+  ]);
+
+  return {
+    kbMatches,
+    smallMutations,
+    copyNumber,
+    expRNA,
+    expDensityGraph,
+    structuralVariants,
+  };
+};
+
+
 module.exports = {
-  createReportGenes, createReportSection,
+  createReportGenes, createReportSection, getGeneRelatedContent,
 };
