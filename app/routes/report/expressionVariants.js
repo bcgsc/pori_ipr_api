@@ -14,7 +14,7 @@ const logger = require('../../log');
 router.param('expressionVariant', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.expressionVariants.scope('public').findOne({where: {ident, expType: {[Op.in]: ['rna', 'protein']}}});
+    result = await db.models.expressionVariants.scope('public').findOne({where: {ident}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
@@ -75,7 +75,7 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
 router.route('/:type(clinical|nostic|biological)?')
   .get(async (req, res) => {
     // Setup where clause
-    const where = {reportId: req.report.id, expType: {[Op.in]: ['rna', 'protein']}};
+    const where = {reportId: req.report.id};
     // Searching for specific type of expressionVariants
     if (req.params.type) {
       // Are we looking for approved types?
