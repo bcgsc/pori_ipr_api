@@ -73,7 +73,7 @@ router.route('/')
     // Get all structural variants (sv) for this report
     try {
       const results = await db.models.structuralVariants.scope('extended').findAll({
-        order: [['geneId', 'ASC']],
+        order: [['gene1Id', 'ASC'], ['gene2Id', 'ASC']],
         include: [
           {
             model: db.models.analysis_report,

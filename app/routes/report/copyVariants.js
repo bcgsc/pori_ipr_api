@@ -77,7 +77,7 @@ router.route('/')
       const result = await db.models.copyVariants.scope('extended').findAll({
         order: [['geneId', 'ASC']],
         where: {
-          expression_class: {[Op.ne]: null},
+          cnvState: {[Op.ne]: null},
         },
         include: [
           {
