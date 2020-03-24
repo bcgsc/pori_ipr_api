@@ -71,27 +71,17 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
     }
   });
 
-// Routing for all Outliers
-router.route('/:type(clinical|nostic|biological)?')
+// Routing for all expression variants
+router.route('/')
   .get(async (req, res) => {
-    // Setup where clause
-    const where = {reportId: req.report.id};
-    // Searching for specific type of expressionVariants
-    if (req.params.type) {
-      // Are we looking for approved types?
-      where.outlierType = req.params.type;
-    }
-
-    const options = {
-      where,
-    };
-
     try {
-      const results = await db.models.expressionVariants.scope('extended').findAll(options);
+      const results = await db.models.expressionVariants.scope('extended').findAll({
+        where: {reportId: req.report.id},
+      });
       return res.json(results);
     } catch (error) {
-      logger.error(`Unable to retrieve outliers ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve outliers', code: 'failedOutlierlookup'}});
+      logger.error(`Unable to retrieve expressionVariants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve expressionVariants', code: 'failedOutlierlookup'}});
     }
   });
 
