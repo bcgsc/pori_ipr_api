@@ -66,19 +66,10 @@ router.route('/:sv([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
+router.route('/')
   .get(async (req, res) => {
-    // Setup where clause
-    const where = {reportId: req.report.id};
-
-    // Searching for specific type of alterations
-    if (req.params.type) {
-      // Are we looking for approved types?
-      where.svVariant = req.params.type;
-    }
-
     const options = {
-      where,
+      where: {reportId: req.report.id},
     };
 
     // Get all structural variants (sv) for this report
