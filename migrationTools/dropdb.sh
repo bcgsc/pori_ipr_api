@@ -7,6 +7,6 @@ TEMP_DB_NAME="${TEMP_DB_NAME}"
 HOST=iprdevdb.bcgsc.ca
 USERNAME=ipr_service
 
-echo "connect to the new db"
+echo "drop the test db"
 echo ">>> dropdb -h $HOST -U $USERNAME $TEMP_DB_NAME"
 dropdb -h $HOST -U $USERNAME $TEMP_DB_NAME
