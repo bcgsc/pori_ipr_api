@@ -207,7 +207,7 @@
             "cancerTypes": "stomach cancer"
         }
     ],
-    "cnv": [
+    "copyVariants": [
         {
             "gene": "MYCN",
             "ploidyCorrCpChange": 2,
@@ -246,7 +246,7 @@
             "ntermTranscript": "UPLOADPAT01"
         }
     ],
-    "outlier": [
+    "expressionVariants": [
         {
             "gene": "MALAT1",
             "location": "11:65265233-65273940",
