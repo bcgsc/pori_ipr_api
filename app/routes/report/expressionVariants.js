@@ -29,7 +29,7 @@ router.param('expressionVariant', async (req, res, next, ident) => {
   return next();
 });
 
-// Handle requests for outliers
+// Handle requests for expressionVariants
 router.route('/:expressionVariant([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.expressionVariants);
