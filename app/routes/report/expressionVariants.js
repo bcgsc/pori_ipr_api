@@ -7,10 +7,6 @@ const db = require('../../models');
 
 const logger = require('../../log');
 
-/*
- * Outliers
- *
- */
 router.param('expressionVariant', async (req, res, next, ident) => {
   let result;
   try {
