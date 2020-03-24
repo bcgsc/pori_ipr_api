@@ -137,6 +137,19 @@ Once you are done with testing, delete the temporary database
 dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
+#### Migrations in Pull Requests
+======================================
+
+1. Create temp db for ticket (see the `Testing Migration Changes` section)
+2. Point `DEFAULT_DB_NAME` varaible to your new temp db in `app/config.js`
+3. Test migration and code changes on temp db
+4. Once the code works, create a PR and wait for it to be approved
+5. Update the migration date to be the latest migration by running `migrationTools/moveMigration.sh`
+6. Run migration on `ipr-sync-dev` (helpful to mention you're running a migration on dev in IPR chat)
+7. Point `DEFAULT_DB_NAME` varaible back to the dev db
+8. Wait for PR approval
+9. Merge code changes into development branch
+10. Delete the temp db you created
 
 #### Process Manager
 ======================================
