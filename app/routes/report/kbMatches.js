@@ -61,7 +61,7 @@ router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|no
 
     try {
       // Get all alterations for this report
-      const result = await db.models.kbMatches.scope('public').findAll(options);
+      const result = await db.models.kbMatches.scope('extended').findAll(options);
       return res.json(result);
     } catch (error) {
       console.error(error);
