@@ -14,7 +14,7 @@ const _ = require('lodash');
 router.param('discussion', async (req, res, next, ident) => {
   try {
     const result = await db.models.presentation_discussion.scope('public').findOne({where: {ident}});
-    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
+    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.'}});
     req.discussion = result;
     return next();
   } catch (error) {
@@ -96,7 +96,7 @@ router.route('/discussion/:discussion')
 router.param('slide', async (req, res, next, ident) => {
   try {
     const result = await db.models.presentation_slides.scope('public').findOne({where: {ident}});
-    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.', code: 'failedMiddlewareOutlierLookup'}});
+    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.'}});
     req.slide = result;
     return next();
   } catch (error) {
