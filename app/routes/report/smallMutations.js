@@ -68,16 +68,10 @@ router.route('/:mutation([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/:type(clinical|nostic|biological|unknown)?')
+router.route('/')
   .get(async (req, res) => {
     // Setup where clause
     const where = {reportId: req.report.id};
-
-    // Searching for specific type of alterations
-    if (req.params.type) {
-      // Are we looking for approved types?
-      where.mutationType = req.params.type;
-    }
 
     const options = {
       where,
