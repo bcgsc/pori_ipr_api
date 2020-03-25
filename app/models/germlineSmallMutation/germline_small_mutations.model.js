@@ -15,7 +15,6 @@ module.exports = (sequelize) => {
       name: 'biopsyName',
       field: 'biopsy_name',
       type: Sq.TEXT,
-      allowNull: false,
       required: true,
     },
     normalLibrary: {

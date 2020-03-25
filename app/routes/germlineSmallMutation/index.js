@@ -46,10 +46,10 @@ router.param('gsm_report', gsmMiddleware);
  *
  * @returns {Promise.<object>} - Returns the created report
  */
-router.post('/patient/:patient/biopsy/:biopsy', async (req, res) => {
-  const {params: {patient: patientId, biopsy: biopsyName}, user} = req;
+router.post('/', async (req, res) => {
+  const {params: user} = req;
 
-  const content = {...req.body, patientId, biopsyName};
+  const content = {...req.body};
 
   try {
     // fix for path names that do not current match model names

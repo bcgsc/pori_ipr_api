@@ -30,13 +30,31 @@ describe('/germline-small-mutation', () => {
   });
 
 
-  describe('POST (create) /patient/:patient/biopsy/:biopsy', () => {
+  describe('POST (create)', () => {
     test('valid input - ok', async () => {
       const {body: record} = await request
-        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .post(`${BASE_URL}`)
         .auth(username, password)
         .type('json')
         .send({...mockData})
+        .expect(HTTP_STATUS.CREATED);
+      expect(record).toHaveProperty('ident');
+
+      // clean up the newly created report
+      await db.models.germline_small_mutation.destroy({
+        where: {ident: record.ident},
+        force: true,
+      });
+    });
+
+    test('biopsyName can be null - ok', async () => {
+      const uploadData = {...mockData};
+      delete uploadData.biopsyName;
+      const {body: record} = await request
+        .post(`${BASE_URL}`)
+        .auth(username, password)
+        .type('json')
+        .send({...uploadData})
         .expect(HTTP_STATUS.CREATED);
       expect(record).toHaveProperty('ident');
 
