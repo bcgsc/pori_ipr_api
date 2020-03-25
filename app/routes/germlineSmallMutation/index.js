@@ -116,7 +116,7 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   const {
     query: {
-      limit, offset, search, project,
+      limit, offset, patientId, biopsyName, project,
     },
   } = req;
 
@@ -125,9 +125,14 @@ router.get('/', async (req, res) => {
     where: {},
   };
 
-  if (search) {
-    opts.where.patientId = {[Op.iLike]: `%${req.query.search}%`};
+  if (patientId) {
+    opts.where.patientId = {[Op.iLike]: `%${req.query.patientId}%`};
   }
+
+  if (biopsyName) {
+    opts.where.biopsyName = {[Op.iLike]: `%${req.query.biopsyName}%`};
+  }
+
   if (project) {
     opts.where['$projects.name$'] = project;
   }
@@ -163,46 +168,6 @@ router.get('/', async (req, res) => {
 
   return res.json({total: gsmReports.count, reports: rows});
 });
-
-/**
- * Get Germline reports for specific biopsy
- *
- * @param {object} req - Express request
- * @param {object} res - Express response
- *
- * @property {string} req.params.analysis - Analysis biopsy
- * @property {string} req.params.patient - POGID
- *
- * @returns {Promise.<object>} - Returns the germline analysis reports
- */
-router.get('/patient/:patientId/biopsy/:biopsyName', async (req, res) => {
-  const {params: {patientId, biopsyName}} = req;
-
-  try {
-    const reports = await db.models.germline_small_mutation.scope('public').findAll({
-      order: [['createdAt', 'desc']],
-      where: {patientId, biopsyName},
-      attributes: {
-        exclude: ['deletedAt', 'id', 'biofx_assigned_id'],
-      },
-      include: [
-        {as: 'biofx_assigned', model: db.models.user.scope('public')},
-        {as: 'variants', model: db.models.germline_small_mutation_variant, separate: true},
-        {
-          as: 'reviews',
-          model: db.models.germline_small_mutation_review,
-          separate: true,
-          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
-        },
-      ],
-    });
-    return res.json(reports);
-  } catch (error) {
-    logger.error(`There was an error while trying to find all germline reports ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
-  }
-});
-
 
 router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', variantRouter);
 
