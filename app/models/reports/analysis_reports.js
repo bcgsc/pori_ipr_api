@@ -94,7 +94,13 @@ module.exports = (sequelize) => {
     },
     hooks: {
       ...DEFAULT_OPTIONS.hooks,
-      afterDestroy: async (instance) => {
+      // NOTE: This hook only gets triggered on instance.destroy or
+      // when individualHooks is set to true
+      afterDestroy: async (instance, options = {force: false}) => {
+        if (options.force === true) {
+          // when hard deleting a report, also delete the "updated" versions of the report
+          return sequelize.models.analysis_report.destroy({where: {ident: instance.ident}, force: true});
+        }
         // get associations from model
         const {
           ReportUserFilter, createdBy, projects, users, ...associations
