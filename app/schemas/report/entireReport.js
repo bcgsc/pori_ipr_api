@@ -59,9 +59,7 @@ const {
   presentation_slides, users, analystComments, projects, ...associations
 } = db.models.analysis_report.associations;
 
-schema.definitions = {
-  kbMatches: schemaGenerator(db.models.kbMatches, ['variantId']),
-};
+schema.definitions = {};
 
 // add all associated schemas
 Object.values(associations).forEach((association) => {
@@ -82,7 +80,6 @@ schema.definitions.kbMatches.properties.variant = {
 schema.definitions.kbMatches.required = schema.definitions.kbMatches.required || [];
 schema.definitions.kbMatches.required.push('variant');
 
-schema.definitions;
 schema.definitions.structuralVariants.properties = {
   ...schema.definitions.structuralVariants.properties,
   gene1: {
