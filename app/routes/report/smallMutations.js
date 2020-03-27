@@ -52,7 +52,7 @@ router.route('/:mutation([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update somatic mutations ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update somatic mutations', code: 'failedOutlierVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update somatic mutations'}});
     }
   })
   .delete(async (req, res) => {

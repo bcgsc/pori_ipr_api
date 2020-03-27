@@ -50,7 +50,7 @@ router.route('/:sv([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update structural variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update structural variant', code: 'failedOutlierVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update structural variant'}});
     }
   })
   .delete(async (req, res) => {

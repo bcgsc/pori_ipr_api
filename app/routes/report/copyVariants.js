@@ -60,7 +60,7 @@ router.route('/:cnv([A-z0-9-]{36})')
     // Soft delete the entry
     // Update result
     try {
-      await db.models.copyVariants.destroy({where: {ident: req.copyVariants.ident}});
+      await db.models.copyVariants.destroy({where: {ident: req.cnv.ident}});
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);

@@ -7,6 +7,7 @@ This folder is meant for helper methods and scripts to ensure consistency in wri
   - [Bump Migration Files](#bump-migration-files)
   - [Migrate Test DB](#migrate-test-db)
   - [Connect Test DB](#connect-test-db)
+  - [Drop the Test DB](#drop-the-test-db)
 
 ## Scripts
 
@@ -45,3 +46,10 @@ connect to the current test DB
 bash migrationTools/connectdb.sh
 ```
 
+### Drop the Test DB
+
+drop the current test DB
+
+```bash
+bash migrationTools/dropdb.sh
+```

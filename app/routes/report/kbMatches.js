@@ -64,7 +64,6 @@ router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|no
       const result = await db.models.kbMatches.scope('extended').findAll(options);
       return res.json(result);
     } catch (error) {
-      console.error(error);
       logger.error(`Unable to retrieve resource ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
     }

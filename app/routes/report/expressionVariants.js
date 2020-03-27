@@ -7,29 +7,25 @@ const db = require('../../models');
 
 const logger = require('../../log');
 
-/*
- * Outliers
- *
- */
 router.param('expressionVariant', async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.expressionVariants.scope('public').findOne({where: {ident}});
   } catch (error) {
     logger.error(`Unable to process request ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareOutlierQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request'}});
   }
 
   if (!result) {
     logger.error(`Unable to find expressionVariants, ident: ${ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find expressionVariants, ident: ${ident}`, code: 'failedMiddlewareOutlierLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find expressionVariants, ident: ${ident}`}});
   }
 
   req.expressionVariants = result;
   return next();
 });
 
-// Handle requests for outliers
+// Handle requests for expressionVariants
 router.route('/:expressionVariant([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.expressionVariants);
@@ -57,7 +53,7 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update expressionVariants ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update expressionVariants', code: 'failedOutlierVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update expressionVariants'}});
     }
   })
   .delete(async (req, res) => {
@@ -67,11 +63,11 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove expressionVariants ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove expressionVariants', code: 'failedOutlierRemove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove expressionVariants'}});
     }
   });
 
-// Routing for all Outliers
+// Routing for all expression variants
 router.route('/')
   .get(async (req, res) => {
     const {report: {ident: reportIdent}} = req;
@@ -98,8 +94,8 @@ router.route('/')
       });
       return res.json(results);
     } catch (error) {
-      logger.error(`Unable to retrieve outliers ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve outliers', code: 'failedOutlierlookup'}});
+      logger.error(`Unable to retrieve expressionVariants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve expressionVariants'}});
     }
   });
 

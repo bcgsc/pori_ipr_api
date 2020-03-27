@@ -29,8 +29,8 @@ echo ">>> createdb -U $USERNAME -T $TEMPLTE_DB_NAME -h $HOST $TEMP_DB_NAME"
 createdb -U $USERNAME -T $TEMPLTE_DB_NAME -h $HOST $TEMP_DB_NAME
 
 echo "restoring dump ($SOURCE_DB.dump) to new empty db ($TEMP_DB_NAME)"
-echo ">>> pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -T $TEMPLTE_DB_NAME -d $TEMP_DB_NAME "
-pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -T $TEMPLTE_DB_NAME -d $TEMP_DB_NAME
+echo ">>> pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump -d $TEMP_DB_NAME "
+pg_restore -Fc -U $USERNAME -h $HOST $SOURCE_DB.dump  -d $TEMP_DB_NAME
 
 echo "listing current db's"
 echo ">>> psql -h $HOST -U $USERNAME -l"
