@@ -1,10 +1,9 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../../models');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
 const {BASE_EXCLUDE} = require('../../exclude');
-const schemaGenerator = require('./basicReportComponentSchemaGenerator');
 const variantSchemas = require('./variant');
 const kbMatchesSchema = require('./kbMatches');
+const {generateReportSubSchema} = require('./util');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
@@ -67,7 +66,7 @@ schema.definitions = {...variantSchemas, kbMatches: kbMatchesSchema};
 Object.values(associations).forEach((association) => {
   const model = association.target.name;
   if (!schema.definitions[model] === undefined) {
-    const generatedSchema = schemaGenerator(db.models[model]);
+    const generatedSchema = generateReportSubSchema(db.models[model]);
 
     if (!generatedSchema.required) {
       generatedSchema.required = [];
