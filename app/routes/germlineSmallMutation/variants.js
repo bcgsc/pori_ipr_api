@@ -1,7 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
-const _ = require('lodash');
 const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
