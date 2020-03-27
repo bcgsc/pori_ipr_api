@@ -7,11 +7,8 @@ const {generateReportSubSchema} = require('./util');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-const REPORT_EXCLUDE = ['createdBy_id'];
-const exclude = BASE_EXCLUDE.concat(REPORT_EXCLUDE);
-
 const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
-  exclude,
+  exclude: ['createdBy_id', ...BASE_EXCLUDE],
   associations: true,
   excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
@@ -67,7 +64,7 @@ Object.values(associations).forEach((association) => {
   const model = association.target.name;
 
   // generate schemas for the remaining sections
-  if (!schema.definitions[model] === undefined) {
+  if (schema.definitions[model] === undefined) {
     const generatedSchema = generateReportSubSchema(db.models[model]);
 
     if (!generatedSchema.required) {

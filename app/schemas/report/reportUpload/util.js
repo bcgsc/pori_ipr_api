@@ -1,9 +1,7 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
-const {BASE_EXCLUDE} = require('../../exclude');
+const {REPORT_EXCLUDE} = require('../../exclude');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
-
-const REPORT_EXCLUDE = ['createdBy_id', ...BASE_EXCLUDE];
 
 /**
  * generate the schema for a section of the report (intended to be used as part of a larger schema)
@@ -16,7 +14,7 @@ const REPORT_EXCLUDE = ['createdBy_id', ...BASE_EXCLUDE];
  *
  * @returns {object} the JSON schema portion to be added as part of a larger schema
  */
-const generateReportSubSchema = (model, {properties = {}, exclude = [], required = []}) => {
+const generateReportSubSchema = (model, {properties = {}, exclude = [], required = []} = {}) => {
   const schema = schemaManager.generate(model, new JsonSchema7Strategy(), {
     exclude: [...REPORT_EXCLUDE, ...exclude],
     associations: false,
