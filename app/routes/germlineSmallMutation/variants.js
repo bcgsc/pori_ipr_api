@@ -68,7 +68,8 @@ router.route('/:variant')
         paranoid: true,
       };
       await db.models.germline_small_mutation_variant.update(req.body, opt);
-      return res.json(await req.variant.reload(opt));
+      await req.variant.reload(opt);
+      return res.json(await req.variant);
     } catch (error) {
       logger.error(`Error while trying to update variant ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update variant'});
