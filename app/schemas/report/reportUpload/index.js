@@ -65,6 +65,8 @@ schema.definitions = {...variantSchemas, kbMatches: kbMatchesSchema};
 // add all associated schemas
 Object.values(associations).forEach((association) => {
   const model = association.target.name;
+
+  // generate schemas for the remaining sections
   if (!schema.definitions[model] === undefined) {
     const generatedSchema = generateReportSubSchema(db.models[model]);
 
