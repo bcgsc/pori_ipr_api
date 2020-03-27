@@ -1,7 +1,7 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
-const db = require('../../models');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
-const {BASE_EXCLUDE} = require('../exclude');
+const db = require('../../../models');
+const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
+const {BASE_EXCLUDE} = require('../../exclude');
 const schemaGenerator = require('./basicReportComponentSchemaGenerator');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
