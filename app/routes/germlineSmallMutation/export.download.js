@@ -50,7 +50,7 @@ router.get('/batch/download', async (req, res, next) => {
 
     next();
 
-    return req.flashToken.destroy();
+    return flashToken.destroy();
   } catch (error) {
     logger.error(error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to query for flash token provided'}});
