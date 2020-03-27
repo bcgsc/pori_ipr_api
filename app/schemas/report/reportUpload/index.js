@@ -4,6 +4,7 @@ const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
 const {BASE_EXCLUDE} = require('../../exclude');
 const schemaGenerator = require('./basicReportComponentSchemaGenerator');
 const variantSchemas = require('./variant');
+const kbMatchesSchema = require('./kbMatches');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
@@ -60,7 +61,7 @@ const {
   presentation_slides, users, analystComments, projects, ...associations
 } = db.models.analysis_report.associations;
 
-schema.definitions = {...variantSchemas};
+schema.definitions = {...variantSchemas, kbMatches: kbMatchesSchema};
 
 // add all associated schemas
 Object.values(associations).forEach((association) => {
@@ -74,14 +75,6 @@ Object.values(associations).forEach((association) => {
     schema.definitions[model] = generatedSchema;
   }
 });
-
-
-schema.definitions.kbMatches = schemaGenerator(db.models.kbMatches, ['variantId']);
-schema.definitions.kbMatches.properties.variant = {
-  type: 'string', description: 'the variant key linking this to one of the variant records',
-};
-schema.definitions.kbMatches.required = schema.definitions.kbMatches.required || [];
-schema.definitions.kbMatches.required.push('variant');
 
 
 module.exports = schema;
