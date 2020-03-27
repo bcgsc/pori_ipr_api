@@ -338,7 +338,7 @@ router.route('/:report')
     }
 
     try {
-      await db.models.analysis_report.destroy({where: {id: req.report.id}});
+      await req.report.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error trying to delete report ${error}`);
