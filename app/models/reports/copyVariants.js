@@ -1,8 +1,8 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('cnv', {
+  return sequelize.define('copyVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -12,9 +12,6 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
-    },
-    cnvVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'commonAmplified', 'homodTumourSupress', 'highlyExpOncoGain', 'lowlyExpTSloss'),
     },
     geneId: {
       name: 'geneId',
@@ -47,24 +44,21 @@ module.exports = (sequelize) => {
     size: {
       type: Sq.FLOAT,
     },
-    expressionRpkm: {
-      type: Sq.FLOAT,
-    },
-    foldChange: {
-      type: Sq.FLOAT,
-    },
-    tcgaPerc: {
-      type: Sq.FLOAT,
-    },
   }, {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_copy_number_analysis_cnv',
+    tableName: 'reports_copy_variants',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
         include: [
-          {model: sequelize.models.genes, as: 'gene', attributes: ['ident', 'name']},
+          {
+            model: sequelize.models.genes.scope('minimal'),
+            as: 'gene',
+          },
         ],
+      },
+      minimal: {
+        attributes: ['cnvState', 'lohState', 'ploidyCorrCpChange'],
       },
     },
   });

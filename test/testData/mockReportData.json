@@ -207,9 +207,8 @@
             "cancerTypes": "stomach cancer"
         }
     ],
-    "cnv": [
+    "copyVariants": [
         {
-            "cnvVariant": "clinical",
             "gene": "MYCN",
             "ploidyCorrCpChange": 2,
             "lohState": "HET",
@@ -217,10 +216,7 @@
             "chromosomeBand": "2p24.3",
             "start": 16017349,
             "end": 16108192,
-            "size": 0.09,
-            "expressionRpkm": 0.14,
-            "foldChange": -1.41,
-            "tcgaPerc": 53
+            "size": 0.09
         }
     ],
     "mavis": [
@@ -250,15 +246,10 @@
             "ntermTranscript": "UPLOADPAT01"
         }
     ],
-    "outlier": [
+    "expressionVariants": [
         {
-            "expType": "rna",
-            "outlierType": "upreg_onco",
             "gene": "MALAT1",
             "location": "11:65265233-65273940",
-            "copyChange": "1",
-            "lohState": "HET",
-            "cnvState": "Gain",
             "rnaReads": null,
             "rpkm": 1889.11,
             "foldChange": 3.58,
