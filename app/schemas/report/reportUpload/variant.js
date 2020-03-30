@@ -16,6 +16,7 @@ const variantSchemas = {
       },
     },
     required: ['gene1', 'gene2'],
+    exclude: ['gene1Id', 'gene2Id'],
   }),
 };
 
