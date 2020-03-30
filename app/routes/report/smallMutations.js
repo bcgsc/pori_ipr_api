@@ -9,7 +9,7 @@ const logger = require('../../log');
 router.param('mutation', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.somaticMutations.scope('public').findOne({where: {ident: mutIdent}});
+    result = await db.models.smallMutations.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
     logger.error(`Unable to get somatic mutations ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get somatic mutations', code: 'failedMiddlewareSomaticMutationQuery'}});
