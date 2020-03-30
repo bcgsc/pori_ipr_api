@@ -15,7 +15,7 @@ const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
-const reportSchema = require('../../schemas/report/entireReport');
+const reportUploadSchema = require('../../schemas/report/reportUpload');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -207,7 +207,7 @@ router.route('/')
 
     // validate loaded report against schema
     try {
-      validateAgainstSchema(reportSchema, req.body);
+      validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
       logger.error(`Error while validating ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'There was an error validating', cause: error}});

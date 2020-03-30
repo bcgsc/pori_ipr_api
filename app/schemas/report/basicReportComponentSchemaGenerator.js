@@ -10,16 +10,13 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
  * @param {object} model - Sequelize model
  * @returns {object} - Returns a schema based on the given model
  */
-const schemaGenerator = (model, additionalExclude = []) => {
+const schemaGenerator = (model) => {
   const schema = schemaManager.generate(model, new JsonSchema7Strategy(), {
-    exclude: [...REPORT_EXCLUDE, ...additionalExclude],
+    exclude: REPORT_EXCLUDE,
     associations: false,
   });
 
   schema.additionalProperties = false;
-
-  // remove association schema draft versions
-  delete schema.$schema;
   return schema;
 };
 
