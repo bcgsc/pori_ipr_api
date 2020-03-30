@@ -1,55 +1,30 @@
 const {Op} = require('sequelize');
 
 const db = require('../../../models');
+const {loadImage} = require('./../images');
 const logger = require('../../../log');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../../constants');
 
 /**
  * Creates a new section for the report adding the report and gene foreign keys where required
  *
  * @param {Number} reportId the report Id for the report these sections belongto
- * @param {Object} genesRecordsByName mapping of gene names to their corresponding records
  * @param {string} modelName name of the model for this section
  * @param {Array|Object} sectionContent the record or records to be created for this section
  *
  * @returns {Array.<Object>} the newly created records in this section
  */
-const createReportSection = async (reportId, genesRecordsByName, modelName, sectionContent) => {
+const createReportSection = async (reportId, modelName, sectionContent) => {
   const records = Array.isArray(sectionContent)
     ? sectionContent
     : [sectionContent];
 
   try {
-    if (modelName === 'structuralVariants') {
-      // add the gene FK associations
-      await db.models[modelName].bulkCreate(
-        records.map(({gene1, gene2, ...newEntry}) => {
-          return {
-            ...newEntry,
-            reportId,
-            gene1Id: genesRecordsByName[gene1],
-            gene2Id: genesRecordsByName[gene2],
-          };
-        })
-      );
-    } else if (GENE_LINKED_VARIANT_MODELS.includes(modelName)) {
-      // add the gene FK association
-      await db.models[modelName].bulkCreate(
-        records.map(({gene, ...newEntry}) => {
-          return {
-            ...newEntry,
-            reportId,
-            geneId: genesRecordsByName[gene],
-          };
-        })
-      );
-    } else {
-      await db.models[modelName].bulkCreate(
-        records.map((newEntry) => {
-          return {...newEntry, reportId};
-        })
-      );
-    }
+    await db.models[modelName].bulkCreate(
+      records.map((newEntry) => {
+        return {...newEntry, reportId};
+      })
+    );
   } catch (err) {
     logger.error(`Error creating section (${modelName}): ${err}`);
     throw err;
@@ -153,6 +128,123 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
 };
 
 
+const createReportVariantsSection = async (reportId, genesRecordsByName, modelName, sectionContent) => {
+  const keyCheck = new Set();
+  let records;
+  // check the 'key' is unique
+  for (const {key} of sectionContent) {
+    if (key) {
+      if (keyCheck.has(key)) {
+        throw new Error(`bad input. variant key violated unique constraint (key=${key})`);
+      }
+      keyCheck.add(key);
+    }
+  }
+  if (modelName === 'structuralVariants') {
+    // add the gene FK associations
+    records = await db.models[modelName].bulkCreate(
+      sectionContent.map(({
+        key, gene1, gene2, ...newEntry
+      }) => {
+        return {
+          ...newEntry,
+          reportId,
+          gene1Id: genesRecordsByName[gene1],
+          gene2Id: genesRecordsByName[gene2],
+        };
+      })
+    );
+  } else {
+    // add the gene FK association
+    records = await db.models[modelName].bulkCreate(
+      sectionContent.map(({key, gene, ...newEntry}) => {
+        return {
+          ...newEntry,
+          reportId,
+          geneId: genesRecordsByName[gene],
+        };
+      })
+    );
+  }
+  const mapping = {};
+
+  for (let i = 0; i < sectionContent.length; i++) {
+    if (sectionContent[i].key) {
+      mapping[sectionContent[i].key] = records[i].id;
+    }
+  }
+  return mapping;
+};
+
+/**
+ * Creates the report genes, variants, and kb-matches which must all be interlinked
+ */
+const createReportContent = async (report, content) => {
+  // create the genes first since they will need to be linked to the variant records
+  const geneDefns = await createReportGenes(report, content);
+
+  // create the variants and create a mapping from their input 'key' value to the new records
+  const variantMapping = {};
+  const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
+    const variantModel = KB_PIVOT_MAPPING[variantType];
+    const mapping = await createReportVariantsSection(
+      report.id, geneDefns, variantModel, content[variantModel] || []
+    );
+    variantMapping[variantType] = mapping;
+  });
+
+  // create the probe results (linked to gene but not to kbMatches)
+  variantPromises.push(createReportVariantsSection(
+    report.id, geneDefns, 'probeResults', content.probeResults || []
+  ));
+
+  await Promise.all(variantPromises);
+  // then the kb matches which must be linked to the variants
+  const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
+    if (variantMapping[variantType] === undefined) {
+      throw new Error(`cannot link kb-matches to variant type ${variantType} as none were specified`);
+    }
+    if (variantMapping[variantType][variant] === undefined) {
+      throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
+    }
+    return {...match, variantId: variantMapping[variantType][variant], variantType};
+  });
+
+  await createReportSection(report.id, 'kbMatches', kbMatches);
+
+  // finally all other sections can be built
+  const excludeSections = new Set([
+    ...GENE_LINKED_VARIANT_MODELS,
+    'analystComments',
+    'createdBy',
+    'genes',
+    'kbMatches',
+    'presentation_discussion',
+    'presentation_slides',
+    'probe_signature',
+    'projects',
+    'ReportUserFilter',
+    'users',
+  ]);
+
+  // add images to db
+  const promises = (content.images || []).map(async ({path, key}) => {
+    return loadImage(report.id, key, path);
+  });
+
+  // add the other sections
+  Object.keys(db.models.analysis_report.associations).filter((model) => {
+    return !excludeSections.has(model);
+  }).forEach((model) => {
+    logger.debug(`creating report (${model}) section (${report.ident})`);
+    if (content[model]) {
+      promises.push(createReportSection(report.id, model, content[model]));
+    }
+  });
+  await Promise.all(promises);
+};
+
+
 module.exports = {
-  createReportGenes, createReportSection, getGeneRelatedContent,
+  createReportContent, getGeneRelatedContent,
 };

@@ -157,20 +157,15 @@
     "kbMatches": [
         {
             "category": "unknown",
-            "gene": "ZNF703",
-            "variant": "p.A514del",
+            "variantType": "exp",
+            "variant": "hash12345678",
             "kbVariant": "protein increased expression",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
             "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "expressionTissueFc": "Neutral",
-            "expressionCancerPercentile": "Mid",
-            "copyNumber": "Neutral",
             "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
-            "lohRegion": "No",
-            "zygosity": "sub",
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
@@ -185,7 +180,6 @@
     ],
     "smallMutations": [
         {
-            "mutationType": "unknown",
             "gene": "ZFP36L2",
             "transcript": "ENST00000282388",
             "proteinChange": "p.Q401del",
@@ -227,11 +221,10 @@
     ],
     "structuralVariants": [
         {
-            "svVariant": "uncharacterized",
             "gene1": "FN1",
             "gene2": "FN1",
-            "exon1": "e39",
-            "exon2": "e37",
+            "exon1": 39,
+            "exon2": 37,
             "breakpoint": "2:216238066|2:216240359",
             "eventType": "duplication",
             "detectedIn": "DNA",
@@ -248,6 +241,7 @@
     ],
     "expressionVariants": [
         {
+            "key": "hash12345678",
             "gene": "MALAT1",
             "location": "11:65265233-65273940",
             "rnaReads": null,

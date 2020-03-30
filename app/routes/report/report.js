@@ -6,17 +6,16 @@ const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
-const {loadImage} = require('./images');
 const logger = require('../../log');
 
 const reportMiddleware = require('../../middleware/analysis_report');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
-const {createReportSection, createReportGenes} = require('./db');
+const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
-const reportSchema = require('../../schemas/report/entireReport');
+const reportUploadSchema = require('../../schemas/report/reportUpload');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -208,7 +207,7 @@ router.route('/')
 
     // validate loaded report against schema
     try {
-      validateAgainstSchema(reportSchema, req.body);
+      validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
       logger.error(`Error while validating ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'There was an error validating', cause: error}});
@@ -267,33 +266,7 @@ router.route('/')
     }
 
     try {
-      // create the genes first since they will need to be linked to the variant records
-      const geneDefns = await createReportGenes(report, req.body);
-
-      const promises = [];
-      // for all associations create new entry based on the
-      // included associations in req.body
-      const {
-        ReportUserFilter,
-        createdBy,
-        probe_signature,
-        presentation_discussion,
-        presentation_slides,
-        users,
-        analystComments,
-        projects,
-        genes,
-        ...associations
-      } = db.models.analysis_report.associations;
-
-      Object.values(associations).forEach((association) => {
-        const model = association.target.name;
-        logger.debug(`creating report (${model}) section (${report.ident})`);
-        if (req.body[model]) {
-          promises.push(createReportSection(report.id, geneDefns, model, req.body[model]));
-        }
-      });
-      await Promise.all(promises);
+      await createReportContent(report, req.body);
     } catch (error) {
       logger.error(`Unable to create all report components ${error}`);
 
@@ -305,16 +278,6 @@ router.route('/')
       }
 
       return res.status(400).json({error: {message: 'Unable to create all report components', cause: error}});
-    }
-
-    // add images to db
-    try {
-      await Promise.all(req.body.images.map(async ({path, key}) => {
-        return loadImage(report.id, key, path);
-      }));
-    } catch (error) {
-      logger.error(`Unable to load images ${error}`);
-      return cleanUpReport(error);
     }
 
     return res.json({message: 'Report upload was successful', ident: report.ident});
