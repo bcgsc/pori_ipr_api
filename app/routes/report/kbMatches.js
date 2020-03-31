@@ -42,7 +42,7 @@ router.route('/')
 
     // Searching for specific type of alterations
     if (category) {
-      where.category = category;
+      where.category = {[Op.in]: category.split(',')};
     }
 
     if (matchedCancer !== undefined) {
