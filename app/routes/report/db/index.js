@@ -73,33 +73,38 @@ const createReportGenes = async (report, content) => {
   return geneDefns;
 };
 
-
+/**
+ * get content related to a given gene
+ *
+ * @param {object} opt the gene record
+ * @param {Number} opt.reportId the report this gene belongs to
+ * @param {string} opt.name the gene name
+ * @param {Number} opt.id the gene id
+ *
+ * @returns {object} the gene related records by section
+ */
 const getGeneRelatedContent = async ({reportId, name, id}) => {
   const [
-    kbMatches,
     smallMutations,
     copyNumber,
     expRNA,
     expDensityGraph,
     structuralVariants,
   ] = await Promise.all([
-    db.models.kbMatches.scope('public').findAll({
-      where: {
-        reportId,
-        gene: {[Op.iLike]: `%${name}%`},
-      },
-    }),
     db.models.smallMutations.scope('public').findAll({
+      attributes: {include: ['id']},
       where: {
         geneId: id,
       },
     }),
     db.models.copyVariants.scope('public').findAll({
+      attributes: {include: ['id']},
       where: {
         geneId: id,
       },
     }),
     db.models.expressionVariants.scope('public').findAll({
+      attributes: {include: ['id']},
       where: {
         geneId: id,
       },
@@ -111,11 +116,36 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
       },
     }),
     db.models.structuralVariants.scope('public').findAll({
+      attributes: {include: ['id']},
       where: {
         [Op.or]: [{gene1Id: id}, {gene2Id: id}],
       },
     }),
   ]);
+
+  const popIdField = (record) => {
+    const {dataValues: {id: recordId}} = record;
+    delete record.id;
+    delete record.dataValues.id;
+    return recordId;
+  };
+
+  // do after so that we can use the variant Ids for filtering
+  const kbMatches = await db.models.kbMatches.scope('public').findAll({
+    where: {
+      [Op.and]: [
+        {reportId},
+        {
+          [Op.or]: [
+            {variantType: 'exp', variantId: {[Op.in]: expRNA.map(popIdField)}},
+            {variantType: 'sv', variantId: {[Op.in]: structuralVariants.map(popIdField)}},
+            {variantType: 'cnv', variantId: {[Op.in]: copyNumber.map(popIdField)}},
+            {variantType: 'mut', variantId: {[Op.in]: smallMutations.map(popIdField)}},
+          ],
+        },
+      ],
+    },
+  });
 
   return {
     kbMatches,

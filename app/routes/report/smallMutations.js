@@ -9,7 +9,7 @@ const logger = require('../../log');
 router.param('mutation', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.somaticMutations.scope('public').findOne({where: {ident: mutIdent}});
+    result = await db.models.smallMutations.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
     logger.error(`Unable to get somatic mutations ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get somatic mutations', code: 'failedMiddlewareSomaticMutationQuery'}});
@@ -70,17 +70,26 @@ router.route('/:mutation([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    // Setup where clause
-    const where = {reportId: req.report.id};
-
-    const options = {
-      where,
-      order: [['geneId', 'ASC']],
-    };
+    const {report: {ident: reportIdent}} = req;
 
     // Get all small mutations for this report
     try {
-      const results = await db.models.smallMutations.scope('extended').findAll(options);
+      const results = await db.models.smallMutations.scope('extended').findAll({
+        order: [['geneId', 'ASC']],
+        include: [
+          {
+            model: db.models.analysis_report,
+            where: {ident: reportIdent},
+            attributes: [],
+            required: true,
+            as: 'report',
+          },
+          {
+            model: db.models.kbMatches,
+            attributes: ['ident', 'category'],
+          },
+        ],
+      });
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve small mutations ${error}`);

@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
@@ -68,24 +69,30 @@ router.route('/:cnv([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/:type(clinical|nostic|biological|commonAmplified|homodTumourSupress|highlyExpOncoGain|lowlyExpTSloss)?')
+router.route('/')
   .get(async (req, res) => {
-    // Setup where clause
-    const where = {reportId: req.report.id};
-
-    // Searching for specific type of alterations
-    if (req.params.type) {
-      // Are we looking for approved types?
-      where.cnvVariant = req.params.type;
-    }
-
-    const options = {
-      where,
-    };
-
+    const {report: {ident: reportIdent}} = req;
     // Get all cnv's for this report
     try {
-      const result = await db.models.copyVariants.scope('extended').findAll(options);
+      const result = await db.models.copyVariants.scope('extended').findAll({
+        order: [['geneId', 'ASC']],
+        where: {
+          cnvState: {[Op.ne]: null},
+        },
+        include: [
+          {
+            model: db.models.analysis_report,
+            where: {ident: reportIdent},
+            attributes: [],
+            required: true,
+            as: 'report',
+          },
+          {
+            model: db.models.kbMatches,
+            attributes: ['ident', 'category'],
+          },
+        ],
+      });
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);

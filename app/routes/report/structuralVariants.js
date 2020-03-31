@@ -68,13 +68,26 @@ router.route('/:sv([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    const options = {
-      where: {reportId: req.report.id},
-    };
+    const {report: {ident: reportIdent}} = req;
 
     // Get all structural variants (sv) for this report
     try {
-      const results = await db.models.structuralVariants.scope('extended').findAll(options);
+      const results = await db.models.structuralVariants.scope('extended').findAll({
+        order: [['gene1Id', 'ASC'], ['gene2Id', 'ASC']],
+        include: [
+          {
+            model: db.models.analysis_report,
+            where: {ident: reportIdent},
+            attributes: [],
+            required: true,
+            as: 'report',
+          },
+          {
+            model: db.models.kbMatches,
+            attributes: ['ident', 'category'],
+          },
+        ],
+      });
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
