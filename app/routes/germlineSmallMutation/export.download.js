@@ -140,7 +140,7 @@ router.get('/batch/download', async (req, res) => {
     // Ensure all required reviews are present on report
     const reportReviews = report.reviews.map((review) => { return review.type; });
 
-    if (requiredReviews.every((state) => { return reportReviews.include(state); })) {
+    if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
       // contains all the required reviews
       const summaryMatch = matchedReportSummaries.find((summary) => {
         return summary.report.patientId === report.patientId;
