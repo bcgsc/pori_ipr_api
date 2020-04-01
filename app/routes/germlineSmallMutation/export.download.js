@@ -115,16 +115,20 @@ router.get('/batch/download', async (req, res) => {
     matchedReportSummaries = await db.models.tumourAnalysis.findAll({
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
-        {model: db.models.analysis_report, as: 'report'},
-      ],
+        {
+          model: db.models.analysis_report,
+          as: 'report',
       where: {
         patientId: {
-          [Op.in]: germlineReports.map((report) => { return report.patientId; }),
+              [Op.in]: germlineReports.map((germReport) => { return germReport.patientId; }),
         },
-        '$report.state$': {
+            state: {
           [Op.in]: ['presented', 'active', 'archived'],
         },
       },
+          required: true,
+        },
+      ],
     });
   } catch (error) {
     logger.error(`Error while trying to get tumour analysis ${error}`);
