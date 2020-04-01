@@ -116,14 +116,14 @@ router.get('/batch/download', async (req, res) => {
         {
           model: db.models.analysis_report,
           as: 'report',
-      where: {
-        patientId: {
+          where: {
+            patientId: {
               [Op.in]: germlineReports.map((germReport) => { return germReport.patientId; }),
-        },
+            },
             state: {
-          [Op.in]: ['presented', 'active', 'archived'],
-        },
-      },
+              [Op.in]: ['presented', 'active', 'archived'],
+            },
+          },
           required: true,
         },
       ],
@@ -192,7 +192,7 @@ router.get('/batch/download', async (req, res) => {
     // Mark all exported reports in DB
     await Promise.all(germlineReports.map(async (report) => {
       report.exported = true;
-      return report.save();
+      return report.save({fields: ['exported'], hooks: false});
     }));
     return res.end();
   } catch (error) {
