@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
@@ -69,9 +70,27 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
 // Routing for all expression variants
 router.route('/')
   .get(async (req, res) => {
+    const {report: {ident: reportIdent}} = req;
+
     try {
       const results = await db.models.expressionVariants.scope('extended').findAll({
-        where: {reportId: req.report.id},
+        order: [['geneId', 'ASC']],
+        where: {
+          expression_class: {[Op.ne]: null},
+        },
+        include: [
+          {
+            model: db.models.analysis_report,
+            where: {ident: reportIdent},
+            attributes: [],
+            required: true,
+            as: 'report',
+          },
+          {
+            model: db.models.kbMatches,
+            attributes: ['ident', 'category'],
+          },
+        ],
       });
       return res.json(results);
     } catch (error) {

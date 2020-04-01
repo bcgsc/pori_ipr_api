@@ -1,9 +1,19 @@
 const Sq = require('sequelize');
 
+const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
+class KbMatches extends Sq.Model {
+  getVariant(options) {
+    const targetModel = this.experimentalVariantType;
+    if (!targetModel) return Promise.resolve(null);
+    const mixinMethodName = `get${targetModel[0].toUpperCase()}${targetModel.slice(1)}`;
+    return this[mixinMethodName](options);
+  }
+}
+
 module.exports = (sequelize) => {
-  return sequelize.define('kbMatches', {
+  return KbMatches.init({
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -23,12 +33,6 @@ module.exports = (sequelize) => {
       name: 'approvedTherapy',
       type: Sq.TEXT,
       defaultValue: null,
-    },
-    gene: {
-      type: Sq.TEXT,
-    },
-    variant: {
-      type: Sq.TEXT,
     },
     kbVariant: {
       field: 'kb_variant',
@@ -50,30 +54,7 @@ module.exports = (sequelize) => {
     reference: {
       type: Sq.TEXT,
     },
-    expressionTissueFc: {
-      field: 'expression_tissue_fc',
-      name: 'expressionTissueFc',
-      type: Sq.TEXT,
-    },
-    expressionCancerPercentile: {
-      field: 'expression_cancer_percentile',
-      name: 'expressionCancerPercentile',
-      type: Sq.TEXT,
-    },
-    copyNumber: {
-      field: 'copy_number',
-      name: 'copyNumber',
-      type: Sq.TEXT,
-    },
     sample: {
-      type: Sq.TEXT,
-    },
-    lohRegion: {
-      type: Sq.TEXT,
-      field: 'loh_region',
-      name: 'lohRegion',
-    },
-    zygosity: {
       type: Sq.TEXT,
     },
     evidenceLevel: {
@@ -93,8 +74,16 @@ module.exports = (sequelize) => {
     },
     variantType: {
       field: 'variant_type',
-      name: 'variantType',
-      type: Sq.TEXT,
+      name: KB_PIVOT_COLUMN,
+      type: Sq.ENUM(...Object.keys(KB_PIVOT_MAPPING)),
+      allowNull: false,
+    },
+    variantId: {
+      // the 'FK' top the individual variant tables, cannot enforce constraints b/c it is polymorphic
+      name: 'variantId',
+      field: 'variant_id',
+      type: Sq.INTEGER,
+      allowNull: false,
     },
     kbVariantId: {
       name: 'kbVariantId',
@@ -116,8 +105,44 @@ module.exports = (sequelize) => {
     tableName: 'reports_kb_matches',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'deletedAt', 'reportId']},
+        attributes: {exclude: ['id', 'deletedAt', 'reportId', 'variantId']},
+        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+          return {model: sequelize.models[modelName].scope('public'), as: modelName};
+        }),
+      },
+      extended: {
+        attributes: {exclude: ['id', 'deletedAt', 'reportId', 'variantId']},
+        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+          return {model: sequelize.models[modelName].scope('extended'), as: modelName};
+        }),
       },
     },
+    hooks: {
+      ...DEFAULT_OPTIONS.hooks,
+      afterFind: (findResult) => {
+        if (!Array.isArray(findResult)) {
+          findResult = [findResult];
+        }
+        for (const instance of findResult) {
+          const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
+
+          for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
+            const modelName = KB_PIVOT_MAPPING[pivotType];
+
+            if (instance[modelName] !== undefined) {
+              if (pivotType === currentPivotValue) {
+                instance.variant = instance[modelName];
+                instance.dataValues.variant = instance[modelName].dataValues;
+              }
+              // To prevent mistakes:
+              delete instance[modelName];
+              delete instance.dataValues[modelName];
+            }
+          }
+        }
+      },
+    },
+    modelName: 'kbMatches',
+    sequelize,
   });
 };

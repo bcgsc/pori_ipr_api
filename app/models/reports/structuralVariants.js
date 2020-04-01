@@ -16,9 +16,6 @@ module.exports = (sequelize) => {
     mavis_product_id: {
       type: Sq.TEXT,
     },
-    svVariant: {
-      type: Sq.ENUM('clinical', 'nostic', 'biological', 'fusionOmicSupport', 'uncharacterized'),
-    },
     gene1Id: {
       name: 'gene1Id',
       field: 'gene1_id',
@@ -86,6 +83,12 @@ module.exports = (sequelize) => {
     ntermTranscript: {
       type: Sq.TEXT,
       defaultValue: null,
+    },
+    omicSupport: {
+      type: Sq.BOOLEAN,
+      field: 'omic_support',
+      name: 'omicSupport',
+      defaultValue: false,
     },
   }, {
     ...DEFAULT_OPTIONS,

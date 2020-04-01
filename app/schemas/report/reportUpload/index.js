@@ -1,16 +1,14 @@
 const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
-const db = require('../../models');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
-const {BASE_EXCLUDE} = require('../exclude');
-const schemaGenerator = require('./basicReportComponentSchemaGenerator');
+const db = require('../../../models');
+const {BASE_EXCLUDE} = require('../../exclude');
+const variantSchemas = require('./variant');
+const kbMatchesSchema = require('./kbMatches');
+const {generateReportSubSchema} = require('./util');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-const REPORT_EXCLUDE = ['createdBy_id'];
-const exclude = BASE_EXCLUDE.concat(REPORT_EXCLUDE);
-
 const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
-  exclude,
+  exclude: ['createdBy_id', ...BASE_EXCLUDE],
   associations: true,
   excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
@@ -59,35 +57,22 @@ const {
   presentation_slides, users, analystComments, projects, ...associations
 } = db.models.analysis_report.associations;
 
-schema.definitions = {};
+schema.definitions = {...variantSchemas, kbMatches: kbMatchesSchema};
 
 // add all associated schemas
 Object.values(associations).forEach((association) => {
   const model = association.target.name;
 
-  const generatedSchema = schemaGenerator(db.models[model]);
-  // remove association schema draft versions
-  delete generatedSchema.$schema;
+  // generate schemas for the remaining sections
+  if (schema.definitions[model] === undefined) {
+    const generatedSchema = generateReportSubSchema(db.models[model]);
 
-  // if this is a variant model, add the gene property and remove the gene_id property
-  if (model === 'structuralVariants') {
-    generatedSchema.properties.gene1 = {
-      type: 'string', description: 'The gene name for the first breakpoint',
-    };
-    generatedSchema.properties.gene2 = {
-      type: 'string', description: 'The gene name for the second breakpoint',
-    };
-  } else if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
-    generatedSchema.properties.gene = {
-      type: 'string', description: 'The gene name for this variant',
-    };
     if (!generatedSchema.required) {
       generatedSchema.required = [];
     }
-    generatedSchema.required.push('gene');
+    schema.definitions[model] = generatedSchema;
   }
-
-  schema.definitions[model] = generatedSchema;
 });
+
 
 module.exports = schema;

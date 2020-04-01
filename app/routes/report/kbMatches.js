@@ -34,10 +34,10 @@ router.route('/:kbMatch([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
   .get(async (req, res) => {
-    const {params: {category}} = req;
+    const {params: {category}, report: {id: reportId}} = req;
     // Setup where clause
     const where = {
-      reportId: req.report.id,
+      reportId,
     };
 
     // Searching for specific type of alterations
@@ -56,12 +56,12 @@ router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|no
 
     const options = {
       where,
-      order: [['gene', 'ASC']],
+      order: [['variantType', 'ASC'], ['variantId', 'ASC']],
     };
 
     try {
       // Get all alterations for this report
-      const result = await db.models.kbMatches.scope('public').findAll(options);
+      const result = await db.models.kbMatches.scope('extended').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);

@@ -66,24 +66,28 @@ router.route('/:sv([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/:type(clinical|nostic|biological|fusionOmicSupport|uncharacterized)?')
+router.route('/')
   .get(async (req, res) => {
-    // Setup where clause
-    const where = {reportId: req.report.id};
-
-    // Searching for specific type of alterations
-    if (req.params.type) {
-      // Are we looking for approved types?
-      where.svVariant = req.params.type;
-    }
-
-    const options = {
-      where,
-    };
+    const {report: {ident: reportIdent}} = req;
 
     // Get all structural variants (sv) for this report
     try {
-      const results = await db.models.structuralVariants.scope('extended').findAll(options);
+      const results = await db.models.structuralVariants.scope('extended').findAll({
+        order: [['gene1Id', 'ASC'], ['gene2Id', 'ASC']],
+        include: [
+          {
+            model: db.models.analysis_report,
+            where: {ident: reportIdent},
+            attributes: [],
+            required: true,
+            as: 'report',
+          },
+          {
+            model: db.models.kbMatches,
+            attributes: ['ident', 'category'],
+          },
+        ],
+      });
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
