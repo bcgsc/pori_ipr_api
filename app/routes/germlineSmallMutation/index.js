@@ -169,11 +169,11 @@ router.get('/', async (req, res) => {
   return res.json({total: gsmReports.count, reports: rows});
 });
 
-router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', variantRouter);
+router.use('/:gsm_report/variant', variantRouter);
 
 
 // Individual report resources
-router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
+router.route('/:gsm_report')
 
   /**
    * Get an existing report
@@ -250,7 +250,7 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
 router.use('/export/batch', batchExportRouter);
 
 // Reviews
-router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', reviewRouter);
+router.use('/:gsm_report/review', reviewRouter);
 
 
 module.exports = router;

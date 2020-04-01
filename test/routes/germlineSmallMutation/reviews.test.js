@@ -11,10 +11,10 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/germline-small-mutation';
+const BASE_URL = '/api/germline-small-mutation-reports';
 
 
-describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm_report/review', () => {
+describe('/germline-small-mutation-reports/patient/:patient/biopsy/:analysis/report/:gsm_report/review', () => {
   let record;
   let server;
   let request;

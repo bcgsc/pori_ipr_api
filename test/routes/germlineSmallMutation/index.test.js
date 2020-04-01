@@ -13,7 +13,7 @@ const mockData = require('../../testData/mockGermlineReportData.json');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/germline-small-mutation';
+const BASE_URL = '/api/germline-small-mutation-reports';
 
 // Template of a germline report for testing
 const checkGermlineReport = expect.objectContaining({
@@ -38,7 +38,7 @@ const checkGermlineReportList = expect.objectContaining({
 });
 
 
-describe('/germline-small-mutation', () => {
+describe('/germline-small-mutation-reports', () => {
   // TODO:Add checks to ensure is not returning id
   let server;
   let request;
