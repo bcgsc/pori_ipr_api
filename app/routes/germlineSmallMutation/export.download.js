@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const Excel = require('exceljs');
 const moment = require('moment');
 const {Op} = require('sequelize');
-const _ = require('lodash');
 const express = require('express');
 
 const db = require('../../models');
