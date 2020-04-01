@@ -91,13 +91,13 @@ router.get('/batch/download', async (req, res) => {
         {
           model: db.models.germline_small_mutation_variant,
           as: 'variants',
-          separate: true,
+          required: true,
           order: [['gene', 'asc']],
         },
         {
           model: db.models.germline_small_mutation_review,
           as: 'reviews',
-          separate: true,
+          required: true,
           include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
         },
       ],
