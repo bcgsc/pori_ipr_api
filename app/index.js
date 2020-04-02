@@ -78,8 +78,8 @@ const listen = async (port = null) => {
   logger.info(`starting http server on port ${port || conf.get('web:port')}`);
   const server = http.createServer(app).listen(port || conf.get('web:port'));
   app.use(bodyParser.json());
-  app.use(compression());
   app.use(boolParser());
+  app.use(compression());
   app.use(cors());
   app.use(fileUpload());
   app.use((req, res, next) => {
