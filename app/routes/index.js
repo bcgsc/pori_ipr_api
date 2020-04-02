@@ -55,6 +55,7 @@ class Routing extends RouterInterface {
         '/project',
         '/reports',
         '/germline-small-mutation-reports',
+        '/export',
       ].join('|')})`, authMiddleware);
 
     // Add Single Routes
