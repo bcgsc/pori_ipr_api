@@ -31,8 +31,9 @@ module.exports = (sequelize) => {
     approvedTherapy: {
       field: 'approved_therapy',
       name: 'approvedTherapy',
-      type: Sq.TEXT,
-      defaultValue: null,
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     },
     kbVariant: {
       field: 'kb_variant',
@@ -65,7 +66,9 @@ module.exports = (sequelize) => {
     matchedCancer: {
       field: 'matched_cancer',
       name: 'matchedCancer',
-      type: Sq.TEXT,
+      type: Sq.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     pmidRef: {
       field: 'pmid_ref',

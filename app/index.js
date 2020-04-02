@@ -5,6 +5,7 @@ const http = require('http');
 const express = require('express'); // Call express
 const bodyParser = require('body-parser'); // Body parsing lib
 const compression = require('compression'); // Compression middleware
+const boolParser = require('express-query-boolean'); // Converts strings with true/false to a boolean
 const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
@@ -78,6 +79,7 @@ const listen = async (port = null) => {
   const server = http.createServer(app).listen(port || conf.get('web:port'));
   app.use(bodyParser.json());
   app.use(compression());
+  app.use(boolParser());
   app.use(cors());
   app.use(fileUpload());
   app.use((req, res, next) => {
