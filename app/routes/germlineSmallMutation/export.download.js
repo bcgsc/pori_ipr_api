@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const Excel = require('exceljs');
 const moment = require('moment');
 const {Op} = require('sequelize');
-const _ = require('lodash');
 const express = require('express');
 
 const db = require('../../models');
@@ -92,13 +91,13 @@ router.get('/batch/download', async (req, res) => {
         {
           model: db.models.germline_small_mutation_variant,
           as: 'variants',
-          separate: true,
+          required: true,
           order: [['gene', 'asc']],
         },
         {
           model: db.models.germline_small_mutation_review,
           as: 'reviews',
-          separate: true,
+          required: true,
           include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
         },
       ],
@@ -111,21 +110,23 @@ router.get('/batch/download', async (req, res) => {
   let matchedReportSummaries; // find the most recent genomic report for the same patient/sample
 
   try {
-    // TODO: filter patientId does not exist on the summary, must fitler by report. This is pending DEVSU-745
-    // https://www.bcgsc.ca/jira/browse/DEVSU-865
     matchedReportSummaries = await db.models.tumourAnalysis.findAll({
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
-        {model: db.models.analysis_report, as: 'report'},
+        {
+          model: db.models.analysis_report,
+          as: 'report',
+          where: {
+            patientId: {
+              [Op.in]: germlineReports.map((germReport) => { return germReport.patientId; }),
+            },
+            state: {
+              [Op.in]: ['presented', 'active', 'archived'],
+            },
+          },
+          required: true,
+        },
       ],
-      where: {
-        patientId: {
-          [Op.in]: germlineReports.map((report) => { return report.patientId; }),
-        },
-        '$report.state$': {
-          [Op.in]: ['presented', 'active', 'archived'],
-        },
-      },
     });
   } catch (error) {
     logger.error(`Error while trying to get tumour analysis ${error}`);
@@ -139,7 +140,7 @@ router.get('/batch/download', async (req, res) => {
     // Ensure all required reviews are present on report
     const reportReviews = report.reviews.map((review) => { return review.type; });
 
-    if (requiredReviews.every((state) => { return reportReviews.include(state); })) {
+    if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
       // contains all the required reviews
       const summaryMatch = matchedReportSummaries.find((summary) => {
         return summary.report.patientId === report.patientId;
@@ -191,7 +192,7 @@ router.get('/batch/download', async (req, res) => {
     // Mark all exported reports in DB
     await Promise.all(germlineReports.map(async (report) => {
       report.exported = true;
-      return report.save();
+      return report.save({fields: ['exported'], hooks: false});
     }));
     return res.end();
   } catch (error) {
