@@ -32,9 +32,9 @@ router.route('/:kbMatch([A-z0-9-]{36})')
   });
 
 // Routing for Alteration
-router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|novel|thisCancer|otherCancer)?')
+router.route('/')
   .get(async (req, res) => {
-    const {params: {category}, report: {id: reportId}} = req;
+    const {report: {id: reportId}, query: {matchedCancer, approvedTherapy, category}} = req;
     // Setup where clause
     const where = {
       reportId,
@@ -42,16 +42,15 @@ router.route('/:category(therapeutic|biological|prognostic|diagnostic|unknown|no
 
     // Searching for specific type of alterations
     if (category) {
-      // Are we looking for approved types?
-      if (category.includes('Cancer')) {
-        where.approvedTherapy = category;
-      } else {
-        where.category = category;
-        where.approvedTherapy = null;
-      }
-    } else {
-      where.approvedTherapy = null;
-      where.category = {[Op.notIn]: ['unknown', 'novel']};
+      where.category = {[Op.in]: category.split(',')};
+    }
+
+    if (matchedCancer !== undefined) {
+      where.matchedCancer = matchedCancer;
+    }
+
+    if (approvedTherapy !== undefined) {
+      where.approvedTherapy = approvedTherapy;
     }
 
     const options = {
