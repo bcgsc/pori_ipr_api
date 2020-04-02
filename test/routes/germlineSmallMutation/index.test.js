@@ -54,10 +54,10 @@ describe('/germline-small-mutation-reports', () => {
   });
 
 
-  describe('POST (create) /patient/:patient/biopsy/:biopsy', () => {
-    test('POST /patient/:patient/biopsy/:biopsy - 201 Created', async () => {
+  describe('POST (create) /', () => {
+    test('POST / - 201 Created', async () => {
       const {body: record} = await request
-        .post(`${BASE_URL}`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({...mockData})
@@ -71,9 +71,9 @@ describe('/germline-small-mutation-reports', () => {
       });
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy version is required - 400 Bad Request', async () => {
+    test('POST / version is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -85,9 +85,9 @@ describe('/germline-small-mutation-reports', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy source is required - 400 Bad Request', async () => {
+    test('POST / source is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -99,9 +99,9 @@ describe('/germline-small-mutation-reports', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy project is required - 400 Bad Request', async () => {
+    test('POST / project is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -113,9 +113,9 @@ describe('/germline-small-mutation-reports', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy normal_library is required - 400 Bad Request', async () => {
+    test('POST / normal_library is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -230,7 +230,7 @@ describe('/germline-small-mutation-reports', () => {
     });
 
     describe('GET', () => {
-      test('GET /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 success', async () => {
+      test('GET /:gsm_report - 200 success', async () => {
         const res = await request
           .get(`${BASE_URL}/${record.ident}`)
           .auth(username, password)
@@ -244,7 +244,7 @@ describe('/germline-small-mutation-reports', () => {
     });
 
     describe('PUT', () => {
-      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 Success', async () => {
+      test('PUT /:gsm_report - 200 Success', async () => {
         const NEW_EXPORTED = true;
         const res = await request
           .put(`${BASE_URL}/${record.ident}`)
@@ -256,7 +256,7 @@ describe('/germline-small-mutation-reports', () => {
         expect(res.body.exported).toBe(NEW_EXPORTED);
       });
 
-      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+      test('PUT /:gsm_report - 404 Not Found', async () => {
         const NEW_EXPORTED = true;
         await request
           .put(`${BASE_URL}/NOT_A_EXISTING_RECORD`)
@@ -268,7 +268,7 @@ describe('/germline-small-mutation-reports', () => {
     });
 
     describe('DELETE', () => {
-      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 204 Success', async () => {
+      test('DELETE /:gsm_report - 204 Success', async () => {
         await request
           .delete(`${BASE_URL}/${record.ident}`)
           .auth(username, password)
@@ -276,7 +276,7 @@ describe('/germline-small-mutation-reports', () => {
           .expect(HTTP_STATUS.NO_CONTENT);
       });
 
-      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+      test('DELETE /:gsm_report - 404 Not Found', async () => {
         await request
           .delete(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
           .auth(username, password)

@@ -14,7 +14,7 @@ const {username, password} = CONFIG.get('testing');
 const BASE_URL = '/api/germline-small-mutation-reports';
 
 
-describe('/germline-small-mutation-reports/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', () => {
+describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
   let record;
   let variant;
   let server;
