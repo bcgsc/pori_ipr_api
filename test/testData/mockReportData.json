@@ -91,16 +91,6 @@
         "diseaseExpressionComparator": "TARGET_RHD",
         "tcgaColor": "0xC0C0C0"
     },
-    "genomicEventsTherapeutic": [
-        {
-            "reportType": "genomic",
-            "genomicEvent": "MYCN (amplification)",
-            "approvedThisCancerType": null,
-            "approvedOtherCancerType": null,
-            "emergingPreclinicalEvidence": null,
-            "comments": null
-        }
-    ],
     "variantCounts": {
         "smallMutations": 2,
         "CNVs": 12,
