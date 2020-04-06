@@ -156,12 +156,6 @@
       "Expression Outliers": "expressionOutliers",
       "Variants of Uncertain Significance": "variantsUnknown"
     },
-    "genomicEventsTherapeutic": {
-      "Genomic Event": "genomicEvent",
-      "Approved in this cancer type": "approvedThisCancerType",
-      "Approved in other cancer type": "approvedOtherCancerType",
-      "Emerging preclinical evidence": "emergingPreclinicalEvidence"
-    },
     "probeTargets": {
       "Gene": "gene",
       "Variant": "variant",

@@ -11,7 +11,6 @@ const clinRel = require('./detailedGenomicAnalysis/alterations');
 const patientInfo = require('./summary/patientInformation');
 const patientTumourAnalysis = require('./summary/tumourAnalysis');
 const genomicAltIdentified = require('./summary/genomicAlterationsIdentified');
-const genomicEventsEheraAssoc = require('./summary/genomicEventsTherapeutic');
 
 
 const validExporters = {
@@ -19,7 +18,6 @@ const validExporters = {
   patient_info: patientInfo,
   patient_tumour_analysis: patientTumourAnalysis,
   genomic_alt_identified: genomicAltIdentified,
-  genomic_events_thera_assoc: genomicEventsEheraAssoc,
 };
 
 class ExportDataTables {

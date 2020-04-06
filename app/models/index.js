@@ -104,7 +104,6 @@ summary.tumourAnalysis = sequelize.import('./reports/genomic/summary/tumourAnaly
 summary.mutationSummary = sequelize.import('./reports/genomic/summary/mutationSummary');
 summary.variantCounts = sequelize.import('./reports/genomic/summary/variantCounts');
 summary.genomicAlterationsIdentified = sequelize.import('./reports/genomic/summary/genomicAlterationsIdentified');
-summary.genomicEventsTherapeutic = sequelize.import('./reports/genomic/summary/genomicEventsTherapeutic');
 summary.analystComments = sequelize.import('./reports/genomic/summary/analystComments');
 summary.pathwayAnalysis = sequelize.import('./reports/genomic/summary/pathwayAnalysis');
 summary.probeResults = sequelize.import('./reports/probeResults');
@@ -119,9 +118,6 @@ analysisReports.belongsTo(user, {
 });
 analysisReports.hasOne(summary.tumourAnalysis, {
   as: 'tumourAnalysis', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(summary.genomicEventsTherapeutic, {
-  as: 'genomicEventsTherapeutic', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasOne(summary.variantCounts, {
   as: 'variantCounts', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -148,9 +144,6 @@ analysisReports.hasMany(summary.mutationSummaryv2, {
   as: 'mutationSummaryv2', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-summary.genomicEventsTherapeutic.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 summary.mutationSummary.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
