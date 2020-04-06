@@ -30,7 +30,7 @@ router.param('gsm_report', gsmMiddleware);
 /**
  * Load Germline Report
  *
- * /POG/{POGID}/analysis/{analysis}
+ * /
  *
  * @param {object} req - Express request
  * @param {object} res - Express response
@@ -43,6 +43,8 @@ router.param('gsm_report', gsmMiddleware);
  * @property {string} req.body.project - Project name
  * @property {string} req.body.normal_library - The germline/normal library name Eg: P12345
  * @property {object} req.user - Current user
+ * @property {string} req.patientId - Patient id
+ * @property {object} req.biopsyName - Biopsy name
  *
  * @returns {Promise.<object>} - Returns the created report
  */
@@ -105,8 +107,9 @@ router.post('/', async (req, res) => {
  * @param {object} res - Express response
  *
  * @property {object} req.query - Contains query options
- * @property {string} req.query.search - Search option for POGID
  * @property {string} req.query.project - Search option for project
+ * @property {string} req.query.patientId - Search option for Patient id
+ * @property {string} req.query.biopsyName - Search option for Biopsy name
  * @property {number} req.query.limit - Query page limit
  * @property {number} req.query.offset - Query page offset
  * @property {Array.<string>} req.user.groups - Array of groups user belongs to
@@ -178,7 +181,7 @@ router.route('/:gsm_report')
   /**
    * Get an existing report
    *
-   * GET /patient/{patient}/biopsy/{analysis}/report/{report}
+   * GET /{report}
    *
    * @urlParam {string} patientID - Patient unique ID (POGID)
    * @urlParam {string} biopsy - Biopsy analysis id (biop1)
@@ -193,7 +196,7 @@ router.route('/:gsm_report')
   /**
    * Update an existing report
    *
-   * GET /patient/{patient}/biopsy/{analysis}/report/{report}
+   * GET /{report}
    *
    * @urlParam {string} patientID - Patient unique ID (POGID)
    * @urlParam {string} biopsy - Biopsy analysis id (biop1)
@@ -225,7 +228,7 @@ router.route('/:gsm_report')
   /**
    * Remove an existing report
    *
-   * DELETE /patient/{patient}/biopsy/{analysis}/report/{report}
+   * DELETE /{report}
    *
    * @urlParam {string} patientID - Patient unique ID (POGID)
    * @urlParam {string} biopsy - Biopsy analysis id (biop1)
