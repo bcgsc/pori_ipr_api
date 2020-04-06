@@ -59,7 +59,7 @@ router.route('/')
     const access = new Acl(req, res);
     access.read = ['admin'];
 
-    if (access.check(true) && req.query.admin === 'true') {
+    if (access.check(true) && req.query.admin === true) {
       includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}});
       includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
     }

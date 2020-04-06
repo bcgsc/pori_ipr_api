@@ -65,7 +65,7 @@ router.route('/:alteration([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic alterations', code: 'failedGenomicAlterationsIdentifiedRemove'}});
     }
 
-    if (!req.query.cascade || req.query.cascade !== 'true') {
+    if (!req.query.cascade || req.query.cascade !== true) {
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     }
 

@@ -162,7 +162,7 @@ router.route('/')
     }
 
     // Are we filtering on POGUser relationship?
-    if (req.query.all !== 'true' || req.query.role) {
+    if (req.query.all !== true || req.query.role) {
       const userFilter = {
         model: db.models.analysis_reports_user,
         as: 'ReportUserFilter',
