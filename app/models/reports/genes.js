@@ -44,6 +44,12 @@ module.exports = (sequelize) => {
         type: Sq.BOOLEAN,
         defaultValue: false,
       },
+      knownFusionPartner: {
+        name: 'knownFusionPartner',
+        field: 'known_fusion_partner',
+        type: Sq.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       ...DEFAULT_OPTIONS,

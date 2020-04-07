@@ -76,6 +76,18 @@ module.exports = (sequelize) => {
       type: Sq.STRING,
       defaultValue: 'v8',
     },
+    kbUrl: {
+      name: 'kbUrl',
+      field: 'kb_url',
+      type: Sq.STRING,
+      defaultValue: 'https://ipr.bcgsc.ca/knowledgebase/references',
+    },
+    kbDiseaseMatch: {
+      name: 'kbDiseaseMatch',
+      field: 'kb_disease_match',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
   },
   {
     ...DEFAULT_OPTIONS,

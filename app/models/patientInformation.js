@@ -15,14 +15,11 @@ module.exports = (sequelize) => {
     age: {
       type: Sq.STRING,
     },
-    POGID: {
-      type: Sq.STRING,
-    },
     caseType: {
       type: Sq.STRING,
       allowNull: false,
     },
-    tumourType: {
+    diagnosis: {
       type: Sq.STRING,
     },
     reportDate: {
