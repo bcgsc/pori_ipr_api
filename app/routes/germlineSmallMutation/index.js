@@ -42,9 +42,9 @@ router.param('gsm_report', gsmMiddleware);
  * @property {Array.<object>} req.body.rows - Data rows
  * @property {string} req.body.project - Project name
  * @property {string} req.body.normal_library - The germline/normal library name Eg: P12345
+ * @property {string} req.body.patientId - Patient id
+ * @property {object} req.body.biopsyName - Biopsy name
  * @property {object} req.user - Current user
- * @property {string} req.patientId - Patient id
- * @property {object} req.biopsyName - Biopsy name
  *
  * @returns {Promise.<object>} - Returns the created report
  */
