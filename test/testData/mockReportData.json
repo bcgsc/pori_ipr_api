@@ -76,7 +76,7 @@
         "age": 20,
         "POGID": "UPLOADPAT01",
         "caseType": "Adult",
-        "tumourType": "pancreatic cancer",
+        "diagnosis": "pancreatic cancer",
         "reportDate": "2020/01/01",
         "biopsySite": "liver",
         "tumourSample": "Metastatic",
