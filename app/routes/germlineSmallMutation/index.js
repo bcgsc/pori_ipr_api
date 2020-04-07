@@ -47,7 +47,7 @@ router.param('gsm_report', gsmMiddleware);
  * @returns {Promise.<object>} - Returns the created report
  */
 router.post('/', async (req, res) => {
-  const {params: user} = req;
+  const {user} = req;
 
   const content = {...req.body};
 
