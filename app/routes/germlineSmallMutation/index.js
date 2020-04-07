@@ -35,8 +35,6 @@ router.param('gsm_report', gsmMiddleware);
  * @param {object} req - Express request
  * @param {object} res - Express response
  *
- * @property {string} req.params.analysis - Bioapps biopsy/analysis value Eg: biop1
- * @property {string} req.params.patient - Patient identifier Eg: POG1234
  * @property {string} req.body.source - Source file path
  * @property {string} req.body.version - Source file version Eg: v0.0.1
  * @property {Array.<object>} req.body.rows - Data rows
@@ -183,8 +181,6 @@ router.route('/:gsm_report')
    *
    * GET /{report}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    *
    * @returns {object} - Returns the requested report
@@ -198,8 +194,6 @@ router.route('/:gsm_report')
    *
    * GET /{report}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    *
    * @bodyParam {string} biofx_assigned - ident string of user to be assigned
@@ -230,8 +224,6 @@ router.route('/:gsm_report')
    *
    * DELETE /{report}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    *
    * @param {object} req - Express request
