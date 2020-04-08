@@ -30,26 +30,26 @@ router.param('gsm_report', gsmMiddleware);
 /**
  * Load Germline Report
  *
- * /POG/{POGID}/analysis/{analysis}
+ * /
  *
  * @param {object} req - Express request
  * @param {object} res - Express response
  *
- * @property {string} req.params.analysis - Bioapps biopsy/analysis value Eg: biop1
- * @property {string} req.params.patient - Patient identifier Eg: POG1234
  * @property {string} req.body.source - Source file path
  * @property {string} req.body.version - Source file version Eg: v0.0.1
  * @property {Array.<object>} req.body.rows - Data rows
  * @property {string} req.body.project - Project name
  * @property {string} req.body.normal_library - The germline/normal library name Eg: P12345
+ * @property {string} req.body.patientId - Patient id
+ * @property {object} req.body.biopsyName - Biopsy name
  * @property {object} req.user - Current user
  *
  * @returns {Promise.<object>} - Returns the created report
  */
-router.post('/patient/:patient/biopsy/:biopsy', async (req, res) => {
-  const {params: {patient: patientId, biopsy: biopsyName}, user} = req;
+router.post('/', async (req, res) => {
+  const {user} = req;
 
-  const content = {...req.body, patientId, biopsyName};
+  const content = {...req.body};
 
   try {
     // fix for path names that do not current match model names
@@ -105,8 +105,9 @@ router.post('/patient/:patient/biopsy/:biopsy', async (req, res) => {
  * @param {object} res - Express response
  *
  * @property {object} req.query - Contains query options
- * @property {string} req.query.search - Search option for POGID
  * @property {string} req.query.project - Search option for project
+ * @property {string} req.query.patientId - Search option for Patient id
+ * @property {string} req.query.biopsyName - Search option for Biopsy name
  * @property {number} req.query.limit - Query page limit
  * @property {number} req.query.offset - Query page offset
  * @property {Array.<string>} req.user.groups - Array of groups user belongs to
@@ -116,7 +117,7 @@ router.post('/patient/:patient/biopsy/:biopsy', async (req, res) => {
 router.get('/', async (req, res) => {
   const {
     query: {
-      limit, offset, search, project,
+      limit, offset, patientId, biopsyName, project,
     },
   } = req;
 
@@ -125,9 +126,14 @@ router.get('/', async (req, res) => {
     where: {},
   };
 
-  if (search) {
-    opts.where.patientId = {[Op.iLike]: `%${req.query.search}%`};
+  if (patientId) {
+    opts.where.patientId = {[Op.iLike]: `%${req.query.patientId}%`};
   }
+
+  if (biopsyName) {
+    opts.where.biopsyName = {[Op.iLike]: `%${req.query.biopsyName}%`};
+  }
+
   if (project) {
     opts.where['$projects.name$'] = project;
   }
@@ -164,59 +170,17 @@ router.get('/', async (req, res) => {
   return res.json({total: gsmReports.count, reports: rows});
 });
 
-/**
- * Get Germline reports for specific biopsy
- *
- * @param {object} req - Express request
- * @param {object} res - Express response
- *
- * @property {string} req.params.analysis - Analysis biopsy
- * @property {string} req.params.patient - POGID
- *
- * @returns {Promise.<object>} - Returns the germline analysis reports
- */
-router.get('/patient/:patientId/biopsy/:biopsyName', async (req, res) => {
-  const {params: {patientId, biopsyName}} = req;
-
-  try {
-    const reports = await db.models.germline_small_mutation.scope('public').findAll({
-      order: [['createdAt', 'desc']],
-      where: {patientId, biopsyName},
-      attributes: {
-        exclude: ['deletedAt', 'id', 'biofx_assigned_id'],
-      },
-      include: [
-        {as: 'biofx_assigned', model: db.models.user.scope('public')},
-        {as: 'variants', model: db.models.germline_small_mutation_variant, separate: true},
-        {
-          as: 'reviews',
-          model: db.models.germline_small_mutation_review,
-          separate: true,
-          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
-        },
-      ],
-    });
-    return res.json(reports);
-  } catch (error) {
-    logger.error(`There was an error while trying to find all germline reports ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find all germline reports'});
-  }
-});
-
-
-router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', variantRouter);
+router.use('/:gsm_report/variant', variantRouter);
 
 
 // Individual report resources
-router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
+router.route('/:gsm_report')
 
   /**
    * Get an existing report
    *
-   * GET /patient/{patient}/biopsy/{analysis}/report/{report}
+   * GET /{report}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    *
    * @returns {object} - Returns the requested report
@@ -228,10 +192,8 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
   /**
    * Update an existing report
    *
-   * GET /patient/{patient}/biopsy/{analysis}/report/{report}
+   * GET /{report}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    *
    * @bodyParam {string} biofx_assigned - ident string of user to be assigned
@@ -260,10 +222,8 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
   /**
    * Remove an existing report
    *
-   * DELETE /patient/{patient}/biopsy/{analysis}/report/{report}
+   * DELETE /{report}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    *
    * @param {object} req - Express request
@@ -285,7 +245,7 @@ router.route('/patient/:patient/biopsy/:analysis/report/:gsm_report')
 router.use('/export/batch', batchExportRouter);
 
 // Reviews
-router.use('/patient/:patient/biopsy/:analysis/report/:gsm_report/review', reviewRouter);
+router.use('/:gsm_report/review', reviewRouter);
 
 
 module.exports = router;

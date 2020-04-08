@@ -1332,7 +1332,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to access somatic small mutations
-  "/germline-small-mutation":
+  "/germline-small-mutation-reports":
     get:
       summary: Get all germline small mutation reports
       description: Returns all germline small mutation reports the user has access to
@@ -1387,8 +1387,8 @@ paths:
   # "/POG/{POG}/report/{report}/image/mutation-summary":
   # "/POG/{POG}/report/{report}/genomic/mavis":
   # "/POG/{POG}/load/genomic":
-  # "/germline-small-mutation/patient/{POG}/biopsy/{biopsy}/report/{report}":
-  # "/germline-small-mutation/patient/{POG}/biopsy/{biopsy}/report/{report}/variant/{variant}":
+  # "/germline-small-mutation-reports/patient/{POG}/biopsy/{biopsy}/report/{report}":
+  # "/germline-small-mutation-reports/patient/{POG}/biopsy/{biopsy}/report/{report}/variant/{variant}":
   # "/POG/{POG}/report/{report}/probe/alterations":
   # "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations/{mutation}":
   # "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations/{type}":
