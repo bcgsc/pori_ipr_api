@@ -1,9 +1,16 @@
 const Ajv = require('ajv');
-
+const isSvg = require('is-svg');
 const logger = require('../log');
 
 const ajv = new Ajv({
   useDefaults: true, unknownFormats: ['int32', 'float'], coerceTypes: true, logger,
+});
+
+ajv.addFormat('svg', (text) => {
+  if (text) {
+    return isSvg(text);
+  }
+  return true;
 });
 
 /**
