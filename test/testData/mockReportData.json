@@ -74,7 +74,6 @@
         "physician": "Dr. Test Upload",
         "gender": "Male",
         "age": 20,
-        "POGID": "UPLOADPAT01",
         "caseType": "Adult",
         "diagnosis": "pancreatic cancer",
         "reportDate": "2020/01/01",
