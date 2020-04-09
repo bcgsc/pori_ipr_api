@@ -12,7 +12,7 @@ module.exports = {
 
       await queryInterface.addColumn('reports', 'kbUrl', {
         type: Sequelize.STRING,
-        defaultValue: 'https://ipr.bcgsc.ca/knowledgebase/references',
+        defaultValue: null,
       }, {transaction});
 
       await queryInterface.addColumn('reports_genes', 'knownFusionPartner', {

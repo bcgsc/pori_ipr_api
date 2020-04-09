@@ -80,7 +80,7 @@ module.exports = (sequelize) => {
       name: 'kbUrl',
       field: 'kb_url',
       type: Sq.STRING,
-      defaultValue: 'https://ipr.bcgsc.ca/knowledgebase/references',
+      defaultValue: null,
     },
     kbDiseaseMatch: {
       name: 'kbDiseaseMatch',
