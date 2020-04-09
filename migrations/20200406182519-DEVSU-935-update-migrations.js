@@ -14,11 +14,11 @@ module.exports = {
         defaultValue: null,
       }, {transaction});
 
+      // Create kb_url column and set all values to 'https://ipr.bcgsc.ca/knowledgebase/references'
       await queryInterface.addColumn('reports', 'kb_url', {
         type: Sequelize.STRING,
         defaultValue: null,
       }, {transaction});
-
       await queryInterface.sequelize.query(
         `UPDATE ${TABLE} SET ${kbUrlColumn} = 'https://ipr.bcgsc.ca/knowledgebase/references'
         WHERE ${kbUrlColumn} IS NULL`,
