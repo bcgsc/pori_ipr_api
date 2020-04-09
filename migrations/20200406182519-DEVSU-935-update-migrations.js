@@ -15,7 +15,7 @@ module.exports = {
       }, {transaction});
 
       // Create kb_url column and set all values to 'https://ipr.bcgsc.ca/knowledgebase/references'
-      await queryInterface.addColumn('reports', 'kb_url', {
+      await queryInterface.addColumn('reports', kbUrlColumn, {
         type: Sequelize.STRING,
         defaultValue: null,
       }, {transaction});
