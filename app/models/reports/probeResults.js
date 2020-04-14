@@ -35,6 +35,9 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
+    comments: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'reports_probe_results',

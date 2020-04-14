@@ -13,7 +13,7 @@ const mockData = require('../../testData/mockGermlineReportData.json');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/germline-small-mutation';
+const BASE_URL = '/api/germline-small-mutation-reports';
 
 // Template of a germline report for testing
 const checkGermlineReport = expect.objectContaining({
@@ -38,7 +38,7 @@ const checkGermlineReportList = expect.objectContaining({
 });
 
 
-describe('/germline-small-mutation', () => {
+describe('/germline-small-mutation-reports', () => {
   // TODO:Add checks to ensure is not returning id
   let server;
   let request;
@@ -54,10 +54,10 @@ describe('/germline-small-mutation', () => {
   });
 
 
-  describe('POST (create) /patient/:patient/biopsy/:biopsy', () => {
-    test('POST /patient/:patient/biopsy/:biopsy - 201 Created', async () => {
+  describe('POST (create) /', () => {
+    test('POST / - 201 Created', async () => {
       const {body: record} = await request
-        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({...mockData})
@@ -71,9 +71,9 @@ describe('/germline-small-mutation', () => {
       });
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy version is required - 400 Bad Request', async () => {
+    test('POST / version is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -85,9 +85,9 @@ describe('/germline-small-mutation', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy source is required - 400 Bad Request', async () => {
+    test('POST / source is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -99,9 +99,9 @@ describe('/germline-small-mutation', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy project is required - 400 Bad Request', async () => {
+    test('POST / project is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -113,9 +113,9 @@ describe('/germline-small-mutation', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('POST /patient/:patient/biopsy/:biopsy normal_library is required - 400 Bad Request', async () => {
+    test('POST / normal_library is required - 400 Bad Request', async () => {
       await request
-        .post(`${BASE_URL}/patient/FAKE/biopsy/biop1`)
+        .post(BASE_URL)
         .auth(username, password)
         .type('json')
         .send({
@@ -142,7 +142,7 @@ describe('/germline-small-mutation', () => {
     test('GET / all reports + search query - 200 success', async () => {
       const res = await request
         .get(BASE_URL)
-        .query({search: 'POG'})
+        .query({patientId: 'POG'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -170,7 +170,7 @@ describe('/germline-small-mutation', () => {
     test('GET / all reports + project query - 200 success', async () => {
       const res = await request
         .get(BASE_URL)
-        .query({search: 'POG'})
+        .query({project: 'POG'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -230,21 +230,9 @@ describe('/germline-small-mutation', () => {
     });
 
     describe('GET', () => {
-      test('GET /patient/:patient/biopsy/:biopsy reports - 200 success', async () => {
+      test('GET /:gsm_report - 200 success', async () => {
         const res = await request
-          .get(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
-
-        expect(res.body).toEqual(expect.arrayContaining([
-          checkGermlineReport,
-        ]));
-      });
-
-      test('GET /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 success', async () => {
-        const res = await request
-          .get(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
+          .get(`${BASE_URL}/${record.ident}`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
@@ -256,10 +244,10 @@ describe('/germline-small-mutation', () => {
     });
 
     describe('PUT', () => {
-      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 200 Success', async () => {
+      test('PUT /:gsm_report - 200 Success', async () => {
         const NEW_EXPORTED = true;
         const res = await request
-          .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
+          .put(`${BASE_URL}/${record.ident}`)
           .send({exported: NEW_EXPORTED})
           .auth(username, password)
           .type('json')
@@ -268,10 +256,10 @@ describe('/germline-small-mutation', () => {
         expect(res.body.exported).toBe(NEW_EXPORTED);
       });
 
-      test('PUT /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+      test('PUT /:gsm_report - 404 Not Found', async () => {
         const NEW_EXPORTED = true;
         await request
-          .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_A_EXISTING_RECORD`)
+          .put(`${BASE_URL}/NOT_A_EXISTING_RECORD`)
           .send({exported: NEW_EXPORTED})
           .auth(username, password)
           .type('json')
@@ -280,17 +268,17 @@ describe('/germline-small-mutation', () => {
     });
 
     describe('DELETE', () => {
-      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 204 Success', async () => {
+      test('DELETE /:gsm_report - 204 Success', async () => {
         await request
-          .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}`)
+          .delete(`${BASE_URL}/${record.ident}`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NO_CONTENT);
       });
 
-      test('DELETE /patient/:patient/biopsy/:analysis/report/:gsm_report - 404 Not Found', async () => {
+      test('DELETE /:gsm_report - 404 Not Found', async () => {
         await request
-          .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/NOT_AN_EXISTING_RECORD`)
+          .delete(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NOT_FOUND);

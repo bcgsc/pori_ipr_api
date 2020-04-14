@@ -11,10 +11,10 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/germline-small-mutation';
+const BASE_URL = '/api/germline-small-mutation-reports';
 
 
-describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm_report/review', () => {
+describe('/germline-small-mutation-reports/:gsm_report/review', () => {
   let record;
   let server;
   let request;
@@ -53,7 +53,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
   describe('PUT', () => {
     test('PUT / - 200 Success', async () => {
       const res = await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .put(`${BASE_URL}/${record.ident}/review`)
         .send({type: 'test_type', comment: 'This is an example of a comment'})
         .auth(username, password)
         .type('json')
@@ -73,7 +73,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT / type is required - 400 Bad Request', async () => {
       await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .put(`${BASE_URL}/${record.ident}/review`)
         .send({})
         .auth(username, password)
         .type('json')
@@ -82,14 +82,14 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT / report is already reviewed - 400 Bad Request', async () => {
       await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .put(`${BASE_URL}/${record.ident}/review`)
         .send({type: 'test_type'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review`)
+        .put(`${BASE_URL}/${record.ident}/review`)
         .send({type: 'test_type'})
         .auth(username, password)
         .type('json')
@@ -120,7 +120,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('DELETE /{review} - 204 No content', async () => {
       await request
-        .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review/${review.ident}`)
+        .delete(`${BASE_URL}/${record.ident}/review/${review.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -128,7 +128,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('DELETE /{review} - 404 Not found', async () => {
       await request
-        .delete(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/review/NOT_EXISTING_ID`)
+        .delete(`${BASE_URL}/${record.ident}/review/NOT_EXISTING_ID`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);

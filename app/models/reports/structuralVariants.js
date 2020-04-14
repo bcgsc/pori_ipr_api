@@ -55,6 +55,10 @@ module.exports = (sequelize) => {
     svg: {
       type: Sq.TEXT,
       defaultValue: null,
+      jsonSchema: {
+        description: 'SVG image of this fusion variant',
+        schema: {format: 'svg', type: 'string'}
+      },
     },
     svgTitle: {
       type: Sq.TEXT,

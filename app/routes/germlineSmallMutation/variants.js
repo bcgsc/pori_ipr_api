@@ -16,10 +16,8 @@ router.route('/:variant')
   /**
    * Get an existing variant
    *
-   * GET /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+   * GET /{gsm_report}/variant/{variant}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    * @urlParam {string} variant - Variant id (ident)
    *
@@ -35,10 +33,8 @@ router.route('/:variant')
   /**
    * Update an existing variant
    *
-   * PUT /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+   * PUT /{gsm_report}/variant/{variant}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    * @urlParam {string} variant - Variant id (ident)
    *
