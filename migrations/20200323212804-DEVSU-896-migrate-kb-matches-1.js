@@ -10,10 +10,10 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       console.log(`create new column ${MUT_TABLE}.detected_in`);
-      await queryInterface.addColumn(MUT_TABLE, 'detected_in', {type: Sq.TEXT});
+      await queryInterface.addColumn(MUT_TABLE, 'detected_in', {type: Sq.TEXT}, {transaction});
       // create the variant_id column
       console.log('create the variant_id column');
-      await queryInterface.addColumn(KB_TABLE, 'variant_id', {type: Sq.INTEGER});
+      await queryInterface.addColumn(KB_TABLE, 'variant_id', {type: Sq.INTEGER}, {transaction});
 
       // add new enum type: SV, MUT, EXP, CNV
       // map empty varianType values to their correct values
