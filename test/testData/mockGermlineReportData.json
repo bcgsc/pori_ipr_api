@@ -1,4 +1,6 @@
 {
+    "patientId": "FAKE",
+    "biopsyName": "biop1",
     "normal_library": "P0XXXXX",
     "project": "TEST",
     "rows": [

@@ -11,10 +11,10 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/germline-small-mutation';
+const BASE_URL = '/api/germline-small-mutation-reports';
 
 
-describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm_report/variant', () => {
+describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
   let record;
   let variant;
   let server;
@@ -68,7 +68,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
   describe('GET', () => {
     test('GET /{variant} - 200 Success', async () => {
       const result = await request
-        .get(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .get(`${BASE_URL}/${record.ident}/variant/${variant.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -77,7 +77,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('GET /{variant} - 404 Not Found', async () => {
       await request
-        .get(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
+        .get(`${BASE_URL}/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
@@ -87,7 +87,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
   describe('PUT', () => {
     test('PUT /{variant} - 200 Success', async () => {
       const res = await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .put(`${BASE_URL}/${record.ident}/variant/${variant.ident}`)
         .send({patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: true})
         .auth(username, password)
         .type('json')
@@ -102,7 +102,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT /{variant} - 200 Success with missing patient_history', async () => {
       const res = await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .put(`${BASE_URL}/${record.ident}/variant/${variant.ident}`)
         .send({family_history: 'Updated_family_history', hidden: true})
         .auth(username, password)
         .type('json')
@@ -117,7 +117,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT /{variant} - 200 Success with missing family_history', async () => {
       const res = await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .put(`${BASE_URL}/${record.ident}/variant/${variant.ident}`)
         .send({patient_history: 'Updated_patient_history', hidden: true})
         .auth(username, password)
         .type('json')
@@ -132,7 +132,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT /{variant} hidden should be boolean - 400 Bad Request', async () => {
       await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .put(`${BASE_URL}/${record.ident}/variant/${variant.ident}`)
         .send({patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: 'NOT_BOOLEAN'})
         .auth(username, password)
         .type('json')
@@ -141,7 +141,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT /{variant} Adding an additional property should return error - 400 Bad Request', async () => {
       await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/${variant.ident}`)
+        .put(`${BASE_URL}/${record.ident}/variant/${variant.ident}`)
         .send({
           patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: true, chromosome: 'NOT_ALLOWED_CHROMOSOME',
         })
@@ -152,7 +152,7 @@ describe('/germline-small-mutation/patient/:patient/biopsy/:analysis/report/:gsm
 
     test('PUT /{variant} - 404 Not Found', async () => {
       await request
-        .put(`${BASE_URL}/patient/${record.patientId}/biopsy/${record.biopsyName}/report/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
+        .put(`${BASE_URL}/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
         .send({patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: true})
         .auth(username, password)
         .type('json')

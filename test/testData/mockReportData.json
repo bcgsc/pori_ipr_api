@@ -219,7 +219,7 @@
             "eventType": "duplication",
             "detectedIn": "DNA",
             "conventionalName": "d(2)(q35)",
-            "svg": null,
+            "svg": "<svg></svg>",
             "svgTitle": "Figure 1. Putative Fusion-duplication event. The original transcript UPLOADPAT01 from the gene UPLOADPAT01 on the reverse strand is drawn twice above. The 5' portion that contributes to the fusion gene is shown top left, the 3' portion is drawn top right. Breakpoints are at 2:216238066 and 2:216240359. Exons are drawn to scale relative to other exons in the same drawing. Introns are scaled to make up approximately 1/4th of the final drawing. This is predicted to be an OUT-of-frame fusion. Domain(s) featured in the above figure(s) are labelled by their various external identifiers as follows: FN_type2_col-bd(UPLOADPAT01), Fibronectin_type1(UPLOADPAT01), Fibronectin_type3(UPLOADPAT01).",
             "name": "FN1::FN1",
             "frame": "OUT",

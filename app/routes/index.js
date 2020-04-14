@@ -54,7 +54,7 @@ class Routing extends RouterInterface {
         '/user',
         '/project',
         '/reports',
-        '/germline-small-mutation',
+        '/germline-small-mutation-reports',
         '/export',
       ].join('|')})`, authMiddleware);
 
@@ -73,10 +73,10 @@ class Routing extends RouterInterface {
     this.router.use('/spec.json', swaggerSpecJson);
 
     // Get Germline Reports Routes
-    this.router.use('/germline-small-mutation', germlineReports);
+    this.router.use('/germline-small-mutation-reports', germlineReports);
 
     // Get Export Germline Reports Routes
-    this.router.use('/export/germline-small-mutation', germlineReportsExport);
+    this.router.use('/export/germline-small-mutation-reports', germlineReportsExport);
 
     // Get Project Routes
     this.router.use('/project', projectRoute);
