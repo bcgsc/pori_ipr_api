@@ -1,11 +1,11 @@
 const nconf = require('nconf');
-const {merge} = require('lodash');
+const { merge } = require('lodash');
 
 
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
-let DEFAULT_DB_NAME = 'DEVSU-964-suggestions';
+let DEFAULT_DB_NAME = 'ipr-sync-dev';
 
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
@@ -78,7 +78,7 @@ const DEFAULTS = {
 };
 
 const processEnvVariables = (env = process.env, opt = {}) => {
-  const {lowerCase = true, separator = '_'} = opt;
+  const { lowerCase = true, separator = '_' } = opt;
   // pre-process env variables (transform doesn't actually work in nconf)
   const processed = {};
 
@@ -109,10 +109,10 @@ const processEnvVariables = (env = process.env, opt = {}) => {
 
 const argv = {};
 Object.entries(DEFAULTS.database, ([key, value]) => {
-  argv[`database.${key}`] = {alias: `database:${key}`, default: value, parseValues: true};
+  argv[`database.${key}`] = { alias: `database:${key}`, default: value, parseValues: true };
 });
 Object.entries(DEFAULTS.keycloak, ([key, value]) => {
-  argv[`keycloak.${key}`] = {alias: `keycloak:${key}`, default: value, parseValues: true};
+  argv[`keycloak.${key}`] = { alias: `keycloak:${key}`, default: value, parseValues: true };
 });
 
 
