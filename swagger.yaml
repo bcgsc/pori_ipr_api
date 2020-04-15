@@ -1958,7 +1958,7 @@ components:
           enum:
             - Adult
             - Pediatric
-        tumourType:
+        diagnosis:
           type: string
         reportDate:
           type: string
@@ -2098,7 +2098,7 @@ components:
           enum:
             - Adult
             - Pediatric
-        tumourType:
+        diagnosis:
           type: string
         biopsySite:
           type: string

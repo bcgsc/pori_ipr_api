@@ -62,15 +62,15 @@ router.route('/')
     /* Sort fields
      * args expected to take the form: ?sort=column:direction,column:direction...
      * where direction = asc or desc and column is one of:
-     * patientID, analysisBiopsy, tumourType, physician, state, caseType, or alternateIdentifier */
+     * patientID, analysisBiopsy, diagnosis, physician, state, caseType, or alternateIdentifier */
     if (req.query.sort) {
       const modelMapping = (index, order) => {
         return {
           patientID: ['patientId', order],
           analysisBiopsy: ['biopsyName', order],
-          tumourType: [
+          diagnosis: [
             {model: db.models.patientInformation, as: 'patientInformation'},
-            'tumour_type',
+            'diagnosis',
             order,
           ],
           physician: [
@@ -128,7 +128,7 @@ router.route('/')
     if (req.query.searchText) {
       opts.where = {
         [Op.or]: [
-          {'$patientInformation.tumourType$': {[Op.iLike]: `%${req.query.searchText}%`}},
+          {'$patientInformation.diagnosis$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.biopsySite$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
@@ -143,7 +143,7 @@ router.route('/')
     const columnMapping = {
       patientID: {column: 'patientId', table: null},
       analysisBiopsy: {column: 'biopsyName', table: null},
-      tumourType: {column: 'tumourType', table: 'patientInformation'},
+      diagnosis: {column: 'diagnosis', table: 'patientInformation'},
       physician: {column: 'physician', table: 'patientInformation'},
       state: {column: 'state', table: null},
       caseType: {column: 'caseType', table: 'patientInformation'},
