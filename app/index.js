@@ -77,7 +77,8 @@ const listen = async (port = null) => {
   const app = express(); // define app using express
   logger.info(`starting http server on port ${port || conf.get('web:port')}`);
   const server = http.createServer(app).listen(port || conf.get('web:port'));
-  app.use(bodyParser.json({limit: '10mb'}));
+  // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-985 reduce when images are a separate upload
+  app.use(bodyParser.json({limit: '100mb'}));
   app.use(boolParser());
   app.use(compression());
   app.use(cors());
