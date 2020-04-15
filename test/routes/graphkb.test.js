@@ -92,11 +92,11 @@ describe('/graphkb', () => {
     });
   });
 
-  describe('GET /evidence', () => {
+  describe('GET /evidenceLevel', () => {
     test.todo('with keyword'); // pending API Fix release in GraphKB API 3.3.0
 
     test('without keyword', async () => {
-      await testAutocompleteWithoutKeyword(request, 'evidence');
+      await testAutocompleteWithoutKeyword(request, 'evidenceLevel');
     });
   });
 
