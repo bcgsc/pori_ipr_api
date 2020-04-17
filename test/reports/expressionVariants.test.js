@@ -1,3 +1,7 @@
+process.env.NODE_ENV = 'local';
+process.env.IPR_DATABASE_PASSWORD = '41p33@RG!';
+process.env.IPR_TESTING_PASSWORD = 'w1nt3r';
+
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
@@ -9,7 +13,8 @@ const {listen} = require('../../app');
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+let {username, password} = CONFIG.get('testing');
+password = 'w1nt3r';
 
 describe('/expression-variants', () => {
   let server;
@@ -88,7 +93,7 @@ describe('/expression-variants', () => {
         }
       });
 
-      test('a single expression variant by ident', async (done) => {
+      test('a single expression variant by ident', async () => {
         const {body: result} = await request
           .get(`/api/reports/${report.ident}/expression-variants/${variant.ident}`)
           .auth(username, password)
@@ -106,8 +111,6 @@ describe('/expression-variants', () => {
         expect(result).not.toHaveProperty('reportId');
         expect(result).not.toHaveProperty('geneId');
         expect(result).not.toHaveProperty('deletedAt');
-
-        done();
       });
     });
   });

@@ -97,7 +97,7 @@ describe('/structural-variants', () => {
         }
       });
 
-      test('a single structural variant by ident', async (done) => {
+      test('a single structural variant by ident', async () => {
         const {body: result} = await request
           .get(`/api/reports/${report.ident}/structural-variants/${variant.ident}`)
           .auth(username, password)
@@ -120,8 +120,6 @@ describe('/structural-variants', () => {
         expect(result).not.toHaveProperty('gene1Id');
         expect(result).not.toHaveProperty('gene2Id');
         expect(result).not.toHaveProperty('deletedAt');
-
-        done();
       });
     });
   });

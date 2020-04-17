@@ -88,7 +88,7 @@ describe('/copy-variants', () => {
         }
       });
 
-      test('a single copy variant by ident', async (done) => {
+      test('a single copy variant by ident', async () => {
         const {body: result} = await request
           .get(`/api/reports/${report.ident}/copy-variants/${variant.ident}`)
           .auth(username, password)
@@ -106,8 +106,6 @@ describe('/copy-variants', () => {
         expect(result).not.toHaveProperty('reportId');
         expect(result).not.toHaveProperty('geneId');
         expect(result).not.toHaveProperty('deletedAt');
-
-        done();
       });
     });
   });
