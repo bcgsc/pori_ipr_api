@@ -29,7 +29,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
     query.queryType = 'ancestors';
     query.filters = {name: 'therapeutic efficacy'};
   } else {
-    if (targetType === 'evidence') {
+    if (targetType === 'evidenceLevel') {
       query.target = 'EvidenceLevel';
       delete query.limit; // short list with short names, just return all
     } else if (targetType === 'therapy') {
