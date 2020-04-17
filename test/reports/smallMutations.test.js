@@ -88,7 +88,7 @@ describe('/small-mutations', () => {
         }
       });
 
-      test('a single small mutation by ident', async () => {
+      test('a single small mutation by ident', async (done) => {
         const {body: result} = await request
           .get(`/api/reports/${report.ident}/small-mutations/${variant.ident}`)
           .auth(username, password)
@@ -106,6 +106,8 @@ describe('/small-mutations', () => {
         expect(result).not.toHaveProperty('reportId');
         expect(result).not.toHaveProperty('geneId');
         expect(result).not.toHaveProperty('deletedAt');
+
+        done();
       });
     });
   });

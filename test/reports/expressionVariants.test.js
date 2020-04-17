@@ -88,7 +88,7 @@ describe('/expression-variants', () => {
         }
       });
 
-      test('a single expression variant by ident', async () => {
+      test('a single expression variant by ident', async (done) => {
         const {body: result} = await request
           .get(`/api/reports/${report.ident}/expression-variants/${variant.ident}`)
           .auth(username, password)
@@ -106,6 +106,8 @@ describe('/expression-variants', () => {
         expect(result).not.toHaveProperty('reportId');
         expect(result).not.toHaveProperty('geneId');
         expect(result).not.toHaveProperty('deletedAt');
+
+        done();
       });
     });
   });
