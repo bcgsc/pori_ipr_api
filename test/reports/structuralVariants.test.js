@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'test';
-
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
