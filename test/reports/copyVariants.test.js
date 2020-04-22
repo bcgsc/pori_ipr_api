@@ -57,6 +57,7 @@ describe('/copy-variants', () => {
   });
 
   afterAll(async () => {
+    await new Promise(resolve => setTimeout(() => resolve(), 500)); // avoid jest open handle error
     await server.close();
   });
 

@@ -1,7 +1,3 @@
-process.env.NODE_ENV = 'local';
-process.env.IPR_DATABASE_PASSWORD = '41p33@RG!';
-process.env.IPR_TESTING_PASSWORD = 'w1nt3r';
-
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
@@ -13,8 +9,7 @@ const {listen} = require('../../app');
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
-let {username, password} = CONFIG.get('testing');
-password = 'w1nt3r';
+const {username, password} = CONFIG.get('testing');
 
 describe('/expression-variants', () => {
   let server;
@@ -62,6 +57,7 @@ describe('/expression-variants', () => {
   });
 
   afterAll(async () => {
+    await new Promise(resolve => setTimeout(() => resolve(), 500)); // avoid jest open handle error
     await server.close();
   });
 
