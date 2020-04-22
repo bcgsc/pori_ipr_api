@@ -19,7 +19,7 @@ const FAKE_TARGET = {
   geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
-  rank: 1,
+  rank: 0,
   evidenceLevel: 'OncoKB 1',
 };
 
@@ -150,6 +150,51 @@ describe('/therapeutic-targets', () => {
           where: {ident: original.ident, deletedAt: {[Op.not]: null}},
         });
         expect(result).toHaveProperty('deletedAt');
+      });
+
+      describe('tests depending on multiple records present', () => {
+        let original2;
+
+        beforeEach(async () => {
+          // create a new therapeutic target
+          ({dataValues: original2} = await db.models.therapeuticTarget.create({
+            ...FAKE_TARGET,
+            rank: 1,
+            reportId: report.id,
+          }));
+
+          expect(original2).toHaveProperty('ident');
+          expect(original2).toHaveProperty('id');
+        });
+
+        afterEach(async () => {
+          if (original2) {
+            // clean up the new record if one was created
+            await db.models.therapeuticTarget.destroy({
+              where: {ident: original2.ident},
+              force: true,
+            });
+          }
+        });
+
+        test('update rank', async () => {
+          const {body: record} = await request
+            .put(`/api/reports/${report.ident}/therapeutic-targets`)
+            .auth(username, password)
+            .send([
+              {...FAKE_TARGET, rank: 1, reportId: report.id},
+              {...FAKE_TARGET, rank: 0, reportId: report.id},
+            ])
+            .type('json')
+            .expect(HTTP_STATUS.OK);
+
+          expect(record).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({rank: 0}),
+              expect.objectContaining({rank: 1}),
+            ])
+          );
+        });
       });
 
       test.todo('Bad request on update and set gene to null');
