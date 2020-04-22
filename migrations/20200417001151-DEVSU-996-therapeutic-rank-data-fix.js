@@ -12,10 +12,10 @@ module.exports = {
         `UPDATE ${TABLE} options set rank = reranked.new_rank - 1
         FROM (
           SELECT id,
-            (ROW_NUMBER() OVER (
-              PARTITION BY report_id, type
-              ORDER BY rank, context, gene, variant, id
-            ) - 1) as new_rank
+            ROW_NUMBER() OVER (
+                PARTITION BY report_id, type
+                ORDER BY rank, context, gene, variant, id
+            ) as new_rank
           FROM (
             SELECT * FROM ${TABLE} WHERE deleted_at IS NULL
           ) foo
