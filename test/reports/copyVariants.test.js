@@ -13,6 +13,8 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
+const LONGER_TIMEOUT = 50000;
+
 let server;
 let request;
 
@@ -87,7 +89,7 @@ describe('/copy-variants', () => {
           expect(result).not.toHaveProperty('geneId');
           expect(result).not.toHaveProperty('deletedAt');
         }
-      });
+      }, LONGER_TIMEOUT);
 
       test('a single copy variant by ident', async () => {
         const {body: result} = await request
