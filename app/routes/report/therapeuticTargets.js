@@ -2,8 +2,11 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
+const therapeuticTargetsMiddleware = require('../../middleware/therapeuticTargets');
 const db = require('../../models');
 const logger = require('../../log');
+
+router.use(therapeuticTargetsMiddleware);
 
 // Fetch the therapeutic target if found as URL param
 router.param('target', async (req, res, next, target) => {
@@ -76,19 +79,11 @@ router.route('/:target([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    const {report: {id: reportId}} = req;
-
-    // Get all rows for this report
-    try {
-      const results = await db.models.therapeuticTarget.scope('public').findAll({
-        where: {reportId},
-        order: [['rank', 'ASC']],
-      });
-      return res.json(results);
-    } catch (error) {
-      logger.error(`Unable to retrieve therapeutic targets ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve therapeutic targets', code: 'failedTherapeuticTargetlookup'}});
-    }
+    const targets = req.targets.map((target) => {
+      const {id, ...targetNoId} = target.dataValues;
+      return targetNoId;
+    });
+    return res.json(targets);
   })
   .post(async (req, res) => {
     // Create new entry
@@ -103,6 +98,28 @@ router.route('/')
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
+    }
+  })
+  .put(async (req, res) => {
+    const {targets} = req;
+
+    try {
+      let results = await db.transaction(async (transaction) => {
+        return Promise.all(
+          targets.map((target) => {
+            return target.save({hooks: false, transaction});
+          }),
+        );
+      });
+      // id field was added in middleware to save against a pkey. Remove here
+      results = results.map((result) => {
+        const {id, ...resultsNoId} = result.dataValues;
+        return resultsNoId;
+      });
+      return res.json(results);
+    } catch (error) {
+      logger.error(`Unable to update therapeutic target entries ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target entries', code: 'failedTherapeuticTargetVersion'}});
     }
   });
 
