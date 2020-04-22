@@ -13,7 +13,7 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 100000;
+const LONGER_TIMEOUT = 50000;
 
 let server;
 let request;
