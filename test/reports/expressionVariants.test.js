@@ -1,3 +1,5 @@
+process.env.NODE_ENV = 'test';
+
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
@@ -11,17 +13,20 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
+let server;
+let request;
+
+beforeAll(async () => {
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
+  request = supertest(server);
+});
+
 describe('/expression-variants', () => {
-  let server;
-  let request;
   let report;
   let variant;
 
   beforeAll(async () => {
-    const port = await getPort({port: CONFIG.get('web:port')});
-    server = await listen(port);
-    request = supertest(server);
-
     // find a variant (any variant)
     variant = await db.models.expressionVariants.findOne({
       attributes: ['id', 'ident', 'reportId'],
@@ -54,12 +59,6 @@ describe('/expression-variants', () => {
     expect(report).toHaveProperty('ident');
     expect(report.id).not.toBe(null);
     expect(report.ident).not.toBe(null);
-  });
-
-  afterAll(async () => {
-    await new Promise(resolve => setTimeout(() => resolve(), 500)); // avoid jest open handle error
-    await server.close();
-    await db.close();
   });
 
   describe('tests dependent on existing expression variants', () => {
@@ -111,4 +110,8 @@ describe('/expression-variants', () => {
       });
     });
   });
+});
+
+afterAll(async () => {
+  await server.close();
 });
