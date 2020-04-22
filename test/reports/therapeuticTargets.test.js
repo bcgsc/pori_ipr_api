@@ -1,3 +1,5 @@
+process.env.NODE_ENV = 'test';
+
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
@@ -23,16 +25,20 @@ const FAKE_TARGET = {
   evidenceLevel: 'OncoKB 1',
 };
 
+let server;
+let request;
+
+beforeAll(async () => {
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
+  request = supertest(server);
+});
+
 describe('/therapeutic-targets', () => {
-  let server;
-  let request;
   let report;
   let createdIdent;
 
   beforeAll(async () => {
-    const port = await getPort({port: CONFIG.get('web:port')});
-    server = await listen(port);
-    request = supertest(server);
     // connect to the db
     // find a report (any report)
     report = await db.models.analysis_report.findOne({
@@ -44,10 +50,6 @@ describe('/therapeutic-targets', () => {
     expect(report).toHaveProperty('ident');
     expect(report.id).not.toBe(null);
     expect(report.ident).not.toBe(null);
-  });
-
-  afterAll(async () => {
-    await server.close();
   });
 
   beforeEach(() => {
@@ -169,4 +171,8 @@ describe('/therapeutic-targets', () => {
       expect(result).toHaveProperty('deletedAt');
     });
   });
+});
+
+afterAll(async () => {
+  await server.close();
 });
