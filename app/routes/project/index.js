@@ -36,8 +36,8 @@ router.param('project', async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
-      {as: 'reports', model: db.models.analysis_report.scope('public')},
+      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}, through: {attributes: []}},
+      {as: 'reports', model: db.models.analysis_report.scope('minimal'), through: {attributes: []}},
     ],
   };
 
@@ -60,8 +60,8 @@ router.route('/')
     access.read = ['admin'];
 
     if (access.check(true) && req.query.admin === true) {
-      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
+      includeOpts.push({as: 'reports', model: db.models.analysis_report.scope('minimal'), through: {attributes: []}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
     }
 
     let projectAccess;
@@ -214,8 +214,8 @@ router.route('/:ident([A-z0-9-]{36})')
       where: {ident: req.params.ident},
       attributes: {exclude: ['id']},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
-        {as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
+        {as: 'reports', model: db.models.analysis_report.scope('minimal'), through: {attributes: []}},
       ],
     };
 
