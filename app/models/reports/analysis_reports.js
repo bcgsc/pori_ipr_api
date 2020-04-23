@@ -103,6 +103,9 @@ module.exports = (sequelize) => {
           exclude: ['id', 'createdBy_id', 'deletedAt'],
         },
       },
+      minimal: {
+        attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'],
+      },
     },
     hooks: {
       ...DEFAULT_OPTIONS.hooks,
