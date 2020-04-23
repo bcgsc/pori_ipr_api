@@ -433,7 +433,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
     let report;
     try {
       // Lookup report
-      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}});
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id', 'ident']});
       if (!report) {
         logger.error('Unable to find report');
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report', code: 'failedReportLookupReportProject'}});
@@ -472,7 +472,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
     let report;
     try {
       // Lookup report
-      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: {exclude: ['deletedAt']}});
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id']});
       if (!report) {
         logger.error(`Unable to find report ${req.body.report}`);
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`, code: 'failedReportLookupReportProject'}});
