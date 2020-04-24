@@ -199,7 +199,7 @@ router.route('/:project([A-z0-9-]{36})')
     // Attempt project model update
     try {
       await db.models.project.update(updateBody, {
-        where: {ident: req.params.ident},
+        where: {ident: req.project.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
@@ -211,7 +211,7 @@ router.route('/:project([A-z0-9-]{36})')
 
     // Success, get project -- UGH
     const opts = {
-      where: {ident: req.params.ident},
+      where: {ident: req.project.ident},
       attributes: {exclude: ['id']},
       include: [
         {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
@@ -239,7 +239,7 @@ router.route('/:project([A-z0-9-]{36})')
 
     try {
       // Delete project
-      const result = await db.models.project.destroy({where: {ident: req.params.ident}, limit: 1});
+      const result = await db.models.project.destroy({where: {ident: req.project.ident}, limit: 1});
       if (!result) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
       }
