@@ -161,7 +161,7 @@ router.route('/')
     }
   });
 
-router.route('/:ident([A-z0-9-]{36})')
+router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
     // Getting project
     // Check user permission and filter by project
