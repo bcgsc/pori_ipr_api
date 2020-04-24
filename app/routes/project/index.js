@@ -37,7 +37,7 @@ router.param('project', async (req, res, next, ident) => {
     attributes: {exclude: ['deletedAt']},
     include: [
       {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}, through: {attributes: []}},
-      {as: 'reports', model: db.models.analysis_report.scope('minimal'), through: {attributes: []}},
+      {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
     ],
   };
 
@@ -60,7 +60,7 @@ router.route('/')
     access.read = ['admin'];
 
     if (access.check(true) && req.query.admin === true) {
-      includeOpts.push({as: 'reports', model: db.models.analysis_report.scope('minimal'), through: {attributes: []}});
+      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
       includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
     }
 
@@ -215,7 +215,7 @@ router.route('/:project([A-z0-9-]{36})')
       attributes: {exclude: ['id']},
       include: [
         {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
-        {as: 'reports', model: db.models.analysis_report.scope('minimal'), through: {attributes: []}},
+        {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
       ],
     };
 
