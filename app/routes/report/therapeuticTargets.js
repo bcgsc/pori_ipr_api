@@ -119,9 +119,9 @@ router.route('/')
                 ident: target.ident,
               },
               transaction,
-              individualHooks: true,
-              paranoid: true,
-              returning: true,
+              validate: false,
+              hooks: false,
+              paranoid: false,
             }
           );
         }));
