@@ -25,6 +25,7 @@ const checkKbMatch = (kbMatchObject) => {
   kbMatchProperties.forEach((element) => {
     expect(kbMatchObject).toHaveProperty(element);
   });
+  expect(kbMatchObject.variant).toHaveProperty('ident');
 };
 
 // Start API
