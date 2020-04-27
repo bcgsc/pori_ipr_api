@@ -35,7 +35,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-// Tests for uploading a report and all of its components
+// Tests for /kb-matches endpoint
 describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
   let reportId;
   let reportIdent;
@@ -78,8 +78,6 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
 
   // delete report
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // by hard deleting newly created report
     await db.models.analysis_report.destroy({where: {id: reportId}, force: true});
 
     // verify report is deleted
