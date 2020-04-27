@@ -12,7 +12,7 @@
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js",
     "sync": "node ./bin/syncWorker"
   },
-  "author": "Brandon Pierce <bpierce@bcgsc.ca>",
+  "author": "IPR <ipr@bcgsc.ca>",
   "license": "GPL-3.0",
   "dependencies": {
     "@alt3/sequelize-to-json-schemas": "^0.3.43",
