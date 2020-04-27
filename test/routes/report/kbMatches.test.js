@@ -2,12 +2,12 @@ process.env.NODE_ENV = 'test';
 
 const supertest = require('supertest');
 const getPort = require('get-port');
-const db = require('../app/models');
+const db = require('../../../app/models');
 
-const mockReportData = require('./testData/mockReportData.json');
+const mockReportData = require('../../testData/mockReportData.json');
 
-const CONFIG = require('../app/config');
-const {listen} = require('../app');
+const CONFIG = require('../../../app/config');
+const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
 
@@ -18,6 +18,15 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
+const kbMatchProperties = ['ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease', 'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
+  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant'];
+
+const checkKbMatch = (kbMatchObject) => {
+  kbMatchProperties.forEach((element) => {
+    expect(kbMatchObject).toHaveProperty(element);
+  });
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -26,13 +35,14 @@ beforeAll(async () => {
 });
 
 // Tests for uploading a report and all of its components
-describe('', () => {
+describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
   let reportId;
   let reportIdent;
+  let kbMatchIdent;
 
   beforeAll(async () => {
     // create report
-    let res = await request
+    const res = await request
       .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
@@ -40,23 +50,29 @@ describe('', () => {
       .expect(200);
 
     expect(typeof res.body).toBe('object');
-
     reportIdent = res.body.ident;
+  }, LONGER_TIMEOUT);
 
-    // check that the report was created
-    res = await request
-      .get(`/api/reports/${reportIdent}`)
+  test('Getting all kb-matches is ok', async () => {
+    const res = await request
+      .get(`/api/reports/${reportIdent}/kb-matches`)
       .auth(username, password)
       .type('json')
       .expect(200);
 
-    // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.reportId;
-  }, LONGER_TIMEOUT);
+    expect(Array.isArray(res.body)).toBe(true);
+    checkKbMatch(res.body[0]);
+    kbMatchIdent = res.body[0].ident;
+  });
 
-  // Test that all components were created
-  test('', async () => {
+  test('Getting a specific kb-match is ok', async () => {
+    const res = await request
+      .get(`/api/reports/${reportIdent}/kb-matches/${kbMatchIdent}`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
 
+    checkKbMatch(res.body);
   });
 
   // delete report
