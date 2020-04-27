@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'test';
-
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
