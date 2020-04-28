@@ -95,7 +95,7 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'createdBy_id', 'deletedAt'],
+          exclude: ['id', 'config', 'createdBy_id', 'deletedAt'],
         },
       },
       extended: {
