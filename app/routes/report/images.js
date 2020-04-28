@@ -184,13 +184,17 @@ const loadImage = async (reportId, key, imagePath) => {
   }
 
   const imageData = await processImage(imagePath, config.width, config.height, config.format);
-  await db.models.imageData.create({
-    reportId,
-    format: config.format,
-    filename: path.basename(imagePath),
-    key,
-    data: imageData,
-  });
+  if (imageData) {
+    await db.models.imageData.create({
+      reportId,
+      format: config.format,
+      filename: path.basename(imagePath),
+      key,
+      data: imageData,
+    });
+  } else {
+    logger.verbose(`skipping empty image: ${imagePath}`);
+  }
 };
 
 module.exports = {loadImage};
