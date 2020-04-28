@@ -104,6 +104,46 @@ describe('Tests for uploading a report and all of its components', () => {
   }, LONGER_TIMEOUT);
 });
 
+// Tests for uploading a report and all of its components
+describe('Tests for uploading a report with empty image data', () => {
+  let reportId;
+  let reportIdent;
+
+  beforeAll(async () => {
+    // create report
+    const emptyImageMockReportData = mockReportData;
+    emptyImageMockReportData.images[0].path = '/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors_empty.png';
+    let res = await request
+      .post('/api/reports')
+      .auth(username, password)
+      .send(emptyImageMockReportData)
+      .type('json')
+      .expect(200);
+
+    expect(typeof res.body).toBe('object');
+
+    reportIdent = res.body.ident;
+
+    // check that the report was created
+    res = await request
+      .get(`/api/reports/${reportIdent}`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    // get report id from patient info. because it's excluded in public view
+    reportId = res.body.patientInformation.reportId;
+  });
+
+  test('Empty image data was not created in the database', async () => {
+    const images = await db.models.imageData.findAll({where: {reportId}});
+
+    expect(images).toEqual(expect.arrayContaining([expect.not.objectContaining({
+      data: '',
+    })]));
+  });
+});
+
 afterAll(async () => {
   await server.close();
 });
