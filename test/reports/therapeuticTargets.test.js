@@ -8,6 +8,8 @@ const db = require('../../app/models');
 const CONFIG = require('../../app/config');
 const {listen} = require('../../app');
 
+const LONGER_TIMEOUT = 5000;
+
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
@@ -133,7 +135,7 @@ describe('/therapeutic-targets', () => {
       });
     });
 
-    describe('UPDATE', () => {
+    describe('PUT', () => {
       test('update with valid input', async () => {
         const {body: record} = await request
           .put(url)
@@ -152,49 +154,55 @@ describe('/therapeutic-targets', () => {
         expect(result).toHaveProperty('deletedAt');
       });
 
-      describe('tests depending on multiple records present', () => {
-        let original2;
+      describe('tests depending on multiple targets present', () => {
+        let newTarget;
 
         beforeEach(async () => {
           // create a new therapeutic target
-          ({dataValues: original2} = await db.models.therapeuticTarget.create({
+          ({dataValues: newTarget} = await db.models.therapeuticTarget.create({
             ...FAKE_TARGET,
-            rank: 1,
+            rank: -900,
             reportId: report.id,
           }));
 
-          expect(original2).toHaveProperty('ident');
-          expect(original2).toHaveProperty('id');
+          expect(newTarget).toHaveProperty('id');
+          expect(newTarget).toHaveProperty('ident');
+          expect(newTarget).toHaveProperty('rank');
         });
 
         afterEach(async () => {
-          if (original2) {
+          if (newTarget) {
             // clean up the new record if one was created
             await db.models.therapeuticTarget.destroy({
-              where: {ident: original2.ident},
+              where: {ident: newTarget.ident},
               force: true,
             });
           }
         });
 
-        test('update rank', async () => {
-          const {body: record} = await request
+        test('update target ranks with non-duplicate rank', async () => {
+          await request
             .put(`/api/reports/${report.ident}/therapeutic-targets`)
             .auth(username, password)
             .send([
-              {...FAKE_TARGET, rank: 1, reportId: report.id},
-              {...FAKE_TARGET, rank: 0, reportId: report.id},
+              {ident: original.ident, rank: newTarget.rank},
+              {ident: newTarget.ident, rank: original.rank},
             ])
             .type('json')
             .expect(HTTP_STATUS.OK);
+        }, LONGER_TIMEOUT);
 
-          expect(record).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({rank: 0}),
-              expect.objectContaining({rank: 1}),
+        test('update target ranks with duplicate rank', async () => {
+          await request
+            .put(`/api/reports/${report.ident}/therapeutic-targets`)
+            .auth(username, password)
+            .send([
+              {ident: original.ident, rank: -500},
+              {ident: newTarget.ident, rank: -500},
             ])
-          );
-        });
+            .type('json')
+            .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+        }, LONGER_TIMEOUT);
       });
 
       test.todo('Bad request on update and set gene to null');
