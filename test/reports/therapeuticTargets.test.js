@@ -19,7 +19,7 @@ const FAKE_TARGET = {
   geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
-  rank: 0,
+  rank: -1000,
   evidenceLevel: 'OncoKB 1',
 };
 
