@@ -122,7 +122,11 @@ const processImage = (imagePath, width, height, format = 'PNG') => {
 
     // Done executing
     base.on('close', () => {
-      resolve(imageData);
+      if (imageData) {
+        resolve(imageData);
+      } else {
+        reject(new Error(`empty image for path: ${imagePath}`));
+      }
     });
   });
 };
@@ -184,17 +188,13 @@ const loadImage = async (reportId, key, imagePath) => {
   }
 
   const imageData = await processImage(imagePath, config.width, config.height, config.format);
-  if (imageData) {
-    await db.models.imageData.create({
-      reportId,
-      format: config.format,
-      filename: path.basename(imagePath),
-      key,
-      data: imageData,
-    });
-  } else {
-    logger.verbose(`skipping empty image: ${imagePath}`);
-  }
+  await db.models.imageData.create({
+    reportId,
+    format: config.format,
+    filename: path.basename(imagePath),
+    key,
+    data: imageData,
+  });
 };
 
 module.exports = {loadImage};
