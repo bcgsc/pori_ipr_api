@@ -109,27 +109,26 @@ router.route('/')
     const {report: {id: reportId}, body} = req;
 
     try {
-      const results = await db.transaction(async (transaction) => {
+      await db.transaction(async (transaction) => {
         return Promise.all(body.map((target) => {
           return db.models.therapeuticTarget.update(
-            {...target},
+            {rank: target.rank},
             {
               where: {
                 reportId,
                 ident: target.ident,
               },
               transaction,
-              validate: false,
               hooks: false,
-              paranoid: false,
             }
           );
         }));
       });
-      return res.json(results);
+
+      return res.json({updated: true});
     } catch (error) {
-      logger.error(`Unable to update therapeutic target entries ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target entries', code: 'failedTherapeuticTargetVersion'}});
+      logger.error(`Unable to update therapeutic target rank ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target rank', code: 'failedTherapeuticTargetVersion'}});
     }
   });
 
