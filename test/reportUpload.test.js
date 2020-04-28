@@ -133,7 +133,7 @@ describe('Tests for uploading a report with empty image data', () => {
 
     // get report id from patient info. because it's excluded in public view
     reportId = res.body.patientInformation.reportId;
-  });
+  }, LONGER_TIMEOUT);
 
   test('Empty image data was not created in the database', async () => {
     const images = await db.models.imageData.findAll({where: {reportId}});
