@@ -5,14 +5,14 @@
   "description": "Integrated Pipeline Reports API",
   "main": "bin/server.js",
   "scripts": {
-    "start": "node bin/server.js",
-    "start:prod": "NODE_ENV=production node bin/server.js",
-    "start:dev": "NODE_ENV=development node bin/server.js",
+    "start": "node --max-old-space-size=2800 bin/server.js",
+    "start:prod": "NODE_ENV=production node --max-old-space-size=2800 bin/server.js",
+    "start:dev": "NODE_ENV=development node --max-old-space-size=2800 bin/server.js",
     "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js",
     "sync": "node ./bin/syncWorker"
   },
-  "author": "Brandon Pierce <bpierce@bcgsc.ca>",
+  "author": "IPR <ipr@bcgsc.ca>",
   "license": "GPL-3.0",
   "dependencies": {
     "@alt3/sequelize-to-json-schemas": "^0.3.43",
