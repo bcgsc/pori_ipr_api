@@ -60,7 +60,8 @@ router.post('/', async (req, res) => {
     // validate against the model
     validateAgainstSchema(germlineReportUploadSchema, content);
   } catch (err) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json(err);
+    const message = `There was an error validating the report content: ${err}`;
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
   }
 
   let report;
