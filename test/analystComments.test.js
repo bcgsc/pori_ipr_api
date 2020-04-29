@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
 
-const mockReportData = require('./testData/mockReportData.json');
+const {images, ...mockReportData} = require('./testData/mockReportData.json');
 
 // get test user info
 const CONFIG = require('../app/config');
