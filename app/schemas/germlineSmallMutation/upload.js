@@ -20,4 +20,6 @@ schema.properties.rows = {
   items: variant,
 };
 
+schema.additionalProperties = false;
+
 module.exports = schema;
