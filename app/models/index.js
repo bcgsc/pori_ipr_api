@@ -39,10 +39,10 @@ const analysisReports = sequelize.import('./reports/analysis_reports');
 const analysisReportsUsers = sequelize.import('./analysis_report_user');
 
 project.belongsToMany(analysisReports, {
-  as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'report_id', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 analysisReports.belongsToMany(project, {
-  as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'report_id', otherKey: 'project_id', onDelete: 'CASCADE',
+  as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'reportId', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
 analysisReports.hasMany(analysisReportsUsers, {
