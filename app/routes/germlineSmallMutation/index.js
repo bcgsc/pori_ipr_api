@@ -63,6 +63,20 @@ router.post('/', async (req, res) => {
     return res.status(HTTP_STATUS.BAD_REQUEST).json(err);
   }
 
+  // get project
+  let project;
+  try {
+    project = await db.models.project.findOne({where: {name: req.body.project}});
+  } catch (error) {
+    logger.error(`Unable to find project ${req.body.project} with error ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
+  }
+
+  if (!project) {
+    logger.error(`Project ${req.body.project} doesn't currently exist`);
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
+  }
+
   let report;
   let rawVariants;
   try {
@@ -77,6 +91,16 @@ router.post('/', async (req, res) => {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
   }
 
+  // Create project association
+  try {
+    await db.models.germlineReportsToProjects.create(
+      {germlineReportId: report.id, projectId: project.id}
+    );
+  } catch (err) {
+    logger.error(`There was an error creating germline small mutation report ${err}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
+  }
+
   try {
     // create the variants for this report
     const processedVariants = Variants.processVariants(report, rawVariants);
@@ -84,10 +108,15 @@ router.post('/', async (req, res) => {
       return {...v, germline_report_id: report.id};
     }));
 
+    // Clean project object
+    delete project.dataValues.id;
+    delete project.dataValues.deletedAt;
+
     const output = {
       ..._.omit(report, ['id', 'biofx_assigned_id', 'deletedAt']),
       variants: rows,
       biofx_assigned: user,
+      projects: project,
     };
 
     return res.status(HTTP_STATUS.CREATED).json(output);
