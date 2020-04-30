@@ -1,8 +1,8 @@
 {
     "patientId": "FAKE",
     "biopsyName": "biop1",
-    "normal_library": "P0XXXXX",
-    "project": "TEST",
+    "normalLibrary": "P0XXXXX",
+    "project": "POG",
     "rows": [
         {
             "additional_info": "Pour-over mumblecore kombucha fashion axe hot chicken keffiyeh tbh af plaid umami cornhole +1 tumblr kale chips",
