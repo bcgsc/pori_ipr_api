@@ -26,26 +26,5 @@ module.exports = {
         NODE_ENV: 'staging',
       },
     },
-    // Sync Worker
-    {
-      name: 'IPR-API-syncWorker',
-      script: 'npm',
-      args: 'run sync',
-      watch: false,
-      log_date_format: 'YYYY-MM-DD HH:mm Z',
-      merge_logs: true,
-      max_restarts: 20,
-      min_uptime: 10000,
-      append_env_to_name: true,
-      env_production: {
-        NODE_ENV: 'production',
-      },
-      env_development: {
-        NODE_ENV: 'development',
-      },
-      env_staging: {
-        NODE_ENV: 'staging',
-      },
-    },
   ],
 };
