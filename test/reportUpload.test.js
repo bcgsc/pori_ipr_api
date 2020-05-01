@@ -104,6 +104,23 @@ describe('Tests for uploading a report and all of its components', () => {
   }, LONGER_TIMEOUT);
 });
 
+// Tests for uploading a report and all of its components
+describe('Test for uploading a report with empty image data', () => {
+  test('Upload fails on empty image data', async () => {
+    // create report
+    const emptyImageMockReportData = mockReportData;
+    emptyImageMockReportData.images[0].path = '/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors_empty.png';
+    const res = await request
+      .post('/api/reports')
+      .auth(username, password)
+      .send(emptyImageMockReportData)
+      .type('json')
+      .expect(400);
+
+    expect(typeof res.body).toBe('object');
+  }, LONGER_TIMEOUT);
+});
+
 afterAll(async () => {
   await server.close();
 });
