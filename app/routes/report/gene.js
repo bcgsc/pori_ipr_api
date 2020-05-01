@@ -50,8 +50,8 @@ router.route('/:geneName')
 
       return res.json(publicModel);
     } catch (error) {
-      logger.error(`Unable to update probe target ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update probe target', code: 'failedMutationSummaryVersion'}});
+      logger.error(`Unable to update gene ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to update gene'}});
     }
   });
 
