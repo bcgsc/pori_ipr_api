@@ -11,8 +11,6 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
-
 let server;
 let request;
 
@@ -64,12 +62,16 @@ describe('/small-mutations', () => {
   describe('tests dependent on existing small mutations', () => {
     describe('GET', () => {
       test('all small mutations for a report', async () => {
-        const {body: results} = await request
+        let {body: results} = await request
           .get(`/api/reports/${report.ident}/small-mutations`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
         expect(Array.isArray(results)).toBe(true);
+
+        // make sure results is 5 entries or less
+        results = results.slice(0, 5);
+
         // verify all returned variants
         for (const result of results) {
           expect(result).toHaveProperty('ident');
@@ -87,7 +89,7 @@ describe('/small-mutations', () => {
           expect(result).not.toHaveProperty('geneId');
           expect(result).not.toHaveProperty('deletedAt');
         }
-      }, LONGER_TIMEOUT);
+      });
 
       test('a single small mutation by ident', async () => {
         const {body: result} = await request
