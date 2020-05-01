@@ -15,8 +15,8 @@ module.exports = {
       console.log('transfer the content from the genes/exons to the split versions');
       await queryInterface.sequelize.query(
         `UPDATE ${SV_TABLE} SET
-          gene1 = split_part(genes, '::', 1),
-          gene2 = split_part(genes, '::', 2),
+          gene1 = TRIM(split_part(genes, '::', 1)),
+          gene2 = TRIM(split_part(genes, '::', 2)),
           exon1 = split_part(exons, ':', 1),
           exon2 = split_part(exons, ':', 2)`,
         {transaction}

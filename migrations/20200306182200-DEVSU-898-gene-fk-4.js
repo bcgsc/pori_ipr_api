@@ -27,6 +27,11 @@ module.exports = {
       console.log('Copy the genes from each variant to the genes table');
 
       for (const table of GENE_LINKED_VARIANT_TABLES) {
+        console.log('trim gene names');
+        await queryInterface.sequelize.query(
+          `UPDATE ${table} SET gene = TRIM(gene)`,
+          {transaction}
+        );
         console.log(`copy genes from ${table}`);
         const records = await queryInterface.sequelize.query(
           `SELECT DISTINCT ON (report_id, name) report_id,

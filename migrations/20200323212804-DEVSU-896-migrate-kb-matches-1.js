@@ -62,13 +62,18 @@ module.exports = {
       );
       console.log('standardize kb-matches structural variant variant names');
       await queryInterface.sequelize.query(
-        `UPDATE ${KB_TABLE} SET variant = REGEXP_REPLACE(
+        `UPDATE ${KB_TABLE} SET variant = TRIM(REGEXP_REPLACE(
           REPLACE(variant, gene || ' ', ''),
           '[e()]',
           '',
           'g'
-        )
+        ))
         WHERE variant_type = 'sv'`,
+        {transaction}
+      );
+      console.log('trim gene whitespace');
+      await queryInterface.sequelize.query(
+        `UPDATE ${KB_TABLE} SET gene = TRIM(gene)`,
         {transaction}
       );
 
