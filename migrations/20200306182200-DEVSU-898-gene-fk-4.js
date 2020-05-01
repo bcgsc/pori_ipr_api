@@ -30,7 +30,7 @@ module.exports = {
         console.log(`copy genes from ${table}`);
         const records = await queryInterface.sequelize.query(
           `SELECT DISTINCT ON (report_id, name) report_id,
-            gene as name,
+            TRIM(FROM gene) as name,
             created_at,
             updated_at
           FROM ${table} mut
@@ -53,7 +53,7 @@ module.exports = {
         console.log(`copy genes from ${SV_TABLE}.${geneCol}`);
         const records = await queryInterface.sequelize.query(
           `SELECT DISTINCT ON (report_id, name) report_id,
-              ${geneCol} as name,
+              TRIM(FROM ${geneCol}) as name,
               created_at,
               updated_at,
               deleted_at
@@ -62,7 +62,7 @@ module.exports = {
               SELECT * FROM ${GENE_TABLE} gene
               WHERE gene.deleted_at IS NULL AND mut.report_id = gene.report_id AND mut.${geneCol} = gene.name
             )
-            ORDER BY report_id, ${geneCol}, deleted_at DESC, updated_at DESC, created_at DESC`,
+            ORDER BY report_id, name, deleted_at DESC, updated_at DESC, created_at DESC`,
           {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
         );
         console.log(`copying ${records.length} records from ${SV_TABLE}.${geneCol} to ${GENE_TABLE}`);
