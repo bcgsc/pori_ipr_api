@@ -11,8 +11,6 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
-
 let server;
 let request;
 
@@ -67,12 +65,16 @@ describe('/structural-variants', () => {
   describe('tests dependent on existing structural variants', () => {
     describe('GET', () => {
       test('all structural variants for a report', async () => {
-        const {body: results} = await request
+        let {body: results} = await request
           .get(`/api/reports/${report.ident}/structural-variants`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
         expect(Array.isArray(results)).toBe(true);
+
+        // make sure results is 5 entries or less
+        results = results.slice(0, 5);
+
         // verify all returned variants
         for (const result of results) {
           // have properties
@@ -96,7 +98,7 @@ describe('/structural-variants', () => {
           expect(result).not.toHaveProperty('gene2Id');
           expect(result).not.toHaveProperty('deletedAt');
         }
-      }, LONGER_TIMEOUT);
+      });
 
       test('a single structural variant by ident', async () => {
         const {body: result} = await request

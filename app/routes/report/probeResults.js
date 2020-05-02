@@ -9,7 +9,7 @@ const logger = require('../../log');
 router.param('target', async (req, res, next, altIdent) => {
   let result;
   try {
-    result = await db.models.probeResults.findOne({where: {ident: altIdent}, attributes: {exclude: ['id', '"deletedAt"']}});
+    result = await db.models.probeResults.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.error(`Unable to find probe target ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find probe target', code: 'failedMiddlewareProbeTargetQuery'}});
@@ -27,7 +27,7 @@ router.param('target', async (req, res, next, altIdent) => {
 // Handle requests for alterations
 router.route('/:target([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.alteration);
+    return res.json(req.target);
   })
   .put(async (req, res) => {
     // Update DB Version for Entry

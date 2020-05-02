@@ -13,6 +13,7 @@ const smallMutations = require('./smallMutations');
 const therapeuticTargets = require('./therapeuticTargets');
 const probeTestInformation = require('./probeTestInformation');
 const geneViewer = require('./geneViewer');
+const gene = require('./gene');
 const mutationSignatures = require('./mutationSignatures');
 
 const router = express.Router({mergeParams: true});
@@ -33,5 +34,6 @@ router.use('/probe-test-information', probeTestInformation);
 router.use('/kb-matches', kbMatches);
 router.use('/probe-results', probeResults);
 router.use('/gene-viewer', geneViewer);
+router.use('/genes', gene);
 
 module.exports = router;
