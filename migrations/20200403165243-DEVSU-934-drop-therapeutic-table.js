@@ -12,8 +12,8 @@ module.exports = {
       console.log(`creating the simplifed view ${tempViewName}`);
       await queryInterface.sequelize.query(`
         CREATE TEMP VIEW ${tempViewName} AS SELECT
-          DISTINCT ON (gene_name, variant, report_id)
-            gene_name,
+          DISTINCT ON (TRIM(gene_name), variant, report_id)
+            TRIM(gene_name) AS gene_name,
             variant,
             report_id,
             comments,
@@ -42,7 +42,7 @@ module.exports = {
             WHERE
                 "reportType" != 'genomic' AND deleted_at IS NULL
           ) foo
-          ORDER BY gene_name, variant, report_id, comments, updated_at DESC
+          ORDER BY TRIM(gene_name), variant, report_id, comments, updated_at DESC
       `, {transaction});
       console.log(`copying genes from ${GENOMIC_EVENTS_TABLE} to reports_genes`);
       // transfer missing genes from GENOMIC_EVENTS_TABLE to reports_genes
