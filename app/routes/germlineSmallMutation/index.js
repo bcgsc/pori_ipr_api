@@ -60,7 +60,8 @@ router.post('/', async (req, res) => {
     // validate against the model
     validateAgainstSchema(germlineReportUploadSchema, content);
   } catch (err) {
-    const message = `There was an error validating the report content: ${err}`;
+    const message = `There was an error creating germline small mutation report ${err}`;
+    logger.error(message);
     return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
   }
 
@@ -74,8 +75,9 @@ router.post('/', async (req, res) => {
       {...rest, biofx_assigned: user.id},
     ));
   } catch (err) {
-    logger.error(`There was an error creating germline small mutation report ${err}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
+    const message = `There was an error creating germline small mutation report: ${err}`;
+    logger.error(message);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
   }
 
   try {
@@ -94,8 +96,9 @@ router.post('/', async (req, res) => {
     return res.status(HTTP_STATUS.CREATED).json(output);
   } catch (err) {
     db.models.germline_small_mutation.destroy({where: {id: report.id}, force: true});
-    logger.error(`There was an error creating germline small mutation report variants ${err}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(err);
+    const message = `There was an error creating germline small mutation report variants ${err}`;
+    logger.error(message);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
   }
 });
 
@@ -144,7 +147,7 @@ router.get('/', async (req, res) => {
     gsmReports = await db.models.germline_small_mutation.scope('public').findAndCountAll(opts);
   } catch (error) {
     logger.error(`There was an error while finding all germline reports ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while finding all germline reports'});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error while finding all germline reports'}});
   }
 
   let reports = gsmReports.rows;
@@ -208,7 +211,7 @@ router.route('/:gsm_report')
       report = await Report.updateReport(req.report, req.body);
     } catch (error) {
       logger.error(`There was an error updating the germline report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error updating the germline report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error updating the germline report'}});
     }
 
     try {
@@ -216,7 +219,7 @@ router.route('/:gsm_report')
       return res.json(publicReport);
     } catch (error) {
       logger.error(`There was an error while updating the germline report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while updating the germline report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error while updating the germline report'}});
     }
   })
 
@@ -238,7 +241,7 @@ router.route('/:gsm_report')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while removing requested germline report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while removing requested germline report'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while removing requested germline report'}});
     }
   });
 
