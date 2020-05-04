@@ -1,0 +1,390 @@
+{
+    "type": "genomic",
+    "sampleInfo": [
+        {
+            "Sample": "Tumour",
+            "Patho TC": "68%",
+            "Biopsy Site": "US guided liver",
+            "Sample Name": "UPLOADPAT01",
+            "Primary Site": "Liver",
+            "Collection Date": "01-01-20"
+        },
+        {
+            "Sample": "Constitutional",
+            "Patho TC": "na",
+            "Biopsy Site": "Normal tissue",
+            "Sample Name": "UPLOADPAT01",
+            "Primary Site": "Blood-Peripheral",
+            "Collection Date": "01-01-20"
+        }
+    ],
+    "seqQC": [
+        {
+            "Reads": "na",
+            "bioQC": "Passed",
+            "labQC": "Approved",
+            "Sample": "Tumour DNA",
+            "Library": "UPLOADPAT01",
+            "Coverage": "113X",
+            "Input_ng": "Unknown ng",
+            "Input_ug": "Unknown ug",
+            "Protocol": "PCR free WGS",
+            "Sample Name": "UPLOADPAT01",
+            "Duplicate_Reads_Perc": "13.01x"
+        },
+        {
+            "Reads": "na",
+            "bioQC": "Passed",
+            "labQC": "Approved",
+            "Sample": "Constitutional DNA",
+            "Library": "B88221",
+            "Coverage": "39X",
+            "Input_ng": "1000.0 ng",
+            "Input_ug": "1.0 ug",
+            "Protocol": "PCR free WGS",
+            "Sample Name": "UPLOADPAT01",
+            "Duplicate_Reads_Perc": "17.69x"
+        },
+        {
+            "Reads": "168M",
+            "bioQC": "Passed",
+            "labQC": "Approved",
+            "Sample": "Tumour RNA",
+            "Library": "TEST123",
+            "Coverage": "na",
+            "Input_ng": "124.0 ng",
+            "Input_ug": "0.124 ug",
+            "Protocol": "Ribodepletion RNA",
+            "Sample Name": "UPLOADPAT01",
+            "Duplicate_Reads_Perc": "na"
+        }
+    ],
+    "config": "Test config I don't think these are needed anymore, we could just store the entire upload json in here now.",
+    "reportVersion": "v6.3.4",
+    "kbVersion": "v2.8.3",
+    "state": "ready",
+    "expression_matrix": "v9",
+    "patientId": "UPLOADPAT01",
+    "ageOfConsent": 20,
+    "alternateIdentifier": "UPLOADPATIENT01",
+    "biopsyName": "biop1",
+    "biopsyDate": "2020-01-01T20:20:00+00:00",
+    "presentationDate": null,
+    "kbUrl": "https://ipr.bcgsc.ca/testurl",
+    "kbDiseaseMatch": "Colorectal Cancer",
+    "patientInformation": {
+        "physician": "Dr. Test Upload",
+        "gender": "Male",
+        "age": 20,
+        "caseType": "Adult",
+        "diagnosis": "pancreatic cancer",
+        "reportDate": "2020/01/01",
+        "biopsySite": "liver",
+        "tumourSample": "Metastatic",
+        "tumourProtocol": "WGS; RNA-seq",
+        "constitutionalSample": "Peripheral Blood",
+        "constitutionalProtocol": "WGS"
+    },
+    "tumourAnalysis": {
+        "tumourContent": 75,
+        "ploidy": "diploid",
+        "normalExpressionComparator": "average",
+        "diseaseExpressionComparator": "TARGET_RHD",
+        "tcgaColor": "0xC0C0C0"
+    },
+    "variantCounts": {
+        "smallMutations": 2,
+        "CNVs": 12,
+        "SVs": 0,
+        "expressionOutliers": 18,
+        "variantsUnknown": 26
+    },
+    "genomicAlterationsIdentified": [
+        {
+            "geneVariant": "ZNF217 (amplification)"
+        }
+    ],
+    "pathwayAnalysis": {
+        "original": null,
+        "pathway": "Test pathway string"
+    },
+    "probeResults": [
+        {
+            "gene": "KRAS",
+            "variant": "p.G12V",
+            "sample": "POG1136-OCT-1; POG1136-OCT-1_trans"
+        }
+    ],
+    "therapeuticTarget": [
+        {
+            "type": "therapeutic",
+            "variant": "p.G12D",
+            "gene": "KRASSS",
+            "geneGraphkbId": "#2:3",
+            "context": "resistance",
+            "therapy": "EGFR inhibitors",
+            "rank": 1,
+            "evidenceLevel": "OncoKB 1"
+        }
+    ],
+    "summary_microbial": {
+        "species": "None",
+        "integrationSite": "None"
+    },
+    "mutationSummaryv2": [
+        {
+            "comparator": "average",
+            "snv": 4,
+            "snv_truncating": 0,
+            "indels": 0,
+            "indels_frameshift": 0,
+            "sv": 92,
+            "sv_expressed": 40,
+            "snv_percentile": 4,
+            "indel_percentile": 10,
+            "sv_percentile": 60
+        }
+    ],
+    "kbMatches": [
+        {
+            "category": "unknown",
+            "variantType": "exp",
+            "variant": "hash12345678",
+            "kbVariant": "protein increased expression",
+            "disease": "colorectal cancer",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
+            "status": "na",
+            "reference": "12345678#",
+            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
+        }
+    ],
+    "genes": [
+        {
+            "name": "ZFP36L2",
+            "oncogene": true
+        }
+    ],
+    "smallMutations": [
+        {
+            "gene": "ZFP36L2",
+            "transcript": "ENST00000282388",
+            "proteinChange": "p.Q401del",
+            "location": "2:43451739",
+            "refAlt": "CCTG>C",
+            "zygosity": "sub [0/3]",
+            "tumourReads": "583/4",
+            "rnaReads": "400/15"
+        }
+    ],
+    "mutationSignature": [
+        {
+            "signature": 28,
+            "pearson": 0.183,
+            "nnls": 0.0299,
+            "associations": "Tobacco chewing",
+            "features": "D,T",
+            "numCancerTypes": 1,
+            "cancerTypes": "stomach cancer"
+        }
+    ],
+    "copyVariants": [
+        {
+            "gene": "MYCN",
+            "ploidyCorrCpChange": 2,
+            "lohState": "HET",
+            "cnvState": "Amp",
+            "chromosomeBand": "2p24.3",
+            "start": 16017349,
+            "end": 16108192,
+            "size": 0.09
+        }
+    ],
+    "mavis": [
+        {
+            "product_id": "UPLOADPAT01_transcriptome_PyheRHP5qMYxDKZqnQeUu7-v3-a1_None_None_None",
+            "summary": "{\"#tracking_id\":\"transabyss-135.1;transabyss-135.2\",\"library\":\"UPLOADPAT01\",\"annotation_id\":\"PyheRHP5qMYxDKZqnQeUu7-v3-a1\",\"product_id\":\"UPLOADPAT01_transcriptome_PyheRHP5qMYxDKZqnQeUu7-v3-a1_None_None_None\",\"event_type\":\"translocation\",\"gene1\":\"None\",\"gene1_direction\":\"None\",\"gene2\":\"TESTVALUE001\",\"gene2_direction\":\"3\",\"gene1_aliases\":\"None\",\"gene2_aliases\":\"NUDT4\",\"gene_product_type\":\"None\",\"transcript1\":\"1:145139602_145139602+\",\"transcript2\":\"TESTVALUE02\",\"fusion_splicing_pattern\":\"None\",\"fusion_cdna_coding_start\":\"None\",\"fusion_cdna_coding_end\":\"None\",\"fusion_mapped_domains\":\"None\",\"fusion_protein_hgvs\":\"None\",\"annotation_figure\":\"None\",\"genes_encompassed\":\"\",\"break1_chromosome\":\"1\",\"break1_position_start\":\"145139602\",\"break1_position_end\":\"145139602\",\"break1_orientation\":\"L\",\"exon_last_5prime\":\"None\",\"exon_first_3prime\":\"None\",\"break1_strand\":\"?\",\"break2_chromosome\":\"12\",\"break2_position_start\":\"93771723\",\"break2_position_end\":\"93771723\",\"break2_orientation\":\"R\",\"break2_strand\":\"?\",\"protocol\":\"transcriptome\",\"tools\":\"transabyss\",\"call_method\":\"split reads\",\"break1_homologous_seq\":\"TGCTGCTGCTC\",\"break1_split_reads\":\"30\",\"break2_homologous_seq\":\"\",\"break2_split_reads\":\"2\",\"contig_alignment_score\":\"None\",\"contig_remapped_reads\":\"None\",\"contig_seq\":\"None\",\"spanning_reads\":\"0\",\"flanking_pairs\":\"16\",\"linking_split_reads\":\"7\",\"untemplated_seq\":\"\",\"cdna_synon\":\"None\",\"protein_synon\":\"None\",\"supplementary_call\":\"False\",\"net_size\":\"0-0\",\"assumed_untemplated\":\"False\",\"P02376_diseased_genome\":\"no genomic support\",\"P02387_normal_genome\":\"somatic\",\"P02389_diseased_transcriptome\":\"Not Applicable\",\"dgv\":\"None\"}"
+        }
+    ],
+    "structuralVariants": [
+        {
+            "gene1": "FN1",
+            "gene2": "FN1",
+            "exon1": 39,
+            "exon2": 37,
+            "breakpoint": "2:216238066|2:216240359",
+            "eventType": "duplication",
+            "detectedIn": "DNA",
+            "conventionalName": "d(2)(q35)",
+            "svg": "<svg></svg>",
+            "svgTitle": "Figure 1. Putative Fusion-duplication event. The original transcript UPLOADPAT01 from the gene UPLOADPAT01 on the reverse strand is drawn twice above. The 5' portion that contributes to the fusion gene is shown top left, the 3' portion is drawn top right. Breakpoints are at 2:216238066 and 2:216240359. Exons are drawn to scale relative to other exons in the same drawing. Introns are scaled to make up approximately 1/4th of the final drawing. This is predicted to be an OUT-of-frame fusion. Domain(s) featured in the above figure(s) are labelled by their various external identifiers as follows: FN_type2_col-bd(UPLOADPAT01), Fibronectin_type1(UPLOADPAT01), Fibronectin_type3(UPLOADPAT01).",
+            "name": "FN1::FN1",
+            "frame": "OUT",
+            "ctermGene": "FN1(UPLOADPAT01)",
+            "ntermGene": "FN1(UPLOADPAT01)",
+            "ctermTranscript": "UPLOADPAT01",
+            "ntermTranscript": "UPLOADPAT01"
+        }
+    ],
+    "expressionVariants": [
+        {
+            "key": "hash12345678",
+            "gene": "MALAT1",
+            "location": "11:65265233-65273940",
+            "rnaReads": null,
+            "rpkm": 1889.11,
+            "foldChange": 3.58,
+            "expression_class": "outlier_high",
+            "tcgaPerc": 88,
+            "tcgaPercCol": "tcga_comp_TARGET_RHD_percentile",
+            "tcgakIQR": 4.21,
+            "tcgaQC": 43,
+            "tcgaQCCol": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
+            "tcgaAvgPerc": 99,
+            "tcgaAvgkIQR": 30.84,
+            "tcgaAvgQC": 93,
+            "tcgaAvgQCCol": "qc_tcga_comp_average_percentile_median_(625)",
+            "tcgaNormPerc": 75,
+            "tcgaNormkIQR": 1.04,
+            "ptxPerc": null,
+            "ptxkIQR": null,
+            "ptxQC": 0.23,
+            "ptxPercCol": "PTX_POG_TARGET_RHD_percentile",
+            "ptxTotSampObs": null,
+            "ptxPogPerc": null,
+            "gtexComp": "average",
+            "gtexPerc": 100,
+            "gtexFC": 16,
+            "gtexkIQR": 16.82,
+            "gtexAvgPerc": 100,
+            "gtexAvgFC": 16,
+            "gtexAvgkIQR": 16
+        }
+    ],
+    "probe_test_information": [
+        {
+            "kbVersion": "v2.8.3",
+            "snpProbe": "2.8.3.0",
+            "snpGenes": "252",
+            "snpVars": "18239",
+            "fusionProbe": "2.8.3.0",
+            "fusionGenes": "447",
+            "fusionVars": "825"
+        }
+    ],
+    "project": "TEST",
+    "images": [
+        {
+            "key": "mutSignature.corPcors",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors.png"
+        },
+        {
+            "key": "mutSignature.snvsAllStrelka",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png"
+        },
+        {
+            "key": "cnvLoh.circos",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png"
+        },
+        {
+            "key": "cnv.1",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png"
+        },
+        {
+            "key": "cnv.2",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_2.png"
+        },
+        {
+            "key": "cnv.3",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_3.png"
+        },
+        {
+            "key": "cnv.4",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_4.png"
+        },
+        {
+            "key": "cnv.5",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_5.png"
+        },
+        {
+            "key": "loh.1",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_1.png"
+        },
+        {
+            "key": "loh.2",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_2.png"
+        },
+        {
+            "key": "loh.3",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_3.png"
+        },
+        {
+            "key": "loh.4",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_4.png"
+        },
+        {
+            "key": "loh.5",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_5.png"
+        },
+        {
+            "key": "circosSv.genome",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_strct_var/circos_strct_var_genome.png"
+        },
+        {
+            "key": "circosSv.transcriptome",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_strct_var/circos_strct_var_transcriptome.png"
+        },
+        {
+            "key": "expression.chart",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expression/expression.png"
+        },
+        {
+            "key": "expression.legend",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expression/expression_legend.png"
+        },
+        {
+            "key": "expDensity.MYC_ENSG00000136997",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/MYC_ENSG00000136997.png"
+        },
+        {
+            "key": "expDensity.CES2",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/CES2_ENSG00000172831.png"
+        },
+        {
+            "key": "mutation_summary.barplot_sv",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_sv.png"
+        },
+        {
+            "key": "mutation_summary.barplot_snv.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_snv.paad.png"
+        },
+        {
+            "key": "mutation_summary.barplot_indel.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_indel.paad.png"
+        },
+        {
+            "key": "mutation_summary.density_sv",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_sv.png"
+        },
+        {
+            "key": "mutation_summary.density_snv.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_snv.paad.png"
+        },
+        {
+            "key": "mutation_summary.density_indel.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_indel.paad.png"
+        },
+        {
+            "key": "mutation_summary.legend_sv",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_sv.png"
+        },
+        {
+            "key": "mutation_summary.legend_snv_indel.paad",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+        }
+    ]
+}

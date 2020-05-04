@@ -6,6 +6,7 @@ const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
+
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (ENV === 'staging') {
@@ -20,16 +21,6 @@ if (ENV === 'production') {
 }
 
 const DEFAULT_TEST_USER = 'ipr-bamboo-admin';
-const BIOAPPS_DEFAULTS = {
-  hostname: 'http://sbs.bcgsc.ca:8100',
-  api: '',
-};
-
-const LIMS_DEFAULTS = {
-  hostname: 'https://lims16.bcgsc.ca',
-  api: '/v0/limsapi',
-};
-
 
 const DEFAULTS = {
   env: ENV,
@@ -47,6 +38,12 @@ const DEFAULTS = {
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
+  graphkb: {
+    uri: ENV === 'production'
+      ? 'https://graphkb-api.bcgsc.ca/api'
+      : 'https://graphkbstaging-api.bcgsc.ca/api',
+    username: 'ipr_gkb_link',
+  },
   testing: {
     username: DEFAULT_TEST_USER,
   },
@@ -55,8 +52,6 @@ const DEFAULTS = {
   },
   database: {
     engine: 'postgres',
-    migrate: false,
-    hardMigration: false,
     schema: 'public',
     prefix: '',
     username: 'ipr_service',
@@ -66,13 +61,6 @@ const DEFAULTS = {
     port: 5432,
     name: DEFAULT_DB_NAME,
   },
-  jira: {
-    hostname: 'www.bcgsc.ca',
-    api: '/jira/rest',
-    version: '2',
-  },
-  lims: LIMS_DEFAULTS,
-  bioapps: BIOAPPS_DEFAULTS,
   redis: {
     uri: '',
     host: '',
@@ -85,159 +73,6 @@ const DEFAULTS = {
       reportRoot: '/P*/jreport_genomic_summary_*/',
       probeData: '/projects/tumour_char/pog/reports/probing',
       probeDir: '/P*/jreport_genomic_summary_v*/',
-    },
-  },
-  loader: {
-    defaults: {
-      default_genomic: {
-        libraries: [
-          'meta',
-          'image',
-          'summary_patientInformation',
-          'summary_tumourAnalysis',
-          'summary_variantCounts',
-          'summary_mutationSummary',
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'summary_probeTarget',
-          'detailed_alterations',
-          'detailed_approvedThisCancer',
-          'detailed_approvedOtherCancer',
-          'detailed_targetedGenes',
-          'somatic_smallMutations',
-          'somatic_mutationSignature',
-          'copynumber_cnv',
-          'structural_sv',
-          'expression_outlier',
-          'expression_drugTarget',
-        ],
-      },
-      pog_genomic: {
-        libraries: [
-          'meta',
-          'image',
-          'summary_patientInformation',
-          'summary_tumourAnalysis',
-          'summary_variantCounts',
-          'summary_mutationSummary',
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'summary_probeTarget',
-          'detailed_alterations',
-          'detailed_approvedThisCancer',
-          'detailed_approvedOtherCancer',
-          'detailed_targetedGenes',
-          'somatic_smallMutations',
-          'somatic_mutationSignature',
-          'copynumber_cnv',
-          'structural_sv',
-          'expression_outlier',
-          'expression_drugTarget',
-        ],
-      },
-      GPH_Lymphoma_genomic: {
-        libraries: [
-          'A*_A*',
-        ],
-        moduleOptions: {
-          somatic_mutationSignature: {
-            project: 'gph_lymphoma',
-          },
-        },
-        loaders: [
-          'meta',
-          'image',
-          'summary_patientInformation',
-          'summary_tumourAnalysis',
-          'summary_variantCounts',
-          'summary_mutationSummary',
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'summary_probeTarget',
-          'detailed_alterations',
-          'detailed_approvedThisCancer',
-          'detailed_approvedOtherCancer',
-          'detailed_targetedGenes',
-          'somatic_smallMutations',
-          'somatic_mutationSignature',
-          'copynumber_cnv',
-          'structural_sv',
-          'expression_outlier',
-          'expression_drugTarget',
-        ],
-      },
-      default_genomic_no_flat: {
-        libraries: [
-          'meta',
-          'image',
-          'summary_variantCounts',
-          'summary_mutationSummary',
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'summary_probeTarget',
-          'detailed_alterations',
-          'detailed_approvedThisCancer',
-          'detailed_approvedOtherCancer',
-          'detailed_targetedGenes',
-          'somatic_smallMutations',
-          'somatic_mutationSignature',
-          'copynuyargsmber_cnv',
-          'structyargsural_sv',
-          'expresyargssion_outlier',
-          'expresyargssion_drugTarget',
-        ],
-      },
-      default_probe: {
-        loaders: [
-          'summary_patientInformation',
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'alterations_identified',
-          'alterations',
-          'sample_information',
-          'test_information',
-          'approved_thisCancer',
-          'approved_otherCancer',
-        ],
-      },
-      PROFYLE_probe: {
-        loaders: [
-          'summary_patientInformation',
-          'summary_genomicEventsTherapeutic',
-          'summary_genomicAlterationsIdentified',
-          'alterations_identified',
-          'alterations',
-          'sample_information',
-          'test_information',
-          'approved_thisCancer',
-          'approved_otherCancer',
-        ],
-      },
-      pog_probe: {
-        loaders: [
-          'summary_patientInformation',
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'alterations_identified',
-          'alterations',
-          'sample_information',
-          'test_information',
-          'approved_thisCancer',
-          'approved_otherCancer',
-        ],
-      },
-      default_probe_no_flat: {
-        loaders: [
-          'summary_genomicAlterationsIdentified',
-          'summary_genomicEventsTherapeutic',
-          'alterations_identified',
-          'alterations',
-          'sample_information',
-          'test_information',
-          'approved_thisCancer',
-          'approved_otherCancer',
-        ],
-      },
     },
   },
 };
@@ -296,28 +131,19 @@ const CONFIG = nconf
     'database.password': {
       alias: 'database:password',
     },
+    'graphkb.password': {
+      alias: 'graphkb:password',
+    },
     port: {
       alias: 'web:port',
-    },
-    'bioapps.hostname': {
-      alias: 'bioapps:hostname',
-    },
-    'bioapps.api': {
-      alias: 'bioapps:api',
-    },
-    'lims.hostname': {
-      alias: 'lims:hostname',
-    },
-    'lims.api': {
-      alias: 'lims:api',
     },
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
 if (ENV === 'test') {
-  CONFIG.required(['database:password', 'testing:password']);
+  CONFIG.required(['database:password', 'graphkb:password', 'testing:password']);
 } else {
-  CONFIG.required(['database:password']);
+  CONFIG.required(['database:password', 'graphkb:password']);
 }
 
 module.exports = CONFIG;

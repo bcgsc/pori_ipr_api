@@ -2,16 +2,29 @@
     "env": {
         "es6": true,
         "node": true,
-        "mocha": true
+        "jest": true
     },
     "extends": [
         "eslint:recommended",
-        "airbnb"
+        "airbnb",
+        "plugin:jest/recommended",
+        "plugin:jest-formatting/recommended"
     ],
     "rules": {
-        "indent": ["error", 2, {
-            "SwitchCase": 1
-        }],
+        "indent": [
+            "error",
+            2,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "jest/consistent-test-it": [
+            "error",
+            {
+                "fn": "test"
+            }
+        ],
+        "jest/no-standalone-expect": "off",
         "linebreak-style": [
             "error",
             "unix"
@@ -24,55 +37,98 @@
             "error",
             "always"
         ],
-        "arrow-body-style": ["error", "always"],
-        "object-curly-spacing": ["error", "never"],
-        "array-bracket-spacing": ["error", "never"],
-        "computed-property-spacing": ["error", "never"],
+        "arrow-body-style": [
+            "error",
+            "always"
+        ],
+        "object-curly-spacing": [
+            "error",
+            "never"
+        ],
+        "array-bracket-spacing": [
+            "error",
+            "never"
+        ],
+        "computed-property-spacing": [
+            "error",
+            "never"
+        ],
         "no-whitespace-before-property": "error",
-        "space-in-parens": ["error", "never"],
+        "space-in-parens": [
+            "error",
+            "never"
+        ],
         "no-mixed-spaces-and-tabs": "error",
         "no-cond-assign": "off",
-        "prefer-destructuring": ["warn", {
-            "VariableDeclarator": {
-                "array": true,
-                "object": true
+        "prefer-destructuring": [
+            "warn",
+            {
+                "VariableDeclarator": {
+                    "array": true,
+                    "object": true
+                },
+                "AssignmentExpression": {
+                    "array": false,
+                    "object": true
+                }
             },
-            "AssignmentExpression": {
-                "array": false,
-                "object": true
+            {
+                "enforceForRenamedProperties": false
             }
-        }, {
-            "enforceForRenamedProperties": false
-        }],
-        "comma-dangle": ["error", "always-multiline"],
-        "prefer-const": ["error", {
-            "destructuring": "all"
-        }],
+        ],
+        "comma-dangle": [
+            "error",
+            "always-multiline"
+        ],
+        "prefer-const": [
+            "error",
+            {
+                "destructuring": "all"
+            }
+        ],
         "no-restricted-syntax": "off",
         "no-continue": "off",
         "no-bitwise": "off",
         "no-use-before-define": "warn",
-        "no-param-reassign": ["warn", {
-            "props": true,
-            "ignorePropertyModificationsFor": ["opt"]
-        }],
+        "no-param-reassign": [
+            "warn",
+            {
+                "props": true,
+                "ignorePropertyModificationsFor": [
+                    "opt"
+                ]
+            }
+        ],
         "no-multi-assign": "off",
-        "one-var": ["warn", "never"],
+        "one-var": [
+            "warn",
+            "never"
+        ],
         "no-plusplus": "off",
-        "max-len": ["warn", {
-            "code": 100,
-            "ignoreUrls": true
-        }],
+        "max-len": [
+            "warn",
+            {
+                "code": 100,
+                "ignoreUrls": true
+            }
+        ],
         "no-underscore-dangle": "off",
-        "no-empty": ["error", {
-            "allowEmptyCatch": true
-        }],
+        "no-empty": [
+            "error",
+            {
+                "allowEmptyCatch": true
+            }
+        ],
         "react/destructuring-assignment": "off",
         "no-await-in-loop": "off",
         "no-unused-expressions": "off",
         "valid-jsdoc": "warn",
         "require-jsdoc": "warn",
         "import/no-dynamic-require": "warn",
-        "class-methods-use-this": "off"
+        "class-methods-use-this": "off",
+        "camelcase": ["error", {
+            "ignoreDestructuring": true,
+            "properties": "never"
+        }]
     }
 }

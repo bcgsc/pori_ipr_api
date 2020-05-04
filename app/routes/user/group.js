@@ -1,10 +1,29 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+
 
 const router = express.Router({mergeParams: true});
 
+// Group json schema
+const groupSchema = {
+  type: 'object',
+  required: ['name', 'owner'],
+  properties: {
+    name: {type: 'string'},
+    owner: {type: 'string', format: 'uuid'},
+  },
+};
+const memberSchema = {
+  type: 'object',
+  required: ['user'],
+  properties: {
+    user: {type: 'string', format: 'uuid'},
+  },
+};
 
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
@@ -13,7 +32,7 @@ router.use('/', (req, res, next) => {
   access.read = ['*'];
   if (!access.check()) {
     logger.error('User isn\'t allowed to access this');
-    return res.status(403).send();
+    return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
   }
 
   return next();
@@ -26,7 +45,7 @@ router.param('group', async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken']}},
+      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
       {as: 'owner', model: db.models.user.scope('public')},
     ],
   };
@@ -36,7 +55,7 @@ router.param('group', async (req, res, next, ident) => {
     return next();
   } catch (error) {
     logger.error(`SQL Group Lookup Error ${error}`);
-    return res.status(500).json({error: {message: 'Error while trying to find a usergroup', code: 'failedGroupIdentLookup'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find a usergroup', code: 'failedGroupIdentLookup'}});
   }
 });
 
@@ -48,7 +67,7 @@ router.route('/')
       attributes: {exclude: ['id', 'deletedAt']},
       order: [['name', 'ASC']],
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
         {as: 'owner', model: db.models.user.scope('public')},
       ],
     };
@@ -59,10 +78,18 @@ router.route('/')
       return res.json(groups);
     } catch (error) {
       logger.error(`SQL Groups Lookup Error ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to get all groups', code: 'failedGroupsLookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get all groups', code: 'failedGroupsLookup'}});
     }
   })
   .post(async (req, res) => {
+    try {
+      // Validate input
+      validateAgainstSchema(groupSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     const newGroup = {name: req.body.name};
     let user;
     try {
@@ -70,12 +97,12 @@ router.route('/')
       user = await db.models.user.findOne({where: {ident: req.body.owner}});
     } catch (error) {
       logger.error(`SQL Groups lookup error ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get owner/user', code: 'failedOwnerLookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get owner/user', code: 'failedOwnerLookup'}});
     }
 
     if (!user && req.body.user) {
       logger.error('Unable to find the specified owner');
-      return res.status(404).json({message: 'Unable to find the specified owner'});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({message: 'Unable to find the specified owner'});
     }
     if (user) {
       newGroup.owner_id = user.id;
@@ -87,14 +114,14 @@ router.route('/')
       userGroup = await db.models.userGroup.create(newGroup);
     } catch (error) {
       logger.error(`SQL Groups Creation Error ${error}`);
-      return res.status(500).json({error: {message: 'Unable to create the new group', code: 'failedGroupsCreate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create the new group', code: 'failedGroupsCreate'}});
     }
 
     const opts = {
       where: {ident: userGroup.ident},
       attributes: {exclude: ['id', 'deletedAt']},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
         {as: 'owner', model: db.models.user.scope('public')},
       ],
     };
@@ -105,7 +132,7 @@ router.route('/')
       return res.json(group);
     } catch (error) {
       logger.error(`SQL Groups lookup failure ${error}`);
-      return res.status(500).json({error: {message: 'There was an error loading the newly created group', code: 'failedGroupLookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error loading the newly created group', code: 'failedGroupLookup'}});
     }
   });
 
@@ -116,42 +143,57 @@ router.route('/:group([A-z0-9-]{36})')
     return res.json(req.group);
   })
   .put(async (req, res) => {
+    try {
+      // Validate input
+      validateAgainstSchema(groupSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Get Owner/User ID resolve
       user = await db.models.user.findOne({where: {ident: req.body.owner}});
     } catch (error) {
       logger.error('SQL Error while trying to find owner/user');
-      return res.status(500).json({error: {message: 'Unable to find owner/user', code: 'failedGroupUpdateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find owner/user', code: 'failedGroupUpdateQuery'}});
     }
 
     if (!user && req.body.user) {
       logger.error('Unable to find the specified owner');
-      return res.status(404).json({error: {message: 'Unable to find the specified owner', code: 'failedGroupUpdateQuery'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the specified owner', code: 'failedGroupUpdateQuery'}});
     }
 
     if (user) {
-      req.group.owner_id = user.id;
+      req.body.owner_id = user.id;
     }
 
     // Update Group
-    req.group.name = req.body.name;
     try {
-      const save = await req.group.save();
-      return res.json(save);
+      await db.models.userGroup.update(req.body, {
+        where: {
+          ident: req.group.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+      });
+
+      await req.group.reload();
+      return res.json(req.group);
     } catch (error) {
       logger.error(`SQL Error trying to update group ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update the specified group', code: 'failedGroupUpdateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update the specified group', code: 'failedGroupUpdateQuery'}});
     }
   })
 
   .delete(async (req, res) => {
     try {
       await db.models.userGroup.destroy({where: {ident: req.group.ident}});
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`SQL Error trying to remove group ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove group', code: 'failedGroupDestroyQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove group', code: 'failedGroupDestroyQuery'}});
     }
   });
 
@@ -163,18 +205,26 @@ router.route('/:group([A-z0-9-]{36})/member')
   })
   .post(async (req, res) => {
     // Add Group Member
+    try {
+      // Validate input
+      validateAgainstSchema(memberSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`SQL Error trying to find user ${error}`);
-      return res.status(500).json({error: {message: 'Unable to find user', code: 'failedUserLookupGroupMember'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find user', code: 'failedUserLookupGroupMember'}});
     }
 
     if (!user) {
       logger.error('Unable to find user');
-      return res.status(404).json({error: {message: 'Unable to find user', code: 'failedUserLookupGroupMember'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user', code: 'failedUserLookupGroupMember'}});
     }
 
     try {
@@ -199,23 +249,31 @@ router.route('/:group([A-z0-9-]{36})/member')
       return res.json(output);
     } catch (error) {
       logger.error(`SQL Error trying to add group member ${error}`);
-      return res.status(500).json({error: {message: 'Unable to add group member', code: 'failedGroupMemberCreateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to add group member', code: 'failedGroupMemberCreateQuery'}});
     }
   })
   .delete(async (req, res) => {
     // Remove Group Member
+    try {
+      // Validate input
+      validateAgainstSchema(memberSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`SQL Error trying to find user ${error}`);
-      return res.status(500).json({error: {message: 'SQL Error unable to find user', code: 'failedUserLookupGroupMember'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error unable to find user', code: 'failedUserLookupGroupMember'}});
     }
 
     if (!user) {
       logger.error('Unable to find user');
-      return res.status(404).json({error: {message: 'Unable to find user', code: 'failedUserLookupGroupMember'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user', code: 'failedUserLookupGroupMember'}});
     }
 
     try {
@@ -223,12 +281,12 @@ router.route('/:group([A-z0-9-]{36})/member')
       const membership = await db.models.userGroupMember.destroy({where: {group_id: req.group.id, user_id: user.id}});
       if (!membership) {
         logger.error('Unable to remove group member');
-        return res.status(404).json({error: {message: 'Unable to remove group member', code: 'failedGroupMemberDestroy'}});
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to remove group member', code: 'failedGroupMemberDestroy'}});
       }
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`SQL Error trying to remove member ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove group member', code: 'failedGroupMemberRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove group member', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 

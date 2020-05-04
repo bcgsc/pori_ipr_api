@@ -1,21 +1,15 @@
 const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
-module.exports = sequelize => sequelize.define('presentation_slides',
-  {
-    id: {
-      type: Sq.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    ident: {
-      type: Sq.UUID,
-      unique: false,
-      defaultValue: Sq.UUIDV4,
-    },
-    pog_report_id: {
+module.exports = (sequelize) => {
+  return sequelize.define('presentation_slides', {
+    ...DEFAULT_COLUMNS,
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
       type: Sq.INTEGER,
       references: {
-        model: 'pog_analysis_reports',
+        model: 'reports',
         key: 'id',
       },
     },
@@ -40,17 +34,14 @@ module.exports = sequelize => sequelize.define('presentation_slides',
     },
   },
   {
-    // Table Name
-    tableName: 'pog_analysis_reports_presentation_slides',
-    // Automatically create createdAt, updatedAt, deletedAt
-    timestamps: true,
-    // Use soft-deletes!
-    paranoid: true,
+    ...DEFAULT_OPTIONS,
+    tableName: 'reports_presentation_slides',
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt'],
+          exclude: ['id', 'reportId', 'deletedAt'],
         },
       },
     },
   });
+};

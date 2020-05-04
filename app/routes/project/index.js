@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 const _ = require('lodash');
@@ -20,14 +21,14 @@ router.param('project', async (req, res, next, ident) => {
     projectAccess = await access.getProjectAccess();
   } catch (error) {
     logger.error(`Error while geting user's access to projects ${error}`);
-    return res.status(500).json({error: {message: 'Error while geting user\'s access to projects'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while geting user\'s access to projects'}});
   }
 
   const projects = _.intersection(_.map(projectAccess, 'ident'), [ident]);
 
   if (projects.length < 1) {
     logger.error('Project Access Error');
-    return res.status(403).json(ERRORS.AccessForbidden);
+    return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
   }
 
   // Lookup project!
@@ -35,8 +36,8 @@ router.param('project', async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken']}},
-      {as: 'pogs', model: db.models.POG.scope('public')},
+      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}, through: {attributes: []}},
+      {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
     ],
   };
 
@@ -45,7 +46,7 @@ router.param('project', async (req, res, next, ident) => {
     return next();
   } catch (error) {
     logger.error(`Error while trying to find a project ${error}`);
-    return res.status(500).json({error: {message: 'Error while trying to find a project'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find a project'}});
   }
 });
 
@@ -56,11 +57,11 @@ router.route('/')
     // Access Control
     const includeOpts = [];
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
 
-    if (access.check(true) && req.query.admin === 'true') {
-      includeOpts.push({as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
+    if (access.check(true) && req.query.admin === true) {
+      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
     }
 
     let projectAccess;
@@ -69,7 +70,7 @@ router.route('/')
       projectAccess = await access.getProjectAccess();
     } catch (error) {
       logger.error(`Error while geting user's access to projects ${error}`);
-      return res.status(500).json({error: {message: 'Error while geting user\'s access to projects'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while geting user\'s access to projects'}});
     }
     // getting project access/filter
     const opts = {
@@ -86,17 +87,17 @@ router.route('/')
       return res.json(projects);
     } catch (error) {
       logger.error(`Error while trying to retrieve projects${error}`);
-      return res.status(500).json({error: {message: 'Unable to retrieve projects'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve projects'}});
     }
   })
   .post(async (req, res) => {
     // Add new project
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add new project');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
     // Validate input
@@ -119,7 +120,7 @@ router.route('/')
       existingProject = await db.models.project.findOne({where: {name: req.body.name, deletedAt: {[Op.ne]: null}}, paranoid: false});
     } catch (error) {
       logger.error(`Error while trying to find project ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find project'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find project'}});
     }
 
     if (existingProject) {
@@ -143,7 +144,7 @@ router.route('/')
         return res.json(publicModel);
       } catch (error) {
         logger.error(`Error while trying to restore project ${error}`);
-        return res.status(500).json({error: {message: 'Error while trying to restore project'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to restore project'}});
       }
     } else {
       if (req.body.name.length < 1) {
@@ -152,15 +153,15 @@ router.route('/')
       // Everything looks good, create the account!
       try {
         const created = await db.models.project.create(req.body);
-        return res.status(201).json(created);
+        return res.status(HTTP_STATUS.CREATED).json(created);
       } catch (error) {
         logger.error(`Error while trying to create project ${error}`);
-        return res.status(500).json({error: {message: 'Error while trying to create project'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to create project'}});
       }
     }
   });
 
-router.route('/:ident([A-z0-9-]{36})')
+router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
     // Getting project
     // Check user permission and filter by project
@@ -170,7 +171,7 @@ router.route('/:ident([A-z0-9-]{36})')
       projectAccess = await access.getProjectAccess();
     } catch (error) {
       logger.error(`Error while checking if user has access to project ${error}`);
-      return res.status(500).json({error: {message: 'Error while checking if user has access to project'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while checking if user has access to project'}});
     }
 
     if (_.includes(_.map(projectAccess, 'ident'), req.project.ident)) {
@@ -178,16 +179,16 @@ router.route('/:ident([A-z0-9-]{36})')
     }
 
     logger.error('User doesn\'t have access to project');
-    return res.status(403).json(ERRORS.AccessForbidden);
+    return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
   })
 
   .put(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add new project');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
     // Update project
@@ -198,23 +199,23 @@ router.route('/:ident([A-z0-9-]{36})')
     // Attempt project model update
     try {
       await db.models.project.update(updateBody, {
-        where: {ident: req.params.ident},
+        where: {ident: req.project.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
       });
     } catch (error) {
       logger.error(`Error while trying to update project ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
     }
 
     // Success, get project -- UGH
     const opts = {
-      where: {ident: req.params.ident},
+      where: {ident: req.project.ident},
       attributes: {exclude: ['id']},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'access', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
-        {as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
+        {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
       ],
     };
 
@@ -223,29 +224,29 @@ router.route('/:ident([A-z0-9-]{36})')
       return res.json(project);
     } catch (error) {
       logger.error(`Error while trying to retrieve a project ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to retrieve a project', code: 'failedProjectLookupQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to retrieve a project', code: 'failedProjectLookupQuery'}});
     }
   })
   // Remove a project
   .delete(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove projects');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
     try {
       // Delete project
-      const result = await db.models.project.destroy({where: {ident: req.params.ident}, limit: 1});
+      const result = await db.models.project.destroy({where: {ident: req.project.ident}, limit: 1});
       if (!result) {
-        return res.status(400).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
       }
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while trying to remove project ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to remove project', code: 'failedProjectRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove project', code: 'failedProjectRemoveQuery'}});
     }
   });
 
@@ -263,7 +264,7 @@ router.route('/search')
       projects = await db.models.project.findAll({where, attributes: {exclude: ['deletedAt', 'id']}});
     } catch (error) {
       logger.error(`Error while trying to find projects ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find projects'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find projects'}});
     }
 
     // Check user permission and filter by project
@@ -278,7 +279,7 @@ router.route('/search')
       return res.json(filteredResults);
     } catch (error) {
       logger.error(`Error while geting user's access to projects ${error}`);
-      return res.status(403).json({error: {message: 'Error while geting user\'s access to projects'}});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'Error while geting user\'s access to projects'}});
     }
   });
 
@@ -287,10 +288,10 @@ router.route('/:project([A-z0-9-]{36})/user')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to get project users');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
     // Get Project Users
     return res.json(req.project.users);
@@ -299,23 +300,23 @@ router.route('/:project([A-z0-9-]{36})/user')
     // Add Project User
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add project users');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
     }
 
     if (!user) {
-      return res.status(404).json({error: {message: 'Unable to find the supplied user.', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied user.', code: 'failedUserLookupUserProject'}});
     }
 
     let hasBinding;
@@ -324,7 +325,7 @@ router.route('/:project([A-z0-9-]{36})/user')
       hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {[Op.ne]: null}}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserBindingLookupUserProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserBindingLookupUserProject'}});
     }
 
     // exists - set deletedAt to null
@@ -338,7 +339,7 @@ router.route('/:project([A-z0-9-]{36})/user')
         return res.json(user);
       } catch (error) {
         logger.error(`Error while restoring user project binding ${error}`);
-        return res.status(500).json({error: {message: 'Error while restoring existing user project binding', code: 'failedUserProjectRestore'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while restoring existing user project binding', code: 'failedUserProjectRestore'}});
       }
     }
     // doesn't exist - create new binding
@@ -364,31 +365,31 @@ router.route('/:project([A-z0-9-]{36})/user')
       return res.json(output);
     } catch (error) {
       logger.error(`Error while adding user to project ${error}`);
-      return res.status(500).json({error: {message: 'Error while adding user to project', code: 'failedUserProjectCreate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding user to project', code: 'failedUserProjectCreate'}});
     }
   })
   .delete(async (req, res) => {
     // Remove Project User
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove project user');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
     }
 
     if (!user) {
       logger.error('Unable to find the supplied user');
-      return res.status(400).json({error: {message: 'Unable to find the supplied user', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied user', code: 'failedUserLookupUserProject'}});
     }
 
     try {
@@ -396,105 +397,101 @@ router.route('/:project([A-z0-9-]{36})/user')
       const unboundUser = await db.models.user_project.destroy({where: {project_id: req.project.id, user_id: user.id}});
       if (!unboundUser) {
         logger.error('Unable to remove user from project');
-        return res.status(400).json({error: {message: 'Unable to remove user from project', code: 'failedUserProjectDestroy'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove user from project', code: 'failedUserProjectDestroy'}});
       }
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while removing user from project ${error}`);
-      return res.status(500).json({error: {message: 'Error while removing user from project', code: 'failedGroupMemberRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while removing user from project', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 
-// POG Binding Functions
-router.route('/:project([A-z0-9-]{36})/pog')
+// Report Binding Functions
+router.route('/:project([A-z0-9-]{36})/reports')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to get project POGs');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      logger.error('User isn\'t allowed to get project reports');
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    // Get Project POGs
-    return res.json(req.project.pogs);
+    // get project reports
+    return res.json(req.project.reports);
   })
   .post(async (req, res) => {
-    // Add Project POG
+    // Add Project report
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser', 'Full Project Access'];
+    access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to add project POGs');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      logger.error('User isn\'t allowed to add project reports');
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    let pog;
+    let report;
     try {
-      // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt', 'access', 'password', 'jiraToken']}});
-      if (!pog) {
-        logger.error('Unable to find POG file');
-        return res.status(400).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+      // Lookup report
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id', 'ident']});
+      if (!report) {
+        logger.error('Unable to find report');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report', code: 'failedReportLookupReportProject'}});
       }
     } catch (error) {
-      logger.error(`Error while trying to find the POG file ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find the POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
     }
 
     try {
-      // Bind POG
-      const pogProject = await db.models.pog_project.create({project_id: req.project.id, pog_id: pog.id});
+      // Bind report
+      const reportProject = await db.models.reportProject.create({project_id: req.project.id, reportId: report.id});
       const output = {
-        ident: pog.ident,
-        POGID: pog.POGID,
-        createdAt: pog.createdAt,
-        updatedAt: pog.updatedAt,
-        pog_project: {
-          updatedAt: pogProject.updatedAt,
-          createdAt: pogProject.createdAt,
-        },
+        report: report.ident,
+        project: req.project.name,
+        createdAt: reportProject.createdAt,
+        updatedAt: reportProject.updatedAt,
       };
 
       return res.json(output);
     } catch (error) {
-      logger.error(`Error while adding pog to project ${error}`);
-      return res.status(500).json({error: {message: 'Error while adding pog to project', code: 'failedPOGProjectCreateQuery'}});
+      logger.error(`Error while adding report to project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding report to project', code: 'failedReportProjectCreateQuery'}});
     }
   })
   .delete(async (req, res) => {
-    // Remove Project POG
+    // Remove project-report association
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser', 'Full Project Access'];
+    access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to delete project POGs');
-      return res.status(403).json(ERRORS.AccessForbidden);
+      logger.error('User isn\'t allowed to delete project reports');
+      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    let pog;
+    let report;
     try {
-      // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt']}});
-      if (!pog) {
-        logger.error('Unable to find the supplied pog');
-        return res.status(404).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+      // Lookup report
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id']});
+      if (!report) {
+        logger.error(`Unable to find report ${req.body.report}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`, code: 'failedReportLookupReportProject'}});
       }
     } catch (error) {
-      logger.error(`Error while trying to find supplied POG ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to find POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
     }
 
     try {
-      // Unbind POG
-      const pogProject = await db.models.pog_project.destroy({where: {project_id: req.project.id, pog_id: pog.id}});
-      if (!pogProject) {
-        return res.status(400).json({error: {message: 'Unable to remove pog from project', code: 'failedPOGProjectDestroy'}});
+      // Unbind report
+      const reportProject = await db.models.reportProject.destroy({where: {project_id: req.project.id, reportId: report.id}});
+      if (!reportProject) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove report from project', code: 'failedReportProjectDestroy'}});
       }
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
-      logger.error(`Error while trying to remove POG from project ${error}`);
-      return res.status(500).json({error: {message: 'Error while trying to remove POG from project', code: 'failedGroupMemberRemoveQuery'}});
+      logger.error(`Error while trying to remove report from project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove Report from project', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 

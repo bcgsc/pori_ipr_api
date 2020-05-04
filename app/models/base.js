@@ -1,16 +1,11 @@
 const Sq = require('sequelize');
 
-const DEFAULT_COLUMNS = {
+
+const DEFAULT_MAPPING_COLUMNS = {
   id: {
     type: Sq.INTEGER,
     autoIncrement: true,
     primaryKey: true,
-  },
-  ident: {
-    type: Sq.UUID,
-    unique: false,
-    defaultValue: Sq.UUIDV4,
-    notNull: true,
   },
   createdAt: {
     type: Sq.DATE,
@@ -18,24 +13,38 @@ const DEFAULT_COLUMNS = {
     name: 'createdAt',
     field: 'created_at',
   },
-  updatedAt: {
-    type: Sq.DATE,
-    name: 'updatedAt',
-    field: 'updated_at',
-  },
   deletedAt: {
     type: Sq.DATE,
     name: 'deletedAt',
     field: 'deleted_at',
   },
+  updatedAt: {
+    type: Sq.DATE,
+    name: 'updatedAt',
+    field: 'updated_at',
+  },
 };
 
-// basically everything except tablename can be here
-const DEFAULT_OPTIONS = {
+const DEFAULT_COLUMNS = {
+  ident: {
+    type: Sq.UUID,
+    unique: false,
+    defaultValue: Sq.UUIDV4,
+    allowNull: false,
+  },
+  ...DEFAULT_MAPPING_COLUMNS,
+};
+
+const DEFAULT_MAPPING_OPTIONS = {
   // Automatically create createdAt, updatedAt, deletedAt
   timestamps: true,
   // Use soft-deletes!
   paranoid: true,
+};
+
+// basically everything except tablename can be here
+const DEFAULT_OPTIONS = {
+  ...DEFAULT_MAPPING_OPTIONS,
   indexes: [
     {
       unique: true,
@@ -61,4 +70,9 @@ const DEFAULT_OPTIONS = {
   },
 };
 
-module.exports = {DEFAULT_COLUMNS, DEFAULT_OPTIONS};
+module.exports = {
+  DEFAULT_MAPPING_OPTIONS,
+  DEFAULT_MAPPING_COLUMNS,
+  DEFAULT_OPTIONS,
+  DEFAULT_COLUMNS,
+};

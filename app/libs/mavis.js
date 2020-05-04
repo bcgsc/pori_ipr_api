@@ -25,8 +25,7 @@ const parseMavisFile = async (report, mavisFile) => {
   const mavisRecords = parsedMavisSummary.map((record) => {
     return {
       product_id: record.product_id.split(';')[0],
-      pog_id: report.pog_id,
-      pog_report_id: report.id,
+      reportId: report.id,
       summary: JSON.stringify(record),
     };
   });
@@ -39,7 +38,7 @@ const parseMavisFile = async (report, mavisFile) => {
  *
  * Create DB entries for MAVIS summaries. Parse in CSV values, mutate, insert.
  *
- * @param {object} report - POG report model object
+ * @param {object} report - report model object
  * @param {list} sources - list of file paths to MAVIS summaries
  * @param {list} productIds - list of MAVIS product ids to add to database
  * @returns {Promise.<Array.<Model>>} - Returns an array of the mavis summary's created

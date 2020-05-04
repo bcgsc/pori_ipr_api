@@ -8,6 +8,7 @@ _tmp/*
 coverage
 .nyc_output
 xunit.xml
+junit.xml
 mocha.json
 jsdoc
 .vscode/

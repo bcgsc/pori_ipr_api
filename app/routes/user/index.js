@@ -1,12 +1,40 @@
-const validator = require('validator');
+const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 
 const router = express.Router({mergeParams: true});
+
+// POST new user json schema
+const newUserSchema = {
+  type: 'object',
+  required: ['username', 'type', 'firstName', 'lastName', 'email'],
+  properties: {
+    username: {type: 'string', minLength: 2},
+    password: {type: 'string'},
+    // type must be either 'local' or 'bcgsc'
+    type: {type: 'string', enum: db.models.user.rawAttributes.type.values},
+    email: {type: 'string', format: 'email'},
+    firstName: {type: 'string', minLength: 1},
+    lastName: {type: 'string', minLength: 1},
+  },
+  // password can be null if type is bcgsc
+  if: {
+    properties: {type: {const: 'bcgsc'}},
+  },
+  then: {
+    properties: {password: {default: null}},
+  },
+  else: {
+    // password need to have minimum length of 8
+    required: ['username', 'password', 'type', 'firstName', 'lastName', 'email'],
+    properties: {password: {minLength: 8}},
+  },
+};
 
 // Route for getting a POG
 router.route('/')
@@ -14,10 +42,10 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const access = new Acl(req, res);
-    access.read = ['admin', 'superUser'];
+    access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to access this');
-      return res.status(403).send();
+      return res.status(HTTP_STATUS.FORBIDDEN).send();
     }
 
     try {
@@ -33,43 +61,51 @@ router.route('/')
       return res.json(users);
     } catch (error) {
       logger.error(`SQL Error unable to get current user ${error}`);
-      return res.status(500).json({error: {message: 'Unable to get current user', code: 'failedCurrentUserLookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get current user', code: 'failedCurrentUserLookup'}});
     }
   })
   .post(async (req, res) => {
     // Add new user
-    // Validate input
-    const requiredInputs = ['username', 'password', 'type', 'firstName', 'lastName', 'email'];
-    const inputErrors = [];
 
-    // Inputs set
-    requiredInputs.forEach((value) => {
-      // Password can be null if type is ldap
-      if (req.body[value] === undefined) {
-        inputErrors.push({
-          input: value,
-          message: `${value} is a required input`,
-        });
-      }
-    });
-
-    let existCheck;
-    try {
-      // Check for existing account.
-      existCheck = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
-    } catch (error) {
-      logger.error(`SQL Error unable to check for existing username ${error}`);
-      return res.status(500).json({error: {message: 'Unable to check if this username has been taken', code: 'failedUserNameExistsQuery'}});
+    // Checks if the person is authorized to add new users
+    const access = new Acl(req, res);
+    if (!access.check()) {
+      logger.error('User isn\'t allowed to add a new user');
+      return res.status(HTTP_STATUS.FORBIDDEN).send({error: {message: 'You are not allowed to perform this action'}});
     }
 
-    if (existCheck) {
+    try {
+      // Validate input
+      validateAgainstSchema(newUserSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
+    let deletedUserExists;
+    let userExists;
+    try {
+      // Check for existing account.
+      deletedUserExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
+      userExists = await db.models.user.findOne({where: {username: req.body.username}});
+    } catch (error) {
+      logger.error(`SQL Error unable to check for existing username ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to check if this username has been taken', code: 'failedUserNameExistsQuery'}});
+    }
+
+    // if username exists and is not a deleted user return 409
+    if (userExists) {
+      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Username already exists'}});
+    }
+
+    if (deletedUserExists) {
       // set up user to restore with updated field values
       const restoreUser = req.body;
       restoreUser.deletedAt = null;
 
       try {
         const result = await db.models.user.update(restoreUser, {
-          where: {ident: existCheck.ident},
+          where: {ident: deletedUserExists.ident},
           individualHooks: true,
           paranoid: true,
           returning: true,
@@ -86,47 +122,13 @@ router.route('/')
         return res.json(publicModel);
       } catch (error) {
         logger.error(`Unable to restore username ${error}`);
-        return res.status(500).json({error: {message: 'Unable to restore existing username', code: 'failedUsernameCheckQuery'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to restore existing username', code: 'failedUsernameCheckQuery'}});
       }
-    }
-
-    // Check if email password is valid only if type=local
-    if (req.body.type === 'local' && req.body.password.length < 8) {
-      inputErrors.push({input: 'password', message: 'password must be at least 8 characters'});
-    }
-
-    if (!validator.isEmail(req.body.email)) {
-      inputErrors.push({input: 'email', message: 'email address must be valid'});
-    }
-
-    if (req.body.firstName.length < 1) {
-      inputErrors.push({input: 'firstName', message: 'first name must be set'});
-    }
-
-    if (req.body.lastName.length < 1) {
-      inputErrors.push({input: 'lastName', message: 'last name must be set'});
-    }
-
-    if (req.body.username.length < 2) {
-      inputErrors.push({input: 'username', message: 'username must be set'});
-    }
-
-    req.body.access = 'clinician';
-
-    if (validator.isIn(req.body.type, [db.models.user.rawAttributes.type.values])) {
-      inputErrors.push({input: 'type', message: 'user type must be one of: bcgsc, local'});
-    }
-
-    if (inputErrors.length > 0) {
-      logger.error(`Input contains this/these error(s) ${inputErrors}`);
-      return res.status(400).json({errors: inputErrors});
     }
 
     // Hash password
     if (req.body.type === 'local') {
       req.body.password = bcrypt.hashSync(req.body.password, 10);
-    } else if (req.body.type === 'ldap') {
-      req.body.password = null;
     }
 
     try {
@@ -136,7 +138,7 @@ router.route('/')
       return res.json(resp);
     } catch (error) {
       logger.error(`Unable to create user account ${error}`);
-      return res.status(500).json({status: false, message: 'Unable to create user account.'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: false, message: 'Unable to create user account.'});
     }
   });
 
@@ -164,7 +166,7 @@ router.route('/settings')
       return res.json(dataValues.settings);
     } catch (error) {
       logger.error(`SQL Error unable to update user ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update user', code: 'failedUserUpdate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user', code: 'failedUserUpdate'}});
     }
   });
 
@@ -173,37 +175,29 @@ router.route('/:ident([A-z0-9-]{36})')
     // Update current user
     // Access Control
     const access = new Acl(req, res);
-    access.write = ['*']; // Anyone is allowed to edit their account details. Controller later protects non-self edits.
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to update current user');
-      return res.status(403).send();
-    }
+    access.write = ['*']; // Admins can update any user, users can only update themselves
 
-    // Editing someone other than self?
-    if (req.user.ident !== req.body.ident && req.user.access !== 'superUser') {
+    // Is the user neither itself or admin?
+    if (!(req.user.ident === req.params.ident || access.isAdmin())) {
       logger.error('User is not allowed to edit someone other than self');
-      return res.status(403).json({status: false, message: 'You are not allowed to perform this action'});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({status: false, message: 'You are not allowed to perform this action'});
     }
 
     // Check Access
-    if (req.user.access !== 'superUser') {
-      if (req.body.access && req.body.access !== req.user.access) {
-        logger.error('User is not able to update own access');
-        return res.status(403).json({error: {message: 'You are not able to update your own access', code: 'failUpdateAccess'}});
-      }
+    if (!(access.isAdmin())) {
       if (req.body.username && req.body.username !== req.user.username) {
         logger.error('User is not able to update username');
-        return res.status(403).json({error: {message: 'You are not able to update your username', code: 'failUpdateUsername'}});
+        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your username', code: 'failUpdateUsername'}});
       }
       if (req.body.type && req.body.type !== req.user.type) {
         logger.error('User is not able to update account type');
-        return res.status(403).json({error: {message: 'You are not able to update your account type', code: 'failUpdateType'}});
+        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your account type', code: 'failUpdateType'}});
       }
     }
 
     if (req.body.password && req.body.password && req.body.password.length < 8) {
       logger.error('Password must be 8 characters or more');
-      return res.status(400).json({error: {message: 'Password must be 8 characters or more.', code: 'failUpdateType'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Password must be 8 characters or more.', code: 'failUpdateType'}});
     }
 
     const updateBody = {
@@ -222,20 +216,20 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Attempt user model update
     try {
-      await db.models.user.update(updateBody, {
-        where: {ident: req.body.ident},
+      await db.models.user.update({...updateBody, ident: req.params.ident}, {
+        where: {ident: req.params.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
       });
     } catch (error) {
       logger.error(`SQL Error unable to update user model ${error}`);
-      return res.status(500).json({error: {message: 'Unable to update user model', code: 'failedUserModelUpdate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user model', code: 'failedUserModelUpdate'}});
     }
 
     try {
       const user = await db.models.user.findOne({
-        where: {ident: req.body.ident},
+        where: {ident: req.params.ident},
         attributes: {exclude: ['id', 'password', 'deletedAt']},
         include: [
           {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
@@ -245,17 +239,17 @@ router.route('/:ident([A-z0-9-]{36})')
       return res.json(user);
     } catch (error) {
       logger.error(`SQL Error unable to find user ${error}`);
-      return res.status(500).json({error: {message: 'SQL Error unable to find user', code: 'failedUserSearch'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error unable to find user', code: 'failedUserSearch'}});
     }
   })
   // Remove a user
   .delete(async (req, res) => {
     // Remove a user
     const access = new Acl(req, res);
-    access.write = ['admin', 'superUser'];
+    access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove a user');
-      return res.status(403).send();
+      return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
     }
 
     try {
@@ -263,13 +257,13 @@ router.route('/:ident([A-z0-9-]{36})')
       const result = await db.models.user.destroy({where: {ident: req.params.ident}, limit: 1});
       if (!result) {
         logger.error('Unable to remove the requested user');
-        return res.status(400).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemove'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemove'}});
       }
 
-      return res.status(204).send();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`SQL Failed User remove ${error}`);
-      return res.status(500).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemoveQuery'}});
     }
   });
 
@@ -291,7 +285,7 @@ router.route('/search')
       return res.json(users);
     } catch (error) {
       logger.error(`SQL Error while trying to find all users ${error}`);
-      return res.status(500).json({error: {message: 'Unable to query user search'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query user search'}});
     }
   });
 

@@ -7,12 +7,6 @@
     "hostname": "ipr.bcgsc.ca"
   },
 
-  "jira": {
-    "hostname": "www.bcgsc.ca",
-    "api": "/jira/rest",
-    "version": "2"
-  },
-
   "redis": {
     "uri": "",
     "host": "",
@@ -35,9 +29,9 @@
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
           "summary_variantCounts", "summary_mutationSummary", "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic", "summary_probeTarget", "detailed_alterations",
-          "detailed_approvedThisCancer", "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
-          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
+          "summary_probeTarget", "detailed_alterations", "detailed_approvedThisCancer",
+          "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
+          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier"
         ]
       },
 
@@ -45,9 +39,9 @@
         "libraries": [
           "meta", "image", "summary_patientInformation", "summary_tumourAnalysis",
           "summary_variantCounts", "summary_mutationSummary", "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic", "summary_probeTarget", "detailed_alterations",
-          "detailed_approvedThisCancer", "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
-          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier", "expression_drugTarget"
+          "summary_probeTarget", "detailed_alterations", "detailed_approvedThisCancer",
+          "detailed_approvedOtherCancer", "detailed_targetedGenes", "somatic_smallMutations",
+          "somatic_mutationSignature", "copynumber_cnv", "structural_sv", "expression_outlier"
         ]
       },
 
@@ -55,7 +49,6 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -67,7 +60,6 @@
       "PROFYLE_probe": {
         "loaders": [
           "summary_patientInformation",
-          "summary_genomicEventsTherapeutic",
           "summary_genomicAlterationsIdentified",
           "alterations_identified",
           "alterations",
@@ -81,7 +73,6 @@
         "loaders": [
           "summary_patientInformation",
           "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic",
           "alterations_identified",
           "alterations",
           "sample_information",
@@ -105,7 +96,6 @@
           "summary_variantCounts",
           "summary_mutationSummary",
           "summary_genomicAlterationsIdentified",
-          "summary_genomicEventsTherapeutic",
           "summary_probeTarget",
           "detailed_alterations",
           "detailed_approvedThisCancer",
@@ -115,8 +105,7 @@
           "somatic_mutationSignature",
           "copynumber_cnv",
           "structural_sv",
-          "expression_outlier",
-          "expression_drugTarget"
+          "expression_outlier"
         ]
       }
     }

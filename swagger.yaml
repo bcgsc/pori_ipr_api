@@ -53,7 +53,7 @@ paths:
                 $ref: "#/components/schemas/ACLDenied"
     post:
       summary: Authorize new account
-      description: Authorize a new user to access IPR
+      description: Authorize a new user to access IPR. Field 'type' should be equal 'local' or 'bcgsc'.
       tags:
         - User
       security:
@@ -63,14 +63,7 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
-                newUser:
-                  $ref: "#/components/schemas/NewUser"
-                searchField:
-                  description: Field to search for patient ids in (i.e originalSourceName)
-                  type: string
-              required:
-                - newUser
+              $ref: "#/components/schemas/NewUser"
       responses:
         "200":
           description: User has been successfully added to the system
@@ -84,6 +77,8 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: Insufficient access to authorize new accounts
+        "409":
+          description: Username is already being used
   "/user/{user}":
     put:
       summary: Update a user account
@@ -118,33 +113,6 @@ paths:
                 $ref: "#/components/schemas/User"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-    get:
-      summary: Get single user
-      description: Return full user description from ident key.
-      tags:
-        - User
-      security:
-        - basicAuth: []
-      parameters:
-        - name: user
-          in: path
-          required: true
-          description: User's UUID string
-          schema:
-            type: string
-      responses:
-        "200":
-          description: A user account has been found and returned
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          description: Insufficient access to view user records
-        "404":
-          description: Unable to find the specified user
     delete:
       summary: Remove a single user
       description: Delete a user's access to the API. This does not remove the record from
@@ -302,11 +270,15 @@ paths:
             schema:
               type: object
               properties:
-                newGroup:
-                  description: New group objects to be created
+                name:
+                  description: Name of the new group
+                  type: string
+                owner:
+                  description: UUID of the owner of the new group
                   type: string
               required:
-                - newGroup
+                - name
+                - owner
       responses:
         "200":
           description: Group successfully added to database
@@ -366,14 +338,15 @@ paths:
             schema:
               type: object
               properties:
-                newGroup:
-                  description: New group object to be created
-                  type: object
-                  properties:
-                    name:
-                      type: string
-              required:
-                - newGroup
+                name:
+                  description: Name of the new group
+                  type: string
+                owner:
+                  description: UUID of the owner of the new group
+                  type: string
+                required:
+                  - name
+                  - owner
       responses:
         "200":
           description: Successfully updated the group.
@@ -465,13 +438,9 @@ paths:
               type: object
               properties:
                 user:
-                  description: The user UUID ident string
-                  type: object
-                  properties:
-                    user:
-                      type: string
-                      description: UUID ident string belonging to the user
-                      example: 8cd64045-7e68-4455-bcc2-e750c4372974
+                  type: string
+                  description: UUID ident string belonging to the user
+                  example: 8cd64045-7e68-4455-bcc2-e750c4372974
               required:
                 - user
       responses:
@@ -509,13 +478,9 @@ paths:
               type: object
               properties:
                 user:
-                  description: The user UUID ident string
-                  type: object
-                  properties:
-                    user:
-                      type: string
-                      description: UUID ident string belonging to the user
-                      example: 8cd64045-7e68-4455-bcc2-e750c4372974
+                  type: string
+                  description: UUID ident string belonging to the user
+                  example: 8cd64045-7e68-4455-bcc2-e750c4372974
               required:
                 - user
       responses:
@@ -791,7 +756,7 @@ paths:
         "404":
           description: Unable to find a provided user and/or unable to remove a user from a
             POG
-  "/POG/{POG}/report/{report}/genomic/summary/patientInformation":
+  "/POG/{POG}/report/{report}/genomic/summary/patient-information":
     get:
       summary: Get Patient Summary
       description: Retrieve basic metadata patient details for a POG
@@ -846,7 +811,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/mutationSummary":
+  "/POG/{POG}/report/{report}/genomic/summary/mutation-summary":
     get:
       summary: Get Mutation Summary
       description: Retrieve summary of mutation details for the POG
@@ -907,7 +872,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/tumourAnalysis":
+  "/POG/{POG}/report/{report}/genomic/summary/tumour-analysis":
     get:
       summary: Get Tumour Analysis Summary
       description: Retrieve summary of Tumour Analysis details for the POG
@@ -966,7 +931,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/variantCounts":
+  "/POG/{POG}/report/{report}/genomic/summary/variant-counts":
     get:
       summary: Get Variant counts
       description: This endpoint is soon to be deprecated. Returns static analysis of variant
@@ -990,7 +955,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified":
+  "/POG/{POG}/report/{report}/genomic/summary/genomic-alterations-identified":
     get:
       summary: Get key genomic alterations
       description: Retrieve list of key identified genomic alterations
@@ -1035,7 +1000,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User is not authorized to add key genomic alterations
-  "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}":
+  "/POG/{POG}/report/{report}/genomic/summary/genomic-alterations-identified/{alteration}":
     delete:
       summary: Remove key genomic alterations
       description: Remove a key identified genomic alteration entry.
@@ -1056,29 +1021,6 @@ paths:
       responses:
         "204":
           description: Alteration was successfully removed
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          description: POG Not found
-  "/POG/{POG}/report/{report}/genomic/summary/genomicEventsTherapeutic":
-    get:
-      summary: Get genomic events with therapeutic association
-      description: Retrieve list of genomic events with potential therapeutic association
-      parameters:
-        - $ref: "#/components/parameters/POG"
-        - $ref: "#/components/parameters/report"
-      tags:
-        - Genomic Report
-        - Genomic Summary
-      security:
-        - basicAuth: []
-      responses:
-        "200":
-          description: Returns array of enomic events with potential therapeutic association
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/summary_genomicEvents"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "404":
@@ -1174,152 +1116,6 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           description: Probe report test results not found
-  /lims/biological-metadata:
-    post:
-      summary: Retrieve LIMS biological metadata
-      description: Retrieve sample results based on POGID from LIMS
-      tags:
-        - LIMS
-      security:
-        - basicAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                patientIds:
-                  description: Patient id (POG id) or array of patient ids
-                  oneOf:
-                    - type: string
-                    - type: array
-                      items:
-                        type: string
-                searchField:
-                  description: Field to search for patient ids in (i.e originalSourceName)
-                  type: string
-              required:
-                - patientIds
-      responses:
-        "200":
-          description: User has successfully retrieved biological metadata
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/LimsBiologicalMetadata"
-        "400":
-          description: Missing patient ids
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          description: Insufficient access to get biological metadata
-  /lims/library:
-    post:
-      summary: Retrieve LIMS libraries
-      description: Retrieve library data from LIMS for specified library names
-      tags:
-        - LIMS
-      security:
-        - basicAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                libraries:
-                  description: Name of library(ies) to search for in LIMS
-                  oneOf:
-                    - type: string
-                    - type: array
-                      items:
-                        type: string
-                searchField:
-                  description: Field to search for libraries in (i.e name)
-                  type: string
-              required:
-                - libraries
-      responses:
-        "200":
-          description: User has successfully retrieved LIMS library data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/LimsLibrary"
-        "400":
-          description: Missing libraries
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          description: Insufficient access to get LIMS library datas
-  /lims/sequencer-run:
-    post:
-      summary: Retrieve LIMS sequencer run information
-      description: Retrieve sequencer run data from LIMS for a specified library
-      tags:
-        - LIMS
-      security:
-        - basicAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                libraries:
-                  description: Name of library(ies) or multiplex library(ies) to search for in LIMS sequencer-run data
-                  oneOf:
-                    - type: string
-                    - type: array
-                      items:
-                        type: string
-              required:
-                - libraries
-      responses:
-        "200":
-          description: User has successfully retrieved sequencer run data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LimsSequencerRuns"
-        "400":
-          description: Missing libraries for sequencer run
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          description: Insufficient access to get sequencer run data
-  "/lims/disease-ontology/{query}":
-    get:
-      summary: Get disease ontology
-      description: Query LIMS for disease ontology information
-      parameters:
-        - name: query
-          in: path
-          required: true
-          description: Query LIMS disease ontology
-          schema:
-            type: string
-      tags:
-        - LIMS
-      security:
-        - basicAuth: []
-      responses:
-        "200":
-          description: Returns array of key identified gemomic alterations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/LimsDiseaseOntology"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          description: POG Not found
   /reports:
     get:
       summary: Get all analysis reports
@@ -1400,7 +1196,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User isn't allowed to add a project
-  "/POG/{POG}/report/{report}/genomic/therapeuticTargets":
+  "/POG/{POG}/report/{report}/genomic/therapeutic-targets":
     get:
       summary: Get therapeutic targets
       description: Returns all therapeutic targets for an analysis report
@@ -1447,7 +1243,7 @@ paths:
                 $ref: "#/components/schemas/therapeuticTarget"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-  "/POG/{POG}/report/{report}/genomic/summary/pathwayAnalysis":
+  "/POG/{POG}/report/{report}/genomic/summary/pathway-analysis":
     get:
       summary: Get report pathway analysis
       description: Get a reports pathway analysis image
@@ -1511,7 +1307,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to upload pathway analysis image
-  "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations":
+  "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations":
     get:
       summary: Get somatic small mutations
       description: Returns an analysis reports somatic small mutations
@@ -1536,7 +1332,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           description: User doesn't have permissions to access somatic small mutations
-  "/germline_small_mutation":
+  "/germline-small-mutation-reports":
     get:
       summary: Get all germline small mutation reports
       description: Returns all germline small mutation reports the user has access to
@@ -1588,14 +1384,14 @@ paths:
         "403":
           description: User doesn't have permissions to access germline small mutations
   # Below are all skeleton routes, with no details added
-  # "/POG/{POG}/report/{report}/image/mutationSummary":
+  # "/POG/{POG}/report/{report}/image/mutation-summary":
   # "/POG/{POG}/report/{report}/genomic/mavis":
   # "/POG/{POG}/load/genomic":
-  # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}":
-  # "/germline_small_mutation/patient/{POG}/biopsy/{biopsy}/report/{report}/variant/{variant}":
+  # "/germline-small-mutation-reports/patient/{POG}/biopsy/{biopsy}/report/{report}":
+  # "/germline-small-mutation-reports/patient/{POG}/biopsy/{biopsy}/report/{report}/variant/{variant}":
   # "/POG/{POG}/report/{report}/probe/alterations":
-  # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{mutation}":
-  # "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations/{type}":
+  # "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations/{mutation}":
+  # "/POG/{POG}/report/{report}/genomic/somatic-mutations/small-mutations/{type}":
   "/patient/{POG}/biopsy/{analysis}":
     get:
       summary: Get the details of a Germline Report
@@ -1764,9 +1560,9 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: https://ipr-api.bcgsc.ca/api/1.0
+  - url: https://ipr-api.bcgsc.ca/api
     description: Production server (uses live data)
-  - url: https://dev-ipr.bcgsc.ca:8081/api/1.0
+  - url: https://dev-ipr.bcgsc.ca:8081/api
     description: Development server
 components:
   parameters:
@@ -1808,7 +1604,7 @@ components:
           type: string
           description: The location authentication details are stored in.
           enum:
-            - BCGSC
+            - bcgsc
             - local
         email:
           type: string
@@ -1829,11 +1625,13 @@ components:
       properties:
         username:
           type: string
+        password:
+          type: string
         type:
           type: string
           description: The location authentication details are stored in.
           enum:
-            - BCGSC
+            - bcgsc
             - local
         email:
           type: string
@@ -1845,18 +1643,24 @@ components:
     Group:
       type: object
       properties:
+        id:
+          type: int
         ident:
           $ref: "#/components/schemas/ident"
         name:
           type: string
-        users:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
+        owner_id:
+          type: int
         createdAt:
           $ref: "#/components/schemas/datetime"
         updatedAt:
           $ref: "#/components/schemas/datetime"
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        owner: 
+          $ref: "#/components/schemas/User"
     POG:
       allOf:
         - $ref: "#/components/schemas/POGModel"
@@ -2089,163 +1893,6 @@ components:
           $ref: "#/components/schemas/ident"
         name:
           type: string
-    LimsBiologicalMetadata:
-      type: object
-      properties:
-        cellTypeIds:
-          type: array
-          items:
-            type: integer
-        cellTypeNames:
-          type: array
-          items:
-            type: string
-        uri:
-          type: string
-        diseaseStatus:
-          type: string
-        diseaseName:
-          type: string
-        diseaseId:
-          type: integer
-        sex:
-          type: string
-        anatomicSiteId:
-          type: integer
-        originalSourceName:
-          type: string
-        participantStudyId:
-          $ref: "#/components/schemas/POGID"
-        sampleCollectionTimes:
-          type: array
-          items:
-            $ref: "#/components/schemas/datetime"
-        sampleType:
-          type: array
-          items:
-            type: string
-        subjectId:
-          type: string
-        taxonomyId:
-          type: integer
-        taxonomyName:
-          type: string
-        id:
-          type: integer
-        anatomicSite:
-          type: string
-        cellLineName:
-          type: string
-        ethnicity:
-          type: string
-    LimsLibrary:
-      type: object
-      properties:
-        contactOrganization:
-          type: string
-        contactPhone:
-          type: string
-        status:
-          type: string
-        uri:
-          type: string
-        id:
-          type: integer
-        description:
-          type: string
-        contactName:
-          type: string
-        externalIds:
-          type: array
-          items:
-            type: string
-        nucleicAcidType:
-          type: string
-        originalSourceName:
-          type: string
-        goalName:
-          type: array
-          items:
-            type: string
-        libraryStrategyName:
-          type: array
-          items:
-            type: string
-        name:
-          type: string
-        created:
-          $ref: "#/components/schemas/datetime"
-        goalType:
-          type: array
-          items:
-            type: string
-        contactPosition:
-          type: string
-        contactEmail:
-          type: string
-          format: email
-        projectName:
-          type: string
-    LimsSequencerRuns:
-      type: object
-      properties:
-        cycles:
-          type: integer
-        status:
-          type: string
-        multiplexIndices:
-          type: array
-          items:
-            type: string
-        duplicateRate:
-          type: integer
-        approvalDatetime:
-          $ref: "#/components/schemas/datetime"
-        qcStatus:
-          type: string
-        multiplexLibraryNames:
-          type: array
-          items:
-            type: string
-        datetime:
-          $ref: "#/components/schemas/datetime"
-        projectName:
-          type: string
-        uri:
-          type: integer
-        sequencerName:
-          type: string
-        finished:
-          $ref: "#/components/schemas/datetime"
-        flowcellId:
-          type: string
-        type:
-          type: string
-        multiplexSampleIds:
-          type: array
-          items:
-            type: integer
-        directory:
-          type: string
-        libraryStatus:
-          type: string
-        libraryName:
-          type: string
-        approval:
-          type: string
-        qcStatusDatetime:
-          $ref: "#/components/schemas/datetime"
-        lane:
-          type: string
-        id:
-          type: integer
-    LimsDiseaseOntology:
-      type: object
-      properties:
-        id:
-          type: string
-        text:
-          type: string
     summary_sampleInfo:
       type: object
       properties:
@@ -2311,7 +1958,7 @@ components:
           enum:
             - Adult
             - Pediatric
-        tumourType:
+        diagnosis:
           type: string
         reportDate:
           type: string
@@ -2451,7 +2098,7 @@ components:
           enum:
             - Adult
             - Pediatric
-        tumourType:
+        diagnosis:
           type: string
         biopsySite:
           type: string
@@ -2563,28 +2210,6 @@ components:
         dataVersion:
           $ref: "#/components/schemas/dataVersion"
         geneVariant:
-          type: string
-        createdAt:
-          $ref: "#/components/schemas/datetime"
-        updatedAt:
-          $ref: "#/components/schemas/datetime"
-    summary_genomicEvents:
-      type: object
-      description: Genomic events with potential therapeutic targets
-      properties:
-        ident:
-          $ref: "#/components/schemas/ident"
-        dataVersion:
-          $ref: "#/components/schemas/dataVersion"
-        genomicEvent:
-          type: string
-        approvedThisCancerType:
-          type: string
-        approvedOtherCancerType:
-          type: string
-        emergingPreclinicalEvidence:
-          type: string
-        comments:
           type: string
         createdAt:
           $ref: "#/components/schemas/datetime"

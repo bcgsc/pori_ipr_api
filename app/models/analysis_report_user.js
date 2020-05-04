@@ -1,65 +1,50 @@
 const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('./base');
 
-module.exports = sequelize => sequelize.define('analysis_reports_user', {
-  id: {
-    type: Sq.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  ident: {
-    type: Sq.UUID,
-    unique: true,
-    defaultValue: Sq.UUIDV4,
-  },
-  role: {
-    type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'reviewer', 'admin'),
-    allowNull: false,
-  },
-  pog_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'POGs',
-      key: 'id',
+module.exports = (sequelize) => {
+  return sequelize.define('analysis_reports_user', {
+    ...DEFAULT_COLUMNS,
+    role: {
+      type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'reviewer', 'admin'),
+      allowNull: false,
     },
-  },
-  pog_report_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'pog_analysis_reports',
-      key: 'id',
-    },
-  },
-  user_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'users',
-      key: 'id',
-    },
-  },
-  addedBy_id: {
-    type: Sq.INTEGER,
-    allowNull: true,
-    references: {
-      model: 'users',
-      key: 'id',
-    },
-  },
-
-},
-{
-  tableName: 'pog_analysis_reports_users',
-  // Automatically create createdAt, updatedAt, deletedAt
-  timestamps: true,
-  // Use soft-deletes
-  paranoid: true,
-  scopes: {
-    public: {
-      attributes: {
-        exclude: ['id', 'pog_report_id', 'user_id'],
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports',
+        key: 'id',
       },
-      include: [
-        {model: sequelize.models.user.scope('public'), as: 'user'},
-      ],
+    },
+    user_id: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+    },
+    addedBy_id: {
+      type: Sq.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
   },
-});
+  {
+    ...DEFAULT_OPTIONS,
+    tableName: 'reports_users',
+    scopes: {
+      public: {
+        attributes: {
+          exclude: ['id', 'reportId', 'user_id'],
+        },
+        include: [
+          {model: sequelize.models.user.scope('public'), as: 'user'},
+        ],
+      },
+    },
+  });
+};

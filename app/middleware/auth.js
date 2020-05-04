@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const db = require('../models');
@@ -13,26 +14,13 @@ module.exports = async (req, res, next) => {
   // Get Authorization Header
   let token = req.header('Authorization') || '';
 
-  // Report loader case for permanent token lookup
-  const respToken = await db.models.userToken.findOne({
-    where: {user_id: 23},
-    attributes: {
-      exclude: ['id'],
-      include: [['user_id', 'id']],
-    },
-  });
-  if (respToken.token === token) {
-    req.user = respToken;
-    return next();
-  }
-
   // Check for basic authorization header
   if (token.includes('Basic')) {
     let credentials;
     try {
       credentials = Buffer.from(token.split(' ')[1], 'base64').toString('utf-8').split(':');
     } catch (err) {
-      return res.status(400).json({message: 'The authentication header you provided was not properly formatted.'});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'The authentication header you provided was not properly formatted.'});
     }
     try {
       const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
@@ -40,11 +28,11 @@ module.exports = async (req, res, next) => {
     } catch (error) {
       const errorDescription = JSON.parse(error.error).error_description;
       logger.error(`Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`);
-      return res.status(400).json({error: {name: error.name, code: error.statusCode, cause: errorDescription}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {name: error.name, code: error.statusCode, cause: errorDescription}});
     }
   }
   if (!token) {
-    return res.status(403).json({message: 'Invalid authorization token'});
+    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'Missing required Authorization token'});
   }
 
   // Verify token using public key
@@ -53,11 +41,11 @@ module.exports = async (req, res, next) => {
     decoded = await jwt.verify(token, pubKey, {algorithms: ['RS256']});
   } catch (err) {
     logger.debug(`token verification failed against key ${nconf.get('keycloak:keyFile')}`);
-    return res.status(403).json({message: `Invalid or expired authorization token: (${err.message})`});
+    return res.status(HTTP_STATUS.FORBIDDEN).json({message: `Invalid or expired authorization token: (${err.message})`});
   }
   // Check for IPR access
   if (!decoded.realm_access.roles.includes(nconf.get('keycloak:role'))) {
-    return res.status(403).json({message: 'IPR Access Error'});
+    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'IPR Access Error'});
   }
   const username = decoded.preferred_username;
   const expiry = decoded.exp;
@@ -87,12 +75,13 @@ module.exports = async (req, res, next) => {
       ],
     });
     if (!respUser) {
-      return res.status(400).json({message: 'User does not exist'});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'User does not exist'});
     }
     respUser.dataValues.expiry = expiry;
     req.user = respUser;
     return next();
   } catch (err) {
-    return res.status(400).json({message: 'Invalid authorization token'});
+    logger.error(err);
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Invalid authorization token'});
   }
 };

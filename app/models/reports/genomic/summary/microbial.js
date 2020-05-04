@@ -1,31 +1,33 @@
 const Sq = require('sequelize');
-
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
-module.exports = sequelize => sequelize.define('summary_microbial', {
-  ...DEFAULT_COLUMNS,
-  pog_report_id: {
-    type: Sq.INTEGER,
-    references: {
-      model: 'pog_analysis_reports',
-      key: 'id',
-    },
-  },
-  species: {
-    type: Sq.TEXT,
-  },
-  integrationSite: {
-    type: Sq.TEXT,
-  },
-}, {
-  ...DEFAULT_OPTIONS,
-  // Table Name
-  tableName: 'pog_analysis_reports_summary_microbial',
-  scopes: {
-    public: {
-      attributes: {
-        exclude: ['id', 'pog_report_id', 'deletedAt'],
+module.exports = (sequelize) => {
+  return sequelize.define('summary_microbial', {
+    ...DEFAULT_COLUMNS,
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports',
+        key: 'id',
       },
     },
-  },
-});
+    species: {
+      type: Sq.TEXT,
+    },
+    integrationSite: {
+      type: Sq.TEXT,
+    },
+  }, {
+    ...DEFAULT_OPTIONS,
+    tableName: 'reports_summary_microbial',
+    scopes: {
+      public: {
+        attributes: {
+          exclude: ['id', 'reportId', 'deletedAt'],
+        },
+      },
+    },
+  });
+};
