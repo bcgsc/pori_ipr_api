@@ -66,6 +66,21 @@ const DEFAULT_OPTIONS = {
         transaction: options.transaction,
       });
     },
+
+    afterUpdate: (instance, options = {}) => {
+      // remove reviewer signature from report
+      return instance.sequelize.models.analystComments.update({
+        reviewerId: null,
+        reviewerSignedAt: null,
+      }, {
+        where: {
+          reportId: (instance.constructor.name === 'analysis_report') ? instance.id : instance.reportId,
+        },
+        hooks: false,
+        silent: true,
+        transaction: options.transaction,
+      });
+    },
   },
 };
 
