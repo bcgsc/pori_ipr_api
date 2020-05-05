@@ -1,6 +1,5 @@
 const Sq = require('sequelize');
 
-
 const DEFAULT_MAPPING_COLUMNS = {
   id: {
     type: Sq.INTEGER,
@@ -60,7 +59,7 @@ const DEFAULT_OPTIONS = {
     beforeUpdate: (instance, options = {}) => {
       const {id, ...content} = instance._previousDataValues;
 
-      return options.model.create({
+      return instance.constructor.create({
         ...content, deletedAt: new Date().getTime(),
       }, {
         silent: true,
