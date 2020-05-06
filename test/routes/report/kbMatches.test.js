@@ -1,4 +1,5 @@
 process.env.NODE_ENV = 'test';
+const HTTP_STATUS = require('http-status-codes');
 
 const supertest = require('supertest');
 const getPort = require('get-port');
@@ -47,7 +48,7 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
       .auth(username, password)
       .send(mockReportData)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(typeof res.body).toBe('object');
     reportIdent = res.body.ident;
@@ -57,7 +58,7 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
       .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     // get report id from patient info. because it's excluded in public view
     reportId = res.body.patientInformation.reportId;
@@ -68,7 +69,7 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
       .get(`/api/reports/${reportIdent}/kb-matches`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(Array.isArray(res.body)).toBe(true);
     checkKbMatch(res.body[0]);
@@ -82,7 +83,7 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
       .get(`/api/reports/${reportIdent}/kb-matches/${kbMatch.ident}`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     checkKbMatch(res.body);
   });
@@ -96,7 +97,7 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
       .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
-      .expect(404);
+      .expect(HTTP_STATUS.NOT_FOUND);
   }, LONGER_TIMEOUT);
 });
 
