@@ -39,11 +39,10 @@ beforeAll(async () => {
 describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
   let reportId;
   let reportIdent;
-  let kbMatchIdent;
 
   beforeAll(async () => {
     // create report
-    const res = await request
+    let res = await request
       .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
@@ -52,6 +51,16 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
 
     expect(typeof res.body).toBe('object');
     reportIdent = res.body.ident;
+
+    // check that the report was created
+    res = await request
+      .get(`/api/reports/${reportIdent}`)
+      .auth(username, password)
+      .type('json')
+      .expect(200);
+
+    // get report id from patient info. because it's excluded in public view
+    reportId = res.body.patientInformation.reportId;
   }, LONGER_TIMEOUT);
 
   test('Getting all kb-matches is ok', async () => {
@@ -63,12 +72,14 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
 
     expect(Array.isArray(res.body)).toBe(true);
     checkKbMatch(res.body[0]);
-    kbMatchIdent = res.body[0].ident;
   });
 
   test('Getting a specific kb-match is ok', async () => {
+    // Get kbMatch ident to be used in tests
+    const kbMatch = await db.models.kbMatches.findOne({where: reportId});
+
     const res = await request
-      .get(`/api/reports/${reportIdent}/kb-matches/${kbMatchIdent}`)
+      .get(`/api/reports/${reportIdent}/kb-matches/${kbMatch.ident}`)
       .auth(username, password)
       .type('json')
       .expect(200);
