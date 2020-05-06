@@ -66,6 +66,13 @@ const DEFAULT_OPTIONS = {
         transaction: options.transaction,
       });
     },
+  },
+};
+
+const DEFAULT_REPORT_OPTIONS = {
+  ...DEFAULT_OPTIONS,
+  hooks: {
+    ...DEFAULT_OPTIONS.hooks,
 
     afterUpdate: (instance, options = {}) => {
       // remove reviewer signature from report
@@ -89,4 +96,5 @@ module.exports = {
   DEFAULT_MAPPING_COLUMNS,
   DEFAULT_OPTIONS,
   DEFAULT_COLUMNS,
+  DEFAULT_REPORT_OPTIONS,
 };
