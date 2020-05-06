@@ -64,28 +64,30 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
     reportId = res.body.patientInformation.reportId;
   }, LONGER_TIMEOUT);
 
-  test('Getting all kb-matches is ok', async () => {
-    const res = await request
-      .get(`/api/reports/${reportIdent}/kb-matches`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
+  describe('GET', () => {
+    test('Getting all kb-matches is ok', async () => {
+      const res = await request
+        .get(`/api/reports/${reportIdent}/kb-matches`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    expect(Array.isArray(res.body)).toBe(true);
-    checkKbMatch(res.body[0]);
-  });
+      expect(Array.isArray(res.body)).toBe(true);
+      checkKbMatch(res.body[0]);
+    });
 
-  test('Getting a specific kb-match is ok', async () => {
-    // Get kbMatch ident to be used in tests
-    const kbMatch = await db.models.kbMatches.findOne({where: reportId});
+    test('Getting a specific kb-match is ok', async () => {
+      // Get kbMatch ident to be used in tests
+      const kbMatch = await db.models.kbMatches.findOne({where: reportId});
 
-    const res = await request
-      .get(`/api/reports/${reportIdent}/kb-matches/${kbMatch.ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
+      const res = await request
+        .get(`/api/reports/${reportIdent}/kb-matches/${kbMatch.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    checkKbMatch(res.body);
+      checkKbMatch(res.body);
+    });
   });
 
   // delete report
