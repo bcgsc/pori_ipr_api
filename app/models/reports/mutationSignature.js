@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('mutationSignature', {
@@ -35,7 +35,7 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_somatic_mutations_mutation_signature',
     scopes: {
       public: {
