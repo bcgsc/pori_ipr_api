@@ -83,8 +83,8 @@ const DEFAULT_REPORT_OPTIONS = {
         where: {
           reportId: (instance.constructor.name === 'analysis_report') ? instance.id : instance.reportId,
         },
-        hooks: false,
-        silent: true,
+        individualHooks: true,
+        paranoid: true,
         transaction: options.transaction,
       });
     },
