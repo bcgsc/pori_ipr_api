@@ -86,7 +86,7 @@ router.route('/sign/:role(author|reviewer)')
         where: {
           ident: req.analystComments.ident,
         },
-        hooks: false,
+        individualHooks: true,
         paranoid: true,
       });
     } catch (error) {
@@ -122,7 +122,7 @@ router.route('/sign/revoke/:role(author|reviewer)')
         where: {
           ident: req.analystComments.ident,
         },
-        hooks: false,
+        individualHooks: true,
         paranoid: true,
       });
     } catch (error) {
