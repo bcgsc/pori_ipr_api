@@ -46,28 +46,28 @@ router.route('/')
     } else {
       // Update DB Version for Entry
       try {
-        const result = await db.models.analystComments.update(req.body, {
+        await db.models.analystComments.update(req.body, {
           where: {
             ident: req.analystComments.ident,
           },
           individualHooks: true,
           paranoid: true,
-          returning: true,
         });
-
-        // Get updated model data from update
-        const [, [{dataValues}]] = result;
-
-        // Remove id's and deletedAt properties from returned model
-        const {
-          id, reportId, deletedAt, authorId, reviewerId, ...publicModel
-        } = dataValues;
-
-        return res.json(publicModel);
       } catch (error) {
         logger.error(`Unable to update analysis comments ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedAnalystCommentVersion'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments'}});
       }
+
+      // get updated public view of record with includes
+      // TODO: This will get replaced with a save + reload
+      // this should be changed in DEVSU-1049
+      try {
+        const updatedResult = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+        return res.json(updatedResult);
+      } catch (error) {
+        logger.error(`Unable to get updated analysis comments ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get updated analysis comments'}});
+    }
     }
   });
 
