@@ -88,11 +88,7 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
 
   // delete report
   afterAll(async () => {
-    // Delete db entries
     await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
-    await db.models.genes.destroy({where: {id: gene.id}, force: true});
-    await db.models.variant.destroy({where: {id: variant.id}, force: true});
-    await db.models.kbMatch.destroy({where: {id: kbMatch.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 
