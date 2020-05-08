@@ -111,7 +111,7 @@ class AnalysisReport {
     // must be bound, see https://www.bcgsc.ca/jira/browse/DEVSU-681
     const result = await reportModel.bind(reportModel).findOne({
       where: {ident: this.instance.ident},
-      attributes: {exclude: ['deletedAt']},
+      attributes: {exclude: ['config', 'deletedAt']},
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt']}},
         {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
