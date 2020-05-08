@@ -5,7 +5,7 @@ const db = require('../models');
 module.exports = async (req, res, next, ident) => {
   const result = await db.models.analysis_report.findOne({
     where: {ident},
-    attributes: {exclude: ['deletedAt']},
+    attributes: {exclude: ['config', 'deletedAt']},
     include: [
       {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt']}},
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
