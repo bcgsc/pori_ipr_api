@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('genomicAlterationsIdentified', {
@@ -18,7 +18,7 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_genomic_alterations_identified',
     scopes: {
       public: {

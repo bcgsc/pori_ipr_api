@@ -44,29 +44,34 @@ router.route('/')
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new analysis comments', code: 'failedAnalystCommentCreate'}});
       }
     } else {
+      // On comment update
+      // remove reviewer signature
+      req.body.reviewerId = null;
+      req.body.reviewerSignedAt = null;
+
       // Update DB Version for Entry
       try {
-        const result = await db.models.analystComments.update(req.body, {
+        await db.models.analystComments.update(req.body, {
           where: {
             ident: req.analystComments.ident,
           },
           individualHooks: true,
           paranoid: true,
-          returning: true,
         });
-
-        // Get updated model data from update
-        const [, [{dataValues}]] = result;
-
-        // Remove id's and deletedAt properties from returned model
-        const {
-          id, reportId, deletedAt, authorId, reviewerId, ...publicModel
-        } = dataValues;
-
-        return res.json(publicModel);
       } catch (error) {
         logger.error(`Unable to update analysis comments ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedAnalystCommentVersion'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments'}});
+      }
+
+      // get updated public view of record with includes
+      // TODO: This will get replaced with a save + reload
+      // this should be changed in DEVSU-1049
+      try {
+        const updatedResult = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+        return res.json(updatedResult);
+      } catch (error) {
+        logger.error(`Unable to get updated analysis comments ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get updated analysis comments'}});
       }
     }
   });
@@ -74,90 +79,71 @@ router.route('/')
 router.route('/sign/:role(author|reviewer)')
   .put(async (req, res) => {
     // Get the role
-    let role;
-    if (req.params.role === 'author') {
-      role = 'authorSigned';
-    } else if (req.params.role === 'reviewer') {
-      role = 'reviewerSigned';
-    }
+    const {params: {role}} = req;
 
-    if (!role) {
-      logger.error('A valid signing role must be specified');
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
-    }
-
-    // Update Comments
+    // add author or reviewer
     const data = {};
-    data[`${role}By_id`] = req.user.id;
-    data[`${role}At`] = moment().toISOString();
+    data[`${role}Id`] = req.user.id;
+    data[`${role}SignedAt`] = moment().toISOString();
 
     try {
-      const result = await db.models.analystComments.update(data, {
+      await db.models.analystComments.update(data, {
         where: {
           ident: req.analystComments.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, authorId, reviewerId, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
     } catch (error) {
-      logger.error(`Unable to update analysis comments ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
+      logger.error(`Unable to add ${role} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to add ${role}`}});
+    }
+
+    // get updated public view of record with includes
+    // TODO: This will get replaced with a save + reload
+    // this should be changed in DEVSU-1049
+    try {
+      const updatedResult = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+      return res.json(updatedResult);
+    } catch (error) {
+      logger.error(`Unable to get updated analysis comments ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get updated analysis comments'}});
     }
   });
 
 router.route('/sign/revoke/:role(author|reviewer)')
   .put(async (req, res) => {
     // Get the role
-    let role;
-    if (req.params.role === 'author') {
-      role = 'authorSigned';
-    } else if (req.params.role === 'reviewer') {
-      role = 'reviewerSigned';
-    }
+    const {params: {role}} = req;
 
-    if (!role) {
-      logger.error('A valid signing role must be specified');
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({error: {message: 'A valid signing role must be specified', code: 'invalidCommentSignRole'}});
-    }
-
-    // Update Comments
+    // remove author or reviewer
     const data = {};
-    data[`${role}By_id`] = null;
-    data[`${role}At`] = null;
+    data[`${role}Id`] = null;
+    data[`${role}SignedAt`] = null;
 
+    // update analyst comment
     try {
-      const result = await db.models.analystComments.update(data, {
+      await db.models.analystComments.update(data, {
         where: {
           ident: req.analystComments.ident,
         },
         individualHooks: true,
         paranoid: true,
-        returning: true,
       });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, authorId, reviewerId, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
     } catch (error) {
-      logger.error(`Unable to update analysis comments ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update analysis comments', code: 'failedSignCommentsQuery'}});
+      logger.error(`Unable to revoke ${role} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to revoke ${role}`}});
+    }
+
+    // get updated public view of record with includes
+    // TODO: This will get replaced with a save + reload
+    // this should be changed in DEVSU-1049
+    try {
+      const updatedResult = await db.models.analystComments.scope('public').findOne({where: {ident: req.analystComments.ident}});
+      return res.json(updatedResult);
+    } catch (error) {
+      logger.error(`Unable to get updated analysis comments ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get updated analysis comments'}});
     }
   });
 

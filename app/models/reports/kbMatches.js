@@ -1,7 +1,7 @@
 const Sq = require('sequelize');
 
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 class KbMatches extends Sq.Model {
   getVariant(options) {
@@ -104,7 +104,7 @@ module.exports = (sequelize) => {
       type: Sq.JSONB,
     },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matches',
     scopes: {
       public: {
@@ -121,7 +121,7 @@ module.exports = (sequelize) => {
       },
     },
     hooks: {
-      ...DEFAULT_OPTIONS.hooks,
+      ...DEFAULT_REPORT_OPTIONS.hooks,
       afterFind: (findResult) => {
         if (!Array.isArray(findResult)) {
           findResult = [findResult];

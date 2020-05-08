@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('variantCounts', {
@@ -35,7 +35,7 @@ module.exports = (sequelize) => {
       defaultValue: 0,
     },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_variant_counts',
     scopes: {
       public: {
