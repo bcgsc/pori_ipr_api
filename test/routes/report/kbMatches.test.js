@@ -1,4 +1,3 @@
-process.env.NODE_ENV = 'test';
 const HTTP_STATUS = require('http-status-codes');
 
 const supertest = require('supertest');
@@ -38,36 +37,36 @@ beforeAll(async () => {
 
 // Tests for /kb-matches endpoint
 describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
-  let reportId;
-  let reportIdent;
+  let report;
+  let gene;
+  let variant;
+  let kbMatch;
 
   beforeAll(async () => {
-    // create report
-    let res = await request
-      .post('/api/reports')
-      .auth(username, password)
-      .send(mockReportData)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-
-    expect(typeof res.body).toBe('object');
-    reportIdent = res.body.ident;
-
-    // check that the report was created
-    res = await request
-      .get(`/api/reports/${reportIdent}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-
-    // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.reportId;
+    // Create Report and kbMatch
+    report = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+    });
+    gene = await db.models.genes.create({
+      reportId: report.id,
+      name: mockReportData.genes[0].name,
+    });
+    variant = await db.models.copyVariants.create({
+      reportId: report.id,
+      geneId: gene.id,
+    });
+    kbMatch = await db.models.kbMatches.create({
+      reportId: report.id,
+      variantId: variant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+    });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
     test('Getting all kb-matches is ok', async () => {
       const res = await request
-        .get(`/api/reports/${reportIdent}/kb-matches`)
+        .get(`/api/reports/${report.ident}/kb-matches`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -77,11 +76,8 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
     });
 
     test('Getting a specific kb-match is ok', async () => {
-      // Get kbMatch ident to be used in tests
-      const kbMatch = await db.models.kbMatches.findOne({where: reportId});
-
       const res = await request
-        .get(`/api/reports/${reportIdent}/kb-matches/${kbMatch.ident}`)
+        .get(`/api/reports/${report.ident}/kb-matches/${kbMatch.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -92,14 +88,11 @@ describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.analysis_report.destroy({where: {id: reportId}, force: true});
-
-    // verify report is deleted
-    await request
-      .get(`/api/reports/${reportIdent}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
+    // Delete db entries
+    await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
+    await db.models.genes.destroy({where: {id: gene.id}, force: true});
+    await db.models.variant.destroy({where: {id: variant.id}, force: true});
+    await db.models.kbMatch.destroy({where: {id: kbMatch.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 
