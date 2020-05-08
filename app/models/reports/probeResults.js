@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 /**
  * Stores the results from the probing pipeline (targeted gene report) to be
@@ -39,7 +39,7 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_probe_results',
     scopes: {
       public: {

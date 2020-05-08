@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('analysis_report', {
@@ -90,7 +90,7 @@ module.exports = (sequelize) => {
     },
   },
   {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
     scopes: {
       public: {
@@ -105,7 +105,7 @@ module.exports = (sequelize) => {
       },
     },
     hooks: {
-      ...DEFAULT_OPTIONS.hooks,
+      ...DEFAULT_REPORT_OPTIONS.hooks,
       // NOTE: This hook only gets triggered on instance.destroy or
       // when individualHooks is set to true
       afterDestroy: async (instance, options = {force: false}) => {
