@@ -3,7 +3,7 @@
 
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
-The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
+The Integrated pipeline reports API manages data access to the IPR database on iprdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic, probe reports, and Germline Small Mutation reports.
 
 #### Installation
