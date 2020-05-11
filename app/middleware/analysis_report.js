@@ -7,7 +7,7 @@ module.exports = async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['config', 'deletedAt']},
     include: [
-      {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'reportId', 'deletedAt']}},
+      {model: db.models.patientInformation.scope('public'), as: 'patientInformation'},
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
       {model: db.models.user.scope('public'), as: 'createdBy'},
       {
