@@ -5,15 +5,16 @@ const db = require('../models');
 module.exports = async (req, res, next, ident) => {
   const result = await db.models.analysis_report.findOne({
     where: {ident},
-    attributes: {exclude: ['deletedAt']},
+    attributes: {exclude: ['config', 'deletedAt']},
     include: [
-      {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt']}},
+      {model: db.models.patientInformation.scope('public'), as: 'patientInformation'},
       {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
       {model: db.models.user.scope('public'), as: 'createdBy'},
       {
         model: db.models.analysis_reports_user,
         as: 'users',
         separate: true,
+        attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt']},
         include: [
           {model: db.models.user.scope('public'), as: 'user'},
         ],
