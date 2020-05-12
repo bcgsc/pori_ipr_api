@@ -1,6 +1,6 @@
+const HTTP_STATUS = require('http-status-codes');
 const db = require('../../models');
 const MiddlewareNotFound = require('../exceptions/MiddlewareNotFound');
-const MiddlewareQueryFailed = require('../exceptions/MiddlewareQueryFailed');
 
 const logger = require('../../log');
 
@@ -9,9 +9,6 @@ module.exports = async (req, res, next, ident) => {
   const opts = {
     where: {
       ident,
-    },
-    attributes: {
-      exclude: ['deletedAt'],
     },
   };
 
@@ -24,6 +21,6 @@ module.exports = async (req, res, next, ident) => {
     return next();
   } catch (error) {
     logger.error(error);
-    throw new MiddlewareQueryFailed('Unable to find the requested germline report.', req, res, 'failedTrackingStateTaskMiddlewareQuery');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: 'Unable to find the requested germline report.'});
   }
 };

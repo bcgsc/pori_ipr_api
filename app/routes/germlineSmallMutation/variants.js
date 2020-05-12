@@ -3,6 +3,9 @@ const express = require('express');
 
 const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const db = require('../../models');
+const variantSchema = require('../../schemas/germlineSmallMutation/updateVariant');
 
 const router = express.Router({mergeParams: true});
 
@@ -13,10 +16,8 @@ router.route('/:variant')
   /**
    * Get an existing variant
    *
-   * GET /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+   * GET /{gsm_report}/variant/{variant}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    * @urlParam {string} variant - Variant id (ident)
    *
@@ -32,10 +33,8 @@ router.route('/:variant')
   /**
    * Update an existing variant
    *
-   * PUT /patient/{patient}/biopsy/{analysis}/report/{gsm_report}/variant/{variant}
+   * PUT /{gsm_report}/variant/{variant}
    *
-   * @urlParam {string} patientID - Patient unique ID (POGID)
-   * @urlParam {string} biopsy - Biopsy analysis id (biop1)
    * @urlParam {stirng} report - Report UUID
    * @urlParam {string} variant - Variant id (ident)
    *
@@ -48,13 +47,25 @@ router.route('/:variant')
    */
   .put(async (req, res) => {
     // Update Variant details
-    req.variant.patient_history = req.body.patient_history;
-    req.variant.family_history = req.body.family_history;
-    req.variant.hidden = req.body.hidden;
+    try {
+      // Validate input
+      validateAgainstSchema(variantSchema, req.body);
+    } catch (error) {
+      // if input is invalid return 400
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
 
     try {
-      await req.variant.save();
-      return res.json(req.variant);
+      const opt = {
+        where: {
+          ident: req.variant.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+      };
+      await db.models.germline_small_mutation_variant.update(req.body, opt);
+      await req.variant.reload(opt);
+      return res.json(await req.variant);
     } catch (error) {
       logger.error(`Error while trying to update variant ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update variant'});

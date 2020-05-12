@@ -122,7 +122,11 @@ const processImage = (imagePath, width, height, format = 'PNG') => {
 
     // Done executing
     base.on('close', () => {
-      resolve(imageData);
+      if (imageData) {
+        resolve(imageData);
+      } else {
+        reject(new Error(`empty image for path: ${imagePath}`));
+      }
     });
   });
 };

@@ -4,6 +4,8 @@
 const http = require('http');
 const express = require('express'); // Call express
 const bodyParser = require('body-parser'); // Body parsing lib
+const compression = require('compression'); // Compression middleware
+const boolParser = require('express-query-boolean'); // Converts strings with true/false to a boolean
 const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
@@ -75,7 +77,10 @@ const listen = async (port = null) => {
   const app = express(); // define app using express
   logger.info(`starting http server on port ${port || conf.get('web:port')}`);
   const server = http.createServer(app).listen(port || conf.get('web:port'));
-  app.use(bodyParser.json());
+  // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-985 reduce when images are a separate upload
+  app.use(bodyParser.json({limit: '100mb'}));
+  app.use(boolParser());
+  app.use(compression());
   app.use(cors());
   app.use(fileUpload());
   app.use((req, res, next) => {
@@ -85,7 +90,7 @@ const listen = async (port = null) => {
   });
 
   // log http request information
-  // ex. "GET /api/1.0/project 200 username 173.095 ms"
+  // ex. "GET /api/project 200 username 173.095 ms"
   if (logger.levels[logger.level] >= logger.levels.info) {
     app.use(morgan((tokens, req, res) => {
       const token = req.header('Authorization');
@@ -125,7 +130,7 @@ const listen = async (port = null) => {
     await routing.init();
 
     // Expose routing
-    app.use('/api/1.0', routing.getRouter());
+    app.use('/api', routing.getRouter());
     logger.info('Routing Started!');
   } catch (error) {
     logger.error(`Unable to initialize routing ${error}`);

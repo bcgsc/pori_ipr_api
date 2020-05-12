@@ -65,20 +65,13 @@ router.route('/:alteration([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic alterations', code: 'failedGenomicAlterationsIdentifiedRemove'}});
     }
 
-    if (!req.query.cascade || req.query.cascade !== 'true') {
+    if (!req.query.cascade || req.query.cascade !== true) {
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     }
 
     // Check to see if we're propagating this down into Detailed Genomic
     const gene = req.alteration.geneVariant.split(/\s(.+)/);
     const where = {gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), reportId: req.report.id};
-
-    try {
-      await db.models.genomicEventsTherapeutic.destroy({where: {genomicEvent: req.alteration.geneVariant, reportId: req.report.id}});
-    } catch (error) {
-      logger.error(`Unable to remove genomic events therapeutic ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove genomic events therapeutic', code: 'failedGenomicAlterationsIdentifiedRemove'}});
-    }
 
     // Cascade removal of variant through Detailed Genomic Analysis
     try {

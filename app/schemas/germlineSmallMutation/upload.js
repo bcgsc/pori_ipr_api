@@ -20,4 +20,10 @@ schema.properties.rows = {
   items: variant,
 };
 
+schema.properties.project = {
+  type: 'string',
+};
+
+schema.additionalProperties = false;
+
 module.exports = schema;

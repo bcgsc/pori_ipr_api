@@ -36,8 +36,8 @@ router.param('project', async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
-      {as: 'reports', model: db.models.analysis_report.scope('public')},
+      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}, through: {attributes: []}},
+      {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
     ],
   };
 
@@ -59,9 +59,9 @@ router.route('/')
     const access = new Acl(req, res);
     access.read = ['admin'];
 
-    if (access.check(true) && req.query.admin === 'true') {
-      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
+    if (access.check(true) && req.query.admin === true) {
+      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
     }
 
     let projectAccess;
@@ -161,7 +161,7 @@ router.route('/')
     }
   });
 
-router.route('/:ident([A-z0-9-]{36})')
+router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
     // Getting project
     // Check user permission and filter by project
@@ -199,7 +199,7 @@ router.route('/:ident([A-z0-9-]{36})')
     // Attempt project model update
     try {
       await db.models.project.update(updateBody, {
-        where: {ident: req.params.ident},
+        where: {ident: req.project.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
@@ -211,11 +211,11 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Success, get project -- UGH
     const opts = {
-      where: {ident: req.params.ident},
+      where: {ident: req.project.ident},
       attributes: {exclude: ['id']},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
-        {as: 'reports', model: db.models.analysis_report, attributes: {exclude: ['id', 'createdBy_id', 'deletedAt']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
+        {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
       ],
     };
 
@@ -239,7 +239,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     try {
       // Delete project
-      const result = await db.models.project.destroy({where: {ident: req.params.ident}, limit: 1});
+      const result = await db.models.project.destroy({where: {ident: req.project.ident}, limit: 1});
       if (!result) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
       }
@@ -433,7 +433,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
     let report;
     try {
       // Lookup report
-      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}});
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id', 'ident']});
       if (!report) {
         logger.error('Unable to find report');
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report', code: 'failedReportLookupReportProject'}});
@@ -472,7 +472,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
     let report;
     try {
       // Lookup report
-      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: {exclude: ['deletedAt']}});
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id']});
       if (!report) {
         logger.error(`Unable to find report ${req.body.report}`);
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`, code: 'failedReportLookupReportProject'}});

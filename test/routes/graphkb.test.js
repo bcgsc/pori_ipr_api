@@ -9,11 +9,12 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/1.0/graphkb';
+const BASE_URL = '/api/graphkb';
 
 const testAutocompleteWithKeyword = async (request, type, keyword) => {
   const {body} = await request
-    .get(`${BASE_URL}/${type}?keyword=${keyword}`)
+    .post(`${BASE_URL}/${type}`)
+    .send({keyword})
     .auth(username, password)
     .type('json')
     .expect(HTTP_STATUS.OK);
@@ -35,7 +36,7 @@ const testAutocompleteWithKeyword = async (request, type, keyword) => {
 
 const testAutocompleteWithoutKeyword = async (request, type) => {
   const {body} = await request
-    .get(`${BASE_URL}/${type}`)
+    .post(`${BASE_URL}/${type}`)
     .auth(username, password)
     .type('json')
     .expect(HTTP_STATUS.OK);
@@ -91,11 +92,11 @@ describe('/graphkb', () => {
     });
   });
 
-  describe('GET /evidence', () => {
+  describe('GET /evidenceLevel', () => {
     test.todo('with keyword'); // pending API Fix release in GraphKB API 3.3.0
 
     test('without keyword', async () => {
-      await testAutocompleteWithoutKeyword(request, 'evidence');
+      await testAutocompleteWithoutKeyword(request, 'evidenceLevel');
     });
   });
 

@@ -104,6 +104,32 @@ router.route('/')
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry', code: 'failedTherapeuticTargetCreate'}});
     }
+  })
+  .put(async (req, res) => {
+    const {report: {id: reportId}, body} = req;
+
+    try {
+      await db.transaction(async (transaction) => {
+        return Promise.all(body.map((target) => {
+          return db.models.therapeuticTarget.update(
+            {rank: target.rank},
+            {
+              where: {
+                reportId,
+                ident: target.ident,
+              },
+              transaction,
+              hooks: false,
+            }
+          );
+        }));
+      });
+
+      return res.json({updated: true});
+    } catch (error) {
+      logger.error(`Unable to update therapeutic target rank ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to update therapeutic target rank'}});
+    }
   });
 
 module.exports = router;

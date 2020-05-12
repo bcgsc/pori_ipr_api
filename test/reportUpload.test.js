@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'test';
-
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
@@ -33,7 +31,7 @@ describe('Tests for uploading a report and all of its components', () => {
   beforeAll(async () => {
     // create report
     let res = await request
-      .post('/api/1.0/reports')
+      .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
       .type('json')
@@ -45,13 +43,14 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // check that the report was created
     res = await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(200);
 
-    // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.reportId;
+    // get report id from doing a db find because it's not returned by the API
+    const result = await db.models.analysis_report.findOne({where: {ident: reportIdent}, attributes: ['id']});
+    reportId = result.id;
   }, LONGER_TIMEOUT);
 
   // Test that all components were created
@@ -80,6 +79,17 @@ describe('Tests for uploading a report and all of its components', () => {
     });
   }, LONGER_TIMEOUT);
 
+  test('genes entries were created from variant and gene rows', async () => {
+    const genes = await db.models.genes.findAll({where: {reportId}});
+    expect(genes).toHaveProperty('length', 5);
+
+    // gene flags should be added from genes section if given
+    expect(genes).toEqual(expect.arrayContaining([expect.objectContaining({
+      name: 'ZFP36L2',
+      oncogene: true,
+    })]));
+  });
+
   // delete report
   afterAll(async () => {
     // delete newly created report and all of it's components
@@ -88,10 +98,27 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(404);
+  }, LONGER_TIMEOUT);
+});
+
+// Tests for uploading a report and all of its components
+describe('Test for uploading a report with empty image data', () => {
+  test('Upload fails on empty image data', async () => {
+    // create report
+    const emptyImageMockReportData = mockReportData;
+    emptyImageMockReportData.images[0].path = '/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors_empty.png';
+    const res = await request
+      .post('/api/reports')
+      .auth(username, password)
+      .send(emptyImageMockReportData)
+      .type('json')
+      .expect(400);
+
+    expect(typeof res.body).toBe('object');
   }, LONGER_TIMEOUT);
 });
 

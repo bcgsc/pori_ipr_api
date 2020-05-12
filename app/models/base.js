@@ -1,6 +1,5 @@
 const Sq = require('sequelize');
 
-
 const DEFAULT_MAPPING_COLUMNS = {
   id: {
     type: Sq.INTEGER,
@@ -30,7 +29,7 @@ const DEFAULT_COLUMNS = {
     type: Sq.UUID,
     unique: false,
     defaultValue: Sq.UUIDV4,
-    notNull: true,
+    allowNull: false,
   },
   ...DEFAULT_MAPPING_COLUMNS,
 };
@@ -60,10 +59,32 @@ const DEFAULT_OPTIONS = {
     beforeUpdate: (instance, options = {}) => {
       const {id, ...content} = instance._previousDataValues;
 
-      return options.model.create({
+      return instance.constructor.create({
         ...content, deletedAt: new Date().getTime(),
       }, {
         silent: true,
+        transaction: options.transaction,
+      });
+    },
+  },
+};
+
+const DEFAULT_REPORT_OPTIONS = {
+  ...DEFAULT_OPTIONS,
+  hooks: {
+    ...DEFAULT_OPTIONS.hooks,
+
+    afterUpdate: (instance, options = {}) => {
+      // remove reviewer signature from report
+      return instance.sequelize.models.analystComments.update({
+        reviewerId: null,
+        reviewerSignedAt: null,
+      }, {
+        where: {
+          reportId: (instance.constructor.name === 'analysis_report') ? instance.id : instance.reportId,
+        },
+        individualHooks: true,
+        paranoid: true,
         transaction: options.transaction,
       });
     },
@@ -75,4 +96,5 @@ module.exports = {
   DEFAULT_MAPPING_COLUMNS,
   DEFAULT_OPTIONS,
   DEFAULT_COLUMNS,
+  DEFAULT_REPORT_OPTIONS,
 };

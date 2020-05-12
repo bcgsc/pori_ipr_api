@@ -1,19 +1,36 @@
-// app/routes/genomic/somaticMutation.js
-let express = require('express'),
-  router = express.Router({mergeParams: true}),
-  db = require(process.cwd() + '/app/models'),
-  tcga_v8 = require(process.cwd() + '/database/exp_matrix.v8.json');
-  tcga_v9 = require(process.cwd() + '/database/exp_matrix.v9.json');
+const HTTP_STATUS = require('http-status-codes');
+const express = require('express');
 
-// Handle requests for alterations
+const router = express.Router({mergeParams: true});
+const db = require('../../models');
+const logger = require('../../log');
+
+const tcgaV8 = require('../../../database/exp_matrix.v8.json');
+const tcgaV9 = require('../../../database/exp_matrix.v9.json');
+
+router.route('/')
+  .get(async (req, res) => {
+    try {
+      const result = await db.models.analysis_report.findOne({
+        where: {ident: req.report.ident},
+        attributes: ['sampleInfo', 'seqQC', 'config'],
+      });
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Unable to find report ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to find report'}});
+    }
+  });
+
 router.route('/tcga')
-  .get((req,res,next) => {
-    
-    if(req.report.expression_matrix === 'v8') return res.json(tcga_v8);
-    if(req.report.expression_matrix === 'v9') return res.json(tcga_v9);
-    
-    res.json([]);
-
+  .get((req, res) => {
+    if (req.report.expression_matrix === 'v8') {
+      return res.json(tcgaV8);
+    }
+    if (req.report.expression_matrix === 'v9') {
+      return res.json(tcgaV9);
+    }
+    return res.json([]);
   });
 
 module.exports = router;

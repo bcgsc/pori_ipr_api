@@ -166,15 +166,21 @@ router.route('/:group([A-z0-9-]{36})')
     }
 
     if (user) {
-      req.group.owner_id = user.id;
+      req.body.owner_id = user.id;
     }
 
     // Update Group
-    req.group.name = req.body.name;
     try {
-      const save = await req.group.save();
-      await save.reload();
-      return res.json(save);
+      await db.models.userGroup.update(req.body, {
+        where: {
+          ident: req.group.ident,
+        },
+        individualHooks: true,
+        paranoid: true,
+      });
+
+      await req.group.reload();
+      return res.json(req.group);
     } catch (error) {
       logger.error(`SQL Error trying to update group ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update the specified group', code: 'failedGroupUpdateQuery'}});

@@ -1,6 +1,7 @@
 const Sq = require('sequelize');
 const nconf = require('../config');
 const logger = require('../log'); // Load logging library
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING, KB_PIVOT_COLUMN} = require('../constants');
 
 // Load database
 const dbSettings = nconf.get('database');
@@ -21,11 +22,6 @@ const sequelize = new Sq(
 // Import Application Models
 const user = sequelize.import('./user/user');
 
-const userToken = sequelize.import('./user/userToken');
-
-user.hasMany(userToken, {as: 'tokens', foreignKey: 'user_id'});
-userToken.belongsTo(user, {as: 'user', foreignKey: 'user_id', targetKey: 'id'});
-
 // Projects
 const project = sequelize.import('./project/project');
 const userProject = sequelize.import('./project/user_project');
@@ -43,10 +39,10 @@ const analysisReports = sequelize.import('./reports/analysis_reports');
 const analysisReportsUsers = sequelize.import('./analysis_report_user');
 
 project.belongsToMany(analysisReports, {
-  as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'report_id', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 analysisReports.belongsToMany(project, {
-  as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'report_id', otherKey: 'project_id', onDelete: 'CASCADE',
+  as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'reportId', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
 analysisReports.hasMany(analysisReportsUsers, {
@@ -81,6 +77,15 @@ userGroup.belongsTo(user, {
   as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL',
 });
 
+// IMPORTANT must be done before the variant models are defined
+const genes = sequelize.import('./reports/genes');
+genes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(genes, {
+  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 const imageData = sequelize.import('./reports/imageData');
 imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
@@ -99,7 +104,6 @@ summary.tumourAnalysis = sequelize.import('./reports/genomic/summary/tumourAnaly
 summary.mutationSummary = sequelize.import('./reports/genomic/summary/mutationSummary');
 summary.variantCounts = sequelize.import('./reports/genomic/summary/variantCounts');
 summary.genomicAlterationsIdentified = sequelize.import('./reports/genomic/summary/genomicAlterationsIdentified');
-summary.genomicEventsTherapeutic = sequelize.import('./reports/genomic/summary/genomicEventsTherapeutic');
 summary.analystComments = sequelize.import('./reports/genomic/summary/analystComments');
 summary.pathwayAnalysis = sequelize.import('./reports/genomic/summary/pathwayAnalysis');
 summary.probeResults = sequelize.import('./reports/probeResults');
@@ -114,9 +118,6 @@ analysisReports.belongsTo(user, {
 });
 analysisReports.hasOne(summary.tumourAnalysis, {
   as: 'tumourAnalysis', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(summary.genomicEventsTherapeutic, {
-  as: 'genomicEventsTherapeutic', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasOne(summary.variantCounts, {
   as: 'variantCounts', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -143,9 +144,6 @@ analysisReports.hasMany(summary.mutationSummaryv2, {
   as: 'mutationSummaryv2', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-summary.genomicEventsTherapeutic.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 summary.mutationSummary.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -186,44 +184,33 @@ summary.analystComments.belongsTo(user, {
   as: 'reviewerSignature', foreignKey: 'reviewerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
-// DetailedGenomicAnalysis
-const alterations = sequelize.import('./reports/genomic/detailedGenomicAnalysis/alterations');
-
-alterations.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(alterations, {
-  as: 'alterations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-
 // Somatic Mutations
-const somaticMutations = {};
-somaticMutations.smallMutations = sequelize.import('./reports/genomic/somaticMutations/smallMutations');
-somaticMutations.mutationSignature = sequelize.import('./reports/genomic/somaticMutations/mutationSignature');
+const smallMutations = sequelize.import('./reports/smallMutations');
+const mutationSignature = sequelize.import('./reports/mutationSignature');
 
-somaticMutations.smallMutations.belongsTo(analysisReports, {
+smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-somaticMutations.mutationSignature.belongsTo(analysisReports, {
+mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.smallMutations, {
+analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(somaticMutations.mutationSignature, {
+analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Copy Number Analysis
-const copyNumberAnalyses = {};
-copyNumberAnalyses.cnv = sequelize.import('./reports/genomic/copyNumberAnalysis/cnv');
+const copyVariants = sequelize.import('./reports/copyVariants');
 
-copyNumberAnalyses.cnv.belongsTo(analysisReports, {
+copyVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(copyNumberAnalyses.cnv, {
-  as: 'cnv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(copyVariants, {
+  as: 'copyVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
+
 
 // MAVIS Summary
 const mavis = sequelize.import('./reports/genomic/mavis/mavis');
@@ -235,33 +222,128 @@ analysisReports.hasMany(mavis, {
 });
 
 // Structural Variation
-const structuralVariation = {};
-structuralVariation.sv = sequelize.import('./reports/genomic/structuralVariation/sv');
+const structuralVariants = sequelize.import('./reports/structuralVariants');
 
-structuralVariation.sv.belongsTo(analysisReports, {
+structuralVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(structuralVariation.sv, {
-  as: 'sv', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(structuralVariants, {
+  as: 'structuralVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-// Structural Variation
-const expressionAnalysis = {};
-expressionAnalysis.outlier = sequelize.import('./reports/genomic/expressionAnalysis/outlier');
-expressionAnalysis.drugTarget = sequelize.import('./reports/genomic/expressionAnalysis/drugTarget');
 
-expressionAnalysis.outlier.belongsTo(analysisReports, {
+// expression variants
+const expressionVariants = sequelize.import('./reports/expressionVariants');
+
+expressionVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-expressionAnalysis.drugTarget.belongsTo(analysisReports, {
+analysisReports.hasMany(expressionVariants, {
+  as: 'expressionVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
+
+// This adds the gene to variant relationships to the table which have a foreign key to the genes table
+for (const name of GENE_LINKED_VARIANT_MODELS) {
+  const variantModel = sequelize.models[name];
+  const extendedScope = {
+    attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+    include: [],
+  };
+
+  if (name === 'structuralVariants') {
+    // sequelize can't handle union-ing these so they require separate alias names
+    variantModel.belongsTo(genes, {
+      as: 'gene1', foreignKey: 'gene1Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+    });
+    variantModel.belongsTo(genes, {
+      as: 'gene2', foreignKey: 'gene2Id', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: `${name}1`, foreignKey: 'gene1Id', onDelete: 'CASCADE', constraints: true,
+    });
+    genes.hasMany(variantModel, {
+      as: `${name}2`, foreignKey: 'gene2Id', onDelete: 'CASCADE', constraints: true,
+    });
+    extendedScope.attributes.exclude.push(...['gene1Id', 'gene2Id']);
+    extendedScope.include = [
+      {
+        model: sequelize.models.genes.scope('minimal'),
+        foreignKey: 'gene1Id',
+        as: 'gene1',
+        include: [],
+      },
+      {
+        model: sequelize.models.genes.scope('minimal'),
+        foreignKey: 'gene2Id',
+        as: 'gene2',
+        include: [],
+      },
+    ];
+  } else {
+    // Link variants to the gene model
+    variantModel.belongsTo(genes, {
+      as: 'gene', foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+    });
+    if (['expressionVariants', 'copyVariants'].includes(name)) {
+      genes.hasOne(variantModel, {
+        as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+      });
+    } else {
+      genes.hasMany(variantModel, {
+        as: name, foreignKey: 'geneId', onDelete: 'CASCADE', constraints: true,
+      });
+    }
+    extendedScope.attributes.exclude.push(...['geneId']);
+    extendedScope.include = [
+      {
+        model: sequelize.models.genes.scope('minimal'),
+        foreignKey: 'geneId',
+        as: 'gene',
+        include: [],
+      },
+    ];
+  }
+
+  // add the linked scope
+  for (const link of ['expressionVariants', 'copyVariants']) {
+    if (link !== name) {
+      extendedScope.include.forEach((geneInclude) => {
+        geneInclude.include.push({
+          model: sequelize.models[link].scope('minimal'),
+          foreignKey: 'geneId',
+          as: link,
+        });
+      });
+    }
+  }
+  variantModel.addScope('extended', extendedScope);
+}
+
+// IMPORTANT: Must be defined after variant models so that the includes can be found
+const kbMatches = sequelize.import('./reports/kbMatches');
+
+kbMatches.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(expressionAnalysis.outlier, {
-  as: 'outlier', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(kbMatches, {
+  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(expressionAnalysis.drugTarget, {
-  as: 'drugTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
+
+for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
+  sequelize.models[modelName].hasMany(kbMatches, {
+    foreignKey: 'variantId',
+    constraints: false,
+    scope: {
+      [KB_PIVOT_COLUMN]: pivotValue,
+    },
+  });
+  kbMatches.belongsTo(sequelize.models[modelName], {
+    foreignKey: 'variantId',
+    constraints: false,
+    as: modelName,
+  });
+}
 
 // Presentation Data
 const presentation = {};

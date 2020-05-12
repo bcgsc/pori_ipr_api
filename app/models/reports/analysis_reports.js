@@ -1,6 +1,5 @@
 const Sq = require('sequelize');
-
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('analysis_report', {
@@ -77,14 +76,26 @@ module.exports = (sequelize) => {
       type: Sq.STRING,
       defaultValue: 'v8',
     },
+    kbUrl: {
+      name: 'kbUrl',
+      field: 'kb_url',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
+    kbDiseaseMatch: {
+      name: 'kbDiseaseMatch',
+      field: 'kb_disease_match',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
   },
   {
-    ...DEFAULT_OPTIONS,
-    tableName: 'pog_analysis_reports',
+    ...DEFAULT_REPORT_OPTIONS,
+    tableName: 'reports',
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'createdBy_id', 'deletedAt'],
+          exclude: ['id', 'config', 'createdBy_id', 'deletedAt'],
         },
       },
       extended: {
@@ -94,8 +105,14 @@ module.exports = (sequelize) => {
       },
     },
     hooks: {
-      ...DEFAULT_OPTIONS.hooks,
-      afterDestroy: async (instance) => {
+      ...DEFAULT_REPORT_OPTIONS.hooks,
+      // NOTE: This hook only gets triggered on instance.destroy or
+      // when individualHooks is set to true
+      afterDestroy: async (instance, options = {force: false}) => {
+        if (options.force === true) {
+          // when hard deleting a report, also delete the "updated" versions of the report
+          return sequelize.models.analysis_report.destroy({where: {ident: instance.ident}, force: true});
+        }
         // get associations from model
         const {
           ReportUserFilter, createdBy, projects, users, ...associations
