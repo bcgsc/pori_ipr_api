@@ -166,7 +166,9 @@
     "genes": [
         {
             "name": "ZFP36L2",
-            "oncogene": true
+            "oncogene": true,
+            "therapeuticAssociated": true,
+            "knownSmallMutation": true
         }
     ],
     "smallMutations": [
