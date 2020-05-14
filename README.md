@@ -252,10 +252,6 @@ pm2 start current/pm2.config.js --env production
 │   │
 │   ├── libs                            # Application specific libraries
 │   │
-│   ├── exporters                       # Exporters
-│   │                                   Libraries for exporting data from IPR to csv or tsv files.
-│   │
-│   │
 │   ├── middleware                      # Middleware
 │   │                                   Location for all globally required middleware definitions.
 │   │

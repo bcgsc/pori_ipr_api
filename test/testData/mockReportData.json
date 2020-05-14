@@ -166,7 +166,9 @@
     "genes": [
         {
             "name": "ZFP36L2",
-            "oncogene": true
+            "oncogene": true,
+            "therapeuticAssociated": true,
+            "knownSmallMutation": true
         }
     ],
     "smallMutations": [
@@ -228,7 +230,8 @@
             "ctermGene": "FN1(UPLOADPAT01)",
             "ntermGene": "FN1(UPLOADPAT01)",
             "ctermTranscript": "UPLOADPAT01",
-            "ntermTranscript": "UPLOADPAT01"
+            "ntermTranscript": "UPLOADPAT01",
+            "highQuality": true
         }
     ],
     "expressionVariants": [
