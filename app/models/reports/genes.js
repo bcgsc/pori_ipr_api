@@ -6,11 +6,11 @@ module.exports = (sequelize) => {
   return sequelize.define('genes', {
     ...DEFAULT_COLUMNS,
     reportId: {
+      name: 'reportId',
+      field: 'report_id',
       type: Sq.INTEGER,
       unique: false,
       allowNull: false,
-      field: 'report_id',
-      name: 'reportId',
       references: {
         model: 'reports',
         key: 'id',
@@ -21,10 +21,10 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     tumourSuppressor: {
+      name: 'tumourSuppressor',
+      field: 'tumour_suppressor',
       type: Sq.BOOLEAN,
       defaultValue: false,
-      field: 'tumour_suppressor',
-      name: 'tumourSuppressor',
     },
     oncogene: {
       type: Sq.BOOLEAN,
@@ -45,6 +45,18 @@ module.exports = (sequelize) => {
     knownFusionPartner: {
       name: 'knownFusionPartner',
       field: 'known_fusion_partner',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+    },
+    therapeuticAssociated: {
+      name: 'therapeuticAssociated',
+      field: 'therapeutic_associated',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+    },
+    knownSmallMutation: {
+      name: 'knownSmallMutation',
+      field: 'known_small_mutation',
       type: Sq.BOOLEAN,
       defaultValue: false,
     },
