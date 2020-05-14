@@ -94,9 +94,9 @@ module.exports = (sequelize) => {
       type: Sq.BOOLEAN,
       defaultValue: false,
     },
-    lowQuality: {
-      name: 'lowQuality',
-      field: 'low_quality',
+    highQuality: {
+      name: 'highQuality',
+      field: 'high_quality',
       type: Sq.BOOLEAN,
       defaultValue: null,
     },
