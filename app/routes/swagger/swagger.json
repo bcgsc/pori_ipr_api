@@ -2662,36 +2662,6 @@
       }
     },
     "schemas": {
-      "NewUser": {
-        "type": "object",
-        "description": "New user to be added to the database",
-        "properties": {
-          "username": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "description": "The location authentication details are stored in.",
-            "enum": [
-              "bcgsc",
-              "local"
-            ]
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          }
-        }
-      },
       "Group": {
         "type": "object",
         "properties": {
