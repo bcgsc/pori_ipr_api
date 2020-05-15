@@ -404,7 +404,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Group"
+                    "$ref": "#/components/schemas/group"
                   }
                 }
               }
@@ -459,7 +459,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Group"
+                  "$ref": "#/components/schemas/group"
                 }
               }
             }
@@ -503,7 +503,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Group"
+                  "$ref": "#/components/schemas/group"
                 }
               }
             }
@@ -568,7 +568,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Group"
+                  "$ref": "#/components/schemas/group"
                 }
               }
             }
@@ -2662,38 +2662,6 @@
       }
     },
     "schemas": {
-      "Group": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "int"
-          },
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "name": {
-            "type": "string"
-          },
-          "owner_id": {
-            "type": "int"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "users": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/user"
-            }
-          },
-          "owner": {
-            "$ref": "#/components/schemas/user"
-          }
-        }
-      },
       "POG": {
         "allOf": [
           {
