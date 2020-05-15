@@ -44,6 +44,11 @@ router.route('/')
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new analysis comments', code: 'failedAnalystCommentCreate'}});
       }
     } else {
+      // On comment update
+      // remove reviewer signature
+      req.body.reviewerId = null;
+      req.body.reviewerSignedAt = null;
+
       // Update DB Version for Entry
       try {
         await db.models.analystComments.update(req.body, {

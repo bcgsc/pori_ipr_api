@@ -48,8 +48,9 @@ describe('Tests for uploading a report and all of its components', () => {
       .type('json')
       .expect(200);
 
-    // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.reportId;
+    // get report id from doing a db find because it's not returned by the API
+    const result = await db.models.analysis_report.findOne({where: {ident: reportIdent}, attributes: ['id']});
+    reportId = result.id;
   }, LONGER_TIMEOUT);
 
   // Test that all components were created

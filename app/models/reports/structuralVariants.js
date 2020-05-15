@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('structuralVariants', {
@@ -57,7 +57,7 @@ module.exports = (sequelize) => {
       defaultValue: null,
       jsonSchema: {
         description: 'SVG image of this fusion variant',
-        schema: {format: 'svg', type: 'string'}
+        schema: {format: 'svg', type: 'string'},
       },
     },
     svgTitle: {
@@ -89,13 +89,19 @@ module.exports = (sequelize) => {
       defaultValue: null,
     },
     omicSupport: {
-      type: Sq.BOOLEAN,
-      field: 'omic_support',
       name: 'omicSupport',
+      field: 'omic_support',
+      type: Sq.BOOLEAN,
       defaultValue: false,
     },
+    highQuality: {
+      name: 'highQuality',
+      field: 'high_quality',
+      type: Sq.BOOLEAN,
+      defaultValue: null,
+    },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_structural_variants',
     scopes: {
       public: {

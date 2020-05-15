@@ -166,7 +166,9 @@
     "genes": [
         {
             "name": "ZFP36L2",
-            "oncogene": true
+            "oncogene": true,
+            "therapeuticAssociated": true,
+            "knownSmallMutation": true
         }
     ],
     "smallMutations": [
@@ -201,7 +203,8 @@
             "chromosomeBand": "2p24.3",
             "start": 16017349,
             "end": 16108192,
-            "size": 0.09
+            "size": 0.09,
+            "kbCategory": "Test Category"
         }
     ],
     "mavis": [
@@ -227,7 +230,8 @@
             "ctermGene": "FN1(UPLOADPAT01)",
             "ntermGene": "FN1(UPLOADPAT01)",
             "ctermTranscript": "UPLOADPAT01",
-            "ntermTranscript": "UPLOADPAT01"
+            "ntermTranscript": "UPLOADPAT01",
+            "highQuality": true
         }
     ],
     "expressionVariants": [
@@ -238,7 +242,7 @@
             "rnaReads": null,
             "rpkm": 1889.11,
             "foldChange": 3.58,
-            "expression_class": "outlier_high",
+            "expressionState": "outlier_high",
             "tcgaPerc": 88,
             "tcgaPercCol": "tcga_comp_TARGET_RHD_percentile",
             "tcgakIQR": 4.21,
@@ -262,7 +266,8 @@
             "gtexkIQR": 16.82,
             "gtexAvgPerc": 100,
             "gtexAvgFC": 16,
-            "gtexAvgkIQR": 16
+            "gtexAvgkIQR": 16,
+            "kbCategory": "Test Category"
         }
     ],
     "probe_test_information": [

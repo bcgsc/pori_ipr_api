@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
   return sequelize.define('expressionVariants', {
@@ -35,7 +35,9 @@ module.exports = (sequelize) => {
     foldChange: {
       type: Sq.FLOAT,
     },
-    expression_class: {
+    expressionState: {
+      name: 'expressionState',
+      field: 'expression_state',
       type: Sq.TEXT,
       defaultValue: null,
     },
@@ -134,8 +136,13 @@ module.exports = (sequelize) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
   }, {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_expression_variants',
     scopes: {
       public: {
@@ -145,7 +152,7 @@ module.exports = (sequelize) => {
         ],
       },
       minimal: {
-        attributes: ['expression_class', 'rpkm', 'tcgaPerc', 'foldChange'],
+        attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
       },
     },
   });
