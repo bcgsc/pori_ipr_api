@@ -64,55 +64,20 @@
     "kbVersion": "v2.8.3",
     "state": "ready",
     "expression_matrix": "v9",
-    "pog": {
-        "POGID": "UPLOADPAT01",
-        "nonPOG": false,
-        "project": "TEST",
-        "alternate_identifier": "UPLOADPATIENT01",
-        "age_of_consent": 20
-    },
-    "analysis": {
-        "libraries": {
-            "normal": "TEST123",
-            "tumour": "TEST123",
-            "transcriptome": "TEST123"
-        },
-        "notes": "This is a test analysis for the test upload",
-        "clinical_biopsy": "clinspec_1",
-        "analysis_biopsy": "biop1",
-        "disease": "Glioblastoma Multiforme",
-        "biopsy_notes": "Fake biopsy notes for report upload test",
-        "priority": "1",
-        "comparator_disease": {
-            "tcga": [
-                "GBM",
-                "LGG",
-                "PED_MB_SHH"
-            ],
-            "gtex_bioposy_site": "Cerebellum",
-            "gtex_primary_site": "Cerebellum"
-        },
-        "biopsy_site": "resection of brain (primary)",
-        "biopsy_type": null,
-        "biopsy_date": "2020-01-01T20:20:00+00:00",
-        "date_analysis": null,
-        "date_presentation": null,
-        "threeLetterCode": "SAR",
-        "physician": [
-            {
-                "last_name": "TEST",
-                "first_name": "UPLOAD"
-            }
-        ],
-        "pediatric_id": null
-    },
+    "patientId": "UPLOADPAT01",
+    "ageOfConsent": 20,
+    "alternateIdentifier": "UPLOADPATIENT01",
+    "biopsyName": "biop1",
+    "biopsyDate": "2020-01-01T20:20:00+00:00",
+    "presentationDate": null,
+    "kbUrl": "https://ipr.bcgsc.ca/testurl",
+    "kbDiseaseMatch": "Colorectal Cancer",
     "patientInformation": {
         "physician": "Dr. Test Upload",
         "gender": "Male",
         "age": 20,
-        "POGID": "UPLOADPAT01",
         "caseType": "Adult",
-        "tumourType": "pancreatic cancer",
+        "diagnosis": "pancreatic cancer",
         "reportDate": "2020/01/01",
         "biopsySite": "liver",
         "tumourSample": "Metastatic",
@@ -127,16 +92,6 @@
         "diseaseExpressionComparator": "TARGET_RHD",
         "tcgaColor": "0xC0C0C0"
     },
-    "genomicEventsTherapeutic": [
-        {
-            "reportType": "genomic",
-            "genomicEvent": "MYCN (amplification)",
-            "approvedThisCancerType": null,
-            "approvedOtherCancerType": null,
-            "emergingPreclinicalEvidence": null,
-            "comments": null
-        }
-    ],
     "variantCounts": {
         "smallMutations": 2,
         "CNVs": 12,
@@ -190,49 +145,42 @@
             "sv_percentile": 60
         }
     ],
-    "alterations": [
+    "kbMatches": [
         {
-            "reportType": "genomic",
-            "alterationType": "unknown",
-            "newEntry": true,
-            "gene": "ZNF703",
-            "variant": "p.A514del",
+            "category": "unknown",
+            "variantType": "exp",
+            "variant": "hash12345678",
             "kbVariant": "protein increased expression",
             "disease": "colorectal cancer",
-            "effect": "not specified",
-            "association": "unfavourable",
-            "therapeuticContext": "lower overall survival",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "expression_tissue_fc": "Neutral",
-            "expression_cancer_percentile": "Mid",
-            "copyNumber": "Neutral",
             "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
-            "LOHRegion": "No",
-            "zygosity": "sub",
-            "evidence": "reported",
-            "matched_cancer": "False",
-            "pmid_ref": "yes",
-            "kb_entry_type": "prognostic",
-            "kb_entry_key": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
+        }
+    ],
+    "genes": [
+        {
+            "name": "ZFP36L2",
+            "oncogene": true,
+            "therapeuticAssociated": true,
+            "knownSmallMutation": true
         }
     ],
     "smallMutations": [
         {
-            "mutationType": "unknown",
             "gene": "ZFP36L2",
             "transcript": "ENST00000282388",
             "proteinChange": "p.Q401del",
             "location": "2:43451739",
             "refAlt": "CCTG>C",
             "zygosity": "sub [0/3]",
-            "ploidyCorrCpChange": "+1_int",
-            "lohState": "HET",
             "tumourReads": "583/4",
-            "RNAReads": "400/15",
-            "expressionRpkm": 28.3,
-            "foldChange": -3.92,
-            "TCGAPerc": 32
+            "rnaReads": "400/15"
         }
     ],
     "mutationSignature": [
@@ -246,9 +194,8 @@
             "cancerTypes": "stomach cancer"
         }
     ],
-    "cnv": [
+    "copyVariants": [
         {
-            "cnvVariant": "clinical",
             "gene": "MYCN",
             "ploidyCorrCpChange": 2,
             "lohState": "HET",
@@ -257,9 +204,7 @@
             "start": 16017349,
             "end": 16108192,
             "size": 0.09,
-            "expressionRpkm": 0.14,
-            "foldChange": -1.41,
-            "tcgaPerc": 53
+            "kbCategory": "Test Category"
         }
     ],
     "mavis": [
@@ -268,41 +213,36 @@
             "summary": "{\"#tracking_id\":\"transabyss-135.1;transabyss-135.2\",\"library\":\"UPLOADPAT01\",\"annotation_id\":\"PyheRHP5qMYxDKZqnQeUu7-v3-a1\",\"product_id\":\"UPLOADPAT01_transcriptome_PyheRHP5qMYxDKZqnQeUu7-v3-a1_None_None_None\",\"event_type\":\"translocation\",\"gene1\":\"None\",\"gene1_direction\":\"None\",\"gene2\":\"TESTVALUE001\",\"gene2_direction\":\"3\",\"gene1_aliases\":\"None\",\"gene2_aliases\":\"NUDT4\",\"gene_product_type\":\"None\",\"transcript1\":\"1:145139602_145139602+\",\"transcript2\":\"TESTVALUE02\",\"fusion_splicing_pattern\":\"None\",\"fusion_cdna_coding_start\":\"None\",\"fusion_cdna_coding_end\":\"None\",\"fusion_mapped_domains\":\"None\",\"fusion_protein_hgvs\":\"None\",\"annotation_figure\":\"None\",\"genes_encompassed\":\"\",\"break1_chromosome\":\"1\",\"break1_position_start\":\"145139602\",\"break1_position_end\":\"145139602\",\"break1_orientation\":\"L\",\"exon_last_5prime\":\"None\",\"exon_first_3prime\":\"None\",\"break1_strand\":\"?\",\"break2_chromosome\":\"12\",\"break2_position_start\":\"93771723\",\"break2_position_end\":\"93771723\",\"break2_orientation\":\"R\",\"break2_strand\":\"?\",\"protocol\":\"transcriptome\",\"tools\":\"transabyss\",\"call_method\":\"split reads\",\"break1_homologous_seq\":\"TGCTGCTGCTC\",\"break1_split_reads\":\"30\",\"break2_homologous_seq\":\"\",\"break2_split_reads\":\"2\",\"contig_alignment_score\":\"None\",\"contig_remapped_reads\":\"None\",\"contig_seq\":\"None\",\"spanning_reads\":\"0\",\"flanking_pairs\":\"16\",\"linking_split_reads\":\"7\",\"untemplated_seq\":\"\",\"cdna_synon\":\"None\",\"protein_synon\":\"None\",\"supplementary_call\":\"False\",\"net_size\":\"0-0\",\"assumed_untemplated\":\"False\",\"P02376_diseased_genome\":\"no genomic support\",\"P02387_normal_genome\":\"somatic\",\"P02389_diseased_transcriptome\":\"Not Applicable\",\"dgv\":\"None\"}"
         }
     ],
-    "sv": [
+    "structuralVariants": [
         {
-            "svVariant": "uncharacterized",
-            "genes": "FN1::FN1",
-            "exons": "e39:e37",
+            "gene1": "FN1",
+            "gene2": "FN1",
+            "exon1": 39,
+            "exon2": 37,
             "breakpoint": "2:216238066|2:216240359",
             "eventType": "duplication",
             "detectedIn": "DNA",
             "conventionalName": "d(2)(q35)",
-            "rpkm": "811.3/811.3",
-            "foldChange": "15.98/15.98",
-            "tcgaPerc": "98/98",
-            "svg": null,
+            "svg": "<svg></svg>",
             "svgTitle": "Figure 1. Putative Fusion-duplication event. The original transcript UPLOADPAT01 from the gene UPLOADPAT01 on the reverse strand is drawn twice above. The 5' portion that contributes to the fusion gene is shown top left, the 3' portion is drawn top right. Breakpoints are at 2:216238066 and 2:216240359. Exons are drawn to scale relative to other exons in the same drawing. Introns are scaled to make up approximately 1/4th of the final drawing. This is predicted to be an OUT-of-frame fusion. Domain(s) featured in the above figure(s) are labelled by their various external identifiers as follows: FN_type2_col-bd(UPLOADPAT01), Fibronectin_type1(UPLOADPAT01), Fibronectin_type3(UPLOADPAT01).",
             "name": "FN1::FN1",
             "frame": "OUT",
             "ctermGene": "FN1(UPLOADPAT01)",
             "ntermGene": "FN1(UPLOADPAT01)",
             "ctermTranscript": "UPLOADPAT01",
-            "ntermTranscript": "UPLOADPAT01"
+            "ntermTranscript": "UPLOADPAT01",
+            "highQuality": true
         }
     ],
-    "outlier": [
+    "expressionVariants": [
         {
-            "expType": "rna",
-            "outlierType": "upreg_onco",
+            "key": "hash12345678",
             "gene": "MALAT1",
             "location": "11:65265233-65273940",
-            "copyChange": "1",
-            "lohState": "HET",
-            "cnvState": "Gain",
             "rnaReads": null,
             "rpkm": 1889.11,
             "foldChange": 3.58,
-            "expression_class": "outlier_high",
+            "expressionState": "outlier_high",
             "tcgaPerc": 88,
             "tcgaPercCol": "tcga_comp_TARGET_RHD_percentile",
             "tcgakIQR": 4.21,
@@ -326,21 +266,8 @@
             "gtexkIQR": 16.82,
             "gtexAvgPerc": 100,
             "gtexAvgFC": 16,
-            "gtexAvgkIQR": 16
-        }
-    ],
-    "drugTarget": [
-        {
-            "gene": "DDR1",
-            "copy": 3,
-            "lohRegion": "HET",
-            "foldChange": 1.85,
-            "tcgaPerc": 100,
-            "drugOptions": "IMATINIB",
-            "kIQR": 3.65,
-            "kIQRColumn": "tcga_comp_TARGET_RHD_kIQR",
-            "kIQRNormal": 3.7,
-            "kIQRNormalColumn": "tcga_comp_TARGET_RHD_norm_kIQR"
+            "gtexAvgkIQR": 16,
+            "kbCategory": "Test Category"
         }
     ],
     "probe_test_information": [

@@ -14,19 +14,6 @@ module.exports = async (req, res, next) => {
   // Get Authorization Header
   let token = req.header('Authorization') || '';
 
-  // Report loader case for permanent token lookup
-  const respToken = await db.models.userToken.findOne({
-    where: {user_id: 23},
-    attributes: {
-      exclude: ['id'],
-      include: [['user_id', 'id']],
-    },
-  });
-  if (respToken.token === token) {
-    req.user = respToken;
-    return next();
-  }
-
   // Check for basic authorization header
   if (token.includes('Basic')) {
     let credentials;

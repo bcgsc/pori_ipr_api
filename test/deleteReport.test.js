@@ -30,7 +30,7 @@ describe('Tests for deleting a report and all of its components', () => {
   let report;
   // get analysis report associations
   const {
-    pog, analysis, ReportUserFilter, createdBy, ...associations
+    ReportUserFilter, createdBy, projects, users, ...associations
   } = db.models.analysis_report.associations;
 
   beforeAll(async () => {
@@ -47,7 +47,7 @@ describe('Tests for deleting a report and all of its components', () => {
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
       modelNames.push(model);
-      promises.push(db.models[model].findAll({where: {report_id: report.id}}));
+      promises.push(db.models[model].findAll({where: {reportId: report.id}}));
     });
 
     const results = await Promise.all(promises);
@@ -70,7 +70,7 @@ describe('Tests for deleting a report and all of its components', () => {
   test('Test paranoid report delete', async () => {
     // delete the report
     await request
-      .delete(`/api/1.0/reports/${report.ident}`)
+      .delete(`/api/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(204);
@@ -78,7 +78,7 @@ describe('Tests for deleting a report and all of its components', () => {
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${report.ident}`)
+      .get(`/api/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(404);
@@ -87,7 +87,7 @@ describe('Tests for deleting a report and all of its components', () => {
     // verify report components are also soft deleted
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      const results = await db.models[model].findAll({where: {report_id: report.id}});
+      const results = await db.models[model].findAll({where: {reportId: report.id}});
       // results should be an empty array
       expect(results).toEqual([]);
     });
@@ -100,7 +100,7 @@ describe('Tests for deleting a report and all of its components', () => {
 
     // verify report was restored
     await request
-      .get(`/api/1.0/reports/${report.ident}`)
+      .get(`/api/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(200);

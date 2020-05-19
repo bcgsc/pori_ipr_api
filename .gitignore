@@ -12,3 +12,4 @@ junit.xml
 mocha.json
 jsdoc
 .vscode/
+.env.sh

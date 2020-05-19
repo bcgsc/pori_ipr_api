@@ -40,7 +40,7 @@ describe('Tests for update changes', () => {
   beforeAll(async () => {
     // create project record
     let res = await request
-      .post('/api/1.0/project')
+      .post('/api/project')
       .auth(username, password)
       .type('json')
       .send(projectData)
@@ -50,7 +50,7 @@ describe('Tests for update changes', () => {
 
     // check that the created project record exists
     res = await request
-      .get(`/api/1.0/project/search?query=${projectData.name}`)
+      .get(`/api/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')
       .expect(200);
@@ -69,7 +69,7 @@ describe('Tests for update changes', () => {
   test('Test update changes', async () => {
     // update project name for given ident
     await request
-      .put(`/api/1.0/project/${ident}`)
+      .put(`/api/project/${ident}`)
       .auth(username, password)
       .type('json')
       .send({...update})
@@ -77,7 +77,7 @@ describe('Tests for update changes', () => {
 
     // get updated project and compare to update values
     const res = await request
-      .get(`/api/1.0/project/search?query=${update.name}`)
+      .get(`/api/project/search?query=${update.name}`)
       .auth(username, password)
       .type('json')
       .expect(200);
@@ -93,14 +93,14 @@ describe('Tests for update changes', () => {
   afterAll(async () => {
     // delete newly created project
     await request
-      .delete(`/api/1.0/project/${ident}`)
+      .delete(`/api/project/${ident}`)
       .auth(username, password)
       .type('json')
       .expect(204);
 
     // verify project is deleted
     await request
-      .get(`/api/1.0/POG/project/search?query=${projectData.name}`)
+      .get(`/api/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')
       .expect(404);

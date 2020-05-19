@@ -41,7 +41,7 @@ describe('/user/group endpoint testing', () => {
     // Test for GET /user/group 200 endpoint
     test('GET / list of groups - 200 Success', async () => {
       const res = await request
-        .get('/api/1.0/user/group')
+        .get('/api/user/group')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -63,7 +63,7 @@ describe('/user/group endpoint testing', () => {
     // Test for GET /user/group/:ident 404 endpoint
     test('GET /{group} group - 404 Not Found', async () => {
       await request
-        .get('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
+        .get('/api/user/group/PROBABLY_NOT_A_GROUP')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
@@ -75,7 +75,7 @@ describe('/user/group endpoint testing', () => {
     // Test for POST /user/group 200 endpoint
     test('POST / - 200 Success', async () => {
       const res = await request
-        .post('/api/1.0/user/group')
+        .post('/api/user/group')
         .auth(username, password)
         .type('json')
         .send({name: 'testGroup', owner: users[1].ident})
@@ -99,7 +99,7 @@ describe('/user/group endpoint testing', () => {
     // Test for POST /user/group 400 endpoint
     test('POST / - 400 name is required', async () => {
       await request
-        .post('/api/1.0/user/group')
+        .post('/api/user/group')
         .auth(username, password)
         .type('json')
         .send({owner: users[1].ident})
@@ -108,7 +108,7 @@ describe('/user/group endpoint testing', () => {
 
     test('POST / - 400 owner is required', async () => {
       await request
-        .post('/api/1.0/user/group')
+        .post('/api/user/group')
         .auth(username, password)
         .type('json')
         .send({name: 'testGroup'})
@@ -117,7 +117,7 @@ describe('/user/group endpoint testing', () => {
 
     test('POST / - 400 owner should have uuid format', async () => {
       await request
-        .post('/api/1.0/user/group')
+        .post('/api/user/group')
         .auth(username, password)
         .type('json')
         .send({name: 'testGroup', owner: 'NOT_UUID'})
@@ -134,7 +134,7 @@ describe('/user/group endpoint testing', () => {
       groupIdent = userGroup.ident;
 
       await request
-        .delete(`/api/1.0/user/group/${groupIdent}`)
+        .delete(`/api/user/group/${groupIdent}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -143,7 +143,7 @@ describe('/user/group endpoint testing', () => {
     // Test for DELETE /user/group/:ident 404 endpoint
     test('DELETE /{group} group - 404 Group not found', async () => {
       await request
-        .delete('/api/1.0/user/group/PROBABLY_NOT_A_GROUP')
+        .delete('/api/user/group/PROBABLY_NOT_A_GROUP')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
@@ -173,7 +173,7 @@ describe('/user/group endpoint testing', () => {
       // Test for GET /user/group/:ident 200 endpoint
       test('GET /{group} specific group - 200 Success', async () => {
         const res = await request
-          .get(`/api/1.0/user/group/${groupIdent}`)
+          .get(`/api/user/group/${groupIdent}`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
@@ -192,7 +192,7 @@ describe('/user/group endpoint testing', () => {
       // Test for GET /user/group/:ident/member 200 endpoint
       test('GET /{group}/member all members of a group - 200 Success', async () => {
         const res = await request
-          .get(`/api/1.0/user/group/${groupIdent}/member`)
+          .get(`/api/user/group/${groupIdent}/member`)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
@@ -217,7 +217,7 @@ describe('/user/group endpoint testing', () => {
       // Test for GET /user/group/:ident/member 404 endpoint
       test('GET /{group}/member all members of a group - 404 Group not found', async () => {
         await request
-          .get('/api/1.0/user/group/PROBABLY_NOT_A_GROUP/member')
+          .get('/api/user/group/PROBABLY_NOT_A_GROUP/member')
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NOT_FOUND);
@@ -229,7 +229,7 @@ describe('/user/group endpoint testing', () => {
       // Test for PUT /user/group/:ident 200 endpoint
       test('PUT /{group} specific group - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/user/group/${groupIdent}`)
+          .put(`/api/user/group/${groupIdent}`)
           .send({name: 'newGroupName', owner: users[0].ident})
           .auth(username, password)
           .type('json')
@@ -252,7 +252,7 @@ describe('/user/group endpoint testing', () => {
       // Test for PUT /user/group/:ident 400 endpoint
       test('PUT /{group} specific group - 400 name is required', async () => {
         await request
-          .put(`/api/1.0/user/group/${groupIdent}`)
+          .put(`/api/user/group/${groupIdent}`)
           .send({owner: users[0].ident})
           .auth(username, password)
           .type('json')
@@ -261,7 +261,7 @@ describe('/user/group endpoint testing', () => {
 
       test('PUT /{group} specific group - 400 owner is required', async () => {
         await request
-          .put(`/api/1.0/user/group/${groupIdent}`)
+          .put(`/api/user/group/${groupIdent}`)
           .send({name: 'newGroupName'})
           .auth(username, password)
           .type('json')
@@ -270,7 +270,7 @@ describe('/user/group endpoint testing', () => {
 
       test('PUT /{group} specific group - 400 owner should have uuid format', async () => {
         await request
-          .put(`/api/1.0/user/group/${groupIdent}`)
+          .put(`/api/user/group/${groupIdent}`)
           .send({name: 'newGroupName', owner: 'NOT_UUID'})
           .auth(username, password)
           .type('json')
@@ -283,7 +283,7 @@ describe('/user/group endpoint testing', () => {
       // Test for POST /user/group/:ident/member 200 endpoint
       test('POST /{group}/member new group member - 200 Success', async () => {
         const res = await request
-          .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .post(`/api/user/group/${groupIdent}/member`)
           .send({user: users[0].ident})
           .auth(username, password)
           .type('json')
@@ -305,7 +305,7 @@ describe('/user/group endpoint testing', () => {
       // Test for POST /user/group/:ident/member 400 endpoint
       test('POST /{group}/member new group member - 400 Member should have uuid format', async () => {
         await request
-          .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .post(`/api/user/group/${groupIdent}/member`)
           .send({user: 'NOT_UUID'})
           .auth(username, password)
           .type('json')
@@ -315,7 +315,7 @@ describe('/user/group endpoint testing', () => {
       // Test for POST /user/group/:ident/member 404 endpoint
       test('POST /{group}/member new group member - 404 Member does not exist', async () => {
         await request
-          .post(`/api/1.0/user/group/${groupIdent}/member`)
+          .post(`/api/user/group/${groupIdent}/member`)
           .send({user: uuidv4()})
           .auth(username, password)
           .type('json')
@@ -328,7 +328,7 @@ describe('/user/group endpoint testing', () => {
       // Test for DELETE /user/group/:ident/member 200 endpoint
       test('DELETE /{group}/member delete group member - 200 Success', async () => {
         await request
-          .delete(`/api/1.0/user/group/${groupIdent}/member`)
+          .delete(`/api/user/group/${groupIdent}/member`)
           .send({user: users[0].ident})
           .auth(username, password)
           .type('json')
@@ -338,7 +338,7 @@ describe('/user/group endpoint testing', () => {
       // Test for DELETE /user/group/:ident/member 400 endpoint
       test('DELETE /{group}/member delete group member - 400 Member should have uuid format', async () => {
         await request
-          .delete(`/api/1.0/user/group/${groupIdent}/member`)
+          .delete(`/api/user/group/${groupIdent}/member`)
           .send({user: 'NOT_UUID'})
           .auth(username, password)
           .type('json')
@@ -348,7 +348,7 @@ describe('/user/group endpoint testing', () => {
       // Test for DELETE /user/group/:ident/member 404 endpoint
       test('DELETE /{group}/member delete group member - 404 Member does not exist', async () => {
         await request
-          .delete(`/api/1.0/user/group/${groupIdent}/member`)
+          .delete(`/api/user/group/${groupIdent}/member`)
           .send({user: uuidv4()})
           .auth(username, password)
           .type('json')

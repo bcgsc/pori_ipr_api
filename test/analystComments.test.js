@@ -4,8 +4,6 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
 
-const mockReportData = require('./testData/mockReportData.json');
-
 // get test user info
 const CONFIG = require('../app/config');
 const {listen} = require('../app');
@@ -34,26 +32,21 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoint testing', () => {
-  const pogId = mockReportData.pog.POGID;
-  let reportIdent;
+describe('/reports/{REPORTID}/summary/analyst-comments endpoint testing', () => {
+  let report;
 
   beforeAll(async () => {
     // create a report to be used in tests
     // TODO: Update report upload to report mocking once metadata is simplified
-    const res = await request
-      .post('/api/1.0/reports')
-      .auth(username, password)
-      .send(mockReportData)
-      .type('json')
-      .expect(200);
-
-    expect(typeof res.body).toBe('object');
-    reportIdent = res.body.ident;
+    // const project = await db.models.project.findOne(); // any project is fine
+    report = await db.models.analysis_report.create({
+      type: 'genomic',
+      patientId: 'PATIENT1234',
+    });
 
     // Create initial comment to be tested
     await request
-      .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
+      .put(`/api/reports/${report.ident}/summary/analyst-comments`)
       .auth(username, password)
       .type('json')
       .send({comments: 'This is the first comment'})
@@ -63,7 +56,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
   test('GET / comment - 200 Success', async () => {
     // Test GET endpoint and also if comment was created successfully
     const res = await request
-      .get(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
+      .get(`/api/reports/${report.ident}/summary/analyst-comments`)
       .auth(username, password)
       .type('json')
       .expect(200);
@@ -89,7 +82,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       // Tests for adding/editing comments
       test('PUT / comment - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments`)
           .auth(username, password)
           .type('json')
           .send({comments: 'This is another comment'})
@@ -101,18 +94,9 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
         }));
       });
 
-      test('PUT / comment - 404 POG not found', async () => {
-        await request
-          .put(`/api/1.0/POG/NOT_POG/report/${reportIdent}/genomic/summary/analystComments`)
-          .auth(username, password)
-          .type('json')
-          .send({comments: 'This is a sample comment'})
-          .expect(404);
-      });
-
       test('PUT / comment - 404 Report not found', async () => {
         await request
-          .put(`/api/1.0/POG/${pogId}/report/NOT_REPORT/genomic/summary/analystComments`)
+          .put('/api/reports/NOT_REPORT/summary/analyst-comments')
           .auth(username, password)
           .type('json')
           .send({comments: 'This is a sample comment'})
@@ -124,7 +108,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       // Tests for signing comments and invalid inputs
       test('PUT /sign/author sign comment as author - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/author`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/author`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -138,7 +122,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
       test('PUT /sign/reviewer sign comment as reviewer - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/reviewer`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/reviewer`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -152,7 +136,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
       test('PUT /sign/INVALID sign comment as not existing role - 404 Not Found', async () => {
         await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/NOT_EXISTENT_ROLE`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/NOT_EXISTENT_ROLE`)
           .auth(username, password)
           .type('json')
           .expect(404);
@@ -163,7 +147,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
       // Tests for revoking signatures and invalid inputs
       test('PUT /sign/revoke/author revoke sign comment as author - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/revoke/author`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/revoke/author`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -177,7 +161,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
       test('PUT /sign/revoke/reviewer revoke sign comment as reviewer - 200 Success', async () => {
         const res = await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/revoke/reviewer`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/revoke/reviewer`)
           .auth(username, password)
           .type('json')
           .expect(200);
@@ -191,7 +175,7 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
 
       test('PUT /sign/revoke/INVALID comment as not existing role - 404 Not Found', async () => {
         await request
-          .put(`/api/1.0/POG/${pogId}/report/${reportIdent}/genomic/summary/analystComments/sign/revoke/NOT_EXISTENT_ROLECLEAR`)
+          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/revoke/NOT_EXISTENT_ROLECLEAR`)
           .auth(username, password)
           .type('json')
           .expect(404);
@@ -203,11 +187,11 @@ describe('/POG/{POGID}/report/{REPORTID}/genomic/summary/analystComments endpoin
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.POG.destroy({where: {POGID: mockReportData.pog.POGID}, force: true});
+    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(404);

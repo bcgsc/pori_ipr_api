@@ -3,7 +3,7 @@
 
 ![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
 
-The Integrated pipeline reports API manages data access to the IPR database on seqdevdb01.bcgsc.ca.
+The Integrated pipeline reports API manages data access to the IPR database on iprdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic, probe reports, and Germline Small Mutation reports.
 
 #### Installation
@@ -80,6 +80,12 @@ npm run test
 
 Developer documentation is generated using the JSDoc library. To generate a local copy of the documentation, cd into the root of the project directory and run the command `npm run jsdoc`. This should automatically create documentation within folder named 'jsdoc' that can be viewed in a web browser.
 
+#### Coding Specifications
+======================================
+
+1. When updating a models data please use the `model.update` method instead of `instance.save`. We currently have an update hook that doesn't run properly on `instance.save`.
+However, this is being investigated in this ticket https://www.bcgsc.ca/jira/browse/DEVSU-905.
+
 #### Migrating Database Changes
 ======================================
 
@@ -108,7 +114,7 @@ That creates the dump file. Then create the new temp database. Add temp or the t
 obvious later that it can be deleted
 
 ```bash
-createdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+createdb -U ipr_service -T templateipr -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
 This then needs to be restored as a new database.
@@ -116,7 +122,7 @@ This then needs to be restored as a new database.
 **WARNING: DO NOT RESTORE TO THE PRODUCTION DB SERVER**
 
 ```bash
-pg_restore -Fc -U ipr_service -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
+pg_restore -Fc -U ipr_service -T templateipr -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
 ```
 
 Finally connect to the newly created database
@@ -131,6 +137,19 @@ Once you are done with testing, delete the temporary database
 dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
+#### Migrations in Pull Requests
+======================================
+
+1. Create temp db for ticket (see the `Testing Migration Changes` section)
+2. Point `DEFAULT_DB_NAME` varaible to your new temp db in `app/config.js`
+3. Test migration and code changes on temp db
+4. Once the code works, create a PR and wait for it to be approved
+5. Update the migration date to be the latest migration by running `migrationTools/moveMigration.sh`
+6. Run migration on `ipr-sync-dev` (helpful to mention you're running a migration on dev in IPR chat)
+7. Point `DEFAULT_DB_NAME` variable back to the dev db
+8. Wait for PR approval
+9. Merge code changes into development branch
+10. Delete the temp db you created
 
 #### Process Manager
 ======================================
@@ -232,10 +251,6 @@ pm2 start current/pm2.config.js --env production
 │   │                                   Factories for interacting with API services.
 │   │
 │   ├── libs                            # Application specific libraries
-│   │
-│   ├── exporters                       # Exporters
-│   │                                   Libraries for exporting data from IPR to csv or tsv files.
-│   │
 │   │
 │   ├── middleware                      # Middleware
 │   │                                   Location for all globally required middleware definitions.

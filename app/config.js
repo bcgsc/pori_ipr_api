@@ -6,6 +6,7 @@ const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
+
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (ENV === 'staging') {
@@ -37,6 +38,12 @@ const DEFAULTS = {
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },
+  graphkb: {
+    uri: ENV === 'production'
+      ? 'https://graphkb-api.bcgsc.ca/api'
+      : 'https://graphkbstaging-api.bcgsc.ca/api',
+    username: 'ipr_gkb_link',
+  },
   testing: {
     username: DEFAULT_TEST_USER,
   },
@@ -49,7 +56,7 @@ const DEFAULTS = {
     prefix: '',
     username: 'ipr_service',
     hostname: ENV === 'production'
-      ? 'seqdevdb01.bcgsc.ca'
+      ? 'iprdb01.bcgsc.ca'
       : 'iprdevdb.bcgsc.ca',
     port: 5432,
     name: DEFAULT_DB_NAME,
@@ -124,6 +131,9 @@ const CONFIG = nconf
     'database.password': {
       alias: 'database:password',
     },
+    'graphkb.password': {
+      alias: 'graphkb:password',
+    },
     port: {
       alias: 'web:port',
     },
@@ -131,9 +141,9 @@ const CONFIG = nconf
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
 if (ENV === 'test') {
-  CONFIG.required(['database:password', 'testing:password']);
+  CONFIG.required(['database:password', 'graphkb:password', 'testing:password']);
 } else {
-  CONFIG.required(['database:password']);
+  CONFIG.required(['database:password', 'graphkb:password']);
 }
 
 module.exports = CONFIG;

@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'test';
-
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
@@ -17,6 +15,7 @@ const LONGER_TIMEOUT = 50000;
 
 let server;
 let request;
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -27,13 +26,12 @@ beforeAll(async () => {
 // Tests for uploading a report and all of its components
 describe('Tests for uploading a report and all of its components', () => {
   let reportId;
-  let pogId;
   let reportIdent;
 
   beforeAll(async () => {
     // create report
     let res = await request
-      .post('/api/1.0/reports')
+      .post('/api/reports')
       .auth(username, password)
       .send(mockReportData)
       .type('json')
@@ -45,46 +43,31 @@ describe('Tests for uploading a report and all of its components', () => {
 
     // check that the report was created
     res = await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(200);
 
-    // get report id from patient info. because it's excluded in public view
-    reportId = res.body.patientInformation.report_id;
+    // get report id from doing a db find because it's not returned by the API
+    const result = await db.models.analysis_report.findOne({where: {ident: reportIdent}, attributes: ['id']});
+    reportId = result.id;
   }, LONGER_TIMEOUT);
 
   // Test that all components were created
   test('Test that all components were created', async () => {
-    // check that the POG was created by searching by POGID
-    const res = await request
-      .get(`/api/1.0/POG/${mockReportData.pog.POGID}`)
-      .auth(username, password)
-      .type('json')
-      .expect(200);
-
-    pogId = res.body.id;
-
-    // check that the pog_analysis was created by searching
-    // based on pog_id and analysis_biopsy
-    const pogAnalysis = await db.models.pog_analysis.findOne({where: {pog_id: pogId, analysis_biopsy: mockReportData.analysis.analysis_biopsy}});
-
-    expect(pogAnalysis).not.toBeNull();
-    expect(typeof pogAnalysis).toBe('object');
-
     // for all components, do a find where report_id
     // is the same as the created report id
     const {
-      pog, analysis, ReportUserFilter, createdBy, probe_signature,
+      ReportUserFilter, createdBy, probe_signature,
       presentation_discussion, presentation_slides,
-      users, analystComments, ...associations
+      users, analystComments, projects, ...associations
     } = db.models.analysis_report.associations;
 
     const promises = [];
     // verify all report components were created
     Object.values(associations).forEach(async (association) => {
       const model = association.target.name;
-      promises.push(db.models[model].findAll({where: {report_id: reportId}}));
+      promises.push(db.models[model].findAll({where: {reportId}}));
     });
 
     const components = await Promise.all(promises);
@@ -96,18 +79,46 @@ describe('Tests for uploading a report and all of its components', () => {
     });
   }, LONGER_TIMEOUT);
 
+  test('genes entries were created from variant and gene rows', async () => {
+    const genes = await db.models.genes.findAll({where: {reportId}});
+    expect(genes).toHaveProperty('length', 5);
+
+    // gene flags should be added from genes section if given
+    expect(genes).toEqual(expect.arrayContaining([expect.objectContaining({
+      name: 'ZFP36L2',
+      oncogene: true,
+    })]));
+  });
+
   // delete report
   afterAll(async () => {
     // delete newly created report and all of it's components
-    // indirectly by hard deleting newly created patient
-    await db.models.POG.destroy({where: {POGID: mockReportData.pog.POGID}, force: true});
+    // by hard deleting newly created report
+    await db.models.analysis_report.destroy({where: {id: reportId}, force: true});
 
     // verify report is deleted
     await request
-      .get(`/api/1.0/reports/${reportIdent}`)
+      .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
       .expect(404);
+  }, LONGER_TIMEOUT);
+});
+
+// Tests for uploading a report and all of its components
+describe('Test for uploading a report with empty image data', () => {
+  test('Upload fails on empty image data', async () => {
+    // create report
+    const emptyImageMockReportData = mockReportData;
+    emptyImageMockReportData.images[0].path = '/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors_empty.png';
+    const res = await request
+      .post('/api/reports')
+      .auth(username, password)
+      .send(emptyImageMockReportData)
+      .type('json')
+      .expect(400);
+
+    expect(typeof res.body).toBe('object');
   }, LONGER_TIMEOUT);
 });
 

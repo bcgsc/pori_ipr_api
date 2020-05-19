@@ -36,8 +36,8 @@ router.param('project', async (req, res, next, ident) => {
     where: {ident},
     attributes: {exclude: ['deletedAt']},
     include: [
-      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
-      {as: 'pogs', model: db.models.POG.scope('public')},
+      {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}, through: {attributes: []}},
+      {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
     ],
   };
 
@@ -59,9 +59,9 @@ router.route('/')
     const access = new Acl(req, res);
     access.read = ['admin'];
 
-    if (access.check(true) && req.query.admin === 'true') {
-      includeOpts.push({as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}});
+    if (access.check(true) && req.query.admin === true) {
+      includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
     }
 
     let projectAccess;
@@ -161,7 +161,7 @@ router.route('/')
     }
   });
 
-router.route('/:ident([A-z0-9-]{36})')
+router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
     // Getting project
     // Check user permission and filter by project
@@ -199,7 +199,7 @@ router.route('/:ident([A-z0-9-]{36})')
     // Attempt project model update
     try {
       await db.models.project.update(updateBody, {
-        where: {ident: req.params.ident},
+        where: {ident: req.project.ident},
         individualHooks: true,
         paranoid: true,
         limit: 1,
@@ -211,11 +211,11 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Success, get project -- UGH
     const opts = {
-      where: {ident: req.params.ident},
+      where: {ident: req.project.ident},
       attributes: {exclude: ['id']},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}},
-        {as: 'pogs', model: db.models.POG, attributes: {exclude: ['id', 'deletedAt']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
+        {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
       ],
     };
 
@@ -239,7 +239,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     try {
       // Delete project
-      const result = await db.models.project.destroy({where: {ident: req.params.ident}, limit: 1});
+      const result = await db.models.project.destroy({where: {ident: req.project.ident}, limit: 1});
       if (!result) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
       }
@@ -406,96 +406,92 @@ router.route('/:project([A-z0-9-]{36})/user')
     }
   });
 
-// POG Binding Functions
-router.route('/:project([A-z0-9-]{36})/pog')
+// Report Binding Functions
+router.route('/:project([A-z0-9-]{36})/reports')
   .get((req, res) => {
     // Access Control
     const access = new Acl(req, res);
     access.read = ['admin'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to get project POGs');
+      logger.error('User isn\'t allowed to get project reports');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    // Get Project POGs
-    return res.json(req.project.pogs);
+    // get project reports
+    return res.json(req.project.reports);
   })
   .post(async (req, res) => {
-    // Add Project POG
+    // Add Project report
     // Access Control
     const access = new Acl(req, res);
     access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to add project POGs');
+      logger.error('User isn\'t allowed to add project reports');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    let pog;
+    let report;
     try {
-      // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
-      if (!pog) {
-        logger.error('Unable to find POG file');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+      // Lookup report
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id', 'ident']});
+      if (!report) {
+        logger.error('Unable to find report');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report', code: 'failedReportLookupReportProject'}});
       }
     } catch (error) {
-      logger.error(`Error while trying to find the POG file ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find the POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
     }
 
     try {
-      // Bind POG
-      const pogProject = await db.models.pog_project.create({project_id: req.project.id, pog_id: pog.id});
+      // Bind report
+      const reportProject = await db.models.reportProject.create({project_id: req.project.id, reportId: report.id});
       const output = {
-        ident: pog.ident,
-        POGID: pog.POGID,
-        createdAt: pog.createdAt,
-        updatedAt: pog.updatedAt,
-        pog_project: {
-          updatedAt: pogProject.updatedAt,
-          createdAt: pogProject.createdAt,
-        },
+        report: report.ident,
+        project: req.project.name,
+        createdAt: reportProject.createdAt,
+        updatedAt: reportProject.updatedAt,
       };
 
       return res.json(output);
     } catch (error) {
-      logger.error(`Error while adding pog to project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding pog to project', code: 'failedPOGProjectCreateQuery'}});
+      logger.error(`Error while adding report to project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding report to project', code: 'failedReportProjectCreateQuery'}});
     }
   })
   .delete(async (req, res) => {
-    // Remove Project POG
+    // Remove project-report association
     // Access Control
     const access = new Acl(req, res);
     access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
-      logger.error('User isn\'t allowed to delete project POGs');
+      logger.error('User isn\'t allowed to delete project reports');
       return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
     }
 
-    let pog;
+    let report;
     try {
-      // Lookup POG
-      pog = await db.models.POG.findOne({where: {ident: req.body.pog}, attributes: {exclude: ['deletedAt']}});
-      if (!pog) {
-        logger.error('Unable to find the supplied pog');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied pog', code: 'failedPOGLookupPOGProject'}});
+      // Lookup report
+      report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id']});
+      if (!report) {
+        logger.error(`Unable to find report ${req.body.report}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`, code: 'failedReportLookupReportProject'}});
       }
     } catch (error) {
-      logger.error(`Error while trying to find supplied POG ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find POG file', code: 'failedPOGLookupPOGProject'}});
+      logger.error(`Error while trying to find report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
     }
 
     try {
-      // Unbind POG
-      const pogProject = await db.models.pog_project.destroy({where: {project_id: req.project.id, pog_id: pog.id}});
-      if (!pogProject) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove pog from project', code: 'failedPOGProjectDestroy'}});
+      // Unbind report
+      const reportProject = await db.models.reportProject.destroy({where: {project_id: req.project.id, reportId: report.id}});
+      if (!reportProject) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove report from project', code: 'failedReportProjectDestroy'}});
       }
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
-      logger.error(`Error while trying to remove POG from project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove POG from project', code: 'failedGroupMemberRemoveQuery'}});
+      logger.error(`Error while trying to remove report from project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove Report from project', code: 'failedGroupMemberRemoveQuery'}});
     }
   });
 

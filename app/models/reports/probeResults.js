@@ -1,6 +1,5 @@
 const Sq = require('sequelize');
-
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 /**
  * Stores the results from the probing pipeline (targeted gene report) to be
@@ -9,15 +8,23 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 module.exports = (sequelize) => {
   return sequelize.define('probeResults', {
     ...DEFAULT_COLUMNS,
-    report_id: {
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
       type: Sq.INTEGER,
       references: {
-        model: 'pog_analysis_reports',
+        model: 'reports',
         key: 'id',
       },
     },
-    gene: {
-      type: Sq.TEXT,
+    geneId: {
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      field: 'gene_id',
+      name: 'geneId',
       allowNull: false,
     },
     variant: {
@@ -28,15 +35,18 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
+    comments: {
+      type: Sq.TEXT,
+    },
   }, {
-    ...DEFAULT_OPTIONS,
-    // Table Name
-    tableName: 'pog_analysis_reports_probe_results',
+    ...DEFAULT_REPORT_OPTIONS,
+    tableName: 'reports_probe_results',
     scopes: {
       public: {
-        attributes: {
-          exclude: ['id', 'report_id', 'deletedAt'],
-        },
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+        include: [
+          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
+        ],
       },
     },
   });
