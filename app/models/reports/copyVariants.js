@@ -44,6 +44,11 @@ module.exports = (sequelize) => {
     size: {
       type: Sq.FLOAT,
     },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_copy_variants',

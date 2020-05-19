@@ -35,7 +35,9 @@ module.exports = (sequelize) => {
     foldChange: {
       type: Sq.FLOAT,
     },
-    expression_class: {
+    expressionState: {
+      name: 'expressionState',
+      field: 'expression_state',
       type: Sq.TEXT,
       defaultValue: null,
     },
@@ -134,6 +136,11 @@ module.exports = (sequelize) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_expression_variants',
@@ -145,7 +152,7 @@ module.exports = (sequelize) => {
         ],
       },
       minimal: {
-        attributes: ['expression_class', 'rpkm', 'tcgaPerc', 'foldChange'],
+        attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
       },
     },
   });

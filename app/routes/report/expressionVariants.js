@@ -76,7 +76,7 @@ router.route('/')
       const results = await db.models.expressionVariants.scope('extended').findAll({
         order: [['geneId', 'ASC']],
         where: {
-          expression_class: {[Op.ne]: null},
+          expressionState: {[Op.ne]: null},
         },
         include: [
           {
