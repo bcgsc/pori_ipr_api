@@ -391,12 +391,6 @@ analysisReports.hasOne(probeSignature, {
   as: 'probe_signature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-// Flash Tokens
-const flashToken = sequelize.import('./flashtoken.model');
-flashToken.belongsTo(user, {
-  as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
-});
-
 // Germline Small Mutations
 require('./germlineSmallMutation')(sequelize);
 

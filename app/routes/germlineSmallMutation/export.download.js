@@ -17,46 +17,6 @@ const parseMutationSignature = (arr) => {
 };
 
 /**
- * Flash Token Authentication and user injection
- *
- * @param {object} req - Express request
- * @param {object} res - Express response
- * @param {function} next - Callback function
- *
- * @property {sequelize.DataTypes.UUID} req.query.flash_token - Flash token UUID
- *
- * @returns {Promise.<number>} - Returns number of destroyed rows by deleting flash token from db
- */
-router.get('/batch/download', async (req, res, next) => {
-  // Check for authentication token
-  if (!req.query.flash_token) {
-    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'A flash token is required in the url parameter: flash_token'});
-  }
-
-  try {
-    const flashToken = await db.models.flash_token.findOne({
-      where: {token: req.query.flash_token},
-      include: [{model: db.models.user, as: 'user'}],
-    });
-
-    if (!flashToken) {
-      logger.error('A valid flash token is required to download reports');
-      return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'A valid flash token is required to download reports'});
-    }
-
-    req.user = flashToken.user;
-    req.flash_token = flashToken;
-
-    next();
-
-    return flashToken.destroy();
-  } catch (error) {
-    logger.error(error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to query for flash token provided'}});
-  }
-});
-
-/**
  * Generate Batch Export
  *
  * Get a batch export of all report variants that have not been exported yet
@@ -66,17 +26,11 @@ router.get('/batch/download', async (req, res, next) => {
  * @param {object} req - Express request
  * @param {object} res - Express response
  *
- * @property {object} req.flash_token - Flash token
  * @property {string?} req.query.reviews - Comma separated list of reviews required for export
  *
  * @returns {Promise.<object>} - Returns response object
  */
 router.get('/batch/download', async (req, res) => {
-  if (!req.flash_token) {
-    logger.error('Missing flash token');
-    return res.status(HTTP_STATUS.FORBIDDEN).send({message: 'A flash token is required in the url parameter: flash_token'});
-  }
-
   const requiredReviews = req.query.reviews.split(',');
 
   let germlineReports;
