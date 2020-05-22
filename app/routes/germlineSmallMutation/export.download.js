@@ -134,6 +134,7 @@ router.get('/batch/download', async (req, res) => {
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYY-MM-DD')}.ipr.germline.export.xlsx`);
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
 
   try {
     await workbook.xlsx.write(res);
