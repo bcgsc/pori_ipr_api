@@ -19,8 +19,8 @@ const newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
 
 const group = schemaManager.generate(db.models.userGroup, new OpenApi3Strategy(), {
   title: 'group',
-  associations: false,
-  exclude: [...BASE_EXCLUDE],
+  associations: true,
+  exclude: [...BASE_EXCLUDE, 'owner_id', 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings'],
 });
 
 module.exports = {
