@@ -1989,7 +1989,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Project"
+                    "$ref": "#/components/schemas/project"
                   }
                 }
               }
@@ -2020,7 +2020,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/project"
                 }
               }
             }
@@ -2692,7 +2692,7 @@
               "projects": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/project"
                 }
               }
             }
@@ -3019,23 +3019,12 @@
                   "projects": {
                     "type": "array",
                     "items": {
-                      "$ref": "#/components/schemas/Project"
+                      "$ref": "#/components/schemas/project"
                     }
                   }
                 }
               }
             ]
-          }
-        }
-      },
-      "Project": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "name": {
-            "type": "string"
           }
         }
       },
