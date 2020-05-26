@@ -949,7 +949,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -992,7 +992,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -1029,7 +1029,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -1105,7 +1105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -1917,7 +1917,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/report"
+                    "$ref": "#/components/schemas/analysis_report"
                   }
                 }
               }
@@ -2681,7 +2681,7 @@
               "analysis_reports": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -2760,9 +2760,6 @@
             "$ref": "#/components/schemas/datetime"
           }
         }
-      },
-      "report": {
-        "$ref": "#/components/schemas/analysis_report"
       },
       "analysis": {
         "type": "object",
