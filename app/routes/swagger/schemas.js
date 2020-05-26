@@ -79,6 +79,7 @@ const summary_microbial = schemaManager.generate(db.models.summary_microbial, ne
   exclude: [...BASE_EXCLUDE],
 });
 
+// TODO: Ask clarification about mutation summary v2 difference
 const mutationSummaryv2 = schemaManager.generate(db.models.mutationSummaryv2, new OpenApi3Strategy(), {
   title: 'mutationSummaryv2',
   associations: false,
