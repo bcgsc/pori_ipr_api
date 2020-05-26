@@ -1563,7 +1563,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_variantCounts"
+                  "$ref": "#/components/schemas/variantCounts"
                 }
               }
             }
@@ -3230,39 +3230,6 @@
           },
           "indelReportCategory": {
             "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_variantCounts": {
-        "type": "object",
-        "description": "Soon to be deprecated, this output provides static counts of variants\nidentified in the report.",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "smallMutations": {
-            "type": "integer"
-          },
-          "CNVs": {
-            "type": "integer"
-          },
-          "SVs": {
-            "type": "integer"
-          },
-          "expressionOutliers": {
-            "type": "integer"
-          },
-          "variantsUnknown": {
-            "type": "integer"
           },
           "createdAt": {
             "$ref": "#/components/schemas/datetime"
