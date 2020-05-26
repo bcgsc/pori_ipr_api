@@ -110,8 +110,6 @@ summary.probeResults = sequelize.import('./reports/probeResults');
 summary.therapeuticTargets = sequelize.import('./reports/genomic/summary/therapeuticTargets');
 summary.microbial = sequelize.import('./reports/genomic/summary/microbial');
 
-summary.mutationSummaryv2 = sequelize.import('./reports/genomic/summary/mutationSummary.v02');
-
 
 analysisReports.belongsTo(user, {
   as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true,
@@ -140,8 +138,8 @@ analysisReports.hasMany(summary.therapeuticTargets, {
 analysisReports.hasOne(summary.microbial, {
   as: 'summary_microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(summary.mutationSummaryv2, {
-  as: 'mutationSummaryv2', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(summary.mutationSummary, {
+  as: 'mutationSummary', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 summary.mutationSummary.belongsTo(analysisReports, {
@@ -169,10 +167,6 @@ summary.microbial.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 summary.tumourAnalysis.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-
-summary.mutationSummaryv2.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
