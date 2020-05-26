@@ -2261,7 +2261,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/smallMutation"
+                    "$ref": "#/components/schemas/smallMutations"
                   }
                 }
               }
@@ -3095,72 +3095,6 @@
           },
           "notes": {
             "type": "string"
-          }
-        }
-      },
-      "smallMutation": {
-        "type": "object",
-        "description": "Somatic small mutation information",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "mutationType": {
-            "type": "string",
-            "enum": [
-              "clinical",
-              "nostic",
-              "biological",
-              "unknown"
-            ]
-          },
-          "gene": {
-            "type": "string"
-          },
-          "transcript": {
-            "type": "string"
-          },
-          "proteinChange": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
-          },
-          "refAlt": {
-            "type": "string"
-          },
-          "zygosity": {
-            "type": "string"
-          },
-          "ploidyCorrCpChange": {
-            "type": "string"
-          },
-          "lohState": {
-            "type": "string"
-          },
-          "tumourReads": {
-            "type": "string"
-          },
-          "RNAReads": {
-            "type": "string"
-          },
-          "expressionRpkm": {
-            "type": "number"
-          },
-          "foldChange": {
-            "type": "number"
-          },
-          "TCGAPerc": {
-            "type": "integer"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
           }
         }
       },
