@@ -1460,7 +1460,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_tumourAnalysis"
+                  "$ref": "#/components/schemas/tumourAnalysis"
                 }
               }
             }
@@ -1522,7 +1522,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_tumourAnalysis"
+                  "$ref": "#/components/schemas/tumourAnalysis"
                 }
               }
             }
@@ -3170,42 +3170,6 @@
           },
           "comment": {
             "$ref": "#/components/schemas/updateComment"
-          }
-        }
-      },
-      "summary_tumourAnalysis": {
-        "type": "object",
-        "description": "Details about the tumour.",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "tumourContent": {
-            "type": "integer"
-          },
-          "ploidy": {
-            "type": "string"
-          },
-          "normalExpressionComparator": {
-            "type": "string"
-          },
-          "diseaseExpressionComparator": {
-            "type": "string"
-          },
-          "subtyping": {
-            "type": "string"
-          },
-          "tcgaColor": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
           }
         }
       },
