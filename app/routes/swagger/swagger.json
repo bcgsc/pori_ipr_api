@@ -2662,44 +2662,6 @@
       }
     },
     "schemas": {
-      "summary_seqQC": {
-        "type": "object",
-        "properties": {
-          "Reads": {
-            "type": "string"
-          },
-          "bioQC": {
-            "type": "string"
-          },
-          "labQC": {
-            "type": "string"
-          },
-          "Sample": {
-            "type": "string"
-          },
-          "Library": {
-            "type": "string"
-          },
-          "Coverage": {
-            "type": "string"
-          },
-          "Input_ng": {
-            "type": "string"
-          },
-          "Input_ug": {
-            "type": "string"
-          },
-          "Protocol": {
-            "type": "string"
-          },
-          "Sample Name": {
-            "type": "string"
-          },
-          "Duplicate_Reads_Perc": {
-            "type": "string"
-          }
-        }
-      },
       "patientInformation": {
         "type": "object",
         "description": "Patient details and meta information",
