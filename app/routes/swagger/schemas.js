@@ -177,6 +177,12 @@ const patientInformation = schemaManager.generate(db.models.patientInformation, 
   exclude: [...BASE_EXCLUDE],
 });
 
+const pathwayAnalysis = schemaManager.generate(db.models.pathwayAnalysis, new OpenApi3Strategy(), {
+  title: 'pathwayAnalysis',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
 
 module.exports = {
   user,
@@ -207,4 +213,5 @@ module.exports = {
   probe_signature,
   user_project,
   patientInformation,
+  pathwayAnalysis,
 };

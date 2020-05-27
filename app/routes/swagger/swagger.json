@@ -2662,25 +2662,6 @@
       }
     },
     "schemas": {
-      "pathwayAnalysis": {
-        "type": "object",
-        "description": "Pathway analysis details and SVG image",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "original": {
-            "type": "string"
-          },
-          "pathway": {
-            "type": "string",
-            "description": "XML of pathway analysis SVG image"
-          }
-        }
-      },
       "therapeuticTarget": {
         "type": "object",
         "description": "A therapeutic target from an analysis report",
