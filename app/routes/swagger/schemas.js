@@ -7,7 +7,7 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 const user = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'user',
   associations: false,
-  exclude: [],
+  exclude: [...BASE_EXCLUDE],
 });
 
 const newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
@@ -30,9 +30,8 @@ const project = schemaManager.generate(db.models.project, new OpenApi3Strategy()
 
 const analysis_report = schemaManager.generate(db.models.analysis_report, new OpenApi3Strategy(), {
   title: 'analysis_report',
-  exclude: ['createdBy_id', ...BASE_EXCLUDE],
+  exclude: [...BASE_EXCLUDE],
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
 
 const genes = schemaManager.generate(db.models.genes, new OpenApi3Strategy(), {
