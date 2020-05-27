@@ -2662,29 +2662,6 @@
       }
     },
     "schemas": {
-      "summary_sampleInfo": {
-        "type": "object",
-        "properties": {
-          "sample": {
-            "type": "string"
-          },
-          "Patho TC": {
-            "type": "string"
-          },
-          "Biopsy Site": {
-            "type": "string"
-          },
-          "Sample Name": {
-            "type": "string"
-          },
-          "Primary Site": {
-            "type": "string"
-          },
-          "Collection Date": {
-            "type": "string"
-          }
-        }
-      },
       "summary_seqQC": {
         "type": "object",
         "properties": {
