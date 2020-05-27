@@ -1700,47 +1700,6 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/genomicEventsTherapeutic": {
-      "get": {
-        "summary": "Get genomic events with therapeutic association",
-        "description": "Retrieve list of genomic events with potential therapeutic association",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Genomic Report",
-          "Genomic Summary"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns array of enomic events with potential therapeutic association",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/summary_genomicEvents"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "POG Not found"
-          }
-        }
-      }
-    },
     "/POG/{POG}/report/{report}/genomic/summary/probeTarget": {
       "get": {
         "summary": "Get probe targets",
@@ -2662,39 +2621,6 @@
       }
     },
     "schemas": {
-      "summary_genomicEvents": {
-        "type": "object",
-        "description": "Genomic events with potential therapeutic targets",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "genomicEvent": {
-            "type": "string"
-          },
-          "approvedThisCancerType": {
-            "type": "string"
-          },
-          "approvedOtherCancerType": {
-            "type": "string"
-          },
-          "emergingPreclinicalEvidence": {
-            "type": "string"
-          },
-          "comments": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "summary_probeTarget": {
         "type": "object",
         "description": "Entries detected by rapid analysis pipeline",
