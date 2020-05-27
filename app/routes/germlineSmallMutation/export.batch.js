@@ -91,29 +91,5 @@ router.get('/', async (req, res) => {
   }
 });
 
-/**
- * Generate a flash token for exporting reports
- *
- * Get a batch export of all report variants that have not been exported yet
- *
- * GET /export/batch/token
- *
- * @param {object} req - Express request
- * @param {object} res - Express response
- *
- * @property {number} req.user.id - Current user's id
- *
- * @returns {Promise.<object>} - Returns the created flash token
- */
-router.get('/token', async (req, res) => {
-  try {
-    const flashToken = await db.models.flash_token.create({user_id: req.user.id, resource: 'gsm_export'});
-    return res.json({token: flashToken.token});
-  } catch (error) {
-    logger.error(`Error while trying to create flash token ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to create flash token'});
-  }
-});
-
 
 module.exports = router;

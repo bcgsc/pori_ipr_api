@@ -68,7 +68,13 @@ router.post('/', async (req, res) => {
   // get project
   let project;
   try {
-    project = await db.models.project.findOne({where: {name: req.body.project}});
+    project = await db.models.project.findOne({
+      where: {
+        name: {
+          [Op.iLike]: req.body.project.trim(),
+        },
+      },
+    });
   } catch (error) {
     logger.error(`Unable to find project ${req.body.project} with error ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
