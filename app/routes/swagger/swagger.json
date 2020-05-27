@@ -2662,105 +2662,6 @@
       }
     },
     "schemas": {
-      "POG": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/POGModel"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "patientInformation": {
-                "$ref": "#/components/schemas/patientInformation"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "analysis_reports": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/analysis_report"
-                }
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "projects": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/project"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "POGModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "POGID": {
-            "$ref": "#/components/schemas/POGID"
-          },
-          "nonPOG": {
-            "type": "boolean"
-          },
-          "project": {
-            "type": "string"
-          },
-          "alternate_identifier": {
-            "$ref": "#/components/schemas/POGID"
-          },
-          "age_of_consent": {
-            "type": "integer"
-          }
-        }
-      },
-      "POGUser": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "bioinformatician",
-              "analyst",
-              "reviewer",
-              "admin",
-              "clinician"
-            ]
-          },
-          "user": {
-            "$ref": "#/components/schemas/user"
-          },
-          "addedBy": {
-            "$ref": "#/components/schemas/user"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "analysis": {
         "type": "object",
         "properties": {
@@ -3444,16 +3345,6 @@
         "type": "string",
         "example": "JY41T",
         "description": "Randomly generated unique report ID"
-      },
-      "POGRelationship": {
-        "type": "string",
-        "enum": [
-          "bioinformatician",
-          "analyst",
-          "reviewer",
-          "admin",
-          "clinician"
-        ]
       },
       "updateComment": {
         "type": "string",
