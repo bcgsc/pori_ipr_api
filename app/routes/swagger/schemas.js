@@ -82,12 +82,6 @@ const mutationSummary = schemaManager.generate(db.models.mutationSummary, new Op
   exclude: [...BASE_EXCLUDE],
 });
 
-const mutationSummaryv2 = schemaManager.generate(db.models.mutationSummaryv2, new OpenApi3Strategy(), {
-  title: 'mutationSummaryv2',
-  associations: false,
-  exclude: [...BASE_EXCLUDE],
-});
-
 const smallMutations = schemaManager.generate(db.models.smallMutations, new OpenApi3Strategy(), {
   title: 'smallMutations',
   associations: false,
@@ -210,7 +204,6 @@ module.exports = {
   probeResults,
   summary_microbial,
   mutationSummary,
-  mutationSummaryv2,
   smallMutations,
   mutationSignature,
   copyVariants,
