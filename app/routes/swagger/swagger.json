@@ -2340,7 +2340,7 @@
                     "reports": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/germlineSmallMutation"
+                        "$ref": "#/components/schemas/germline_small_mutation"
                       }
                     }
                   }
@@ -2662,36 +2662,6 @@
       }
     },
     "schemas": {
-      "germlineSmallMutation": {
-        "type": "object",
-        "description": "A germline small mutation report",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "pog_analysis_id": {
-            "type": "integer"
-          },
-          "biofx_assigned_id": {
-            "type": "integer"
-          },
-          "source_version": {
-            "type": "string"
-          },
-          "source_path": {
-            "type": "string"
-          },
-          "exported": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "summary_mutationSummary": {
         "type": "object",
         "description": "Details of the computed mutational signature",

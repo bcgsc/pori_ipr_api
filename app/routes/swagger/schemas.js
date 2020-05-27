@@ -189,6 +189,12 @@ const therapeuticTarget = schemaManager.generate(db.models.therapeuticTarget, ne
   exclude: [...BASE_EXCLUDE],
 });
 
+const germline_small_mutation = schemaManager.generate(db.models.germline_small_mutation, new OpenApi3Strategy(), {
+  title: 'germline_small_mutation',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
 
 module.exports = {
   user,
@@ -221,4 +227,5 @@ module.exports = {
   patientInformation,
   pathwayAnalysis,
   therapeuticTarget,
+  germline_small_mutation,
 };
