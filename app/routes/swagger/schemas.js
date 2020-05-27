@@ -171,6 +171,12 @@ const user_project = schemaManager.generate(db.models.user_project, new OpenApi3
   exclude: [...BASE_EXCLUDE],
 });
 
+const patientInformation = schemaManager.generate(db.models.patientInformation, new OpenApi3Strategy(), {
+  title: 'patientInformation',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
 
 module.exports = {
   user,
@@ -200,4 +206,5 @@ module.exports = {
   presentation_slides,
   probe_signature,
   user_project,
+  patientInformation,
 };

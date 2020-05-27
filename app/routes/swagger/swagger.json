@@ -1297,7 +1297,7 @@
                 "type": "object",
                 "properties": {
                   "update": {
-                    "$ref": "#/components/schemas/summary_patientInformation_update"
+                    "$ref": "#/components/schemas/patientInformation"
                   }
                 },
                 "required": [
@@ -2662,69 +2662,6 @@
       }
     },
     "schemas": {
-      "patientInformation": {
-        "type": "object",
-        "description": "Patient details and meta information",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "physician": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "Male",
-              "Female",
-              "Not Defined"
-            ]
-          },
-          "age": {
-            "type": "string"
-          },
-          "POGID": {
-            "type": "string"
-          },
-          "caseType": {
-            "type": "string",
-            "enum": [
-              "Adult",
-              "Pediatric"
-            ]
-          },
-          "tumourType": {
-            "type": "string"
-          },
-          "reportDate": {
-            "type": "string"
-          },
-          "biopsySite": {
-            "type": "string"
-          },
-          "tumourSample": {
-            "type": "string"
-          },
-          "tumourProtocol": {
-            "type": "string"
-          },
-          "constitutionalSample": {
-            "type": "string"
-          },
-          "constitutionalProtocol": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "pathwayAnalysis": {
         "type": "object",
         "description": "Pathway analysis details and SVG image",
@@ -2808,51 +2745,6 @@
           },
           "updatedAt": {
             "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_patientInformation_update": {
-        "type": "object",
-        "description": "Patient details and meta information",
-        "properties": {
-          "physician": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "Male",
-              "Female",
-              "Not Specified"
-            ]
-          },
-          "age": {
-            "type": "string"
-          },
-          "caseType": {
-            "type": "string",
-            "enum": [
-              "Adult",
-              "Pediatric"
-            ]
-          },
-          "tumourType": {
-            "type": "string"
-          },
-          "biopsySite": {
-            "type": "string"
-          },
-          "tumourSample": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "comment": {
-            "$ref": "#/components/schemas/updateComment"
           }
         }
       },
