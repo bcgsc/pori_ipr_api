@@ -2621,68 +2621,6 @@
       }
     },
     "schemas": {
-      "smallMut_mutation": {
-        "type": "object",
-        "description": "Detected small mutations",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "mutationType": {
-            "type": "string"
-          },
-          "gene": {
-            "type": "string"
-          },
-          "transcript": {
-            "type": "string"
-          },
-          "proteinChange": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
-          },
-          "refAlt": {
-            "type": "string"
-          },
-          "zygosity": {
-            "type": "string"
-          },
-          "ploidyCorrCpChange": {
-            "type": "string"
-          },
-          "lohState": {
-            "type": "string"
-          },
-          "tumourReads": {
-            "type": "string"
-          },
-          "RNAReads": {
-            "type": "string"
-          },
-          "expressionRpkm": {
-            "type": "number",
-            "format": "float"
-          },
-          "foldChange": {
-            "type": "number",
-            "format": "float"
-          },
-          "TCGAPerc": {
-            "type": "integer"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "ident": {
         "type": "string",
         "format": "UUIDv4",
