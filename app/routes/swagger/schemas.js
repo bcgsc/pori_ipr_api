@@ -207,6 +207,7 @@ const genomicAlterationsIdentified = schemaManager.generate(db.models.genomicAlt
   exclude: [...BASE_EXCLUDE],
 });
 
+// TODO: Ask about probeResults vs probeTarget
 
 module.exports = {
   user,
