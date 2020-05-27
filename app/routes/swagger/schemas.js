@@ -4,7 +4,6 @@ const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-// TODO: Fix user schemas after https://www.bcgsc.ca/jira/browse/DEVSU-908
 const user = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'user',
   associations: false,
@@ -72,14 +71,12 @@ const probeResults = schemaManager.generate(db.models.probeResults, new OpenApi3
   exclude: [...BASE_EXCLUDE],
 });
 
-// TODO: Rename table to camel case in models
 const summary_microbial = schemaManager.generate(db.models.summary_microbial, new OpenApi3Strategy(), {
   title: 'summary_microbial',
   associations: false,
   exclude: [...BASE_EXCLUDE],
 });
 
-// TODO: Ask clarification about mutation summary v2 difference
 const mutationSummary = schemaManager.generate(db.models.mutationSummary, new OpenApi3Strategy(), {
   title: 'mutationSummary',
   associations: false,
@@ -170,7 +167,6 @@ const probe_signature = schemaManager.generate(db.models.probe_signature, new Op
   exclude: [...BASE_EXCLUDE],
 });
 
-
 const user_project = schemaManager.generate(db.models.user_project, new OpenApi3Strategy(), {
   title: 'user_project',
   associations: false,
@@ -200,9 +196,6 @@ const germline_small_mutation = schemaManager.generate(db.models.germline_small_
   associations: false,
   exclude: [...BASE_EXCLUDE],
 });
-
-
-// TODO: Ask about probeResults vs probeTarget
 
 module.exports = {
   user,
