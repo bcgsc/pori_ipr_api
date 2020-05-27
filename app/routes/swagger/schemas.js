@@ -80,6 +80,12 @@ const summary_microbial = schemaManager.generate(db.models.summary_microbial, ne
 });
 
 // TODO: Ask clarification about mutation summary v2 difference
+const mutationSummary = schemaManager.generate(db.models.mutationSummary, new OpenApi3Strategy(), {
+  title: 'mutationSummary',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
 const mutationSummaryv2 = schemaManager.generate(db.models.mutationSummaryv2, new OpenApi3Strategy(), {
   title: 'mutationSummaryv2',
   associations: false,
@@ -209,6 +215,7 @@ module.exports = {
   genomicAlterationsIdentified,
   probeResults,
   summary_microbial,
+  mutationSummary,
   mutationSummaryv2,
   smallMutations,
   mutationSignature,

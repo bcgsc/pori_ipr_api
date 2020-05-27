@@ -1354,7 +1354,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_mutationSummary"
+                  "$ref": "#/components/schemas/mutationSummary"
                 }
               }
             }
@@ -1419,7 +1419,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_mutationSummary"
+                  "$ref": "#/components/schemas/mutationSummary"
                 }
               }
             }
@@ -2662,72 +2662,6 @@
       }
     },
     "schemas": {
-      "summary_mutationSummary": {
-        "type": "object",
-        "description": "Details of the computed mutational signature",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "mutationSignature": {
-            "$ref": "#/components/schemas/smallMut_signature"
-          },
-          "totalSNV": {
-            "type": "string"
-          },
-          "totalIndel": {
-            "type": "string"
-          },
-          "totalSV": {
-            "type": "string"
-          },
-          "snvPercentileTCGA": {
-            "type": "integer"
-          },
-          "snvPercentileDisease": {
-            "type": "string"
-          },
-          "indelPercentileTCGA": {
-            "type": "integer"
-          },
-          "indelPercentileDisease": {
-            "type": "string"
-          },
-          "svPercentilePOG": {
-            "type": "integer"
-          },
-          "snvPercentileTCGACategory": {
-            "type": "string"
-          },
-          "snvPercentileDiseaseCategory": {
-            "type": "string"
-          },
-          "indelPercentileTCGACategory": {
-            "type": "string"
-          },
-          "indelPercentileDiseaseCategory": {
-            "type": "string"
-          },
-          "svPercentilePOGCategory": {
-            "type": "string"
-          },
-          "snvReportCategory": {
-            "type": "string"
-          },
-          "indelReportCategory": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "summary_genomicAlteration": {
         "type": "object",
         "description": "Describes an identified genomic alteration",
