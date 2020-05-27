@@ -2633,23 +2633,10 @@
         "example": "2017-03-30T19:04:13.354Z",
         "description": "YYYY-MM-DDTZHH:ii:ss timestamp"
       },
-      "dataVersion": {
-        "type": "integer",
-        "description": "Describes which edit version this entry is. Default is 0"
-      },
-      "POGID": {
-        "type": "string",
-        "example": "POG90",
-        "description": "BC Cancer Patient identifier"
-      },
       "reportIdent": {
         "type": "string",
         "example": "JY41T",
         "description": "Randomly generated unique report ID"
-      },
-      "updateComment": {
-        "type": "string",
-        "description": "A reason why this updated was made."
       },
       "ACLDenied": {
         "type": "object",
