@@ -207,6 +207,13 @@ const genomicAlterationsIdentified = schemaManager.generate(db.models.genomicAlt
   exclude: [...BASE_EXCLUDE],
 });
 
+const mutationSignature = schemaManager.generate(db.models.mutationSignature, new OpenApi3Strategy(), {
+  title: 'mutationSignature',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
+
 // TODO: Ask about probeResults vs probeTarget
 
 module.exports = {
@@ -243,4 +250,5 @@ module.exports = {
   therapeuticTarget,
   germline_small_mutation,
   genomicAlterationsIdentified,
+  mutationSignature,
 };

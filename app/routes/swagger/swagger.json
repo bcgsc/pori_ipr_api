@@ -1400,7 +1400,7 @@
                       "mutationSignature": {
                         "type": "array",
                         "items": {
-                          "$ref": "#/components/schemas/smallMut_signature"
+                          "$ref": "#/components/schemas/mutationSignature"
                         }
                       }
                     }
@@ -2621,43 +2621,6 @@
       }
     },
     "schemas": {
-      "smallMut_signature": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "signature": {
-            "type": "object"
-          },
-          "pearson": {
-            "type": "number",
-            "format": "float"
-          },
-          "nnls": {
-            "type": "number",
-            "format": "float"
-          },
-          "associations": {
-            "type": "string"
-          },
-          "features": {
-            "type": "string"
-          },
-          "numCancerType": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "smallMut_mutation": {
         "type": "object",
         "description": "Detected small mutations",
