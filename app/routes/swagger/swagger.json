@@ -1604,7 +1604,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_genomicAlteration"
+                  "$ref": "#/components/schemas/genomicAlterationsIdentified"
                 }
               }
             }
@@ -1643,7 +1643,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_genomicAlteration"
+                  "$ref": "#/components/schemas/genomicAlterationsIdentified"
                 }
               }
             }
@@ -2662,27 +2662,6 @@
       }
     },
     "schemas": {
-      "summary_genomicAlteration": {
-        "type": "object",
-        "description": "Describes an identified genomic alteration",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "geneVariant": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "summary_genomicEvents": {
         "type": "object",
         "description": "Genomic events with potential therapeutic targets",
