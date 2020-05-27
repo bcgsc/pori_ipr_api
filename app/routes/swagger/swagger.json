@@ -2662,43 +2662,6 @@
       }
     },
     "schemas": {
-      "therapeuticTarget": {
-        "type": "object",
-        "description": "A therapeutic target from an analysis report",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "therapeutic",
-              "chemoresistance"
-            ]
-          },
-          "rank": {
-            "type": "integer"
-          },
-          "target": {
-            "type": "object"
-          },
-          "targetContext": {
-            "type": "string"
-          },
-          "resistance": {
-            "type": "string"
-          },
-          "biomaker": {
-            "type": "object"
-          },
-          "notes": {
-            "type": "string"
-          }
-        }
-      },
       "germlineSmallMutation": {
         "type": "object",
         "description": "A germline small mutation report",

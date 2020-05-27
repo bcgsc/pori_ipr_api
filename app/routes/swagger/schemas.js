@@ -183,6 +183,12 @@ const pathwayAnalysis = schemaManager.generate(db.models.pathwayAnalysis, new Op
   exclude: [...BASE_EXCLUDE],
 });
 
+const therapeuticTarget = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
+  title: 'therapeuticTarget',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
 
 module.exports = {
   user,
@@ -214,4 +220,5 @@ module.exports = {
   user_project,
   patientInformation,
   pathwayAnalysis,
+  therapeuticTarget,
 };
