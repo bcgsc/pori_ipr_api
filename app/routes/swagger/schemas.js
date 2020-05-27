@@ -201,18 +201,6 @@ const germline_small_mutation = schemaManager.generate(db.models.germline_small_
   exclude: [...BASE_EXCLUDE],
 });
 
-const genomicAlterationsIdentified = schemaManager.generate(db.models.genomicAlterationsIdentified, new OpenApi3Strategy(), {
-  title: 'genomicAlterationsIdentified',
-  associations: false,
-  exclude: [...BASE_EXCLUDE],
-});
-
-const mutationSignature = schemaManager.generate(db.models.mutationSignature, new OpenApi3Strategy(), {
-  title: 'mutationSignature',
-  associations: false,
-  exclude: [...BASE_EXCLUDE],
-});
-
 
 // TODO: Ask about probeResults vs probeTarget
 
@@ -249,6 +237,4 @@ module.exports = {
   pathwayAnalysis,
   therapeuticTarget,
   germline_small_mutation,
-  genomicAlterationsIdentified,
-  mutationSignature,
 };
