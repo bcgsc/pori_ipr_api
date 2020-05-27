@@ -1727,7 +1727,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_probeTarget"
+                  "$ref": "#/components/schemas/probeResults"
                 }
               }
             }
@@ -2621,33 +2621,6 @@
       }
     },
     "schemas": {
-      "summary_probeTarget": {
-        "type": "object",
-        "description": "Entries detected by rapid analysis pipeline",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "gene": {
-            "type": "string"
-          },
-          "variant": {
-            "type": "string"
-          },
-          "sample": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "smallMut_signature": {
         "type": "object",
         "properties": {
