@@ -41,7 +41,7 @@ class AnalysisReport {
     this.ident = ident; // Store report ident
     this.instance = null;
     this.model = db.models.analysis_report;
-    this.allowedStates = ['nonproduction', 'ready', 'active', 'presented', 'archived', 'reviewed', 'uploaded', 'signedoff'];
+    this.allowedStates = ['nonproduction', 'ready', 'active', 'archived', 'reviewed', 'uploaded', 'signedoff'];
 
     if (typeof ident === 'object' && ident !== null && ident.ident) {
       this.instance = ident;
@@ -77,7 +77,7 @@ class AnalysisReport {
    *
    * @param {user} user - Owning user for the report creation event
    * @param {type} type - report type to be created (genomic vs probe)
-   * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, presented, archived; expression_matrix: v8, v9)
+   * @param {object} options - Report creation options (eg. state: nonproduction, ready, active, archived; expression_matrix: v8, v9)
    *
    * @returns {Promise.<object>} - Returns a new report
    */
