@@ -900,9 +900,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "name": "type",
             "in": "path",
             "required": true,
@@ -969,15 +966,10 @@
         }
       }
     },
-    "/POG/{POG}/reports": {
+    "/reports": {
       "get": {
-        "summary": "Get all reports for a POG",
-        "description": "Retrieve list of all reports, of all types for a given POG",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          }
-        ],
+        "summary": "Get all reports",
+        "description": "Retrieve list of all reports, of all types for a given query",
         "tags": [
           "POG"
         ],
@@ -1003,14 +995,11 @@
         }
       }
     },
-    "/POG/{POG}/reports/{report}": {
+    "/reports/{report}": {
       "get": {
-        "summary": "Get all reports for a POG",
-        "description": "Retrieve list of all reports, of all types for a given POG",
+        "summary": "Get details of a specific report",
+        "description": "Retrieve an object with details of a specific report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1049,9 +1038,6 @@
           "POG"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1230,14 +1216,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/patientInformation": {
+    "/reports/{report}/genomic/summary/patientInformation": {
       "get": {
         "summary": "Get Patient Summary",
-        "description": "Retrieve basic metadata patient details for a POG",
+        "description": "Retrieve basic metadata patient details for a report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1278,9 +1261,6 @@
           "Genomic Summary"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1327,14 +1307,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/mutationSummary": {
+    "/reports/{report}/genomic/summary/mutationSummary": {
       "get": {
         "summary": "Get Mutation Summary",
         "description": "Retrieve summary of mutation details for the POG",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1375,9 +1352,6 @@
           "Genomic Summary"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1433,14 +1407,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/tumourAnalysis": {
+    "/reports/{report}/genomic/summary/tumourAnalysis": {
       "get": {
         "summary": "Get Tumour Analysis Summary",
         "description": "Retrieve summary of Tumour Analysis details for the POG",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1481,9 +1452,6 @@
           "Genomic Summary"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1536,14 +1504,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/variantCounts": {
+    "/reports/{report}/genomic/summary/variantCounts": {
       "get": {
         "summary": "Get Variant counts",
         "description": "This endpoint is soon to be deprecated. Returns static analysis of variant\ncounts",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1577,14 +1542,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified": {
+    "/reports/{report}/genomic/summary/genomicAlterationsIdentified": {
       "get": {
         "summary": "Get key genomic alterations",
         "description": "Retrieve list of key identified genomic alterations",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1622,9 +1584,6 @@
         "description": "Add new key genomic alterations to a analysis report",
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
@@ -1657,14 +1616,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}": {
+    "/reports/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}": {
       "delete": {
         "summary": "Remove key genomic alterations",
         "description": "Remove a key identified genomic alteration entry.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           },
@@ -1700,14 +1656,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/probeTarget": {
+    "/reports/{report}/genomic/summary/probeTarget": {
       "get": {
         "summary": "Get probe targets",
         "description": "Retrieve list of key identified genomic alterations",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1741,14 +1694,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/probeTarget/{target}": {
+    "/reports/{report}/genomic/summary/probeTarget/{target}": {
       "delete": {
         "summary": "Remove probe target",
         "description": "Remove an idenfitied probe target.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           },
@@ -1784,14 +1734,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/probe/testInformation": {
+    "/reports/{report}/probe/testInformation": {
       "get": {
         "summary": "Get probe test information",
         "description": "Get probe analysis test information",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1891,14 +1838,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/microbial": {
+    "/reports/{report}/genomic/summary/microbial": {
       "get": {
         "summary": "Get microbial data",
         "description": "Get microbial data for a specific POG report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1993,7 +1937,7 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/therapeuticTargets": {
+    "/reports/{report}/genomic/therapeuticTargets": {
       "get": {
         "summary": "Get therapeutic targets",
         "description": "Returns all therapeutic targets for an analysis report",
@@ -2003,9 +1947,6 @@
           "Therapeutic Targets"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -2047,9 +1988,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
@@ -2075,7 +2013,7 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/pathwayAnalysis": {
+    "/reports/{report}/genomic/summary/pathwayAnalysis": {
       "get": {
         "summary": "Get report pathway analysis",
         "description": "Get a reports pathway analysis image",
@@ -2083,9 +2021,6 @@
           "Pathway Analysis"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -2122,9 +2057,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
@@ -2160,9 +2092,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
@@ -2191,7 +2120,7 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations": {
+    "/reports/{report}/genomic/somaticMutations/smallMutations": {
       "get": {
         "summary": "Get somatic small mutations",
         "description": "Returns an analysis reports somatic small mutations",
@@ -2200,9 +2129,6 @@
           "Small Mutations"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -2324,9 +2250,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/analysis"
           }
         ],
@@ -2374,9 +2297,6 @@
           "Germline Report"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/analysis"
           }
