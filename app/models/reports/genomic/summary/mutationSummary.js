@@ -13,58 +13,49 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    mutationSignature: {
-      type: Sq.JSONB,
-      defaultValue: [],
-    },
-    totalSNV: {
+    comparator: {
       type: Sq.TEXT,
+      defaultValue: null,
     },
-    totalIndel: {
-      type: Sq.TEXT,
-    },
-    totalSV: {
-      type: Sq.TEXT,
-    },
-    snvPercentileTCGA: {
+    snv: {
       type: Sq.INTEGER,
+      defaultValue: null,
     },
-    snvPercentileDisease: {
-      type: Sq.TEXT,
-    },
-    indelPercentileTCGA: {
+    snv_truncating: {
       type: Sq.INTEGER,
+      defaultValue: null,
     },
-    indelPercentileDisease: {
-      type: Sq.TEXT,
-    },
-    svPercentilePOG: {
+    indels: {
       type: Sq.INTEGER,
+      defaultValue: null,
     },
-    snvPercentileTCGACategory: {
-      type: Sq.TEXT,
+    indels_frameshift: {
+      type: Sq.INTEGER,
+      defaultValue: null,
     },
-    snvPercentileDiseaseCategory: {
-      type: Sq.TEXT,
+    sv: {
+      type: Sq.INTEGER,
+      defaultValue: null,
     },
-    indelPercentileTCGACategory: {
-      type: Sq.TEXT,
+    sv_expressed: {
+      type: Sq.INTEGER,
+      defaultValue: null,
     },
-    indelPercentileDiseaseCategory: {
-      type: Sq.TEXT,
+    snv_percentile: {
+      type: Sq.INTEGER,
+      defaultValue: null,
     },
-    svPercentilePOGCategory: {
-      type: Sq.TEXT,
+    indel_percentile: {
+      type: Sq.INTEGER,
+      defaultValue: null,
     },
-    snvReportCategory: {
-      type: Sq.TEXT,
-    },
-    indelReportCategory: {
-      type: Sq.TEXT,
+    sv_percentile: {
+      type: Sq.INTEGER,
+      defaultValue: null,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_summary_mutation_summary',
+    tableName: 'reports_summary_mutation',
     scopes: {
       public: {
         attributes: {

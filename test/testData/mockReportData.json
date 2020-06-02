@@ -131,7 +131,7 @@
         "species": "None",
         "integrationSite": "None"
     },
-    "mutationSummaryv2": [
+    "mutationSummary": [
         {
             "comparator": "average",
             "snv": 4,

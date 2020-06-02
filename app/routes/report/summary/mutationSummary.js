@@ -10,7 +10,7 @@ router.use('/', async (req, res, next) => {
   // Get Mutation Summary for this report
   let result;
   try {
-    result = await db.models.mutationSummaryv2.scope('public').findAll({where: {reportId: req.report.id}});
+    result = await db.models.mutationSummary.scope('public').findAll({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup mutation summaries for report ${req.report.ident} error: ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.report.ident}`, code: 'failedMutationSummaryQuery'}});
