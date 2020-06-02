@@ -22,7 +22,7 @@
       "description": "Rapid analysis pipeline report"
     },
     {
-      "name": "POG",
+      "name": "Report",
       "description": "Personalized Oncogenomics related object"
     },
     {
@@ -35,7 +35,7 @@
     },
     {
       "name": "Genomic Summary",
-      "description": "Genomic Report - Summary details for a POG report"
+      "description": "Genomic Report - Summary details for a report"
     },
     {
       "name": "Germline Report",
@@ -808,7 +808,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Successfully found all reports for this POG",
+            "description": "Successfully found all reports",
             "content": {
               "application/json": {
                 "schema": {
@@ -963,7 +963,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1016,7 +1016,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1024,7 +1024,7 @@
     "/reports/{report}/genomic/summary/mutationSummary": {
       "get": {
         "summary": "Get Mutation Summary",
-        "description": "Retrieve summary of mutation details for the POG",
+        "description": "Retrieve summary of mutation details for the report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -1054,7 +1054,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1116,7 +1116,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1124,7 +1124,7 @@
     "/reports/{report}/genomic/summary/tumourAnalysis": {
       "get": {
         "summary": "Get Tumour Analysis Summary",
-        "description": "Retrieve summary of Tumour Analysis details for the POG",
+        "description": "Retrieve summary of Tumour Analysis details for the report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -1154,7 +1154,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1213,7 +1213,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1251,7 +1251,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1289,7 +1289,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1365,7 +1365,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1403,7 +1403,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1443,7 +1443,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1520,7 +1520,7 @@
     "/reports": {
       "get": {
         "summary": "Get all analysis reports",
-        "description": "Get all POG analysis reports that you have acess to",
+        "description": "Get all analysis reports that you have acess to",
         "tags": [
           "Reports"
         ],
@@ -1531,7 +1531,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of POG analysis reports",
+            "description": "Returns an array of analysis reports",
             "content": {
               "application/json": {
                 "schema": {
