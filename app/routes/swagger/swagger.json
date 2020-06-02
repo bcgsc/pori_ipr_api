@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "Designed to be consumed by the POG Report Client, the endpoints are\navailable for authorized users to consume.",
+    "description": "Designed to be consumed by the Report Client, the endpoints are\navailable for authorized users to consume.",
     "version": "1.0.0",
-    "title": "POG Reports",
+    "title": "Analysis reports",
     "contact": {
       "name": "IPR Team",
       "email": "ipr@bcgsc.ca"
@@ -420,7 +420,7 @@
       },
       "post": {
         "summary": "Create new group",
-        "description": "Create a new ACL group in the POG Report API",
+        "description": "Create a new ACL group in the Report API",
         "tags": [
           "User",
           "Group"
@@ -804,7 +804,6 @@
           }
         ],
         "tags": [
-          "POG"
         ],
         "security": [
           {
@@ -834,7 +833,6 @@
         "summary": "Update report",
         "description": "Update an analysis report's settings",
         "tags": [
-          "POG"
         ],
         "parameters": [
           {
@@ -1518,7 +1516,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "403": {
-            "description": "Insufficient access to get POG reports"
+            "description": "Insufficient access to get reports"
           }
         }
       }
@@ -1526,7 +1524,7 @@
     "/reports/{report}/genomic/summary/microbial": {
       "get": {
         "summary": "Get microbial data",
-        "description": "Get microbial data for a specific POG report",
+        "description": "Get microbial data for a specific report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -1858,7 +1856,7 @@
             "name": "search",
             "in": "query",
             "required": false,
-            "description": "POGID to search reports for",
+            "description": "ID to search reports for",
             "schema": {
               "type": "string"
             }
@@ -1944,15 +1942,6 @@
   ],
   "components": {
     "parameters": {
-      "POG": {
-        "name": "POG",
-        "in": "path",
-        "required": true,
-        "description": "POG ID",
-        "schema": {
-          "type": "string"
-        }
-      },
       "report": {
         "name": "report",
         "in": "path",
