@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "Designed to be consumed by the Report Client, the endpoints are\navailable for authorized users to consume.",
+    "description": "Designed to be consumed by the Integrated Personalized Reports (IPR) Client, the endpoints are\navailable for authorized users to consume.",
     "version": "1.0.0",
-    "title": "Analysis reports",
+    "title": "Integrated Personalized Reports (IPR)",
     "contact": {
       "name": "IPR Team",
       "email": "ipr@bcgsc.ca"
