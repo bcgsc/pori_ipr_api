@@ -794,35 +794,6 @@
         }
       }
     },
-    "/reports": {
-      "get": {
-        "summary": "Get all reports",
-        "description": "Retrieve list of all reports, of all types for a given query",
-        "tags": [
-          "POG"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully found all reports",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/analysis_report"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
     "/reports/{report}": {
       "get": {
         "summary": "Get details of a specific report",
