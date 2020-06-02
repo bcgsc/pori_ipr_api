@@ -1938,7 +1938,7 @@
       "description": "Production server (uses live data)"
     },
     {
-      "url": "https://dev-ipr.bcgsc.ca:8081/api/1.0",
+      "url": "https://iprdev-api.bcgsc.ca/api",
       "description": "Development server"
     }
   ],
