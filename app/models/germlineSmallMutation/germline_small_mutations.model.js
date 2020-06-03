@@ -13,13 +13,13 @@ module.exports = (sequelize) => {
     biopsyName: {
       name: 'biopsyName',
       field: 'biopsy_name',
+      allowNull: false,
       type: Sq.TEXT,
     },
     normalLibrary: {
       name: 'normalLibrary',
       field: 'normal_library',
       type: Sq.TEXT,
-      allowNull: false,
     },
     source_version: {
       type: Sq.TEXT,
