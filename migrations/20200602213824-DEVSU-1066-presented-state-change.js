@@ -19,6 +19,7 @@ module.exports = {
 
       await queryInterface.changeColumn(TABLE, 'state', {
         type: Sequelize.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction'),
+        allowNull: false,
       }, {transaction});
 
       return queryInterface.sequelize.query(
