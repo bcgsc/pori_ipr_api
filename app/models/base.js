@@ -2,6 +2,11 @@ const Sq = require('sequelize');
 const {existsChecker} = require('../libs/helperFunctions');
 
 const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
+
+const SIGNATURE_REMOVAL_EXCLUDE = {
+  analysis_report: ['state', 'presentationDate', 'updatedAt'],
+};
+
 const DEFAULT_MAPPING_COLUMNS = {
   id: {
     type: Sq.INTEGER,
@@ -84,13 +89,23 @@ const DEFAULT_REPORT_OPTIONS = {
     ...DEFAULT_OPTIONS.hooks,
 
     afterUpdate: (instance, options = {}) => {
+      const modelName = instance.constructor.name;
+      // check if the data has changed or if the fields updated
+      // are excluded from removing the reviewer signature
+      const changed = instance.changed();
+      const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
+
+      if (!changed || existsChecker(updateExclude, changed)) {
+        return true;
+      }
+
       // remove reviewer signature from report
       return instance.sequelize.models.analystComments.update({
         reviewerId: null,
         reviewerSignedAt: null,
       }, {
         where: {
-          reportId: (instance.constructor.name === 'analysis_report') ? instance.id : instance.reportId,
+          reportId: (modelName === 'analysis_report') ? instance.id : instance.reportId,
         },
         individualHooks: true,
         paranoid: true,
