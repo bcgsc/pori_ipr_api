@@ -1,5 +1,7 @@
 const Sq = require('sequelize');
+const {existsChecker} = require('../libs/helperFunctions');
 
+const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
 const DEFAULT_MAPPING_COLUMNS = {
   id: {
     type: Sq.INTEGER,
@@ -57,6 +59,13 @@ const DEFAULT_OPTIONS = {
   ],
   hooks: {
     beforeUpdate: (instance, options = {}) => {
+      // check if the data has changed or if the fields updated
+      // are excluded from creating a new record
+      const changed = instance.changed();
+      if (!changed || existsChecker(DEFAULT_UPDATE_EXCLUDE, changed)) {
+        return true;
+      }
+
       const {id, ...content} = instance._previousDataValues;
 
       return instance.constructor.create({
