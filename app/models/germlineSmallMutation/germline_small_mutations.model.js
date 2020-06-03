@@ -9,13 +9,11 @@ module.exports = (sequelize) => {
       field: 'patient_id',
       type: Sq.TEXT,
       allowNull: false,
-      required: true,
     },
     biopsyName: {
       name: 'biopsyName',
       field: 'biopsy_name',
       type: Sq.TEXT,
-      required: true,
     },
     normalLibrary: {
       name: 'normalLibrary',
@@ -32,7 +30,6 @@ module.exports = (sequelize) => {
     },
     biofx_assigned_id: {
       type: Sq.INTEGER,
-      required: true,
       references: {
         model: 'users',
         key: 'id',
