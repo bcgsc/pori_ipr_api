@@ -19,6 +19,7 @@ module.exports = (sequelize) => {
       name: 'normalLibrary',
       field: 'normal_library',
       type: Sq.TEXT,
+      allowNull: false,
     },
     source_version: {
       type: Sq.TEXT,
@@ -30,6 +31,7 @@ module.exports = (sequelize) => {
     },
     biofx_assigned_id: {
       type: Sq.INTEGER,
+      allowNull: false,
       references: {
         model: 'users',
         key: 'id',
