@@ -35,7 +35,7 @@ router.route('/')
       logger.info('Successfully got project access');
     } catch (error) {
       logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message, code: error.code}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message}});
     }
     let opts = {
       where: {},
