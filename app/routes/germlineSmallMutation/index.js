@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
     rawVariants = variants;
 
     ({dataValues: report} = await db.models.germline_small_mutation.create(
-      {...rest, biofx_assigned: user.id},
+      {...rest, biofx_assigned_id: user.id},
     ));
   } catch (err) {
     const message = `There was an error creating germline small mutation report: ${err}`;
