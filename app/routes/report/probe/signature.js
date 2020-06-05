@@ -68,7 +68,7 @@ router.route('/:role(ready|reviewer)')
       return res.json(result);
     } catch (error) {
       logger.error(`Error while trying to find updated probe signature ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find updated probe signature', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find updated probe signature'}});
     }
   });
 
@@ -108,7 +108,7 @@ router.route('/revoke/:role(ready|reviewer)')
       return res.json(result);
     } catch (error) {
       logger.error(`Error while trying to find updated probe signature ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find updated probe signature', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find updated probe signature'}});
     }
   });
 

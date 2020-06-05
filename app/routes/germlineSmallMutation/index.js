@@ -77,7 +77,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project'}});
   }
 
   if (!project) {
