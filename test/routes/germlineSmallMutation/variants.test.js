@@ -36,7 +36,7 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
     record = await db.models.germline_small_mutation.create({
       source_version: 'v1.0.0',
       source_path: '/some/random/source/path',
-      biofx_assigned: 0,
+      biofx_assigned_id: 1,
       exported: false,
       patientId: 'TESTPAT01',
       biopsyName: 'TEST123',
