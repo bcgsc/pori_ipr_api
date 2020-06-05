@@ -52,7 +52,7 @@ router.route('/')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update patient information ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update patient information', code: 'failedPatientInformationVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update patient information'}});
     }
   });
 

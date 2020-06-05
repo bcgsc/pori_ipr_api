@@ -15,7 +15,7 @@ router.use('/', async (req, res, next) => {
     result = await db.models.analystComments.scope('public').findOne({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to query analyst comments for ${req.report.patientId} with error ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.report.patientId}`, code: 'failedAnalystCommentsQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to query analyst comments for ${req.report.patientId}`}});
   }
 
   // Not found is allowed!
@@ -41,7 +41,7 @@ router.route('/')
         return res.json(result);
       } catch (error) {
         logger.error(`Unable to create new analysis comments ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new analysis comments', code: 'failedAnalystCommentCreate'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new analysis comments'}});
       }
     } else {
       // On comment update

@@ -13,12 +13,12 @@ router.param('cnv', async (req, res, next, mutIdent) => {
     result = await db.models.copyVariants.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
     logger.error(`Error while processing request ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareCNVQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request'}});
   }
 
   if (!result) {
     logger.error('Unable to locate the requested resource');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareCNVLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource'}});
   }
 
   req.cnv = result;
@@ -53,7 +53,7 @@ router.route('/:cnv([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to version the resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to version the resource', code: 'failedAPCDestroy'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to version the resource'}});
     }
   })
   .delete(async (req, res) => {
@@ -64,7 +64,7 @@ router.route('/:cnv([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove resource', code: 'failedCNVremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove resource'}});
     }
   });
 
@@ -96,7 +96,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedCNVlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource'}});
     }
   });
 
