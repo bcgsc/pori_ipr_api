@@ -40,7 +40,7 @@ router.route('/retrieve/:key')
       return res.json(output);
     } catch (error) {
       logger.error(`There was an error finding image data ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
     }
   });
 
@@ -66,7 +66,7 @@ router.route('/expression-density-graphs')
       return res.json(output);
     } catch (error) {
       logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
     }
   });
 
@@ -95,7 +95,7 @@ router.route('/mutation-summary')
       return res.json(output);
     } catch (error) {
       logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
     }
   });
 
@@ -121,7 +121,7 @@ router.route('/subtype-plots')
       return res.json(output);
     } catch (error) {
       logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data', code: 'imageQueryFailed'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
     }
   });
 

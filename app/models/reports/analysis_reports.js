@@ -69,8 +69,9 @@ module.exports = (sequelize) => {
       defaultValue: null,
     },
     state: {
-      type: Sq.STRING,
+      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction'),
       defaultValue: 'ready',
+      allowNull: false,
     },
     expression_matrix: {
       type: Sq.STRING,

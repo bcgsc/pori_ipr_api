@@ -23,7 +23,7 @@ const checkGermlineReport = expect.objectContaining({
   exported: expect.any(Boolean),
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
-  biofx_assigned: expect.any(Object),
+  biofx_assigned: expect.objectContaining({ident: expect.any(String)}),
   projects: expect.any(Array),
   reviews: expect.any(Array),
   variants: expect.any(Array),
@@ -42,11 +42,17 @@ describe('/germline-small-mutation-reports', () => {
   // TODO:Add checks to ensure is not returning id
   let server;
   let request;
+  let testUser;
 
   beforeAll(async () => {
     const port = await getPort({port: CONFIG.get('web:port')});
     server = await listen(port);
     request = supertest(server);
+
+    // get test user
+    testUser = await db.models.user.findOne({
+      where: {username},
+    });
   });
 
   afterAll(async () => {
@@ -214,7 +220,11 @@ describe('/germline-small-mutation-reports', () => {
       record = await db.models.germline_small_mutation.create({
         source_version: 'v1.0.0',
         source_path: '/some/random/source/path',
+<<<<<<< HEAD
         biofx_assigned_id: 1,
+=======
+        biofx_assigned_id: testUser.id,
+>>>>>>> development
         exported: false,
         patientId: 'TESTPAT01',
         biopsyName: 'TEST123',
