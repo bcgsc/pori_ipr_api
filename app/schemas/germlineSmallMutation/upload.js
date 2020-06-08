@@ -24,6 +24,10 @@ schema.properties.project = {
   type: 'string',
 };
 
+// Remove germline_report_id from the required inputs
+const germlineReportIdIndex = schema.properties.rows.items.required.indexOf('germline_report_id');
+schema.properties.rows.items.required.splice(germlineReportIdIndex, 1);
+
 schema.additionalProperties = false;
 
 module.exports = schema;
