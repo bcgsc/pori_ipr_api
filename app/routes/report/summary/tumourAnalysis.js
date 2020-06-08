@@ -14,12 +14,12 @@ router.use('/', async (req, res, next) => {
     result = await db.models.tumourAnalysis.scope('public').findOne({where: {reportId: req.report.id}});
   } catch (error) {
     logger.error(`Unable to lookup the tumour analysis for ${req.report.ident} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the tumour analysis for ${req.report.ident}`, code: 'failedTumourAnalysisQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the tumour analysis for ${req.report.ident}`}});
   }
 
   if (!result) {
     logger.error(`Unable to find tumour analysis for ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find tumour analysis for ${req.report.ident}`, code: 'failedTumourAnalysisLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find tumour analysis for ${req.report.ident}`}});
   }
 
   // Found the patient information
@@ -56,7 +56,7 @@ router.route('/')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update tumour analysis ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update tumour analysis', code: 'failedTumourAnalysisVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update tumour analysis'}});
     }
   });
 

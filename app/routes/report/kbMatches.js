@@ -13,12 +13,12 @@ router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
     result = await db.models.kbMatches.scope('public').findOne({where: {ident: kbMatchIdent}});
   } catch (error) {
     logger.log(`Unable to process the request ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareAlterationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request'}});
   }
 
   if (!result) {
     logger.error('Unable to locate the requested resource');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareAlterationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource'}});
   }
 
   req.kbMatch = result;
@@ -64,7 +64,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource'}});
     }
   });
 
