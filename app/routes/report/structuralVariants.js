@@ -12,12 +12,12 @@ router.param('sv', async (req, res, next, svIdent) => {
     result = await db.models.structuralVariants.scope('public').findOne({where: {ident: svIdent}});
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get structural variant', code: 'failedMiddlewareStructuralVariationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get structural variant'}});
   }
 
   if (!result) {
     logger.error('Unable to locate structural variant');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate structural variant', code: 'failedMiddlewareStructuralVariationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate structural variant'}});
   }
   req.variation = result;
   return next();
@@ -61,7 +61,7 @@ router.route('/:sv([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove structural variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove structural variant', code: 'failedStructuralVariationremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove structural variant'}});
     }
   });
 
@@ -91,7 +91,7 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve structural variants', code: 'failedStructuralVariationlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve structural variants'}});
     }
   });
 

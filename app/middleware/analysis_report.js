@@ -24,7 +24,7 @@ module.exports = async (req, res, next, ident) => {
 
   // Nothing found?
   if (!result) {
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report', code: 'reportMiddlewareLookupFail'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
   }
 
   // report found, next()

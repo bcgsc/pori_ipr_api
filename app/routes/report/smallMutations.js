@@ -12,12 +12,12 @@ router.param('mutation', async (req, res, next, mutIdent) => {
     result = await db.models.smallMutations.scope('public').findOne({where: {ident: mutIdent}});
   } catch (error) {
     logger.error(`Unable to get somatic mutations ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get somatic mutations', code: 'failedMiddlewareSomaticMutationQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get somatic mutations'}});
   }
 
   if (!result) {
     logger.error('Unable to locate somatic mutations');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate somatic mutations', code: 'failedMiddlewareSomaticMutationLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate somatic mutations'}});
   }
 
   req.mutation = result;
@@ -63,7 +63,7 @@ router.route('/:mutation([A-z0-9-]{36})')
       return res.json({success: true});
     } catch (error) {
       logger.error(`Unable to remove somatic mutations ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove somatic mutations', code: 'failedSomaticMutationremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove somatic mutations'}});
     }
   });
 
@@ -93,7 +93,7 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve small mutations ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve small mutations', code: 'failedSomaticMutationlookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve small mutations'}});
     }
   });
 

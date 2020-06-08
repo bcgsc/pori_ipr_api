@@ -206,7 +206,7 @@ router.route('/:project([A-z0-9-]{36})')
       });
     } catch (error) {
       logger.error(`Error while trying to update project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to update project', code: 'failedProjectUpdateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to update project'}});
     }
 
     // Success, get project -- UGH
@@ -224,7 +224,7 @@ router.route('/:project([A-z0-9-]{36})')
       return res.json(project);
     } catch (error) {
       logger.error(`Error while trying to retrieve a project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to retrieve a project', code: 'failedProjectLookupQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to retrieve a project'}});
     }
   })
   // Remove a project
@@ -241,12 +241,12 @@ router.route('/:project([A-z0-9-]{36})')
       // Delete project
       const result = await db.models.project.destroy({where: {ident: req.project.ident}, limit: 1});
       if (!result) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested project', code: 'failedProjectRemove'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested project'}});
       }
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while trying to remove project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove project', code: 'failedProjectRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove project'}});
     }
   });
 
@@ -312,11 +312,11 @@ router.route('/:project([A-z0-9-]{36})/user')
       user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
     }
 
     if (!user) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied user.', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied user.'}});
     }
 
     let hasBinding;
@@ -325,7 +325,7 @@ router.route('/:project([A-z0-9-]{36})/user')
       hasBinding = await db.models.user_project.findOne({paranoid: false, where: {user_id: user.id, project_id: req.project.id, deletedAt: {[Op.ne]: null}}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserBindingLookupUserProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
     }
 
     // exists - set deletedAt to null
@@ -339,7 +339,7 @@ router.route('/:project([A-z0-9-]{36})/user')
         return res.json(user);
       } catch (error) {
         logger.error(`Error while restoring user project binding ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while restoring existing user project binding', code: 'failedUserProjectRestore'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while restoring existing user project binding'}});
       }
     }
     // doesn't exist - create new binding
@@ -365,7 +365,7 @@ router.route('/:project([A-z0-9-]{36})/user')
       return res.json(output);
     } catch (error) {
       logger.error(`Error while adding user to project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding user to project', code: 'failedUserProjectCreate'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding user to project'}});
     }
   })
   .delete(async (req, res) => {
@@ -384,12 +384,12 @@ router.route('/:project([A-z0-9-]{36})/user')
       user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
     }
 
     if (!user) {
       logger.error('Unable to find the supplied user');
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied user', code: 'failedUserLookupUserProject'}});
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied user'}});
     }
 
     try {
@@ -397,12 +397,12 @@ router.route('/:project([A-z0-9-]{36})/user')
       const unboundUser = await db.models.user_project.destroy({where: {project_id: req.project.id, user_id: user.id}});
       if (!unboundUser) {
         logger.error('Unable to remove user from project');
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove user from project', code: 'failedUserProjectDestroy'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove user from project'}});
       }
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while removing user from project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while removing user from project', code: 'failedGroupMemberRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while removing user from project'}});
     }
   });
 
@@ -436,11 +436,11 @@ router.route('/:project([A-z0-9-]{36})/reports')
       report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id', 'ident']});
       if (!report) {
         logger.error('Unable to find report');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report', code: 'failedReportLookupReportProject'}});
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the supplied report'}});
       }
     } catch (error) {
       logger.error(`Error while trying to find report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report'}});
     }
 
     try {
@@ -456,7 +456,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
       return res.json(output);
     } catch (error) {
       logger.error(`Error while adding report to project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding report to project', code: 'failedReportProjectCreateQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding report to project'}});
     }
   })
   .delete(async (req, res) => {
@@ -475,23 +475,23 @@ router.route('/:project([A-z0-9-]{36})/reports')
       report = await db.models.analysis_report.findOne({where: {ident: req.body.report}, attributes: ['id']});
       if (!report) {
         logger.error(`Unable to find report ${req.body.report}`);
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`, code: 'failedReportLookupReportProject'}});
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find report ${req.body.report}`}});
       }
     } catch (error) {
       logger.error(`Error while trying to find report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report', code: 'failedReportLookupReportProject'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find report'}});
     }
 
     try {
       // Unbind report
       const reportProject = await db.models.reportProject.destroy({where: {project_id: req.project.id, reportId: report.id}});
       if (!reportProject) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove report from project', code: 'failedReportProjectDestroy'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove report from project'}});
       }
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while trying to remove report from project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove Report from project', code: 'failedGroupMemberRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to remove Report from project'}});
     }
   });
 

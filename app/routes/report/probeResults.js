@@ -12,12 +12,12 @@ router.param('target', async (req, res, next, altIdent) => {
     result = await db.models.probeResults.scope('public').findOne({where: {ident: altIdent}});
   } catch (error) {
     logger.error(`Unable to find probe target ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find probe target', code: 'failedMiddlewareProbeTargetQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find probe target'}});
   }
 
   if (!result) {
     logger.error('Unable to locate probe target');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate probe target', code: 'failedMiddlewareProbeTargetLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate probe target'}});
   }
 
   req.target = result;
@@ -52,7 +52,7 @@ router.route('/:target([A-z0-9-]{36})')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update probe target ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update probe target', code: 'failedMutationSummaryVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update probe target'}});
     }
   })
   .delete(async (req, res) => {
@@ -62,7 +62,7 @@ router.route('/:target([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove probe target ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove probe target', code: 'failedProbeTargetremove'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove probe target'}});
     }
   });
 
@@ -83,7 +83,7 @@ router.route('/')
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedTargetedGenelookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource'}});
     }
   });
 
