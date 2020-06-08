@@ -220,11 +220,7 @@ describe('/germline-small-mutation-reports', () => {
       record = await db.models.germline_small_mutation.create({
         source_version: 'v1.0.0',
         source_path: '/some/random/source/path',
-<<<<<<< HEAD
-        biofx_assigned_id: 1,
-=======
         biofx_assigned_id: testUser.id,
->>>>>>> development
         exported: false,
         patientId: 'TESTPAT01',
         biopsyName: 'TEST123',
