@@ -60,7 +60,7 @@ router.route('/')
 
     try {
       // Get all alterations for this report
-      const result = await db.models.kbMatches.scope('extended').findAll(options);
+      const result = await db.models.kbMatches.scope('publicNoIncludes').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
