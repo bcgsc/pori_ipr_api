@@ -65,9 +65,6 @@ module.exports = (sequelize) => {
       minimal: {
         attributes: ['cnvState', 'lohState', 'ploidyCorrCpChange'],
       },
-      publicNoIncludes: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
-      },
     },
   });
 };
