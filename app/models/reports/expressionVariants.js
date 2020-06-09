@@ -154,6 +154,9 @@ module.exports = (sequelize) => {
       minimal: {
         attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
       },
+      publicNoIncludes: {
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+      },
     },
   });
 };

@@ -62,6 +62,9 @@ module.exports = (sequelize) => {
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
       },
+      publicNoIncludes: {
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+      },
     },
   });
 };

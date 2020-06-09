@@ -119,6 +119,9 @@ module.exports = (sequelize) => {
           },
         ],
       },
+      publicNoIncludes: {
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'gene1Id', 'gene2Id']},
+      },
     },
   });
 };

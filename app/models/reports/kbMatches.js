@@ -119,6 +119,12 @@ module.exports = (sequelize) => {
           return {model: sequelize.models[modelName].scope('extended'), as: modelName};
         }),
       },
+      publicNoIncludes: {
+        attributes: {exclude: ['id', 'deletedAt', 'reportId', 'variantId']},
+        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+          return {model: sequelize.models[modelName].scope('publicNoIncludes'), as: modelName};
+        }),
+      },
     },
     hooks: {
       ...DEFAULT_REPORT_OPTIONS.hooks,
