@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
       },
     },
     signature: {
-      type: Sq.INTEGER,
+      type: Sq.TEXT,
     },
     pearson: {
       type: Sq.FLOAT,
