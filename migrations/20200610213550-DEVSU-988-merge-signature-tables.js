@@ -18,9 +18,9 @@ module.exports = {
       // 3) transfer signatures from comment analyst to reports_signatures (probe_signatures) table
       await queryInterface.sequelize.query(
         `
-          INSERT INTO ${SIGNATURES_TABLE} (ident, report_id, reviewer_id, reviewer_signed_at, author_id, author_signed_at, created_at, updated_at) (
-            SELECT uuid_generate_v4(), report_id, reviewer_id, reviewer_signed_at, author_id, author_signed_at, created_at, updated_at 
-            FROM ${ANALYST_COMMENTS_TABLE} WHERE deleted_at IS NULL
+          INSERT INTO ${SIGNATURES_TABLE} (ident, report_id, reviewer_id, reviewer_signed_at, author_id, author_signed_at, created_at, updated_at, deleted_at) (
+            SELECT uuid_generate_v4(), report_id, reviewer_id, reviewer_signed_at, author_id, author_signed_at, created_at, updated_at, deleted_at 
+            FROM ${ANALYST_COMMENTS_TABLE}
           )
         `, {transaction}
       );
