@@ -18,7 +18,7 @@ router.param('discussion', async (req, res, next, ident) => {
     req.discussion = result;
     return next();
   } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareDiscussionQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.'}});
   }
 });
 
@@ -101,7 +101,7 @@ router.param('slide', async (req, res, next, ident) => {
     return next();
   } catch (error) {
     console.log(error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.', code: 'failedMiddlewareSlideQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.'}});
   }
 });
 

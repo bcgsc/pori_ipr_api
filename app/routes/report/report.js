@@ -35,7 +35,7 @@ router.route('/')
       logger.info('Successfully got project access');
     } catch (error) {
       logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message, code: error.code}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message}});
     }
     let opts = {
       where: {},
@@ -226,7 +226,7 @@ router.route('/')
       });
     } catch (error) {
       logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project'}});
     }
 
     if (!project) {
@@ -245,7 +245,7 @@ router.route('/')
         logger.error(`Unable to delete the already created components of the report ${err}`);
       }
 
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report'}});
     };
 
     // create report
@@ -284,7 +284,7 @@ router.route('/')
         logger.error(`Unable to delete the already created report/components of the report ${err}`);
       }
 
-      return res.status(400).json({error: {message: 'Unable to create all report components', cause: error}});
+      return res.status(400).json({error: {message: 'Unable to create all report components'}});
     }
 
     return res.json({message: 'Report upload was successful', ident: report.ident});
@@ -312,7 +312,7 @@ router.route('/:report')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error trying to delete report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report'}});
     }
   })
   .put(async (req, res) => {
@@ -340,7 +340,7 @@ router.route('/:report')
       return res.json(publicModel);
     } catch (error) {
       logger.error(`Unable to update report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report', cause: error}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report'}});
     }
   });
 

@@ -28,7 +28,7 @@ module.exports = async (req, res, next) => {
     } catch (error) {
       const errorDescription = JSON.parse(error.error).error_description;
       logger.error(`Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {name: error.name, code: error.statusCode, cause: errorDescription}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`}});
     }
   }
   if (!token) {

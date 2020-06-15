@@ -75,7 +75,7 @@ router.get('/batch/download', async (req, res) => {
               [Op.in]: germlineReports.map((germReport) => { return germReport.patientId; }),
             },
             state: {
-              [Op.in]: ['presented', 'active', 'archived'],
+              [Op.in]: ['reviewed', 'active', 'archived'],
             },
           },
           required: true,

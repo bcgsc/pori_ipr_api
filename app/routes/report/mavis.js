@@ -19,7 +19,7 @@ router.route('/')
       },
       (error) => {
         console.log(error);
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedMAVISSummarylookup'} });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource'} });
       }
     );
 

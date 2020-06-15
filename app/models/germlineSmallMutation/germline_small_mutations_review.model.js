@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
     ...DEFAULT_COLUMNS,
     germline_report_id: {
       type: Sq.INTEGER,
-      required: true,
+      allowNull: false,
       references: {
         model: 'germline_small_mutations',
         key: 'id',
@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
     },
     reviewedBy_id: {
       type: Sq.INTEGER,
-      required: true,
+      allowNull: false,
       references: {
         model: 'users',
         key: 'id',

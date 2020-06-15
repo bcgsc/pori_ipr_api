@@ -24,6 +24,7 @@ schema.properties.project = {
   type: 'string',
 };
 
+
 schema.additionalProperties = false;
 
 module.exports = schema;
