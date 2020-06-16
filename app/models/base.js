@@ -76,7 +76,7 @@ const DEFAULT_REPORT_OPTIONS = {
 
     afterUpdate: (instance, options = {}) => {
       // remove reviewer signature from report
-      return instance.sequelize.models.analystComments.update({
+      return instance.sequelize.models.signatures.update({
         reviewerId: null,
         reviewerSignedAt: null,
       }, {

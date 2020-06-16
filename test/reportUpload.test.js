@@ -58,7 +58,7 @@ describe('Tests for uploading a report and all of its components', () => {
     // for all components, do a find where report_id
     // is the same as the created report id
     const {
-      ReportUserFilter, createdBy, probe_signature,
+      ReportUserFilter, createdBy, signatures,
       presentation_discussion, presentation_slides,
       users, analystComments, projects, ...associations
     } = db.models.analysis_report.associations;

@@ -1,8 +1,8 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('probe_signature', {
+  return sequelize.define('signatures', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -13,7 +13,9 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    reviewerSignedBy_id: {
+    reviewerId: {
+      name: 'reviewerId',
+      field: 'reviewer_id',
       type: Sq.INTEGER,
       references: {
         model: 'users',
@@ -21,30 +23,36 @@ module.exports = (sequelize) => {
       },
     },
     reviewerSignedAt: {
+      name: 'reviewerSignedAt',
+      field: 'reviewer_signed_at',
       type: Sq.DATE,
       allowNull: true,
     },
-    readySignedBy_id: {
+    authorId: {
+      name: 'authorId',
+      field: 'author_id',
       type: Sq.INTEGER,
       references: {
         model: 'users',
         key: 'id',
       },
     },
-    readySignedAt: {
+    authorSignedAt: {
+      name: 'authorSignedAt',
+      field: 'author_signed_at',
       type: Sq.DATE,
       allowNull: true,
     },
   },
   {
     ...DEFAULT_OPTIONS,
-    tableName: 'reports_probe_signature',
+    tableName: 'reports_signatures',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'readySignedBy_id', 'reviewerSignedBy_id']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'reviewerId', 'authorId']},
         include: [
           {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
-          {model: sequelize.models.user.scope('public'), as: 'readySignature'},
+          {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
         ],
       },
     },
