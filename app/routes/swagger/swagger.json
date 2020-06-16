@@ -899,7 +899,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/patientInformation": {
+    "/reports/{report}/genomic/summary/patient-information": {
       "get": {
         "summary": "Get Patient Summary",
         "description": "Retrieve basic metadata patient details for a report",
@@ -990,7 +990,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/mutationSummary": {
+    "/reports/{report}/genomic/summary/mutation-summary": {
       "get": {
         "summary": "Get Mutation Summary",
         "description": "Retrieve summary of mutation details for the report",
@@ -1090,7 +1090,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/tumourAnalysis": {
+    "/reports/{report}/genomic/summary/tumour-analysis": {
       "get": {
         "summary": "Get Tumour Analysis Summary",
         "description": "Retrieve summary of Tumour Analysis details for the report",
@@ -1187,7 +1187,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/variantCounts": {
+    "/reports/{report}/genomic/summary/variant-counts": {
       "get": {
         "summary": "Get Variant counts",
         "description": "This endpoint is soon to be deprecated. Returns static analysis of variant\ncounts",
@@ -1225,7 +1225,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/genomicAlterationsIdentified": {
+    "/reports/{report}/genomic/summary/genomic-alterations-identified": {
       "get": {
         "summary": "Get key genomic alterations",
         "description": "Retrieve list of key identified genomic alterations",
@@ -1299,7 +1299,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}": {
+    "/reports/{report}/genomic/summary/genomic-alterations-identified/{alteration}": {
       "delete": {
         "summary": "Remove key genomic alterations",
         "description": "Remove a key identified genomic alteration entry.",
@@ -1335,153 +1335,6 @@
           },
           "404": {
             "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/genomic/summary/probeTarget": {
-      "get": {
-        "summary": "Get probe targets",
-        "description": "Retrieve list of key identified genomic alterations",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Genomic Report",
-          "Genomic Summary"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns array of key identified gemomic alterations",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/probeResults"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/genomic/summary/probeTarget/{target}": {
-      "delete": {
-        "summary": "Remove probe target",
-        "description": "Remove an idenfitied probe target.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "name": "target",
-            "in": "path",
-            "required": true,
-            "description": "The probe target entry to be removed",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "tags": [
-          "Genomic Report",
-          "Genomic Summary"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Probe target was successfully removed"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/probe/testInformation": {
-      "get": {
-        "summary": "Get probe test information",
-        "description": "Get probe analysis test information",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Probe Report"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Probe report test information was successfully received",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ident": {
-                      "$ref": "#/components/schemas/ident"
-                    },
-                    "kbVersion": {
-                      "type": "string"
-                    },
-                    "snpProbe": {
-                      "type": "string"
-                    },
-                    "snpGenes": {
-                      "type": "string"
-                    },
-                    "snpVars": {
-                      "type": "string"
-                    },
-                    "fusionProbe": {
-                      "type": "string"
-                    },
-                    "fusionGenes": {
-                      "type": "string"
-                    },
-                    "fusionVars": {
-                      "type": "string"
-                    },
-                    "createdAt": {
-                      "$ref": "#/components/schemas/datetime"
-                    },
-                    "updatedAt": {
-                      "$ref": "#/components/schemas/datetime"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Probe report test results not found"
           }
         }
       }
@@ -1620,7 +1473,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/therapeuticTargets": {
+    "/reports/{report}/genomic/therapeutic-targets": {
       "get": {
         "summary": "Get therapeutic targets",
         "description": "Returns all therapeutic targets for an analysis report",
@@ -1696,7 +1549,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/pathwayAnalysis": {
+    "/reports/{report}/genomic/summary/pathway-analysis": {
       "get": {
         "summary": "Get report pathway analysis",
         "description": "Get a reports pathway analysis image",
@@ -1803,7 +1656,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/somaticMutations/smallMutations": {
+    "/reports/{report}/genomic/small-mutations": {
       "get": {
         "summary": "Get somatic small mutations",
         "description": "Returns an analysis reports somatic small mutations",
@@ -1844,7 +1697,7 @@
         }
       }
     },
-    "/germline_small_mutation": {
+    "/germline-small-mutation-reports": {
       "get": {
         "summary": "Get all germline small mutation reports",
         "description": "Returns all germline small mutation reports the user has access to",
