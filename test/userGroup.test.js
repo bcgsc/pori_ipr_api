@@ -51,10 +51,10 @@ describe('/user/group endpoint testing', () => {
           expect.objectContaining({
             ident: expect.any(String),
             name: expect.any(String),
-            owner_id: expect.any(Number),
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             users: expect.any(Array),
+            owner: expect.any(Object),
           }),
         ])
       );
@@ -86,7 +86,6 @@ describe('/user/group endpoint testing', () => {
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
         name: expect.any(String),
-        owner_id: expect.any(Number),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         users: expect.any(Array),
@@ -181,7 +180,6 @@ describe('/user/group endpoint testing', () => {
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
           name: expect.any(String),
-          owner_id: expect.any(Number),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
           users: expect.any(Array),
@@ -238,7 +236,6 @@ describe('/user/group endpoint testing', () => {
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
           name: expect.any(String),
-          owner_id: expect.any(Number),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
           users: expect.any(Array),

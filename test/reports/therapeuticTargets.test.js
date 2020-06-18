@@ -73,7 +73,7 @@ describe('/therapeutic-targets', () => {
         .auth(username, password)
         .type('json')
         .send({...FAKE_TARGET})
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.OK);
       // check that expected property not present in request body is added by create method
       expect(record).toHaveProperty('variantGraphkbId', null);
       expect(record).toHaveProperty('ident');
