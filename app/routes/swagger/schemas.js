@@ -1,14 +1,12 @@
 const {JsonSchemaManager, OpenApi3Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../models');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
-const schema = require('../../schemas/report/reportUpload');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const schemas = {};
 
-// eslint-disable-next-line guard-for-in
-for (const property in db.models) {
+for (const property of Object.keys(db.models)) {
   schemas[property] = schemaManager.generate(db.models[property], new OpenApi3Strategy(), {
     title: `${property}`,
     associations: true,
