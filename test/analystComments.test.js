@@ -89,7 +89,7 @@ describe('/reports/{REPORTID}/summary/analyst-comments endpoint testing', () => 
     // Tests for DELETE endpoints
     describe('Test DELETE comments', () => {
       // Test for deleting analysis comments
-      test('DELETE / comment - 200 Success', async () => {
+      test('DELETE / comment - 204 Success', async () => {
         await request
           .delete(`/api/reports/${report.ident}/summary/analyst-comments`)
           .auth(username, password)

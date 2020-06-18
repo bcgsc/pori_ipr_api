@@ -325,8 +325,8 @@ describe('/user/group endpoint testing', () => {
 
     // Tests for DELETE endpoint
     describe('DELETE', () => {
-      // Test for DELETE /user/group/:ident/member 200 endpoint
-      test('DELETE /{group}/member delete group member - 200 Success', async () => {
+      // Test for DELETE /user/group/:ident/member 204 endpoint
+      test('DELETE /{group}/member delete group member - 204 Success', async () => {
         await request
           .delete(`/api/user/group/${groupIdent}/member`)
           .send({user: users[0].ident})
