@@ -1346,6 +1346,107 @@
         "tags": [
           "Reports"
         ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter the reports by 'genomic'or 'probe'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "required": false,
+            "description": "Seach for all reports under a chosen project name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchText",
+            "in": "query",
+            "required": false,
+            "description": "String to be searched in the reports field",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "states",
+            "in": "query",
+            "required": false,
+            "description": "Filter by current state of the report",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "all",
+            "in": "query",
+            "required": false,
+            "description": "'true' if you want to retrieve all reports. Default is set to 'false'",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "description": "Filter the reports by user role",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter the reports by 'genomic'or 'probe'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paginated",
+            "in": "query",
+            "required": false,
+            "description": "'true', if you want to split the report, allowing to to choose the 'limit' and 'offset",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "The end of the set of reports to retrieve",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "The start of the set of reports to retrieve",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Column for the reports to be sorted",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "basicAuth": []
