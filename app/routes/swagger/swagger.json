@@ -899,7 +899,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/patient-information": {
+    "/reports/{report}/summary/patient-information": {
       "get": {
         "summary": "Get Patient Summary",
         "description": "Retrieve basic metadata patient details for a report",
@@ -990,7 +990,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/mutation-summary": {
+    "/reports/{report}/summary/mutation-summary": {
       "get": {
         "summary": "Get Mutation Summary",
         "description": "Retrieve summary of mutation details for the report",
@@ -1090,7 +1090,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/tumour-analysis": {
+    "/reports/{report}/summary/tumour-analysis": {
       "get": {
         "summary": "Get Tumour Analysis Summary",
         "description": "Retrieve summary of Tumour Analysis details for the report",
@@ -1187,7 +1187,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/variant-counts": {
+    "/reports/{report}/summary/variant-counts": {
       "get": {
         "summary": "Get Variant counts",
         "description": "This endpoint is soon to be deprecated. Returns static analysis of variant\ncounts",
@@ -1225,7 +1225,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/genomic-alterations-identified": {
+    "/reports/{report}/summary/genomic-alterations-identified": {
       "get": {
         "summary": "Get key genomic alterations",
         "description": "Retrieve list of key identified genomic alterations",
@@ -1299,7 +1299,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/genomic-alterations-identified/{alteration}": {
+    "/reports/{report}/summary/genomic-alterations-identified/{alteration}": {
       "delete": {
         "summary": "Remove key genomic alterations",
         "description": "Remove a key identified genomic alteration entry.",
@@ -1374,7 +1374,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/microbial": {
+    "/reports/{report}/summary/microbial": {
       "get": {
         "summary": "Get microbial data",
         "description": "Get microbial data for a specific report",
@@ -1473,7 +1473,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/therapeutic-targets": {
+    "/reports/{report}/therapeutic-targets": {
       "get": {
         "summary": "Get therapeutic targets",
         "description": "Returns all therapeutic targets for an analysis report",
@@ -1549,7 +1549,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/summary/pathway-analysis": {
+    "/reports/{report}/summary/pathway-analysis": {
       "get": {
         "summary": "Get report pathway analysis",
         "description": "Get a reports pathway analysis image",
@@ -1656,7 +1656,7 @@
         }
       }
     },
-    "/reports/{report}/genomic/small-mutations": {
+    "/reports/{report}/small-mutations": {
       "get": {
         "summary": "Get somatic small mutations",
         "description": "Returns an analysis reports somatic small mutations",
