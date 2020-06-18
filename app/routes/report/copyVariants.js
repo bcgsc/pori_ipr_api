@@ -3,14 +3,16 @@ const express = require('express');
 const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../models');
 
+const db = require('../../models');
 const logger = require('../../log');
 
 router.param('cnv', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.copyVariants.scope('public').findOne({where: {ident: mutIdent}});
+    result = await db.models.copyVariants.scope('middleware').findOne({
+      where: {ident: mutIdent},
+    });
   } catch (error) {
     logger.error(`Error while processing request ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request'}});
@@ -21,54 +23,39 @@ router.param('cnv', async (req, res, next, mutIdent) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource'}});
   }
 
+  // Add cnv to request
   req.cnv = result;
   return next();
 });
 
-// Handle requests for alterations
+// Handle requests for copy variant
 router.route('/:cnv([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.cnv);
+    return res.json(req.cnv.view('public'));
   })
   .put(async (req, res) => {
-    // Update DB Version for Entry
+    // Update db entry
     try {
-      const result = await db.models.copyVariants.update(req.body, {
-        where: {
-          ident: req.cnv.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      await req.cnv.update(req.body);
+      await req.cnv.reload();
+      return res.json(req.cnv.view('public'));
     } catch (error) {
-      logger.error(`Unable to version the resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to version the resource'}});
+      logger.error(`Unable to version copy variant ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to version copy variant'}});
     }
   })
   .delete(async (req, res) => {
     // Soft delete the entry
-    // Update result
     try {
-      await db.models.copyVariants.destroy({where: {ident: req.cnv.ident}});
-      return res.json({success: true});
+      await req.cnv.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
-      logger.error(`Unable to remove resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove resource'}});
+      logger.error(`Unable to remove copy variant ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove copy variant'}});
     }
   });
 
-// Routing for Alteration
+// Routing for report copy variants
 router.route('/')
   .get(async (req, res) => {
     const {report: {ident: reportIdent}} = req;
