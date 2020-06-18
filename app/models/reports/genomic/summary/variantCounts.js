@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('variantCounts', {
+  const variantCounts = sequelize.define('variantCounts', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -45,4 +45,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  variantCounts.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return variantCounts;
 };
