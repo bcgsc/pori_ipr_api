@@ -2,14 +2,16 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../models');
 
+const db = require('../../models');
 const logger = require('../../log');
 
 router.param('sv', async (req, res, next, svIdent) => {
   let result;
   try {
-    result = await db.models.structuralVariants.scope('public').findOne({where: {ident: svIdent}});
+    result = await db.models.structuralVariants.scope('middleware').findOne({
+      where: {ident: svIdent},
+    });
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get structural variant'}});
@@ -19,6 +21,8 @@ router.param('sv', async (req, res, next, svIdent) => {
     logger.error('Unable to locate structural variant');
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate structural variant'}});
   }
+
+  // Add structural variant to request
   req.variation = result;
   return next();
 });
@@ -26,28 +30,14 @@ router.param('sv', async (req, res, next, svIdent) => {
 // Handle requests for alterations
 router.route('/:sv([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.variation);
+    return res.json(req.variation.view('public'));
   })
   .put(async (req, res) => {
-    // Update DB Version for Entry
+    // Update db entry
     try {
-      const result = await db.models.structuralVariants.update(req.body, {
-        where: {
-          ident: req.variation.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      await req.variation.update(req.body);
+      await req.variation.reload();
+      return res.json(req.variation.view('public'));
     } catch (error) {
       logger.error(`Unable to update structural variant ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update structural variant'}});
@@ -55,10 +45,9 @@ router.route('/:sv([A-z0-9-]{36})')
   })
   .delete(async (req, res) => {
     // Soft delete the entry
-    // Update result
     try {
-      await db.models.structuralVariants.destroy({where: {ident: req.sv.ident}});
-      return res.json({success: true});
+      await req.variation.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove structural variant ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove structural variant'}});
