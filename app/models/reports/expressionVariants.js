@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('expressionVariants', {
+  const expressionVariants = sequelize.define('expressionVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -146,7 +146,7 @@ module.exports = (sequelize) => {
     tableName: 'reports_expression_variants',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
         include: [
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
@@ -154,6 +154,22 @@ module.exports = (sequelize) => {
       minimal: {
         attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
       },
+      middleware: {
+        include: [
+          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
+        ],
+      },
     },
   });
+
+  // set instance methods
+  expressionVariants.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return expressionVariants;
 };
