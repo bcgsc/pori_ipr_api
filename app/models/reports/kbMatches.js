@@ -3,17 +3,9 @@ const Sq = require('sequelize');
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
-class KbMatches extends Sq.Model {
-  getVariant(options) {
-    const targetModel = this.experimentalVariantType;
-    if (!targetModel) return Promise.resolve(null);
-    const mixinMethodName = `get${targetModel[0].toUpperCase()}${targetModel.slice(1)}`;
-    return this[mixinMethodName](options);
-  }
-}
 
 module.exports = (sequelize) => {
-  return KbMatches.init({
+  const KbMatches = sequelize.define('kbMatches', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -29,15 +21,15 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     approvedTherapy: {
-      field: 'approved_therapy',
       name: 'approvedTherapy',
+      field: 'approved_therapy',
       type: Sq.BOOLEAN,
       defaultValue: false,
       allowNull: false,
     },
     kbVariant: {
-      field: 'kb_variant',
       name: 'kbVariant',
+      field: 'kb_variant',
       type: Sq.TEXT,
     },
     disease: {
@@ -59,25 +51,25 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     evidenceLevel: {
-      field: 'evidence_level',
       name: 'evidenceLevel',
+      field: 'evidence_level',
       type: Sq.TEXT,
     },
     matchedCancer: {
-      field: 'matched_cancer',
       name: 'matchedCancer',
+      field: 'matched_cancer',
       type: Sq.BOOLEAN,
-      allowNull: false,
       defaultValue: false,
+      allowNull: false,
     },
     pmidRef: {
-      field: 'pmid_ref',
       name: 'pmidRef',
+      field: 'pmid_ref',
       type: Sq.TEXT,
     },
     variantType: {
-      field: 'variant_type',
       name: KB_PIVOT_COLUMN,
+      field: 'variant_type',
       type: Sq.ENUM(...Object.keys(KB_PIVOT_MAPPING)),
       allowNull: false,
     },
@@ -94,13 +86,13 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     kbStatementId: {
-      field: 'kb_statement_id',
       name: 'kbStatementId',
+      field: 'kb_statement_id',
       type: Sq.TEXT,
     },
     kbData: {
-      field: 'kb_data',
       name: 'kbData',
+      field: 'kb_data',
       type: Sq.JSONB,
     },
   }, {
@@ -108,15 +100,20 @@ module.exports = (sequelize) => {
     tableName: 'reports_kb_matches',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'deletedAt', 'reportId', 'variantId']},
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt']},
         include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
           return {model: sequelize.models[modelName].scope('public'), as: modelName};
         }),
       },
       extended: {
-        attributes: {exclude: ['id', 'deletedAt', 'reportId', 'variantId']},
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt']},
         include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
           return {model: sequelize.models[modelName].scope('extended'), as: modelName};
+        }),
+      },
+      middleware: {
+        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+          return {model: sequelize.models[modelName].scope('public'), as: modelName};
         }),
       },
     },
@@ -148,4 +145,26 @@ module.exports = (sequelize) => {
     modelName: 'kbMatches',
     sequelize,
   });
+
+  // set instance methods
+  KbMatches.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, variantId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  KbMatches.prototype.getVariant = function (options) {
+    const targetModel = this.experimentalVariantType;
+
+    if (!targetModel) {
+      return Promise.resolve(null);
+    }
+
+    const mixinMethodName = `get${targetModel[0].toUpperCase()}${targetModel.slice(1)}`;
+    return this[mixinMethodName](options);
+  };
+
+  return KbMatches;
 };
