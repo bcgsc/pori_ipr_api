@@ -251,7 +251,7 @@ const createReportContent = async (report, content) => {
     'kbMatches',
     'presentation_discussion',
     'presentation_slides',
-    'probe_signature',
+    'signatures',
     'projects',
     'ReportUserFilter',
     'users',

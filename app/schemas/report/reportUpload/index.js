@@ -10,7 +10,7 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
   exclude: ['createdBy_id', ...BASE_EXCLUDE],
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
+  excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
 
 // set schema version and don't allow additional properties
@@ -53,7 +53,7 @@ schema.properties.images = {
 
 // get report associations
 const {
-  ReportUserFilter, createdBy, probe_signature, presentation_discussion,
+  ReportUserFilter, createdBy, signatures, presentation_discussion,
   presentation_slides, users, analystComments, projects, ...associations
 } = db.models.analysis_report.associations;
 

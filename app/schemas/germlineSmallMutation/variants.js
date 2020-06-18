@@ -6,7 +6,7 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const schema = schemaManager.generate(
   db.models.germline_small_mutation_variant, new JsonSchema7Strategy(), {
-    exclude: BASE_EXCLUDE,
+    exclude: [...BASE_EXCLUDE, 'germline_report_id'],
     associations: false,
   }
 );

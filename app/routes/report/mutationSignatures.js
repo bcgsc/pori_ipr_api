@@ -11,7 +11,6 @@ router.route('/')
   .get(async (req, res) => {
     const options = {
       where: {reportId: req.report.id},
-      order: [['signature', 'ASC']],
     };
 
     // Get all small mutations for this report

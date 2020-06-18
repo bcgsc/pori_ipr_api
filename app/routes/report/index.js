@@ -15,6 +15,7 @@ const probeTestInformation = require('./probeTestInformation');
 const geneViewer = require('./geneViewer');
 const gene = require('./gene');
 const mutationSignatures = require('./mutationSignatures');
+const reportSignatures = require('./signatures');
 
 const router = express.Router({mergeParams: true});
 
@@ -29,6 +30,7 @@ router.use('/structural-variants', structuralVariants);
 router.use('/small-mutations', smallMutations);
 router.use('/mutation-signatures', mutationSignatures);
 router.use('/therapeutic-targets', therapeuticTargets);
+router.use('/signatures', reportSignatures);
 
 router.use('/probe-test-information', probeTestInformation);
 router.use('/kb-matches', kbMatches);

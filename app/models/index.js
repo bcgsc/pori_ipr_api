@@ -170,14 +170,6 @@ summary.tumourAnalysis.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-
-summary.analystComments.belongsTo(user, {
-  as: 'authorSignature', foreignKey: 'authorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-summary.analystComments.belongsTo(user, {
-  as: 'reviewerSignature', foreignKey: 'reviewerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
-});
-
 // Somatic Mutations
 const smallMutations = sequelize.import('./reports/smallMutations');
 const mutationSignature = sequelize.import('./reports/mutationSignature');
@@ -371,18 +363,18 @@ analysisReports.hasMany(probeTestInformation, {
   as: 'probe_test_information', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-const probeSignature = sequelize.import('./reports/probe/signature');
-probeSignature.belongsTo(analysisReports, {
+const reportSignatures = sequelize.import('./reports/signatures');
+reportSignatures.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-probeSignature.belongsTo(user, {
-  as: 'readySignature', foreignKey: 'readySignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+reportSignatures.belongsTo(user, {
+  as: 'authorSignature', foreignKey: 'authorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
-probeSignature.belongsTo(user, {
-  as: 'reviewerSignature', foreignKey: 'reviewerSignedBy_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+reportSignatures.belongsTo(user, {
+  as: 'reviewerSignature', foreignKey: 'reviewerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
-analysisReports.hasOne(probeSignature, {
-  as: 'probe_signature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasOne(reportSignatures, {
+  as: 'signatures', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Germline Small Mutations
