@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('signatures', {
+  const signatures = sequelize.define('signatures', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -43,8 +43,7 @@ module.exports = (sequelize) => {
       type: Sq.DATE,
       allowNull: true,
     },
-  },
-  {
+  }, {
     ...DEFAULT_OPTIONS,
     tableName: 'reports_signatures',
     scopes: {
@@ -55,6 +54,23 @@ module.exports = (sequelize) => {
           {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
         ],
       },
+      middleware: {
+        include: [
+          {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
+          {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
+        ],
+      },
     },
   });
+
+  // set instance methods
+  signatures.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, reviewerId, authorId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return signatures;
 };
