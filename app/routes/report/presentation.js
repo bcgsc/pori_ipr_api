@@ -1,10 +1,10 @@
 const HTTP_STATUS = require('http-status-codes');
-
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
-const db = require(`${process.cwd()}/app/models`);
-const _ = require('lodash');
+
+const db = require('../../models');
+const logger = require('../../log');
 
 
 /*
@@ -12,38 +12,44 @@ const _ = require('lodash');
  *
  */
 router.param('discussion', async (req, res, next, ident) => {
+  let result;
   try {
-    const result = await db.models.presentation_discussion.scope('public').findOne({where: {ident}});
-    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.'}});
-    req.discussion = result;
-    return next();
+    result = await db.models.presentation_discussion.scope('middleware').findOne({
+      where: {ident},
+    });
   } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.'}});
+    logger.error(`Unable to get report discussion ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get report discussion'}});
   }
+
+  if (!result) {
+    logger.error(`Unable to find discussion for report ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find discussion for report ${req.report.ident}`}});
+  }
+
+  // Add discussion to request
+  req.discussion = result;
+  return next();
 });
 
 
-// Handle requests for alterations
+// Handle requests for report discussions
 router.route('/discussion')
   .get(async (req, res) => {
-    const opts = {
-      where: {
-        reportId: req.report.id,
-      },
-      order: [['createdAt', 'ASC']],
-    };
-
     try {
-      const results = await db.models.presentation_discussion.scope('public').findAll(opts);
-      res.json(results);
+      const results = await db.models.presentation_discussion.scope('public').findAll({
+        where: {reportId: req.report.id},
+        order: [['createdAt', 'ASC']],
+      });
+      return res.json(results);
     } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to retrieve presentation discussion notes'});
+      logger.error(`Failed to retrieve presentation discussion ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to retrieve presentation discussion'}});
     }
   })
   .post(async (req, res) => {
     const data = {
-      body: req.body.body,
+      ...req.body,
       user_id: req.user.id,
       reportId: req.report.id,
     };
@@ -51,40 +57,35 @@ router.route('/discussion')
     try {
       let result = await db.models.presentation_discussion.create(data);
       result = await db.models.presentation_discussion.scope('public').findOne({where: {id: result.id}});
-      res.json(result);
+      return res.json(result);
     } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion entry'});
+      logger.error(`Failed to create new discussion ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion'});
     }
   });
 
 // Single entry
 router.route('/discussion/:discussion')
-  .delete(async (req, res) => {
-    try {
-      await db.models.presentation_discussion.destroy({where: {ident: req.discussion.ident}});
-      res.status(HTTP_STATUS.NO_CONTENT).send();
-    } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to remove the requested discussion entry'});
-    }
-  })
   .get((req, res) => {
-    res.json(req.discussion);
+    return res.json(req.discussion.view('public'));
   })
   .put(async (req, res) => {
-    const data = {
-      body: req.body.body,
-    };
-
     try {
-      const result = await db.models.presentation_discussion.update(data, {where: {ident: req.discussion.ident}});
-      req.discussion.body = req.body.body;
-      req.discussion.updatedAt = result.updatedAt;
-      res.json(req.discussion);
+      await req.discussion.update(req.body);
+      await req.discussion.reload();
+      return res.json(req.discussion.view('public'));
     } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to update the discussion entry for server-side reasons.'});
+      logger.error(`Failed to update the discussion ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to update the discussion'}});
+    }
+  })
+  .delete(async (req, res) => {
+    try {
+      await req.discussion.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Failed to remove discussion ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to remove discussion'}});
     }
   });
 
@@ -94,40 +95,38 @@ router.route('/discussion/:discussion')
  *
  */
 router.param('slide', async (req, res, next, ident) => {
+  let result;
   try {
-    const result = await db.models.presentation_slides.scope('public').findOne({where: {ident}});
-    if (result === null) return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource.'}});
-    req.slide = result;
-    return next();
+    result = await db.models.presentation_slides.scope('middleware').findOne({
+      where: {ident},
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request.'}});
+    logger.error(`Unable to get presentation slides ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get presentation slides'}});
   }
+
+  if (!result) {
+    logger.error(`Unable to find presentation slides for report ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find presentation slides for report ${req.report.ident}`}});
+  }
+
+  // Add presentation slides to request
+  req.slide = result;
+  return next();
 });
 
 
 // Handle requests for slides
 router.route('/slide')
   .get(async (req, res) => {
-    const opts = {
-      where: {
-        reportId: req.report.id,
-      },
-    };
-
     try {
-      const slides = [];
-      let temp;
-      const results = await db.models.presentation_slides.scope('public').findAll(opts);
-      _.forEach(results, (s) => {
-        temp = s.toJSON();
-        temp.object = temp.object.toString('base64');
-        slides.push(temp);
+      const results = await db.models.presentation_slides.scope('public').findAll({
+        where: {reportId: req.report.id},
       });
-      res.json(slides);
+      return res.json(results);
     } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to retrieve presentation slides'});
+      logger.error(`Failed to retrieve presentation slides ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to retrieve presentation slides'});
     }
   })
   .post(async (req, res) => {
@@ -142,29 +141,36 @@ router.route('/slide')
     try {
       let result = await db.models.presentation_slides.create(data);
       result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
-      res.json(result);
+      return res.json(result);
     } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new presentation slides'});
+      logger.error(`Failed to create a new presentation slide ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create a new presentation slide'});
     }
   });
 
 // Single entry
 router.route('/slide/:slide')
-  .delete(async (req, res) => {
+  .get((req, res) => {
+    return res.json(req.slide.view('public'));
+  })
+  .put(async (req, res) => {
     try {
-      await db.models.presentation_slides.destroy({where: {ident: req.slide.ident}});
-      res.status(HTTP_STATUS.NO_CONTENT).send();
+      await req.slide.update(req.body);
+      await req.slide.reload();
+      return res.json(req.slide.view('public'));
     } catch (error) {
-      console.log(error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to remove the requested slide'});
+      logger.error(`Failed to update the presentation slide ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to update the presentation slide'}});
     }
   })
-  .get((req, res) => {
-    const slide = req.slide.toJSON();
-    slide.object = slide.object.toString('base64');
-    res.json(slide);
+  .delete(async (req, res) => {
+    try {
+      await req.slide.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Failed to remove slide ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to remove slide'}});
+    }
   });
-
 
 module.exports = router;

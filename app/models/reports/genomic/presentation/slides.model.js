@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('presentation_slides', {
+  const presentationSlides = sequelize.define('presentation_slides', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -32,16 +32,34 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
-  },
-  {
+  }, {
     ...DEFAULT_OPTIONS,
     tableName: 'reports_presentation_slides',
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'reportId', 'deletedAt'],
+          exclude: ['id', 'reportId', 'user_id', 'deletedAt'],
         },
+        include: [
+          {model: sequelize.models.user.scope('public'), as: 'user'},
+        ],
+      },
+      middleware: {
+        include: [
+          {model: sequelize.models.user.scope('public'), as: 'user'},
+        ],
       },
     },
   });
+
+  // set instance methods
+  presentationSlides.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, user_id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return presentationSlides;
 };
