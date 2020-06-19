@@ -11,8 +11,11 @@ const logger = require('../../log');
 router.param('expressionVariant', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.expressionVariants.scope('middleware').findOne({
+    result = await db.models.expressionVariants.findOne({
       where: {ident},
+      include: [
+        {model: db.models.genes.scope('minimal'), as: 'gene'},
+      ],
     });
   } catch (error) {
     logger.error(`Error while getting expression variant ${error}`);

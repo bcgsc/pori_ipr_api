@@ -9,8 +9,12 @@ const logger = require('../../log');
 router.param('sv', async (req, res, next, svIdent) => {
   let result;
   try {
-    result = await db.models.structuralVariants.scope('middleware').findOne({
+    result = await db.models.structuralVariants.findOne({
       where: {ident: svIdent},
+      include: [
+        {model: db.models.genes.scope('minimal'), foreignKey: 'gene1Id', as: 'gene1'},
+        {model: db.models.genes.scope('minimal'), foreignKey: 'gene2Id', as: 'gene2'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);

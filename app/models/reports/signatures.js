@@ -54,12 +54,6 @@ module.exports = (sequelize) => {
           {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
         ],
       },
-      middleware: {
-        include: [
-          {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
-          {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
-        ],
-      },
     },
   });
 

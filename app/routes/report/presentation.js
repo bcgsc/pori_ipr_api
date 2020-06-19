@@ -14,8 +14,11 @@ const logger = require('../../log');
 router.param('discussion', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.presentation_discussion.scope('middleware').findOne({
+    result = await db.models.presentation_discussion.findOne({
       where: {ident},
+      include: [
+        {model: db.models.user.scope('public'), as: 'user'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to get report discussion ${error}`);
@@ -97,8 +100,11 @@ router.route('/discussion/:discussion')
 router.param('slide', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.presentation_slides.scope('middleware').findOne({
+    result = await db.models.presentation_slides.findOne({
       where: {ident},
+      include: [
+        {model: db.models.user.scope('public'), as: 'user'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to get presentation slides ${error}`);

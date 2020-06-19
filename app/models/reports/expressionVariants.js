@@ -154,11 +154,6 @@ module.exports = (sequelize) => {
       minimal: {
         attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
       },
-      middleware: {
-        include: [
-          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
-        ],
-      },
     },
   });
 

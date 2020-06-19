@@ -10,8 +10,11 @@ const logger = require('../../log');
 router.param('cnv', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.copyVariants.scope('middleware').findOne({
+    result = await db.models.copyVariants.findOne({
       where: {ident: mutIdent},
+      include: [
+        {model: db.models.genes.scope('minimal'), as: 'gene'},
+      ],
     });
   } catch (error) {
     logger.error(`Error while processing request ${error}`);

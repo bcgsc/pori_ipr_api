@@ -10,8 +10,11 @@ const logger = require('../../log');
 router.param('mutation', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.smallMutations.scope('middleware').findOne({
+    result = await db.models.smallMutations.findOne({
       where: {ident: mutIdent},
+      include: [
+        {model: db.models.genes.scope('minimal'), as: 'gene'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to get somatic mutations ${error}`);

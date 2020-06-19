@@ -7,12 +7,17 @@ const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
 
+const {KB_PIVOT_MAPPING} = require('../../constants');
+
 // Middleware for kbMatches
 router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
   let result;
   try {
-    result = await db.models.kbMatches.scope('middleware').findOne({
+    result = await db.models.kbMatches.findOne({
       where: {ident: kbMatchIdent},
+      include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+        return {model: db.models[modelName].scope('public'), as: modelName};
+      }),
     });
   } catch (error) {
     logger.log(`Error while trying to get kb match ${error}`);

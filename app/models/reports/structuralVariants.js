@@ -119,20 +119,6 @@ module.exports = (sequelize) => {
           },
         ],
       },
-      middleware: {
-        include: [
-          {
-            model: sequelize.models.genes.scope('minimal'),
-            foreignKey: 'gene1Id',
-            as: 'gene1',
-          },
-          {
-            model: sequelize.models.genes.scope('minimal'),
-            foreignKey: 'gene2Id',
-            as: 'gene2',
-          },
-        ],
-      },
     },
   });
 

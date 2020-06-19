@@ -9,8 +9,11 @@ const logger = require('../../log');
 router.param('target', async (req, res, next, altIdent) => {
   let result;
   try {
-    result = await db.models.probeResults.scope('middleware').findOne({
+    result = await db.models.probeResults.findOne({
       where: {ident: altIdent},
+      include: [
+        {model: db.models.genes.scope('minimal'), as: 'gene'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to find probe target ${error}`);

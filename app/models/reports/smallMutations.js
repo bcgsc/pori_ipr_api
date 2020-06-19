@@ -62,11 +62,6 @@ module.exports = (sequelize) => {
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
       },
-      middleware: {
-        include: [
-          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
-        ],
-      },
     },
   });
 

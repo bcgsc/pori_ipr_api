@@ -65,14 +65,6 @@ module.exports = (sequelize) => {
       minimal: {
         attributes: ['cnvState', 'lohState', 'ploidyCorrCpChange'],
       },
-      middleware: {
-        include: [
-          {
-            model: sequelize.models.genes.scope('minimal'),
-            as: 'gene',
-          },
-        ],
-      },
     },
   });
 

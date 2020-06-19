@@ -11,8 +11,12 @@ const router = express.Router({mergeParams: true});
 router.use('/', async (req, res, next) => {
   try {
     // Get report signatures
-    req.signatures = await db.models.signatures.scope('middleware').findOne({
+    req.signatures = await db.models.signatures.findOne({
       where: {reportId: req.report.id},
+      include: [
+        {model: db.models.user.scope('public'), as: 'reviewerSignature'},
+        {model: db.models.user.scope('public'), as: 'authorSignature'},
+      ],
     });
     return next();
   } catch (error) {

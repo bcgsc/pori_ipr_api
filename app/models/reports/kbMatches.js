@@ -111,11 +111,6 @@ module.exports = (sequelize) => {
           return {model: sequelize.models[modelName].scope('extended'), as: modelName};
         }),
       },
-      middleware: {
-        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-          return {model: sequelize.models[modelName].scope('public'), as: modelName};
-        }),
-      },
     },
     hooks: {
       ...DEFAULT_REPORT_OPTIONS.hooks,
