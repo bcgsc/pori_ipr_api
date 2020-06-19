@@ -50,8 +50,7 @@ router.route('/')
 
     try {
       // Get users
-      const users = await db.models.user.findAll({
-        attributes: {exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf']},
+      const users = await db.models.user.scope('public').findAll({
         order: [['username', 'ASC']],
         include: [
           {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
@@ -61,7 +60,7 @@ router.route('/')
       return res.json(users);
     } catch (error) {
       logger.error(`SQL Error unable to get current user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get current user', code: 'failedCurrentUserLookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get current user'}});
     }
   })
   .post(async (req, res) => {
@@ -90,39 +89,25 @@ router.route('/')
       userExists = await db.models.user.findOne({where: {username: req.body.username}});
     } catch (error) {
       logger.error(`SQL Error unable to check for existing username ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to check if this username has been taken', code: 'failedUserNameExistsQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to check if this username has been taken'}});
     }
 
     // if username exists and is not a deleted user return 409
     if (userExists) {
+      logger.error('Username already exists');
       return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Username already exists'}});
     }
 
     if (deletedUserExists) {
       // set up user to restore with updated field values
-      const restoreUser = req.body;
-      restoreUser.deletedAt = null;
+      req.body.deletedAt = null;
 
       try {
-        const result = await db.models.user.update(restoreUser, {
-          where: {ident: deletedUserExists.ident},
-          individualHooks: true,
-          paranoid: true,
-          returning: true,
-        });
-
-        // Get updated model data from update
-        const [, [{dataValues}]] = result;
-
-        // Remove id's and deletedAt properties from returned model
-        const {
-          id, password, deletedAt, ...publicModel
-        } = dataValues;
-
-        return res.json(publicModel);
+        await deletedUserExists.update(req.body);
+        return res.json(deletedUserExists.view('public'));
       } catch (error) {
         logger.error(`Unable to restore username ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to restore existing username', code: 'failedUsernameCheckQuery'}});
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to restore existing username'}});
       }
     }
 
@@ -135,7 +120,7 @@ router.route('/')
       // Everything looks good, create the account!
       const resp = await db.models.user.create(req.body);
       // Account created, send details
-      return res.json(resp);
+      return res.json(resp.view('public'));
     } catch (error) {
       logger.error(`Unable to create user account ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: false, message: 'Unable to create user account.'});
@@ -144,7 +129,7 @@ router.route('/')
 
 router.route('/me')
   .get((req, res) => {
-    return res.json(req.user);
+    return res.json(req.user.view('public'));
   });
 
 router.route('/settings')
@@ -152,21 +137,13 @@ router.route('/settings')
     return res.json(req.user.get('settings'));
   })
   .put(async (req, res) => {
+    const {settings} = req;
     try {
-      const result = await db.models.user.update(req.body, {
-        where: {ident: req.user.ident},
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      return res.json(dataValues.settings);
+      await req.user.update(settings);
+      return res.json(req.user.get('settings'));
     } catch (error) {
-      logger.error(`SQL Error unable to update user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user', code: 'failedUserUpdate'}});
+      logger.error(`Unable to update user settings ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user settings'}});
     }
   });
 
@@ -187,17 +164,17 @@ router.route('/:ident([A-z0-9-]{36})')
     if (!(access.isAdmin())) {
       if (req.body.username && req.body.username !== req.user.username) {
         logger.error('User is not able to update username');
-        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your username', code: 'failUpdateUsername'}});
+        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your username'}});
       }
       if (req.body.type && req.body.type !== req.user.type) {
         logger.error('User is not able to update account type');
-        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your account type', code: 'failUpdateType'}});
+        return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'You are not able to update your account type'}});
       }
     }
 
     if (req.body.password && req.body.password && req.body.password.length < 8) {
       logger.error('Password must be 8 characters or more');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Password must be 8 characters or more.', code: 'failUpdateType'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Password must be 8 characters or more.'}});
     }
 
     const updateBody = {
@@ -214,32 +191,33 @@ router.route('/:ident([A-z0-9-]{36})')
       updateBody.password = bcrypt.hashSync(req.body.password, 10);
     }
 
-    // Attempt user model update
+    let user;
     try {
-      await db.models.user.update({...updateBody, ident: req.params.ident}, {
+      user = await db.models.user.findOne({
         where: {ident: req.params.ident},
-        individualHooks: true,
-        paranoid: true,
-        limit: 1,
-      });
-    } catch (error) {
-      logger.error(`SQL Error unable to update user model ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user model', code: 'failedUserModelUpdate'}});
-    }
-
-    try {
-      const user = await db.models.user.findOne({
-        where: {ident: req.params.ident},
-        attributes: {exclude: ['id', 'password', 'deletedAt']},
         include: [
           {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
           {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}},
         ],
       });
-      return res.json(user);
     } catch (error) {
-      logger.error(`SQL Error unable to find user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error unable to find user', code: 'failedUserSearch'}});
+      logger.error(`SQL Error while trying to find user to update ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error while trying to find user to update'}});
+    }
+
+    if (!user) {
+      logger.error('Unable to find user to update');
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user to update'}});
+    }
+
+    // Attempt user model update
+    try {
+      await user.update({...updateBody, ident: req.params.ident});
+      await user.reload();
+      return res.json(user.view('public'));
+    } catch (error) {
+      logger.error(`SQL Error unable to update user model ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user model'}});
     }
   })
   // Remove a user
@@ -257,13 +235,13 @@ router.route('/:ident([A-z0-9-]{36})')
       const result = await db.models.user.destroy({where: {ident: req.params.ident}, limit: 1});
       if (!result) {
         logger.error('Unable to remove the requested user');
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemove'}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove the requested user'}});
       }
 
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`SQL Failed User remove ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove the requested user', code: 'failedUserRemoveQuery'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove the requested user'}});
     }
   });
 

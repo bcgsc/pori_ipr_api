@@ -185,7 +185,7 @@
     ],
     "mutationSignature": [
         {
-            "signature": 28,
+            "signature": "SBS##a",
             "pearson": 0.183,
             "nnls": 0.0299,
             "associations": "Tobacco chewing",

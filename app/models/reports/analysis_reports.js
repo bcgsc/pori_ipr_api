@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('analysis_report', {
+  const report = sequelize.define('analysis_report', {
     ...DEFAULT_COLUMNS,
     patientId: {
       name: 'patientId',
@@ -69,8 +69,9 @@ module.exports = (sequelize) => {
       defaultValue: null,
     },
     state: {
-      type: Sq.STRING,
+      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction'),
       defaultValue: 'ready',
+      allowNull: false,
     },
     expression_matrix: {
       type: Sq.STRING,
@@ -88,8 +89,7 @@ module.exports = (sequelize) => {
       type: Sq.STRING,
       defaultValue: null,
     },
-  },
-  {
+  }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
     scopes: {
@@ -129,4 +129,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  report.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, config, createdBy_id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return report;
 };

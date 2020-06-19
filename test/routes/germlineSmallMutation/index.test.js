@@ -23,7 +23,7 @@ const checkGermlineReport = expect.objectContaining({
   exported: expect.any(Boolean),
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
-  biofx_assigned: expect.any(Object),
+  biofx_assigned: expect.objectContaining({ident: expect.any(String)}),
   projects: expect.any(Array),
   reviews: expect.any(Array),
   variants: expect.any(Array),
@@ -42,11 +42,17 @@ describe('/germline-small-mutation-reports', () => {
   // TODO:Add checks to ensure is not returning id
   let server;
   let request;
+  let testUser;
 
   beforeAll(async () => {
     const port = await getPort({port: CONFIG.get('web:port')});
     server = await listen(port);
     request = supertest(server);
+
+    // get test user
+    testUser = await db.models.user.findOne({
+      where: {username},
+    });
   });
 
   afterAll(async () => {
@@ -214,7 +220,7 @@ describe('/germline-small-mutation-reports', () => {
       record = await db.models.germline_small_mutation.create({
         source_version: 'v1.0.0',
         source_path: '/some/random/source/path',
-        biofx_assigned: 0,
+        biofx_assigned_id: testUser.id,
         exported: false,
         patientId: 'TESTPAT01',
         biopsyName: 'TEST123',
@@ -256,14 +262,14 @@ describe('/germline-small-mutation-reports', () => {
         expect(res.body.exported).toBe(NEW_EXPORTED);
       });
 
-      test('PUT /:gsm_report - 404 Not Found', async () => {
+      test('PUT /:gsm_report - 400 Bad Request', async () => {
         const NEW_EXPORTED = true;
         await request
-          .put(`${BASE_URL}/NOT_A_EXISTING_RECORD`)
+          .put(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
           .send({exported: NEW_EXPORTED})
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
+          .expect(HTTP_STATUS.BAD_REQUEST);
       });
     });
 
@@ -276,12 +282,12 @@ describe('/germline-small-mutation-reports', () => {
           .expect(HTTP_STATUS.NO_CONTENT);
       });
 
-      test('DELETE /:gsm_report - 404 Not Found', async () => {
+      test('DELETE /:gsm_report - 400 Bad Request', async () => {
         await request
           .delete(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
+          .expect(HTTP_STATUS.BAD_REQUEST);
       });
     });
   });

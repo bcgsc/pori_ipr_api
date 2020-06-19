@@ -11,22 +11,19 @@ router.use('/', async (req, res, next) => {
   let result;
   try {
     result = await db.models.variantCounts.findOne({
-      where: {
-        reportId: req.report.id,
-      },
-      attributes: {exclude: ['id', '"deletedAt"']},
+      where: {reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Unable to lookup variant counts for report: ${req.report.ident} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup variant counts for report: ${req.report.ident}`, code: 'failedVariantCountsQuery'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup variant counts for report: ${req.report.ident}`}});
   }
 
   if (!result) {
     logger.error(`Unable to find variant counts for report: ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find variant counts for ${req.report.ident}`, code: 'failedVariantCountsLookup'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find variant counts for ${req.report.ident}`}});
   }
 
-  // Found the patient information
+  // Add variant counts to request
   req.variantCounts = result;
   return next();
 });
@@ -34,32 +31,16 @@ router.use('/', async (req, res, next) => {
 // Handle requests for Variant Counts
 router.route('/')
   .get((req, res) => {
-    return res.json(req.variantCounts);
+    return res.json(req.variantCounts.view('public'));
   })
   .put(async (req, res) => {
-    // Update DB Version for Entry
+    // Update db entry
     try {
-      const result = await db.models.variantCounts.update(req.body, {
-        where: {
-          ident: req.variantCounts.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      await req.variantCounts.update(req.body);
+      return res.json(req.variantCounts.view('public'));
     } catch (error) {
       logger.error(`Unable to update variant counts ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update variant counts', code: 'failedVariantCountsVersion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update variant counts'}});
     }
   });
 

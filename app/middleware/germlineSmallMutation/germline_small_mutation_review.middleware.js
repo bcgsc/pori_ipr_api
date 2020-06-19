@@ -1,29 +1,27 @@
 const HTTP_STATUS = require('http-status-codes');
 const db = require('../../models');
-const MiddlewareNotFound = require('../exceptions/MiddlewareNotFound');
-
 const logger = require('../../log');
 
-// Lookup POG middleware
+// Middleware for germline reviews
 module.exports = async (req, res, next, ident) => {
-  const opts = {
-    where: {
-      ident,
-    },
-    attributes: {
-      exclude: ['deletedAt', 'reviewedBy_id', 'germline_report_id'],
-    },
-  };
-
+  let result;
   try {
-    const result = await db.models.germline_small_mutation_review.scope('public').findOne(opts);
-    if (!result) {
-      throw new MiddlewareNotFound('Unable to find the germline report review', req, res, 'germlineReportReview');
-    }
-    req.review = result;
-    return next();
+    result = await db.models.germline_small_mutation_review.findOne({
+      where: {ident},
+      include: [
+        {model: db.models.user.scope('public'), as: 'reviewedBy'},
+      ],
+    });
   } catch (error) {
-    logger.error(error);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: 'Unable to find the requested germline report.'});
+    logger.error(`Error while trying to get germline report reviews ${error}`);
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to get germline report reviews'}});
   }
+
+  if (!result) {
+    logger.error('Unable to find germline report reviews');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find germline report reviews'}});
+  }
+
+  req.review = result;
+  return next();
 };

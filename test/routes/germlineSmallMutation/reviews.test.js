@@ -18,11 +18,17 @@ describe('/germline-small-mutation-reports/:gsm_report/review', () => {
   let record;
   let server;
   let request;
+  let testUser;
 
   beforeAll(async () => {
     const port = await getPort({port: CONFIG.get('web:port')});
     server = await listen(port);
     request = supertest(server);
+
+    // get test user
+    testUser = await db.models.user.findOne({
+      where: {username},
+    });
   });
 
   afterAll(async () => {
@@ -35,7 +41,7 @@ describe('/germline-small-mutation-reports/:gsm_report/review', () => {
     record = (await db.models.germline_small_mutation.create({
       source_version: 'v1.0.0',
       source_path: '/some/random/source/path',
-      biofx_assigned: 0,
+      biofx_assigned_id: testUser.id,
       exported: false,
       patientId: 'TESTPAT01',
       biopsyName: 'TEST123',
@@ -126,12 +132,12 @@ describe('/germline-small-mutation-reports/:gsm_report/review', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
     });
 
-    test('DELETE /{review} - 404 Not found', async () => {
+    test('DELETE /{review} - 400 Bad Request', async () => {
       await request
         .delete(`${BASE_URL}/${record.ident}/review/NOT_EXISTING_ID`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });

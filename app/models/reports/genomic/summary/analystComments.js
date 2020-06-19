@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('analystComments', {
+  const analystComments = sequelize.define('analystComments', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -17,36 +17,6 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-    reviewerId: {
-      name: 'reviewerId',
-      field: 'reviewer_id',
-      type: Sq.INTEGER,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    reviewerSignedAt: {
-      name: 'reviewerSignedAt',
-      field: 'reviewer_signed_at',
-      type: Sq.DATE,
-      allowNull: true,
-    },
-    authorId: {
-      name: 'authorId',
-      field: 'author_id',
-      type: Sq.INTEGER,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    authorSignedAt: {
-      name: 'authorSignedAt',
-      field: 'author_signed_at',
-      type: Sq.DATE,
-      allowNull: true,
-    },
   },
   {
     ...DEFAULT_OPTIONS,
@@ -54,13 +24,20 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'reportId', 'deletedAt', 'authorId', 'reviewerId'],
+          exclude: ['id', 'reportId', 'deletedAt'],
         },
-        include: [
-          {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
-          {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
-        ],
       },
     },
   });
+
+  // set instance methods
+  analystComments.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return analystComments;
 };

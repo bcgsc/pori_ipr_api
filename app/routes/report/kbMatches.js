@@ -3,35 +3,44 @@ const express = require('express');
 const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
-const db = require('../../models');
 
+const db = require('../../models');
 const logger = require('../../log');
 
+const {KB_PIVOT_MAPPING} = require('../../constants');
+
+// Middleware for kbMatches
 router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
   let result;
   try {
-    result = await db.models.kbMatches.scope('public').findOne({where: {ident: kbMatchIdent}});
+    result = await db.models.kbMatches.findOne({
+      where: {ident: kbMatchIdent},
+      include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+        return {model: db.models[modelName].scope('public'), as: modelName};
+      }),
+    });
   } catch (error) {
-    logger.log(`Unable to process the request ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to process the request', code: 'failedMiddlewareAlterationQuery'}});
+    logger.log(`Error while trying to get kb match ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get kb match'}});
   }
 
   if (!result) {
-    logger.error('Unable to locate the requested resource');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate the requested resource', code: 'failedMiddlewareAlterationLookup'}});
+    logger.error('Unable to locate kb match');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate kb match'}});
   }
 
+  // Add kb match to request
   req.kbMatch = result;
   return next();
 });
 
-// Handle requests for alterations
+// Handle requests for kb match
 router.route('/:kbMatch([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.kbMatch);
+    return res.json(req.kbMatch.view('public'));
   });
 
-// Routing for Alteration
+// Routing for kb matches
 router.route('/')
   .get(async (req, res) => {
     const {report: {id: reportId}, query: {matchedCancer, approvedTherapy, category}} = req;
@@ -60,11 +69,11 @@ router.route('/')
 
     try {
       // Get all alterations for this report
-      const result = await db.models.kbMatches.scope('extended').findAll(options);
+      const result = await db.models.kbMatches.scope('public').findAll(options);
       return res.json(result);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource', code: 'failedAPClookup'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve resource'}});
     }
   });
 

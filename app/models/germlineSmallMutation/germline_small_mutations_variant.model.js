@@ -2,11 +2,11 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('germline_small_mutation_variant', {
+  const germlineVariant = sequelize.define('germline_small_mutation_variant', {
     ...DEFAULT_COLUMNS,
     germline_report_id: {
       type: Sq.INTEGER,
-      required: true,
+      allowNull: false,
       references: {
         model: 'germline_small_mutations',
         key: 'id',
@@ -145,8 +145,7 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-  },
-  {
+  }, {
     ...DEFAULT_OPTIONS,
     tableName: 'germline_small_mutations_variant',
     scopes: {
@@ -158,4 +157,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  germlineVariant.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, germline_report_id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return germlineVariant;
 };

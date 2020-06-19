@@ -77,7 +77,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project', cause: error}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project'}});
   }
 
   if (!project) {
@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
     rawVariants = variants;
 
     ({dataValues: report} = await db.models.germline_small_mutation.create(
-      {...rest, biofx_assigned: user.id},
+      {...rest, biofx_assigned_id: user.id},
     ));
   } catch (err) {
     const message = `There was an error creating germline small mutation report: ${err}`;
@@ -225,7 +225,7 @@ router.route('/:gsm_report')
    * @returns {object} - Returns the requested report
    */
   .get((req, res) => {
-    return res.json(req.report);
+    return res.json(req.report.view('public'));
   })
 
   /**
@@ -241,20 +241,28 @@ router.route('/:gsm_report')
    * @returns {Promise.<object>} - Returns updated report
    */
   .put(async (req, res) => {
-    let report;
-    try {
-      report = await Report.updateReport(req.report, req.body);
-    } catch (error) {
-      logger.error(`There was an error updating the germline report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error updating the germline report'}});
+    let newReviewer;
+    // Supported values to update
+    if (req.body.biofx_assigned) {
+      try {
+        newReviewer = await db.models.user.findOne({where: {ident: req.body.biofx_assigned}});
+      } catch (error) {
+        logger.error(`Error while trying to get new biofx reviewer ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get new biofx reviewer'}});
+      }
+    }
+
+    if (newReviewer) {
+      req.body.biofx_assigned_id = newReviewer.id;
     }
 
     try {
-      const [publicReport] = await Report.public(report.ident);
-      return res.json(publicReport);
+      await req.report.update(req.body);
+      await req.report.reload();
+      return res.json(req.report.view('public'));
     } catch (error) {
-      logger.error(`There was an error while updating the germline report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error while updating the germline report'}});
+      logger.error(`There was an error updating the germline report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error updating the germline report'}});
     }
   })
 

@@ -19,11 +19,17 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
   let variant;
   let server;
   let request;
+  let testUser;
 
   beforeAll(async () => {
     const port = await getPort({port: CONFIG.get('web:port')});
     server = await listen(port);
     request = supertest(server);
+
+    // get test user
+    testUser = await db.models.user.findOne({
+      where: {username},
+    });
   });
 
   afterAll(async () => {
@@ -36,7 +42,7 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
     record = await db.models.germline_small_mutation.create({
       source_version: 'v1.0.0',
       source_path: '/some/random/source/path',
-      biofx_assigned: 0,
+      biofx_assigned_id: testUser.id,
       exported: false,
       patientId: 'TESTPAT01',
       biopsyName: 'TEST123',
@@ -75,12 +81,12 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
       expect(result.body).not.toHaveProperty('id');
     });
 
-    test('GET /{variant} - 404 Not Found', async () => {
+    test('GET /{variant} - 400 Bad Request', async () => {
       await request
         .get(`${BASE_URL}/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
@@ -150,13 +156,13 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('PUT /{variant} - 404 Not Found', async () => {
+    test('PUT /{variant} - 400 Bad Request', async () => {
       await request
-        .put(`${BASE_URL}/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
+        .put(`${BASE_URL}/${record.ident}/variant/NOT_AN_EXISTING_VARIANT`)
         .send({patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: true})
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });
