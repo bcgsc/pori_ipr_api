@@ -191,32 +191,33 @@ router.route('/:ident([A-z0-9-]{36})')
       updateBody.password = bcrypt.hashSync(req.body.password, 10);
     }
 
-    // Attempt user model update
+    let user;
     try {
-      await db.models.user.update({...updateBody, ident: req.params.ident}, {
+      user = await db.models.user.findOne({
         where: {ident: req.params.ident},
-        individualHooks: true,
-        paranoid: true,
-        limit: 1,
-      });
-    } catch (error) {
-      logger.error(`SQL Error unable to update user model ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user model'}});
-    }
-
-    try {
-      const user = await db.models.user.findOne({
-        where: {ident: req.params.ident},
-        attributes: {exclude: ['id', 'password', 'deletedAt']},
         include: [
           {as: 'groups', model: db.models.userGroup, attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']}},
           {as: 'projects', model: db.models.project, attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']}},
         ],
       });
-      return res.json(user);
     } catch (error) {
-      logger.error(`SQL Error unable to find user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error unable to find user'}});
+      logger.error(`SQL Error while trying to find user to update ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error while trying to find user to update'}});
+    }
+
+    if (!user) {
+      logger.error('Unable to find user to update');
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user to update'}});
+    }
+
+    // Attempt user model update
+    try {
+      await user.update({...updateBody, ident: req.params.ident});
+      await user.reload();
+      return res.json(user.view('public'));
+    } catch (error) {
+      logger.error(`SQL Error unable to update user model ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user model'}});
     }
   })
   // Remove a user
