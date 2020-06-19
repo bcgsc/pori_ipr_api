@@ -23,7 +23,7 @@ schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(),
 schemas.user = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'user',
   associations: false,
-  exclude: [...BASE_EXCLUDE],
+  exclude: [...BASE_EXCLUDE, 'user_projects', 'userGroupMembers'],
 });
 
 schemas.group = schemaManager.generate(db.models.userGroup, new OpenApi3Strategy(), {
@@ -34,7 +34,7 @@ schemas.group = schemaManager.generate(db.models.userGroup, new OpenApi3Strategy
 
 schemas.project = schemaManager.generate(db.models.project, new OpenApi3Strategy(), {
   title: 'project',
-  associations: true,
+  associations: false,
   exclude: [...BASE_EXCLUDE],
 });
 
@@ -44,5 +44,25 @@ schemas.analysis_report = schemaManager.generate(db.models.analysis_report, new 
   associations: true,
   excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
+
+schemas.germline_small_mutation = schemaManager.generate(db.models.germline_small_mutation, new OpenApi3Strategy(), {
+  title: 'germline_small_mutation',
+  associations: false,
+  exclude: [...BASE_EXCLUDE],
+});
+
+schemas.project.properties.users = schemas.user;
+schemas.project.properties.reports = schemas.analysis_report;
+
+schemas.group.properties.users = schemas.user;
+
+schemas.userGroup.properties.users = schemas.user;
+
+delete schemas.user_project;
+delete schemas.reportProject;
+delete schemas.userGroupMember;
+delete schemas.germlineReportsToProjects;
+
+console.log(schemas.project);
 
 module.exports = schemas;
