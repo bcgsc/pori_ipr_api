@@ -33,8 +33,12 @@ router.param('project', async (req, res, next, ident) => {
 
   try {
     // Add project to request
-    req.project = await db.models.project.scope('middleware').findOne({
+    req.project = await db.models.project.findOne({
       where: {ident},
+      include: [
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
+        {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
+      ],
     });
     return next();
   } catch (error) {

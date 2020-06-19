@@ -29,12 +29,6 @@ module.exports = (sequelize) => {
           exclude: ['id', 'deletedAt'],
         },
       },
-      middleware: {
-        include: [
-          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
-          {as: 'reports', model: sequelize.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
-        ],
-      },
     },
   });
 
