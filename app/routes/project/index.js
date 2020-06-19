@@ -432,22 +432,8 @@ router.route('/')
     if (existingProject) {
       // Restore!
       try {
-        const result = await db.models.project.update({deletedAt: null}, {
-          where: {ident: existingProject.ident},
-          individualHooks: true,
-          paranoid: true,
-          returning: true,
-        });
-
-        // Get updated model data from update
-        const [, [{dataValues}]] = result;
-
-        // Remove id's and deletedAt properties from returned model
-        const {
-          id, deletedAt, ...publicModel
-        } = dataValues;
-
-        return res.json(publicModel);
+        await existingProject.update({deletedAt: null});
+        return res.json(existingProject.view('public'));
       } catch (error) {
         logger.error(`Error while trying to restore project ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to restore project'}});
