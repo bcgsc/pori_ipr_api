@@ -1,26 +1,24 @@
 const HTTP_STATUS = require('http-status-codes');
 const db = require('../../models');
-const MiddlewareNotFound = require('../exceptions/MiddlewareNotFound');
-
 const logger = require('../../log');
 
-// Lookup POG middleware
+// Middleware for germline variants
 module.exports = async (req, res, next, ident) => {
-  const opts = {
-    where: {
-      ident,
-    },
-  };
-
+  let result;
   try {
-    const result = await db.models.germline_small_mutation_variant.scope('public').findOne(opts);
-    if (!result) {
-      throw new MiddlewareNotFound('Unable to find the germline report variant', req, res, 'germlineReportVariant');
-    }
-    req.variant = result;
-    return next();
+    result = await db.models.germline_small_mutation_variant.findOne({
+      where: {ident},
+    });
   } catch (error) {
-    logger.error(error);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: 'Unable to find the requested germline report.'});
+    logger.error(`Error while trying to get germline report variant ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get germline report variant'}});
   }
+
+  if (!result) {
+    logger.error('Unable to find germline report variant');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find germline report variant'}});
+  }
+
+  req.variant = result;
+  return next();
 };
