@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {existsChecker} = require('../libs/helperFunctions');
+const {includesAll} = require('../libs/helperFunctions');
 
 const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
 
@@ -67,7 +67,7 @@ const DEFAULT_OPTIONS = {
       // check if the data has changed or if the fields updated
       // are excluded from creating a new record
       const changed = instance.changed();
-      if (!changed || existsChecker(DEFAULT_UPDATE_EXCLUDE, changed)) {
+      if (!changed || includesAll(DEFAULT_UPDATE_EXCLUDE, changed)) {
         return true;
       }
 
@@ -95,7 +95,7 @@ const DEFAULT_REPORT_OPTIONS = {
       const changed = instance.changed();
       const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
 
-      if (!changed || existsChecker(updateExclude, changed)) {
+      if (!changed || includesAll(updateExclude, changed)) {
         return true;
       }
 
