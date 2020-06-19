@@ -14,7 +14,7 @@ module.exports = async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Error while trying to get germline report reviews ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get germline report reviews'}});
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to get germline report reviews'}});
   }
 
   if (!result) {

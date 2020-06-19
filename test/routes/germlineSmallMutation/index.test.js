@@ -262,14 +262,14 @@ describe('/germline-small-mutation-reports', () => {
         expect(res.body.exported).toBe(NEW_EXPORTED);
       });
 
-      test('PUT /:gsm_report - 404 Not Found', async () => {
+      test('PUT /:gsm_report - 400 Bad Request', async () => {
         const NEW_EXPORTED = true;
         await request
-          .put(`${BASE_URL}/NOT_A_EXISTING_RECORD`)
+          .put(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
           .send({exported: NEW_EXPORTED})
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
+          .expect(HTTP_STATUS.BAD_REQUEST);
       });
     });
 
@@ -282,12 +282,12 @@ describe('/germline-small-mutation-reports', () => {
           .expect(HTTP_STATUS.NO_CONTENT);
       });
 
-      test('DELETE /:gsm_report - 404 Not Found', async () => {
+      test('DELETE /:gsm_report - 400 Bad Request', async () => {
         await request
           .delete(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
+          .expect(HTTP_STATUS.BAD_REQUEST);
       });
     });
   });
