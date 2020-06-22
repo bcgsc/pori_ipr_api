@@ -130,6 +130,6 @@
             "ignoreDestructuring": true,
             "properties": "never"
         }],
-        "func-names": 0
+        "func-names": "off"
     }
 }
