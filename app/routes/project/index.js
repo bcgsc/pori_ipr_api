@@ -336,7 +336,7 @@ router.route('/:project([A-z0-9-]{36})/user')
           individualHooks: true,
           paranoid: true,
         });
-        return res.json(user);
+        return res.status(HTTP_STATUS.CREATED).json(user);
       } catch (error) {
         logger.error(`Error while restoring user project binding ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while restoring existing user project binding'}});
@@ -362,7 +362,7 @@ router.route('/:project([A-z0-9-]{36})/user')
         },
       };
 
-      return res.json(output);
+      return res.status(HTTP_STATUS.CREATED).json(output);
     } catch (error) {
       logger.error(`Error while adding user to project ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding user to project'}});
@@ -453,7 +453,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
         updatedAt: reportProject.updatedAt,
       };
 
-      return res.json(output);
+      return res.status(HTTP_STATUS.CREATED).json(output);
     } catch (error) {
       logger.error(`Error while adding report to project ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while adding report to project'}});

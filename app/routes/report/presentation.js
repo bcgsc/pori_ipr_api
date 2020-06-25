@@ -51,7 +51,7 @@ router.route('/discussion')
     try {
       let result = await db.models.presentation_discussion.create(data);
       result = await db.models.presentation_discussion.scope('public').findOne({where: {id: result.id}});
-      res.json(result);
+      res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       console.log(error);
       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion entry'});
@@ -142,7 +142,7 @@ router.route('/slide')
     try {
       let result = await db.models.presentation_slides.create(data);
       result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
-      res.json(result);
+      res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       console.log(error);
       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new presentation slides'});

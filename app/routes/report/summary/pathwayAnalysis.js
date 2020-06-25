@@ -102,7 +102,7 @@ router.route('/')
           // Create new entry
           try {
             const result = await db.models.pathwayAnalysis.create(req.body);
-            return res.json(result);
+            return res.status(HTTP_STATUS.CREATED).json(result);
           } catch (error) {
             logger.error(`Unable to create pathway analysis ${error}`);
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create pathway analysis'}});

@@ -119,7 +119,7 @@ router.route('/')
           id, password, deletedAt, ...publicModel
         } = dataValues;
 
-        return res.json(publicModel);
+        return res.status(HTTP_STATUS.CREATED).json(publicModel);
       } catch (error) {
         logger.error(`Unable to restore username ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to restore existing username'}});
@@ -135,7 +135,7 @@ router.route('/')
       // Everything looks good, create the account!
       const resp = await db.models.user.create(req.body);
       // Account created, send details
-      return res.json(resp);
+      return res.status(HTTP_STATUS.CREATED).json(resp);
     } catch (error) {
       logger.error(`Unable to create user account ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: false, message: 'Unable to create user account.'});
