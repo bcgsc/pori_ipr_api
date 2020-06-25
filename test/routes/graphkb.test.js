@@ -17,7 +17,7 @@ const testAutocompleteWithKeyword = async (request, type, keyword) => {
     .send({keyword})
     .auth(username, password)
     .type('json')
-    .expect(HTTP_STATUS.OK);
+    .expect(HTTP_STATUS.CREATED);
 
   expect(body).toEqual(
     expect.objectContaining({
@@ -39,7 +39,7 @@ const testAutocompleteWithoutKeyword = async (request, type) => {
     .post(`${BASE_URL}/${type}`)
     .auth(username, password)
     .type('json')
-    .expect(HTTP_STATUS.OK);
+    .expect(HTTP_STATUS.CREATED);
 
   expect(body).toEqual(
     expect.objectContaining({

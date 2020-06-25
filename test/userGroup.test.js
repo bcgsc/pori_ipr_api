@@ -79,7 +79,7 @@ describe('/user/group endpoint testing', () => {
         .auth(username, password)
         .type('json')
         .send({name: 'testGroup', owner: users[1].ident})
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.CREATED);
 
       groupIdent = res.body.ident;
 
@@ -287,7 +287,7 @@ describe('/user/group endpoint testing', () => {
           .send({user: users[0].ident})
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.OK);
+          .expect(HTTP_STATUS.CREATED);
 
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),

@@ -105,7 +105,7 @@ describe('/user', () => {
           firstName: 'FirstNameTest',
           lastName: 'LastNameTest',
         })
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.CREATED);
     });
     // Test for POST /user 400 endpoint
     test('POST new user - Password is required for local', async () => {
@@ -206,7 +206,7 @@ describe('/user', () => {
           firstName: 'FirstNameTest',
           lastName: 'LastNameTest',
         })
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.CREATED);
 
       newUserIdent = res.body.ident;
 
@@ -233,7 +233,7 @@ describe('/user', () => {
         .auth(username, password)
         .type('json')
         .send(newUser)
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.CREATED);
 
       newUserIdent = res.body.ident;
     });
