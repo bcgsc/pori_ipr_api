@@ -68,7 +68,7 @@ const DEFAULT_OPTIONS = {
       // are excluded from creating a new record
       const changed = instance.changed();
       if (!changed || includesAll(DEFAULT_UPDATE_EXCLUDE, changed)) {
-        return true;
+        return Promise.resolve(true);
       }
 
       const {id, ...content} = instance._previousDataValues;
@@ -96,7 +96,7 @@ const DEFAULT_REPORT_OPTIONS = {
       const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
 
       if (!changed || includesAll(updateExclude, changed)) {
-        return true;
+        return Promise.resolve(true);
       }
 
       // remove reviewer signature from report
