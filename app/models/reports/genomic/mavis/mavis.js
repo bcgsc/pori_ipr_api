@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('mavis', {
+  const mavis = sequelize.define('mavis', {
     ...DEFAULT_COLUMNS,
     product_id: {
       type: Sq.TEXT,
@@ -31,4 +31,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  mavis.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, product_id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return mavis;
 };

@@ -51,12 +51,10 @@ module.exports = async (req, res, next) => {
   const expiry = decoded.exp;
 
   // Lookup token in IPR database
+  // Middleware for user
   try {
     const respUser = await db.models.user.findOne({
       where: {username},
-      attributes: {
-        exclude: ['deletedAt', 'password', 'jiraToken', 'jiraXsrf'],
-      },
       include: [
         {
           model: db.models.userGroup,
@@ -74,9 +72,12 @@ module.exports = async (req, res, next) => {
         },
       ],
     });
+
     if (!respUser) {
+      logger.error('User does not exist');
       return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'User does not exist'});
     }
+
     respUser.dataValues.expiry = expiry;
     req.user = respUser;
     return next();

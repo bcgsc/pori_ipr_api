@@ -6,10 +6,16 @@ const db = require('../../models');
 
 const logger = require('../../log');
 
+// Middleware for small mutations
 router.param('mutation', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.smallMutations.scope('public').findOne({where: {ident: mutIdent}});
+    result = await db.models.smallMutations.findOne({
+      where: {ident: mutIdent},
+      include: [
+        {model: db.models.genes.scope('minimal'), as: 'gene'},
+      ],
+    });
   } catch (error) {
     logger.error(`Unable to get somatic mutations ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get somatic mutations'}});
@@ -20,36 +26,22 @@ router.param('mutation', async (req, res, next, mutIdent) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate somatic mutations'}});
   }
 
+  // Add small mutation to request
   req.mutation = result;
   return next();
 });
 
-// Handle requests for alterations
+// Handle requests for small mutations
 router.route('/:mutation([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.mutation);
+    return res.json(req.mutation.view('public'));
   })
   .put(async (req, res) => {
-    // Update DB Version for Entry
+    // Update db entry
     try {
-      const result = await db.models.smallMutations.update(req.body, {
-        where: {
-          ident: req.mutation.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      await req.mutation.update(req.body);
+      await req.mutation.reload();
+      return res.json(req.mutation.view('public'));
     } catch (error) {
       logger.error(`Unable to update somatic mutations ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update somatic mutations'}});
@@ -57,10 +49,9 @@ router.route('/:mutation([A-z0-9-]{36})')
   })
   .delete(async (req, res) => {
     // Soft delete the entry
-    // Update result
     try {
-      await db.models.smallMutations.destroy({where: {ident: req.mutation.ident}});
-      return res.json({success: true});
+      await req.mutation.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove somatic mutations ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove somatic mutations'}});

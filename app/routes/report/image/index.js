@@ -19,20 +19,15 @@ router.route('/retrieve/:key')
       keys = req.params.key.split(',');
     }
 
-    const opts = {
-      where: {
-        key: {
-          [Op.in]: keys,
-        },
-        reportId: req.report.id,
-      },
-      attributes: {exclude: ['id', 'deletedAt', 'reportId']},
-    };
-
     try {
-      const results = await db.models.imageData.findAll(opts);
-      const output = {};
+      const results = await db.models.imageData.scope('public').findAll({
+        where: {
+          key: {[Op.in]: keys},
+          reportId: req.report.id,
+        },
+      });
 
+      const output = {};
       results.forEach((value) => {
         output[value.key] = value;
       });
@@ -47,18 +42,15 @@ router.route('/retrieve/:key')
 router.route('/expression-density-graphs')
   .get(async (req, res) => {
     try {
-      const output = {};
-      const results = await db.models.imageData.findAll({
+      const results = await db.models.imageData.scope('public').findAll({
         where: {
+          key: {[Op.like]: 'expDensity.%'},
           reportId: req.report.id,
-          key: {
-            [Op.like]: 'expDensity.%',
-          },
         },
         order: [['key', 'ASC']],
-        attributes: {exclude: ['id', 'deletedAt']},
       });
 
+      const output = {};
       results.forEach((value) => {
         output[value.key] = value;
       });
@@ -72,26 +64,25 @@ router.route('/expression-density-graphs')
 
 router.route('/mutation-summary')
   .get(async (req, res) => {
-    const opts = {
-      where: {
-        reportId: req.report.id,
-        key: {
-          [Op.or]: [
-            {[Op.like]: 'mutation_summary.%'},
-            {[Op.like]: 'mutSummary.%'},
-          ],
-        },
-      },
-      order: [['key', 'ASC']],
-      attributes: {exclude: ['id', 'deletedAt', 'reportId']},
-    };
-
     try {
+      const results = await db.models.imageData.scope('public').findAll({
+        where: {
+          key: {
+            [Op.or]: [
+              {[Op.like]: 'mutation_summary.%'},
+              {[Op.like]: 'mutSummary.%'},
+            ],
+          },
+          reportId: req.report.id,
+        },
+        order: [['key', 'ASC']],
+      });
+
       const output = {};
-      const results = await db.models.imageData.findAll(opts);
       results.forEach((value) => {
         output[value.key] = value;
       });
+
       return res.json(output);
     } catch (error) {
       logger.error(error);
@@ -102,18 +93,15 @@ router.route('/mutation-summary')
 router.route('/subtype-plots')
   .get(async (req, res) => {
     try {
-      const output = {};
-      const results = await db.models.imageData.findAll({
+      const results = await db.models.imageData.scope('public').findAll({
         where: {
+          key: {[Op.like]: 'subtypePlot.%'},
           reportId: req.report.id,
-          key: {
-            [Op.like]: 'subtypePlot.%',
-          },
         },
         order: [['key', 'ASC']],
-        attributes: {exclude: ['id', 'deletedAt']},
       });
 
+      const output = {};
       results.forEach((value) => {
         output[value.key] = value;
       });

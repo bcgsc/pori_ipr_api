@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('analystComments', {
+  const analystComments = sequelize.define('analystComments', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -29,4 +29,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  analystComments.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return analystComments;
 };

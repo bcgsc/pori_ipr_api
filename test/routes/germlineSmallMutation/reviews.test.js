@@ -132,12 +132,12 @@ describe('/germline-small-mutation-reports/:gsm_report/review', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
     });
 
-    test('DELETE /{review} - 404 Not found', async () => {
+    test('DELETE /{review} - 400 Bad Request', async () => {
       await request
         .delete(`${BASE_URL}/${record.ident}/review/NOT_EXISTING_ID`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });
