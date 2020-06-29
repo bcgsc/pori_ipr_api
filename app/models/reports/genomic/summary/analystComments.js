@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
   const analystComments = sequelize.define('analystComments', {
@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
     },
   },
   {
-    ...DEFAULT_OPTIONS,
+    ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_analyst_comments',
     scopes: {
       public: {
