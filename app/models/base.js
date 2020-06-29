@@ -91,7 +91,7 @@ const DEFAULT_REPORT_OPTIONS = {
     afterUpdate: (instance, options = {}) => {
       const modelName = instance.constructor.name;
       // check if the data has changed or if the fields updated
-      // are excluded from removing the reviewer signature
+      // are excluded from removing the report signatures
       const changed = instance.changed();
       const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
 
@@ -99,8 +99,10 @@ const DEFAULT_REPORT_OPTIONS = {
         return Promise.resolve(true);
       }
 
-      // remove reviewer signature from report
+      // remove signatures from report
       return instance.sequelize.models.signatures.update({
+        authorId: null,
+        authorSignedAt: null,
         reviewerId: null,
         reviewerSignedAt: null,
       }, {
