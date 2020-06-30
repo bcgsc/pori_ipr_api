@@ -63,6 +63,4 @@ delete schemas.reportProject;
 delete schemas.userGroupMember;
 delete schemas.germlineReportsToProjects;
 
-console.log(schemas.project);
-
 module.exports = schemas;
