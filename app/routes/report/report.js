@@ -300,6 +300,7 @@ router.route('/')
   .post(async (req, res) => {
     // verify user is allowed to upload a report
     const access = new Acl(req);
+    access.write = ['*'];
     if (!access.check()) {
       logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
