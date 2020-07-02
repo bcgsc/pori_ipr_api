@@ -6,11 +6,11 @@ const logger = require('../../../log');
 const router = express.Router({mergeParams: true});
 
 // Middleware for mutation summary
-router.use('mutation', async (req, res, next, mutation) => {
+router.param('mutation', async (req, res, next, mutIdent) => {
   let result;
   try {
     result = await db.models.mutationSummary.findOne({
-      where: {ident: mutation},
+      where: {ident: mutIdent},
     });
   } catch (error) {
     logger.error(`Unable to lookup mutation summary error: ${error}`);
