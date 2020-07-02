@@ -1,4 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
+const uuidv4 = require('uuid/v4');
 const supertest = require('supertest');
 const getPort = require('get-port');
 
@@ -43,6 +44,7 @@ describe('/germline-small-mutation-reports', () => {
   let server;
   let request;
   let testUser;
+  let fakeReportIdent;
 
   beforeAll(async () => {
     const port = await getPort({port: CONFIG.get('web:port')});
@@ -53,6 +55,13 @@ describe('/germline-small-mutation-reports', () => {
     testUser = await db.models.user.findOne({
       where: {username},
     });
+
+    // Generate UUID that doesn't belong to a report
+    let result = 'Random Starting Value';
+    while (result !== null) {
+      fakeReportIdent = uuidv4();
+      result = await db.models.germline_small_mutation.findOne({where: {ident: fakeReportIdent}});
+    }
   });
 
   afterAll(async () => {
@@ -247,6 +256,14 @@ describe('/germline-small-mutation-reports', () => {
           checkGermlineReport,
         );
       });
+
+      test('GET /:gsm_report - 404 Not Found', async () => {
+        await request
+          .get(`${BASE_URL}/${fakeReportIdent}`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
+      });
     });
 
     describe('PUT', () => {
@@ -271,6 +288,16 @@ describe('/germline-small-mutation-reports', () => {
           .type('json')
           .expect(HTTP_STATUS.BAD_REQUEST);
       });
+
+      test('PUT /:gsm_report - 404 Not Found', async () => {
+        const NEW_EXPORTED = true;
+        await request
+          .put(`${BASE_URL}/${fakeReportIdent}`)
+          .send({exported: NEW_EXPORTED})
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
+      });
     });
 
     describe('DELETE', () => {
@@ -288,6 +315,14 @@ describe('/germline-small-mutation-reports', () => {
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
+      test('DELETE /:gsm_report - 404 Not Found', async () => {
+        await request
+          .delete(`${BASE_URL}/${fakeReportIdent}`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NOT_FOUND);
       });
     });
   });
