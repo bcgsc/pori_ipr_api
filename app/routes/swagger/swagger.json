@@ -1878,6 +1878,373 @@
           }
         }
       }
+    },
+    "/germline-small-mutation-reports/{report}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{report}/review": {
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_review"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{report}/review/{review}": {
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/review"
+          },
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_review"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{report}/variant/{variant}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variant"
+          },
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_variant"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variant"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_variant"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/graphkb/{targetType}": {
+      "post": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/targetType"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/appendices": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/appendices/tcga": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/copy-variants": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/copy-variants/{cnv}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/cnv"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
@@ -1901,6 +2268,42 @@
         "in": "path",
         "required": true,
         "description": "Analysis report ident",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "targetType": {
+        "name": "Target Type",
+        "in": "path",
+        "required": true,
+        "description": "Target type, one of: variant, therapy, evidenceLevel or context",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "review": {
+        "name": "review",
+        "in": "path",
+        "required": true,
+        "description": "Germline Review ID",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "variant": {
+        "name": "variant",
+        "in": "path",
+        "required": true,
+        "description": "Germline Variant ID",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "cnv": {
+        "name": "Copy-Number Variant",
+        "in": "path",
+        "required": true,
+        "description": "Copy number variant",
         "schema": {
           "type": "string"
         }
