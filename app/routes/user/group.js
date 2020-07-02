@@ -28,8 +28,7 @@ const memberSchema = {
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
   // Access Control
-  const access = new Acl(req, res);
-  access.read = ['*'];
+  const access = new Acl(req);
   if (!access.check()) {
     logger.error('User isn\'t allowed to access this');
     return res.status(HTTP_STATUS.FORBIDDEN).send({status: false, message: 'You are not allowed to perform this action'});
