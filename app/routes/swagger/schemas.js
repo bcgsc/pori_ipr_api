@@ -6,12 +6,11 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const schemas = {};
 
-delete db.models.user_project;
-delete db.models.reportProject;
-delete db.models.userGroupMember;
-delete db.models.germlineReportsToProjects;
+const {
+  germlineReportsToProjects, userGroupMember, reportProject, user_project, ...models
+} = db.models;
 
-for (const property of Object.keys(db.models)) {
+for (const property of Object.keys(models)) {
   schemas[property] = schemaManager.generate(db.models[property], new OpenApi3Strategy(), {
     title: `${property}`,
     associations: true,
