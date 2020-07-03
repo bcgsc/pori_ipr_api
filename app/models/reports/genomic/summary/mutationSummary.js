@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('mutationSummary', {
+  const mutationSummary = sequelize.define('mutationSummary', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -64,4 +64,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  mutationSummary.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return mutationSummary;
 };

@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('probe_test_information', {
+  const probeTestInformation = sequelize.define('probe_test_information', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -41,8 +41,7 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
-  },
-  {
+  }, {
     ...DEFAULT_OPTIONS,
     tableName: 'reports_probe_test_information',
     scopes: {
@@ -51,4 +50,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  probeTestInformation.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return probeTestInformation;
 };

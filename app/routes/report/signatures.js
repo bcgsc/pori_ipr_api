@@ -11,7 +11,13 @@ const router = express.Router({mergeParams: true});
 router.use('/', async (req, res, next) => {
   try {
     // Get report signatures
-    req.signatures = await db.models.signatures.scope('public').findOne({where: {reportId: req.report.id}});
+    req.signatures = await db.models.signatures.findOne({
+      where: {reportId: req.report.id},
+      include: [
+        {model: db.models.user.scope('public'), as: 'reviewerSignature'},
+        {model: db.models.user.scope('public'), as: 'authorSignature'},
+      ],
+    });
     return next();
   } catch (error) {
     logger.error(`Unable to get signatures for report ${req.report.ident} error: ${error}`);
@@ -21,7 +27,10 @@ router.use('/', async (req, res, next) => {
 
 router.route('/')
   .get((req, res) => {
-    return res.json(req.signatures);
+    if (req.signatures) {
+      return res.json(req.signatures.view('public'));
+    }
+    return res.json(null);
   });
 
 router.route('/sign/:role(author|reviewer)')
@@ -41,34 +50,21 @@ router.route('/sign/:role(author|reviewer)')
 
       try {
         await db.models.signatures.create(data);
+        const newEntry = await db.models.signatures.scope('public').findOne({where: {reportId: req.report.id}});
+        return res.json(newEntry);
       } catch (error) {
         logger.error(`Unable to create ${role} signature ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to create ${role} signature`}});
       }
     } else {
       try {
-        await db.models.signatures.update(data, {
-          where: {
-            ident: req.signatures.ident,
-          },
-          individualHooks: true,
-          paranoid: true,
-        });
+        await req.signatures.update(data);
+        await req.signatures.reload();
+        return res.json(req.signatures.view('public'));
       } catch (error) {
         logger.error(`Unable to update ${role} signature ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to update ${role} signature`}});
       }
-    }
-
-    // get updated public view of record with includes
-    // TODO: This will get replaced with a save + reload
-    // this should be changed in DEVSU-1049
-    try {
-      const updatedResult = await db.models.signatures.scope('public').findOne({where: {reportId: req.report.id}});
-      return res.json(updatedResult);
-    } catch (error) {
-      logger.error(`Unable to get updated signatures ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get updated signatures'}});
     }
   });
 
@@ -90,27 +86,12 @@ router.route('/revoke/:role(author|reviewer)')
 
     // update signatures
     try {
-      await db.models.signatures.update(data, {
-        where: {
-          ident: req.signatures.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-      });
+      await req.signatures.update(data);
+      await req.signatures.reload();
+      return res.json(req.signatures.view('public'));
     } catch (error) {
       logger.error(`Unable to revoke ${role} ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to revoke ${role}`}});
-    }
-
-    // get updated public view of record with includes
-    // TODO: This will get replaced with a save + reload
-    // this should be changed in DEVSU-1049
-    try {
-      const updatedResult = await db.models.signatures.scope('public').findOne({where: {ident: req.signatures.ident}});
-      return res.json(updatedResult);
-    } catch (error) {
-      logger.error(`Unable to get updated signatures ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get updated signatures'}});
     }
   });
 

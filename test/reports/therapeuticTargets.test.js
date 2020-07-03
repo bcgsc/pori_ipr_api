@@ -73,7 +73,7 @@ describe('/therapeutic-targets', () => {
         .auth(username, password)
         .type('json')
         .send({...FAKE_TARGET})
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.OK);
       // check that expected property not present in request body is added by create method
       expect(record).toHaveProperty('variantGraphkbId', null);
       expect(record).toHaveProperty('ident');
@@ -213,7 +213,7 @@ describe('/therapeutic-targets', () => {
         .delete(url)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.NO_CONTENT);
       // should now find a deleted record with this ident
       const result = await db.models.therapeuticTarget.findOne({
         paranoid: false,

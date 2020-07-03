@@ -81,12 +81,12 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
       expect(result.body).not.toHaveProperty('id');
     });
 
-    test('GET /{variant} - 404 Not Found', async () => {
+    test('GET /{variant} - 400 Bad Request', async () => {
       await request
         .get(`${BASE_URL}/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
@@ -156,13 +156,13 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test('PUT /{variant} - 404 Not Found', async () => {
+    test('PUT /{variant} - 400 Bad Request', async () => {
       await request
-        .put(`${BASE_URL}/${record.ident}/variant/NOT_A_EXISTING_VARIANT`)
+        .put(`${BASE_URL}/${record.ident}/variant/NOT_AN_EXISTING_VARIANT`)
         .send({patient_history: 'Updated_patient_history', family_history: 'Updated_family_history', hidden: true})
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });

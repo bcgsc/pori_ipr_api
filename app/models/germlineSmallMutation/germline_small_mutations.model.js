@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('germline_small_mutation', {
+  const germlineReport = sequelize.define('germline_small_mutation', {
     ...DEFAULT_COLUMNS,
     patientId: {
       name: 'patientId',
@@ -41,15 +41,14 @@ module.exports = (sequelize) => {
       type: Sq.BOOLEAN,
       defaultValue: false,
     },
-  },
-  {
+  }, {
     ...DEFAULT_OPTIONS,
     tableName: 'germline_small_mutations',
     scopes: {
       public: {
         order: [['createdAt', 'desc']],
         attributes: {
-          exclude: ['id', 'biofx_assigned_id', 'deletedAt', 'germline_report_id'],
+          exclude: ['id', 'biofx_assigned_id', 'deletedAt'],
         },
         include: [
           {as: 'biofx_assigned', model: sequelize.models.user.scope('public')},
@@ -64,4 +63,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  germlineReport.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, biofx_assigned_id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return germlineReport;
 };
