@@ -6,6 +6,11 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const schemas = {};
 
+delete db.models.user_project;
+delete db.models.reportProject;
+delete db.models.userGroupMember;
+delete db.models.germlineReportsToProjects;
+
 for (const property of Object.keys(db.models)) {
   schemas[property] = schemaManager.generate(db.models[property], new OpenApi3Strategy(), {
     title: `${property}`,
@@ -57,10 +62,5 @@ schemas.project.properties.reports = schemas.analysis_report;
 schemas.group.properties.users = schemas.user;
 
 schemas.userGroup.properties.users = schemas.user;
-
-delete schemas.user_project;
-delete schemas.reportProject;
-delete schemas.userGroupMember;
-delete schemas.germlineReportsToProjects;
 
 module.exports = schemas;
