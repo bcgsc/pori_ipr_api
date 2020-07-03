@@ -899,7 +899,7 @@
         }
       }
     },
-    "/reports/{report}/summary/patient-information": {
+    "/reports/{report}/patient-information": {
       "get": {
         "summary": "Get Patient Summary",
         "description": "Retrieve basic metadata patient details for a report",
@@ -2217,6 +2217,1660 @@
           },
           {
             "$ref": "#/components/parameters/cnv"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/expression-variants": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/expression-variants/{ExpressionVariant}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/gene-viewer/{geneName} ": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{reports}/genes": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{reports}/genes/{geneName}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/expression-density-graphs": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/mutation-summary": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/retrieve/{key} ": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/subtype-plots": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches/{kbMatch}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mavis": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mutation-signatures": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/discussion": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/discussion/{discussion}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/slide": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/slide/{slide}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/probe-results": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/probe-results/{target}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/probe-test-information": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures/revoke/{role}": {
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures/sign/{role}": {
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/small-mutations/{mutation}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/structural-variants": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/structural-variants/{structuralVariant}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/summary/analyst-comments": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/therapeutic-targets/{target}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
           }
         ],
         "tags": [
