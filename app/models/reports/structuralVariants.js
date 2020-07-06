@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('structuralVariants', {
+  const structuralVariants = sequelize.define('structuralVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -105,7 +105,7 @@ module.exports = (sequelize) => {
     tableName: 'reports_structural_variants',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'gene1Id', 'gene2Id']},
+        attributes: {exclude: ['id', 'reportId', 'gene1Id', 'gene2Id', 'deletedAt']},
         include: [
           {
             model: sequelize.models.genes.scope('minimal'),
@@ -121,4 +121,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  structuralVariants.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, gene1Id, gene2Id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return structuralVariants;
 };

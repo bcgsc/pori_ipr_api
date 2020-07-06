@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('./base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('patientInformation', {
+  const patientInformation = sequelize.define('patientInformation', {
     ...DEFAULT_COLUMNS,
     physician: {
       type: Sq.STRING,
@@ -59,4 +59,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  patientInformation.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return patientInformation;
 };

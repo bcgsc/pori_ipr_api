@@ -92,7 +92,7 @@ router.put('/', async (req, res) => {
  */
 router.delete('/:review', async (req, res) => {
   try {
-    await db.models.germline_small_mutation_review.destroy({where: {ident: req.review.ident}});
+    await req.review.destroy();
     return res.status(HTTP_STATUS.NO_CONTENT).send();
   } catch (error) {
     logger.error(`There was an error while trying to remove the requested germline report ${error}`);

@@ -4,7 +4,6 @@ const express = require('express');
 const logger = require('../../log');
 const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const db = require('../../models');
 const variantSchema = require('../../schemas/germlineSmallMutation/updateVariant');
 
 const router = express.Router({mergeParams: true});
@@ -27,7 +26,7 @@ router.route('/:variant')
    * @returns {object} - Returns requested variant
    */
   .get((req, res) => {
-    return res.json(req.variant);
+    return res.json(req.variant.view('public'));
   })
 
   /**
@@ -51,24 +50,17 @@ router.route('/:variant')
       // Validate input
       validateAgainstSchema(variantSchema, req.body);
     } catch (error) {
-      // if input is invalid return 400
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+      logger.error(`Germline variant validation failed ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Germline variant validation failed'}});
     }
 
     try {
-      const opt = {
-        where: {
-          ident: req.variant.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-      };
-      await db.models.germline_small_mutation_variant.update(req.body, opt);
-      await req.variant.reload(opt);
-      return res.json(await req.variant);
+      await req.variant.update(req.body);
+      await req.variant.reload();
+      return res.json(req.variant.view('public'));
     } catch (error) {
-      logger.error(`Error while trying to update variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update variant'});
+      logger.error(`Error while trying to update germline variant ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update germline variant'});
     }
   });
 

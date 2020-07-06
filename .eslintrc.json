@@ -129,6 +129,7 @@
         "camelcase": ["error", {
             "ignoreDestructuring": true,
             "properties": "never"
-        }]
+        }],
+        "func-names": "off"
     }
 }

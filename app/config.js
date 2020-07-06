@@ -61,11 +61,6 @@ const DEFAULTS = {
     port: 5432,
     name: DEFAULT_DB_NAME,
   },
-  redis: {
-    uri: '',
-    host: '',
-    port: 6379,
-  },
   paths: {
     data: {
       POGdata: '/projects/tumour_char/pog/reports/genomic',

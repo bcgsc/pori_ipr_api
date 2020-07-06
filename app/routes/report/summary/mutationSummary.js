@@ -5,15 +5,16 @@ const logger = require('../../../log');
 
 const router = express.Router({mergeParams: true});
 
-// Middleware for Mutation Summary
-router.use('/', async (req, res, next) => {
-  // Get Mutation Summary for this report
+// Middleware for mutation summary
+router.param('mutation', async (req, res, next, mutIdent) => {
   let result;
   try {
-    result = await db.models.mutationSummary.scope('public').findAll({where: {reportId: req.report.id}});
+    result = await db.models.mutationSummary.findOne({
+      where: {ident: mutIdent},
+    });
   } catch (error) {
-    logger.error(`Unable to lookup mutation summaries for report ${req.report.ident} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.report.ident}`}});
+    logger.error(`Unable to lookup mutation summary error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup the mutation summary'}});
   }
 
   if (!result) {
@@ -21,41 +22,38 @@ router.use('/', async (req, res, next) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find mutation summary for ${req.report.ident}`}});
   }
 
-  // Found the patient information
+  // Add mutation summary to request
   req.mutationSummary = result;
   return next();
 });
 
-// Handle requests for mutation summary
-router.route('/')
+// Handle requests for mutation summary by ident
+router.route('/:mutation([A-z0-9-]{36})')
   .get((req, res) => {
-    // Get Patient History
-    return res.json(req.mutationSummary);
+    return res.json(req.mutationSummary.view('public'));
   })
   .put(async (req, res) => {
-    // Update DB Version for Entry
+    // Update db entry
     try {
-      const result = await db.models.mutationSummary.update(req.body, {
-        where: {
-          ident: req.mutationSummary.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      await req.mutationSummary.update(req.body);
+      return res.json(req.mutationSummary.view('public'));
     } catch (error) {
       logger.error(`Unable to update mutation summary ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutation summary'}});
+    }
+  });
+
+// Handle requests for mutation summaries
+router.route('/')
+  .get(async (req, res) => {
+    try {
+      const results = await db.models.mutationSummary.scope('public').findAll({
+        where: {reportId: req.report.id},
+      });
+      return res.json(results);
+    } catch (error) {
+      logger.error(`Unable to lookup mutation summaries for report ${req.report.ident} error: ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation summaries for ${req.report.ident}`}});
     }
   });
 
