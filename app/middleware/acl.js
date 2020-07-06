@@ -51,7 +51,7 @@ class ACL {
 
 
     // Check that the allowed groups and disallowed groups don't contain the same group
-    if (_.intersection(this.groups, this.nGroups).length > 0) {
+    if (_.intersection(this.groups, this.nGroups).length > 0 || (this.groups.includes('*') && this.nGroups.length > 0)) {
       logger.error('Group(s) in both allowed and not allowed');
       throw new Error('Group(s) in both allowed and not allowed');
     }
@@ -84,7 +84,7 @@ class ACL {
         return _.intersection(userGroups, this.masterReportEdit).length > 0 || boundUser;
       }
 
-      // If read is not set to allow all, run check for pogRole access
+      // If read is not set to allow all, run check for read access
       if (this.req.method === 'GET'
         && (this.read.includes('*')
         || _.intersection(userGroups, this.read).length > 0)
