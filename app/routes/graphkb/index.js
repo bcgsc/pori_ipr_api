@@ -19,7 +19,7 @@ router.post('/:targetType(variant|therapy|evidenceLevel|context)', async (req, r
   const {body: {keyword}, params: {targetType}, graphkbToken} = req;
   try {
     const data = await graphkbAutocomplete(targetType, graphkbToken, keyword);
-    return res.status(HTTP_STATUS.CREATED).json(data);
+    return res.status(HTTP_STATUS.OK).json(data);
   } catch (error) {
     logger.error(error);
     return res.status(HTTP_STATUS.SERVICE_UNAVAILABLE).json(`GraphKB lookup error: ${error}`);
