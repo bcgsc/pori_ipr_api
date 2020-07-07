@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 /**
  * Checks that all target values exist
  * in an array
@@ -12,6 +14,20 @@ const includesAll = (arr, targets) => {
   });
 };
 
+/**
+ * Performs a case insensitice intersection on
+ * two arrays of strings
+ *
+ * @param {Array<string>} array1 - First array of strings
+ * @param {Array<string>} array2 - Second array of strings
+ * @returns {Array<string>} - Returns a new array of intersecting values
+ */
+
+const caseInsensitiveIntersect = (array1, array2) => {
+  return _.intersectionBy(array1, array2, _.lowerCase);
+};
+
 module.exports = {
   includesAll,
+  caseInsensitiveIntersect,
 };
