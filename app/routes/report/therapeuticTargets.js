@@ -80,7 +80,7 @@ router.route('/')
         ...body,
         reportId,
       });
-      return res.json(result.view('public'));
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry'}});
