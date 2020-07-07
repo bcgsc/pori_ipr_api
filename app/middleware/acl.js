@@ -1,6 +1,6 @@
-const _ = require('lodash');
 const db = require('../models');
 const logger = require('../log');
+const {caseInsensitiveIntersect} = require('../libs/helperFunctions');
 
 class ACL {
   /**
@@ -31,8 +31,10 @@ class ACL {
   // Get project access
   async getProjectAccess() {
     const accessGroups = ['Full Project Access', 'admin'];
-    const userGroups = _.map(this.req.user.groups, 'name');
-    const hasAccess = _.intersectionBy(accessGroups, userGroups, _.lowerCase);
+    const userGroups = this.req.user.groups.map((group) => {
+      return group.name;
+    });
+    const hasAccess = caseInsensitiveIntersect(accessGroups, userGroups);
 
     if (hasAccess.length > 0) { // user has full project access
       return db.models.project.findAll();
@@ -51,17 +53,17 @@ class ACL {
 
 
     // Check that the allowed groups and disallowed groups don't contain the same group
-    if (_.intersectionBy(this.groups, this.nGroups, _.lowerCase).length > 0 || (this.groups.includes('*') && this.nGroups.length > 0)) {
+    if (caseInsensitiveIntersect(this.groups, this.nGroups).length > 0 || (this.groups.includes('*') && this.nGroups.length > 0)) {
       logger.error('Group(s) in both allowed and not allowed');
       throw new Error('Group(s) in both allowed and not allowed');
     }
     // Check if user belongs to one of the allowed groups if not return false
-    if (this.groups.length > 0 && !this.groups.includes('*') && _.intersectionBy(userGroups, this.groups, _.lowerCase).length === 0) {
+    if (this.groups.length > 0 && !this.groups.includes('*') && caseInsensitiveIntersect(userGroups, this.groups).length === 0) {
       logger.warn(`User: ${this.req.user.username} doesn't belong to one of the allowed group(s): ${this.groups.join()}`);
       return false;
     }
     // Check that user doesn't belong to one or more of the not allowed groups, return false if they do
-    if (_.intersectionBy(userGroups, this.nGroups, _.lowerCase).length > 0) {
+    if (caseInsensitiveIntersect(userGroups, this.nGroups).length > 0) {
       logger.warn(`User: ${this.req.user.username} belongs to one or more of the not allowed group(s): ${this.nGroups.join()}`);
       return false;
     }
@@ -72,7 +74,7 @@ class ACL {
       // Check if this is a write endpoint and the user belongs
       // to a group that is allowed to edit reports
       if (['POST', 'PUT', 'DELETE'].includes(this.req.method)
-        && _.intersectionBy(userGroups, this.reportEdit, _.lowerCase).length > 0
+        && caseInsensitiveIntersect(userGroups, this.reportEdit).length > 0
       ) {
         // check if user is bound to report
         const boundUser = this.req.report.users.some((reportUser) => {
@@ -81,13 +83,13 @@ class ACL {
 
         // They are allowed to edit if they belong to one of the groups in masterReportEdit
         // or if they have been bound to the report
-        return _.intersectionBy(userGroups, this.masterReportEdit, _.lowerCase).length > 0 || boundUser;
+        return caseInsensitiveIntersect(userGroups, this.masterReportEdit).length > 0 || boundUser;
       }
 
       // If read is not set to allow all, run check for read access
       if (this.req.method === 'GET'
         && (this.read.includes('*')
-        || _.intersectionBy(userGroups, this.read, _.lowerCase).length > 0)
+        || caseInsensitiveIntersect(userGroups, this.read).length > 0)
       ) {
         return true;
       }
@@ -103,7 +105,7 @@ class ACL {
     // and/or everyone is allowed to read at this endpoint
     if (this.req.method === 'GET'
       && (this.read.includes('*')
-      || _.intersectionBy(userGroups, this.read, _.lowerCase).length > 0)
+      || caseInsensitiveIntersect(userGroups, this.read).length > 0)
     ) {
       return true;
     }
@@ -112,7 +114,7 @@ class ACL {
     // and/or everyone is allowed to write at this endpoint
     if (['POST', 'PUT', 'DELETE'].includes(this.req.method)
       && (this.write.includes('*')
-      || _.intersectionBy(userGroups, this.write, _.lowerCase).length > 0)
+      || caseInsensitiveIntersect(userGroups, this.write).length > 0)
     ) {
       return true;
     }
