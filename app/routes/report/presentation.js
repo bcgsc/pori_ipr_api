@@ -60,7 +60,7 @@ router.route('/discussion')
     try {
       let result = await db.models.presentation_discussion.create(data);
       result = await db.models.presentation_discussion.scope('public').findOne({where: {id: result.id}});
-      return res.json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create new discussion ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion'});
@@ -147,7 +147,7 @@ router.route('/slide')
     try {
       let result = await db.models.presentation_slides.create(data);
       result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
-      return res.json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create a new presentation slide ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create a new presentation slide'});

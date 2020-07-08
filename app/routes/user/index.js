@@ -120,7 +120,7 @@ router.route('/')
       // Everything looks good, create the account!
       const resp = await db.models.user.create(req.body);
       // Account created, send details
-      return res.json(resp.view('public'));
+      return res.status(HTTP_STATUS.CREATED).json(resp.view('public'));
     } catch (error) {
       logger.error(`Unable to create user account ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: false, message: 'Unable to create user account.'});

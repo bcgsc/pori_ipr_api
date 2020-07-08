@@ -180,7 +180,7 @@ router.route('/:group([A-z0-9-]{36})/member')
         },
       };
 
-      return res.json(output);
+      return res.status(HTTP_STATUS.CREATED).json(output);
     } catch (error) {
       logger.error(`SQL Error trying to add group member ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to add group member'}});
@@ -283,7 +283,7 @@ router.route('/')
       const group = await db.models.userGroup.scope('public').findOne({
         where: {ident: userGroup.ident},
       });
-      return res.json(group);
+      return res.status(HTTP_STATUS.CREATED).json(group);
     } catch (error) {
       logger.error(`SQL Groups lookup failure ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error loading the newly created group'}});

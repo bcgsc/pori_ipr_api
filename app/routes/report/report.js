@@ -84,7 +84,7 @@ router.route('/:report/user')
     try {
       const result = await report.bindUser(req.body.user, req.body.role, req.user);
       logger.info(`Response from bind user ${result}`);
-      return res.json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(error);
       const code = (error.code === 'userNotFound') ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
@@ -384,10 +384,10 @@ router.route('/')
         logger.error(`Unable to delete the already created report/components of the report ${err}`);
       }
 
-      return res.status(400).json({error: {message: 'Unable to create all report components'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to create all report components'}});
     }
 
-    return res.json({message: 'Report upload was successful', ident: report.ident});
+    return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
   });
 
 module.exports = router;
