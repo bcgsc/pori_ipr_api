@@ -15,7 +15,7 @@ const ERRORS = Object.freeze({
 // Middleware for project
 router.param('project', async (req, res, next, ident) => {
   // Check user permission and filter by project
-  const access = new Acl(req, res);
+  const access = new Acl(req);
   let projectAccess;
   try {
     projectAccess = await access.getProjectAccess();
@@ -52,7 +52,7 @@ router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
     // Getting project
     // Check user permission and filter by project
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     let projectAccess;
     try {
       projectAccess = await access.getProjectAccess();
@@ -73,7 +73,7 @@ router.route('/:project([A-z0-9-]{36})')
 
   .put(async (req, res) => {
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add new project');
@@ -93,7 +93,7 @@ router.route('/:project([A-z0-9-]{36})')
   // Remove a project
   .delete(async (req, res) => {
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove projects');
@@ -116,7 +116,7 @@ router.route('/search')
     const {query} = req.query;
 
     // Check user permission and filter by project
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     let projectAccess;
     try {
       projectAccess = await access.getProjectAccess();
@@ -149,7 +149,7 @@ router.route('/search')
 router.route('/:project([A-z0-9-]{36})/user')
   .get((req, res) => {
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to get project users');
@@ -161,7 +161,7 @@ router.route('/:project([A-z0-9-]{36})/user')
   .post(async (req, res) => {
     // Add Project User
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add project users');
@@ -233,7 +233,7 @@ router.route('/:project([A-z0-9-]{36})/user')
   .delete(async (req, res) => {
     // Remove Project User
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove project user');
@@ -272,7 +272,7 @@ router.route('/:project([A-z0-9-]{36})/user')
 router.route('/:project([A-z0-9-]{36})/reports')
   .get((req, res) => {
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to get project reports');
@@ -285,7 +285,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
   .post(async (req, res) => {
     // Add Project report
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add project reports');
@@ -324,7 +324,7 @@ router.route('/:project([A-z0-9-]{36})/reports')
   .delete(async (req, res) => {
     // Remove project-report association
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin', 'Full Project Access'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to delete project reports');
@@ -362,10 +362,10 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const includeOpts = [];
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.read = ['admin'];
 
-    if (access.check(true) && req.query.admin === true) {
+    if (access.check() && req.query.admin === true) {
       includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
       includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
     }
@@ -399,7 +399,7 @@ router.route('/')
   .post(async (req, res) => {
     // Add new project
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to add new project');

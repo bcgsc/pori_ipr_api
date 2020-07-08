@@ -40,7 +40,7 @@ router.route('/:report')
   })
   .delete(async (req, res) => {
     // first check user permissions before delete
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     if (!access.check()) {
       logger.error('User doesn\'t have correct permissions to delete report');
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
@@ -60,7 +60,7 @@ router.route('/:report')
  */
 router.route('/:report/user')
   .post(async (req, res) => {
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     if (!access.check()) {
       logger.error(
         `User doesn't have correct permissions to add a user binding ${req.user.username}`,
@@ -92,7 +92,7 @@ router.route('/:report/user')
     }
   })
   .delete(async (req, res) => {
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     if (!access.check()) {
       logger.error(
         `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
@@ -128,7 +128,7 @@ router.route('/:report/user')
 router.route('/')
   .get(async (req, res) => {
     // Check user permission and filter by project
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     let projectAccess = null;
     try {
       projectAccess = await access.getProjectAccess();
@@ -299,7 +299,8 @@ router.route('/')
   })
   .post(async (req, res) => {
     // verify user is allowed to upload a report
-    const access = new Acl(req, res);
+    const access = new Acl(req);
+    access.write = ['*'];
     if (!access.check()) {
       logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
