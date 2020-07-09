@@ -64,6 +64,17 @@ describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => 
       checkMutationSummary(res.body[0]);
       expect(res.body[0].comparator).toEqual(mutationComparator);
     });
+
+    test('Getting a specific mutation is OK', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/summary/mutation-summary/${mutationSummary.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkMutationSummary(res.body);
+      expect(res.body.comparator).toEqual(mutationComparator);
+    });
   });
 
   // delete report
