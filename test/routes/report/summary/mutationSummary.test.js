@@ -75,6 +75,14 @@ describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => 
       checkMutationSummary(res.body);
       expect(res.body.comparator).toEqual(mutationComparator);
     });
+
+    test('Getting a not existent mutation returns not found', async () => {
+      await request
+        .get(`/api/reports/${report.ident}/summary/mutation-summary/NOT_EXISTENT_MUTATION`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
   });
 
   // delete report
