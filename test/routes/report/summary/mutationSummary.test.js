@@ -18,6 +18,14 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
+const mutationSummaryProperties = ['ident', 'createdAt', 'updatedAt', 'comparator', 'snv', 'snv_truncating', 'indels', 'indels_frameshift', 'sv', 'sv_expressed', 'snv_percentile', 'indel_percentile', 'sv_percentile'];
+
+const checkMutationSummary = (mutationObject) => {
+  mutationSummaryProperties.forEach((element) => {
+    expect(mutationObject).toHaveProperty(element);
+  });
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -26,24 +34,40 @@ beforeAll(async () => {
 });
 
 // Tests for /kb-matches endpoint
-describe('', () => {
-  let report;
+describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => {
+  const mutationComparator = 'SARC';
 
-  beforeAll(async () => {
+  let report;
+  let mutationSummary;
+
+  beforeEach(async () => {
     // Create Report and kbMatch
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
+
+    mutationSummary = await db.models.mutationSummary.create({
+      reportId: report.id,
+      comparator: mutationComparator,
+    });
   }, LONGER_TIMEOUT);
 
-  describe('', () => {
-    test('', async () => {
+  describe('GET', () => {
+    test('Getting a list of mutations is OK', async () => {
       const res = await request
+        .get(`/api/reports/${report.ident}/summary/mutation-summary`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkMutationSummary(res.body[0]);
+      expect(res.body[0].comparator).toEqual(mutationComparator);
     });
   });
 
   // delete report
-  afterAll(async () => {
+  afterEach(async () => {
     await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
   }, LONGER_TIMEOUT);
 });
