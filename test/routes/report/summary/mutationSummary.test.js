@@ -85,6 +85,22 @@ describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => 
     });
   });
 
+  describe('PUT', () => {
+    test('Updating a mutation is OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}/summary/mutation-summary/${mutationSummary.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          comparator: 'SYTHR',
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkMutationSummary(res.body);
+      expect(res.body.comparator).toEqual('SYTHR');
+    });
+  });
+
   // delete report
   afterEach(async () => {
     await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
