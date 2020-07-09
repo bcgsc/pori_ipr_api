@@ -33,7 +33,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-// Tests for /kb-matches endpoint
+// Tests for /mutationSummary endpoint
 describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => {
   const mutationComparator = 'SARC';
 
@@ -41,7 +41,7 @@ describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => 
   let mutationSummary;
 
   beforeEach(async () => {
-    // Create Report and kbMatch
+    // Create Report and Mutation Summary
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
