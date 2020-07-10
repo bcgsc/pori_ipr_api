@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../app/models');
@@ -28,7 +29,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/reports/{REPORTID}/signatures endpoint testing', () => {
+describe('/reports/{REPORTID}/signatures', () => {
   let report;
 
   beforeAll(async () => {
@@ -45,16 +46,16 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
       .put(`/api/reports/${report.ident}/signatures/sign/author`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
   });
 
-  test('GET / signatures - 200 Success', async () => {
+  test('GET / - 200 Success', async () => {
     // Test GET endpoint and also if signature was created successfully
     const res = await request
       .get(`/api/reports/${report.ident}/signatures`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     const {body: {reviewerSignature, authorSignature}} = res;
     expect(res.body).toEqual(expect.objectContaining({
@@ -66,7 +67,7 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
     }));
     expect(res.body).toHaveProperty('reviewerSignedAt');
     expect(res.body).toHaveProperty('authorSignedAt');
-    checkSignatureProperties(reviewerSignature);
+    expect(reviewerSignature).toBe(null);
     checkSignatureProperties(authorSignature);
 
     // check that an author was added and a reviewer wasn't
@@ -81,12 +82,12 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
     // Tests for PUT endpoints
     describe('Tests for adding a signature', () => {
       // Tests for adding a signature
-      test('PUT /sign/author update author signature - 200 Success', async () => {
+      test('PUT /sign/author - 200 Success', async () => {
         const res = await request
           .put(`/api/reports/${report.ident}/signatures/sign/author`)
           .auth(username, password)
           .type('json')
-          .expect(200);
+          .expect(HTTP_STATUS.OK);
 
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
@@ -94,12 +95,12 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
         }));
       });
 
-      test('PUT /sign/reviewer update signatures by adding a reviewer signature - 200 Success', async () => {
+      test('PUT /sign/reviewer - 200 Success', async () => {
         const res = await request
           .put(`/api/reports/${report.ident}/signatures/sign/reviewer`)
           .auth(username, password)
           .type('json')
-          .expect(200);
+          .expect(HTTP_STATUS.OK);
 
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
@@ -107,23 +108,23 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
         }));
       });
 
-      test('PUT /sign/INVALID sign with a not existing role - 404 Not Found', async () => {
+      test('PUT /sign/INVALID - 404 Not Found', async () => {
         await request
           .put(`/api/reports/${report.ident}/signatures/sign/NOT_EXISTENT_ROLE`)
           .auth(username, password)
           .type('json')
-          .expect(404);
+          .expect(HTTP_STATUS.NOT_FOUND);
       });
     });
 
     describe('Test revoking signatures', () => {
       // Tests for revoking signatures and invalid inputs
-      test('PUT /revoke/author revoke author signature - 200 Success', async () => {
+      test('PUT /revoke/author - 200 Success', async () => {
         const res = await request
           .put(`/api/reports/${report.ident}/signatures/revoke/author`)
           .auth(username, password)
           .type('json')
-          .expect(200);
+          .expect(HTTP_STATUS.OK);
 
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
@@ -131,12 +132,12 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
         }));
       });
 
-      test('PUT /revoke/reviewer revoke reviewer signature - 200 Success', async () => {
+      test('PUT /revoke/reviewer - 200 Success', async () => {
         const res = await request
           .put(`/api/reports/${report.ident}/signatures/revoke/reviewer`)
           .auth(username, password)
           .type('json')
-          .expect(200);
+          .expect(HTTP_STATUS.OK);
 
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
@@ -144,12 +145,12 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
         }));
       });
 
-      test('PUT /revoke/INVALID remove signature for non-existing role - 404 Not Found', async () => {
+      test('PUT /revoke/INVALID - 404 Not Found', async () => {
         await request
           .put(`/api/reports/${report.ident}/signatures/revoke/NOT_EXISTENT_ROLECLEAR`)
           .auth(username, password)
           .type('json')
-          .expect(404);
+          .expect(HTTP_STATUS.NOT_FOUND);
       });
     });
   });
@@ -165,7 +166,7 @@ describe('/reports/{REPORTID}/signatures endpoint testing', () => {
       .get(`/api/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
-      .expect(404);
+      .expect(HTTP_STATUS.NOT_FOUND);
   });
 });
 
