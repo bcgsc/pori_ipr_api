@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 
+const uuidv4 = require('uuid/v4');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../../app/models');
@@ -36,6 +37,7 @@ beforeAll(async () => {
 // Tests for /mutationSummary endpoint
 describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => {
   const mutationComparator = 'SARC';
+  const randomUuid = uuidv4();
 
   let report;
   let mutationSummary;
@@ -78,7 +80,7 @@ describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => 
 
     test('Getting a not existent mutation returns not found', async () => {
       await request
-        .get(`/api/reports/${report.ident}/summary/mutation-summary/NOT_EXISTENT_MUTATION`)
+        .get(`/api/reports/${report.ident}/summary/mutation-summary/${randomUuid}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
