@@ -31,6 +31,8 @@ router.route('/')
     Applying a scope to the includes is causing a null value/null foreign key
     to be wrapped in the scoped model where all the values are null.
     The reload can be removed once this is fixed in Sequelize.
+    This applies to Sequelize version 5.21.1
+    Jira Ticket: DEVSU-1175
   */
   .get(async (req, res) => {
     if (req.signatures) {
