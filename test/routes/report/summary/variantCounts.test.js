@@ -9,6 +9,14 @@ const {listen} = require('../../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
+// Data for variant counts create
+const CREATE_DATA = {
+  smallMutations: 23,
+  CNVs: 56,
+  SVs: 12,
+  expressionOutliers: 77,
+};
+
 // Data for variant counts update
 const UPDATE_DATA = {
   smallMutations: 12,
@@ -48,7 +56,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/reports/{REPORTID}/summary/variant-counts variant count endpoint testing', () => {
+describe('/reports/{REPORTID}/summary/variant-counts', () => {
   let report;
 
   beforeAll(async () => {
@@ -60,16 +68,13 @@ describe('/reports/{REPORTID}/summary/variant-counts variant count endpoint test
 
     // Create test variant counts
     await db.models.variantCounts.create({
+      ...CREATE_DATA,
       reportId: report.id,
-      smallMutations: 23,
-      CNVs: 56,
-      SVs: 12,
-      expressionOutliers: 77,
     });
   });
 
   describe('GET', () => {
-    test('GET / report variant counts - 200 Success', async () => {
+    test('GET / - 200 Success', async () => {
       // Test GET endpoint
       const res = await request
         .get(`/api/reports/${report.ident}/summary/variant-counts`)
@@ -78,12 +83,15 @@ describe('/reports/{REPORTID}/summary/variant-counts variant count endpoint test
         .expect(HTTP_STATUS.OK);
 
       validateOutput(res.body);
+
+      // Check returned values match the create data
+      expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
     });
   });
 
   describe('PUT', () => {
     // Tests for PUT endpoints
-    test('PUT / update variant counts - 200 Success', async () => {
+    test('PUT / - 200 Success', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}/summary/variant-counts`)
         .send(UPDATE_DATA)
