@@ -35,7 +35,7 @@ afterAll(async () => {
 });
 
 // Tests for user group related endpoints
-describe('/user/group endpoint testing', () => {
+describe('/user/group', () => {
   // Tests for GET endpoints
   describe('GET', () => {
     // Test for GET /user/group 200 endpoint

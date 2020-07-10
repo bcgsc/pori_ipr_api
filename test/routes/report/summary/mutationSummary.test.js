@@ -35,7 +35,7 @@ beforeAll(async () => {
 });
 
 // Tests for /mutationSummary endpoint
-describe('/reports/{REPORTID}/summary/mutation-summary endpoint testing', () => {
+describe('/reports/{REPORTID}/summary/mutation-summary', () => {
   const mutationComparator = 'SARC';
   const randomUuid = uuidv4();
 

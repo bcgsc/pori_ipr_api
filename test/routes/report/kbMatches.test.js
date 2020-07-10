@@ -36,7 +36,7 @@ beforeAll(async () => {
 });
 
 // Tests for /kb-matches endpoint
-describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
+describe('/reports/{REPORTID}/kb-matches', () => {
   let report;
   let gene;
   let variant;

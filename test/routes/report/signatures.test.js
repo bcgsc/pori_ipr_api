@@ -28,7 +28,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/reports/{REPORTID}/signatures endpoint testing', () => {
+describe('/reports/{REPORTID}/signatures', () => {
   let report;
 
   beforeAll(async () => {
