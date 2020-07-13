@@ -19,6 +19,16 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
+const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'original', 'pathway'];
+
+const checkPathwayAnalysis = (pathwayObject) => {
+  pathwayProperties.forEach((element) => {
+    expect(pathwayObject).toHaveProperty(element);
+  });
+  expect(pathwayObject).not.toHaveProperty('id');
+  expect(pathwayObject).not.toHaveProperty('deletedAt');
+  expect(pathwayObject).not.toHaveProperty('reportId');
+};
 
 // Start API
 beforeAll(async () => {
@@ -35,17 +45,43 @@ describe('', () => {
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
+
+    await db.models.pathwayAnalysis.create({
+      reportId: report.id,
+    });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
-    test('', async () => {
+    test('Getting a pathway analysis is ok', async () => {
       const res = await request
-        .put(`/api/reports/LVZPX/summary/pathway-analysis`)
+        .get('/api/reports/LVZPX/summary/pathway-analysis')
         .auth(username, password)
         .type('json')
-        .attach('pathway', path.join(__dirname, '/../../../testData/pathwayAnalysisData.txt'))
         .expect(HTTP_STATUS.OK);
 
+      checkPathwayAnalysis(res.body);
+    });
+  });
+
+  describe('PUT', () => {
+    test('Updating a pathway analysis is ok', async () => {
+      const res = await request
+        .put('/api/reports/LVZPX/summary/pathway-analysis')
+        .auth(username, password)
+        .type('json')
+        .attach('pathway', path.join(__dirname, '/../../../testData/pathwayAnalysisData.svg'))
+        .expect(HTTP_STATUS.OK);
+
+      checkPathwayAnalysis(res.body);
+      expect(res.body.pathway).not.toBe(null);
+    });
+
+    test('Updating a pathway without providing a file should error', async () => {
+      const res = await request
+        .put('/api/reports/LVZPX/summary/pathway-analysis')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
