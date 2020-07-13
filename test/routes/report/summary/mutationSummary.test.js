@@ -25,6 +25,11 @@ const checkMutationSummary = (mutationObject) => {
   mutationSummaryProperties.forEach((element) => {
     expect(mutationObject).toHaveProperty(element);
   });
+  expect(mutationObject).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    reportId: expect.any(Number),
+    deletedAt: expect.any(String),
+  }));
 };
 
 // Start API
