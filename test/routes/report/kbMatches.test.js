@@ -19,7 +19,7 @@ let server;
 let request;
 
 const kbMatchProperties = ['ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease', 'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
-  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant'];
+  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant', 'inferred'];
 
 const checkKbMatch = (kbMatchObject) => {
   kbMatchProperties.forEach((element) => {
