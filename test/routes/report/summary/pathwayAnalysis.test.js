@@ -37,7 +37,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('', () => {
+describe('/reports/{report}/summary/pathway-analysis', () => {
   let report;
 
   beforeEach(async () => {
@@ -54,7 +54,7 @@ describe('', () => {
   describe('GET', () => {
     test('Getting a pathway analysis is ok', async () => {
       const res = await request
-        .get('/api/reports/LVZPX/summary/pathway-analysis')
+        .get(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -66,7 +66,7 @@ describe('', () => {
   describe('PUT', () => {
     test('Updating a pathway analysis is ok', async () => {
       const res = await request
-        .put('/api/reports/LVZPX/summary/pathway-analysis')
+        .put(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .attach('pathway', path.join(__dirname, '/../../../testData/pathwayAnalysisData.svg'))
@@ -77,8 +77,8 @@ describe('', () => {
     });
 
     test('Updating a pathway without providing a file should error', async () => {
-      const res = await request
-        .put('/api/reports/LVZPX/summary/pathway-analysis')
+      await request
+        .put(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.BAD_REQUEST);
