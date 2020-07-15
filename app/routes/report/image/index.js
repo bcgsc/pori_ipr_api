@@ -25,6 +25,7 @@ const MAXIMUM_IMG_SIZE = ONE_GB;
 // Route for adding an image
 router.route('/')
   .post(async (req, res) => {
+    // Check that image files were uploaded
     if (!req.files || Object.keys(req.files).length === 0) {
       logger.error('No attached images to upload');
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
@@ -34,6 +35,17 @@ router.route('/')
     if (Object.keys(req.files).length > MAXIMUM_NUM_IMAGES) {
       logger.error(`Tried to upload more images than the maximum allowed per request. Max: ${MAXIMUM_NUM_IMAGES}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `You tried to upload more than the allowed max number of images per request. Max: ${MAXIMUM_NUM_IMAGES}`}});
+    }
+
+    // Get image filenames
+    const filenames = Object.values(req.files).map((image) => {
+      return image.name.trim();
+    });
+
+    // Check for duplicate image names in upload
+    if (filenames.length !== new Set(filenames).size) {
+      logger.error('There are 2 or more images with the same filename');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'There are 2 or more images with the same filename'}});
     }
 
     try {
@@ -50,9 +62,8 @@ router.route('/')
           throw new Error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`);
         }
 
-        // Added key to temp filename. This shouldn't be an issue,
-        // but image files could potentially have the same name
-        const file = `tmp/${key.trim().split('.').join('_')}_${image.name.trim()}`;
+        // Temp image file location
+        const file = `tmp/${image.name.trim()}`;
         try {
           await writeFile(file, image.data);
 
