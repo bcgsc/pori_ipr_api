@@ -1,7 +1,11 @@
 const fs = require('fs');
+const util = require('util');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
+
+const writeFile = util.promisify(fs.writeFile);
+const removeFile = util.promisify(fs.unlink);
 
 const db = require('../../../models');
 const logger = require('../../../log');
@@ -50,13 +54,13 @@ router.route('/')
         // but image files could potentially have the same name
         const file = `tmp/${key.trim().split('.').join('_')}_${image.name.trim()}`;
         try {
-          fs.writeFileSync(file, image.data);
+          await writeFile(file, image.data);
 
           await loadImage(req.report.id, key.trim(), file);
         } catch (error) {
           throw error;
         } finally {
-          fs.unlinkSync(file);
+          await removeFile(file);
         }
         return {success: true};
       }));
