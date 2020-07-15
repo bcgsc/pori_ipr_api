@@ -1,12 +1,71 @@
+const fs = require('fs');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
+
 const db = require('../../../models');
 const logger = require('../../../log');
+const {loadImage} = require('../images');
 
 const router = express.Router({mergeParams: true});
 
+// Maximum number of images per upload
+const MAXIMUM_NUM_IMAGES = 5;
+// The size of 1 GB, which is 1073741824 bytes
+const ONE_GB = 1073741824;
+// Maximum image size
+const MAXIMUM_IMG_SIZE = ONE_GB;
+
 // Register middleware
+
+// Route for adding an image
+router.route('/')
+  .post(async (req, res) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      logger.error('No attached images to upload');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
+    }
+
+    // Check that upload doesn't exceed maximum number of images allowed
+    if (Object.keys(req.files).length > MAXIMUM_NUM_IMAGES) {
+      logger.error(`Tried to upload more images than the maximum allowed per request. Max: ${MAXIMUM_NUM_IMAGES}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `You tried to upload more than the allowed max number of images per request. Max: ${MAXIMUM_NUM_IMAGES}`}});
+    }
+
+    try {
+      await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
+        // Don't allow duplicate keys
+        if (Array.isArray(image)) {
+          logger.error(`Duplicate keys are not allowed. Duplicate key: ${key.trim()}`);
+          throw new Error(`Duplicate keys are not allowed. Duplicate key: ${key.trim()}`);
+        }
+
+        // Check image isn't too large
+        if (image.size > MAXIMUM_IMG_SIZE) {
+          logger.error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`);
+          throw new Error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`);
+        }
+
+        // Added key to temp filename. This shouldn't be an issue,
+        // but image files could potentially have the same name
+        const file = `tmp/${key.trim().split('.').join('_')}_${image.name.trim()}`;
+        try {
+          fs.writeFileSync(file, image.data);
+
+          await loadImage(req.report.id, key.trim(), file);
+        } catch (error) {
+          throw error;
+        } finally {
+          fs.unlinkSync(file);
+        }
+        return {success: true};
+      }));
+      return res.status(HTTP_STATUS.CREATED).json({message: 'All images successfully uploaded!'});
+    } catch (error) {
+      logger.error(`Error while uploading images ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while uploading images ${error}`}});
+    }
+  });
 
 // Route for getting an image
 router.route('/retrieve/:key')
