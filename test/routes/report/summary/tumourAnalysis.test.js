@@ -46,15 +46,38 @@ describe('/reports/{REPORTID}/summary/tumour-analysis', () => {
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
+
+    await db.models.tumourAnalysis.create({
+      reportId: report.id,
+      tumourContent: 61,
+      ploidy: 'tetraploid',
+    });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
-    test('', async () => {
+    test('Getting a Tumour Analysis is OK', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/summary/tumour-analysis`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkTumourAnalysis(res.body);
     });
   });
 
   describe('PUT', () => {
-    test('', async () => {
+    test('Updating a Tumour Analysis is OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}/summary/tumour-analysis`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          reportId: 1,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkTumourAnalysis(res.body);
     });
   });
 
