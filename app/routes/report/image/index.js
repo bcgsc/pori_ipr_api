@@ -1,11 +1,11 @@
 const fs = require('fs');
 const util = require('util');
+const tmp = require('tmp-promise');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
 const writeFile = util.promisify(fs.writeFile);
-const removeFile = util.promisify(fs.unlink);
 
 const db = require('../../../models');
 const logger = require('../../../log');
@@ -37,45 +37,51 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `You tried to upload more than the allowed max number of images per request. Max: ${MAXIMUM_NUM_IMAGES}`}});
     }
 
-    // Get image filenames
-    const filenames = Object.values(req.files).map((image) => {
-      return image.name.trim();
-    });
-
-    // Check for duplicate image names in upload
-    if (filenames.length !== new Set(filenames).size) {
-      logger.error('There are 2 or more images with the same filename');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'There are 2 or more images with the same filename'}});
-    }
-
     try {
-      await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
+      const results = await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
+        // Remove trailing space from key
+        key = key.trim();
+
         // Don't allow duplicate keys
         if (Array.isArray(image)) {
-          logger.error(`Duplicate keys are not allowed. Duplicate key: ${key.trim()}`);
-          throw new Error(`Duplicate keys are not allowed. Duplicate key: ${key.trim()}`);
+          logger.error(`Duplicate keys are not allowed. Duplicate key: ${key}`);
+          return {key, upload: 'failed', error: `Duplicate keys are not allowed. Duplicate key: ${key}`};
         }
 
         // Check image isn't too large
         if (image.size > MAXIMUM_IMG_SIZE) {
           logger.error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`);
-          throw new Error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`);
+          return {
+            key,
+            upload: 'failed',
+            error: `Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`,
+          };
         }
 
-        // Temp image file location
-        const file = `tmp/${image.name.trim()}`;
+        let cleanup;
         try {
+          // Get temp folder
+          const tempDir = await tmp.dir({unsafeCleanup: true});
+          cleanup = tempDir.cleanup;
+
+          // Set filename and path
+          const file = `${tempDir.path}/${image.name.trim()}`;
+
+          // Write file to temp folder
           await writeFile(file, image.data);
 
-          await loadImage(req.report.id, key.trim(), file);
+          // Load image
+          await loadImage(req.report.id, key, file);
+
+          // Return that this image was uploaded successfully
+          return {key, upload: 'successful'};
         } catch (error) {
-          throw error;
+          return {key, upload: 'failed', error};
         } finally {
-          await removeFile(file);
+          cleanup();
         }
-        return {success: true};
       }));
-      return res.status(HTTP_STATUS.CREATED).json({message: 'All images successfully uploaded!'});
+      return res.status(HTTP_STATUS.CREATED).json(results);
     } catch (error) {
       logger.error(`Error while uploading images ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while uploading images ${error}`}});
