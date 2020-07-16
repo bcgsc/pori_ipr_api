@@ -44,7 +44,14 @@ describe('/reports/{REPORTID}/image', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Check returned values match successful upload
-      expect(res.body.message).toEqual('All images successfully uploaded!');
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+
+      const [result] = res.body;
+
+      expect(result.key).toBe('cnv.1');
+      expect(result.upload).toBe('successful');
+      expect(result.error).toBe(undefined);
     });
 
     test.todo('All other POST tests');
