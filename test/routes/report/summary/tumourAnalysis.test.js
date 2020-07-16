@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 
+const uuidv4 = require('uuid/v4');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../../app/models');
@@ -18,7 +19,16 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
-const tumourAnalysisProperties = [];
+const tumourUpdate = {
+  tumourContent: 10,
+  ploidy: 'newPloidy',
+  normalExpressionComparator: 'newNormalExp',
+  diseaseExpressionComparator: 'newDiseaseExp',
+  subtyping: 'newSubtyping',
+  tcgaColor: 'newColor',
+};
+
+const tumourAnalysisProperties = ['ident', 'createdAt', 'updatedAt', 'tumourContent', 'ploidy', 'normalExpressionComparator', 'diseaseExpressionComparator', 'subtyping', 'tcgaColor', 'mutationSignature'];
 
 const checkTumourAnalysis = (tumourObject) => {
   tumourAnalysisProperties.forEach((element) => {
@@ -72,12 +82,34 @@ describe('/reports/{REPORTID}/summary/tumour-analysis', () => {
         .put(`/api/reports/${report.ident}/summary/tumour-analysis`)
         .auth(username, password)
         .type('json')
-        .send({
-          reportId: 1,
-        })
+        .send(tumourUpdate)
         .expect(HTTP_STATUS.OK);
 
       checkTumourAnalysis(res.body);
+      expect(res.body.tumourContent).toEqual(tumourUpdate.tumourContent);
+      expect(res.body.ploidy).toEqual(tumourUpdate.ploidy);
+      expect(res.body.normalExpressionComparator).toEqual(tumourUpdate.normalExpressionComparator);
+      expect(res.body.diseaseExpressionComparator).toEqual(tumourUpdate.diseaseExpressionComparator);
+      expect(res.body.subtyping).toEqual(tumourUpdate.subtyping);
+      expect(res.body.tcgaColor).toEqual(tumourUpdate.tcgaColor);
+    });
+
+    test('Updating a Tumour Analysis should not accept additional properties', async () => {
+      await request
+        .put(`/api/reports/${report.ident}/summary/tumour-analysis`)
+        .auth(username, password)
+        .type('json')
+        .send({reportId: 0})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('Updating a Tumour Analysis should not update ident', async () => {
+      await request
+        .put(`/api/reports/${report.ident}/summary/tumour-analysis`)
+        .auth(username, password)
+        .type('json')
+        .send({ident: uuidv4()})
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
