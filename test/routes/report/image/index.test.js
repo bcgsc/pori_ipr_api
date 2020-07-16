@@ -36,12 +36,12 @@ describe('/reports/{REPORTID}/image', () => {
 
   describe('POST', () => {
     // Tests for POST endpoints
-    test('POST / - 201 Created', async () => {
+    test('POST / - 207 Multi-Status successful', async () => {
       const res = await request
         .post(`/api/reports/${report.ident}/image`)
         .attach('cnv.1', 'test/testData/images/golden.jpg')
         .auth(username, password)
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.MULTI_STATUS);
 
       // Check returned values match successful upload
       expect(Array.isArray(res.body)).toBe(true);
@@ -52,6 +52,20 @@ describe('/reports/{REPORTID}/image', () => {
       expect(result.key).toBe('cnv.1');
       expect(result.upload).toBe('successful');
       expect(result.error).toBe(undefined);
+    });
+
+    test('POST / - 400 Bad Request', async () => {
+      const res = await request
+        .post(`/api/reports/${report.ident}/image`)
+        .attach('cnv.1', 'test/testData/images/golden.jpg')
+        .attach('cnv.1 ', 'test/testData/images/golden.jpg')
+        .auth(username, password)
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      // Check duplicate key error
+      expect(res.body.error).toEqual(expect.objectContaining({
+        message: 'Duplicate keys are not allowed. Duplicate key: cnv.1',
+      }));
     });
 
     test.todo('All other POST tests');
