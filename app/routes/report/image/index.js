@@ -14,13 +14,12 @@ const {loadImage} = require('../images');
 const router = express.Router({mergeParams: true});
 
 // Maximum number of images per upload
-const MAXIMUM_NUM_IMAGES = 5;
-// The size of 1 GB, which is 1073741824 bytes
-const ONE_GB = 1073741824;
-// Maximum image size
-const MAXIMUM_IMG_SIZE = ONE_GB;
+const MAXIMUM_NUM_IMAGES = 20;
+// The size of 1 MB, which is 1048576 bytes
+const ONE_MB = 1048576;
+// Maximum image size (50 MB)
+const MAXIMUM_IMG_SIZE = ONE_MB * 50;
 
-// Register middleware
 
 // Route for adding an image
 router.route('/')
@@ -37,24 +36,31 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `You tried to upload more than the allowed max number of images per request. Max: ${MAXIMUM_NUM_IMAGES}`}});
     }
 
+    // Check for duplicate keys
+    const keys = [];
+    for (let [key, value] of Object.entries(req.files)) {
+      key = key.trim();
+
+      if (keys.includes(key) || Array.isArray(value)) {
+        logger.error(`Duplicate keys are not allowed. Duplicate key: ${key}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Duplicate keys are not allowed. Duplicate key: ${key}`}});
+      }
+
+      keys.push(key);
+    }
+
     try {
       const results = await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
         // Remove trailing space from key
         key = key.trim();
 
-        // Don't allow duplicate keys
-        if (Array.isArray(image)) {
-          logger.error(`Duplicate keys are not allowed. Duplicate key: ${key}`);
-          return {key, upload: 'failed', error: `Duplicate keys are not allowed. Duplicate key: ${key}`};
-        }
-
         // Check image isn't too large
         if (image.size > MAXIMUM_IMG_SIZE) {
-          logger.error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`);
+          logger.error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_MB).toFixed(2)} MBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_MB).toFixed(2)} MBs`);
           return {
             key,
             upload: 'failed',
-            error: `Image ${image.name.trim()} is too large it's ${(image.size / ONE_GB).toFixed(2)} GBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_GB).toFixed(2)} GBs`,
+            error: `Image ${image.name.trim()} is too large it's ${(image.size / ONE_MB).toFixed(2)} MBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_MB).toFixed(2)} MBs`,
           };
         }
 
@@ -81,7 +87,7 @@ router.route('/')
           cleanup();
         }
       }));
-      return res.status(HTTP_STATUS.CREATED).json(results);
+      return res.status(HTTP_STATUS.MULTI_STATUS).json(results);
     } catch (error) {
       logger.error(`Error while uploading images ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while uploading images ${error}`}});
