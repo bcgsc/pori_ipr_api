@@ -52,7 +52,7 @@ describe('/reports/{REPORTID}/summary/tumour-analysis', () => {
   let report;
 
   beforeEach(async () => {
-    // Create Report and Mutation Summary
+    // Create Report and Tumour Analysis
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
