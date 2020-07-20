@@ -69,7 +69,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .put(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
-        .attach('pathway', path.join(__dirname, '/../../../testData/pathwayAnalysisData.svg'))
+        .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
         .expect(HTTP_STATUS.OK);
 
       checkPathwayAnalysis(res.body);
