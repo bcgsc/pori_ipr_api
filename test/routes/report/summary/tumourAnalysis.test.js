@@ -86,12 +86,7 @@ describe('/reports/{REPORTID}/summary/tumour-analysis', () => {
         .expect(HTTP_STATUS.OK);
 
       checkTumourAnalysis(res.body);
-      expect(res.body.tumourContent).toEqual(tumourUpdate.tumourContent);
-      expect(res.body.ploidy).toEqual(tumourUpdate.ploidy);
-      expect(res.body.normalExpressionComparator).toEqual(tumourUpdate.normalExpressionComparator);
-      expect(res.body.diseaseExpressionComparator).toEqual(tumourUpdate.diseaseExpressionComparator);
-      expect(res.body.subtyping).toEqual(tumourUpdate.subtyping);
-      expect(res.body.tcgaColor).toEqual(tumourUpdate.tcgaColor);
+      expect(res.body).toEqual(expect.objectContaining(tumourUpdate));
     });
 
     test('Updating a Tumour Analysis should not accept additional properties', async () => {
