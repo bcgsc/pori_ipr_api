@@ -1644,6 +1644,41 @@
             "$ref": "#/components/responses/UnauthorizedError"
           }
         }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
       }
     },
     "/reports/{report}/summary/pathway-analysis": {
@@ -3867,13 +3902,28 @@
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update a Therapeutic Target for a given ident",
+        "description": "Return the updated therapeutic target for an analysis report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
           }
         ],
+        "requestBody": {
+          "description": "The parameters to be updated, any of the parameters can be removed if does not need to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/therapeuticTargetInput"
+              }
+            }
+          }
+        },
         "tags": [
           "Therapeutic Targets"
         ],
@@ -3884,14 +3934,17 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Updated therapeutic target",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/therapeuticTarget"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Not valid input"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
