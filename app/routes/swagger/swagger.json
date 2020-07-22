@@ -1678,7 +1678,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Updated therapeutic target",
+            "description": "True if ranks were updated successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -1693,7 +1693,7 @@
             }
           },
           "400": {
-            "description": "Not valid input. Or rank already exists"
+            "description": "Not valid input. Or rank already exists."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
