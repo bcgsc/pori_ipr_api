@@ -61,7 +61,7 @@ describe('Tests for uploading a report and all of its components', () => {
     const {
       ReportUserFilter, createdBy, signatures,
       presentation_discussion, presentation_slides,
-      users, analystComments, projects, ...associations
+      users, projects, ...associations
     } = db.models.analysis_report.associations;
 
     const promises = [];
