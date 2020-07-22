@@ -1579,8 +1579,6 @@
         "summary": "Get therapeutic targets",
         "description": "Returns all therapeutic targets for an analysis report",
         "tags": [
-          "Therapeutic",
-          "Therapeutic Target",
           "Therapeutic Targets"
         ],
         "parameters": [
@@ -1619,8 +1617,6 @@
         "summary": "Create a new therapeutic target",
         "description": "Creates a new therapeutic target and sdfs",
         "tags": [
-          "Therapeutic",
-          "Therapeutic Target",
           "Therapeutic Targets"
         ],
         "parameters": [
@@ -3796,16 +3792,20 @@
         }
       }
     },
-    "/reports/{report}/therapeutic-targets/{target}": {
+    "/reports/{report}/therapeutic-targets/{Therapeutic Target}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a Therapeutic Target for a given ident",
+        "description": "Return a single therapeutic target for an analysis report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
           }
         ],
         "tags": [
+          "Therapeutic Target"
         ],
         "security": [
           {
@@ -3814,11 +3814,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get therapeutic target for analysis report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/therapeuticTarget"
                 }
               }
             }
@@ -3840,6 +3840,7 @@
           }
         ],
         "tags": [
+          "Therapeutic Target"
         ],
         "security": [
           {
@@ -3874,6 +3875,7 @@
           }
         ],
         "tags": [
+          "Therapeutic Target"
         ],
         "security": [
           {
@@ -3931,6 +3933,15 @@
         "in": "path",
         "required": true,
         "description": "Target type, one of: variant, therapy, evidenceLevel or context",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "therapeuticTarget": {
+        "name": "Therapeutic Target",
+        "in": "path",
+        "required": true,
+        "description": "Therapeutic Target ident",
         "schema": {
           "type": "string"
         }
