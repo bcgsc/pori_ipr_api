@@ -25,6 +25,12 @@ schemas.therapeuticTargetInput = schemaManager.generate(db.models.therapeuticTar
   exclude: [...SWAGGER_EXCLUDE, 'ident', 'createdAt', 'updatedAt'],
 });
 
+schemas.therapeuticTargetRanksUpdate = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
+  title: 'therapeuticTargetRanksUpdate',
+  associations: false,
+  include: ['rank', 'ident'],
+});
+
 schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'newUser',
   associations: false,

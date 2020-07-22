@@ -1646,13 +1646,28 @@
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update ranks of Therapeutic Targets for a report",
+        "description": "Return true if the targets are updated successfully",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "An array of ranks and idents to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/therapeuticTargetRanksUpdate"
+                }
+              }
+            }
+          }
+        },
         "tags": [
           "Therapeutic Targets"
         ],
@@ -1663,14 +1678,22 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Updated therapeutic target",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
+          },
+          "400": {
+            "description": "Not valid input. Or rank already exists"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
