@@ -34,6 +34,7 @@ router.route('/:target([A-z0-9-]{36})')
   })
   .put(async (req, res) => {
     // Update db entry
+    // TODO: Add validation
     try {
       await req.target.update(req.body);
       return res.json(req.target.view('public'));
@@ -74,7 +75,7 @@ router.route('/')
   .post(async (req, res) => {
     // Create new entry
     const {report: {id: reportId}, body} = req;
-
+    // TODO: Add validation
     try {
       const result = await db.models.therapeuticTarget.create({
         ...body,
@@ -88,7 +89,7 @@ router.route('/')
   })
   .put(async (req, res) => {
     const {report: {id: reportId}, body} = req;
-
+    // TODO: Add validation
     try {
       await db.transaction(async (transaction) => {
         return Promise.all(body.map((target) => {
