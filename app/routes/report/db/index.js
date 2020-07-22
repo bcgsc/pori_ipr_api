@@ -4,6 +4,7 @@ const db = require('../../../models');
 const {loadImage} = require('./../images');
 const logger = require('../../../log');
 const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../../constants');
+const {sanitizeHtml} = require('../../../libs/helperFunctions');
 
 /**
  * Creates a new section for the report adding the report and gene foreign keys where required
@@ -245,7 +246,6 @@ const createReportContent = async (report, content) => {
   // finally all other sections can be built
   const excludeSections = new Set([
     ...GENE_LINKED_VARIANT_MODELS,
-    'analystComments',
     'createdBy',
     'genes',
     'kbMatches',
@@ -268,6 +268,10 @@ const createReportContent = async (report, content) => {
   }).forEach((model) => {
     logger.debug(`creating report (${model}) section (${report.ident})`);
     if (content[model]) {
+      // sanitize html comment if it's not null
+      if (model === 'analystComments' && content[model].comments) {
+        content[model].comments = sanitizeHtml(content[model].comments);
+      }
       promises.push(createReportSection(report.id, model, content[model]));
     }
   });
