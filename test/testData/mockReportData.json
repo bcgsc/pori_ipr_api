@@ -181,7 +181,10 @@
             "refAlt": "CCTG>C",
             "zygosity": "sub [0/3]",
             "tumourReads": "583/4",
-            "rnaReads": "400/15"
+            "rnaReads": "400/15",
+            "hgvsProtein": "ZFP36L2:p.Q401del",
+            "hgvsCds": "ENST00000282388:c.4015_4016dup",
+            "hgvsGenomic": "2:g.43451740_43451742delCTG"
         }
     ],
     "mutationSignature": [

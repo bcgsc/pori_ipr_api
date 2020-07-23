@@ -27,29 +27,44 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     proteinChange: {
-      field: 'protein_change',
       name: 'proteinChange',
+      field: 'protein_change',
       type: Sq.TEXT,
     },
     location: {
       type: Sq.TEXT,
     },
     refAlt: {
-      field: 'ref_alt',
       name: 'refAlt',
+      field: 'ref_alt',
       type: Sq.TEXT,
     },
     zygosity: {
       type: Sq.TEXT,
     },
     tumourReads: {
-      field: 'tumour_reads',
       name: 'tumourReads',
+      field: 'tumour_reads',
       type: Sq.TEXT,
     },
     rnaReads: {
-      field: 'rna_reads',
       name: 'rnaReads',
+      field: 'rna_reads',
+      type: Sq.TEXT,
+    },
+    hgvsProtein: {
+      name: 'hgvsProtein',
+      field: 'hgvs_protein',
+      type: Sq.TEXT,
+    },
+    hgvsCds: {
+      name: 'hgvsCds',
+      field: 'hgvs_cds',
+      type: Sq.TEXT,
+    },
+    hgvsGenomic: {
+      name: 'hgvsGenomic',
+      field: 'hgvs_genomic',
       type: Sq.TEXT,
     },
   }, {
