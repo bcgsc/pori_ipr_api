@@ -5,7 +5,8 @@ const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const therapeuticSchema = require('../../schemas/report/therapeuticTargetsUpload')
+const therapeuticPostSchema = require('../../schemas/report/therapeuticTargetsPost');
+const therapeuticPutSchema = require('../../schemas/report/therapeuticTargetsUpdate');
 
 // Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {
@@ -39,7 +40,7 @@ router.route('/:target([A-z0-9-]{36})')
 
     try {
       // Validate input
-      validateAgainstSchema(therapeuticSchema, req.body);
+      validateAgainstSchema(therapeuticPutSchema, req.body);
     } catch (error) {
       logger.error(`Therapeutic Target validation failed ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -88,7 +89,7 @@ router.route('/')
 
     try {
       // Validate input
-      validateAgainstSchema(therapeuticSchema, req.body);
+      validateAgainstSchema(therapeuticPostSchema, req.body);
     } catch (error) {
       logger.error(`Therapeutic Target validation failed ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});

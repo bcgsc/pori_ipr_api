@@ -21,5 +21,6 @@ Object.values(schema.properties).forEach((property) => {
 
 schema.additionalProperties = false;
 schema.required = [];
+schema.$id = '/therapeuticUpdateSchema.js';
 
 module.exports = schema;
