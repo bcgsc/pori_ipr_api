@@ -40,7 +40,7 @@ router.route('/:target([A-z0-9-]{36})')
       return res.json(req.target.view('public'));
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target'}});
+      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Rank already exists'}});
     }
   })
   .delete(async (req, res) => {

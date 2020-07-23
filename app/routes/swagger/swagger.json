@@ -1610,6 +1610,9 @@
           },
           "403": {
             "description": "Don't have permissions to get therapeutic targets"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       },
@@ -1659,7 +1662,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           },
           "409": {
             "description": "Rank already exists"
@@ -3934,7 +3937,7 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content",
+            "description": "No Content"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
@@ -3994,6 +3997,9 @@
           },
           "404": {
             "description": "Report Not found"
+          },
+          "409": {
+            "description": "Rank already exists"
           }
         }
       }
