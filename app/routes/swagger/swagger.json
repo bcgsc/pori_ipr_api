@@ -1645,7 +1645,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Add therapeutic targets to analysis report",
             "content": {
               "application/json": {
@@ -4008,7 +4008,7 @@
   },
   "servers": [
     {
-      "url": "https://iprdev.bcgsc.ca/api",
+      "url": "https://ipr-api.bcgsc.ca/api",
       "description": "Production server (uses live data)"
     },
     {
