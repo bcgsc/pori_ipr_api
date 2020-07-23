@@ -1615,7 +1615,7 @@
       },
       "post": {
         "summary": "Create a new therapeutic target",
-        "description": "Creates a new therapeutic target and sdfs",
+        "description": "Creates a new therapeutic target",
         "tags": [
           "Therapeutic Targets"
         ],
@@ -1624,6 +1624,18 @@
             "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "An array of ranks and idents to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/therapeuticTargetInput"
+              }
+            }
+          }
+        },
         "security": [
           {
             "basicAuth": []
@@ -1640,8 +1652,17 @@
               }
             }
           },
+          "400": {
+            "description": "Input is not valid"
+          },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          },
+          "409": {
+            "description": "Rank already exists"
           }
         }
       },
@@ -1693,7 +1714,10 @@
             }
           },
           "400": {
-            "description": "Not valid input. Or rank already exists."
+            "description": "Not valid input."
+          },
+          "409": {
+            "description": "Rank already exists."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
