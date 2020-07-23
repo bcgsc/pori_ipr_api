@@ -1716,9 +1716,6 @@
               }
             }
           },
-          "400": {
-            "description": "Not valid input."
-          },
           "409": {
             "description": "Rank already exists."
           },

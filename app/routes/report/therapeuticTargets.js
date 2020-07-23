@@ -4,6 +4,8 @@ const express = require('express');
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const therapeuticSchema = require('../../schemas/report/therapeuticTargetsUpload')
 
 // Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {
@@ -34,7 +36,15 @@ router.route('/:target([A-z0-9-]{36})')
   })
   .put(async (req, res) => {
     // Update db entry
-    // TODO: Add validation
+
+    try {
+      // Validate input
+      validateAgainstSchema(therapeuticSchema, req.body);
+    } catch (error) {
+      logger.error(`Therapeutic Target validation failed ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     try {
       await req.target.update(req.body);
       return res.json(req.target.view('public'));
@@ -75,7 +85,15 @@ router.route('/')
   .post(async (req, res) => {
     // Create new entry
     const {report: {id: reportId}, body} = req;
-    // TODO: Add validation
+
+    try {
+      // Validate input
+      validateAgainstSchema(therapeuticSchema, req.body);
+    } catch (error) {
+      logger.error(`Therapeutic Target validation failed ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     try {
       const result = await db.models.therapeuticTarget.create({
         ...body,
@@ -89,7 +107,6 @@ router.route('/')
   })
   .put(async (req, res) => {
     const {report: {id: reportId}, body} = req;
-    // TODO: Add validation
     try {
       await db.transaction(async (transaction) => {
         return Promise.all(body.map((target) => {
