@@ -5,8 +5,8 @@ const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const therapeuticPostSchema = require('../../schemas/report/therapeuticTargetsPost');
-const therapeuticPutSchema = require('../../schemas/report/therapeuticTargetsUpdate');
+const therapeuticPostSchema = require('../../schemas/report/therapeuticTargets/therapeuticTargetsPost');
+const therapeuticPutSchema = require('../../schemas/report/therapeuticTargets/therapeuticTargetsUpdate');
 
 // Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {
