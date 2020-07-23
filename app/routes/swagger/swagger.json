@@ -3914,11 +3914,14 @@
         }
       },
       "delete": {
-        "summary": "",
-        "description": "",
+        "summary": "Delete a Therapeutic Target for a given ident",
+        "description": "Returns 204 no content if delete was successful",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
           }
         ],
         "tags": [
@@ -3930,15 +3933,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
+          "204": {
+            "description": "No Content",
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
