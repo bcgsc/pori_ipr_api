@@ -4008,7 +4008,7 @@
   },
   "servers": [
     {
-      "url": "http://10.9.202.123:8080/api",
+      "url": "https://iprdev.bcgsc.ca/api",
       "description": "Production server (uses live data)"
     },
     {
