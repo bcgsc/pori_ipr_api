@@ -181,7 +181,10 @@
             "refAlt": "CCTG>C",
             "zygosity": "sub [0/3]",
             "tumourReads": "583/4",
-            "rnaReads": "400/15"
+            "rnaReads": "400/15",
+            "hgvsProtein": "Test hgvs protein",
+            "hgvsCds": "Test hgvs cds",
+            "hgvsGenomic": "Test hgvs genomic"
         }
     ],
     "mutationSignature": [
