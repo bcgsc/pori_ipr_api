@@ -4042,7 +4042,8 @@
         "required": true,
         "description": "Therapeutic Target ident",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "review": {
