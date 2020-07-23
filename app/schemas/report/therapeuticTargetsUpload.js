@@ -14,6 +14,12 @@ const schema = schemaManager.generate(
   }
 );
 
+// Remove all default options from object
+Object.values(schema.properties).forEach((property) => {
+  delete property.default;
+});
+
 schema.additionalProperties = false;
+schema.required = [];
 
 module.exports = schema;

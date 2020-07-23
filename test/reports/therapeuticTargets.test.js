@@ -21,7 +21,7 @@ const FAKE_TARGET = {
   geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
-  rank: -1000,
+  rank: -250,
   evidenceLevel: 'OncoKB 1',
 };
 
@@ -152,6 +152,18 @@ describe('/therapeutic-targets', () => {
           where: {ident: original.ident, deletedAt: {[Op.not]: null}},
         });
         expect(result).toHaveProperty('deletedAt');
+      });
+
+      test('Update should not accept reportId', async () => {
+        await request
+          .put(url)
+          .auth(username, password)
+          .send({
+            reportId: 1,
+            gene: 'BRAF',
+          })
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
       });
 
       describe('tests depending on multiple targets present', () => {
