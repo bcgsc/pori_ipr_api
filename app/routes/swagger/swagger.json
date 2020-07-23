@@ -1628,7 +1628,7 @@
           }
         ],
         "requestBody": {
-          "description": "An array of ranks and idents to be updated",
+          "description": "Therapeutic Target object to be created",
           "required": true,
           "content": {
             "application/json":
