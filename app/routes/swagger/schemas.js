@@ -25,11 +25,15 @@ schemas.therapeuticTargetInput = schemaManager.generate(db.models.therapeuticTar
   exclude: [...SWAGGER_EXCLUDE, 'ident', 'createdAt', 'updatedAt'],
 });
 
-schemas.therapeuticTargetRanksUpdate = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
-  title: 'therapeuticTargetRanksUpdate',
+const therapeuticTargetRanksBulkUpdate = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
+  title: 'therapeuticTargetRanksBulkUpdate',
   associations: false,
   include: ['rank', 'ident'],
 });
+schemas.therapeuticTargetRanksBulkUpdate = {
+  type: 'array',
+  items: therapeuticTargetRanksBulkUpdate,
+};
 
 schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'newUser',
