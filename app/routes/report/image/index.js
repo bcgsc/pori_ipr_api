@@ -76,8 +76,21 @@ router.route('/')
           // Write file to temp folder
           await writeFile(file, image.data);
 
+          // Set options
+          const options = {};
+
+          // Check for title
+          if (req.body[`${key}_title`]) {
+            options.title = req.body[`${key}_title`];
+          }
+
+          // Check for caption
+          if (req.body[`${key}_caption`]) {
+            options.caption = req.body[`${key}_caption`];
+          }
+
           // Load image
-          await loadImage(req.report.id, key, file);
+          await loadImage(req.report.id, key, file, options);
 
           // Return that this image was uploaded successfully
           return {key, upload: 'successful'};
