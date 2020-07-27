@@ -54,6 +54,26 @@ describe('/reports/{REPORTID}/image', () => {
       expect(result.error).toBe(undefined);
     });
 
+    test('POST / - (With title and caption) 207 Multi-Status successful', async () => {
+      const res = await request
+        .post(`/api/reports/${report.ident}/image`)
+        .attach('cnv.1', 'test/testData/images/golden.jpg')
+        .field('cnv.1_title', 'Test title')
+        .field('cnv.1_caption', 'Test caption')
+        .auth(username, password)
+        .expect(HTTP_STATUS.MULTI_STATUS);
+
+      // Check returned values match successful upload
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+
+      const [result] = res.body;
+
+      expect(result.key).toBe('cnv.1');
+      expect(result.upload).toBe('successful');
+      expect(result.error).toBe(undefined);
+    });
+
     test('POST / - 400 Bad Request', async () => {
       const res = await request
         .post(`/api/reports/${report.ident}/image`)

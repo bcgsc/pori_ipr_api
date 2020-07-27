@@ -296,15 +296,19 @@
         },
         {
             "key": "mutSignature.snvsAllStrelka",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png"
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png",
+            "title": "Test adding a title to an image"
         },
         {
             "key": "cnvLoh.circos",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png"
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png",
+            "caption": "Test adding a caption to an image"
         },
         {
             "key": "cnv.1",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png"
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png",
+            "title": "Test adding a title and a caption to an image",
+            "caption": "Test adding a title and a caption to an image"
         },
         {
             "key": "cnv.2",
