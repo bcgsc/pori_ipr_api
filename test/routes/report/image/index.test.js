@@ -54,7 +54,20 @@ describe('/reports/{REPORTID}/image', () => {
       expect(result.error).toBe(undefined);
     });
 
-    test('POST / - 400 Bad Request', async () => {
+    test('POST / - 400 Bad Request invalid key', async () => {
+      const res = await request
+        .post(`/api/reports/${report.ident}/image`)
+        .attach('INVALID_KEY', 'test/testData/images/golden.jpg')
+        .auth(username, password)
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      // Check invalid key error
+      expect(res.body.error).toEqual(expect.objectContaining({
+        message: 'Invalid key: INVALID_KEY',
+      }));
+    });
+
+    test('POST / - 400 Bad Request duplicate key', async () => {
       const res = await request
         .post(`/api/reports/${report.ident}/image`)
         .attach('cnv.1', 'test/testData/images/golden.jpg')
