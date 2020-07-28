@@ -4,6 +4,7 @@ const {BASE_EXCLUDE} = require('../../exclude');
 const variantSchemas = require('./variant');
 const kbMatchesSchema = require('./kbMatches');
 const {generateReportSubSchema} = require('./util');
+const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
@@ -35,17 +36,7 @@ schema.properties.images = {
       },
       key: {
         type: 'string',
-        pattern: `^${[
-          'mutSignature\\.(corPcors|snvsAllStrelka)',
-          'subtypePlot\\.\\S+',
-          '(cnv|loh)\\.[12345]',
-          'cnvLoh.circos',
-          'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel)(\\.\\w+)?',
-          'circosSv\\.(genome|transcriptome)',
-          'expDensity\\.\\S+',
-          'expression\\.(chart|legend)',
-          'microbial\\.circos\\.(genome|transcriptome)',
-        ].map((patt) => { return `(${patt})`; }).join('|')}$`,
+        pattern: VALID_IMAGE_KEY_PATTERN,
       },
     },
   },

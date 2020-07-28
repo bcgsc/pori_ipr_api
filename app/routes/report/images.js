@@ -48,13 +48,13 @@ const IMAGES_CONFIG = [
     format: 'JPG',
   },
   {
-    pattern: 'mutSignature.corPcors',
+    pattern: 'mutSignature.corPcors\\.(dbs|indels|sbs)',
     width: 1000,
     height: 2000,
     format: 'JPG',
   },
   {
-    pattern: 'mutSignature.snvsAllStrelka',
+    pattern: 'mutSignature.barplot\\.(dbs|indels|sbs)',
     width: 480,
     height: 480,
     format: 'PNG',
