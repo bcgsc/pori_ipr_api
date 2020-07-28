@@ -18,9 +18,36 @@ describe('Testing ACL methods', () => {
   });
 
   describe('Test ACL getProjectAccess method', () => {
-    test.todo('Test when user has full project access');
+    beforeEach(async () => {
+      req.user = testUser;
+    });
 
-    test.todo('Test when user does not have full project access');
+    afterEach(async () => {
+      req = {};
+    });
+
+    test('Test when user has full project access', async () => {
+      req.user.groups = [{name: 'admin'}];
+
+      const access = new Acl(req);
+
+      const allProjects = await db.models.project.findAll();
+
+      const projectAccess = await access.getProjectAccess();
+
+      expect(projectAccess).toEqual(allProjects);
+    });
+
+    test('Test when user does not have full project access', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.user.projects = [{name: 'POG'}];
+
+      const access = new Acl(req);
+
+      const projectAccess = await access.getProjectAccess();
+
+      expect(projectAccess).toEqual([{name: 'POG'}]);
+    });
   });
 
   describe('Test ACL check method', () => {
@@ -117,7 +144,6 @@ describe('Testing ACL methods', () => {
     });
 
     describe('Test non-report endpoints in check method', () => {
-
       beforeEach(async () => {
         req.user = testUser;
       });
@@ -159,8 +185,28 @@ describe('Testing ACL methods', () => {
   });
 
   describe('Test ACL isAdmin method', () => {
-    test.todo('Test when user is an admin');
+    beforeEach(async () => {
+      req.user = testUser;
+    });
 
-    test.todo('Test when user is not an admin');
+    afterEach(async () => {
+      req = {};
+    });
+
+    test('Test when user is an admin', async () => {
+      req.user.groups = [{name: 'admin'}];
+
+      const access = new Acl(req);
+
+      expect(access.isAdmin()).toBe(true);
+    });
+
+    test('Test when user is not an admin', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+
+      const access = new Acl(req);
+
+      expect(access.isAdmin()).toBe(false);
+    });
   });
 });
