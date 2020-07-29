@@ -291,11 +291,11 @@
     "project": "TEST",
     "images": [
         {
-            "key": "mutSignature.corPcors",
+            "key": "mutSignature.corPcors.sbs",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors.png"
         },
         {
-            "key": "mutSignature.snvsAllStrelka",
+            "key": "mutSignature.barplot.sbs",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png",
             "title": "Test adding a title to an image"
         },
