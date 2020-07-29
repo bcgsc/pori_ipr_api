@@ -155,14 +155,18 @@ const imagePathExists = (imagePath) => {
 
 
 /**
- * @param {Number} reportId the primary key for the report these images belong to (to create FK relationship)
- * @param {string} key the image key, defines what type of image is being loaded
- * @param {string} imagePath the absolute path to the image file
+ * @param {Number} reportId - The primary key for the report these images belong to (to create FK relationship)
+ * @param {string} key - The image key, defines what type of image is being loaded
+ * @param {string} imagePath - The absolute path to the image file
+ * @param {object} options - An object containing additional image upload options
+ *
+ * @property {string} options.caption - An optional caption for the image
+ * @property {string} options.title - An optional title for the image
  *
  * @returns {Promise} the image has been loaded successfully
  * @throws {Promise.<Error>} the image does not exist or did not load correctly
  */
-const loadImage = async (reportId, key, imagePath) => {
+const loadImage = async (reportId, key, imagePath, options = {}) => {
   logger.verbose(`loading (${key}) image: ${imagePath}`);
 
   let config;
@@ -194,6 +198,8 @@ const loadImage = async (reportId, key, imagePath) => {
     filename: path.basename(imagePath),
     key,
     data: imageData,
+    caption: options.caption,
+    title: options.title,
   });
 };
 
