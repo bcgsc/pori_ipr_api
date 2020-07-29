@@ -54,6 +54,42 @@ describe('/reports/{REPORTID}/image', () => {
       expect(result.error).toBe(undefined);
     });
 
+    test('POST / - (With title and caption) 207 Multi-Status successful', async () => {
+      const res = await request
+        .post(`/api/reports/${report.ident}/image`)
+        .attach('cnv.2', 'test/testData/images/golden.jpg')
+        .field('cnv.2_title', 'Test title')
+        .field('cnv.2_caption', 'Test caption')
+        .auth(username, password)
+        .expect(HTTP_STATUS.MULTI_STATUS);
+
+      // Check returned values match successful upload
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+
+      const [result] = res.body;
+
+      expect(result.key).toBe('cnv.2');
+      expect(result.upload).toBe('successful');
+      expect(result.error).toBe(undefined);
+
+      // Test that title and caption were added to db
+      const imageData = await db.models.imageData.findOne({
+        where: {
+          reportId: report.id,
+          key: 'cnv.2',
+        },
+      });
+
+      expect(imageData).toEqual(expect.objectContaining({
+        format: 'PNG',
+        filename: 'golden.jpg',
+        key: 'cnv.2',
+        title: 'Test title',
+        caption: 'Test caption',
+      }));
+    });
+
     test('POST / - 400 Bad Request', async () => {
       const res = await request
         .post(`/api/reports/${report.ident}/image`)
