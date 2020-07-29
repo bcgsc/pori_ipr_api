@@ -39,11 +39,12 @@ router.route('/')
 
     // Check for valid and duplicate keys
     const keys = [];
+    const pattern = new RegExp(VALID_IMAGE_KEY_PATTERN);
+
     for (let [key, value] of Object.entries(req.files)) {
       key = key.trim();
 
       // Check if key is valid
-      const pattern = new RegExp(VALID_IMAGE_KEY_PATTERN);
       if (!pattern.test(key)) {
         logger.error(`Invalid key: ${key}`);
         return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Invalid key: ${key}`}});
