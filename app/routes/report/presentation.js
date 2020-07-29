@@ -73,6 +73,7 @@ router.route('/discussion/:discussion')
     return res.json(req.discussion.view('public'));
   })
   .put(async (req, res) => {
+    // TODO: Create Validation
     try {
       await req.discussion.update(req.body);
       await req.discussion.reload();
@@ -160,6 +161,7 @@ router.route('/slide/:slide')
     return res.json(req.slide.view('public'));
   })
   .put(async (req, res) => {
+    // TODO: Create Validation
     try {
       await req.slide.update(req.body);
       await req.slide.reload();
