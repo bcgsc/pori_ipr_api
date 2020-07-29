@@ -78,16 +78,10 @@ router.route('/')
 
           // Set options
           const options = {};
-
-          // Check for title
-          if (req.body[`${key}_title`]) {
-            options.title = req.body[`${key}_title`];
-          }
-
-          // Check for caption
-          if (req.body[`${key}_caption`]) {
-            options.caption = req.body[`${key}_caption`];
-          }
+          // Set image title to specified title or undefined
+          options.title = req.body[`${key}_title`];
+          // Set image caption to specified caption or undefined
+          options.caption = req.body[`${key}_caption`];
 
           // Load image
           await loadImage(req.report.id, key, file, options);
