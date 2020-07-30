@@ -19,7 +19,6 @@ let server;
 let request;
 
 // TODO:
-// Validation
 // Error tests
 // Not expected properties
 
