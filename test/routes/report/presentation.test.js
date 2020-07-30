@@ -20,7 +20,6 @@ let request;
 
 // TODO:
 // Error tests
-// Not expected properties
 
 // Start API
 beforeAll(async () => {
@@ -68,6 +67,11 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
       expect(res.body).toEqual(expect.arrayContaining([
         expect.objectContaining(discussionObject),
       ]));
+
+      expect(res.body).not.toHaveProperty('id');
+      expect(res.body).not.toHaveProperty('reportId');
+      expect(res.body).not.toHaveProperty('user_id');
+      expect(res.body).not.toHaveProperty('deletedAt');
     });
 
     test('Getting a specific discussion is ok', async () => {
@@ -95,6 +99,11 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
 
       expect(res.body).toEqual(expect.objectContaining(discussionObject));
       expect(res.body.body).toEqual(bodyText);
+
+      expect(res.body).not.toHaveProperty('id');
+      expect(res.body).not.toHaveProperty('reportId');
+      expect(res.body).not.toHaveProperty('user_id');
+      expect(res.body).not.toHaveProperty('deletedAt');
     });
 
     test.todo('add tests after validation');
@@ -194,6 +203,11 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).toEqual(expect.objectContaining(slideObject));
+
+      expect(res.body).not.toHaveProperty('id');
+      expect(res.body).not.toHaveProperty('reportId');
+      expect(res.body).not.toHaveProperty('user_id');
+      expect(res.body).not.toHaveProperty('deletedAt');
     });
   });
 
@@ -210,6 +224,11 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
 
       expect(res.body).toEqual(expect.objectContaining(slideObject));
       expect(res.body.name).toEqual(nameText);
+
+      expect(res.body).not.toHaveProperty('id');
+      expect(res.body).not.toHaveProperty('reportId');
+      expect(res.body).not.toHaveProperty('user_id');
+      expect(res.body).not.toHaveProperty('deletedAt');
     });
 
     test.todo('add tests after validation');
