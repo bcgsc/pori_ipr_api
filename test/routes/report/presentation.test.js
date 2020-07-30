@@ -18,6 +18,11 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
+// TODO:
+// Validation
+// Error tests
+// Not expected properties
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -129,8 +134,104 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
     });
+  });
+
+  // delete report
+  afterAll(async () => {
+    await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
+  }, LONGER_TIMEOUT);
+});
+
+describe('/reports/{REPORTID}/presentation/slide', () => {
+  let report;
+  let slide;
+  let user;
+
+  const slideObject = {
+    ident: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    name: expect.any(String),
+    object: expect.any(String),
+    object_type: expect.any(String),
+    user: expect.any(Object),
+  };
+
+  beforeAll(async () => {
+    // Create Report and discussion
+    report = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+    });
+    user = await db.models.user.findOne({
+      where: {username},
+    });
+    slide = await db.models.presentation_slides.create({
+      reportId: report.id,
+      user_id: user.id,
+      name: 'NOTCH1 mutations',
+      object: 'iVBORw0KGgoAAAANSUhEUgAADDAAAALBCAYAAAAUSbDVAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAA',
+      object_type: 'image/png',
+    });
+  }, LONGER_TIMEOUT);
+
+  describe('GET', () => {
+    test('Getting a list of slides is ok', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/presentation/slide`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining(slideObject),
+      ]));
+    });
+
+    test('Getting a specific slide is ok', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/presentation/slide/${slide.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(expect.objectContaining(slideObject));
+    });
+  });
+
+  describe('POST', () => {
+    test('Creating a new valid slide is ok', async () => {
+      const nameText = 'the Role of HERC2';
+      const res = await request
+        .post(`/api/reports/${report.ident}/presentation/slide`)
+        .field('name', nameText)
+        .attach('file', 'test/testData/images/golden.jpg')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).toEqual(expect.objectContaining(slideObject));
+      expect(res.body.name).toEqual(nameText);
+    });
 
     test.todo('add tests after validation');
+  });
+
+  describe('DELETE', () => {
+    test('Deleting a slide is ok', async () => {
+      const deleteSlide = await db.models.presentation_slides.create({
+        reportId: report.id,
+        user_id: user.id,
+        name: 'NOTCH2 mutations',
+        object: 'iVBORw0KGgoAAAANSUhEUgAADDAAAALBCAYAAAAUSbDVAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAA2',
+        object_type: 'image/png',
+      });
+
+      await request
+        .delete(`/api/reports/${report.ident}/presentation/slide/${deleteSlide.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+    });
   });
 
   // delete report
