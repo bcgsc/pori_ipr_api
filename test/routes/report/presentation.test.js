@@ -18,9 +18,6 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
-// TODO:
-// Error tests
-
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -106,7 +103,18 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
       expect(res.body).not.toHaveProperty('deletedAt');
     });
 
-    test.todo('add tests after validation');
+    test('Creating a new discussion should not accept additional properties', async () => {
+      const bodyText = 'The highly expressed TOP1 may explain the good response to this therapy.';
+      await request
+        .post(`/api/reports/${report.ident}/presentation/discussion`)
+        .send({
+          body: bodyText,
+          reportId: 1,
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
   });
 
   describe('PUT', () => {
@@ -125,7 +133,31 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
       expect(res.body.body).toEqual(bodyText);
     });
 
-    test.todo('add tests after validation');
+    test('Updating a discussion should not accept reportId', async () => {
+      const bodyText = 'Patient is currently stable and maintained on Flourouracil + Irinotecan + Bevacizumab.';
+      await request
+        .put(`/api/reports/${report.ident}/presentation/discussion/${discussion.ident}`)
+        .send({
+          body: bodyText,
+          reportId: 1,
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('Updating a discussion should not update user_id', async () => {
+      const bodyText = 'Patient is currently stable and maintained on Flourouracil + Irinotecan + Bevacizumab.';
+      await request
+        .put(`/api/reports/${report.ident}/presentation/discussion/${discussion.ident}`)
+        .send({
+          body: bodyText,
+          user_id: 1,
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
   });
 
   describe('DELETE', () => {
@@ -231,7 +263,24 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
       expect(res.body).not.toHaveProperty('deletedAt');
     });
 
-    test.todo('add tests after validation');
+    test('Creating a slide should require a file', async () => {
+      const nameText = 'the Role of HERC2';
+      await request
+        .post(`/api/reports/${report.ident}/presentation/slide`)
+        .field('name', nameText)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('Creating a slide should require a name', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/presentation/slide`)
+        .attach('file', 'test/testData/images/golden.jpg')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
   });
 
   describe('DELETE', () => {
