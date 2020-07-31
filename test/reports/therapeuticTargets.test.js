@@ -21,35 +21,29 @@ const FAKE_TARGET = {
   geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
-  rank: -1000,
+  rank: 0,
   evidenceLevel: 'OncoKB 1',
 };
 
+let server;
+let request;
+
+beforeAll(async () => {
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
+  request = supertest(server);
+});
+
 describe('/therapeutic-targets', () => {
-  let server;
-  let request;
   let report;
   let createdIdent;
 
   beforeAll(async () => {
-    const port = await getPort({port: CONFIG.get('web:port')});
-    server = await listen(port);
-    request = supertest(server);
-    // connect to the db
-    // find a report (any report)
-    report = await db.models.analysis_report.findOne({
-      attributes: ['ident', 'id'],
-      where: {deletedAt: null},
+    // create report
+    report = await db.models.analysis_report.create({
+      type: 'genomic',
+      patientId: 'PATIENT1234',
     });
-
-    expect(report).toHaveProperty('id');
-    expect(report).toHaveProperty('ident');
-    expect(report.id).not.toBe(null);
-    expect(report.ident).not.toBe(null);
-  });
-
-  afterAll(async () => {
-    await server.close();
   });
 
   beforeEach(() => {
@@ -208,18 +202,67 @@ describe('/therapeutic-targets', () => {
       test.todo('Bad request on update and set gene to null');
     });
 
-    test('DELETE', async () => {
-      await request
-        .delete(url)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
-      // should now find a deleted record with this ident
-      const result = await db.models.therapeuticTarget.findOne({
-        paranoid: false,
-        where: {ident: original.ident},
+    describe('DELETE', () => {
+      test('deleting a target', async () => {
+        await request
+          .delete(url)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NO_CONTENT);
+        // should now find a deleted record with this ident
+        const result = await db.models.therapeuticTarget.findOne({
+          paranoid: false,
+          where: {ident: original.ident},
+        });
+        expect(result).toHaveProperty('deletedAt');
       });
-      expect(result).toHaveProperty('deletedAt');
+
+      test('updating all other targets rank on delete', async () => {
+        // Create second record
+        const newTarget = await db.models.therapeuticTarget.create({
+          ...FAKE_TARGET,
+          rank: 1,
+          reportId: report.id,
+        });
+
+        await request
+          .delete(url)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.NO_CONTENT);
+
+        // should now only find the second record
+        const result = await db.models.therapeuticTarget.findAll({
+          where: {reportId: report.id},
+        });
+
+        expect(Array.isArray(result)).toBe(true);
+        expect(result.length).toBe(1);
+
+        const [entry] = result;
+
+        expect(entry.ident).toBe(newTarget.ident);
+        expect(entry.rank).toBe(newTarget.rank - 1);
+      });
     });
   });
+
+  // delete created report
+  afterAll(async () => {
+    // delete newly created report and all of it's components
+    // indirectly by hard deleting newly created patient
+    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
+
+    // verify report is deleted
+    await request
+      .get(`/api/reports/${report.ident}`)
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.NOT_FOUND);
+  });
+
+});
+
+afterAll(async () => {
+  await server.close();
 });
