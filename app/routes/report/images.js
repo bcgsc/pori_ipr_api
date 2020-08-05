@@ -54,9 +54,15 @@ const IMAGES_CONFIG = [
     format: 'JPG',
   },
   {
-    pattern: 'mutSignature.barplot\\.(dbs|indels|sbs)',
+    pattern: 'mutSignature.barplot\\.sbs',
     width: 480,
     height: 480,
+    format: 'PNG',
+  },
+  {
+    pattern: 'mutSignature.barplot\\.(dbs|indels)',
+    width: 1000,
+    height: 500,
     format: 'PNG',
   },
   {
