@@ -194,17 +194,6 @@ router.route('/slide/:slide')
   .get((req, res) => {
     return res.json(req.slide.view('public'));
   })
-  .put(async (req, res) => {
-    // TODO: Create Validation
-    try {
-      await req.slide.update(req.body);
-      await req.slide.reload();
-      return res.json(req.slide.view('public'));
-    } catch (error) {
-      logger.error(`Failed to update the presentation slide ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to update the presentation slide'}});
-    }
-  })
   .delete(async (req, res) => {
     try {
       await req.slide.destroy();
