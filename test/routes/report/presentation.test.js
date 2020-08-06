@@ -176,7 +176,7 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
 
       expect(
         await db.models.presentation_discussion.findOne({
-          where: {id: deleteDiscussion.id},
+          where: {ident: deleteDiscussion.ident},
         })
       ).toBe(null);
     });
@@ -307,7 +307,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
 
       expect(
         await db.models.presentation_slides.findOne({
-          where: {id: deleteSlide.id},
+          where: {ident: deleteSlide.ident},
         })
       ).toBe(null);
     });
