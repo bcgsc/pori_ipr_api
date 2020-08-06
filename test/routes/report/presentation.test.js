@@ -173,6 +173,12 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
+
+      expect(
+        await db.models.presentation_discussion.findOne({
+          where: {id: deleteDiscussion.id},
+        })
+      ).toBe(null);
     });
   });
 
@@ -298,6 +304,12 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
+
+      expect(
+        await db.models.presentation_slides.findOne({
+          where: {id: deleteSlide.id},
+        })
+      ).toBe(null);
     });
   });
 
