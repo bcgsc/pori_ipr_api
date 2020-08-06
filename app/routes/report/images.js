@@ -61,8 +61,8 @@ const IMAGES_CONFIG = [
   },
   {
     pattern: 'mutSignature.barplot\\.(dbs|indels)',
-    width: 1000,
-    height: 500,
+    width: 2000,
+    height: 1000,
     format: 'PNG',
   },
   {
