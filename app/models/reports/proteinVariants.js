@@ -24,41 +24,34 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     percentile: {
-      // ptxPerc
       type: Sq.FLOAT,
       defaultValue: null,
     },
     kiqr: {
-      // ptxPercKIQR
       type: Sq.FLOAT,
       defaultValue: null,
     },
     qc: {
-      // ptxQC
       type: Sq.FLOAT,
       defaultValue: null,
     },
     comparator: {
-      // ptxPercCol
       type: Sq.TEXT,
       defaultValue: null,
     },
     totalSampleObserved: {
-      // ptxTotSampObs
       name: 'totalSampleObserved',
       field: 'total_sample_observed',
       type: Sq.INTEGER,
       defaultValue: null,
     },
     secondaryPercentile: {
-      // ptxPogPerc
       name: 'secondaryPercentile',
       field: 'secondary_percentile',
       type: Sq.FLOAT,
       defaultValue: null,
     },
     secondaryComparator: {
-      // new
       name: 'secondaryComparator',
       field: 'secondary_comparator',
       type: Sq.TEXT,
