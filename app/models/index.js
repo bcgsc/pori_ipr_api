@@ -228,6 +228,16 @@ analysisReports.hasMany(expressionVariants, {
   as: 'expressionVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+// protein variants
+const proteinVariants = sequelize.import('./reports/proteinVariants');
+
+proteinVariants.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(proteinVariants, {
+  as: 'proteinVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 
 // This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {

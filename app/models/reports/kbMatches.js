@@ -148,7 +148,9 @@ module.exports = (sequelize) => {
   // set instance methods
   KbMatches.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, variantId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, variantId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;
