@@ -1,0 +1,97 @@
+const Sq = require('sequelize');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
+
+module.exports = (sequelize) => {
+  const proteinVariants = sequelize.define('proteinVariants', {
+    ...DEFAULT_COLUMNS,
+    reportId: {
+      name: 'reportId',
+      field: 'report_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports',
+        key: 'id',
+      },
+    },
+    geneId: {
+      name: 'geneId',
+      field: 'gene_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'reports_genes',
+        key: 'id',
+      },
+      allowNull: false,
+    },
+    percentile: {
+      // ptxPerc
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    kiqr: {
+      // ptxPercKIQR
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    qc: {
+      // ptxQC
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    comparator: {
+      // ptxPercCol
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    totalSampleObserved: {
+      // ptxTotSampObs
+      name: 'totalSampleObserved',
+      field: 'total_sample_observed',
+      type: Sq.INTEGER,
+      defaultValue: null,
+    },
+    secondaryPercentile: {
+      // ptxPogPerc
+      name: 'secondaryPercentile',
+      field: 'secondary_percentile',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    secondaryComparator: {
+      // new
+      name: 'secondaryComparator',
+      field: 'secondary_comparator',
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
+  }, {
+    ...DEFAULT_REPORT_OPTIONS,
+    tableName: 'reports_protein_variants',
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
+        include: [
+          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
+        ],
+      },
+    },
+  });
+
+  // set instance methods
+  proteinVariants.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {
+        id, reportId, geneId, deletedAt, ...publicView
+      } = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return proteinVariants;
+};
