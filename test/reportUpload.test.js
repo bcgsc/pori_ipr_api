@@ -1,3 +1,4 @@
+const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
@@ -35,7 +36,7 @@ describe('Tests for uploading a report and all of its components', () => {
       .auth(username, password)
       .send(mockReportData)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.CREATED);
 
     expect(typeof res.body).toBe('object');
 
@@ -46,7 +47,7 @@ describe('Tests for uploading a report and all of its components', () => {
       .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     // get report id from doing a db find because it's not returned by the API
     const result = await db.models.analysis_report.findOne({where: {ident: reportIdent}, attributes: ['id']});
@@ -101,7 +102,7 @@ describe('Tests for uploading a report and all of its components', () => {
       .get(`/api/reports/${reportIdent}`)
       .auth(username, password)
       .type('json')
-      .expect(404);
+      .expect(HTTP_STATUS.NOT_FOUND);
   }, LONGER_TIMEOUT);
 });
 
@@ -116,7 +117,7 @@ describe('Test for uploading a report with empty image data', () => {
       .auth(username, password)
       .send(emptyImageMockReportData)
       .type('json')
-      .expect(400);
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
     expect(typeof res.body).toBe('object');
   }, LONGER_TIMEOUT);
