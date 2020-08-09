@@ -28,7 +28,7 @@ schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(),
 schemas.user = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'user',
   associations: false,
-  exclude: [...SWAGGER_EXCLUDE, 'user_projects', 'userGroupMembers'],
+  exclude: [...SWAGGER_EXCLUDE, 'user_projects', 'userGroupMembers', 'jiraToken', 'jiraXsrf', 'password'],
 });
 
 schemas.group = schemaManager.generate(db.models.userGroup, new OpenApi3Strategy(), {
@@ -54,6 +54,13 @@ schemas.germline_small_mutation = schemaManager.generate(db.models.germline_smal
   title: 'germline_small_mutation',
   associations: false,
   exclude: [...SWAGGER_EXCLUDE],
+});
+
+schemas.presentation_discussion = schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
+  title: 'presentation_discussion',
+  associations: true,
+  exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+  excludeAssociations: ['report'],
 });
 
 schemas.project.properties.users = schemas.user;

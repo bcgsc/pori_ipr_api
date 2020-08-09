@@ -2886,14 +2886,15 @@
     },
     "/reports/{report}/presentation/discussion": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a list of discussions for a specific report",
+        "description": "Return an array of discussions from a report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -2902,11 +2903,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get the array of discussions",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentation_discussion"
                 }
               }
             }
