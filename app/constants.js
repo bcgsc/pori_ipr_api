@@ -10,4 +10,15 @@ module.exports = {
   },
   KB_PIVOT_COLUMN: 'variantType',
   GENE_LINKED_VARIANT_MODELS: ['expressionVariants', 'smallMutations', 'copyVariants', 'structuralVariants', 'probeResults'],
+  VALID_IMAGE_KEY_PATTERN: `^${[
+    'mutSignature\\.(corPcors|barplot)\\.(dbs|indels|sbs)',
+    'subtypePlot\\.\\S+',
+    '(cnv|loh)\\.[12345]',
+    'cnvLoh.circos',
+    'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel)(\\.\\w+)?',
+    'circosSv\\.(genome|transcriptome)',
+    'expDensity\\.\\S+',
+    'expression\\.(chart|legend)',
+    'microbial\\.circos\\.(genome|transcriptome)',
+  ].map((patt) => { return `(${patt})`; }).join('|')}$`,
 };
