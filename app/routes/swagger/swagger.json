@@ -3011,14 +3011,18 @@
         }
       },
       "delete": {
-        "summary": "",
-        "description": "",
+        "summary": "Delete a single discussion for a specific report",
+        "description": "Return no content if successful",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3026,12 +3030,12 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
+          "204": {
+            "description": "No content",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentation_discussion"
                 }
               }
             }
@@ -3040,19 +3044,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report Not found or Discussion not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update a discussion for a specific report",
+        "description": "Return the updated discussion for a report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
           }
         ],
+        "requestBody": {
+          "description": "The discussion to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/presentationDiscussionInput"
+              }
+            }
+          }
+        },
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3061,14 +3081,17 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The updated discussion",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentation_discussion"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input was provided"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
