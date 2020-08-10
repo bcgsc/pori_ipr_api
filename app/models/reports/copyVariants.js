@@ -23,16 +23,24 @@ module.exports = (sequelize) => {
       },
       allowNull: false,
     },
-    ploidyCorrCpChange: {
+    copyChange: {
+      name: 'copyChange',
+      field: 'copy_change',
       type: Sq.INTEGER,
     },
     lohState: {
+      name: 'lohState',
+      field: 'loh_state',
       type: Sq.TEXT,
     },
     cnvState: {
+      name: 'cnvState',
+      field: 'cnv_state',
       type: Sq.TEXT,
     },
     chromosomeBand: {
+      name: 'chromosomeBand',
+      field: 'chromosome_band',
       type: Sq.TEXT,
     },
     start: {
@@ -49,6 +57,14 @@ module.exports = (sequelize) => {
       field: 'kb_category',
       type: Sq.TEXT,
     },
+    log2Cna: {
+      name: 'log2Cna',
+      field: 'log2_cna',
+      type: Sq.NUMERIC,
+    },
+    cna: {
+      type: Sq.NUMERIC,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_copy_variants',
@@ -63,7 +79,7 @@ module.exports = (sequelize) => {
         ],
       },
       minimal: {
-        attributes: ['cnvState', 'lohState', 'ploidyCorrCpChange'],
+        attributes: ['cnvState', 'lohState', 'copyChange'],
       },
     },
   });
@@ -71,7 +87,9 @@ module.exports = (sequelize) => {
   // set instance methods
   copyVariants.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, geneId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;
