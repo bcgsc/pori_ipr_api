@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'test';
-
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../app/models');
@@ -9,21 +7,10 @@ const CONFIG = require('../app/config');
 const {listen} = require('../app');
 
 CONFIG.set('env', 'test');
-
 const {username, password} = CONFIG.get('testing');
-
 
 let server;
 let request;
-
-const signatureProperties = ['ident', 'createdAt', 'updatedAt', 'username', 'type', 'firstName', 'lastName', 'email', 'lastLogin'];
-// Properties of res.body.reviewerSignature and res.body.authorSignature
-const checkSignatureProperties = (signature) => {
-  // Function for checking reviewer and author signatures
-  signatureProperties.forEach((property) => {
-    expect(signature).toHaveProperty(property);
-  });
-};
 
 // Start API
 beforeAll(async () => {
@@ -32,7 +19,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/reports/{REPORTID}/summary/analyst-comments endpoint testing', () => {
+describe('/reports/{REPORTID}/summary/analyst-comments', () => {
   let report;
 
   beforeAll(async () => {
@@ -61,19 +48,12 @@ describe('/reports/{REPORTID}/summary/analyst-comments endpoint testing', () => 
       .type('json')
       .expect(200);
 
-    const {body: {reviewerSignature, authorSignature}} = res;
     expect(res.body).toEqual(expect.objectContaining({
       ident: expect.any(String),
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
       comments: expect.any(String),
-      reviewerSignature: expect.any(Object),
-      authorSignature: expect.any(Object),
     }));
-    expect(res.body).toHaveProperty('reviewerSignedAt');
-    expect(res.body).toHaveProperty('authorSignedAt');
-    checkSignatureProperties(reviewerSignature);
-    checkSignatureProperties(authorSignature);
   });
 
   describe('PUT', () => {
@@ -103,82 +83,18 @@ describe('/reports/{REPORTID}/summary/analyst-comments endpoint testing', () => 
           .expect(404);
       });
     });
+  });
 
-    describe('Test signing comments', () => {
-      // Tests for signing comments and invalid inputs
-      test('PUT /sign/author sign comment as author - 200 Success', async () => {
-        const res = await request
-          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/author`)
-          .auth(username, password)
-          .type('json')
-          .expect(200);
-
-        expect(res.body).toEqual(expect.objectContaining({
-          ident: expect.any(String),
-          comments: expect.any(String),
-          authorSignedAt: expect.any(String),
-        }));
-      });
-
-      test('PUT /sign/reviewer sign comment as reviewer - 200 Success', async () => {
-        const res = await request
-          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/reviewer`)
-          .auth(username, password)
-          .type('json')
-          .expect(200);
-
-        expect(res.body).toEqual(expect.objectContaining({
-          ident: expect.any(String),
-          comments: expect.any(String),
-          reviewerSignedAt: expect.any(String),
-        }));
-      });
-
-      test('PUT /sign/INVALID sign comment as not existing role - 404 Not Found', async () => {
+  describe('DELETE', () => {
+    // Tests for DELETE endpoints
+    describe('Test DELETE comments', () => {
+      // Test for deleting analysis comments
+      test('DELETE / comment - 204 Success', async () => {
         await request
-          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/NOT_EXISTENT_ROLE`)
+          .delete(`/api/reports/${report.ident}/summary/analyst-comments`)
           .auth(username, password)
           .type('json')
-          .expect(404);
-      });
-    });
-
-    describe('Test revoking signatures', () => {
-      // Tests for revoking signatures and invalid inputs
-      test('PUT /sign/revoke/author revoke sign comment as author - 200 Success', async () => {
-        const res = await request
-          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/revoke/author`)
-          .auth(username, password)
-          .type('json')
-          .expect(200);
-
-        expect(res.body).toEqual(expect.objectContaining({
-          ident: expect.any(String),
-          comments: expect.any(String),
-          authorSignedAt: null,
-        }));
-      });
-
-      test('PUT /sign/revoke/reviewer revoke sign comment as reviewer - 200 Success', async () => {
-        const res = await request
-          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/revoke/reviewer`)
-          .auth(username, password)
-          .type('json')
-          .expect(200);
-
-        expect(res.body).toEqual(expect.objectContaining({
-          ident: expect.any(String),
-          comments: expect.any(String),
-          reviewerSignedAt: null,
-        }));
-      });
-
-      test('PUT /sign/revoke/INVALID comment as not existing role - 404 Not Found', async () => {
-        await request
-          .put(`/api/reports/${report.ident}/summary/analyst-comments/sign/revoke/NOT_EXISTENT_ROLECLEAR`)
-          .auth(username, password)
-          .type('json')
-          .expect(404);
+          .expect(204);
       });
     });
   });

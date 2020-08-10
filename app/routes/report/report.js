@@ -21,14 +21,114 @@ const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
 
 
-// Register middleware
+// Register report middleware
 router.param('report', reportMiddleware);
+
+router.route('/:report')
+  .get((req, res) => {
+    return res.json(req.report.view('public'));
+  })
+  .put(async (req, res) => {
+    try {
+      await req.report.update(req.body);
+      await req.report.reload();
+      return res.json(req.report.view('public'));
+    } catch (error) {
+      logger.error(`Unable to update report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report'}});
+    }
+  })
+  .delete(async (req, res) => {
+    // first check user permissions before delete
+    const access = new Acl(req);
+    if (!access.check()) {
+      logger.error('User doesn\'t have correct permissions to delete report');
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
+    }
+
+    try {
+      await req.report.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Error trying to delete report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report'}});
+    }
+  });
+
+/**
+ * Report User Binding
+ */
+router.route('/:report/user')
+  .post(async (req, res) => {
+    const access = new Acl(req);
+    if (!access.check()) {
+      logger.error(
+        `User doesn't have correct permissions to add a user binding ${req.user.username}`,
+      );
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
+      );
+    }
+
+    if (!req.body.user) {
+      logger.error('No user provided for binding');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided for binding'}});
+    }
+    if (!req.body.role) {
+      logger.error('No role provided for binding');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for binding'}});
+    }
+
+    const report = new Report(req.report);
+
+    try {
+      const result = await report.bindUser(req.body.user, req.body.role, req.user);
+      logger.info(`Response from bind user ${result}`);
+      return res.status(HTTP_STATUS.CREATED).json(result);
+    } catch (error) {
+      logger.error(error);
+      const code = (error.code === 'userNotFound') ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
+      return res.status(code).json(error);
+    }
+  })
+  .delete(async (req, res) => {
+    const access = new Acl(req);
+    if (!access.check()) {
+      logger.error(
+        `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
+      );
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
+      );
+    }
+
+    if (!req.body.user) {
+      logger.error('No user provided to remove binding');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided to remove binding'}});
+    }
+    if (!req.body.role) {
+      logger.error('No role provided for removal');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for removal'}});
+    }
+
+    const report = new Report(req.report);
+
+    try {
+      const result = await report.unbindUser(req.body.user, req.body.role);
+      logger.info(`Response from unbind ${result}`);
+      return res.json(result);
+    } catch (error) {
+      logger.error(error);
+      const code = ['userNotFound', 'noBindingFound'].includes(error.code) ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
+      return res.status(code).json(error);
+    }
+  });
 
 // Act on all reports
 router.route('/')
   .get(async (req, res) => {
     // Check user permission and filter by project
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     let projectAccess = null;
     try {
       projectAccess = await access.getProjectAccess();
@@ -199,7 +299,8 @@ router.route('/')
   })
   .post(async (req, res) => {
     // verify user is allowed to upload a report
-    const access = new Acl(req, res);
+    const access = new Acl(req);
+    access.write = ['*'];
     if (!access.check()) {
       logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
@@ -284,129 +385,10 @@ router.route('/')
         logger.error(`Unable to delete the already created report/components of the report ${err}`);
       }
 
-      return res.status(400).json({error: {message: 'Unable to create all report components'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to create all report components'}});
     }
 
-    return res.json({message: 'Report upload was successful', ident: report.ident});
-  });
-
-router.route('/:report')
-  .get((req, res) => {
-    const report = req.report.get();
-    delete report.id;
-    delete report.createdBy_id;
-    delete report.deletedAt;
-
-    return res.json(req.report);
-  })
-  .delete(async (req, res) => {
-    // first check user permissions before delete
-    const access = new Acl(req, res);
-    if (!access.check()) {
-      logger.error('User doesn\'t have correct permissions to delete report');
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
-    }
-
-    try {
-      await req.report.destroy();
-      return res.status(HTTP_STATUS.NO_CONTENT).send();
-    } catch (error) {
-      logger.error(`Error trying to delete report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report'}});
-    }
-  })
-  .put(async (req, res) => {
-    try {
-      const result = await db.models.analysis_report.update(req.body, {
-        where: {
-          ident: req.report.ident,
-        },
-        individualHooks: true,
-        paranoid: true,
-        returning: true,
-      });
-
-      // Get updated model data from update
-      const [, [{dataValues}]] = result;
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, createdBy_id, deletedAt, ...publicModel
-      } = dataValues;
-
-      publicModel.patientInformation = req.report.patientInformation;
-      publicModel.users = req.report.users;
-
-      return res.json(publicModel);
-    } catch (error) {
-      logger.error(`Unable to update report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report'}});
-    }
-  });
-
-/**
- * Report User Binding
- */
-router.route('/:report/user')
-  .post(async (req, res) => {
-    const access = new Acl(req, res);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to add a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
-      );
-    }
-
-    if (!req.body.user) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided for binding'}});
-    }
-    if (!req.body.role) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for binding'}});
-    }
-
-    const report = new Report(req.report);
-
-    try {
-      const result = await report.bindUser(req.body.user, req.body.role, req.user);
-      logger.info(`Response from bind user ${result}`);
-      return res.json(result);
-    } catch (error) {
-      logger.error(error);
-      const code = (error.code === 'userNotFound') ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
-      return res.status(code).json(error);
-    }
-  })
-  .delete(async (req, res) => {
-    const access = new Acl(req, res);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
-      );
-    }
-
-    if (!req.body.user) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided for binding'}});
-    }
-    if (!req.body.role) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for binding'}});
-    }
-
-    const report = new Report(req.report);
-
-    try {
-      const result = await report.unbindUser(req.body.user, req.body.role);
-      logger.info(`Response from unbind ${result}`);
-      return res.json(result);
-    } catch (error) {
-      logger.error(error);
-      const code = ['userNotFound', 'noBindingFound'].includes(error.code) ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
-      return res.status(code).json(error);
-    }
+    return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
   });
 
 module.exports = router;

@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('smallMutations', {
+  const smallMutations = sequelize.define('smallMutations', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -27,29 +27,44 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     proteinChange: {
-      field: 'protein_change',
       name: 'proteinChange',
+      field: 'protein_change',
       type: Sq.TEXT,
     },
     location: {
       type: Sq.TEXT,
     },
     refAlt: {
-      field: 'ref_alt',
       name: 'refAlt',
+      field: 'ref_alt',
       type: Sq.TEXT,
     },
     zygosity: {
       type: Sq.TEXT,
     },
     tumourReads: {
-      field: 'tumour_reads',
       name: 'tumourReads',
+      field: 'tumour_reads',
       type: Sq.TEXT,
     },
     rnaReads: {
-      field: 'rna_reads',
       name: 'rnaReads',
+      field: 'rna_reads',
+      type: Sq.TEXT,
+    },
+    hgvsProtein: {
+      name: 'hgvsProtein',
+      field: 'hgvs_protein',
+      type: Sq.TEXT,
+    },
+    hgvsCds: {
+      name: 'hgvsCds',
+      field: 'hgvs_cds',
+      type: Sq.TEXT,
+    },
+    hgvsGenomic: {
+      name: 'hgvsGenomic',
+      field: 'hgvs_genomic',
       type: Sq.TEXT,
     },
   }, {
@@ -57,11 +72,22 @@ module.exports = (sequelize) => {
     tableName: 'reports_small_mutations',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
         include: [
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
       },
     },
   });
+
+  // set instance methods
+  smallMutations.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return smallMutations;
 };

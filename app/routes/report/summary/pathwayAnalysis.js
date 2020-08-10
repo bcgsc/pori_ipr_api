@@ -7,19 +7,16 @@ const db = require('../../../models');
 
 const logger = require('../../../log');
 
-// Middleware for Analyst Comments
+// Middleware for pathway analysis
 router.use('/', async (req, res, next) => {
   try {
     // Get pathway analysis for this report
     const result = await db.models.pathwayAnalysis.findOne({
-      where: {
-        reportId: req.report.id,
-      },
-      attributes: {exclude: ['id', 'deletedAt']},
+      where: {reportId: req.report.id},
     });
 
     // Not found is allowed!
-    // Found the patient information
+    // Add pathway analysis to request
     req.pathwayAnalysis = result;
     return next();
   } catch (error) {
@@ -31,22 +28,32 @@ router.use('/', async (req, res, next) => {
 // Handle requests for alterations
 router.route('/')
   .get((req, res) => {
-    // Get Patient History
-    return res.json(req.pathwayAnalysis);
+    if (req.pathwayAnalysis) {
+      return res.json(req.pathwayAnalysis.view('public'));
+    }
+    return res.json(null);
   })
   .put(async (req, res) => {
+    let pathwayData;
+    try {
+      pathwayData = req.files.pathway.data.toString();
+    } catch (error) {
+      logger.error(`Invalid file or file not provided ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Invalid file or file not provided'}});
+    }
+
     // Updating?
     if (!req.pathwayAnalysis) {
       // Create
       const request = {
-        pathway: req.files.pathway.data.toString(),
+        pathway: pathwayData,
         reportId: req.report.id,
       };
 
       // Create entry
       try {
         const result = await db.models.pathwayAnalysis.create(request);
-        return res.json(result);
+        return res.json(result.view('public'));
       } catch (error) {
         logger.error(`Unable to create pathway analysis entry ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create pathway analysis entry'}});
@@ -54,32 +61,13 @@ router.route('/')
     } else {
       // Updating
       const request = {
-        pathway: req.files.pathway.data.toString(),
-        reportId: req.report.id,
+        pathway: pathwayData,
       };
-      // Remove current
-      req.pathwayAnalysis.reportId = req.report.id;
 
-      // Update DB Version for Entry
+      // Update db entry
       try {
-        const result = await db.models.pathwayAnalysis.update(request, {
-          where: {
-            ident: req.pathwayAnalysis.ident,
-          },
-          individualHooks: true,
-          paranoid: true,
-          returning: true,
-        });
-
-        // Get updated model data from update
-        const [, [{dataValues}]] = result;
-
-        // Remove id's and deletedAt properties from returned model
-        const {
-          id, reportId, deletedAt, ...publicModel
-        } = dataValues;
-
-        return res.json(publicModel);
+        await req.pathwayAnalysis.update(request);
+        return res.json(req.pathwayAnalysis.view('public'));
       } catch (error) {
         logger.error(`Unable to update pathway analysis ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update pathway analysis'}});
@@ -102,7 +90,7 @@ router.route('/')
           // Create new entry
           try {
             const result = await db.models.pathwayAnalysis.create(req.body);
-            return res.json(result);
+            return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
           } catch (error) {
             logger.error(`Unable to create pathway analysis ${error}`);
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create pathway analysis'}});

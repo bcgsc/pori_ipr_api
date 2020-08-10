@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('genomicAlterationsIdentified', {
+  const genomicAlterations = sequelize.define('genomicAlterationsIdentified', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -28,4 +28,15 @@ module.exports = (sequelize) => {
       },
     },
   });
+
+  // set instance methods
+  genomicAlterations.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return genomicAlterations;
 };

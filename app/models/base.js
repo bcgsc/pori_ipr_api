@@ -1,4 +1,11 @@
 const Sq = require('sequelize');
+const {includesAll} = require('../libs/helperFunctions');
+
+const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
+
+const SIGNATURE_REMOVAL_EXCLUDE = {
+  analysis_report: ['state', 'presentationDate', 'updatedAt'],
+};
 
 const DEFAULT_MAPPING_COLUMNS = {
   id: {
@@ -57,6 +64,13 @@ const DEFAULT_OPTIONS = {
   ],
   hooks: {
     beforeUpdate: (instance, options = {}) => {
+      // check if the data has changed or if the fields updated
+      // are excluded from creating a new record
+      const changed = instance.changed();
+      if (!changed || includesAll(DEFAULT_UPDATE_EXCLUDE, changed)) {
+        return Promise.resolve(true);
+      }
+
       const {id, ...content} = instance._previousDataValues;
 
       return instance.constructor.create({
@@ -75,13 +89,25 @@ const DEFAULT_REPORT_OPTIONS = {
     ...DEFAULT_OPTIONS.hooks,
 
     afterUpdate: (instance, options = {}) => {
-      // remove reviewer signature from report
-      return instance.sequelize.models.analystComments.update({
+      const modelName = instance.constructor.name;
+      // check if the data has changed or if the fields updated
+      // are excluded from removing the report signatures
+      const changed = instance.changed();
+      const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
+
+      if (!changed || includesAll(updateExclude, changed)) {
+        return Promise.resolve(true);
+      }
+
+      // remove signatures from report
+      return instance.sequelize.models.signatures.update({
+        authorId: null,
+        authorSignedAt: null,
         reviewerId: null,
         reviewerSignedAt: null,
       }, {
         where: {
-          reportId: (instance.constructor.name === 'analysis_report') ? instance.id : instance.reportId,
+          reportId: (modelName === 'analysis_report') ? instance.id : instance.reportId,
         },
         individualHooks: true,
         paranoid: true,

@@ -1,12 +1,9 @@
 const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
-/**
- * Stores the results from the probing pipeline (targeted gene report) to be
- * displayed in the subsequent Genomic report (this report)
- */
+
 module.exports = (sequelize) => {
-  return sequelize.define('probeResults', {
+  const probeResults = sequelize.define('probeResults', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -43,11 +40,22 @@ module.exports = (sequelize) => {
     tableName: 'reports_probe_results',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'geneId']},
+        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
         include: [
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
       },
     },
   });
+
+  // set instance methods
+  probeResults.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return probeResults;
 };

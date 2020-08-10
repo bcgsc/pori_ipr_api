@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  return sequelize.define('user', {
+  const user = sequelize.define('user', {
     ...DEFAULT_COLUMNS,
     username: {
       type: Sq.STRING,
@@ -45,8 +45,7 @@ module.exports = (sequelize) => {
       type: Sq.DATE,
       defaultValue: null,
     },
-  },
-  {
+  }, {
     ...DEFAULT_OPTIONS,
     indexes: [
       ...DEFAULT_OPTIONS.indexes || [],
@@ -63,9 +62,22 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['deletedAt', 'password', 'id', 'jiraToken', 'jiraXsrf', 'settings'],
+          exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings'],
         },
       },
     },
   });
+
+  // set instance methods
+  user.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {
+        id, deletedAt, password, jiraToken, jiraXsrf, settings, ...publicView
+      } = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return user;
 };

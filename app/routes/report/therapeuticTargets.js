@@ -5,11 +5,13 @@ const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
 
-// Fetch the therapeutic target if found as URL param
+// Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {
   let result;
   try {
-    result = await db.models.therapeuticTarget.scope('public').findOne({where: {ident: target}});
+    result = await db.models.therapeuticTarget.findOne({
+      where: {ident: target},
+    });
   } catch (error) {
     logger.error(`Unable to find therapeutic target ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find therapeutic target'}});
@@ -20,60 +22,39 @@ router.param('target', async (req, res, next, target) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate therapeutic target'}});
   }
 
+  // Add therapeutic target to request
   req.target = result;
   return next();
 });
 
-// Handle requests for alterations
+// Handle requests for therapeutic target specified by ident
 router.route('/:target([A-z0-9-]{36})')
   .get((req, res) => {
-    // Get a specific Target by ID
-    const {target} = req;
-    return res.json(target);
+    return res.json(req.target.view('public'));
   })
   .put(async (req, res) => {
-    const {target: {ident}, body} = req;
-
-    // update the record with the new content
+    // Update db entry
     try {
-      const [, [{dataValues}]] = await db.models.therapeuticTarget.update(
-        {...body, ident},
-        {
-          where: {
-            ident,
-          },
-          individualHooks: true,
-          paranoid: true,
-          returning: true,
-        }
-      );
-
-      // Remove id's and deletedAt properties from returned model
-      const {
-        id, reportId, deletedAt, ...publicModel
-      } = dataValues;
-
-      return res.json(publicModel);
+      await req.target.update(req.body);
+      return res.json(req.target.view('public'));
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target'}});
     }
   })
   .delete(async (req, res) => {
-    const {target: {ident}} = req;
     // Soft delete the entry
     // Update result
     try {
-      await db.models.therapeuticTarget.destroy({where: {ident}});
-
-      return res.json({success: true});
+      await req.target.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove therapeutic target ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove therapeutic target'}});
     }
   });
 
-// Routing for Alteration
+// Handle requests for all therapeutic targets for a report
 router.route('/')
   .get(async (req, res) => {
     const {report: {id: reportId}} = req;
@@ -99,7 +80,7 @@ router.route('/')
         ...body,
         reportId,
       });
-      return res.status(HTTP_STATUS.CREATED).json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry'}});

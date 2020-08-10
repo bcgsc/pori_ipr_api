@@ -29,6 +29,12 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
+    title: {
+      type: Sq.TEXT,
+    },
+    caption: {
+      type: Sq.TEXT,
+    },
   },
   {
     ...DEFAULT_REPORT_OPTIONS,
