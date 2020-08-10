@@ -5,6 +5,8 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const schemas = require('../../schemas/report/presentation');
 
 
 /*
@@ -51,6 +53,15 @@ router.route('/discussion')
     }
   })
   .post(async (req, res) => {
+    try {
+      // validate against the model
+      validateAgainstSchema(schemas.discussionSchema, req.body);
+    } catch (err) {
+      const message = `There was an error creating the discussion ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     const data = {
       ...req.body,
       user_id: req.user.id,
@@ -60,7 +71,7 @@ router.route('/discussion')
     try {
       let result = await db.models.presentation_discussion.create(data);
       result = await db.models.presentation_discussion.scope('public').findOne({where: {id: result.id}});
-      return res.json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create new discussion ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion'});
@@ -73,6 +84,15 @@ router.route('/discussion/:discussion')
     return res.json(req.discussion.view('public'));
   })
   .put(async (req, res) => {
+    try {
+      // validate against the model
+      validateAgainstSchema(schemas.discussionSchema, req.body);
+    } catch (err) {
+      const message = `There was an error updating the discussion ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     try {
       await req.discussion.update(req.body);
       await req.discussion.reload();
@@ -136,18 +156,33 @@ router.route('/slide')
     }
   })
   .post(async (req, res) => {
-    const data = {
-      object: req.files.file.data.toString('base64'),
-      user_id: req.user.id,
-      reportId: req.report.id,
-      name: req.body.name,
-      object_type: req.files.file.mimetype,
-    };
+    let data;
+    try {
+      data = {
+        object: req.files.file.data.toString('base64'),
+        user_id: req.user.id,
+        reportId: req.report.id,
+        name: req.body.name,
+        object_type: req.files.file.mimetype,
+      };
+    } catch (err) {
+      logger.error(err);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Invalid file'}});
+    }
+
+    try {
+      // validate against the model
+      validateAgainstSchema(schemas.slideSchema, data);
+    } catch (err) {
+      const message = `There was an error creating the slide ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
 
     try {
       let result = await db.models.presentation_slides.create(data);
       result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
-      return res.json(result);
+      return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create a new presentation slide ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create a new presentation slide'});
@@ -158,16 +193,6 @@ router.route('/slide')
 router.route('/slide/:slide')
   .get((req, res) => {
     return res.json(req.slide.view('public'));
-  })
-  .put(async (req, res) => {
-    try {
-      await req.slide.update(req.body);
-      await req.slide.reload();
-      return res.json(req.slide.view('public'));
-    } catch (error) {
-      logger.error(`Failed to update the presentation slide ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to update the presentation slide'}});
-    }
   })
   .delete(async (req, res) => {
     try {

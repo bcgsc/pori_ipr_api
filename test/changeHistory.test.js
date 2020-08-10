@@ -1,5 +1,7 @@
 process.env.NODE_ENV = 'test';
 
+const HTTP_STATUS = require('http-status-codes');
+
 const supertest = require('supertest');
 const uuidv4 = require('uuid/v4');
 const getPort = require('get-port');
@@ -44,7 +46,7 @@ describe('Tests for update changes', () => {
       .auth(username, password)
       .type('json')
       .send(projectData)
-      .expect(201);
+      .expect(HTTP_STATUS.CREATED);
     ident = res.body.ident;
 
 
@@ -73,14 +75,14 @@ describe('Tests for update changes', () => {
       .auth(username, password)
       .type('json')
       .send({...update})
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     // get updated project and compare to update values
     const res = await request
       .get(`/api/project/search?query=${update.name}`)
       .auth(username, password)
       .type('json')
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
     expect(Array.isArray(res.body)).toBe(true);
     res.body = res.body[0];
@@ -96,14 +98,14 @@ describe('Tests for update changes', () => {
       .delete(`/api/project/${ident}`)
       .auth(username, password)
       .type('json')
-      .expect(204);
+      .expect(HTTP_STATUS.NO_CONTENT);
 
     // verify project is deleted
     await request
       .get(`/api/project/search?query=${projectData.name}`)
       .auth(username, password)
       .type('json')
-      .expect(404);
+      .expect(HTTP_STATUS.NOT_FOUND);
   });
 });
 

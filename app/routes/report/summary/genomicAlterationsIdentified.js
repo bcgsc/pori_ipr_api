@@ -93,7 +93,7 @@ router.route('/')
       req.body.reportId = req.report.id;
 
       const result = await db.models.genomicAlterationsIdentified.create(req.body);
-      return res.json(result.view('public'));
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create genomic alteration entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create genomic alteration entry'}});

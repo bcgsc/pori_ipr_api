@@ -34,11 +34,19 @@ router.route('/')
     return res.json(null);
   })
   .put(async (req, res) => {
+    let pathwayData;
+    try {
+      pathwayData = req.files.pathway.data.toString();
+    } catch (error) {
+      logger.error(`Invalid file or file not provided ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Invalid file or file not provided'}});
+    }
+
     // Updating?
     if (!req.pathwayAnalysis) {
       // Create
       const request = {
-        pathway: req.files.pathway.data.toString(),
+        pathway: pathwayData,
         reportId: req.report.id,
       };
 
@@ -53,7 +61,7 @@ router.route('/')
     } else {
       // Updating
       const request = {
-        pathway: req.files.pathway.data.toString(),
+        pathway: pathwayData,
       };
 
       // Update db entry
@@ -82,7 +90,7 @@ router.route('/')
           // Create new entry
           try {
             const result = await db.models.pathwayAnalysis.create(req.body);
-            return res.json(result.view('public'));
+            return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
           } catch (error) {
             logger.error(`Unable to create pathway analysis ${error}`);
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create pathway analysis'}});

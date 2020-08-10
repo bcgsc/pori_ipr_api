@@ -1,6 +1,8 @@
 const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
+const {Op} = Sq;
+
 module.exports = (sequelize) => {
   const therapeuticTarget = sequelize.define('therapeuticTarget', {
     ...DEFAULT_COLUMNS,
@@ -78,6 +80,20 @@ module.exports = (sequelize) => {
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
+    hooks: {
+      ...DEFAULT_REPORT_OPTIONS.hooks,
+      // update ranks after deleting therapeutic target
+      afterDestroy: (instance) => {
+        return instance.constructor.decrement('rank', {
+          where: {
+            reportId: instance.reportId,
+            rank: {
+              [Op.gt]: instance.rank,
+            },
+          },
+        });
+      },
+    },
     tableName: 'reports_therapeutic_targets',
     scopes: {
       public: {

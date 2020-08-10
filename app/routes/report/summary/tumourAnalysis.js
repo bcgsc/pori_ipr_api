@@ -1,5 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
+const tumourAnalysisSchema = require('../../../schemas/report/summary/tumourAnalysis');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
@@ -35,6 +37,15 @@ router.route('/')
     return res.json(req.tumourAnalysis.view('public'));
   })
   .put(async (req, res) => {
+    try {
+      // validate against the model
+      validateAgainstSchema(tumourAnalysisSchema, req.body);
+    } catch (err) {
+      const message = `There was an error updating tumour analysis ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     // Update db entry
     try {
       await req.tumourAnalysis.update(req.body);

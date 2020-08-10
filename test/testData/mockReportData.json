@@ -160,7 +160,8 @@
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610"
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "inferred": false
         }
     ],
     "genes": [
@@ -180,7 +181,10 @@
             "refAlt": "CCTG>C",
             "zygosity": "sub [0/3]",
             "tumourReads": "583/4",
-            "rnaReads": "400/15"
+            "rnaReads": "400/15",
+            "hgvsProtein": "ZFP36L2:p.Q401del",
+            "hgvsCds": "ENST00000282388:c.4015_4016dup",
+            "hgvsGenomic": "2:g.43451740_43451742delCTG"
         }
     ],
     "mutationSignature": [
@@ -281,23 +285,30 @@
             "fusionVars": "825"
         }
     ],
+    "analystComments": {
+        "comments": "<p>Here is a test comment.</p>"
+    },
     "project": "TEST",
     "images": [
         {
-            "key": "mutSignature.corPcors",
+            "key": "mutSignature.corPcors.sbs",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors.png"
         },
         {
-            "key": "mutSignature.snvsAllStrelka",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png"
+            "key": "mutSignature.barplot.sbs",
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png",
+            "title": "Test adding a title to an image"
         },
         {
             "key": "cnvLoh.circos",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png"
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png",
+            "caption": "Test adding a caption to an image"
         },
         {
             "key": "cnv.1",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png"
+            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png",
+            "title": "Test adding a title and a caption to an image",
+            "caption": "Test adding a title and a caption to an image"
         },
         {
             "key": "cnv.2",

@@ -4,13 +4,14 @@ const {BASE_EXCLUDE} = require('../../exclude');
 const variantSchemas = require('./variant');
 const kbMatchesSchema = require('./kbMatches');
 const {generateReportSubSchema} = require('./util');
+const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
   exclude: ['createdBy_id', ...BASE_EXCLUDE],
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
+  excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentation_discussion', 'presentation_slides', 'users', 'projects'],
 });
 
 // set schema version and don't allow additional properties
@@ -35,17 +36,7 @@ schema.properties.images = {
       },
       key: {
         type: 'string',
-        pattern: `^${[
-          'mutSignature\\.(corPcors|snvsAllStrelka)',
-          'subtypePlot\\.\\S+',
-          '(cnv|loh)\\.[12345]',
-          'cnvLoh.circos',
-          'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel)(\\.\\w+)?',
-          'circosSv\\.(genome|transcriptome)',
-          'expDensity\\.\\S+',
-          'expression\\.(chart|legend)',
-          'microbial\\.circos\\.(genome|transcriptome)',
-        ].map((patt) => { return `(${patt})`; }).join('|')}$`,
+        pattern: VALID_IMAGE_KEY_PATTERN,
       },
     },
   },
@@ -54,7 +45,7 @@ schema.properties.images = {
 // get report associations
 const {
   ReportUserFilter, createdBy, signatures, presentation_discussion,
-  presentation_slides, users, analystComments, projects, ...associations
+  presentation_slides, users, projects, ...associations
 } = db.models.analysis_report.associations;
 
 schema.definitions = {...variantSchemas, kbMatches: kbMatchesSchema};

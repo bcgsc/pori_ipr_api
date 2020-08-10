@@ -19,7 +19,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/reports/{REPORTID}/summary/analyst-comments endpoint testing', () => {
+describe('/reports/{REPORTID}/summary/analyst-comments', () => {
   let report;
 
   beforeAll(async () => {

@@ -39,9 +39,11 @@
     "pg-native": "^3.0.0",
     "request": "^2.88.2",
     "request-promise-native": "~1.0.5",
+    "sanitize-html": "^1.27.1",
     "sequelize": "^5.21.1",
     "sequelize-cli": "^5.5.0",
     "swagger-ui-express": "^4.0.2",
+    "tmp-promise": "^3.0.2",
     "uuid": "~3.1.0",
     "uuid-validate": "0.0.3",
     "winston": "~2.3.1"
