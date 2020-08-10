@@ -2919,6 +2919,56 @@
             "description": "Report Not found"
           }
         }
+      },
+      "post": {
+        "summary": "Create a discussion for a specific report",
+        "description": "Return the created discussion for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "The discussion to be created",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/presentationDiscussionInput"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The created discussion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentation_discussion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input was provided"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
       }
     },
     "/reports/{report}/presentation/discussion/{discussion}": {

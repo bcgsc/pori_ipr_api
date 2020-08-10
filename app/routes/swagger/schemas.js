@@ -6,6 +6,7 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 const schemas = {};
 
 const SWAGGER_EXCLUDE = ['id', 'reportId', 'geneId', 'deletedAt'];
+const EXCLUDE = require('../../schemas/exclude');
 
 const {
   germlineReportsToProjects, userGroupMember, reportProject, user_project, ...models
@@ -61,6 +62,12 @@ schemas.presentation_discussion = schemaManager.generate(db.models.presentation_
   associations: true,
   exclude: [...SWAGGER_EXCLUDE, 'user_id'],
   excludeAssociations: ['report'],
+});
+
+schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
+  title: 'presentationDiscussionInput',
+  associations: false,
+  exclude: [...EXCLUDE.REPORT_EXCLUDE, 'user_id'],
 });
 
 schemas.project.properties.users = schemas.user;
