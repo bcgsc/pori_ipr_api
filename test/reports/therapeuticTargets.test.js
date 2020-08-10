@@ -148,6 +148,18 @@ describe('/therapeutic-targets', () => {
         expect(result).toHaveProperty('deletedAt');
       });
 
+      test('Update should not accept reportId', async () => {
+        await request
+          .put(url)
+          .auth(username, password)
+          .send({
+            reportId: 1,
+            gene: 'BRAF',
+          })
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
       describe('tests depending on multiple targets present', () => {
         let newTarget;
 
@@ -195,7 +207,7 @@ describe('/therapeutic-targets', () => {
               {ident: newTarget.ident, rank: -500},
             ])
             .type('json')
-            .expect(HTTP_STATUS.BAD_REQUEST);
+            .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
         }, LONGER_TIMEOUT);
       });
 

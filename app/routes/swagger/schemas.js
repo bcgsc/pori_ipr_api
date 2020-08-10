@@ -19,6 +19,22 @@ for (const property of Object.keys(models)) {
   });
 }
 
+schemas.therapeuticTargetInput = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
+  title: 'therapeuticTargetInput',
+  associations: false,
+  exclude: [...SWAGGER_EXCLUDE, 'ident', 'createdAt', 'updatedAt'],
+});
+
+const therapeuticTargetRanksBulkUpdate = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
+  title: 'therapeuticTargetRanksBulkUpdate',
+  associations: false,
+  include: ['rank', 'ident'],
+});
+schemas.therapeuticTargetRanksBulkUpdate = {
+  type: 'array',
+  items: therapeuticTargetRanksBulkUpdate,
+};
+
 schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'newUser',
   associations: false,
