@@ -128,7 +128,7 @@ router.route('/')
       return res.json({updated: true});
     } catch (error) {
       logger.error(`Unable to update therapeutic target rank ${error}`);
-      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Unable to update therapeutic target rank'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target rank'}});
     }
   });
 

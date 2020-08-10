@@ -1713,9 +1713,6 @@
               }
             }
           },
-          "409": {
-            "description": "Rank already exists."
-          },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
