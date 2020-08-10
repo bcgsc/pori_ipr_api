@@ -19,7 +19,7 @@ let server;
 let request;
 
 const kbMatchProperties = ['ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease', 'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
-  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant'];
+  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant', 'inferred'];
 
 const checkKbMatch = (kbMatchObject) => {
   kbMatchProperties.forEach((element) => {
@@ -36,7 +36,7 @@ beforeAll(async () => {
 });
 
 // Tests for /kb-matches endpoint
-describe('/reports/{REPORTID}/kb-matches endpoint testing', () => {
+describe('/reports/{REPORTID}/kb-matches', () => {
   let report;
   let gene;
   let variant;

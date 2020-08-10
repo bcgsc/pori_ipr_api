@@ -41,7 +41,7 @@ router.route('/')
   // Get All Users
   .get(async (req, res) => {
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.read = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to access this');
@@ -67,7 +67,7 @@ router.route('/')
     // Add new user
 
     // Checks if the person is authorized to add new users
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     if (!access.check()) {
       logger.error('User isn\'t allowed to add a new user');
       return res.status(HTTP_STATUS.FORBIDDEN).send({error: {message: 'You are not allowed to perform this action'}});
@@ -120,7 +120,7 @@ router.route('/')
       // Everything looks good, create the account!
       const resp = await db.models.user.create(req.body);
       // Account created, send details
-      return res.json(resp.view('public'));
+      return res.status(HTTP_STATUS.CREATED).json(resp.view('public'));
     } catch (error) {
       logger.error(`Unable to create user account ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: false, message: 'Unable to create user account.'});
@@ -151,7 +151,7 @@ router.route('/:ident([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update current user
     // Access Control
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['*']; // Admins can update any user, users can only update themselves
 
     // Is the user neither itself or admin?
@@ -222,8 +222,7 @@ router.route('/:ident([A-z0-9-]{36})')
   })
   // Remove a user
   .delete(async (req, res) => {
-    // Remove a user
-    const access = new Acl(req, res);
+    const access = new Acl(req);
     access.write = ['admin'];
     if (!access.check()) {
       logger.error('User isn\'t allowed to remove a user');

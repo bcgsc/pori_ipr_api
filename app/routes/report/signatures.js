@@ -26,8 +26,17 @@ router.use('/', async (req, res, next) => {
 });
 
 router.route('/')
-  .get((req, res) => {
+  /**
+    *Note: The reload in the GET is because of a bug/inconsistency in Sequelize.
+    Applying a scope to the includes is causing a null value/null foreign key
+    to be wrapped in the scoped model where all the values are null.
+    The reload can be removed once this is fixed in Sequelize.
+    This applies to Sequelize version 5.21.1
+    Jira Ticket: DEVSU-1175
+  */
+  .get(async (req, res) => {
     if (req.signatures) {
+      await req.signatures.reload();
       return res.json(req.signatures.view('public'));
     }
     return res.json(null);
