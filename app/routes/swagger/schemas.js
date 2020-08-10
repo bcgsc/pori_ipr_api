@@ -64,6 +64,16 @@ schemas.presentation_discussion = schemaManager.generate(db.models.presentation_
   excludeAssociations: ['report'],
 });
 
+schemas.presentationDiscussionArray = {
+  type: 'array',
+  items: schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
+    title: 'presentationDiscussionArray',
+    associations: true,
+    exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+    excludeAssociations: ['report'],
+  }),
+};
+
 schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
   title: 'presentationDiscussionInput',
   associations: false,
