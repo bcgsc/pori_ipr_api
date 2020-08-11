@@ -201,7 +201,9 @@
     "copyVariants": [
         {
             "gene": "MYCN",
-            "ploidyCorrCpChange": 2,
+            "copyChange": 2,
+            "log2Cna": 0.2,
+            "cna": 1.2,
             "lohState": "HET",
             "cnvState": "Amp",
             "chromosomeBand": "2p24.3",
