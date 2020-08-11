@@ -3026,7 +3026,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentation_discussion"
+                  "$ref": "#/components/schemas/presentationDiscussion"
                 }
               }
             }
@@ -3069,7 +3069,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentation_discussion"
+                  "$ref": "#/components/schemas/presentationDiscussion"
                 }
               }
             }
@@ -3150,7 +3150,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentation_discussion"
+                  "$ref": "#/components/schemas/presentationDiscussion"
                 }
               }
             }

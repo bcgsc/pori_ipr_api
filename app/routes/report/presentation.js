@@ -16,7 +16,7 @@ const schemas = require('../../schemas/report/presentation');
 router.param('discussion', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.presentation_discussion.findOne({
+    result = await db.models.presentationDiscussion.findOne({
       where: {ident},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
@@ -42,7 +42,7 @@ router.param('discussion', async (req, res, next, ident) => {
 router.route('/discussion')
   .get(async (req, res) => {
     try {
-      const results = await db.models.presentation_discussion.scope('public').findAll({
+      const results = await db.models.presentationDiscussion.scope('public').findAll({
         where: {reportId: req.report.id},
         order: [['createdAt', 'ASC']],
       });
@@ -69,8 +69,8 @@ router.route('/discussion')
     };
 
     try {
-      let result = await db.models.presentation_discussion.create(data);
-      result = await db.models.presentation_discussion.scope('public').findOne({where: {id: result.id}});
+      let result = await db.models.presentationDiscussion.create(data);
+      result = await db.models.presentationDiscussion.scope('public').findOne({where: {id: result.id}});
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create new discussion ${error}`);

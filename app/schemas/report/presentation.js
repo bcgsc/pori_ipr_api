@@ -4,7 +4,7 @@ const EXCLUDE = require('../exclude');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-const discussionSchema = schemaManager.generate(db.models.presentation_discussion, new JsonSchema7Strategy(), {
+const discussionSchema = schemaManager.generate(db.models.presentationDiscussion, new JsonSchema7Strategy(), {
   exclude: ['user_id', ...EXCLUDE.REPORT_EXCLUDE],
   associations: false,
 });

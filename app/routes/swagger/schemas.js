@@ -64,7 +64,7 @@ schemas.analysis_report = schemaManager.generate(db.models.analysis_report, new 
   title: 'analysis_report',
   exclude: ['createdBy_id', ...SWAGGER_EXCLUDE],
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
+  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentationDiscussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
 });
 
 schemas.germline_small_mutation = schemaManager.generate(db.models.germline_small_mutation, new OpenApi3Strategy(), {
@@ -73,8 +73,8 @@ schemas.germline_small_mutation = schemaManager.generate(db.models.germline_smal
   exclude: [...SWAGGER_EXCLUDE],
 });
 
-schemas.presentation_discussion = schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
-  title: 'presentation_discussion',
+schemas.presentationDiscussion = schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
+  title: 'presentationDiscussion',
   associations: true,
   exclude: [...SWAGGER_EXCLUDE, 'user_id'],
   excludeAssociations: ['report'],
@@ -82,7 +82,7 @@ schemas.presentation_discussion = schemaManager.generate(db.models.presentation_
 
 schemas.presentationDiscussionArray = {
   type: 'array',
-  items: schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
+  items: schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
     title: 'presentationDiscussionArray',
     associations: true,
     exclude: [...SWAGGER_EXCLUDE, 'user_id'],
@@ -90,7 +90,7 @@ schemas.presentationDiscussionArray = {
   }),
 };
 
-schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentation_discussion, new OpenApi3Strategy(), {
+schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
   title: 'presentationDiscussionInput',
   associations: false,
   exclude: [...EXCLUDE.REPORT_EXCLUDE, 'user_id'],

@@ -60,7 +60,7 @@ describe('Tests for uploading a report and all of its components', () => {
     // is the same as the created report id
     const {
       ReportUserFilter, createdBy, signatures,
-      presentation_discussion, presentation_slides,
+      presentationDiscussion, presentation_slides,
       users, projects, ...associations
     } = db.models.analysis_report.associations;
 
