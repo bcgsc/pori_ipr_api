@@ -3245,7 +3245,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentation_slides"
+                  "$ref": "#/components/schemas/presentationSlides"
                 }
               }
             }
@@ -3288,7 +3288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentation_slides"
+                  "$ref": "#/components/schemas/presentationSlides"
                 }
               }
             }

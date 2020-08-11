@@ -120,7 +120,7 @@ router.route('/discussion/:discussion')
 router.param('slide', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.presentation_slides.findOne({
+    result = await db.models.presentationSlides.findOne({
       where: {ident},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
@@ -146,7 +146,7 @@ router.param('slide', async (req, res, next, ident) => {
 router.route('/slide')
   .get(async (req, res) => {
     try {
-      const results = await db.models.presentation_slides.scope('public').findAll({
+      const results = await db.models.presentationSlides.scope('public').findAll({
         where: {reportId: req.report.id},
       });
       return res.json(results);
@@ -180,8 +180,8 @@ router.route('/slide')
     }
 
     try {
-      let result = await db.models.presentation_slides.create(data);
-      result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
+      let result = await db.models.presentationSlides.create(data);
+      result = await db.models.presentationSlides.scope('public').findOne({where: {id: result.id}});
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create a new presentation slide ${error}`);

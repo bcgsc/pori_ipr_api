@@ -250,7 +250,7 @@ const createReportContent = async (report, content) => {
     'genes',
     'kbMatches',
     'presentationDiscussion',
-    'presentation_slides',
+    'presentationSlides',
     'signatures',
     'projects',
     'ReportUserFilter',

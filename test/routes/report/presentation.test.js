@@ -211,7 +211,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
     user = await db.models.user.findOne({
       where: {username},
     });
-    slide = await db.models.presentation_slides.create({
+    slide = await db.models.presentationSlides.create({
       reportId: report.id,
       user_id: user.id,
       name: 'NOTCH1 mutations',
@@ -291,7 +291,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
 
   describe('DELETE', () => {
     test('Deleting a slide is ok', async () => {
-      const deleteSlide = await db.models.presentation_slides.create({
+      const deleteSlide = await db.models.presentationSlides.create({
         reportId: report.id,
         user_id: user.id,
         name: 'NOTCH2 mutations',
@@ -306,7 +306,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       expect(
-        await db.models.presentation_slides.findOne({
+        await db.models.presentationSlides.findOne({
           where: {ident: deleteSlide.ident},
         })
       ).toBe(null);

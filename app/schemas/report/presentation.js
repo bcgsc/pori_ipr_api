@@ -12,7 +12,7 @@ const discussionSchema = schemaManager.generate(db.models.presentationDiscussion
 discussionSchema.additionalProperties = false;
 
 
-const slideSchema = schemaManager.generate(db.models.presentation_slides, new JsonSchema7Strategy(), {
+const slideSchema = schemaManager.generate(db.models.presentationSlides, new JsonSchema7Strategy(), {
   exclude: [...EXCLUDE.BASE_EXCLUDE],
   associations: false,
 });

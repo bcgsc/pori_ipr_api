@@ -64,7 +64,7 @@ schemas.analysis_report = schemaManager.generate(db.models.analysis_report, new 
   title: 'analysis_report',
   exclude: ['createdBy_id', ...SWAGGER_EXCLUDE],
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentationDiscussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
+  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentationDiscussion', 'presentationSlides', 'users', 'analystComments', 'projects'],
 });
 
 schemas.germline_small_mutation = schemaManager.generate(db.models.germline_small_mutation, new OpenApi3Strategy(), {
@@ -96,8 +96,8 @@ schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentat
   exclude: [...EXCLUDE.REPORT_EXCLUDE, 'user_id'],
 });
 
-schemas.presentation_slides = schemaManager.generate(db.models.presentation_slides, new OpenApi3Strategy(), {
-  title: 'presentation_slides',
+schemas.presentationSlides = schemaManager.generate(db.models.presentationSlides, new OpenApi3Strategy(), {
+  title: 'presentationSlides',
   associations: true,
   exclude: [...SWAGGER_EXCLUDE, 'user_id'],
   excludeAssociations: ['report'],
@@ -105,7 +105,7 @@ schemas.presentation_slides = schemaManager.generate(db.models.presentation_slid
 
 schemas.presentationSlidesArray = {
   type: 'array',
-  items: schemaManager.generate(db.models.presentation_slides, new OpenApi3Strategy(), {
+  items: schemaManager.generate(db.models.presentationSlides, new OpenApi3Strategy(), {
     title: 'presentationSlidesArray',
     associations: true,
     exclude: [...SWAGGER_EXCLUDE, 'user_id'],
