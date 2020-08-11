@@ -9,10 +9,15 @@ const logger = require('../../log');
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    // Get all small mutations for this report
+    // Get all mutation signatures for this report
+    const filters = {reportId: req.report.id};
+    if (req.query.selected !== undefined) {
+      filters.selected = req.query.selected;
+    }
+    consolelog('filters', filters);
     try {
       const results = await db.models.mutationSignature.scope('public').findAll({
-        where: {reportId: req.report.id},
+        where: filters,
       });
       return res.json(results);
     } catch (error) {
