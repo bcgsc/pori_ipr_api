@@ -13,7 +13,7 @@ const router = express.Router({mergeParams: true});
 
 // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
 const parseMutationSignature = (arr) => {
-  return arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
+  return arr.map((ls) => { return `${ls.kbCategory} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
 };
 
 /**
@@ -31,7 +31,9 @@ const parseMutationSignature = (arr) => {
  * @returns {Promise.<object>} - Returns response object
  */
 router.get('/batch/download', async (req, res) => {
-  const requiredReviews = req.query.reviews.split(',');
+  const requiredReviews = req.query.reviews
+    ? req.query.reviews.split(',')
+    : [];
 
   let germlineReports;
 
@@ -51,7 +53,7 @@ router.get('/batch/download', async (req, res) => {
         {
           model: db.models.germline_small_mutation_review,
           as: 'reviews',
-          required: true,
+          required: Boolean(requiredReviews.length),
           include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
         },
       ],
