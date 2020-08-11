@@ -46,7 +46,7 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
     user = await db.models.user.findOne({
       where: {username},
     });
-    discussion = await db.models.presentation_discussion.create({
+    discussion = await db.models.presentationDiscussion.create({
       reportId: report.id,
       body: 'Patient is currently stable and maintained on Flourouracil + Irinotecan + Bevacizumab. The highly expressed TOP1 may explain the good response to this therapy.',
       user_id: user.id,
@@ -162,7 +162,7 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
 
   describe('DELETE', () => {
     test('Deleting a discussion is ok', async () => {
-      const deleteDiscussion = await db.models.presentation_discussion.create({
+      const deleteDiscussion = await db.models.presentationDiscussion.create({
         reportId: report.id,
         body: 'The use of erlotinib could be considered despite the presence of a gain of function KRAS mutant. This mutation is suspected to be subclonal and the GRB2 mutation is a variant of unknown significance and unknown functionality',
         user_id: user.id,
@@ -175,7 +175,7 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       expect(
-        await db.models.presentation_discussion.findOne({
+        await db.models.presentationDiscussion.findOne({
           where: {ident: deleteDiscussion.ident},
         })
       ).toBe(null);
@@ -211,7 +211,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
     user = await db.models.user.findOne({
       where: {username},
     });
-    slide = await db.models.presentation_slides.create({
+    slide = await db.models.presentationSlides.create({
       reportId: report.id,
       user_id: user.id,
       name: 'NOTCH1 mutations',
@@ -291,7 +291,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
 
   describe('DELETE', () => {
     test('Deleting a slide is ok', async () => {
-      const deleteSlide = await db.models.presentation_slides.create({
+      const deleteSlide = await db.models.presentationSlides.create({
         reportId: report.id,
         user_id: user.id,
         name: 'NOTCH2 mutations',
@@ -306,7 +306,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       expect(
-        await db.models.presentation_slides.findOne({
+        await db.models.presentationSlides.findOne({
           where: {ident: deleteSlide.ident},
         })
       ).toBe(null);

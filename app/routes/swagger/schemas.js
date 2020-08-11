@@ -6,6 +6,7 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 const schemas = {};
 
 const SWAGGER_EXCLUDE = ['id', 'reportId', 'geneId', 'deletedAt'];
+const EXCLUDE = require('../../schemas/exclude');
 
 const {
   germlineReportsToProjects, userGroupMember, reportProject, user_project, ...models
@@ -44,7 +45,7 @@ schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(),
 schemas.user = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
   title: 'user',
   associations: false,
-  exclude: [...SWAGGER_EXCLUDE, 'user_projects', 'userGroupMembers'],
+  exclude: [...SWAGGER_EXCLUDE, 'user_projects', 'userGroupMembers', 'jiraToken', 'jiraXsrf', 'password'],
 });
 
 schemas.group = schemaManager.generate(db.models.userGroup, new OpenApi3Strategy(), {
@@ -63,7 +64,7 @@ schemas.analysis_report = schemaManager.generate(db.models.analysis_report, new 
   title: 'analysis_report',
   exclude: ['createdBy_id', ...SWAGGER_EXCLUDE],
   associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentation_discussion', 'presentation_slides', 'users', 'analystComments', 'projects'],
+  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentationDiscussion', 'presentationSlides', 'users', 'analystComments', 'projects'],
 });
 
 schemas.germline_small_mutation = schemaManager.generate(db.models.germline_small_mutation, new OpenApi3Strategy(), {
@@ -71,6 +72,46 @@ schemas.germline_small_mutation = schemaManager.generate(db.models.germline_smal
   associations: false,
   exclude: [...SWAGGER_EXCLUDE],
 });
+
+schemas.presentationDiscussion = schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
+  title: 'presentationDiscussion',
+  associations: true,
+  exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+  excludeAssociations: ['report'],
+});
+
+schemas.presentationDiscussionArray = {
+  type: 'array',
+  items: schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
+    title: 'presentationDiscussionArray',
+    associations: true,
+    exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+    excludeAssociations: ['report'],
+  }),
+};
+
+schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
+  title: 'presentationDiscussionInput',
+  associations: false,
+  exclude: [...EXCLUDE.REPORT_EXCLUDE, 'user_id'],
+});
+
+schemas.presentationSlides = schemaManager.generate(db.models.presentationSlides, new OpenApi3Strategy(), {
+  title: 'presentationSlides',
+  associations: true,
+  exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+  excludeAssociations: ['report'],
+});
+
+schemas.presentationSlidesArray = {
+  type: 'array',
+  items: schemaManager.generate(db.models.presentationSlides, new OpenApi3Strategy(), {
+    title: 'presentationSlidesArray',
+    associations: true,
+    exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+    excludeAssociations: ['report'],
+  }),
+};
 
 schemas.project.properties.users = schemas.user;
 schemas.project.properties.reports = schemas.analysis_report;
