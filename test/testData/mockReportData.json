@@ -238,6 +238,19 @@
             "highQuality": true
         }
     ],
+    "proteinVariants": [
+        {
+            "key": "hash1234567812345",
+            "gene": "MALAT1",
+            "percentile": 19,
+            "kiqr": 3.4,
+            "qc": 0.23,
+            "comparator": "PTX_POG_TARGET_RHD_percentile",
+            "totalSampleObserved": 10,
+            "secondaryPercentile": 2,
+            "secondaryComparator": "something else"
+        }
+    ],
     "expressionVariants": [
         {
             "key": "hash12345678",
@@ -258,12 +271,6 @@
             "tcgaAvgQCCol": "qc_tcga_comp_average_percentile_median_(625)",
             "tcgaNormPerc": 75,
             "tcgaNormkIQR": 1.04,
-            "ptxPerc": null,
-            "ptxkIQR": null,
-            "ptxQC": 0.23,
-            "ptxPercCol": "PTX_POG_TARGET_RHD_percentile",
-            "ptxTotSampObs": null,
-            "ptxPogPerc": null,
             "gtexComp": "average",
             "gtexPerc": 100,
             "gtexFC": 16,
