@@ -4,6 +4,9 @@ const express = require('express');
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const therapeuticPostSchema = require('../../schemas/report/therapeuticTargets/therapeuticTargetsPost');
+const therapeuticPutSchema = require('../../schemas/report/therapeuticTargets/therapeuticTargetsUpdate');
 
 // Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {
@@ -34,12 +37,21 @@ router.route('/:target([A-z0-9-]{36})')
   })
   .put(async (req, res) => {
     // Update db entry
+
+    try {
+      // Validate input
+      validateAgainstSchema(therapeuticPutSchema, req.body);
+    } catch (error) {
+      logger.error(`Therapeutic Target validation failed ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
     try {
       await req.target.update(req.body);
       return res.json(req.target.view('public'));
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target'}});
+      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Rank already exists'}});
     }
   })
   .delete(async (req, res) => {
@@ -76,6 +88,14 @@ router.route('/')
     const {report: {id: reportId}, body} = req;
 
     try {
+      // Validate input
+      validateAgainstSchema(therapeuticPostSchema, req.body);
+    } catch (error) {
+      logger.error(`Therapeutic Target validation failed ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
+    }
+
+    try {
       const result = await db.models.therapeuticTarget.create({
         ...body,
         reportId,
@@ -83,12 +103,11 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry'}});
+      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Rank already exists'}});
     }
   })
   .put(async (req, res) => {
     const {report: {id: reportId}, body} = req;
-
     try {
       await db.transaction(async (transaction) => {
         return Promise.all(body.map((target) => {
@@ -109,7 +128,7 @@ router.route('/')
       return res.json({updated: true});
     } catch (error) {
       logger.error(`Unable to update therapeutic target rank ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to update therapeutic target rank'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target rank'}});
     }
   });
 
