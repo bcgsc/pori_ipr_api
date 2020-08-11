@@ -80,6 +80,23 @@ schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentat
   exclude: [...EXCLUDE.REPORT_EXCLUDE, 'user_id'],
 });
 
+schemas.presentation_slides = schemaManager.generate(db.models.presentation_slides, new OpenApi3Strategy(), {
+  title: 'presentation_slides',
+  associations: true,
+  exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+  excludeAssociations: ['report'],
+});
+
+schemas.presentationSlidesArray = {
+  type: 'array',
+  items: schemaManager.generate(db.models.presentation_slides, new OpenApi3Strategy(), {
+    title: 'presentationSlidesArray',
+    associations: true,
+    exclude: [...SWAGGER_EXCLUDE, 'user_id'],
+    excludeAssociations: ['report'],
+  }),
+};
+
 schemas.project.properties.users = schemas.user;
 schemas.project.properties.reports = schemas.analysis_report;
 
