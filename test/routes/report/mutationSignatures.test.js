@@ -52,19 +52,19 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
   let signature;
   let selectedSignature;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     // Create Report and kbMatch
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
-    signature = await db.models.mutationSignatures.create({
+    signature = await db.models.mutationSignature.create({
       reportId: report.id,
       nnls: 0.0123,
       signature: 'SBS1',
       kbCategory: 'slight',
       selected: false,
     });
-    selectedSignature = await db.models.mutationSignatures.create({
+    selectedSignature = await db.models.mutationSignature.create({
       reportId: report.id,
       nnls: 0.4,
       signature: 'SBS2',
@@ -121,13 +121,11 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
         .put(`/api/reports/${report.ident}/mutation-signatures/${signature.ident}`)
         .auth(username, password)
         .type('json')
-        .send({ident: signature.ident, selected: true})
+        .send({selected: true})
         .expect(HTTP_STATUS.OK);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body).toHaveLength(2);
-      res.body.map((s) => { return checkMutationSignature(s); });
-      expect(res.body[0]).toHaveProperty('selected', true);
+      checkMutationSignature(res.body);
+      expect(res.body).toHaveProperty('selected', true);
     });
 
     test('de-select a signature', async () => {
@@ -135,18 +133,25 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
         .put(`/api/reports/${report.ident}/mutation-signatures/${selectedSignature.ident}`)
         .auth(username, password)
         .type('json')
-        .send({ident: signature.ident, selected: false})
+        .send({selected: false})
         .expect(HTTP_STATUS.OK);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body).toHaveLength(2);
-      res.body.map((s) => { return checkMutationSignature(s); });
-      expect(res.body[0]).toHaveProperty('selected', true);
+      checkMutationSignature(res.body);
+      expect(res.body).toHaveProperty('selected', false);
+    });
+
+    test('error on given ident', async () => {
+      await request
+        .put(`/api/reports/${report.ident}/mutation-signatures/${signature.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({ident: signature.ident, selected: true})
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
   // delete report
-  afterAll(async () => {
+  afterEach(async () => {
     await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
   }, LONGER_TIMEOUT);
 });
