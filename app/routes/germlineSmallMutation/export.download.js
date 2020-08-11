@@ -61,10 +61,13 @@ router.get('/batch/download', async (req, res) => {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while finding germline small mutation'}});
   }
 
-  let matchedReportSummaries; // find the most recent genomic report for the same patient/sample
+  let matchedMutationSignatures; // find the most recent genomic report for the same patient/sample
 
   try {
-    matchedReportSummaries = await db.models.tumourAnalysis.findAll({
+    matchedMutationSignatures = await db.models.mutationSignature.findAll({
+      where: {
+        selected: true,
+      },
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
         {
@@ -96,12 +99,12 @@ router.get('/batch/download', async (req, res) => {
 
     if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
       // contains all the required reviews
-      const summaryMatch = matchedReportSummaries.find((summary) => {
-        return summary.report.patientId === report.patientId;
+      const summaryMatch = matchedMutationSignatures.filter((signature) => {
+        return signature.report.patientId === report.patientId;
       });
 
-      const mutationSignature = summaryMatch
-        ? parseMutationSignature(summaryMatch.mutationSignature)
+      const mutationSignature = summaryMatch.length > 0
+        ? parseMutationSignature(summaryMatch)
         : 'N/A';
 
       for (const variant of report.variants.filter((v) => { return !v.hidden; })) {
