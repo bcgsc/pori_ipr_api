@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  const copyVariants = sequelize.define('copyVariants', {
+  const proteinVariants = sequelize.define('proteinVariants', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -23,69 +23,60 @@ module.exports = (sequelize) => {
       },
       allowNull: false,
     },
-    copyChange: {
-      name: 'copyChange',
-      field: 'copy_change',
-      type: Sq.INTEGER,
-    },
-    lohState: {
-      name: 'lohState',
-      field: 'loh_state',
-      type: Sq.TEXT,
-    },
-    cnvState: {
-      name: 'cnvState',
-      field: 'cnv_state',
-      type: Sq.TEXT,
-    },
-    chromosomeBand: {
-      name: 'chromosomeBand',
-      field: 'chromosome_band',
-      type: Sq.TEXT,
-    },
-    start: {
-      type: Sq.INTEGER,
-    },
-    end: {
-      type: Sq.INTEGER,
-    },
-    size: {
+    percentile: {
       type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    kiqr: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    qc: {
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    comparator: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    totalSampleObserved: {
+      name: 'totalSampleObserved',
+      field: 'total_sample_observed',
+      type: Sq.INTEGER,
+      defaultValue: null,
+    },
+    secondaryPercentile: {
+      name: 'secondaryPercentile',
+      field: 'secondary_percentile',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    secondaryComparator: {
+      name: 'secondaryComparator',
+      field: 'secondary_comparator',
+      type: Sq.TEXT,
+      defaultValue: null,
     },
     kbCategory: {
       name: 'kbCategory',
       field: 'kb_category',
       type: Sq.TEXT,
     },
-    log2Cna: {
-      name: 'log2Cna',
-      field: 'log2_cna',
-      type: Sq.NUMERIC,
-    },
-    cna: {
-      type: Sq.NUMERIC,
-    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_copy_variants',
+    tableName: 'reports_protein_variants',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
         include: [
-          {
-            model: sequelize.models.genes.scope('minimal'),
-            as: 'gene',
-          },
+          {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
-      },
-      minimal: {
-        attributes: ['cnvState', 'lohState', 'copyChange'],
       },
     },
   });
 
   // set instance methods
-  copyVariants.prototype.view = function (scope) {
+  proteinVariants.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
         id, reportId, geneId, deletedAt, ...publicView
@@ -95,5 +86,5 @@ module.exports = (sequelize) => {
     return this;
   };
 
-  return copyVariants;
+  return proteinVariants;
 };
