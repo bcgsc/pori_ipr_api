@@ -75,6 +75,12 @@ module.exports = (sequelize) => {
       defaultValue: null,
       field: 'evidence_level_graphkb_id',
     },
+    kbStatementId: {
+      name: 'kbStatementId',
+      type: Sq.TEXT,
+      defaultValue: null,
+      field: 'kb_statement_id',
+    },
     notes: {
       type: Sq.TEXT,
     },
