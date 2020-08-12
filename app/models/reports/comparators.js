@@ -12,6 +12,8 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     analysisRole: {
       name: 'analysisRole',

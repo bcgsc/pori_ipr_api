@@ -40,6 +40,9 @@ module.exports = {
             model: 'reports',
             key: 'id',
           },
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE',
+          allowNull: false,
         },
         analysisRole: {
           name: 'analysisRole',
