@@ -256,20 +256,6 @@ module.exports = {
           ORDER BY report_id, "tcgaQCCol", updated_at, created_at DESC`,
           {transaction}
         );
-        // ignore numbers in the gtexComp column, should not be there, bad data
-        await queryInterface.sequelize.query(
-          `INSERT INTO ${NEW_TABLE}(
-            report_id, name, created_at, updated_at, ident, analysis_role
-          )
-          SELECT DISTINCT ON (report_id, "gtexComp")
-            report_id, "gtexComp", created_at, updated_at, uuid_generate_v4(), 'expression (biopsy site)'
-          FROM ${EXPRESSION_TABLE}
-          WHERE deleted_at IS NULL
-          AND "gtexComp" IS NOT NULL
-            AND "gtexComp" !~ '^[0-9\\.]+$'
-          ORDER BY report_id, "gtexComp", updated_at, created_at DESC`,
-          {transaction}
-        );
 
         // drop the comparator columns from the variant tables
         for (const col of [
