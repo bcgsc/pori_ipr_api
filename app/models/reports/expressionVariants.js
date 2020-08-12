@@ -84,30 +84,6 @@ module.exports = (sequelize) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    ptxPerc: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    ptxkIQR: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    ptxQC: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    ptxPercCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
-    ptxTotSampObs: {
-      type: Sq.INTEGER,
-      defaultValue: null,
-    },
-    ptxPogPerc: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
     gtexComp: {
       type: Sq.TEXT,
       defaultValue: null,
@@ -160,7 +136,9 @@ module.exports = (sequelize) => {
   // set instance methods
   expressionVariants.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, geneId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;
