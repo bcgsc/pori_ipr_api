@@ -44,20 +44,12 @@ module.exports = (sequelize) => {
     tcgaPerc: {
       type: Sq.FLOAT,
     },
-    tcgaPercCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
     tcgakIQR: {
       type: Sq.FLOAT,
       defaultValue: null,
     },
     tcgaQC: {
       type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    tcgaQCCol: {
-      type: Sq.TEXT,
       defaultValue: null,
     },
     tcgaAvgPerc: {
@@ -72,20 +64,12 @@ module.exports = (sequelize) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaAvgQCCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
     tcgaNormPerc: {
       type: Sq.FLOAT,
       defaultValue: null,
     },
     tcgaNormkIQR: {
       type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    gtexComp: {
-      type: Sq.TEXT,
       defaultValue: null,
     },
     gtexPerc: {

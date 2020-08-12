@@ -65,6 +65,8 @@
     "state": "ready",
     "expression_matrix": "v9",
     "patientId": "UPLOADPAT01",
+    "tumourContent": 75,
+    "ploidy": "diploid",
     "ageOfConsent": 20,
     "alternateIdentifier": "UPLOADPATIENT01",
     "biopsyName": "biop1",
@@ -84,13 +86,6 @@
         "tumourProtocol": "WGS; RNA-seq",
         "constitutionalSample": "Peripheral Blood",
         "constitutionalProtocol": "WGS"
-    },
-    "tumourAnalysis": {
-        "tumourContent": 75,
-        "ploidy": "diploid",
-        "normalExpressionComparator": "average",
-        "diseaseExpressionComparator": "TARGET_RHD",
-        "tcgaColor": "0xC0C0C0"
     },
     "variantCounts": {
         "smallMutations": 2,
@@ -131,18 +126,34 @@
         "species": "None",
         "integrationSite": "None"
     },
-    "mutationSummary": [
+    "comparators": [
         {
-            "comparator": "average",
+            "analysisRole": "mutation burden (primary)",
+            "name": "average"
+        },
+        {
+            "analysisRole": "expression (disease QC)",
+            "name": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
+            "size": 6
+        },
+        {
+            "analysisRole": "expression (primary site)",
+            "name": "average",
+            "size": 1024
+        }
+    ],
+    "mutationBurden": [
+        {
             "snv": 4,
-            "snv_truncating": 0,
+            "snvTruncating": 0,
             "indels": 0,
-            "indels_frameshift": 0,
+            "indelsFrameshift": 0,
             "sv": 92,
-            "sv_expressed": 40,
-            "snv_percentile": 4,
-            "indel_percentile": 10,
-            "sv_percentile": 60
+            "svExpressed": 40,
+            "snvPercentile": 4,
+            "indelPercentile": 10,
+            "svPercentile": 60,
+            "role": "primary"
         }
     ],
     "kbMatches": [
@@ -262,26 +273,22 @@
             "rnaReads": null,
             "rpkm": 1889.11,
             "foldChange": 3.58,
-            "expressionState": "outlier_high",
+            "expressionState": "outlier high",
             "tcgaPerc": 88,
-            "tcgaPercCol": "tcga_comp_TARGET_RHD_percentile",
             "tcgakIQR": 4.21,
             "tcgaQC": 43,
-            "tcgaQCCol": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
             "tcgaAvgPerc": 99,
             "tcgaAvgkIQR": 30.84,
             "tcgaAvgQC": 93,
-            "tcgaAvgQCCol": "qc_tcga_comp_average_percentile_median_(625)",
             "tcgaNormPerc": 75,
             "tcgaNormkIQR": 1.04,
-            "gtexComp": "average",
             "gtexPerc": 100,
             "gtexFC": 16,
             "gtexkIQR": 16.82,
             "gtexAvgPerc": 100,
             "gtexAvgFC": 16,
             "gtexAvgkIQR": 16,
-            "kbCategory": "Test Category"
+            "kbCategory": "increased expression"
         }
     ],
     "probe_test_information": [
