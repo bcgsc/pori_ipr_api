@@ -46,14 +46,12 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-// Tests for /kb-matches endpoint
 describe('/reports/{REPORTID}/mutation-signatures', () => {
   let report;
   let signature;
   let selectedSignature;
 
   beforeEach(async () => {
-    // Create Report and kbMatch
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
