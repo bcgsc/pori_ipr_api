@@ -34,10 +34,6 @@ module.exports = (sequelize) => {
     tcgaColor: {
       type: Sq.TEXT,
     },
-    mutationSignature: {
-      type: Sq.JSONB,
-      defaultValue: [],
-    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_tumour_analysis',
@@ -53,7 +49,9 @@ module.exports = (sequelize) => {
   // set instance methods
   tumourAnalysis.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;

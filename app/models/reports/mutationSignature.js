@@ -29,14 +29,27 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     numCancerTypes: {
+      name: 'numCancerTypes',
+      field: 'num_cancer_types',
       type: Sq.INTEGER,
     },
     cancerTypes: {
+      name: 'cancerTypes',
+      field: 'cancer_types',
       type: Sq.TEXT,
+    },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
+    selected: {
+      type: Sq.BOOLEAN,
+      defaultValue: false,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_somatic_mutations_mutation_signature',
+    tableName: 'reports_mutation_signature',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt']},
@@ -47,7 +60,9 @@ module.exports = (sequelize) => {
   // set instance methods
   mutationSignature.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;
