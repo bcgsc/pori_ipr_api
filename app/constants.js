@@ -7,9 +7,17 @@ module.exports = {
     cnv: 'copyVariants',
     mut: 'smallMutations',
     exp: 'expressionVariants',
+    protein: 'proteinVariants',
   },
   KB_PIVOT_COLUMN: 'variantType',
-  GENE_LINKED_VARIANT_MODELS: ['expressionVariants', 'smallMutations', 'copyVariants', 'structuralVariants', 'probeResults'],
+  GENE_LINKED_VARIANT_MODELS: [
+    'expressionVariants',
+    'smallMutations',
+    'copyVariants',
+    'structuralVariants',
+    'probeResults',
+    'proteinVariants',
+  ],
   VALID_IMAGE_KEY_PATTERN: `^${[
     'mutSignature\\.(corPcors|barplot)\\.(dbs|indels|sbs)',
     'subtypePlot\\.\\S+',
