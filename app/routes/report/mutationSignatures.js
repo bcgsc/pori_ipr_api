@@ -27,7 +27,6 @@ router.route('/')
   });
 
 
-// Middleware for kbMatches
 router.param('mutationSignature', async (req, res, next, ident) => {
   let result;
   try {

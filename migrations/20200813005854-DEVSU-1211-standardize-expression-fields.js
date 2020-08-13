@@ -5,21 +5,21 @@ const RENAMES = {
   tcgaPerc: 'disease_percentile',
   tcgakIQR: 'disease_kiqr',
   tcgaQC: 'disease_qc',
-  tcgaNormPerc: 'primary_site_percentile',
-  tcgaNormkIQR: 'primary_site_kiqr',
-  gtexkIQR: 'biopsy_site_kiqr',
-  gtexPerc: 'biopsy_site_percentile',
-  gtexFC: 'biopsy_site_fold_change',
 };
 
 const NEW_FLOAT_COLUMNS = [
-  'disease_zscore',
-  'primary_site_zscore',
-  'biopsy_site_zscore',
-  'tpm',
-  'disease_fold_change',
-  'primary_site_qc',
+  'biopsy_site_fold_change',
+  'biopsy_site_kiqr',
+  'biopsy_site_percentile',
   'biopsy_site_qc',
+  'biopsy_site_zscore',
+  'disease_fold_change',
+  'disease_zscore',
+  'primary_site_kiqr',
+  'primary_site_percentile',
+  'primary_site_qc',
+  'primary_site_zscore',
+  'tpm',
 ];
 
 const DROP_COLUMNS = [
@@ -29,6 +29,11 @@ const DROP_COLUMNS = [
   'tcgaAvgPerc',
   'tcgaAvgkIQR',
   'tcgaAvgQC',
+  'tcgaNormPerc',
+  'tcgaNormkIQR',
+  'gtexkIQR',
+  'gtexPerc',
+  'gtexFC',
 ];
 
 module.exports = {
