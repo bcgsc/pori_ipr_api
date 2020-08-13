@@ -156,7 +156,6 @@ router.route('/')
           as: 'patientInformation',
           attributes: {exclude: ['id', 'deletedAt']},
         },
-        {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
           model: db.models.analysis_reports_user,
@@ -243,8 +242,6 @@ router.route('/')
           {'$patientInformation.biopsySite$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {patientId: {[Op.iLike]: `%${req.query.searchText}%`}},
         ],
       };
