@@ -173,6 +173,7 @@ summary.tumourAnalysis.belongsTo(analysisReports, {
 // Somatic Mutations
 const smallMutations = sequelize.import('./reports/smallMutations');
 const mutationSignature = sequelize.import('./reports/mutationSignature');
+const hlaTypes = sequelize.import('./reports/hlaTypes');
 
 smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -180,11 +181,17 @@ smallMutations.belongsTo(analysisReports, {
 mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
+hlaTypes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
 analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(hlaTypes, {
+  as: 'hlaTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Copy Number Analysis
