@@ -28,7 +28,7 @@ const tumourUpdate = {
   tcgaColor: 'newColor',
 };
 
-const tumourAnalysisProperties = ['ident', 'createdAt', 'updatedAt', 'tumourContent', 'ploidy', 'normalExpressionComparator', 'diseaseExpressionComparator', 'subtyping', 'tcgaColor', 'mutationSignature'];
+const tumourAnalysisProperties = ['ident', 'createdAt', 'updatedAt', 'tumourContent', 'ploidy', 'normalExpressionComparator', 'diseaseExpressionComparator', 'subtyping', 'tcgaColor'];
 
 const checkTumourAnalysis = (tumourObject) => {
   tumourAnalysisProperties.forEach((element) => {

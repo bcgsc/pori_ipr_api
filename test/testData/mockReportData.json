@@ -206,7 +206,8 @@
             "associations": "Tobacco chewing",
             "features": "D,T",
             "numCancerTypes": 1,
-            "cancerTypes": "stomach cancer"
+            "cancerTypes": "stomach cancer",
+            "selected": false
         }
     ],
     "copyVariants": [
