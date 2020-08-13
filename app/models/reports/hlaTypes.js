@@ -42,6 +42,12 @@ module.exports = (sequelize) => {
     c2: {
       type: Sq.TEXT,
     },
+    reads: {
+      type: Sq.FLOAT,
+    },
+    objective: {
+      type: Sq.FLOAT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_hla_types',

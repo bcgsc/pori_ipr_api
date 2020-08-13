@@ -70,6 +70,12 @@ module.exports = {
         c2: {
           type: Sq.TEXT,
         },
+        reads: {
+          type: Sq.FLOAT,
+        },
+        objective: {
+          type: Sq.FLOAT,
+        },
       }, {transaction});
     });
   },
