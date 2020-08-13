@@ -40,6 +40,9 @@ module.exports = {
             model: 'reports',
             key: 'id',
           },
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE',
+          allowNull: false,
         },
         geneId: {
           name: 'geneId',
@@ -50,6 +53,8 @@ module.exports = {
             key: 'id',
           },
           allowNull: false,
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE',
         },
         percentile: {
           // prev: ptxPerc

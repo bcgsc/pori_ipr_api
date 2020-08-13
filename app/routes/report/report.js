@@ -16,6 +16,7 @@ const {createReportContent} = require('./db');
 const router = express.Router({mergeParams: true});
 
 const reportUploadSchema = require('../../schemas/report/reportUpload');
+const updateSchema = require('../../schemas/report/updateReport');
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -29,13 +30,23 @@ router.route('/:report')
     return res.json(req.report.view('public'));
   })
   .put(async (req, res) => {
+    const {report} = req;
     try {
-      await req.report.update(req.body);
-      await req.report.reload();
-      return res.json(req.report.view('public'));
+      // validate against the model
+      validateAgainstSchema(updateSchema, req.body);
+    } catch (err) {
+      const message = `There was an error updating the report ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+    // Update db entry
+    try {
+      await report.update(req.body);
+      report.reload();
+      return res.json(report.view('public'));
     } catch (error) {
-      logger.error(`Unable to update report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report'}});
+      logger.error(`Unable to update the report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update the report'}});
     }
   })
   .delete(async (req, res) => {
@@ -312,7 +323,7 @@ router.route('/')
     } catch (error) {
       const message = `There was an error validating validating the report content: ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error:{message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     // get project
