@@ -1,3 +1,8 @@
+/**
+ * This is optitype output data
+ * https://pubmed.ncbi.nlm.nih.gov/25143287
+ */
+
 const NEW_TABLE = 'reports_hla_types';
 
 module.exports = {
@@ -43,6 +48,10 @@ module.exports = {
           allowNull: false,
           onDelete: 'CASCADE',
           onUpdate: 'CASCADE',
+        },
+        library: {
+          type: Sq.TEXT,
+          allowNull: false,
         },
         pathology: {
           type: Sq.ENUM(['diseased', 'normal']),

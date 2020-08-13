@@ -1,3 +1,8 @@
+/**
+ * This is optitype output data
+ * https://pubmed.ncbi.nlm.nih.gov/25143287
+ */
+
 const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
@@ -15,6 +20,10 @@ module.exports = (sequelize) => {
       allowNull: false,
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
+    },
+    library: {
+      type: Sq.TEXT,
+      allowNull: false,
     },
     pathology: {
       type: Sq.ENUM(['diseased', 'normal']),
@@ -48,6 +57,7 @@ module.exports = (sequelize) => {
     objective: {
       type: Sq.FLOAT,
     },
+
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_hla_types',

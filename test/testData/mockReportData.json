@@ -433,6 +433,7 @@
     ],
     "hlaTypes": [
         {
+            "library": "S1234",
             "pathology": "normal",
             "protocol": "DNA",
             "a1": "A*02:03",
