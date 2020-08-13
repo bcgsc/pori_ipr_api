@@ -35,6 +35,9 @@ const checkHlaType = (correlation) => {
     'b2',
     'c1',
     'c2',
+    'library',
+    'reads',
+    'objective',
   ].forEach((attr) => {
     expect(correlation).toHaveProperty(attr);
   });
@@ -55,6 +58,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
     });
     hlaType = await db.models.hlaTypes.create({
       reportId: report.id,
+      library: 'L1234',
       pathology: 'normal',
       protocol: 'DNA',
       a1: 'A*02:03',
@@ -63,6 +67,8 @@ describe('/reports/{REPORTID}/hla-types', () => {
       b2: 'B*38:02',
       c1: 'C*07:02',
       c2: 'C*07:02',
+      objective: 1234,
+      reads: 123.5,
     });
   }, LONGER_TIMEOUT);
 
@@ -94,6 +100,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
       const res = await request
         .post(`/api/reports/${report.ident}/hla-types`)
         .send({
+          library: 'L1234',
           pathology: 'diseased',
           protocol: 'RNA',
           a1: 'A*02:03',
@@ -115,6 +122,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
       await request
         .post(`/api/reports/${report.ident}/hla-types`)
         .send({
+          library: 'L1234',
           random: 'something kind of random',
           pathology: 'diseased',
           protocol: 'RNA',
@@ -136,6 +144,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
       const res = await request
         .put(`/api/reports/${report.ident}/hla-types/${hlaType.ident}`)
         .send({
+          library: 'L1234',
           pathology: 'diseased',
           protocol: 'RNA',
           a1: 'A*02:03',
@@ -157,6 +166,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
       await request
         .put(`/api/reports/${report.ident}/hla-types/${hlaType.ident}`)
         .send({
+          library: 'L1234',
           pathology: 'diseased',
           protocol: 'RNA',
           a1: 'A*02:03',
@@ -176,6 +186,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
   describe('DELETE', () => {
     test('Deleting a hlaType is ok', async () => {
       const deleteHlaType = await db.models.hlaTypes.create({
+        library: 'L1234',
         pathology: 'diseased',
         protocol: 'RNA',
         a1: 'A*02:03',
