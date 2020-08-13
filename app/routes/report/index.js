@@ -16,10 +16,7 @@ const geneViewer = require('./geneViewer');
 const gene = require('./gene');
 const mutationSignatures = require('./mutationSignatures');
 const reportSignatures = require('./signatures');
-<<<<<<< HEAD
 const pairwiseExpressionCorrelation = require('./pairwiseExpressionCorrelation');
-=======
->>>>>>> development
 const mutationBurden = require('./mutationBurden');
 const comparators = require('./comparators');
 
