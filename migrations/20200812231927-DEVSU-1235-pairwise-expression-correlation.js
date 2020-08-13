@@ -51,8 +51,6 @@ module.exports = {
           allowNull: false,
         },
         library: {
-          name: 'library',
-          field: 'library_name',
           type: Sq.TEXT,
         },
         correlation: {

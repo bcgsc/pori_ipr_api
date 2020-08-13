@@ -23,8 +23,6 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     library: {
-      name: 'library',
-      field: 'library_name',
       type: Sq.TEXT,
     },
     correlation: {
