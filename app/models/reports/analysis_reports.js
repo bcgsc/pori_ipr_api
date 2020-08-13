@@ -89,6 +89,17 @@ module.exports = (sequelize) => {
       type: Sq.STRING,
       defaultValue: null,
     },
+    tumourContent: {
+      name: 'tumourContent',
+      field: 'tumour_content',
+      type: Sq.FLOAT,
+    },
+    ploidy: {
+      type: Sq.TEXT,
+    },
+    subtyping: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
@@ -133,7 +144,9 @@ module.exports = (sequelize) => {
   // set instance methods
   report.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, config, createdBy_id, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, config, createdBy_id, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;

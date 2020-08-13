@@ -22,8 +22,8 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: false,
     },
-    libraryName: {
-      name: 'libraryName',
+    library: {
+      name: 'library',
       field: 'library_name',
       type: Sq.TEXT,
     },

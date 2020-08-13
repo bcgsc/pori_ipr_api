@@ -17,6 +17,8 @@ const gene = require('./gene');
 const mutationSignatures = require('./mutationSignatures');
 const reportSignatures = require('./signatures');
 const pairwiseExpressionCorrelation = require('./pairwiseExpressionCorrelation');
+const mutationBurden = require('./mutationBurden');
+const comparators = require('./comparators');
 
 const router = express.Router({mergeParams: true});
 
@@ -30,9 +32,12 @@ router.use('/presentation', presentation);
 router.use('/structural-variants', structuralVariants);
 router.use('/small-mutations', smallMutations);
 router.use('/mutation-signatures', mutationSignatures);
+router.use('/mutation-burden', mutationBurden);
 router.use('/therapeutic-targets', therapeuticTargets);
 router.use('/signatures', reportSignatures);
 router.use('/pairwise-expression-correlation', pairwiseExpressionCorrelation);
+router.use('/comparators', comparators);
+
 router.use('/probe-test-information', probeTestInformation);
 router.use('/kb-matches', kbMatches);
 router.use('/probe-results', probeResults);

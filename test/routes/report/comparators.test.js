@@ -25,52 +25,56 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-const checkCorrelation = (correlation) => {
-  [
-    'patientId',
-    'library',
-    'correlation',
-    'tumourType',
-    'tissueType',
-    'tumourContent',
-    'ident',
-  ].forEach((attr) => {
-    expect(correlation).toHaveProperty(attr);
-  });
-
-  expect(correlation).not.toHaveProperty('id');
-  expect(correlation).not.toHaveProperty('reportId');
-  expect(correlation).not.toHaveProperty('deletedAt');
+const checkComparator = (comp) => {
+  const comparatorSchema = {
+    ident: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    name: expect.any(String),
+    analysisRole: expect.any(String),
+  };
+  expect(comp).toEqual(expect.objectContaining(comparatorSchema));
+  expect(comp).toHaveProperty('description');
+  expect(comp).toHaveProperty('size');
+  expect(comp).toHaveProperty('size');
 };
 
-describe('/reports/{REPORTID}/pairwise-expression-correlation', () => {
+describe('/reports/{REPORTID}/comparators', () => {
   let report;
+
+  const comparatorSchema = {
+    ident: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    name: expect.any(String),
+    analysisRole: expect.any(String),
+    description: expect.any(String),
+    size: expect.any(Number),
+  };
 
   beforeAll(async () => {
     // Create Report and discussion
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
     });
-    await db.models.pairwiseExpressionCorrelation.create({
-      patientId: 'UPLOADPAT02',
-      library: 'LIB0002',
-      correlation: 0.99,
-      tumourType: 'pancreatic cancer',
-      tissueType: 'liver',
-      tumourContent: 15,
+    await db.models.comparators.create({
       reportId: report.id,
+      name: 'COADREAD',
+      analysisRole: 'expression (disease)',
     });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
-    test('Getting a list of correlations is ok', async () => {
+    test('Getting a list of comparators is ok', async () => {
       const res = await request
-        .get(`/api/reports/${report.ident}/pairwise-expression-correlation`)
+        .get(`/api/reports/${report.ident}/comparators`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      res.body.forEach((corr) => { return checkCorrelation(corr); });
+      res.body.forEach((comp) => {
+        checkComparator(comp);
+      });
     });
   });
 
