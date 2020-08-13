@@ -26,7 +26,13 @@ module.exports = async (req, res, next) => {
       const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
       token = respAccess.access_token;
     } catch (error) {
-      const errorDescription = JSON.parse(error.error).error_description;
+      let errorDescription;
+      try {
+        errorDescription = JSON.parse(error.error).error_description;
+      } catch (parseError) {
+        // if the error is propagated from upstread of the keycloak server it will not have the error.error_description format (ex. certificate failure)
+        errorDescription = error;
+      }
       logger.error(`Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`}});
     }
