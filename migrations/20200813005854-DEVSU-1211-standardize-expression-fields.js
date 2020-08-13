@@ -1,7 +1,7 @@
 const TABLE = 'reports_expression_variants';
 const RENAMES = {
   rnaReads: 'rna_reads',
-  foldChange: 'primary_site_fold_change', // ??????
+  foldChange: 'primary_site_fold_change',
   tcgaPerc: 'disease_percentile',
   tcgakIQR: 'disease_kiqr',
   tcgaQC: 'disease_qc',
