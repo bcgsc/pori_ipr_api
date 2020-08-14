@@ -159,12 +159,16 @@ summary.microbial.belongsTo(analysisReports, {
 // Somatic Mutations
 const smallMutations = sequelize.import('./reports/smallMutations');
 const mutationSignature = sequelize.import('./reports/mutationSignature');
+const hlaTypes = sequelize.import('./reports/hlaTypes');
 const pairwiseExpressionCorrelation = sequelize.import('./reports/pairwiseExpressionCorrelation');
 
 smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 mutationSignature.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+hlaTypes.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 pairwiseExpressionCorrelation.belongsTo(analysisReports, {
@@ -175,6 +179,9 @@ analysisReports.hasMany(smallMutations, {
 });
 analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(hlaTypes, {
+  as: 'hlaTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(pairwiseExpressionCorrelation, {
   as: 'pairwiseExpressionCorrelation', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
