@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "Designed to be consumed by the Integrated Personalized Reports (IPR) Client, the endpoints are\navailable for authorized users to consume.",
+    "description": "Designed to be consumed by the Integrated Pipeline Reports (IPR) Client, the endpoints are\navailable for authorized users to consume.",
     "version": "1.0.0",
-    "title": "Integrated Personalized Reports (IPR)",
+    "title": "Integrated Pipeline Reports (IPR)",
     "contact": {
       "name": "IPR Team",
       "email": "ipr@bcgsc.ca"
@@ -2958,14 +2958,15 @@
     },
     "/reports/{report}/presentation/discussion": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a list of discussions for a specific report",
+        "description": "Return an array of discussions from a report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -2974,11 +2975,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get the array of discussions",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentationDiscussionArray"
                 }
               }
             }
@@ -2987,21 +2988,75 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a discussion for a specific report",
+        "description": "Return the created discussion for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "The discussion to be created",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/presentationDiscussionInput"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The created discussion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationDiscussion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input was provided"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/presentation/discussion/{discussion}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a single discussion for a specific report",
+        "description": "Return a discussion object from a report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3010,11 +3065,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get a single discussion",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentationDiscussion"
                 }
               }
             }
@@ -3023,19 +3078,23 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found or Discussion not found"
           }
         }
       },
       "delete": {
-        "summary": "",
-        "description": "",
+        "summary": "Delete a single discussion for a specific report",
+        "description": "Return no content if successful",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3043,33 +3102,42 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
+          "204": {
+            "description": "No content"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found or Discussion not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update a discussion for a specific report",
+        "description": "Return the updated discussion for a report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
           }
         ],
+        "requestBody": {
+          "description": "The discussion to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/presentationDiscussionInput"
+              }
+            }
+          }
+        },
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3078,34 +3146,38 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The updated discussion",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentationDiscussion"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input was provided"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/presentation/slide": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a list of slides from a report",
+        "description": "Return an array of slide objects",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3114,11 +3186,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Array of slides",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentationSlidesArray"
                 }
               }
             }
@@ -3127,55 +3199,83 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       },
       "post": {
-        "summary": "",
-        "description": "",
+        "summary": "Create a slide for a report",
+        "description": "Return the created slide object",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Presentation"
         ],
+        "requestBody": {
+          "description": "Slide object and name",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "basicAuth": []
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
+          "201": {
+            "description": "Slide object",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentationSlides"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Input not valid"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/presentation/slide/{slide}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a single slide from a report",
+        "description": "Return a slide object",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/slide"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3184,11 +3284,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Slide object",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/presentationSlides"
                 }
               }
             }
@@ -3197,19 +3297,23 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found or Slide not found"
           }
         }
       },
       "delete": {
-        "summary": "",
-        "description": "",
+        "summary": "Delete a single slide for a specific report",
+        "description": "Return no content if successful",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/slide"
           }
         ],
         "tags": [
+          "Presentation"
         ],
         "security": [
           {
@@ -3217,21 +3321,14 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
+          "204": {
+            "description": "No content"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report Not found or Discussion not found"
           }
         }
       }
@@ -4072,6 +4169,26 @@
         "in": "path",
         "required": true,
         "description": "the analysis (or biopsy) ID",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "discussion": {
+        "name": "discussion",
+        "in": "path",
+        "required": true,
+        "description": "the discussion ID",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "slide": {
+        "name": "slide",
+        "in": "path",
+        "required": true,
+        "description": "the slide ID",
         "schema": {
           "type": "string",
           "format": "UUIDv4"

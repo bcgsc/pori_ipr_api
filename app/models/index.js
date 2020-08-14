@@ -351,10 +351,10 @@ presentation.discussion.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 analysisReports.hasMany(presentation.discussion, {
-  as: 'presentation_discussion', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'presentationDiscussion', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(presentation.slides, {
-  as: 'presentation_slides', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'presentationSlides', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Probe Report
