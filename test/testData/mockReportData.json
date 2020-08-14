@@ -430,5 +430,15 @@
             "key": "mutation_summary.legend_snv_indel.paad",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
         }
+    ],
+    "pairwiseExpressionCorrelation": [
+        {
+            "patientId": "UPLOADPAT02",
+            "library": "LIB0002",
+            "correlation": 0.99,
+            "tumourType": "pancreatic cancer",
+            "tissueType": "liver",
+            "tumourContent": 15
+        }
     ]
 }
