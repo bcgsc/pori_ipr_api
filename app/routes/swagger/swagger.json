@@ -3863,14 +3863,15 @@
     },
     "/reports/{report}/summary/analyst-comments": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get an Analyst Comment associated with a given report",
+        "description": "Return the Analyst Comment associated with this report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Analyst Comments"
         ],
         "security": [
           {
@@ -3879,11 +3880,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get Analyst Comment associated with an analysis report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/analystComments"
                 }
               }
             }
@@ -3897,14 +3898,15 @@
         }
       },
       "delete": {
-        "summary": "",
-        "description": "",
+        "summary": "Delete an Analyst Comment associated with a given report",
+        "description": "Returns no content if comment was deleted successfully",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Analyst Comments"
         ],
         "security": [
           {
@@ -3912,15 +3914,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
+          "204": {
+            "description": "No content"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
@@ -3931,14 +3926,27 @@
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update an Analyst Comment associated with a given report",
+        "description": "Return the updated Analyst Comment associated with this report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Analyst Comment object to be created",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/analystCommentsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Analyst Comments"
         ],
         "security": [
           {
@@ -3947,14 +3955,17 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The updated Analyst Comment",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/analystComments"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Input is not valid"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"

@@ -113,6 +113,12 @@ schemas.presentationSlidesArray = {
   }),
 };
 
+schemas.analystCommentsUpdate = schemaManager.generate(db.models.analystComments, new OpenApi3Strategy(), {
+  title: 'analystCommentsUpdate',
+  associations: false,
+  exclude: [...EXCLUDE.REPORT_EXCLUDE],
+});
+
 schemas.project.properties.users = schemas.user;
 schemas.project.properties.reports = schemas.analysis_report;
 

@@ -1,5 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
+const schema = require('../../../schemas/report/analystComments');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
@@ -45,6 +47,14 @@ router.route('/')
     } else {
       // Update DB Version for Entry
       try {
+        try {
+          // validate against the model
+          validateAgainstSchema(schema, req.body);
+        } catch (err) {
+          const message = `There was an error updating the analyst comment ${err}`;
+          logger.error(message);
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+        }
         await req.analystComments.update(req.body);
         return res.json(req.analystComments.view('public'));
       } catch (error) {
