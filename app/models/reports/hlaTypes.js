@@ -24,7 +24,7 @@ module.exports = (sequelize) => {
     library: {
       type: Sq.TEXT,
       allowNull: false,
-      jsonschema: {
+      jsonSchema: {
         description: 'library name of the sample',
       },
     },
@@ -38,49 +38,49 @@ module.exports = (sequelize) => {
     },
     a1: {
       type: Sq.TEXT,
-      jsonschema: {
+      jsonSchema: {
         description: 'first allele for the HLA-A gene. Follows the pattern: A*<group>:<protein>',
       },
     },
     a2: {
       type: Sq.TEXT,
-      jsonschema: {
+      jsonSchema: {
         description: 'second allele for the HLA-A gene. Follows the pattern: A*<group>:<protein>',
       },
     },
     b1: {
       type: Sq.TEXT,
-      jsonschema: {
+      jsonSchema: {
         description: 'first allele for the HLA-B gene. Follows the pattern: B*<group>:<protein>',
       },
     },
     b2: {
       type: Sq.TEXT,
-      jsonschema: {
+      jsonSchema: {
         description: 'second allele for the HLA-B gene. Follows the pattern: B*<group>:<protein>',
       },
     },
     c1: {
       type: Sq.TEXT,
-      jsonschema: {
+      jsonSchema: {
         description: 'first allele for the HLA-C gene. Follows the pattern: C*<group>:<protein>',
       },
     },
     c2: {
       type: Sq.TEXT,
-      jsonschema: {
+      jsonSchema: {
         description: 'second allele for the HLA-C gene. Follows the pattern: C*<group>:<protein>',
       },
     },
     reads: {
       type: Sq.FLOAT,
-      jsonschema: {
+      jsonSchema: {
         description: 'number of reads covered by this solution',
       },
     },
     objective: {
       type: Sq.FLOAT,
-      jsonschema: {
+      jsonSchema: {
         description: 'the value of the linear objective function',
       },
     },
