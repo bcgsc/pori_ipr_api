@@ -12,6 +12,9 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+      allowNull: false,
     },
     geneId: {
       name: 'geneId',
@@ -21,6 +24,8 @@ module.exports = (sequelize) => {
         model: 'reports_genes',
         key: 'id',
       },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
       allowNull: false,
     },
     percentile: {

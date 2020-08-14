@@ -1,4 +1,4 @@
-const NEW_TABLE = 'reports_protein_variants';
+const NEW_TABLE = 'reports_pairwise_expression_correlation';
 
 module.exports = {
   up: (queryInterface, Sq) => {
@@ -44,63 +44,33 @@ module.exports = {
           onUpdate: 'CASCADE',
           allowNull: false,
         },
-        geneId: {
-          name: 'geneId',
-          field: 'gene_id',
-          type: Sq.INTEGER,
-          references: {
-            model: 'reports_genes',
-            key: 'id',
-          },
+        patientId: {
+          name: 'patientId',
+          field: 'patient_id',
+          type: Sq.TEXT,
           allowNull: false,
-          onDelete: 'CASCADE',
-          onUpdate: 'CASCADE',
         },
-        percentile: {
-          // prev: ptxPerc
-          type: Sq.FLOAT,
-          defaultValue: null,
-        },
-        kiqr: {
-          // prev: ptxPercKIQR
-          type: Sq.FLOAT,
-          defaultValue: null,
-        },
-        qc: {
-          // prev: ptxQC
-          type: Sq.FLOAT,
-          defaultValue: null,
-        },
-        comparator: {
-          // prev: ptxPercCol
+        library: {
           type: Sq.TEXT,
-          defaultValue: null,
         },
-        totalSampleObserved: {
-          // prev: ptxTotSampObs
-          name: 'totalSampleObserved',
-          field: 'total_sample_observed',
-          type: Sq.INTEGER,
-          defaultValue: null,
-        },
-        secondaryPercentile: {
-          // prev: ptxPogPerc
-          name: 'secondaryPercentile',
-          field: 'secondary_percentile',
+        correlation: {
           type: Sq.FLOAT,
-          defaultValue: null,
+          allowNull: false,
         },
-        secondaryComparator: {
-          // new
-          name: 'secondaryComparator',
-          field: 'secondary_comparator',
+        tumourType: {
+          name: 'tumourType',
+          field: 'tumour_type',
           type: Sq.TEXT,
-          defaultValue: null,
         },
-        kbCategory: {
-          name: 'kbCategory',
-          field: 'kb_category',
+        tissueType: {
+          name: 'tissueType',
+          field: 'tissue_type',
           type: Sq.TEXT,
+        },
+        tumourContent: {
+          name: 'tumourContent',
+          field: 'tumour_content',
+          type: Sq.FLOAT,
         },
       }, {transaction});
     });

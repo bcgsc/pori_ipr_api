@@ -11,7 +11,6 @@ module.exports = async (req, res, next, ident) => {
       attributes: {exclude: ['config']},
       include: [
         {model: db.models.patientInformation.scope('public'), as: 'patientInformation'},
-        {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
           model: db.models.analysis_reports_user,
