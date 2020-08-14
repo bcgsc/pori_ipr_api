@@ -3863,8 +3863,8 @@
     },
     "/reports/{report}/summary/analyst-comments": {
       "get": {
-        "summary": "Get an Analyst Comment for a given report",
-        "description": "Return a single Analyst Comment for an analysis report",
+        "summary": "Get an Analyst Comment associated with a given report",
+        "description": "Return the Analyst Comment associated with this report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -3880,7 +3880,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Get Analyst Comment for analysis report",
+            "description": "Get Analyst Comment associated with an analysis report",
             "content": {
               "application/json": {
                 "schema": {
@@ -3898,7 +3898,7 @@
         }
       },
       "delete": {
-        "summary": "Delete an Analyst Comment for a given report",
+        "summary": "Delete an Analyst Comment associated with a given report",
         "description": "Returns no content if comment was deleted successfully",
         "parameters": [
           {
@@ -3926,8 +3926,8 @@
         }
       },
       "put": {
-        "summary": "Update an Analyst Comment for a given report",
-        "description": "Return the updated Analyst Comment for an analysis report",
+        "summary": "Update an Analyst Comment associated with a given report",
+        "description": "Return the updated Analyst Comment associated with this report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
