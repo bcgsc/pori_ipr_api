@@ -3926,14 +3926,27 @@
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update an Analyst Comment for a given report",
+        "description": "Return the updated Analyst Comment for an analysis report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Analyst Comment object to be created",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/analystCommentsPut"
+              }
+            }
+          }
+        },
         "tags": [
+          "Analyst Comments"
         ],
         "security": [
           {
@@ -3942,11 +3955,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The updated Analyst Comment",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/analystComments"
                 }
               }
             }
@@ -4094,7 +4107,7 @@
   },
   "servers": [
     {
-      "url": "10.9.202.123:8080/api",
+      "url": "http://10.9.202.123:8080/api",
       "description": "Production server (uses live data)"
     },
     {
