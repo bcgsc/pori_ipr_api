@@ -3898,14 +3898,15 @@
         }
       },
       "delete": {
-        "summary": "",
-        "description": "",
+        "summary": "Delete an Analyst Comment for a given report",
+        "description": "Returns no content if comment was deleted successfully",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Analyst Comments"
         ],
         "security": [
           {
@@ -3913,15 +3914,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
+          "204": {
+            "description": "No content"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
