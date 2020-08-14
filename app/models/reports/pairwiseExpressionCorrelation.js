@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  const mutationSignature = sequelize.define('mutationSignature', {
+  const pairwiseExpressionCorrelation = sequelize.define('pairwiseExpressionCorrelation', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -12,44 +12,41 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+      allowNull: false,
     },
-    signature: {
+    patientId: {
+      name: 'patientId',
+      field: 'patient_id',
+      type: Sq.TEXT,
+      allowNull: false,
+    },
+    library: {
       type: Sq.TEXT,
     },
-    pearson: {
+    correlation: {
       type: Sq.FLOAT,
+      allowNull: false,
     },
-    nnls: {
+    tumourType: {
+      name: 'tumourType',
+      field: 'tumour_type',
+      type: Sq.TEXT,
+    },
+    tissueType: {
+      name: 'tissueType',
+      field: 'tissue_type',
+      type: Sq.TEXT,
+    },
+    tumourContent: {
+      name: 'tumourContent',
+      field: 'tumour_content',
       type: Sq.FLOAT,
-    },
-    associations: {
-      type: Sq.TEXT,
-    },
-    features: {
-      type: Sq.TEXT,
-    },
-    numCancerTypes: {
-      name: 'numCancerTypes',
-      field: 'num_cancer_types',
-      type: Sq.INTEGER,
-    },
-    cancerTypes: {
-      name: 'cancerTypes',
-      field: 'cancer_types',
-      type: Sq.TEXT,
-    },
-    kbCategory: {
-      name: 'kbCategory',
-      field: 'kb_category',
-      type: Sq.TEXT,
-    },
-    selected: {
-      type: Sq.BOOLEAN,
-      defaultValue: false,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_mutation_signature',
+    tableName: 'reports_pairwise_expression_correlation',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt']},
@@ -58,7 +55,7 @@ module.exports = (sequelize) => {
   });
 
   // set instance methods
-  mutationSignature.prototype.view = function (scope) {
+  pairwiseExpressionCorrelation.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
         id, reportId, deletedAt, ...publicView
@@ -68,5 +65,5 @@ module.exports = (sequelize) => {
     return this;
   };
 
-  return mutationSignature;
+  return pairwiseExpressionCorrelation;
 };

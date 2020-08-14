@@ -65,6 +65,8 @@
     "state": "ready",
     "expression_matrix": "v9",
     "patientId": "UPLOADPAT01",
+    "tumourContent": 75,
+    "ploidy": "diploid",
     "ageOfConsent": 20,
     "alternateIdentifier": "UPLOADPATIENT01",
     "biopsyName": "biop1",
@@ -84,13 +86,6 @@
         "tumourProtocol": "WGS; RNA-seq",
         "constitutionalSample": "Peripheral Blood",
         "constitutionalProtocol": "WGS"
-    },
-    "tumourAnalysis": {
-        "tumourContent": 75,
-        "ploidy": "diploid",
-        "normalExpressionComparator": "average",
-        "diseaseExpressionComparator": "TARGET_RHD",
-        "tcgaColor": "0xC0C0C0"
     },
     "variantCounts": {
         "smallMutations": 2,
@@ -131,18 +126,34 @@
         "species": "None",
         "integrationSite": "None"
     },
-    "mutationSummary": [
+    "comparators": [
         {
-            "comparator": "average",
+            "analysisRole": "mutation burden (primary)",
+            "name": "average"
+        },
+        {
+            "analysisRole": "expression (disease QC)",
+            "name": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
+            "size": 6
+        },
+        {
+            "analysisRole": "expression (primary site)",
+            "name": "average",
+            "size": 1024
+        }
+    ],
+    "mutationBurden": [
+        {
             "snv": 4,
-            "snv_truncating": 0,
+            "snvTruncating": 0,
             "indels": 0,
-            "indels_frameshift": 0,
+            "indelsFrameshift": 0,
             "sv": 92,
-            "sv_expressed": 40,
-            "snv_percentile": 4,
-            "indel_percentile": 10,
-            "sv_percentile": 60
+            "svExpressed": 40,
+            "snvPercentile": 4,
+            "indelPercentile": 10,
+            "svPercentile": 60,
+            "role": "primary"
         }
     ],
     "kbMatches": [
@@ -177,11 +188,22 @@
             "gene": "ZFP36L2",
             "transcript": "ENST00000282388",
             "proteinChange": "p.Q401del",
-            "location": "2:43451739",
-            "refAlt": "CCTG>C",
+            "startPosition": 43451739,
+            "endPosition": 43451739,
+            "chromosome": "2",
+            "refSeq": "CCTG",
+            "altSeq": "C",
             "zygosity": "sub [0/3]",
-            "tumourReads": "583/4",
-            "rnaReads": "400/15",
+            "tumourRefCount": 583,
+            "tumourAltCount": 4,
+            "tumourDepth": 590,
+            "rnaRefCount": 400,
+            "rnaAltCount": 15,
+            "rnaDepth": 415,
+            "normalRefCount": 40,
+            "normalAltCount": 0,
+            "normalDepth": 40,
+            "ncbiBuild": "GRCh37",
             "hgvsProtein": "ZFP36L2:p.Q401del",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
             "hgvsGenomic": "2:g.43451740_43451742delCTG"
@@ -195,7 +217,8 @@
             "associations": "Tobacco chewing",
             "features": "D,T",
             "numCancerTypes": 1,
-            "cancerTypes": "stomach cancer"
+            "cancerTypes": "stomach cancer",
+            "selected": false
         }
     ],
     "copyVariants": [
@@ -257,30 +280,22 @@
         {
             "key": "hash12345678",
             "gene": "MALAT1",
+            "biopsySiteFoldChange": 16,
+            "biopsySitekIQR": 16.82,
+            "biopsySitePercentile": 100,
+            "diseasePercentile": 88,
+            "diseasekIQR": 4.21,
+            "diseaseQC": 43,
+            "diseaseZScore": 1.2,
+            "expressionState": "outlier high",
+            "kbCategory": "increased expression",
             "location": "11:65265233-65273940",
+            "primarySiteFoldChange": 3.58,
+            "primarySitekIQR": 1.04,
+            "primarySitePercentile": 75,
             "rnaReads": null,
             "rpkm": 1889.11,
-            "foldChange": 3.58,
-            "expressionState": "outlier_high",
-            "tcgaPerc": 88,
-            "tcgaPercCol": "tcga_comp_TARGET_RHD_percentile",
-            "tcgakIQR": 4.21,
-            "tcgaQC": 43,
-            "tcgaQCCol": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
-            "tcgaAvgPerc": 99,
-            "tcgaAvgkIQR": 30.84,
-            "tcgaAvgQC": 93,
-            "tcgaAvgQCCol": "qc_tcga_comp_average_percentile_median_(625)",
-            "tcgaNormPerc": 75,
-            "tcgaNormkIQR": 1.04,
-            "gtexComp": "average",
-            "gtexPerc": 100,
-            "gtexFC": 16,
-            "gtexkIQR": 16.82,
-            "gtexAvgPerc": 100,
-            "gtexAvgFC": 16,
-            "gtexAvgkIQR": 16,
-            "kbCategory": "Test Category"
+            "tpm": 12.3
         }
     ],
     "probe_test_information": [
@@ -410,6 +425,16 @@
         {
             "key": "mutation_summary.legend_snv_indel.paad",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+        }
+    ],
+    "pairwiseExpressionCorrelation": [
+        {
+            "patientId": "UPLOADPAT02",
+            "library": "LIB0002",
+            "correlation": 0.99,
+            "tumourType": "pancreatic cancer",
+            "tissueType": "liver",
+            "tumourContent": 15
         }
     ]
 }
