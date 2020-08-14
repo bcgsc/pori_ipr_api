@@ -12,6 +12,9 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
+      allowNull: false,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     geneId: {
       name: 'geneId',
@@ -22,18 +25,23 @@ module.exports = (sequelize) => {
         key: 'id',
       },
       allowNull: false,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     location: {
       type: Sq.TEXT,
     },
     rnaReads: {
+      name: 'rnaReads',
+      field: 'rna_reads',
       type: Sq.TEXT,
     },
     rpkm: {
       type: Sq.FLOAT,
     },
-    foldChange: {
+    tpm: {
       type: Sq.FLOAT,
+      defaultValue: null,
     },
     expressionState: {
       name: 'expressionState',
@@ -41,58 +49,90 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       defaultValue: null,
     },
-    tcgaPerc: {
+    diseasePercentile: {
+      name: 'diseasePercentile',
+      field: 'disease_percentile',
       type: Sq.FLOAT,
     },
-    tcgakIQR: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    tcgaQC: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    tcgaAvgPerc: {
+    diseasekIQR: {
+      name: 'diseasekIQR',
+      field: 'disease_kiqr',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaAvgkIQR: {
+    diseaseQC: {
+      name: 'diseaseQC',
+      field: 'disease_qc',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaAvgQC: {
+    diseaseFoldChange: {
+      name: 'diseaseFoldChange',
+      field: 'disease_fold_change',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaNormPerc: {
+    diseaseZScore: {
+      name: 'diseaseZScore',
+      field: 'disease_zscore',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaNormkIQR: {
+    primarySitePercentile: {
+      name: 'primarySitePercentile',
+      field: 'primary_site_percentile',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexPerc: {
+    primarySitekIQR: {
+      name: 'primarySitekIQR',
+      field: 'primary_site_kiqr',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexFC: {
+    primarySiteQC: {
+      name: 'primarySiteQC',
+      field: 'primary_site_qc',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexkIQR: {
+    primarySiteFoldChange: {
+      name: 'primarySiteFoldChange',
+      field: 'primary_site_fold_change',
+      type: Sq.FLOAT,
+    },
+    primarySiteZScore: {
+      name: 'primarySiteZScore',
+      field: 'primary_site_zscore',
+      type: Sq.FLOAT,
+    },
+    biopsySitePercentile: {
+      name: 'biopsySitePercentile',
+      field: 'biopsy_site_percentile',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexAvgPerc: {
+    biopsySitekIQR: {
+      name: 'biopsySitekIQR',
+      field: 'biopsy_site_kiqr',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexAvgFC: {
+    biopsySiteQC: {
+      name: 'biopsySiteQC',
+      field: 'biopsy_site_qc',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexAvgkIQR: {
+    biopsySiteFoldChange: {
+      name: 'biopsySiteFoldChange',
+      field: 'biopsy_site_fold_change',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    biopsySiteZScore: {
+      name: 'biopsySiteZScore',
+      field: 'biopsy_site_zscore',
       type: Sq.FLOAT,
       defaultValue: null,
     },
@@ -112,7 +152,9 @@ module.exports = (sequelize) => {
         ],
       },
       minimal: {
-        attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
+        attributes: [
+          'expressionState', 'rpkm', 'diseasePercentile', 'primarySiteFoldChange',
+        ],
       },
     },
   });

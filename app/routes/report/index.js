@@ -17,6 +17,7 @@ const gene = require('./gene');
 const mutationSignatures = require('./mutationSignatures');
 const reportSignatures = require('./signatures');
 const hlaTypes = require('./hlaTypes');
+const pairwiseExpressionCorrelation = require('./pairwiseExpressionCorrelation');
 const mutationBurden = require('./mutationBurden');
 const comparators = require('./comparators');
 
@@ -36,6 +37,7 @@ router.use('/mutation-burden', mutationBurden);
 router.use('/therapeutic-targets', therapeuticTargets);
 router.use('/signatures', reportSignatures);
 router.use('/hla-types', hlaTypes);
+router.use('/pairwise-expression-correlation', pairwiseExpressionCorrelation);
 router.use('/comparators', comparators);
 router.use('/probe-test-information', probeTestInformation);
 router.use('/kb-matches', kbMatches);
