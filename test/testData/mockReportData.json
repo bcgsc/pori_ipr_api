@@ -427,6 +427,21 @@
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
         }
     ],
+    "hlaTypes": [
+        {
+            "library": "S1234",
+            "pathology": "normal",
+            "protocol": "DNA",
+            "a1": "A*02:03",
+            "a2": "A*11:01",
+            "b1": "B*40:01",
+            "b2": "B*38:02",
+            "c1": "C*07:02",
+            "c2": "C*07:02",
+            "reads": 4152.0,
+            "objective": 4039.895999999993
+        }
+    ],
     "pairwiseExpressionCorrelation": [
         {
             "patientId": "UPLOADPAT02",
