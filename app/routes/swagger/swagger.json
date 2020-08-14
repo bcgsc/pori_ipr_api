@@ -3964,6 +3964,9 @@
               }
             }
           },
+          "400": {
+            "description": "Input is not valid"
+          },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
