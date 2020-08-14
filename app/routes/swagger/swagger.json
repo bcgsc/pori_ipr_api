@@ -3940,7 +3940,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/analystCommentsPut"
+                "$ref": "#/components/schemas/analystCommentsUpdate"
               }
             }
           }
