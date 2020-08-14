@@ -3863,14 +3863,15 @@
     },
     "/reports/{report}/summary/analyst-comments": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get an Analyst Comment for a given report",
+        "description": "Return a single Analyst Comment for an analysis report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Analyst Comments"
         ],
         "security": [
           {
@@ -3879,11 +3880,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get Analyst Comment for analysis report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/analystComments"
                 }
               }
             }
@@ -4099,7 +4100,7 @@
   },
   "servers": [
     {
-      "url": "https://ipr-api.bcgsc.ca/api",
+      "url": "10.9.202.123:8080/api",
       "description": "Production server (uses live data)"
     },
     {
