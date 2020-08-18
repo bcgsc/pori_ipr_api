@@ -9,6 +9,7 @@ const schema = schemaManager.generate(db.models.tumourAnalysis, new JsonSchema7S
   associations: false,
 });
 
+schema.$id = '/tumourAnalysisUpdate.js';
 schema.required = [];
 
 schema.additionalProperties = false;
