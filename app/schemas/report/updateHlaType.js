@@ -1,8 +1,6 @@
 const db = require('../../models');
-const schemaGenerator = require('./basicReportComponentSchemaGenerator');
+const schemaGenerator = require('../schemaGenerator');
 
-const schema = schemaGenerator(db.models.hlaTypes);
-schema.required = [];
-schema.$id = '/updateHlaTypes.json';
+const schema = schemaGenerator(db.models.hlaTypes, {nothingRequired: true});
 
 module.exports = schema;

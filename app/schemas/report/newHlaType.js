@@ -1,4 +1,4 @@
 const db = require('../../models');
-const schemaGenerator = require('./basicReportComponentSchemaGenerator');
+const schemaGenerator = require('../schemaGenerator');
 
 module.exports = schemaGenerator(db.models.hlaTypes);
