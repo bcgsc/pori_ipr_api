@@ -28,5 +28,8 @@ module.exports = {
     'expDensity\\.\\S+',
     'expression\\.(chart|legend)',
     'microbial\\.circos\\.(genome|transcriptome)',
+    'cibersort\\.(cd8_positive|combined)_t-cell_scatter',
+    'mixcr\\.circos_trb_vj_gene_usage',
+    'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
   ].map((patt) => { return `(${patt})`; }).join('|')}$`,
 };

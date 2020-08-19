@@ -425,6 +425,22 @@
         {
             "key": "mutation_summary.legend_snv_indel.paad",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+        },
+        {
+            "key": "cibersort.cd8_positive_t-cell_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.cd8_positive_t-cell_scatter.png"
+        },
+        {
+            "key": "cibersort.combined_t-cell_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.combined_t-cell_scatter.png"
+        },
+        {
+            "key": "mixcr.circos_trb_vj_gene_usage",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.circos_trb_vj_gene_usage.png"
+        },
+        {
+            "key": "mixcr.dominance_vs_alpha_beta_t-cells_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
         }
     ],
     "hlaTypes": [
