@@ -4108,16 +4108,6 @@
     "description": "Find out more about Swagger",
     "url": "http://swagger.io"
   },
-  "servers": [
-    {
-      "url": "https://iprdev-api.bcgsc.ca/api",
-      "description": "Development server"
-    },
-    {
-      "url": "https://ipr-api.bcgsc.ca/api",
-      "description": "Production server (uses live data)"
-    }
-  ],
   "components": {
     "parameters": {
       "report": {
