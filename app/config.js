@@ -3,7 +3,6 @@ const {merge} = require('lodash');
 
 
 const ENV = process.env.NODE_ENV || 'local';
-const SWAGGER_URL = process.env.SWAGGER_URL || null;
 
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
@@ -71,7 +70,9 @@ const DEFAULTS = {
       probeDir: '/P*/jreport_genomic_summary_v*/',
     },
   },
-  swaggerUrl: SWAGGER_URL,
+  swagger: {
+    url: null,
+  },
 };
 
 const processEnvVariables = (env = process.env, opt = {}) => {
