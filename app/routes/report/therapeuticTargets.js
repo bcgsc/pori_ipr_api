@@ -1,6 +1,10 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {REPORT_EXCLUDE} = require('../../schemas/exclude');
+
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
@@ -33,6 +37,16 @@ router.route('/:target([A-z0-9-]{36})')
     return res.json(req.target.view('public'));
   })
   .put(async (req, res) => {
+    // Generate target update (PUT) schema and validate request against it
+    try {
+      const schema = schemaGenerator(db.models.therapeuticTarget, {exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true});
+
+      validateAgainstSchema(schema, req.body);
+    } catch (error) {
+      logger.error(`Error while validating target update request ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
+    }
+
     // Update db entry
     try {
       await req.target.update(req.body);
@@ -75,9 +89,25 @@ router.route('/')
     // Create new entry
     const {report: {id: reportId}, body} = req;
 
+    // Generate target create (POST) schema and validate request against it
     try {
+      const schema = schemaGenerator(db.models.therapeuticTarget, {exclude: [...REPORT_EXCLUDE, 'rank']});
+
+      validateAgainstSchema(schema, req.body);
+    } catch (error) {
+      logger.error(`Error while validating target create request ${error}`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target create request ${error}`}});
+    }
+
+    try {
+      // Note: Paranoid is true for this. So, it finds the max non-deleted entry's rank
+      const maxRank = await db.models.therapeuticTarget.max('rank', {where: {reportId}});
+      // If no entries NaN is returned, so set rank to 0
+      const rank = (Number.isNaN(maxRank)) ? 0 : maxRank + 1;
+
       const result = await db.models.therapeuticTarget.create({
         ...body,
+        rank,
         reportId,
       });
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
