@@ -118,7 +118,6 @@
             "geneGraphkbId": "#2:3",
             "context": "resistance",
             "therapy": "EGFR inhibitors",
-            "rank": 1,
             "evidenceLevel": "OncoKB 1"
         }
     ],
