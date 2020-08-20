@@ -265,12 +265,10 @@ router.route('/')
     if (req.query.states) {
       const states = req.query.states.split(',');
       opts.where.state = {[Op.in]: states};
-    } else {
-      opts.where.state = {[Op.not]: ['archived', 'nonproduction', 'reviewed']};
     }
 
     // Are we filtering on POGUser relationship?
-    if (req.query.all !== true || req.query.role) {
+    if (req.query.role) {
       const userFilter = {
         model: db.models.analysis_reports_user,
         as: 'ReportUserFilter',
