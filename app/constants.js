@@ -29,4 +29,6 @@ module.exports = {
     'expression\\.(chart|legend)',
     'microbial\\.circos\\.(genome|transcriptome)',
   ].map((patt) => { return `(${patt})`; }).join('|')}$`,
+  REPORT_CREATE_BASE_URI: '/reports/create',
+  REPORT_UPDATE_BASE_URI: '/reports/update',
 };

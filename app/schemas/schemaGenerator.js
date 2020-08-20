@@ -1,8 +1,6 @@
 const {JsonSchemaManager, JsonSchema7Strategy, OpenApi3Strategy} = require('@alt3/sequelize-to-json-schemas');
 const {REPORT_EXCLUDE} = require('./exclude');
 
-const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
-
 /**
  * Converts a Sequelize model into a draft-07 JSON schema or
  * an OpenAPI 3 schema
@@ -10,6 +8,7 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
  * @param {object} model - Sequelize model
  * @param {object} options - An object containing additional options for schema generation
  *
+ * @param {string} options.baseUri - The base URI to use for schema
  * @param {boolean} options.jsonSchema - Whether to generate a json schema or an openApischema
  * @param {object} options.properties - Additional properties to add to the schema
  * @param {Array<string>} options.exclude - Fields of model to exclude from schema
@@ -22,9 +21,15 @@ const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
  * @returns {object} - Returns a schema based on the given model
  */
 const schemaGenerator = (model, {
-  jsonSchema = true, properties = {}, exclude = REPORT_EXCLUDE, associations = false,
+  baseUri = '/', jsonSchema = true, properties = {}, exclude = REPORT_EXCLUDE, associations = false,
   excludeAssociations = [], nothingRequired = false, required = [], additionalProperties = false,
 } = {}) => {
+  // Setup schemaManager
+  const schemaManager = new JsonSchemaManager({
+    baseUri,
+    secureSchemaUri: false,
+  });
+
   // Get type of schema to generate
   const type = (jsonSchema) ? new JsonSchema7Strategy() : new OpenApi3Strategy();
 
@@ -49,7 +54,6 @@ const schemaGenerator = (model, {
   };
 
   schema.additionalProperties = additionalProperties;
-  delete schema.$id;
   return schema;
 };
 
