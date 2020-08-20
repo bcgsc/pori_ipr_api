@@ -9,6 +9,10 @@ const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
 
+// Generate schema's
+const createSchema = schemaGenerator(db.models.therapeuticTarget, {exclude: [...REPORT_EXCLUDE, 'rank']});
+const updateSchema = schemaGenerator(db.models.therapeuticTarget, {exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true});
+
 // Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {
   let result;
@@ -37,11 +41,9 @@ router.route('/:target([A-z0-9-]{36})')
     return res.json(req.target.view('public'));
   })
   .put(async (req, res) => {
-    // Generate target update (PUT) schema and validate request against it
+    // Validate request against schema
     try {
-      const schema = schemaGenerator(db.models.therapeuticTarget, {exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true});
-
-      validateAgainstSchema(schema, req.body);
+      validateAgainstSchema(updateSchema, req.body);
     } catch (error) {
       logger.error(`Error while validating target update request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
@@ -89,11 +91,9 @@ router.route('/')
     // Create new entry
     const {report: {id: reportId}, body} = req;
 
-    // Generate target create (POST) schema and validate request against it
+    // Validate request against schema
     try {
-      const schema = schemaGenerator(db.models.therapeuticTarget, {exclude: [...REPORT_EXCLUDE, 'rank']});
-
-      validateAgainstSchema(schema, req.body);
+      validateAgainstSchema(createSchema, body);
     } catch (error) {
       logger.error(`Error while validating target create request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target create request ${error}`}});
