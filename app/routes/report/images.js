@@ -95,6 +95,24 @@ const IMAGES_CONFIG = [
     height: 900,
     format: 'PNG',
   },
+  {
+    pattern: 'cibersort\\.(cd8_positive|combined)_t-cell_scatter',
+    width: 1020,
+    height: 1020,
+    format: 'PNG',
+  },
+  {
+    pattern: 'mixcr\\.circos_trb_vj_gene_usage',
+    width: 1000,
+    height: 1000,
+    format: 'PNG',
+  },
+  {
+    pattern: 'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
+    width: 640,
+    height: 480,
+    format: 'PNG',
+  },
 ];
 
 /**
