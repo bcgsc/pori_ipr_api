@@ -70,6 +70,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     test('Querying states should return less reports', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       let res = await request
         .get('/api/reports')
         .auth(username, password)
