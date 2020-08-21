@@ -1,4 +1,5 @@
 const db = require('../../models');
-const schemaGenerator = require('./basicReportComponentSchemaGenerator');
+const schemaGenerator = require('../schemaGenerator');
+const {REPORT_CREATE_BASE_URI} = require('../../constants');
 
-module.exports = schemaGenerator(db.models.hlaTypes);
+module.exports = schemaGenerator(db.models.hlaTypes, {baseUri: REPORT_CREATE_BASE_URI});
