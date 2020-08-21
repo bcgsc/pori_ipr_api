@@ -48,6 +48,7 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   let report;
+  let totalReports;
 
   beforeEach(async () => {
     // Create Report and Mutation Burden
@@ -66,6 +67,38 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReport(res.body);
+    });
+
+    test('Querying states should return less reports', async () => {
+      let res = await request
+        .get('/api/reports')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      totalReports = res.body.total;
+
+      res = await request
+        .get('/api/reports')
+        .query({states: 'reviewed,archived'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.total).toBeLessThan(totalReports);
+      totalReports = res.body.total;
+
+      res = await request
+        .get('/api/reports')
+        .query({
+          states: 'reviewed,archived',
+          role: 'bioinformatician',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.total).toBeLessThan(totalReports);
     });
 
     test('error on non-existant ident', async () => {
