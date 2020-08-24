@@ -71,6 +71,7 @@ describe('/reports/{REPORTID}', () => {
       patientId: mockReportData.patientId,
       state: 'archived',
     });
+    totalReports = await db.models.analysis_report.count();
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -84,17 +85,27 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
-    test('Querying states should return less reports', async () => {
+    test('No queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
-      let res = await request
+      const res = await request
         .get('/api/reports')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      totalReports = res.body.total;
+      // Check if there's at least one ready report
+      let readyCheck = false;
+      res.body.reports.forEach((reportObject) => {
+        if (reportObject.state === 'ready') {
+          readyCheck = true;
+        }
+      });
+      expect(readyCheck).toBeTruthy();
+    });
 
-      res = await request
+    test('State querying is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
         .get('/api/reports')
         .query({states: 'reviewed,archived'})
         .auth(username, password)
@@ -102,13 +113,14 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body.total).toBeLessThan(totalReports);
-      totalReports = res.body.total;
-
       res.body.reports.forEach((reportObject) => {
         expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
       });
+    });
 
-      res = await request
+    test('Multiple queries is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
         .get('/api/reports')
         .query({
           states: 'reviewed,archived',
@@ -119,7 +131,6 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body.total).toBeLessThan(totalReports);
-
       res.body.reports.forEach((reportObject) => {
         expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
         expect(reportObject.users[0].role).toBe('bioinformatician');
