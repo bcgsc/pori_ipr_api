@@ -94,13 +94,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       // Check if there's at least one ready report
-      let readyCheck = false;
-      res.body.reports.forEach((reportObject) => {
-        if (reportObject.state === 'ready') {
-          readyCheck = true;
-        }
-      });
-      expect(readyCheck).toBeTruthy();
+      expect(res.body.reports.some((r) => { return r.state === 'ready'; })).toBeTruthy();
     });
 
     test('State querying is OK', async () => {
