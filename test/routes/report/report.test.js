@@ -48,6 +48,9 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   let report;
+  let reportReady;
+  let reportReviewed;
+  let reportArchived;
   let totalReports;
 
   beforeEach(async () => {
@@ -55,6 +58,18 @@ describe('/reports/{REPORTID}', () => {
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
       tumourContent: 100,
+    });
+    reportReady = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+      state: 'ready',
+    });
+    reportReviewed = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+      state: 'reviewed',
+    });
+    reportArchived = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+      state: 'archived',
     });
   }, LONGER_TIMEOUT);
 
@@ -169,6 +184,9 @@ describe('/reports/{REPORTID}', () => {
   // delete report
   afterEach(async () => {
     await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
+    await db.models.analysis_report.destroy({where: {id: reportReady.id}, force: true});
+    await db.models.analysis_report.destroy({where: {id: reportReviewed.id}, force: true});
+    await db.models.analysis_report.destroy({where: {id: reportArchived.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 
