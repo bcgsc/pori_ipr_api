@@ -104,6 +104,10 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.total).toBeLessThan(totalReports);
       totalReports = res.body.total;
 
+      res.body.reports.forEach((reportObject) => {
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+      });
+
       res = await request
         .get('/api/reports')
         .query({
@@ -115,6 +119,11 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body.total).toBeLessThan(totalReports);
+
+      res.body.reports.forEach((reportObject) => {
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.users[0].role).toBe('bioinformatician');
+      });
     });
 
     test('error on non-existant ident', async () => {
