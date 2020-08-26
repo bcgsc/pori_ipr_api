@@ -34,4 +34,6 @@ module.exports = {
   ].map((patt) => { return `(${patt})`; }).join('|')}$`,
   REPORT_CREATE_BASE_URI: '/reports/create',
   REPORT_UPDATE_BASE_URI: '/reports/update',
+  GERMLINE_CREATE_BASE_URI: '/germline/create',
+  GERMLINE_UPDATE_BASE_URI: '/germline/update',
 };

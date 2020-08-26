@@ -5,9 +5,14 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+
+const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const updateSchema = require('../../schemas/report/updateHlaType');
-const newSchema = require('../../schemas/report/newHlaType');
+const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
+
+// Generate schema's
+const createSchema = schemaGenerator(db.models.hlaTypes, {baseUri: REPORT_CREATE_BASE_URI});
+const updateSchema = schemaGenerator(db.models.hlaTypes, {baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true});
 
 
 router.param('hlaType', async (req, res, next, ident) => {
@@ -90,7 +95,7 @@ router.route('/')
     const {body, report: {id: reportId}} = req;
     try {
       // validate against the model
-      validateAgainstSchema(newSchema, req.body);
+      validateAgainstSchema(createSchema, req.body);
     } catch (err) {
       const message = `There was an error creating the hlaType ${err}`;
       logger.error(message);

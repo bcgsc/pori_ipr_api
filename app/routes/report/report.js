@@ -9,14 +9,24 @@ const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
 
 const reportMiddleware = require('../../middleware/analysis_report');
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
 const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
+
+// Generate schema's
 const reportUploadSchema = require('../../schemas/report/reportUpload');
-const updateSchema = require('../../schemas/report/updateReport');
+
+const updateSchema = schemaGenerator(db.models.analysis_report, {
+  baseUri: REPORT_UPDATE_BASE_URI,
+  exclude: [...BASE_EXCLUDE, 'createdBy_id', 'config'],
+  nothingRequired: true,
+});
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
