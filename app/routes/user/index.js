@@ -92,23 +92,10 @@ router.route('/')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to check if this username has been taken'}});
     }
 
-    // if username exists and is not a deleted user return 409
-    if (userExists) {
+    // if username exists return 409
+    if (userExists || deletedUserExists) {
       logger.error('Username already exists');
       return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Username already exists'}});
-    }
-
-    if (deletedUserExists) {
-      // set up user to restore with updated field values
-      req.body.deletedAt = null;
-
-      try {
-        await deletedUserExists.update(req.body);
-        return res.json(deletedUserExists.view('public'));
-      } catch (error) {
-        logger.error(`Unable to restore username ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to restore existing username'}});
-      }
     }
 
     // Hash password
