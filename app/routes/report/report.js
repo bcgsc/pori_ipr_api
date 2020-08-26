@@ -275,9 +275,7 @@ router.route('/')
         where: {},
       };
       userFilter.where.user_id = req.user.id;
-      if (req.query.role) {
-        userFilter.where.role = req.query.role; // Role filtering
-      }
+      userFilter.where.role = req.query.role; // Role filtering
       opts.include.push(userFilter);
     }
 
