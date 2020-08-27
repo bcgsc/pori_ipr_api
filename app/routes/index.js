@@ -9,7 +9,7 @@ const APIVersion = require('./version');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
 
-const patientInformationRoute = require('./patientInformation');
+const patientInformationRoute = require('./report/patientInformation');
 const reportsRoute = require('./report/report');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
