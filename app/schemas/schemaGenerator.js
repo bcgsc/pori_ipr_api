@@ -38,8 +38,7 @@ const schemaGenerator = (model, {
 
   // Generate the schema
   const schema = schemaManager.generate(model, type, {
-    include,
-    exclude,
+    ...(include.length > 0 ? {include} : {exclude}),
     excludeAssociations,
     associations,
   });
@@ -48,7 +47,7 @@ const schemaGenerator = (model, {
   if (nothingRequired) {
     schema.required = [];
   } else {
-    schema.required = schema.required.concat(required);
+    schema.required = (schema.required || []).concat(required);
   }
 
   // Update the schema's properties
