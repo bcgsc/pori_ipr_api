@@ -96,21 +96,21 @@ router.route('/:group([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
-    let user;
-    try {
-      // Get Owner/User ID resolve
-      user = await db.models.user.findOne({where: {ident: req.body.owner}});
-    } catch (error) {
-      logger.error('SQL Error while trying to find owner/user');
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find owner/user'}});
-    }
-
-    if (!user && req.body.user) {
-      logger.error('Unable to find the specified owner');
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the specified owner'}});
-    }
-
-    if (user) {
+    if (req.body.owner) {
+      let user;
+      try {
+        // Get Owner/User ID resolve
+        user = await db.models.user.findOne({where: {ident: req.body.owner}});
+      } catch (error) {
+        logger.error('SQL Error while trying to find owner/user');
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find owner/user'}});
+      }
+  
+      if (!user) {
+        logger.error('Unable to find the specified owner');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the specified owner'}});
+      }
+  
       req.body.owner_id = user.id;
     }
 
