@@ -179,8 +179,6 @@ router.route('/slide')
     try {
       data = {
         object: req.files.file.data.toString('base64'),
-        user_id: req.user.id,
-        reportId: req.report.id,
         name: req.body.name,
         object_type: req.files.file.mimetype,
       };
@@ -199,6 +197,13 @@ router.route('/slide')
     }
 
     try {
+      // Add in user and report data
+      data = {
+        ...data,
+        user_id: req.user.id,
+        reportId: req.report.id,
+      };
+
       let result = await db.models.presentation_slides.create(data);
       result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
       return res.status(HTTP_STATUS.CREATED).json(result);
