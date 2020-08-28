@@ -4,12 +4,11 @@
 const db = require('../../models');
 const schemaGenerator = require('../schemaGenerator');
 const {BASE_EXCLUDE, GERMLINE_EXCLUDE} = require('../exclude');
-
-const baseUri = '/germline/upload';
+const {UPLOAD_BASE_URI} = require('../../constants');
 
 // Generate variants schema
 const variantSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
-  baseUri, exclude: GERMLINE_EXCLUDE,
+  baseUri: UPLOAD_BASE_URI, exclude: GERMLINE_EXCLUDE,
 });
 
 // Set additional properties
@@ -25,7 +24,7 @@ const properties = {
 
 // Generate schema
 const schema = schemaGenerator(db.models.germline_small_mutation, {
-  baseUri, exclude: [...BASE_EXCLUDE, 'biofx_assigned_id'], properties,
+  baseUri: UPLOAD_BASE_URI, exclude: [...BASE_EXCLUDE, 'biofx_assigned_id'], properties,
 });
 
 module.exports = schema;
