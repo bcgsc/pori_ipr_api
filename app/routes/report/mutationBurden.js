@@ -1,11 +1,19 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const db = require('../../models');
-const logger = require('../../log');
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const updateSchema = require('../../schemas/report/updateMutationBurden');
 
 const router = express.Router({mergeParams: true});
+
+const db = require('../../models');
+const logger = require('../../log');
+
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+
+// Generate schema
+const updateSchema = schemaGenerator(db.models.mutationBurden, {
+  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
+});
 
 // Middleware for mutation burden
 router.param('mutationBurden', async (req, res, next, mutIdent) => {
@@ -37,8 +45,8 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     const {mutationBurden} = req;
+    // Validate request against schema
     try {
-      // validate against the model
       validateAgainstSchema(updateSchema, req.body);
     } catch (err) {
       const message = `There was an error updating mutation burden ${err}`;
