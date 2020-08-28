@@ -106,7 +106,6 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body.total).toBeLessThan(totalReports);
       res.body.reports.forEach((reportObject) => {
         expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
       });
@@ -124,7 +123,6 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body.total).toBeLessThan(totalReports);
       res.body.reports.forEach((reportObject) => {
         expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
         expect(reportObject.users[0].role).toBe('bioinformatician');
