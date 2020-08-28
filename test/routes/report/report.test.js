@@ -54,23 +54,49 @@ describe('/reports/{REPORTID}', () => {
   let totalReports;
 
   beforeEach(async () => {
-    // Create Report and Mutation Burden
+    // Create Report and associate projects
+    const project = await db.models.project.findOne({
+      where: {
+        name: 'TEST',
+      },
+    });
+
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
       tumourContent: 100,
     });
+    await db.models.reportProject.create({
+      reportId: report.id,
+      project_id: project.id,
+    });
+
     reportReady = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
       state: 'ready',
     });
+    await db.models.reportProject.create({
+      reportId: reportReady.id,
+      project_id: project.id,
+    });
+
     reportReviewed = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
       state: 'reviewed',
     });
+    await db.models.reportProject.create({
+      reportId: reportReviewed.id,
+      project_id: project.id,
+    });
+
     reportArchived = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
       state: 'archived',
     });
+    await db.models.reportProject.create({
+      reportId: reportArchived.id,
+      project_id: project.id,
+    });
+
     totalReports = await db.models.analysis_report.count();
   }, LONGER_TIMEOUT);
 
@@ -93,8 +119,8 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      // Check if there's at least one ready report
-      expect(res.body.reports.some((r) => { return r.state === 'ready'; })).toBeTruthy();
+      // Check if the number of reports returned by api is the same as db
+      expect(res.body.total).toEqual(totalReports);
     });
 
     test('State querying is OK', async () => {
@@ -182,7 +208,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     test('error on unexpected value', async () => {
-      const res = await request
+      await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
         .type('json')
