@@ -311,6 +311,39 @@
     "analystComments": {
         "comments": "<p>Here is a test comment.</p>"
     },
+    "hlaTypes": [
+        {
+            "library": "S1234",
+            "pathology": "normal",
+            "protocol": "DNA",
+            "a1": "A*02:03",
+            "a2": "A*11:01",
+            "b1": "B*40:01",
+            "b2": "B*38:02",
+            "c1": "C*07:02",
+            "c2": "C*07:02",
+            "reads": 4152.0,
+            "objective": 4039.895999999993
+        }
+    ],
+    "pairwiseExpressionCorrelation": [
+        {
+            "patientId": "UPLOADPAT02",
+            "library": "LIB0002",
+            "correlation": 0.99,
+            "tumourType": "pancreatic cancer",
+            "tissueType": "liver",
+            "tumourContent": 15
+        }
+    ],
+    "immuneCellTypes": [
+        {
+            "cellType": "combined T cell",
+            "kbCategory": "moderate",
+            "score": 76,
+            "percentile": 50
+        }
+    ],
     "project": "TEST",
     "images": [
         {
@@ -440,31 +473,6 @@
         {
             "key": "mixcr.dominance_vs_alpha_beta_t-cells_scatter",
             "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
-        }
-    ],
-    "hlaTypes": [
-        {
-            "library": "S1234",
-            "pathology": "normal",
-            "protocol": "DNA",
-            "a1": "A*02:03",
-            "a2": "A*11:01",
-            "b1": "B*40:01",
-            "b2": "B*38:02",
-            "c1": "C*07:02",
-            "c2": "C*07:02",
-            "reads": 4152.0,
-            "objective": 4039.895999999993
-        }
-    ],
-    "pairwiseExpressionCorrelation": [
-        {
-            "patientId": "UPLOADPAT02",
-            "library": "LIB0002",
-            "correlation": 0.99,
-            "tumourType": "pancreatic cancer",
-            "tissueType": "liver",
-            "tumourContent": 15
         }
     ]
 }
