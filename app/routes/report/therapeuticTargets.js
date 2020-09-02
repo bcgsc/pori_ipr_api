@@ -15,8 +15,12 @@ const therapeuticPutSchema = require('../../schemas/report/therapeuticTargets/th
 const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
 
 // Generate schema's
-const createSchema = schemaGenerator(db.models.therapeuticTarget, {baseUri: REPORT_CREATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank']});
-const updateSchema = schemaGenerator(db.models.therapeuticTarget, {baseUri: REPORT_UPDATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true});
+const createSchema = schemaGenerator(db.models.therapeuticTarget, {
+  baseUri: REPORT_CREATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'],
+});
+const updateSchema = schemaGenerator(db.models.therapeuticTarget, {
+  baseUri: REPORT_UPDATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true,
+});
 
 // Middleware for therapeutic targets
 router.param('target', async (req, res, next, target) => {

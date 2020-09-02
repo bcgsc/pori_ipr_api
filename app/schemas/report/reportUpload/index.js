@@ -3,8 +3,8 @@ const db = require('../../../models');
 const {BASE_EXCLUDE} = require('../../exclude');
 const variantSchemas = require('./variant');
 const kbMatchesSchema = require('./kbMatches');
-const {generateReportSubSchema} = require('./util');
-const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
+const schemaGenerator = require('../../schemaGenerator');
+const {VALID_IMAGE_KEY_PATTERN, UPLOAD_BASE_URI} = require('../../../constants');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
@@ -56,7 +56,9 @@ Object.values(associations).forEach((association) => {
 
   // generate schemas for the remaining sections
   if (schema.definitions[model] === undefined) {
-    const generatedSchema = generateReportSubSchema(db.models[model]);
+    const generatedSchema = schemaGenerator(db.models[model], {
+      baseUri: UPLOAD_BASE_URI, isSubSchema: true,
+    });
 
     if (!generatedSchema.required) {
       generatedSchema.required = [];

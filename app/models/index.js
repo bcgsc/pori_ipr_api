@@ -90,7 +90,7 @@ const imageData = sequelize.import('./reports/imageData');
 imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
 // Patient Information
-const patientInformation = sequelize.import('./patientInformation');
+const patientInformation = sequelize.import('./reports/patientInformation');
 analysisReports.hasOne(patientInformation, {
   as: 'patientInformation', foreignKey: 'reportId', onDelete: 'CASCADE', onUpdate: 'CASCADE', constraints: true,
 });

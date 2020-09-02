@@ -1,9 +1,11 @@
 const db = require('../../../models');
-const {generateReportSubSchema} = require('./util');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
+const schemaGenerator = require('../../schemaGenerator');
+const {GENE_LINKED_VARIANT_MODELS, UPLOAD_BASE_URI} = require('../../../constants');
+const {REPORT_EXCLUDE} = require('../../exclude');
 
 const variantSchemas = {
-  structuralVariants: generateReportSubSchema(db.models.structuralVariants, {
+  structuralVariants: schemaGenerator(db.models.structuralVariants, {
+    baseUri: UPLOAD_BASE_URI,
     properties: {
       gene1: {
         type: 'string', description: 'The gene name for the first breakpoint',
@@ -15,26 +17,26 @@ const variantSchemas = {
         type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
       },
     },
+    isSubSchema: true,
     required: ['gene1', 'gene2'],
-    exclude: ['gene1Id', 'gene2Id'],
+    exclude: [...REPORT_EXCLUDE, 'gene1Id', 'gene2Id'],
   }),
 };
 
 GENE_LINKED_VARIANT_MODELS.filter((model) => { return model !== 'structuralVariants'; }).forEach((model) => {
-  variantSchemas[model] = generateReportSubSchema(
-    db.models[model],
-    {
-      properties: {
-        gene: {
-          type: 'string', description: 'The gene name for this variant',
-        },
-        key: {
-          type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
-        },
+  variantSchemas[model] = schemaGenerator(db.models[model], {
+    baseUri: UPLOAD_BASE_URI,
+    properties: {
+      gene: {
+        type: 'string', description: 'The gene name for this variant',
       },
-      required: ['gene'],
-    }
-  );
+      key: {
+        type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
+      },
+    },
+    isSubSchema: true,
+    required: ['gene'],
+  });
 });
 
 

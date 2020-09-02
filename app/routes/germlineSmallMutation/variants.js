@@ -1,12 +1,20 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
-const logger = require('../../log');
-const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const variantSchema = require('../../schemas/germlineSmallMutation/updateVariant');
-
 const router = express.Router({mergeParams: true});
+
+const db = require('../../models');
+const logger = require('../../log');
+
+const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {GERMLINE_UPDATE_BASE_URI} = require('../../constants');
+
+// Generate schema
+const updateSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
+  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patient_history', 'family_history'],
+});
 
 router.param('variant', variantMiddleware);
 
@@ -45,10 +53,9 @@ router.route('/:variant')
    * @returns {object} - Returns updated variant
    */
   .put(async (req, res) => {
-    // Update Variant details
+    // Validate request against schema
     try {
-      // Validate input
-      validateAgainstSchema(variantSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body);
     } catch (error) {
       logger.error(`Germline variant validation failed ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Germline variant validation failed'}});

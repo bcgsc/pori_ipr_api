@@ -9,20 +9,23 @@ const {REPORT_EXCLUDE} = require('./exclude');
  * @param {object} options - An object containing additional options for schema generation
  *
  * @param {string} options.baseUri - The base URI to use for schema
- * @param {boolean} options.jsonSchema - Whether to generate a json schema or an openApischema
+ * @param {boolean} options.jsonSchema - Whether to generate a json schema or an openApi schema
  * @param {object} options.properties - Additional properties to add to the schema
+ * @param {Array<string>} options.include - Fields of model to only include in schema
  * @param {Array<string>} options.exclude - Fields of model to exclude from schema
  * @param {boolean} options.associations - Do you want to include the models associations
  * @param {Array<string>} options.excludeAssociations - List of associations to exclude
  * @param {boolean} options.nothingRequired - Whether nothing is required for this schema
  * @param {Array<string>} options.required - Fields that are required
+ * @param {boolean} options.isSubSchema - Whether the schema is a section of another schema
  * @param {boolean} options.additionalProperties - Whether to allow additional properties or not
  *
  * @returns {object} - Returns a schema based on the given model
  */
 const schemaGenerator = (model, {
-  baseUri = '/', jsonSchema = true, properties = {}, exclude = REPORT_EXCLUDE, associations = false,
-  excludeAssociations = [], nothingRequired = false, required = [], additionalProperties = false,
+  baseUri = '/', jsonSchema = true, properties = {}, include = [], exclude = REPORT_EXCLUDE,
+  associations = false, excludeAssociations = [], nothingRequired = false, required = [],
+  isSubSchema = false, additionalProperties = false,
 } = {}) => {
   // Setup schemaManager
   const schemaManager = new JsonSchemaManager({
@@ -35,7 +38,7 @@ const schemaGenerator = (model, {
 
   // Generate the schema
   const schema = schemaManager.generate(model, type, {
-    exclude,
+    ...(include.length > 0 ? {include} : {exclude}),
     excludeAssociations,
     associations,
   });
@@ -44,7 +47,7 @@ const schemaGenerator = (model, {
   if (nothingRequired) {
     schema.required = [];
   } else {
-    schema.required = schema.required.concat(required);
+    schema.required = (schema.required || []).concat(required);
   }
 
   // Update the schema's properties
@@ -52,6 +55,11 @@ const schemaGenerator = (model, {
     ...schema.properties,
     ...properties,
   };
+
+  // If sub-schema remove schema draft details
+  if (isSubSchema) {
+    delete schema.$schema;
+  }
 
   schema.additionalProperties = additionalProperties;
   return schema;

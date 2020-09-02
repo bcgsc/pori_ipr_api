@@ -26,7 +26,7 @@ module.exports = (sequelize) => {
     },
     object: {
       type: Sq.TEXT,
-      allowNull: true,
+      allowNull: false,
     },
     object_type: {
       type: Sq.TEXT,

@@ -1,29 +1,47 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const logger = require('../../log');
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-
 
 const router = express.Router({mergeParams: true});
 
-// Group json schema
-const groupSchema = {
-  type: 'object',
-  required: ['name', 'owner'],
-  properties: {
-    name: {type: 'string'},
-    owner: {type: 'string', format: 'uuid'},
-  },
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
+
+
+const groupProperties = {
+  owner: {type: 'string', format: 'uuid'},
 };
-const memberSchema = {
-  type: 'object',
+
+const memberProperties = {
+  user: {type: 'string', format: 'uuid'},
+};
+
+// Generate schema's
+const groupUpdateSchema = schemaGenerator(db.models.userGroup, {
+  baseUri: '/update',
+  exclude: [...BASE_EXCLUDE, 'owner_id'],
+  properties: groupProperties,
+  nothingRequired: true,
+});
+
+const groupCreateSchema = schemaGenerator(db.models.userGroup, {
+  baseUri: '/create',
+  exclude: [...BASE_EXCLUDE, 'owner_id'],
+  properties: groupProperties,
+  required: ['owner'],
+});
+
+const memberCreateSchema = schemaGenerator(db.models.userGroupMember, {
+  baseUri: '/create',
+  exclude: [...BASE_EXCLUDE, 'user_id', 'group_id'],
+  properties: memberProperties,
   required: ['user'],
-  properties: {
-    user: {type: 'string', format: 'uuid'},
-  },
-};
+});
+
 
 // Middleware for all group functions
 router.use('/', (req, res, next) => {
@@ -72,27 +90,27 @@ router.route('/:group([A-z0-9-]{36})')
 
     try {
       // Validate input
-      validateAgainstSchema(groupSchema, req.body);
+      validateAgainstSchema(groupUpdateSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
-    let user;
-    try {
-      // Get Owner/User ID resolve
-      user = await db.models.user.findOne({where: {ident: req.body.owner}});
-    } catch (error) {
-      logger.error('SQL Error while trying to find owner/user');
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find owner/user'}});
-    }
-
-    if (!user && req.body.user) {
-      logger.error('Unable to find the specified owner');
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the specified owner'}});
-    }
-
-    if (user) {
+    if (req.body.owner) {
+      let user;
+      try {
+        // Get Owner/User ID resolve
+        user = await db.models.user.findOne({where: {ident: req.body.owner}});
+      } catch (error) {
+        logger.error('SQL Error while trying to find owner/user');
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find owner/user'}});
+      }
+  
+      if (!user) {
+        logger.error('Unable to find the specified owner');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the specified owner'}});
+      }
+  
       req.body.owner_id = user.id;
     }
 
@@ -140,7 +158,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Add Group Member
     try {
       // Validate input
-      validateAgainstSchema(memberSchema, req.body);
+      validateAgainstSchema(memberCreateSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -194,7 +212,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     // Remove Group Member
     try {
       // Validate input
-      validateAgainstSchema(memberSchema, req.body);
+      validateAgainstSchema(memberCreateSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
@@ -244,7 +262,7 @@ router.route('/')
   .post(async (req, res) => {
     try {
       // Validate input
-      validateAgainstSchema(groupSchema, req.body);
+      validateAgainstSchema(groupCreateSchema, req.body);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
