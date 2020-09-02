@@ -118,7 +118,6 @@
             "geneGraphkbId": "#2:3",
             "context": "resistance",
             "therapy": "EGFR inhibitors",
-            "rank": 1,
             "evidenceLevel": "OncoKB 1"
         }
     ],
@@ -425,6 +424,37 @@
         {
             "key": "mutation_summary.legend_snv_indel.paad",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+        },
+        {
+            "key": "cibersort.cd8_positive_t-cell_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.cd8_positive_t-cell_scatter.png"
+        },
+        {
+            "key": "cibersort.combined_t-cell_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.combined_t-cell_scatter.png"
+        },
+        {
+            "key": "mixcr.circos_trb_vj_gene_usage",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.circos_trb_vj_gene_usage.png"
+        },
+        {
+            "key": "mixcr.dominance_vs_alpha_beta_t-cells_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
+        }
+    ],
+    "hlaTypes": [
+        {
+            "library": "S1234",
+            "pathology": "normal",
+            "protocol": "DNA",
+            "a1": "A*02:03",
+            "a2": "A*11:01",
+            "b1": "B*40:01",
+            "b2": "B*38:02",
+            "c1": "C*07:02",
+            "c2": "C*07:02",
+            "reads": 4152.0,
+            "objective": 4039.895999999993
         }
     ],
     "pairwiseExpressionCorrelation": [

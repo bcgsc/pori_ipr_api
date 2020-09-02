@@ -21,7 +21,6 @@ const FAKE_TARGET = {
   geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
-  rank: 0,
   evidenceLevel: 'OncoKB 1',
 };
 
@@ -167,7 +166,7 @@ describe('/therapeutic-targets', () => {
           // create a new therapeutic target
           ({dataValues: newTarget} = await db.models.therapeuticTarget.create({
             ...FAKE_TARGET,
-            rank: -900,
+            rank: 1,
             reportId: report.id,
           }));
 
@@ -203,8 +202,8 @@ describe('/therapeutic-targets', () => {
             .put(`/api/reports/${report.ident}/therapeutic-targets`)
             .auth(username, password)
             .send([
-              {ident: original.ident, rank: -500},
-              {ident: newTarget.ident, rank: -500},
+              {ident: original.ident, rank: 2},
+              {ident: newTarget.ident, rank: 2},
             ])
             .type('json')
             .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
@@ -272,7 +271,6 @@ describe('/therapeutic-targets', () => {
       .type('json')
       .expect(HTTP_STATUS.NOT_FOUND);
   });
-
 });
 
 afterAll(async () => {

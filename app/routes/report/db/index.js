@@ -272,6 +272,13 @@ const createReportContent = async (report, content) => {
       if (model === 'analystComments' && content[model].comments) {
         content[model].comments = sanitizeHtml(content[model].comments);
       }
+
+      // Add ranks to therapeutic targets
+      if (model === 'therapeuticTargets') {
+        content[model].forEach((target, i) => {
+          target.rank = i;
+        });
+      }
       promises.push(createReportSection(report.id, model, content[model]));
     }
   });
