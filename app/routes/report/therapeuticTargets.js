@@ -114,14 +114,6 @@ router.route('/')
     }
 
     try {
-      // Validate input
-      validateAgainstSchema(therapeuticPostSchema, req.body);
-    } catch (error) {
-      logger.error(`Therapeutic Target validation failed ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
-    }
-
-    try {
       // Note: Paranoid is true for this. So, it finds the max non-deleted entry's rank
       const maxRank = await db.models.therapeuticTarget.max('rank', {where: {reportId}});
       // If no entries NaN is returned, so set rank to 0
