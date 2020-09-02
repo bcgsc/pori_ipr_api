@@ -274,6 +274,7 @@ router.route('/')
         as: 'ReportUserFilter',
         where: {},
       };
+      userFilter.where.user_id = req.user.id;
       userFilter.where.role = req.query.role; // Role filtering
       opts.include.push(userFilter);
     }
