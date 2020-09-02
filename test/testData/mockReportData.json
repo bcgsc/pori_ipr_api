@@ -143,16 +143,19 @@
     ],
     "mutationBurden": [
         {
-            "snv": 4,
-            "snvTruncating": 0,
-            "indels": 0,
-            "indelsFrameshift": 0,
-            "sv": 92,
-            "svExpressed": 40,
-            "snvPercentile": 4,
-            "indelPercentile": 10,
-            "svPercentile": 60,
-            "role": "primary"
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": "primary",
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationRate": 56.24
         }
     ],
     "kbMatches": [
