@@ -81,11 +81,9 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
-    let deletedUserExists;
     let userExists;
     try {
       // Check for existing account.
-      deletedUserExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
       userExists = await db.models.user.findOne({where: {username: req.body.username}});
     } catch (error) {
       logger.error(`SQL Error unable to check for existing username ${error}`);
@@ -93,7 +91,7 @@ router.route('/')
     }
 
     // if username exists return 409
-    if (userExists || deletedUserExists) {
+    if (userExists) {
       logger.error('Username already exists');
       return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Username already exists'}});
     }
