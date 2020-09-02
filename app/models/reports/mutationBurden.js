@@ -17,53 +17,101 @@ module.exports = (sequelize) => {
       type: Sq.ENUM(['primary', 'secondary', 'tertiary', 'quarternary']),
       allowNull: false,
     },
-    snv: {
+    codingSnvCount: {
+      name: 'codingSnvCount',
+      field: 'coding_snv_count',
+      type: Sq.INTEGER,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'number of non synonymous coding snvs',
+      },
+    },
+    truncatingSnvCount: {
+      name: 'truncatingSnvCount',
+      field: 'truncating_snv_count',
+      type: Sq.INTEGER,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'number of non synonymous coding snvs which are also truncating',
+      },
+    },
+    codingIndelsCount: {
+      name: 'codingIndelsCount',
+      field: 'coding_indels_count',
+      type: Sq.INTEGER,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'number of non synonymous coding indels',
+      },
+    },
+    frameshiftIndelsCount: {
+      name: 'frameshiftIndelsCount',
+      field: 'frameshift_indels_count',
+      type: Sq.INTEGER,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'number of non synonymous coding indels which result in a frameshift',
+      },
+    },
+    qualitySvCount: {
+      name: 'qualitySvCount',
+      field: 'quality_sv_count',
+      type: Sq.INTEGER,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'number of high quality svs',
+      },
+    },
+    qualitySvExpressedCount: {
+      name: 'qualitySvExpressedCount',
+      field: 'quality_sv_expressed_count',
+      type: Sq.INTEGER,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'number of high quality svs which are expressed in the RNA',
+      },
+    },
+    codingSnvPercentile: {
+      name: 'codingSnvPercentile',
+      field: 'coding_snv_percentile',
       type: Sq.INTEGER,
       defaultValue: null,
     },
-    snvTruncating: {
-      name: 'snvTruncating',
-      field: 'snv_truncating',
+    codingIndelPercentile: {
+      name: 'codingIndelPercentile',
+      field: 'coding_indel_percentile',
       type: Sq.INTEGER,
       defaultValue: null,
     },
-    indels: {
+    qualitySvPercentile: {
+      name: 'qualitySvPercentile',
+      field: 'quality_sv_percentile',
       type: Sq.INTEGER,
       defaultValue: null,
     },
-    indelsFrameshift: {
-      name: 'indelsFrameshift',
-      field: 'indels_frameshift',
+    totalSnvCount: {
+      name: 'totalSnvCount',
+      field: 'total_snv_count',
       type: Sq.INTEGER,
-      defaultValue: null,
+      jsonSchema: {
+        description: 'total number of somatic SNVs',
+      },
     },
-    sv: {
+    totalIndelCount: {
+      name: 'totalIndelCount',
+      field: 'total_indel_count',
       type: Sq.INTEGER,
-      defaultValue: null,
+      jsonSchema: {
+        description: 'total number of somatic indels',
+      },
     },
-    svExpressed: {
-      name: 'svExpressed',
-      field: 'sv_expressed',
-      type: Sq.INTEGER,
-      defaultValue: null,
-    },
-    snvPercentile: {
-      name: 'snvPercentile',
-      field: 'snv_percentile',
-      type: Sq.INTEGER,
-      defaultValue: null,
-    },
-    indelPercentile: {
-      name: 'indelPercentile',
-      field: 'indel_percentile',
-      type: Sq.INTEGER,
-      defaultValue: null,
-    },
-    svPercentile: {
-      name: 'svPercentile',
-      field: 'sv_percentile',
-      type: Sq.INTEGER,
-      defaultValue: null,
+    totalMutationRate: {
+      name: 'totalMutationRate',
+      field: 'total_mutation_rate',
+      type: Sq.FLOAT,
+      jsonSchema: {
+        description: 'somatic indels and SNVs per megabase',
+      },
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
