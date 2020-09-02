@@ -23,7 +23,7 @@ module.exports = {
     'subtypePlot\\.\\S+',
     '(cnv|loh)\\.[12345]',
     'cnvLoh.circos',
-    'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel)(\\.\\w+)?',
+    'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quarternary)',
     'circosSv\\.(genome|transcriptome)',
     'expDensity\\.\\S+',
     'expression\\.(chart|legend)',

@@ -128,6 +128,10 @@
     "comparators": [
         {
             "analysisRole": "mutation burden (primary)",
+            "name": "paad"
+        },
+        {
+            "analysisRole": "mutation burden (secondary)",
             "name": "average"
         },
         {
@@ -394,35 +398,35 @@
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/CES2_ENSG00000172831.png"
         },
         {
-            "key": "mutation_summary.barplot_sv",
+            "key": "mutationBurden.barplot_sv.secondary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_sv.png"
         },
         {
-            "key": "mutation_summary.barplot_snv.paad",
+            "key": "mutationBurden.barplot_snv.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_snv.paad.png"
         },
         {
-            "key": "mutation_summary.barplot_indel.paad",
+            "key": "mutationBurden.barplot_indel.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_indel.paad.png"
         },
         {
-            "key": "mutation_summary.density_sv",
+            "key": "mutationBurden.density_sv.secondary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_sv.png"
         },
         {
-            "key": "mutation_summary.density_snv.paad",
+            "key": "mutationBurden.density_snv.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_snv.paad.png"
         },
         {
-            "key": "mutation_summary.density_indel.paad",
+            "key": "mutationBurden.density_indel.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_indel.paad.png"
         },
         {
-            "key": "mutation_summary.legend_sv",
+            "key": "mutationBurden.legend_sv.secondary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_sv.png"
         },
         {
-            "key": "mutation_summary.legend_snv_indel.paad",
+            "key": "mutationBurden.legend_snv_indel.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
         },
         {
