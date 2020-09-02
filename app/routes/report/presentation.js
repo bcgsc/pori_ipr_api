@@ -13,17 +13,17 @@ const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema's
 const exclude = [...REPORT_EXCLUDE, 'user_id'];
-const discussionCreateSchema = schemaGenerator(db.models.presentation_discussion, {
+const discussionCreateSchema = schemaGenerator(db.models.presentationDiscussion, {
   baseUri: REPORT_CREATE_BASE_URI, exclude,
 });
-const discussionUpdateSchema = schemaGenerator(db.models.presentation_discussion, {
+const discussionUpdateSchema = schemaGenerator(db.models.presentationDiscussion, {
   baseUri: REPORT_UPDATE_BASE_URI, exclude, nothingRequired: true,
 });
 
-const slideCreateSchema = schemaGenerator(db.models.presentation_slides, {
+const slideCreateSchema = schemaGenerator(db.models.presentationSlides, {
   baseUri: REPORT_CREATE_BASE_URI, exclude,
 });
-const slideUpdateSchema = schemaGenerator(db.models.presentation_slides, {
+const slideUpdateSchema = schemaGenerator(db.models.presentationSlides, {
   baseUri: REPORT_UPDATE_BASE_URI, exclude, nothingRequired: true,
 });
 

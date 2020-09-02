@@ -8,10 +8,6 @@ const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const therapeuticPostSchema = require('../../schemas/report/therapeuticTargets/therapeuticTargetsPost');
-const therapeuticPutSchema = require('../../schemas/report/therapeuticTargets/therapeuticTargetsUpdate');
-
 const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
 
 // Generate schema's
@@ -56,16 +52,6 @@ router.route('/:target([A-z0-9-]{36})')
     } catch (error) {
       logger.error(`Error while validating target update request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
-    }
-
-    // Update db entry
-
-    try {
-      // Validate input
-      validateAgainstSchema(therapeuticPutSchema, req.body);
-    } catch (error) {
-      logger.error(`Therapeutic Target validation failed ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
     try {
