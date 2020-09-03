@@ -181,6 +181,11 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify that the record was deleted
+      const result = await db.models.summary_microbial.findOne({where: {id: microbialDelete.id}});
+
+      expect(result).toBeNull();
     });
 
     test('/{microbial} - 404 Not Found No microbial data to delete', async () => {
