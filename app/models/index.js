@@ -161,6 +161,7 @@ const smallMutations = sequelize.import('./reports/smallMutations');
 const mutationSignature = sequelize.import('./reports/mutationSignature');
 const hlaTypes = sequelize.import('./reports/hlaTypes');
 const pairwiseExpressionCorrelation = sequelize.import('./reports/pairwiseExpressionCorrelation');
+const immuneCellTypes = sequelize.import('./reports/immuneCellTypes');
 
 smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -174,6 +175,9 @@ hlaTypes.belongsTo(analysisReports, {
 pairwiseExpressionCorrelation.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
+immuneCellTypes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
 analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
@@ -185,6 +189,9 @@ analysisReports.hasMany(hlaTypes, {
 });
 analysisReports.hasMany(pairwiseExpressionCorrelation, {
   as: 'pairwiseExpressionCorrelation', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(immuneCellTypes, {
+  as: 'immuneCellTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Copy Number Analysis
