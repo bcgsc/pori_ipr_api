@@ -19,32 +19,32 @@ const updateSchema = schemaGenerator(db.models.summary_microbial, {
 
 // Middleware for microbial summary
 router.param('microbial', async (req, res, next, micIdent) => {
+  let result;
   try {
-    // Add microbial summary to request
-    req.microbial = await db.models.summary_microbial.findOne({
+    result = await db.models.summary_microbial.findOne({
       where: {ident: micIdent},
     });
-    return next();
   } catch (error) {
-    logger.error(`Unable to lookup microbial data for report ${req.report.ident} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the microbial data for report ${req.report.ident}`}});
+    logger.error(`Error while trying to get microbial data for ident: ${micIdent} report: ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get microbial data'}});
   }
+
+  if (!result) {
+    logger.error('Unable to find microbial data');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find microbial data'}});
+  }
+
+  // Add microbial summary to request
+  req.microbial = result;
+  return next();
 });
 
 // Handle requests for a single microbial summary
 router.route('/:microbial([A-z0-9-]{36})')
   .get((req, res) => {
-    if (req.microbial) {
-      return res.json(req.microbial.view('public'));
-    }
-    return res.json(null);
+    return res.json(req.microbial.view('public'));
   })
   .put(async (req, res) => {
-    if (!req.microbial) {
-      logger.error('There is no microbial data to update');
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'There is no microbial data to update'}});
-    }
-
     // Validate request against schema
     try {
       validateAgainstSchema(updateSchema, req.body);
@@ -64,11 +64,6 @@ router.route('/:microbial([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
-    if (!req.microbial) {
-      logger.error('There is no microbial data to delete');
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'There is no microbial data to delete'}});
-    }
-
     // Soft delete the entry
     try {
       await req.microbial.destroy();
