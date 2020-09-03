@@ -100,6 +100,12 @@ module.exports = (sequelize) => {
     subtyping: {
       type: Sq.TEXT,
     },
+    analysisStartedAt: {
+      name: 'analysisStartedAt',
+      field: 'analysis_started_at',
+      type: Sq.DATE,
+      defaultValue: null,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
