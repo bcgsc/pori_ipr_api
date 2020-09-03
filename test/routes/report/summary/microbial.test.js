@@ -207,11 +207,8 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
     await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
 
     // verify report is deleted
-    await request
-      .get(`/api/reports/${report.ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
+    const result = await db.models.analysis_report.findOne({where: {ident: report.ident}, paranoid: false});
+    expect(result).toBeNull();
   });
 });
 
