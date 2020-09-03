@@ -48,13 +48,56 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   let report;
+  let reportReady;
+  let reportReviewed;
+  let reportArchived;
+  let totalReports;
 
   beforeEach(async () => {
-    // Create Report and Mutation Burden
+    // Create Report and associate projects
+    const project = await db.models.project.findOne({
+      where: {
+        name: 'TEST',
+      },
+    });
+
     report = await db.models.analysis_report.create({
       patientId: mockReportData.patientId,
       tumourContent: 100,
     });
+    await db.models.reportProject.create({
+      reportId: report.id,
+      project_id: project.id,
+    });
+
+    reportReady = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+      state: 'ready',
+    });
+    await db.models.reportProject.create({
+      reportId: reportReady.id,
+      project_id: project.id,
+    });
+
+    reportReviewed = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+      state: 'reviewed',
+    });
+    await db.models.reportProject.create({
+      reportId: reportReviewed.id,
+      project_id: project.id,
+    });
+
+    reportArchived = await db.models.analysis_report.create({
+      patientId: mockReportData.patientId,
+      state: 'archived',
+    });
+    await db.models.reportProject.create({
+      reportId: reportArchived.id,
+      project_id: project.id,
+    });
+
+    totalReports = await db.models.analysis_report.count();
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -66,6 +109,50 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReport(res.body);
+    });
+
+    test('No queries is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
+        .get('/api/reports')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      // Check if the number of reports returned by api is the same as db
+      expect(res.body.total).toEqual(totalReports);
+    });
+
+    test('State querying is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
+        .get('/api/reports')
+        .query({states: 'reviewed,archived'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      res.body.reports.forEach((reportObject) => {
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+      });
+    });
+
+    test('Multiple queries is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
+        .get('/api/reports')
+        .query({
+          states: 'reviewed,archived',
+          role: 'bioinformatician',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      res.body.reports.forEach((reportObject) => {
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.users.some((user) => { return user.role === 'bioinformatician'; })).toBeTruthy();
+      });
     });
 
     test('error on non-existant ident', async () => {
@@ -121,7 +208,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     test('error on unexpected value', async () => {
-      const res = await request
+      await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
         .type('json')
@@ -135,6 +222,9 @@ describe('/reports/{REPORTID}', () => {
   // delete report
   afterEach(async () => {
     await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
+    await db.models.analysis_report.destroy({where: {id: reportReady.id}, force: true});
+    await db.models.analysis_report.destroy({where: {id: reportReviewed.id}, force: true});
+    await db.models.analysis_report.destroy({where: {id: reportArchived.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 
