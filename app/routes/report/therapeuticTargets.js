@@ -59,7 +59,7 @@ router.route('/:target([A-z0-9-]{36})')
       return res.json(req.target.view('public'));
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);
-      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Rank already exists'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target'}});
     }
   })
   .delete(async (req, res) => {
@@ -117,7 +117,7 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create new therapeutic target entry ${error}`);
-      return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Rank already exists'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry'}});
     }
   })
   .put(async (req, res) => {
@@ -142,7 +142,7 @@ router.route('/')
       return res.json({updated: true});
     } catch (error) {
       logger.error(`Unable to update therapeutic target rank ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update therapeutic target rank'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to update therapeutic target rank'}});
     }
   });
 

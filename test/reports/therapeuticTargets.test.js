@@ -206,7 +206,7 @@ describe('/therapeutic-targets', () => {
               {ident: newTarget.ident, rank: 2},
             ])
             .type('json')
-            .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+            .expect(HTTP_STATUS.BAD_REQUEST);
         }, LONGER_TIMEOUT);
       });
 
