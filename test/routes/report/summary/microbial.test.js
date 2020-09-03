@@ -104,7 +104,10 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
         .type('json')
         .expect(HTTP_STATUS.CREATED);
 
-      // Check that record was created
+      checkMicrobialProperties(res.body);
+      expect(res.body).toEqual(expect.objectContaining(MICROBIAL_DATA));
+
+      // Check that record was created in the db
       let result = await db.models.summary_microbial.findOne({where: {ident: res.body.ident}});
       expect(result).not.toBeNull();
 
