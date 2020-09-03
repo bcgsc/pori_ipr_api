@@ -10,7 +10,7 @@ const db = require('../../../models');
 const logger = require('../../../log');
 
 // Generate schema's
-const updateSchema = schemaGenerator(db.models.analystComments, {baseUri: REPORT_UPDATE_BASE_URI});
+const updateSchema = schemaGenerator(db.models.analystComments, {baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true});
 
 // Middleware for analyst comments
 router.use('/', async (req, res, next) => {
