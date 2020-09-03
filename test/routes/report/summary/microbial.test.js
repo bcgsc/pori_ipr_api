@@ -8,8 +8,7 @@ const CONFIG = require('../../../../app/config');
 const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
-let {username, password} = CONFIG.get('testing');
-password = 'w1nt3r';
+const {username, password} = CONFIG.get('testing');
 
 let server;
 let request;
