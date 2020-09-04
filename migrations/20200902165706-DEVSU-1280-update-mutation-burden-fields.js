@@ -15,7 +15,7 @@ module.exports = {
         queryInterface.renameColumn(MUTATION_BURDEN_TABLE, 'sv_percentile', 'quality_sv_percentile', {transaction}),
         queryInterface.addColumn(MUTATION_BURDEN_TABLE, 'total_snv_count', Sq.INTEGER, {transaction}),
         queryInterface.addColumn(MUTATION_BURDEN_TABLE, 'total_indel_count', Sq.INTEGER, {transaction}),
-        queryInterface.addColumn(MUTATION_BURDEN_TABLE, 'total_mutation_rate', Sq.FLOAT, {transaction}),
+        queryInterface.addColumn(MUTATION_BURDEN_TABLE, 'total_mutations_per_mb', Sq.FLOAT, {transaction}),
       ]);
     });
   },
