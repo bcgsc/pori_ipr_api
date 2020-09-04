@@ -94,7 +94,7 @@ module.exports = (sequelize) => {
       field: 'total_snv_count',
       type: Sq.INTEGER,
       jsonSchema: {
-        description: 'total number of somatic SNVs',
+        description: 'total number of somatic SNVs in the genome',
       },
     },
     totalIndelCount: {
@@ -102,7 +102,7 @@ module.exports = (sequelize) => {
       field: 'total_indel_count',
       type: Sq.INTEGER,
       jsonSchema: {
-        description: 'total number of somatic indels',
+        description: 'total number of somatic indels in the genome',
       },
     },
     totalMutationRate: {
@@ -110,7 +110,7 @@ module.exports = (sequelize) => {
       field: 'total_mutation_rate',
       type: Sq.FLOAT,
       jsonSchema: {
-        description: 'somatic indels and SNVs per megabase',
+        description: 'somatic indels and SNVs per megabase in the genome',
       },
     },
   }, {
