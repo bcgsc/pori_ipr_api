@@ -19,7 +19,12 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
-const mutationBurdenProperties = ['ident', 'createdAt', 'updatedAt', 'snv', 'snvTruncating', 'indels', 'indelsFrameshift', 'sv', 'svExpressed', 'snvPercentile', 'indelPercentile', 'svPercentile', 'role'];
+const mutationBurdenProperties = [
+  'ident', 'createdAt', 'updatedAt', 'role', 'codingSnvCount', 'truncatingSnvCount',
+  'codingIndelsCount', 'frameshiftIndelsCount', 'qualitySvCount', 'qualitySvExpressedCount',
+  'codingSnvPercentile', 'codingIndelPercentile', 'qualitySvPercentile',
+  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb',
+];
 
 const checkMutationBurden = (mutationObject) => {
   mutationBurdenProperties.forEach((element) => {
@@ -55,7 +60,7 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
     mutationBurden = await db.models.mutationBurden.create({
       reportId: report.id,
       role: 'primary',
-      snv: 13,
+      codingSnvCount: 13,
     });
   }, LONGER_TIMEOUT);
 
@@ -97,12 +102,12 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
         .auth(username, password)
         .type('json')
         .send({
-          snv: 4678,
+          codingSnvCount: 4678,
         })
         .expect(HTTP_STATUS.OK);
 
       checkMutationBurden(res.body);
-      expect(res.body).toHaveProperty('snv', 4678);
+      expect(res.body).toHaveProperty('codingSnvCount', 4678);
     });
 
     test('error on unexpected value', async () => {
