@@ -155,7 +155,7 @@
             "role": "primary",
             "totalSnvCount": 120,
             "totalIndelCount": 80,
-            "totalMutationRate": 56.24
+            "totalMutationsPerMb": 56.24
         }
     ],
     "kbMatches": [

@@ -105,9 +105,9 @@ module.exports = (sequelize) => {
         description: 'total number of somatic indels in the genome',
       },
     },
-    totalMutationRate: {
-      name: 'totalMutationRate',
-      field: 'total_mutation_rate',
+    totalMutationsPerMb: {
+      name: 'totalMutationsPerMb',
+      field: 'total_mutations_per_mb',
       type: Sq.FLOAT,
       jsonSchema: {
         description: 'somatic indels and SNVs per megabase in the genome',
