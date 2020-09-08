@@ -8,7 +8,6 @@ const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
-
 const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
 
 // Generate schema's
@@ -55,7 +54,6 @@ router.route('/:target([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
     }
 
-    // Update db entry
     try {
       await req.target.update(req.body);
       return res.json(req.target.view('public'));
@@ -124,7 +122,6 @@ router.route('/')
   })
   .put(async (req, res) => {
     const {report: {id: reportId}, body} = req;
-
     try {
       await db.transaction(async (transaction) => {
         return Promise.all(body.map((target) => {

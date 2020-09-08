@@ -74,6 +74,7 @@
     "presentationDate": null,
     "kbUrl": "https://ipr.bcgsc.ca/testurl",
     "kbDiseaseMatch": "Colorectal Cancer",
+    "analysisStartedAt": "2020-01-01T20:20:00+00:00",
     "patientInformation": {
         "physician": "Dr. Test Upload",
         "gender": "Male",
@@ -147,16 +148,19 @@
     ],
     "mutationBurden": [
         {
-            "snv": 4,
-            "snvTruncating": 0,
-            "indels": 0,
-            "indelsFrameshift": 0,
-            "sv": 92,
-            "svExpressed": 40,
-            "snvPercentile": 4,
-            "indelPercentile": 10,
-            "svPercentile": 60,
-            "role": "primary"
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": "primary",
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationsPerMb": 56.24
         }
     ],
     "kbMatches": [
@@ -315,6 +319,39 @@
     "analystComments": {
         "comments": "<p>Here is a test comment.</p>"
     },
+    "hlaTypes": [
+        {
+            "library": "S1234",
+            "pathology": "normal",
+            "protocol": "DNA",
+            "a1": "A*02:03",
+            "a2": "A*11:01",
+            "b1": "B*40:01",
+            "b2": "B*38:02",
+            "c1": "C*07:02",
+            "c2": "C*07:02",
+            "reads": 4152.0,
+            "objective": 4039.895999999993
+        }
+    ],
+    "pairwiseExpressionCorrelation": [
+        {
+            "patientId": "UPLOADPAT02",
+            "library": "LIB0002",
+            "correlation": 0.99,
+            "tumourType": "pancreatic cancer",
+            "tissueType": "liver",
+            "tumourContent": 15
+        }
+    ],
+    "immuneCellTypes": [
+        {
+            "cellType": "combined T cell",
+            "kbCategory": "moderate",
+            "score": 76,
+            "percentile": 50
+        }
+    ],
     "project": "TEST",
     "images": [
         {
@@ -444,31 +481,6 @@
         {
             "key": "mixcr.dominance_vs_alpha_beta_t-cells_scatter",
             "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
-        }
-    ],
-    "hlaTypes": [
-        {
-            "library": "S1234",
-            "pathology": "normal",
-            "protocol": "DNA",
-            "a1": "A*02:03",
-            "a2": "A*11:01",
-            "b1": "B*40:01",
-            "b2": "B*38:02",
-            "c1": "C*07:02",
-            "c2": "C*07:02",
-            "reads": 4152.0,
-            "objective": 4039.895999999993
-        }
-    ],
-    "pairwiseExpressionCorrelation": [
-        {
-            "patientId": "UPLOADPAT02",
-            "library": "LIB0002",
-            "correlation": 0.99,
-            "tumourType": "pancreatic cancer",
-            "tissueType": "liver",
-            "tumourContent": 15
         }
     ]
 }

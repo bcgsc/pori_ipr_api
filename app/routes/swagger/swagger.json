@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "Designed to be consumed by the POG Report Client, the endpoints are\navailable for authorized users to consume.",
+    "description": "Designed to be consumed by the Integrated Pipeline Reports (IPR) Client, the endpoints are\navailable for authorized users to consume.",
     "version": "1.0.0",
-    "title": "POG Reports",
+    "title": "Integrated Pipeline Reports (IPR)",
     "contact": {
       "name": "IPR Team",
       "email": "ipr@bcgsc.ca"
@@ -22,7 +22,7 @@
       "description": "Rapid analysis pipeline report"
     },
     {
-      "name": "POG",
+      "name": "Report",
       "description": "Personalized Oncogenomics related object"
     },
     {
@@ -35,7 +35,7 @@
     },
     {
       "name": "Genomic Summary",
-      "description": "Genomic Report - Summary details for a POG report"
+      "description": "Genomic Report - Summary details for a report"
     },
     {
       "name": "Germline Report",
@@ -63,7 +63,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -100,7 +100,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "$ref": "#/components/schemas/NewUser"
+                "$ref": "#/components/schemas/newUser"
               }
             }
           }
@@ -111,7 +111,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -161,7 +161,7 @@
                 "type": "object",
                 "properties": {
                   "user": {
-                    "$ref": "#/components/schemas/NewUser"
+                    "$ref": "#/components/schemas/newUser"
                   }
                 },
                 "required": [
@@ -177,7 +177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -243,7 +243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -325,7 +325,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "$ref": "#/components/schemas/User"
+                          "$ref": "#/components/schemas/user"
                         }
                       }
                     ]
@@ -371,7 +371,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -404,7 +404,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Group"
+                    "$ref": "#/components/schemas/group"
                   }
                 }
               }
@@ -420,7 +420,7 @@
       },
       "post": {
         "summary": "Create new group",
-        "description": "Create a new ACL group in the POG Report API",
+        "description": "Create a new ACL group in the Report API",
         "tags": [
           "User",
           "Group"
@@ -459,7 +459,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Group"
+                  "$ref": "#/components/schemas/group"
                 }
               }
             }
@@ -503,7 +503,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Group"
+                  "$ref": "#/components/schemas/group"
                 }
               }
             }
@@ -568,7 +568,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Group"
+                  "$ref": "#/components/schemas/group"
                 }
               }
             }
@@ -655,7 +655,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -720,7 +720,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -794,229 +794,16 @@
         }
       }
     },
-    "/POG": {
+    "/reports/{report}": {
       "get": {
-        "summary": "Get all POGs",
-        "description": "Get all POG entries currently available in database. By default only those\nassigned to the current user are returned",
-        "tags": [
-          "POG"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
+        "summary": "Get details of a specific report",
+        "description": "Retrieve an object with details of a specific report",
         "parameters": [
-          {
-            "name": "all",
-            "in": "query",
-            "required": false,
-            "description": "When value is true, API will return all POGs available, regardless of relationship",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "query",
-            "in": "query",
-            "required": false,
-            "description": "Search POG entries within scope",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully retrieved all POGs",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/POG"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "You are not authorized to view this resource"
-          }
-        }
-      }
-    },
-    "/POG/{POG}": {
-      "get": {
-        "summary": "Get details of a specific POG",
-        "description": "Retrieved details for a given POG",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          }
-        ],
-        "tags": [
-          "POG"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully found POG entry",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/POG"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "You are not authorized to view this resource"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/load/{type}": {
-      "post": {
-        "summary": "Load report into IPR",
-        "description": "Load the requested project/report type into the Interactive POG Report\ndatabase.",
-        "tags": [
-          "POG"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "name": "type",
-            "in": "path",
-            "required": true,
-            "description": "Report type, either genomic, probe, or nonPOG",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "options": {
-                    "description": "Loading parameters for this report",
-                    "type": "object",
-                    "properties": {
-                      "baseDir": {
-                        "type": "string",
-                        "example": "/projects/tumour_char/pog/reports/genomic/POG000/P00000_P00000/jreport_genomic_summary_v4.1.0/report",
-                        "description": "Base directory of genomic report. Expects to find\n./Reporting_Tracking.cfg, ./images and ./JReport_CSV_ODF folders"
-                      },
-                      "project": {
-                        "type": "string",
-                        "description": "Project to be used in determining the loader profile.",
-                        "enum": [
-                          "POG",
-                          "gph_lymphoma",
-                          "profyle"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successfully loaded report into IPR",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/report"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Failed to load POG report. Possibly a required source file/image was\nnot found, and the report failed to load."
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Unable to find the source files required for this POG."
-          },
-          "500": {
-            "description": "The server was not able to load the report due to an internal error."
-          }
-        }
-      }
-    },
-    "/POG/{POG}/reports": {
-      "get": {
-        "summary": "Get all reports for a POG",
-        "description": "Retrieve list of all reports, of all types for a given POG",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          }
-        ],
-        "tags": [
-          "POG"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully found all reports for this POG",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/report"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/reports/{report}": {
-      "get": {
-        "summary": "Get all reports for a POG",
-        "description": "Retrieve list of all reports, of all types for a given POG",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
-          "POG"
         ],
         "security": [
           {
@@ -1029,7 +816,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -1046,12 +833,8 @@
         "summary": "Update report",
         "description": "Update an analysis report's settings",
         "tags": [
-          "POG"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1105,7 +888,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/report"
+                  "$ref": "#/components/schemas/analysis_report"
                 }
               }
             }
@@ -1116,128 +899,11 @@
         }
       }
     },
-    "/POG/{POG}/user": {
-      "post": {
-        "summary": "Bind user to POG",
-        "description": "Bind a new user to the specified POG",
-        "tags": [
-          "POG"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          }
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "relationship": {
-                    "type": "object",
-                    "properties": {
-                      "user": {
-                        "type": "string",
-                        "example": "d1caf489-107f-4f3e-94bf-8004d4905763",
-                        "description": "User's UUID ident string"
-                      },
-                      "role": {
-                        "$ref": "#/components/schemas/POGRelationship"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "relationship"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successfully bound user",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/POGUser"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Unable to find provided user"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Unbind user from POG",
-        "description": "Remove a user's relationship to the specified POG",
-        "tags": [
-          "POG"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          }
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "relationship": {
-                    "type": "object",
-                    "properties": {
-                      "user": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "relationship"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "User successfully unbound from POG"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Unable to find a provided user and/or unable to remove a user from a\nPOG"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/report/{report}/genomic/summary/patientInformation": {
+    "/reports/{report}/patient-information": {
       "get": {
         "summary": "Get Patient Summary",
-        "description": "Retrieve basic metadata patient details for a POG",
+        "description": "Retrieve basic metadata patient details for a report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1266,7 +932,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1278,9 +944,6 @@
           "Genomic Summary"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1297,7 +960,7 @@
                 "type": "object",
                 "properties": {
                   "update": {
-                    "$ref": "#/components/schemas/summary_patientInformation_update"
+                    "$ref": "#/components/schemas/patientInformation"
                   }
                 },
                 "required": [
@@ -1322,19 +985,16 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/mutationSummary": {
+    "/reports/{report}/summary/mutation-summary": {
       "get": {
         "summary": "Get Mutation Summary",
-        "description": "Retrieve summary of mutation details for the POG",
+        "description": "Retrieve summary of mutation details for the report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1354,7 +1014,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_mutationSummary"
+                  "$ref": "#/components/schemas/mutationSummary"
                 }
               }
             }
@@ -1363,7 +1023,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1375,9 +1035,6 @@
           "Genomic Summary"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1400,7 +1057,7 @@
                       "mutationSignature": {
                         "type": "array",
                         "items": {
-                          "$ref": "#/components/schemas/smallMut_signature"
+                          "$ref": "#/components/schemas/mutationSignature"
                         }
                       }
                     }
@@ -1419,7 +1076,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_mutationSummary"
+                  "$ref": "#/components/schemas/mutationSummary"
                 }
               }
             }
@@ -1428,19 +1085,16 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/tumourAnalysis": {
+    "/reports/{report}/summary/tumour-analysis": {
       "get": {
         "summary": "Get Tumour Analysis Summary",
-        "description": "Retrieve summary of Tumour Analysis details for the POG",
+        "description": "Retrieve summary of Tumour Analysis details for the report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1460,7 +1114,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_tumourAnalysis"
+                  "$ref": "#/components/schemas/tumourAnalysis"
                 }
               }
             }
@@ -1469,7 +1123,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1481,9 +1135,6 @@
           "Genomic Summary"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1522,7 +1173,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_tumourAnalysis"
+                  "$ref": "#/components/schemas/tumourAnalysis"
                 }
               }
             }
@@ -1531,19 +1182,16 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/variantCounts": {
+    "/reports/{report}/summary/variant-counts": {
       "get": {
         "summary": "Get Variant counts",
         "description": "This endpoint is soon to be deprecated. Returns static analysis of variant\ncounts",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1563,7 +1211,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_variantCounts"
+                  "$ref": "#/components/schemas/variantCounts"
                 }
               }
             }
@@ -1572,19 +1220,16 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified": {
+    "/reports/{report}/summary/genomic-alterations-identified": {
       "get": {
         "summary": "Get key genomic alterations",
         "description": "Retrieve list of key identified genomic alterations",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1604,7 +1249,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_genomicAlteration"
+                  "$ref": "#/components/schemas/genomicAlterationsIdentified"
                 }
               }
             }
@@ -1613,7 +1258,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
+            "description": "Report Not found"
           }
         }
       },
@@ -1621,9 +1266,6 @@
         "summary": "Add key genomic alterations",
         "description": "Add new key genomic alterations to a analysis report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1643,7 +1285,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/summary_genomicAlteration"
+                  "$ref": "#/components/schemas/genomicAlterationsIdentified"
                 }
               }
             }
@@ -1657,14 +1299,11 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/genomicAlterationsIdentified/{alteration}": {
+    "/reports/{report}/summary/genomic-alterations-identified/{alteration}": {
       "delete": {
         "summary": "Remove key genomic alterations",
         "description": "Remove a key identified genomic alteration entry.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           },
@@ -1695,204 +1334,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "POG Not found"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/report/{report}/genomic/summary/genomicEventsTherapeutic": {
-      "get": {
-        "summary": "Get genomic events with therapeutic association",
-        "description": "Retrieve list of genomic events with potential therapeutic association",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Genomic Report",
-          "Genomic Summary"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns array of enomic events with potential therapeutic association",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/summary_genomicEvents"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "POG Not found"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/report/{report}/genomic/summary/probeTarget": {
-      "get": {
-        "summary": "Get probe targets",
-        "description": "Retrieve list of key identified genomic alterations",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Genomic Report",
-          "Genomic Summary"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns array of key identified gemomic alterations",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/summary_probeTarget"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "POG Not found"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/report/{report}/genomic/summary/probeTarget/{target}": {
-      "delete": {
-        "summary": "Remove probe target",
-        "description": "Remove an idenfitied probe target.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "name": "target",
-            "in": "path",
-            "required": true,
-            "description": "The probe target entry to be removed",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "tags": [
-          "Genomic Report",
-          "Genomic Summary"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Probe target was successfully removed"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "POG Not found"
-          }
-        }
-      }
-    },
-    "/POG/{POG}/report/{report}/probe/testInformation": {
-      "get": {
-        "summary": "Get probe test information",
-        "description": "Get probe analysis test information",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Probe Report"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Probe report test information was successfully received",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ident": {
-                      "$ref": "#/components/schemas/ident"
-                    },
-                    "kbVersion": {
-                      "type": "string"
-                    },
-                    "snpProbe": {
-                      "type": "string"
-                    },
-                    "snpGenes": {
-                      "type": "string"
-                    },
-                    "snpVars": {
-                      "type": "string"
-                    },
-                    "fusionProbe": {
-                      "type": "string"
-                    },
-                    "fusionGenes": {
-                      "type": "string"
-                    },
-                    "fusionVars": {
-                      "type": "string"
-                    },
-                    "createdAt": {
-                      "$ref": "#/components/schemas/datetime"
-                    },
-                    "updatedAt": {
-                      "$ref": "#/components/schemas/datetime"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Probe report test results not found"
+            "description": "Report Not found"
           }
         }
       }
@@ -1900,9 +1342,110 @@
     "/reports": {
       "get": {
         "summary": "Get all analysis reports",
-        "description": "Get all POG analysis reports that you have acess to",
+        "description": "Get all analysis reports that you have acess to",
         "tags": [
           "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter the reports by 'genomic'or 'probe'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "required": false,
+            "description": "Seach for all reports under a chosen project name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchText",
+            "in": "query",
+            "required": false,
+            "description": "String to be searched in the reports field",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "states",
+            "in": "query",
+            "required": false,
+            "description": "Filter by current state of the report",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "all",
+            "in": "query",
+            "required": false,
+            "description": "'true' if you want to retrieve all reports. Default is set to 'false'",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "description": "Filter the reports by user role",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter the reports by 'genomic'or 'probe'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paginated",
+            "in": "query",
+            "required": false,
+            "description": "'true', if you want to split the report, allowing to to choose the 'limit' and 'offset",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "The end of the set of reports to retrieve",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "The start of the set of reports to retrieve",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Column for the reports to be sorted",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "security": [
           {
@@ -1911,13 +1454,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of POG analysis reports",
+            "description": "Returns an array of analysis reports",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/report"
+                    "$ref": "#/components/schemas/analysis_report"
                   }
                 }
               }
@@ -1927,19 +1470,16 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "403": {
-            "description": "Insufficient access to get POG reports"
+            "description": "Insufficient access to get reports"
           }
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/microbial": {
+    "/reports/{report}/summary/microbial": {
       "get": {
         "summary": "Get microbial data",
-        "description": "Get microbial data for a specific POG report",
+        "description": "Get microbial data for a specific report",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -1989,7 +1529,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Project"
+                    "$ref": "#/components/schemas/project"
                   }
                 }
               }
@@ -2020,7 +1560,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/project"
                 }
               }
             }
@@ -2034,19 +1574,14 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/therapeuticTargets": {
+    "/reports/{report}/therapeutic-targets": {
       "get": {
         "summary": "Get therapeutic targets",
         "description": "Returns all therapeutic targets for an analysis report",
         "tags": [
-          "Therapeutic",
-          "Therapeutic Target",
           "Therapeutic Targets"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -2075,32 +1610,42 @@
           },
           "403": {
             "description": "Don't have permissions to get therapeutic targets"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       },
       "post": {
         "summary": "Create a new therapeutic target",
-        "description": "Creates a new therapeutic target and sdfs",
+        "description": "Creates a new therapeutic target",
         "tags": [
-          "Therapeutic",
-          "Therapeutic Target",
           "Therapeutic Targets"
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Therapeutic Target object to be created",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/therapeuticTargetInput"
+              }
+            }
+          }
+        },
         "security": [
           {
             "basicAuth": []
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Add therapeutic targets to analysis report",
             "content": {
               "application/json": {
@@ -2110,13 +1655,74 @@
               }
             }
           },
+          "400": {
+            "description": "Input is not valid"
+          },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "409": {
+            "description": "Rank already exists"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update ranks of Therapeutic Targets for a report",
+        "description": "Return true if the targets are updated successfully",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "An array of ranks and idents to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/therapeuticTargetRanksBulkUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "True if ranks were updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
           }
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/summary/pathwayAnalysis": {
+    "/reports/{report}/summary/pathway-analysis": {
       "get": {
         "summary": "Get report pathway analysis",
         "description": "Get a reports pathway analysis image",
@@ -2124,9 +1730,6 @@
           "Pathway Analysis"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -2163,9 +1766,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
@@ -2201,9 +1801,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
             "$ref": "#/components/parameters/report"
           }
         ],
@@ -2232,7 +1829,7 @@
         }
       }
     },
-    "/POG/{POG}/report/{report}/genomic/somaticMutations/smallMutations": {
+    "/reports/{report}/small-mutations": {
       "get": {
         "summary": "Get somatic small mutations",
         "description": "Returns an analysis reports somatic small mutations",
@@ -2241,9 +1838,6 @@
           "Small Mutations"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/POG"
-          },
           {
             "$ref": "#/components/parameters/report"
           }
@@ -2261,7 +1855,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/smallMutation"
+                    "$ref": "#/components/schemas/smallMutations"
                   }
                 }
               }
@@ -2276,7 +1870,7 @@
         }
       }
     },
-    "/germline_small_mutation": {
+    "/germline-small-mutation-reports": {
       "get": {
         "summary": "Get all germline small mutation reports",
         "description": "Returns all germline small mutation reports the user has access to",
@@ -2288,7 +1882,7 @@
             "name": "search",
             "in": "query",
             "required": false,
-            "description": "POGID to search reports for",
+            "description": "ID to search reports for",
             "schema": {
               "type": "string"
             }
@@ -2340,7 +1934,7 @@
                     "reports": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/germlineSmallMutation"
+                        "$ref": "#/components/schemas/germline_small_mutation"
                       }
                     }
                   }
@@ -2357,19 +1951,16 @@
         }
       }
     },
-    "/patient/{POG}/biopsy/{analysis}": {
+    "/germline-small-mutation-reports/{report}": {
       "get": {
-        "summary": "Get the details of a Germline Report",
-        "tags": [
-          "Germline Report"
-        ],
+        "summary": "",
+        "description": "",
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/analysis"
+            "$ref": "#/components/parameters/report"
           }
+        ],
+        "tags": [
         ],
         "security": [
           {
@@ -2378,233 +1969,2136 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "analysis": {
-                      "type": "object"
-                    },
-                    "biofx_assigned": {
-                      "$ref": "#/components/schemas/User"
-                    },
-                    "reviews": {
-                      "type": "array",
-                      "items": {
-                        "type": "object"
-                      }
-                    },
-                    "variants": {
-                      "type": "array",
-                      "items": {
-                        "type": "object"
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/germline_small_mutation"
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
           }
         }
-      },
-      "post": {
-        "summary": "Upload a Germline Report",
-        "tags": [
-          "Germline Report"
-        ],
+      }
+    },
+    "/germline-small-mutation-reports/{report}/review": {
+      "put": {
+        "summary": "",
+        "description": "",
         "parameters": [
           {
-            "$ref": "#/components/parameters/POG"
-          },
-          {
-            "$ref": "#/components/parameters/analysis"
+            "$ref": "#/components/parameters/report"
           }
+        ],
+        "tags": [
         ],
         "security": [
           {
             "basicAuth": []
           }
         ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_review"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{report}/review/{review}": {
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/review"
+          },
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_review"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{report}/variant/{variant}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variant"
+          },
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_variant"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variant"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_variant"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/graphkb/{targetType}": {
+      "post": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/targetType"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/appendices": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/appendices/tcga": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/copy-variants": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/copy-variants/{cnv}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/cnv"
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/expression-variants": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/expression-variants/{ExpressionVariant}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/gene-viewer/{geneName} ": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{reports}/genes": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{reports}/genes/{geneName}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/expression-density-graphs": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/mutation-summary": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/retrieve/{key} ": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/subtype-plots": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches/{kbMatch}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mavis": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mutation-signatures": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/discussion": {
+      "get": {
+        "summary": "Get a list of discussions for a specific report",
+        "description": "Return an array of discussions from a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get the array of discussions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationDiscussionArray"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a discussion for a specific report",
+        "description": "Return the created discussion for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
         "requestBody": {
+          "description": "The discussion to be created",
+          "required": true,
           "content": {
-            "application/json": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/presentationDiscussionInput"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The created discussion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationDiscussion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input was provided"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/discussion/{discussion}": {
+      "get": {
+        "summary": "Get a single discussion for a specific report",
+        "description": "Return a discussion object from a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a single discussion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationDiscussion"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found or Discussion not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a single discussion for a specific report",
+        "description": "Return no content if successful",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found or Discussion not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a discussion for a specific report",
+        "description": "Return the updated discussion for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/discussion"
+          }
+        ],
+        "requestBody": {
+          "description": "The discussion to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/presentationDiscussionInput"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated discussion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationDiscussion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input was provided"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/slide": {
+      "get": {
+        "summary": "Get a list of slides from a report",
+        "description": "Return an array of slide objects",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of slides",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationSlidesArray"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a slide for a report",
+        "description": "Return the created slide object",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "requestBody": {
+          "description": "Slide object and name",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "source",
-                  "version",
-                  "patient",
-                  "rows",
-                  "project",
-                  "normal_library"
-                ],
                 "properties": {
-                  "source": {
+                  "file": {
                     "type": "string",
-                    "description": "source file path"
+                    "format": "binary"
                   },
-                  "version": {
-                    "type": "string",
-                    "description": "source file version",
-                    "example": "v0.0.1"
-                  },
-                  "patient": {
-                    "type": "string",
-                    "description": "patient identifier",
-                    "example": "POG1234"
-                  },
-                  "rows": {
-                    "type": "array",
-                    "description": "Data rows",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "cgl_category",
-                        "preferred_transcript",
-                        "gmaf"
-                      ],
-                      "properties": {
-                        "flagged": {
-                          "type": "string"
-                        },
-                        "clinvar": {
-                          "type": "string"
-                        },
-                        "cgl_category": {
-                          "type": "string"
-                        },
-                        "gmaf": {
-                          "type": "string"
-                        },
-                        "transcript": {
-                          "type": "string"
-                        },
-                        "gene": {
-                          "type": "string"
-                        },
-                        "variant": {
-                          "type": "string"
-                        },
-                        "impact": {
-                          "type": "string"
-                        },
-                        "chromosome": {
-                          "type": "string"
-                        },
-                        "position": {
-                          "type": "string"
-                        },
-                        "dbSNP": {
-                          "type": "string"
-                        },
-                        "reference": {
-                          "type": "string"
-                        },
-                        "alteration": {
-                          "type": "string"
-                        },
-                        "zygosity_germline": {
-                          "type": "string"
-                        },
-                        "preferred_transcript": {
-                          "type": "boolean"
-                        },
-                        "hgvs_cdna": {
-                          "type": "string"
-                        },
-                        "hgvs_protein": {
-                          "type": "string"
-                        },
-                        "zygosity_tumour": {
-                          "type": "string"
-                        },
-                        "genomic_variant_reads": {
-                          "type": "string"
-                        },
-                        "rna_variant_reads": {
-                          "type": "string"
-                        },
-                        "gene_somatic_abberation": {
-                          "type": "string"
-                        },
-                        "notes": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        },
-                        "patient_history": {
-                          "type": "string"
-                        },
-                        "family_history": {
-                          "type": "string"
-                        },
-                        "tcga_comp_norm_percentile": {
-                          "type": "string"
-                        },
-                        "tcga_comp_percentile": {
-                          "type": "string"
-                        },
-                        "gtex_comp_percentile": {
-                          "type": "string"
-                        },
-                        "fc_bodymap": {
-                          "type": "string"
-                        },
-                        "gene_expression_rpkm": {
-                          "type": "number"
-                        },
-                        "additional_info": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "project": {
-                    "type": "string",
-                    "description": "Project name"
-                  },
-                  "normal_library": {
-                    "type": "string",
-                    "example": "P12345",
-                    "description": "The germline/normal library name"
+                  "name": {
+                    "type": "string"
                   }
                 }
               }
             }
           }
         },
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "The report was created",
+          "201": {
+            "description": "Slide object",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "variants": {
-                      "type": "object"
-                    },
-                    "analysis": {
-                      "type": "object",
-                      "properties": {
-                        "pog": {
-                          "$ref": "#/components/schemas/POG"
-                        }
-                      }
-                    },
-                    "biofx_assigned": {
-                      "$ref": "#/components/schemas/User"
-                    }
-                  }
+                  "$ref": "#/components/schemas/presentationSlides"
                 }
               }
             }
           },
           "400": {
-            "description": "Missing Required Fields or the Report already Exists"
+            "description": "Input not valid"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/presentation/slide/{slide}": {
+      "get": {
+        "summary": "Get a single slide from a report",
+        "description": "Return a slide object",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/slide"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slide object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/presentationSlides"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found or Slide not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a single slide for a specific report",
+        "description": "Return no content if successful",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/slide"
+          }
+        ],
+        "tags": [
+          "Presentation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found or Discussion not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/probe-results": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/probe-results/{target}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/probe-test-information": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures/revoke/{role}": {
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures/sign/{role}": {
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/small-mutations/{mutation}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/structural-variants": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/structural-variants/{structuralVariant}": {
+      "get": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "",
+        "description": "",
+        "parameters": [
+          {
+            "$ref": ""
+          }
+        ],
+        "tags": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/summary/analyst-comments": {
+      "get": {
+        "summary": "Get an Analyst Comment associated with a given report",
+        "description": "Return the Analyst Comment associated with this report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Analyst Comments"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Analyst Comment associated with an analysis report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analystComments"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an Analyst Comment associated with a given report",
+        "description": "Returns no content if comment was deleted successfully",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Analyst Comments"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an Analyst Comment associated with a given report",
+        "description": "Return the updated Analyst Comment associated with this report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "Analyst Comment object to be created",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/analystCommentsUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Analyst Comments"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated Analyst Comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analystComments"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input is not valid"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/therapeutic-targets/{Therapeutic Target}": {
+      "get": {
+        "summary": "Get a Therapeutic Target for a given ident",
+        "description": "Return a single therapeutic target for an analysis report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
+          }
+        ],
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get therapeutic target for analysis report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/therapeuticTarget"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a Therapeutic Target for a given ident",
+        "description": "Returns 204 no content if delete was successful",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
+          }
+        ],
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Therapeutic Target for a given ident",
+        "description": "Return the updated therapeutic target for an analysis report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
+          }
+        ],
+        "requestBody": {
+          "description": "The parameters to be updated, any of the parameters can be removed if does not need to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/therapeuticTargetInput"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated therapeutic target",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/therapeuticTarget"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not valid input"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          },
+          "409": {
+            "description": "Rank already exists"
           }
         }
       }
@@ -2614,32 +4108,59 @@
     "description": "Find out more about Swagger",
     "url": "http://swagger.io"
   },
-  "servers": [
-    {
-      "url": "https://ipr-api.bcgsc.ca/api/1.0",
-      "description": "Production server (uses live data)"
-    },
-    {
-      "url": "https://dev-ipr.bcgsc.ca:8081/api/1.0",
-      "description": "Development server"
-    }
-  ],
   "components": {
     "parameters": {
-      "POG": {
-        "name": "POG",
-        "in": "path",
-        "required": true,
-        "description": "POG ID",
-        "schema": {
-          "type": "string"
-        }
-      },
       "report": {
         "name": "report",
         "in": "path",
         "required": true,
         "description": "Analysis report ident",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "targetType": {
+        "name": "Target Type",
+        "in": "path",
+        "required": true,
+        "description": "Target type, one of: variant, therapy, evidenceLevel or context",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "therapeuticTarget": {
+        "name": "Therapeutic Target",
+        "in": "path",
+        "required": true,
+        "description": "Therapeutic Target ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "review": {
+        "name": "review",
+        "in": "path",
+        "required": true,
+        "description": "Germline Review ID",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "variant": {
+        "name": "variant",
+        "in": "path",
+        "required": true,
+        "description": "Germline Variant ID",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "cnv": {
+        "name": "Copy-Number Variant",
+        "in": "path",
+        "required": true,
+        "description": "Copy number variant",
         "schema": {
           "type": "string"
         }
@@ -2653,6 +4174,26 @@
           "type": "string",
           "format": "UUIDv4"
         }
+      },
+      "discussion": {
+        "name": "discussion",
+        "in": "path",
+        "required": true,
+        "description": "the discussion ID",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "slide": {
+        "name": "slide",
+        "in": "path",
+        "required": true,
+        "description": "the slide ID",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
       }
     },
     "securitySchemes": {
@@ -2662,1119 +4203,6 @@
       }
     },
     "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "username": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "description": "The location authentication details are stored in.",
-            "enum": [
-              "bcgsc",
-              "local"
-            ]
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "lastLogin": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "NewUser": {
-        "type": "object",
-        "description": "New user to be added to the database",
-        "properties": {
-          "username": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "description": "The location authentication details are stored in.",
-            "enum": [
-              "bcgsc",
-              "local"
-            ]
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          }
-        }
-      },
-      "Group": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "int"
-          },
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "name": {
-            "type": "string"
-          },
-          "owner_id": {
-            "type": "int"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "users": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/User"
-            }
-          },
-          "owner": {
-            "$ref": "#/components/schemas/User"
-          }
-        }
-      },
-      "POG": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/POGModel"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "patientInformation": {
-                "$ref": "#/components/schemas/patientInformation"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "analysis_reports": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/report"
-                }
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "projects": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Project"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "POGModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "POGID": {
-            "$ref": "#/components/schemas/POGID"
-          },
-          "nonPOG": {
-            "type": "boolean"
-          },
-          "project": {
-            "type": "string"
-          },
-          "alternate_identifier": {
-            "$ref": "#/components/schemas/POGID"
-          },
-          "age_of_consent": {
-            "type": "integer"
-          }
-        }
-      },
-      "POGUser": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "bioinformatician",
-              "analyst",
-              "reviewer",
-              "admin",
-              "clinician"
-            ]
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
-          },
-          "addedBy": {
-            "$ref": "#/components/schemas/User"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "report": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/reportModel"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "patientInformation": {
-                "$ref": "#/components/schemas/patientInformation"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "tumourAnalysis": {
-                "$ref": "#/components/schemas/summary_tumourAnalysis"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "pog": {
-                "$ref": "#/components/schemas/POGModel"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "createdBy": {
-                "$ref": "#/components/schemas/User"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "analysis": {
-                "$ref": "#/components/schemas/analysis"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "properties": {
-              "users": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "reportModel": {
-        "type": "object",
-        "description": "Analysis Report model object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/reportIdent"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "genomic",
-              "probe"
-            ]
-          },
-          "sampleInfo": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/summary_sampleInfo"
-            }
-          },
-          "seqQC": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/summary_seqQC"
-            }
-          },
-          "config": {
-            "type": "string"
-          },
-          "reportVersion": {
-            "type": "string"
-          },
-          "kbVersion": {
-            "type": "string"
-          },
-          "state": {
-            "type": "string"
-          },
-          "expression_matrix": {
-            "type": "string"
-          },
-          "analysis_id": {
-            "type": "integer"
-          }
-        }
-      },
-      "analysis": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "libraries": {
-            "type": "object",
-            "properties": {
-              "normal": {
-                "type": "string"
-              },
-              "tumour": {
-                "type": "string"
-              },
-              "transcriptome": {
-                "type": "string"
-              }
-            }
-          },
-          "notes": {
-            "type": "string"
-          },
-          "clinical_biopsy": {
-            "type": "string"
-          },
-          "analysis_biopsy": {
-            "type": "string"
-          },
-          "bioapps_source_id": {
-            "type": "string"
-          },
-          "disease": {
-            "type": "string"
-          },
-          "biopsy_notes": {
-            "type": "string"
-          },
-          "priority": {
-            "type": "integer"
-          },
-          "onco_panel_submitted": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "comparator_disease": {
-            "type": "object",
-            "properties": {
-              "all": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "analysis": {
-                "type": "string"
-              },
-              "tumour_type_kb": {
-                "type": "string"
-              },
-              "tumour_type_report": {
-                "type": "string"
-              }
-            }
-          },
-          "comparator_normal": {
-            "type": "object",
-            "properties": {
-              "gtex_biopsy": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "gtex_primary": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "normal_biopsy": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "normal_primary": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "biopsy_site": {
-            "type": "string"
-          },
-          "biopsy_type": {
-            "type": "string"
-          },
-          "biopsy_date": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "date_analysis": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "date_presentation": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "threeLetterCode": {
-            "type": "string"
-          },
-          "physician": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "last_name": {
-                  "type": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "pediatric_id": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "pog": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/POG"
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "projects": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/Project"
-                    }
-                  }
-                }
-              }
-            ]
-          }
-        }
-      },
-      "Project": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "summary_sampleInfo": {
-        "type": "object",
-        "properties": {
-          "sample": {
-            "type": "string"
-          },
-          "Patho TC": {
-            "type": "string"
-          },
-          "Biopsy Site": {
-            "type": "string"
-          },
-          "Sample Name": {
-            "type": "string"
-          },
-          "Primary Site": {
-            "type": "string"
-          },
-          "Collection Date": {
-            "type": "string"
-          }
-        }
-      },
-      "summary_seqQC": {
-        "type": "object",
-        "properties": {
-          "Reads": {
-            "type": "string"
-          },
-          "bioQC": {
-            "type": "string"
-          },
-          "labQC": {
-            "type": "string"
-          },
-          "Sample": {
-            "type": "string"
-          },
-          "Library": {
-            "type": "string"
-          },
-          "Coverage": {
-            "type": "string"
-          },
-          "Input_ng": {
-            "type": "string"
-          },
-          "Input_ug": {
-            "type": "string"
-          },
-          "Protocol": {
-            "type": "string"
-          },
-          "Sample Name": {
-            "type": "string"
-          },
-          "Duplicate_Reads_Perc": {
-            "type": "string"
-          }
-        }
-      },
-      "patientInformation": {
-        "type": "object",
-        "description": "Patient details and meta information",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "physician": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "Male",
-              "Female",
-              "Not Defined"
-            ]
-          },
-          "age": {
-            "type": "string"
-          },
-          "POGID": {
-            "type": "string"
-          },
-          "caseType": {
-            "type": "string",
-            "enum": [
-              "Adult",
-              "Pediatric"
-            ]
-          },
-          "tumourType": {
-            "type": "string"
-          },
-          "reportDate": {
-            "type": "string"
-          },
-          "biopsySite": {
-            "type": "string"
-          },
-          "tumourSample": {
-            "type": "string"
-          },
-          "tumourProtocol": {
-            "type": "string"
-          },
-          "constitutionalSample": {
-            "type": "string"
-          },
-          "constitutionalProtocol": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "pathwayAnalysis": {
-        "type": "object",
-        "description": "Pathway analysis details and SVG image",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "original": {
-            "type": "string"
-          },
-          "pathway": {
-            "type": "string",
-            "description": "XML of pathway analysis SVG image"
-          }
-        }
-      },
-      "therapeuticTarget": {
-        "type": "object",
-        "description": "A therapeutic target from an analysis report",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "therapeutic",
-              "chemoresistance"
-            ]
-          },
-          "rank": {
-            "type": "integer"
-          },
-          "target": {
-            "type": "object"
-          },
-          "targetContext": {
-            "type": "string"
-          },
-          "resistance": {
-            "type": "string"
-          },
-          "biomaker": {
-            "type": "object"
-          },
-          "notes": {
-            "type": "string"
-          }
-        }
-      },
-      "smallMutation": {
-        "type": "object",
-        "description": "Somatic small mutation information",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "mutationType": {
-            "type": "string",
-            "enum": [
-              "clinical",
-              "nostic",
-              "biological",
-              "unknown"
-            ]
-          },
-          "gene": {
-            "type": "string"
-          },
-          "transcript": {
-            "type": "string"
-          },
-          "proteinChange": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
-          },
-          "refAlt": {
-            "type": "string"
-          },
-          "zygosity": {
-            "type": "string"
-          },
-          "ploidyCorrCpChange": {
-            "type": "string"
-          },
-          "lohState": {
-            "type": "string"
-          },
-          "tumourReads": {
-            "type": "string"
-          },
-          "RNAReads": {
-            "type": "string"
-          },
-          "expressionRpkm": {
-            "type": "number"
-          },
-          "foldChange": {
-            "type": "number"
-          },
-          "TCGAPerc": {
-            "type": "integer"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "germlineSmallMutation": {
-        "type": "object",
-        "description": "A germline small mutation report",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "pog_analysis_id": {
-            "type": "integer"
-          },
-          "biofx_assigned_id": {
-            "type": "integer"
-          },
-          "source_version": {
-            "type": "string"
-          },
-          "source_path": {
-            "type": "string"
-          },
-          "exported": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_patientInformation_update": {
-        "type": "object",
-        "description": "Patient details and meta information",
-        "properties": {
-          "physician": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "Male",
-              "Female",
-              "Not Specified"
-            ]
-          },
-          "age": {
-            "type": "string"
-          },
-          "caseType": {
-            "type": "string",
-            "enum": [
-              "Adult",
-              "Pediatric"
-            ]
-          },
-          "tumourType": {
-            "type": "string"
-          },
-          "biopsySite": {
-            "type": "string"
-          },
-          "tumourSample": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "comment": {
-            "$ref": "#/components/schemas/updateComment"
-          }
-        }
-      },
-      "summary_tumourAnalysis": {
-        "type": "object",
-        "description": "Details about the tumour.",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "tumourContent": {
-            "type": "integer"
-          },
-          "ploidy": {
-            "type": "string"
-          },
-          "normalExpressionComparator": {
-            "type": "string"
-          },
-          "diseaseExpressionComparator": {
-            "type": "string"
-          },
-          "subtyping": {
-            "type": "string"
-          },
-          "tcgaColor": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_mutationSummary": {
-        "type": "object",
-        "description": "Details of the computed mutational signature",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "mutationSignature": {
-            "$ref": "#/components/schemas/smallMut_signature"
-          },
-          "totalSNV": {
-            "type": "string"
-          },
-          "totalIndel": {
-            "type": "string"
-          },
-          "totalSV": {
-            "type": "string"
-          },
-          "snvPercentileTCGA": {
-            "type": "integer"
-          },
-          "snvPercentileDisease": {
-            "type": "string"
-          },
-          "indelPercentileTCGA": {
-            "type": "integer"
-          },
-          "indelPercentileDisease": {
-            "type": "string"
-          },
-          "svPercentilePOG": {
-            "type": "integer"
-          },
-          "snvPercentileTCGACategory": {
-            "type": "string"
-          },
-          "snvPercentileDiseaseCategory": {
-            "type": "string"
-          },
-          "indelPercentileTCGACategory": {
-            "type": "string"
-          },
-          "indelPercentileDiseaseCategory": {
-            "type": "string"
-          },
-          "svPercentilePOGCategory": {
-            "type": "string"
-          },
-          "snvReportCategory": {
-            "type": "string"
-          },
-          "indelReportCategory": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_variantCounts": {
-        "type": "object",
-        "description": "Soon to be deprecated, this output provides static counts of variants\nidentified in the report.",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "smallMutations": {
-            "type": "integer"
-          },
-          "CNVs": {
-            "type": "integer"
-          },
-          "SVs": {
-            "type": "integer"
-          },
-          "expressionOutliers": {
-            "type": "integer"
-          },
-          "variantsUnknown": {
-            "type": "integer"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_genomicAlteration": {
-        "type": "object",
-        "description": "Describes an identified genomic alteration",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "geneVariant": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_genomicEvents": {
-        "type": "object",
-        "description": "Genomic events with potential therapeutic targets",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "genomicEvent": {
-            "type": "string"
-          },
-          "approvedThisCancerType": {
-            "type": "string"
-          },
-          "approvedOtherCancerType": {
-            "type": "string"
-          },
-          "emergingPreclinicalEvidence": {
-            "type": "string"
-          },
-          "comments": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "summary_probeTarget": {
-        "type": "object",
-        "description": "Entries detected by rapid analysis pipeline",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "gene": {
-            "type": "string"
-          },
-          "variant": {
-            "type": "string"
-          },
-          "sample": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "smallMut_signature": {
-        "type": "object",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "signature": {
-            "type": "object"
-          },
-          "pearson": {
-            "type": "number",
-            "format": "float"
-          },
-          "nnls": {
-            "type": "number",
-            "format": "float"
-          },
-          "associations": {
-            "type": "string"
-          },
-          "features": {
-            "type": "string"
-          },
-          "numCancerType": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
-      "smallMut_mutation": {
-        "type": "object",
-        "description": "Detected small mutations",
-        "properties": {
-          "ident": {
-            "$ref": "#/components/schemas/ident"
-          },
-          "dataVersion": {
-            "$ref": "#/components/schemas/dataVersion"
-          },
-          "mutationType": {
-            "type": "string"
-          },
-          "gene": {
-            "type": "string"
-          },
-          "transcript": {
-            "type": "string"
-          },
-          "proteinChange": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
-          },
-          "refAlt": {
-            "type": "string"
-          },
-          "zygosity": {
-            "type": "string"
-          },
-          "ploidyCorrCpChange": {
-            "type": "string"
-          },
-          "lohState": {
-            "type": "string"
-          },
-          "tumourReads": {
-            "type": "string"
-          },
-          "RNAReads": {
-            "type": "string"
-          },
-          "expressionRpkm": {
-            "type": "number",
-            "format": "float"
-          },
-          "foldChange": {
-            "type": "number",
-            "format": "float"
-          },
-          "TCGAPerc": {
-            "type": "integer"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/datetime"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/datetime"
-          }
-        }
-      },
       "ident": {
         "type": "string",
         "format": "UUIDv4",
@@ -3787,33 +4215,10 @@
         "example": "2017-03-30T19:04:13.354Z",
         "description": "YYYY-MM-DDTZHH:ii:ss timestamp"
       },
-      "dataVersion": {
-        "type": "integer",
-        "description": "Describes which edit version this entry is. Default is 0"
-      },
-      "POGID": {
-        "type": "string",
-        "example": "POG90",
-        "description": "BC Cancer Patient identifier"
-      },
       "reportIdent": {
         "type": "string",
         "example": "JY41T",
         "description": "Randomly generated unique report ID"
-      },
-      "POGRelationship": {
-        "type": "string",
-        "enum": [
-          "bioinformatician",
-          "analyst",
-          "reviewer",
-          "admin",
-          "clinician"
-        ]
-      },
-      "updateComment": {
-        "type": "string",
-        "description": "A reason why this updated was made."
       },
       "ACLDenied": {
         "type": "object",

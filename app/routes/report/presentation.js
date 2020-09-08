@@ -13,17 +13,17 @@ const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema's
 const exclude = [...REPORT_EXCLUDE, 'user_id'];
-const discussionCreateSchema = schemaGenerator(db.models.presentation_discussion, {
+const discussionCreateSchema = schemaGenerator(db.models.presentationDiscussion, {
   baseUri: REPORT_CREATE_BASE_URI, exclude,
 });
-const discussionUpdateSchema = schemaGenerator(db.models.presentation_discussion, {
+const discussionUpdateSchema = schemaGenerator(db.models.presentationDiscussion, {
   baseUri: REPORT_UPDATE_BASE_URI, exclude, nothingRequired: true,
 });
 
-const slideCreateSchema = schemaGenerator(db.models.presentation_slides, {
+const slideCreateSchema = schemaGenerator(db.models.presentationSlides, {
   baseUri: REPORT_CREATE_BASE_URI, exclude,
 });
-const slideUpdateSchema = schemaGenerator(db.models.presentation_slides, {
+const slideUpdateSchema = schemaGenerator(db.models.presentationSlides, {
   baseUri: REPORT_UPDATE_BASE_URI, exclude, nothingRequired: true,
 });
 
@@ -35,7 +35,7 @@ const slideUpdateSchema = schemaGenerator(db.models.presentation_slides, {
 router.param('discussion', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.presentation_discussion.findOne({
+    result = await db.models.presentationDiscussion.findOne({
       where: {ident},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
@@ -61,7 +61,7 @@ router.param('discussion', async (req, res, next, ident) => {
 router.route('/discussion')
   .get(async (req, res) => {
     try {
-      const results = await db.models.presentation_discussion.scope('public').findAll({
+      const results = await db.models.presentationDiscussion.scope('public').findAll({
         where: {reportId: req.report.id},
         order: [['createdAt', 'ASC']],
       });
@@ -88,8 +88,8 @@ router.route('/discussion')
     };
 
     try {
-      let result = await db.models.presentation_discussion.create(data);
-      result = await db.models.presentation_discussion.scope('public').findOne({where: {id: result.id}});
+      let result = await db.models.presentationDiscussion.create(data);
+      result = await db.models.presentationDiscussion.scope('public').findOne({where: {id: result.id}});
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create new discussion ${error}`);
@@ -139,7 +139,7 @@ router.route('/discussion/:discussion')
 router.param('slide', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.presentation_slides.findOne({
+    result = await db.models.presentationSlides.findOne({
       where: {ident},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
@@ -165,7 +165,7 @@ router.param('slide', async (req, res, next, ident) => {
 router.route('/slide')
   .get(async (req, res) => {
     try {
-      const results = await db.models.presentation_slides.scope('public').findAll({
+      const results = await db.models.presentationSlides.scope('public').findAll({
         where: {reportId: req.report.id},
       });
       return res.json(results);
@@ -204,8 +204,8 @@ router.route('/slide')
         reportId: req.report.id,
       };
 
-      let result = await db.models.presentation_slides.create(data);
-      result = await db.models.presentation_slides.scope('public').findOne({where: {id: result.id}});
+      let result = await db.models.presentationSlides.create(data);
+      result = await db.models.presentationSlides.scope('public').findOne({where: {id: result.id}});
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create a new presentation slide ${error}`);
