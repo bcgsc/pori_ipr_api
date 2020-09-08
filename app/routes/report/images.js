@@ -36,7 +36,7 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.\\w+',
+    pattern: 'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quarternary)',
     width: 560,
     height: 151,
     format: 'PNG',
