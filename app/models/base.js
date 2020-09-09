@@ -67,7 +67,8 @@ const DEFAULT_OPTIONS = {
       // check if the data has changed or if the fields updated
       // are excluded from creating a new record
       const changed = instance.changed();
-      if (!changed || includesAll(DEFAULT_UPDATE_EXCLUDE, changed)) {
+      const updateExclude = (options.newEntryExclude) ? DEFAULT_UPDATE_EXCLUDE.concat(options.newEntryExclude) : DEFAULT_UPDATE_EXCLUDE;
+      if (!changed || includesAll(updateExclude, changed)) {
         return Promise.resolve(true);
       }
 
