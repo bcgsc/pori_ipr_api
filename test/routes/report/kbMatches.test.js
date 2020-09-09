@@ -41,6 +41,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let gene;
   let variant;
   let kbMatch;
+  let createData;
 
   beforeAll(async () => {
     // Create Report and kbMatch
@@ -55,12 +56,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       reportId: report.id,
       geneId: gene.id,
     });
-    kbMatch = await db.models.kbMatches.create({
+
+    createData = {
       reportId: report.id,
       variantId: variant.id,
       category: 'unknown',
       variantType: 'cnv',
-    });
+    };
+
+    kbMatch = await db.models.kbMatches.create(createData);
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -83,6 +87,32 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         .expect(HTTP_STATUS.OK);
 
       checkKbMatch(res.body);
+    });
+  });
+
+  describe('DELETE', () => {
+    let kbMatchDelete;
+
+    beforeEach(async () => {
+      kbMatchDelete = await db.models.kbMatches.create(createData);
+    });
+
+    afterEach(async () => {
+      if (kbMatchDelete) {
+        await db.models.kbMatches.destroy({where: {ident: kbMatchDelete.ident}, force: true});
+      }
+    });
+
+    test('/{kbMatch} - 204 Successful kbMatch delete', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/kb-matches/${kbMatchDelete.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify it was deleted from db
+      const results = await db.models.kbMatches.findAll({where: {ident: kbMatchDelete.ident}});
+      expect(results.length).toBe(0);
     });
   });
 
