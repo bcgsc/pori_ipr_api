@@ -124,7 +124,7 @@ router.route('/settings')
   .put(async (req, res) => {
     const {settings} = req;
     try {
-      await req.user.update(settings);
+      await req.user.update(settings, {fields: ['settings'], newEntryExclude: ['settings']});
       return res.json(req.user.get('settings'));
     } catch (error) {
       logger.error(`Unable to update user settings ${error}`);
@@ -197,7 +197,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Attempt user model update
     try {
-      await user.update({...updateBody, ident: req.params.ident});
+      await user.update({...updateBody, ident: req.params.ident}, {newEntryExclude: ['settings']});
       await user.reload();
       return res.json(user.view('public'));
     } catch (error) {
