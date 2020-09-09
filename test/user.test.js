@@ -1,9 +1,9 @@
-process.env.NODE_ENV = 'test';
-
 const getPort = require('get-port');
 const supertest = require('supertest');
 const uuidv4 = require('uuid/v4');
 const HTTP_STATUS = require('http-status-codes');
+
+const db = require('../app/models');
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -12,6 +12,10 @@ const {listen} = require('../app');
 CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
+
+const CREATE_DATA = {
+  username: 'UserTestUsername',
+};
 
 let newUser;
 let newUserIdent;
@@ -180,6 +184,50 @@ describe('/user', () => {
           email: 'testuser@test.com',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+  });
+
+  describe('PUT', () => {
+    let putTestUser;
+
+    beforeEach(async () => {
+      putTestUser = await db.models.user.create(CREATE_DATA);
+    });
+
+    afterEach(async () => {
+      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
+    });
+
+    // Test successful update
+    // Test update not creating a new record (check that result has changed, but no new record is added (paranoid: false))
+    test('/{user} - 200 successful update', async () => {
+      const res = await request
+        .put(`/api/user/${putTestUser.ident}`)
+        .send({firstName: 'NewFirstName'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.firstName).toBe('NewFirstName');
+    });
+
+    test('/{user} - 200 success update, but new db record is not created', async () => {
+      const intialResults = await db.models.user.findAll({where: {ident: putTestUser.ident}, paranoid: false});
+
+      await request
+        .put(`/api/user/${putTestUser.ident}`)
+        .send({settings: {testSetting: true}})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      // Verify update was successful
+      const result = await db.models.user.findOne({where: {ident: putTestUser.ident}});
+      expect(result.settings).toEqual({testSetting: true});
+
+      const updateResults = await db.models.user.findAll({where: {ident: putTestUser.ident}, paranoid: false});
+      // Verify a new record wasn't added on update
+      expect(intialResults.length).toEqual(updateResults.length);
     });
   });
 
