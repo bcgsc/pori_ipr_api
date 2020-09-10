@@ -8,9 +8,12 @@ const logger = require('../../log');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
 
-// Generate schema
+// Generate schema's
+const createSchema = schemaGenerator(db.models.mutationBurden, {
+  baseUri: REPORT_CREATE_BASE_URI,
+});
 const updateSchema = schemaGenerator(db.models.mutationBurden, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
@@ -48,8 +51,8 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
     // Validate request against schema
     try {
       validateAgainstSchema(updateSchema, req.body);
-    } catch (err) {
-      const message = `There was an error updating mutation burden ${err}`;
+    } catch (error) {
+      const message = `Error while validating mutation burden update request ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
@@ -58,8 +61,8 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
       await mutationBurden.update(req.body);
       return res.json(mutationBurden.view('public'));
     } catch (error) {
-      logger.error(`Unable to update mutationBurden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutationBurden'}});
+      logger.error(`Unable to update mutation burden ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutation burden'}});
     }
   });
 
@@ -74,6 +77,28 @@ router.route('/')
     } catch (error) {
       logger.error(`Unable to lookup mutation burden for report ${req.report.ident} error: ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup the mutation burden for ${req.report.ident}`}});
+    }
+  })
+  .post(async (req, res) => {
+    // Validate request against schema
+    try {
+      await validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `Error while validating mutation burden create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    // Create new entry in db
+    try {
+      const result = await db.models.mutationBurden.create({
+        ...req.body,
+        reportId: req.report.id,
+      });
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
+    } catch (error) {
+      logger.error(`Unable to create mutation burden ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create mutation burden'}});
     }
   });
 
