@@ -13,12 +13,7 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
-const CREATE_DATA = {
-  username: 'UserTestUsername',
-};
-
 let newUser;
-let newUserIdent;
 
 let server;
 let request;
@@ -98,7 +93,7 @@ describe('/user', () => {
   describe('POST', () => {
     // Test for POST /user 200 endpoint
     test('POST new user - Success', async () => {
-      await request
+      const res = await request
         .post('/api/user')
         .auth(username, password)
         .type('json')
@@ -110,6 +105,9 @@ describe('/user', () => {
           lastName: 'LastNameTest',
         })
         .expect(HTTP_STATUS.CREATED);
+
+      // Remove test user from db
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
     // Test for POST /user 400 endpoint
     test('POST new user - Password is required for local', async () => {
@@ -191,7 +189,9 @@ describe('/user', () => {
     let putTestUser;
 
     beforeEach(async () => {
-      putTestUser = await db.models.user.create(CREATE_DATA);
+      putTestUser = await db.models.user.create({
+        username: `putTestUser-${uuidv4()}`,
+      });
     });
 
     afterEach(async () => {
@@ -233,6 +233,26 @@ describe('/user', () => {
 
   describe('DELETE', () => {
     // Test for DELETE /user/ident 404 endpoint
+    let deleteTestUser;
+
+    // Create a unique user for each of the tests
+    beforeEach(async () => {
+      const deleteUserData = {
+        username: `Testuser-${uuidv4()}`,
+        type: 'bcgsc',
+        email: 'testuser@test.com',
+        firstName: 'FirstNameTest',
+        lastName: 'LastNameTest',
+      };
+
+      deleteTestUser = await db.models.user.create(deleteUserData);
+    });
+
+    // Delete the user after each test
+    afterEach(async () => {
+      await db.models.user.destroy({where: {ident: deleteTestUser.ident}, force: true});
+    });
+
     test('DELETE user - Not Found', async () => {
       await request
         .delete('/api/user/PROBABLY_NOT_A_USER')
@@ -243,23 +263,8 @@ describe('/user', () => {
 
     // Test for DELETE /user/ident 204 endpoint
     test('DELETE user - Success', async () => {
-      const res = await request
-        .post('/api/user')
-        .auth(username, password)
-        .type('json')
-        .send({
-          username: `Testuser-${uuidv4()}`,
-          type: 'bcgsc',
-          email: 'testuser@test.com',
-          firstName: 'FirstNameTest',
-          lastName: 'LastNameTest',
-        })
-        .expect(HTTP_STATUS.CREATED);
-
-      newUserIdent = res.body.ident;
-
       await request
-        .delete(`/api/user/${newUserIdent}`)
+        .delete(`/api/user/${deleteTestUser.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -267,6 +272,8 @@ describe('/user', () => {
   });
 
   describe('/user tests for new user dependent endpoints', () => {
+    let putTestUser;
+
     // Create a unique user for each of the tests
     beforeEach(async () => {
       newUser = {
@@ -276,14 +283,13 @@ describe('/user', () => {
         firstName: 'FirstNameTest',
         lastName: 'LastNameTest',
       };
-      const res = await request
-        .post('/api/user')
-        .auth(username, password)
-        .type('json')
-        .send(newUser)
-        .expect(HTTP_STATUS.CREATED);
 
-      newUserIdent = res.body.ident;
+      putTestUser = await db.models.user.create(newUser);
+    });
+
+    // Delete the user after each test
+    afterEach(async () => {
+      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
     });
 
     // Test for POST /user 409 endpoint
@@ -299,15 +305,6 @@ describe('/user', () => {
     describe('PUT', () => {
       // Tests for PUT /user/ident endpoint
       test.todo('PUT user tests - https://www.bcgsc.ca/jira/browse/DEVSU-831');
-    });
-
-    // Delete the user after each test
-    afterEach(async () => {
-      await request
-        .delete(`/api/user/${newUserIdent}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
     });
   });
 });
