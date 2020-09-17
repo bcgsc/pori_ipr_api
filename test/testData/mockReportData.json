@@ -484,7 +484,7 @@
         },
         {
             "key": "scpPlot",
-            "path": "/projects/POG/POG_data/POG1158/plots/expression_comparison/supervised_comparator_predictor/run_20200402_v1.0/biop1_t_D43694-hg19a_jg-e69_bwa-mem-0.7.6a-sb/supervised_comparator_predictor_POG1158_biop1_t_D43694_tumour.png"
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/scpPlot.png"
         }
     ]
 }
