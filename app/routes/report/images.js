@@ -115,8 +115,8 @@ const IMAGES_CONFIG = [
   },
   {
     pattern: 'scpPlot',
-    width: 1000,
-    height: 642,
+    width: 1400,
+    height: 900,
     format: 'PNG',
   },
 ];
