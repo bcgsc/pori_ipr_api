@@ -235,6 +235,7 @@ router.route('/')
           {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {patientId: {[Op.iLike]: `%${req.query.searchText}%`}},
+          {alternateIdentifier: {[Op.iLike]: `%${req.query.searchText}%`}},
         ],
       };
     }
