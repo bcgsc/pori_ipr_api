@@ -99,8 +99,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "$ref": "#/components/schemas/newUser"
+                "$ref": "#/components/schemas/userCreate"
               }
             }
           }
@@ -158,15 +157,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "user": {
-                    "$ref": "#/components/schemas/newUser"
-                  }
-                },
-                "required": [
-                  "user"
-                ]
+                "$ref": "#/components/schemas/userUpdate"
               }
             }
           }
@@ -404,7 +395,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/group"
+                    "$ref": "#/components/schemas/userGroup"
                   }
                 }
               }
@@ -459,7 +450,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/group"
+                  "$ref": "#/components/schemas/userGroup"
                 }
               }
             }
@@ -503,7 +494,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/group"
+                  "$ref": "#/components/schemas/userGroup"
                 }
               }
             }
@@ -568,7 +559,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/group"
+                  "$ref": "#/components/schemas/userGroup"
                 }
               }
             }
@@ -848,36 +839,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "settings": {
-                    "description": "Fields for updating a report's settings",
-                    "type": "object",
-                    "properties": {
-                      "state": {
-                        "type": "string",
-                        "enum": [
-                          "ready",
-                          "active",
-                          "presented",
-                          "archived"
-                        ]
-                      },
-                      "reportVersion": {
-                        "type": "string"
-                      },
-                      "kbVersion": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "settings"
-                ]
+                "$ref": "#/components/parameters/analysis_reportUpdate"
               }
             }
           }
@@ -957,15 +919,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "update": {
-                    "$ref": "#/components/schemas/patientInformation"
-                  }
-                },
-                "required": [
-                  "update"
-                ]
+                "$ref": "#/components/parameters/patientInformationUpdate"
               }
             }
           }
@@ -1048,24 +1002,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "update": {
-                    "description": "The updated mutation summary object",
-                    "type": "object",
-                    "properties": {
-                      "mutationSignature": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/mutationSignature"
-                        }
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "update"
-                ]
+                "$ref": "#/components/parameters/mutationSummaryUpdate"
               }
             }
           }
