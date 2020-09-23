@@ -14,18 +14,20 @@ const {REPORT_EXCLUDE} = require('./exclude');
  * @param {Array<string>} options.include - Fields of model to only include in schema
  * @param {Array<string>} options.exclude - Fields of model to exclude from schema
  * @param {boolean} options.associations - Do you want to include the models associations
+ * @param {Array<string>} options.includeAssociations - List of associations to include
  * @param {Array<string>} options.excludeAssociations - List of associations to exclude
  * @param {boolean} options.nothingRequired - Whether nothing is required for this schema
  * @param {Array<string>} options.required - Fields that are required
  * @param {boolean} options.isSubSchema - Whether the schema is a section of another schema
  * @param {boolean} options.additionalProperties - Whether to allow additional properties or not
+ * @param {string} options.title - Add a title for the schema
  *
  * @returns {object} - Returns a schema based on the given model
  */
 const schemaGenerator = (model, {
   baseUri = '/', jsonSchema = true, properties = {}, include = [], exclude = REPORT_EXCLUDE,
-  associations = false, excludeAssociations = [], nothingRequired = false, required = [],
-  isSubSchema = false, additionalProperties = false,
+  associations = false, excludeAssociations = [], includeAssociations = [], nothingRequired = false,
+  required = [], isSubSchema = false, additionalProperties = false, title = null,
 } = {}) => {
   // Setup schemaManager
   const schemaManager = new JsonSchemaManager({
@@ -38,8 +40,9 @@ const schemaGenerator = (model, {
 
   // Generate the schema
   const schema = schemaManager.generate(model, type, {
+    ...((title) ? {title} : {}),
     ...(include.length > 0 ? {include} : {exclude}),
-    excludeAssociations,
+    ...(includeAssociations.length > 0 ? {includeAssociations} : {excludeAssociations}),
     associations,
   });
 
