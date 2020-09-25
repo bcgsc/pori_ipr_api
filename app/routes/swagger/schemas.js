@@ -26,8 +26,8 @@ const getExcludes = (model) => {
 
   switch (model) {
     case 'user':
-      publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings'];
-      exclude = [...GENERAL_EXCLUDE, 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings'];
+      publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'jiraToken', 'jiraXsrf', 'settings', 'password'];
+      exclude = [...GENERAL_EXCLUDE, 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings', 'password'];
       break;
     case 'project':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
@@ -53,17 +53,22 @@ for (const model of Object.keys(models)) {
   // Get excludes for model
   const [publicExclude, exclude, excludeAssociations] = getExcludes(model);
 
-  // generate user returned public schema's
+  // generate public view of model (no associations)
   schemas[model] = schemaGenerator(db.models[model], {
-    jsonSchema: false, title: `${model}`, exclude: publicExclude, associations: true, excludeAssociations,
+    jsonSchema: false, title: `${model}`, exclude: publicExclude,
   });
 
-  // generate body of POST request schema's
+  // generate public view of model (with associations)
+  schemas[`${model}Associations`] = schemaGenerator(db.models[model], {
+    jsonSchema: false, title: `${model}Associations`, exclude: publicExclude, associations: true, excludeAssociations,
+  });
+
+  // generate body of POST request schemas
   schemas[`${model}Create`] = schemaGenerator(db.models[model], {
     jsonSchema: false, title: `${model}Create`, exclude,
   });
 
-  // generate body of PUT request schema's
+  // generate body of PUT request schemas
   schemas[`${model}Update`] = schemaGenerator(db.models[model], {
     jsonSchema: false, title: `${model}Update`, exclude, nothingRequired: true,
   });
@@ -74,8 +79,8 @@ for (const model of Object.keys(models)) {
 // *Returned object*
 
 // analysis report
-schemas.analysis_report = schemaGenerator(db.models.analysis_report, {
-  jsonSchema: false, title: 'analysis_report', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
+schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report, {
+  jsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
 });
 
 // *POST request body*
