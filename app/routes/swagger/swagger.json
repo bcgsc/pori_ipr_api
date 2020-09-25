@@ -63,7 +63,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/user"
+                    "$ref": "#/components/schemas/userAssociations"
                   }
                 }
               }
@@ -110,7 +110,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user"
+                  "$ref": "#/components/schemas/userAssociations"
                 }
               }
             }
@@ -168,7 +168,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user"
+                  "$ref": "#/components/schemas/userAssociations"
                 }
               }
             }
@@ -234,7 +234,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user"
+                  "$ref": "#/components/schemas/userAssociations"
                 }
               }
             }
@@ -316,7 +316,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "$ref": "#/components/schemas/user"
+                          "$ref": "#/components/schemas/userAssociations"
                         }
                       }
                     ]
@@ -362,7 +362,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/user"
+                    "$ref": "#/components/schemas/userAssociations"
                   }
                 }
               }
@@ -395,7 +395,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/userGroup"
+                    "$ref": "#/components/schemas/userGroupAssociations"
                   }
                 }
               }
@@ -450,7 +450,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/userGroup"
+                  "$ref": "#/components/schemas/userGroupAssociations"
                 }
               }
             }
@@ -494,7 +494,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/userGroup"
+                  "$ref": "#/components/schemas/userGroupAssociations"
                 }
               }
             }
@@ -559,7 +559,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/userGroup"
+                  "$ref": "#/components/schemas/userGroupAssociations"
                 }
               }
             }
@@ -807,7 +807,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_report"
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
                 }
               }
             }
@@ -850,7 +850,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_report"
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
                 }
               }
             }
@@ -1397,7 +1397,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/analysis_report"
+                    "$ref": "#/components/schemas/analysis_reportAssociations"
                   }
                 }
               }
@@ -2916,7 +2916,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationDiscussionArray"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/presentationDiscussionAssociations"
+                  }
                 }
               }
             }
@@ -2944,7 +2947,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/presentationDiscussionInput"
+                "$ref": "#/components/schemas/presentationDiscussionCreate"
               }
             }
           }
@@ -2963,7 +2966,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationDiscussion"
+                  "$ref": "#/components/schemas/presentationDiscussionAssociations"
                 }
               }
             }
@@ -3006,7 +3009,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationDiscussion"
+                  "$ref": "#/components/schemas/presentationDiscussionAssociations"
                 }
               }
             }
@@ -3068,7 +3071,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/presentationDiscussionInput"
+                "$ref": "#/components/schemas/presentationDiscussionUpdate"
               }
             }
           }
@@ -3087,7 +3090,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationDiscussion"
+                  "$ref": "#/components/schemas/presentationDiscussionAssociations"
                 }
               }
             }
@@ -3127,7 +3130,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationSlidesArray"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/presentationSlidesAssociations"
+                  }
                 }
               }
             }
@@ -3157,16 +3163,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/components/schemas/presentationSlidesCreate"
               }
             }
           }
@@ -3182,7 +3179,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationSlides"
+                  "$ref": "#/components/schemas/presentationSlidesAssociations"
                 }
               }
             }
@@ -3225,7 +3222,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/presentationSlides"
+                  "$ref": "#/components/schemas/presentationSlidesAssociations"
                 }
               }
             }
@@ -4116,7 +4113,7 @@
         "name": "discussion",
         "in": "path",
         "required": true,
-        "description": "the discussion ID",
+        "description": "discussion ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
@@ -4126,7 +4123,7 @@
         "name": "slide",
         "in": "path",
         "required": true,
-        "description": "the slide ID",
+        "description": "slide ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
