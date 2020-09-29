@@ -1,129 +1,98 @@
-const {JsonSchemaManager, OpenApi3Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../models');
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const {REPORT_EXCLUDE} = require('../../schemas/exclude');
+const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
 
-const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
 const schemas = {};
 
-const SWAGGER_EXCLUDE = ['id', 'reportId', 'geneId', 'deletedAt'];
-const EXCLUDE = require('../../schemas/exclude');
+const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id'];
+const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
+const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
+const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germline_report', 'user_project', 'userGroupMember'];
 
+
+/**
+ * Check if model has specific excludes or
+ * use the default excludes
+ *
+ * @param {object} model - Sequelize model to get excludes for
+ * @returns {Array<Array<string>>} - Returns an array of excludes for return, POST/PUT body and associations
+ */
+const getExcludes = (model) => {
+  let publicExclude = PUBLIC_VIEW_EXCLUDE;
+  let exclude = GENERAL_EXCLUDE;
+  let excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS;
+
+  switch (model) {
+    case 'user':
+      publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'jiraToken', 'jiraXsrf', 'settings', 'password'];
+      exclude = [...GENERAL_EXCLUDE, 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings', 'password'];
+      break;
+    case 'project':
+      excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
+      break;
+    case 'genes':
+      excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(GENE_LINKED_VARIANT_MODELS).concat(['structuralVariants1', 'structuralVariants2']);
+      break;
+    default:
+      // code block
+  }
+
+  return [publicExclude, exclude, excludeAssociations];
+};
+
+// Remove joining models from the list of models to use for generating schemas
 const {
   germlineReportsToProjects, userGroupMember, reportProject, user_project, ...models
 } = db.models;
 
-for (const property of Object.keys(models)) {
-  schemas[property] = schemaManager.generate(db.models[property], new OpenApi3Strategy(), {
-    title: `${property}`,
-    associations: false,
-    exclude: [...SWAGGER_EXCLUDE],
+// Generate schemas from Sequelize models. One for the public returned value, one
+// for the body of a POST request, and one for the body of a PUT request
+for (const model of Object.keys(models)) {
+  // Get excludes for model
+  const [publicExclude, exclude, excludeAssociations] = getExcludes(model);
+
+  // generate public view of model (no associations)
+  schemas[model] = schemaGenerator(db.models[model], {
+    jsonSchema: false, title: `${model}`, exclude: publicExclude,
+  });
+
+  // generate public view of model (with associations)
+  schemas[`${model}Associations`] = schemaGenerator(db.models[model], {
+    jsonSchema: false, title: `${model}Associations`, exclude: publicExclude, associations: true, excludeAssociations,
+  });
+
+  // generate body of POST request schemas
+  schemas[`${model}Create`] = schemaGenerator(db.models[model], {
+    jsonSchema: false, title: `${model}Create`, exclude,
+  });
+
+  // generate body of PUT request schemas
+  schemas[`${model}Update`] = schemaGenerator(db.models[model], {
+    jsonSchema: false, title: `${model}Update`, exclude, nothingRequired: true,
   });
 }
 
-schemas.therapeuticTargetInput = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
-  title: 'therapeuticTargetInput',
-  associations: false,
-  exclude: [...SWAGGER_EXCLUDE, 'ident', 'createdAt', 'updatedAt'],
+// **Special Cases**
+
+// *Returned object*
+
+// analysis report
+schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report, {
+  jsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
 });
 
-const therapeuticTargetRanksBulkUpdate = schemaManager.generate(db.models.therapeuticTarget, new OpenApi3Strategy(), {
-  title: 'therapeuticTargetRanksBulkUpdate',
-  associations: false,
-  include: ['rank', 'ident'],
-});
-schemas.therapeuticTargetRanksBulkUpdate = {
-  type: 'array',
-  items: therapeuticTargetRanksBulkUpdate,
-};
+// *POST request body*
 
-schemas.newUser = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
-  title: 'newUser',
-  associations: false,
-  exclude: [...SWAGGER_EXCLUDE, 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings'],
+
+// *PUT request body*
+
+// therapeutic targets bulk update
+schemas.therapeuticTargetRanksBulkUpdate = schemaGenerator(db.models.therapeuticTarget, {
+  jsonSchema: false, title: 'therapeuticTargetRanksBulkUpdate',
+  include: ['ident', 'rank'], required: ['ident', 'rank'],
 });
 
-schemas.user = schemaManager.generate(db.models.user, new OpenApi3Strategy(), {
-  title: 'user',
-  associations: false,
-  exclude: [...SWAGGER_EXCLUDE, 'user_projects', 'userGroupMembers', 'jiraToken', 'jiraXsrf', 'password'],
-});
-
-schemas.group = schemaManager.generate(db.models.userGroup, new OpenApi3Strategy(), {
-  title: 'group',
-  associations: true,
-  exclude: [...SWAGGER_EXCLUDE, 'owner_id', 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings'],
-});
-
-schemas.project = schemaManager.generate(db.models.project, new OpenApi3Strategy(), {
-  title: 'project',
-  associations: false,
-  exclude: [...SWAGGER_EXCLUDE],
-});
-
-schemas.analysis_report = schemaManager.generate(db.models.analysis_report, new OpenApi3Strategy(), {
-  title: 'analysis_report',
-  exclude: ['createdBy_id', ...SWAGGER_EXCLUDE],
-  associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'probe_signature', 'presentationDiscussion', 'presentationSlides', 'users', 'analystComments', 'projects'],
-});
-
-schemas.germline_small_mutation = schemaManager.generate(db.models.germline_small_mutation, new OpenApi3Strategy(), {
-  title: 'germline_small_mutation',
-  associations: false,
-  exclude: [...SWAGGER_EXCLUDE],
-});
-
-schemas.presentationDiscussion = schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
-  title: 'presentationDiscussion',
-  associations: true,
-  exclude: [...SWAGGER_EXCLUDE, 'user_id'],
-  excludeAssociations: ['report'],
-});
-
-schemas.presentationDiscussionArray = {
-  type: 'array',
-  items: schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
-    title: 'presentationDiscussionArray',
-    associations: true,
-    exclude: [...SWAGGER_EXCLUDE, 'user_id'],
-    excludeAssociations: ['report'],
-  }),
-};
-
-schemas.presentationDiscussionInput = schemaManager.generate(db.models.presentationDiscussion, new OpenApi3Strategy(), {
-  title: 'presentationDiscussionInput',
-  associations: false,
-  exclude: [...EXCLUDE.REPORT_EXCLUDE, 'user_id'],
-});
-
-schemas.presentationSlides = schemaManager.generate(db.models.presentationSlides, new OpenApi3Strategy(), {
-  title: 'presentationSlides',
-  associations: true,
-  exclude: [...SWAGGER_EXCLUDE, 'user_id'],
-  excludeAssociations: ['report'],
-});
-
-schemas.presentationSlidesArray = {
-  type: 'array',
-  items: schemaManager.generate(db.models.presentationSlides, new OpenApi3Strategy(), {
-    title: 'presentationSlidesArray',
-    associations: true,
-    exclude: [...SWAGGER_EXCLUDE, 'user_id'],
-    excludeAssociations: ['report'],
-  }),
-};
-
-schemas.analystCommentsUpdate = schemaManager.generate(db.models.analystComments, new OpenApi3Strategy(), {
-  title: 'analystCommentsUpdate',
-  associations: false,
-  exclude: [...EXCLUDE.REPORT_EXCLUDE],
-});
-
-schemas.project.properties.users = schemas.user;
-schemas.project.properties.reports = schemas.analysis_report;
-
-schemas.group.properties.users = schemas.user;
-
-schemas.userGroup.properties.users = schemas.user;
 
 module.exports = schemas;
