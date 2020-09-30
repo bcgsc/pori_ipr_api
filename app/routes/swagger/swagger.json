@@ -944,10 +944,10 @@
         }
       }
     },
-    "/reports/{report}/summary/mutation-summary": {
+    "/reports/{report}/mutation-burden": {
       "get": {
-        "summary": "Get Mutation Summary",
-        "description": "Retrieve summary of mutation details for the report",
+        "summary": "Get Mutation Burden",
+        "description": "Retrieve mutation burden details for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -955,7 +955,7 @@
         ],
         "tags": [
           "Genomic Report",
-          "Genomic Summary"
+          "Mutation Burden"
         ],
         "security": [
           {
@@ -964,11 +964,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns summary of mutation details",
+            "description": "Returns an array of all mutation burdens for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mutationSummary"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mutationBurdenAssociations"
+                  }
                 }
               }
             }
@@ -981,12 +984,12 @@
           }
         }
       },
-      "put": {
-        "summary": "Updated Mutation Summary",
-        "description": "Update some of the mutation summary details",
+      "post": {
+        "summary": "Create Mutation Burden",
+        "description": "Add a new mutation burden to this report",
         "tags": [
           "Genomic Report",
-          "Genomic Summary"
+          "Mutation Burden"
         ],
         "parameters": [
           {
@@ -1002,18 +1005,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/parameters/mutationSummaryUpdate"
+                "$ref": "#/components/schemas/mutationBurdenCreate"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Returns the update basic patient meta details",
+            "description": "Returns the newly created mutation burden",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mutationSummary"
+                  "$ref": "#/components/schemas/mutationBurdenAssociations"
                 }
               }
             }
@@ -1023,6 +1026,95 @@
           },
           "404": {
             "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mutation-burden/{burden}": {
+      "get": {
+        "summary": "Get Mutation Burden By Ident",
+        "description": "Retrieve a specific mutation burden from the report by ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/burden"
+          }
+        ],
+        "tags": [
+          "Genomic Report",
+          "Mutation Burden"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or mutation burden not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Mutation Burden",
+        "description": "Update the details of a specific mutation burden",
+        "tags": [
+          "Genomic Report",
+          "Mutation Burden"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/burden"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/mutationBurdenUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or mutation burden not found"
           }
         }
       }
@@ -4124,6 +4216,16 @@
         "in": "path",
         "required": true,
         "description": "slide ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "burden": {
+        "name": "burden",
+        "in": "path",
+        "required": true,
+        "description": "mutation burden ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
