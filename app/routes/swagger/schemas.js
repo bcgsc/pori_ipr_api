@@ -1,15 +1,25 @@
 const db = require('../../models');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
-const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../constants');
 
 
 const schemas = {};
 
-const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id'];
+const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId'];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
 const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germline_report', 'user_project', 'userGroupMember'];
+
+const MODELS_WITH_VARIANTS = ['kbMatches', 'genes'];
+
+const VARIANT_ASSOCIATIONS = {
+  oneOf: Object.values(KB_PIVOT_MAPPING).map((value) => {
+    return {
+      $ref: `#/components/schemas/${value}`,
+    };
+  }),
+};
 
 
 /**
@@ -32,11 +42,12 @@ const getExcludes = (model) => {
     case 'project':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
       break;
-    case 'genes':
-      excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(GENE_LINKED_VARIANT_MODELS).concat(['structuralVariants1', 'structuralVariants2']);
-      break;
     default:
-      // code block
+  }
+
+  // Remove all variant associations for polymorphic relation
+  if (MODELS_WITH_VARIANTS.includes(model)) {
+    excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(GENE_LINKED_VARIANT_MODELS).concat(['structuralVariants1', 'structuralVariants2']);
   }
 
   return [publicExclude, exclude, excludeAssociations];
@@ -72,6 +83,11 @@ for (const model of Object.keys(models)) {
   schemas[`${model}Update`] = schemaGenerator(db.models[model], {
     jsonSchema: false, title: `${model}Update`, exclude, nothingRequired: true,
   });
+
+  // Check if model has a polymorphic variants relationship
+  if (MODELS_WITH_VARIANTS.includes(model)) {
+    schemas[`${model}Associations`].properties.varaint = VARIANT_ASSOCIATIONS;
+  }
 }
 
 // **Special Cases**
