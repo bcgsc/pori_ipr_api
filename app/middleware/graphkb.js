@@ -37,7 +37,9 @@ const graphkbLoginMiddleware = async (req, res, next) => {
         uri: loginURI,
         json: true,
         body: {
-          keyCloakToken: token.access_token,
+          username,
+          password,
+          //keyCloakToken: token.access_token,
         },
       };
       const {kbToken} = await request(options);
