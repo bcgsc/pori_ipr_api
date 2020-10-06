@@ -2951,14 +2951,15 @@
     },
     "/reports/{report}/mutation-signatures": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get mutation signatures",
+        "description": "Returns all mutation signatures for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Genomic Report"
         ],
         "security": [
           {
@@ -2967,11 +2968,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of mutation signatures",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mutationSignature"
+                  }
                 }
               }
             }
