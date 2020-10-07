@@ -1858,47 +1858,6 @@
         }
       }
     },
-    "/reports/{report}/small-mutations": {
-      "get": {
-        "summary": "Get somatic small mutations",
-        "description": "Returns an analysis reports somatic small mutations",
-        "tags": [
-          "Mutations",
-          "Small Mutations"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns a reports somatic small mutations",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/smallMutations"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "User doesn't have permissions to access somatic small mutations"
-          }
-        }
-      }
-    },
     "/germline-small-mutation-reports": {
       "get": {
         "summary": "Get all germline small mutation reports",
@@ -3685,16 +3644,17 @@
         }
       }
     },
-    "/reports/{report}/small-mutations/{mutation}": {
+    "/reports/{report}/small-mutations": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Small Mutations",
+        "description": "Retrieve all small mutations for a given report",
+        "tags": [
+          "Small Mutations"
+        ],
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
-        ],
-        "tags": [
         ],
         "security": [
           {
@@ -3703,32 +3663,41 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of somatic small mutations for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/smallMutationsAssociations"
                 }
               }
+            }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
+      }
       },
-      "delete": {
-        "summary": "",
-        "description": "",
+    "/reports/{report}/small-mutations/{mutation}": {
+      "get": {
+        "summary": "Get Small Mutation",
+        "description": "Retrieves a small mutation from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutation"
           }
         ],
         "tags": [
+          "Small Mutations"
         ],
         "security": [
           {
@@ -3737,11 +3706,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified small mutation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/smallMutationsAssociations"
                 }
               }
             }
@@ -3750,19 +3719,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or small mutation not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Small Mutation",
+        "description": "Update the details of a small mutation",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutation"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current small mutation",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/smallMutationsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Small Mutations"
         ],
         "security": [
           {
@@ -3771,11 +3756,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated small mutation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/smallMutationsAssociations"
                 }
               }
             }
@@ -3784,7 +3769,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or small mutation not found"
+          }
+                }
+      },
+      "delete": {
+        "summary": "Delete Small Mutation",
+        "description": "Removes the specified small mutation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutation"
+              }
+        ],
+        "tags": [
+          "Small Mutations"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+            }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or small mutation not found"
           }
         }
       }
@@ -4322,6 +4338,17 @@
           "type": "string",
           "format": "UUIDv4"
         }
+      },
+      "mutation": {
+        "name": "mutation",
+        "in": "path",
+        "required": true,
+        "description": "small mutation ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
       }
     },
     "securitySchemes": {
