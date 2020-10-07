@@ -2233,14 +2233,15 @@
     },
     "/reports/{report}/copy-variants": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Copy Variants",
+        "description": "Retrieve all copy variants for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Copy Variants"
         ],
         "security": [
           {
@@ -2249,28 +2250,31 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of copy variants for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/copyVariantsAssociations"
                 }
               }
+            }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/copy-variants/{cnv}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Copy Variant",
+        "description": "Retrieve a specific copy variant from a report by ident",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -2280,6 +2284,7 @@
           }
         ],
         "tags": [
+          "Copy Variants"
         ],
         "security": [
           {
@@ -2288,11 +2293,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified copy variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/copyVariantsAssociations"
                 }
               }
             }
@@ -2301,53 +2306,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or copy variant not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Copy Variant",
+        "description": "Update the details of a copy variant",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/cnv"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current copy variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/copyVariantsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Copy Variants"
         ],
         "security": [
           {
@@ -2356,11 +2343,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated copy variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/copyVariantsAssociations"
                 }
               }
             }
@@ -2369,7 +2356,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or copy variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Copy Variant",
+        "description": "Removes the specified copy variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/cnv"
+          }
+        ],
+        "tags": [
+          "Copy Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or copy variant not found"
           }
         }
       }
@@ -4284,9 +4302,10 @@
         "name": "Copy-Number Variant",
         "in": "path",
         "required": true,
-        "description": "Copy number variant",
+        "description": "Copy number variant ident",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "analysis": {
