@@ -2843,14 +2843,16 @@
     },
     "/reports/{report}/kb-matches": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get KB Matches",
+        "description": "Retrieve KB Matches for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "KB Match",
+          "KB Matches"
         ],
         "security": [
           {
@@ -2859,11 +2861,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of KB Matches for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/kbMatchesAssociations"
+                  }
                 }
               }
             }
@@ -2879,14 +2884,19 @@
     },
     "/reports/{report}/kb-matches/{kbMatch}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get KB Match by Ident",
+        "description": "Retrieve a specific KB Match from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
           }
         ],
         "tags": [
+          "KB Match",
+          "KB Matches"
         ],
         "security": [
           {
@@ -2895,11 +2905,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified KB Match",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/kbMatchesAssociations"
                 }
               }
             }
@@ -2908,7 +2918,39 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or KB Match not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete KB Match",
+        "description": "Removes the specified KB Match",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          }
+        ],
+        "tags": [
+          "KB Match",
+          "KB Matches"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or KB Match not found"
           }
         }
       }
@@ -4256,6 +4298,16 @@
         "in": "path",
         "required": true,
         "description": "slide ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "kbMatch": {
+        "name": "kbMatch",
+        "in": "path",
+        "required": true,
+        "description": "KB Match ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
