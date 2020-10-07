@@ -3846,14 +3846,15 @@
     },
     "/reports/{report}/structural-variants": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Structural Variants",
+        "description": "Retrieve all structural variants for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Structural Variants"
         ],
         "security": [
           {
@@ -3862,34 +3863,41 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of structural variants for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/structuralVariantsAssociations"
                 }
               }
+            }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/structural-variants/{structuralVariant}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Structural Variant",
+        "description": "Retrieves a structural variant from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/structuralVariant"
           }
         ],
         "tags": [
+          "Structural Variants"
         ],
         "security": [
           {
@@ -3898,11 +3906,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified structural variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/structuralVariantsAssociations"
                 }
               }
             }
@@ -3911,53 +3919,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or structural variant not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Structural Variant",
+        "description": "Update the details of a structural variant",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/structuralVariant"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current structural variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/structuralVariantsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Structural Variants"
         ],
         "security": [
           {
@@ -3966,11 +3956,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated structural variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/structuralVariantsAssociations"
                 }
               }
             }
@@ -3979,7 +3969,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or structural variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Structural Variant",
+        "description": "Removes the specified structural variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/structuralVariant"
+          }
+        ],
+        "tags": [
+          "Structural Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or structural variant not found"
           }
         }
       }
@@ -4399,6 +4420,15 @@
           "format": "UUIDv4"
         }
       },
+      "structuralVariant": {
+        "name": "structural variant",
+        "in": "path",
+        "required": true,
+        "description": "structural variant ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
       }
     },
     "securitySchemes": {
