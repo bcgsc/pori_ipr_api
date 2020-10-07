@@ -2394,14 +2394,15 @@
     },
     "/reports/{report}/expression-variants": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Expression Variants",
+        "description": "Retrieve all expression variants for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Expression Variants"
         ],
         "security": [
           {
@@ -2410,34 +2411,41 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of expression variants for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/expressionVariantsAssociations"
                 }
               }
+            }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
-    "/reports/{report}/expression-variants/{ExpressionVariant}": {
+    "/reports/{report}/expression-variants/{expression}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Expression Variant",
+        "description": "Retrieve a specific expression variant from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/expression"
           }
         ],
         "tags": [
+          "Expression Variants"
         ],
         "security": [
           {
@@ -2446,11 +2454,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified expression variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/expressionVariantsAssociations"
                 }
               }
             }
@@ -2459,53 +2467,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or expression variant not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Expression Variant",
+        "description": "Update the details of an expression variant",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/expression"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current expression variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/expressionVariantsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Expression Variants"
         ],
         "security": [
           {
@@ -2514,11 +2504,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated expression variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/expressionVariantsAssociations"
                 }
               }
             }
@@ -2527,7 +2517,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or expression variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Expression Variant",
+        "description": "Removes the specified expression variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/expression"
+          }
+        ],
+        "tags": [
+          "Expression Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or expression variant not found"
           }
         }
       }
@@ -4363,6 +4384,16 @@
         "in": "path",
         "required": true,
         "description": "small mutation ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "expression": {
+        "name": "expression",
+        "in": "path",
+        "required": true,
+        "description": "expression variant ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
