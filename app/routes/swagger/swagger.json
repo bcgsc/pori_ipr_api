@@ -2257,9 +2257,9 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/copyVariantsAssociations"
+                  }
                 }
               }
-            }
             }
           },
           "401": {
@@ -2418,9 +2418,9 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/expressionVariantsAssociations"
+                  }
                 }
               }
-            }
             }
           },
           "401": {
@@ -2849,7 +2849,6 @@
           }
         ],
         "tags": [
-          "KB Match",
           "KB Matches"
         ],
         "security": [
@@ -2893,7 +2892,6 @@
           }
         ],
         "tags": [
-          "KB Match",
           "KB Matches"
         ],
         "security": [
@@ -2932,7 +2930,6 @@
           }
         ],
         "tags": [
-          "KB Match",
           "KB Matches"
         ],
         "security": [
@@ -3709,9 +3706,9 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/smallMutationsAssociations"
+                  }
                 }
               }
-            }
             }
           },
           "401": {
@@ -3722,7 +3719,7 @@
           }
         }
       }
-      },
+    },
     "/reports/{report}/small-mutations/{mutation}": {
       "get": {
         "summary": "Get Small Mutation",
@@ -3810,7 +3807,7 @@
           "404": {
             "description": "Report or small mutation not found"
           }
-                }
+        }
       },
       "delete": {
         "summary": "Delete Small Mutation",
@@ -3821,7 +3818,7 @@
           },
           {
             "$ref": "#/components/parameters/mutation"
-              }
+          }
         ],
         "tags": [
           "Small Mutations"
@@ -3829,7 +3826,7 @@
         "security": [
           {
             "basicAuth": []
-            }
+          }
         ],
         "responses": {
           "204": {
@@ -3870,9 +3867,9 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/structuralVariantsAssociations"
+                  }
                 }
               }
-            }
             }
           },
           "401": {
