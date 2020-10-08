@@ -2568,7 +2568,7 @@
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genes"
         ],
         "security": [
           {
@@ -2586,37 +2586,37 @@
                     "kbMatches": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/kbMatches"
+                        "$ref": "#/components/schemas/kbMatchesAssociations"
                       }
                     },
                     "smallMutations": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/smallMutations"
+                        "$ref": "#/components/schemas/smallMutationsAssociations"
                       }
                     },
                     "copyNumber": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/copyVariants"
+                        "$ref": "#/components/schemas/copyVariantsAssociations"
                       }
                     },
                     "expRNA": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/expressionVariants"
+                        "$ref": "#/components/schemas/expressionVariantsAssociations"
                       }
                     },
                     "expDensityGraph": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/imageData"
+                        "$ref": "#/components/schemas/imageDataAssociations"
                       }
                     },
                     "structuralVariants": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/structuralVariants"
+                        "$ref": "#/components/schemas/structuralVariantsAssociations"
                       }
                     }
                   }
@@ -2643,7 +2643,7 @@
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genes"
         ],
         "security": [
           {
@@ -2657,7 +2657,7 @@
               "application/json": {
                 "type": "array",
                 "schema": {
-                  "$ref": "#/components/schemas/genes"
+                  "$ref": "#/components/schemas/genesAssociations"
                 }
               }
             }
@@ -2684,7 +2684,7 @@
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genes"
         ],
         "security": [
           {
@@ -2697,7 +2697,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/genes"
+                  "$ref": "#/components/schemas/genesAssociations"
                 }
               }
             }
@@ -2722,7 +2722,7 @@
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genes"
         ],
         "security": [
           {
@@ -2735,7 +2735,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/genes"
+                  "$ref": "#/components/schemas/genesAssociations"
                 }
               }
             }
