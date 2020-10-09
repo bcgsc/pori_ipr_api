@@ -2697,16 +2697,43 @@
         }
       }
     },
-    "/reports/{report}/image/expression-density-graphs": {
-      "get": {
-        "summary": "",
-        "description": "",
+    "/reports/{report}/image": {
+      "post": {
+        "summary": "Add Images",
+        "description": "Upload new images to report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Images to upload (allows multiple images with different keys)",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "{key}": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "image to upload"
+                  },
+                  "{key}_title": {
+                    "type": "string",
+                    "description": "title of image specified by key"
+                  },
+                  "{key}_caption": {
+                    "type": "string",
+                    "description": "caption of image specified by key"
+                  }
+                }
+              }
+            }
+          }
+        },
         "tags": [
+          "Images"
         ],
         "security": [
           {
@@ -2714,71 +2741,53 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
+          "207": {
+            "description": "Returns an array of objects indicating which images were uploaded successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "upload": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
+          },
+          "400": {
+            "description": "Malformed request syntax"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/image/mutation-summary": {
-      "get": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/image/retrieve/{key} ": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Images by Key",
+        "description": "Retrieve image data for specified keys",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/key"
           }
         ],
         "tags": [
+          "Images"
         ],
         "security": [
           {
@@ -2787,11 +2796,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an object mapping image key to image data",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/imageReturnObject"
                 }
               }
             }
@@ -2800,21 +2809,22 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/image/subtype-plots": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Subtype Plot Images",
+        "description": "Retrieves all subtype plot images for report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Images"
         ],
         "security": [
           {
@@ -2823,11 +2833,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an object mapping image key to image data",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/imageReturnObject"
                 }
               }
             }
@@ -2836,7 +2846,81 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/mutation-burden": {
+      "get": {
+        "summary": "Get Mutation Burden Images",
+        "description": "Retrieve all mutation burden images for report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an object mapping image key to image data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imageReturnObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/expression-density-graphs": {
+      "get": {
+        "summary": "Get Expression Density Images",
+        "description": "Retrieve all expression density images for report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an object mapping image key to image data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imageReturnObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
@@ -4322,6 +4406,18 @@
           "type": "string",
           "format": "UUIDv4"
         }
+      },
+      "key": {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "description": "comma separated list of image keys (e.g. loh.3,loh.4)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -4357,6 +4453,14 @@
           "message": {
             "type": "string",
             "example": "You are not authorized to view this resource."
+          }
+        }
+      },
+      "imageReturnObject": {
+        "type": "object",
+        "properties": {
+          "{key}": {
+            "$ref": "#/components/schemas/imageDataAssociations"
           }
         }
       }
