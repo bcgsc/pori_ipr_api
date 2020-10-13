@@ -2655,9 +2655,11 @@
             "description": "Returns a report's genes",
             "content": {
               "application/json": {
-                "type": "array",
                 "schema": {
-                  "$ref": "#/components/schemas/genesAssociations"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/genesAssociations"
+                  }
                 }
               }
             }
