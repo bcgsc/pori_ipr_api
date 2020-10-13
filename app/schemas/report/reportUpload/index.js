@@ -1,4 +1,3 @@
-const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../../models');
 const {BASE_EXCLUDE} = require('../../exclude');
 const variantSchemas = require('./variant');
@@ -6,66 +5,71 @@ const kbMatchesSchema = require('./kbMatches');
 const schemaGenerator = require('../../schemaGenerator');
 const {VALID_IMAGE_KEY_PATTERN, UPLOAD_BASE_URI} = require('../../../constants');
 
-const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-const schema = schemaManager.generate(db.models.analysis_report, new JsonSchema7Strategy(), {
-  exclude: ['createdBy_id', ...BASE_EXCLUDE],
-  associations: true,
-  excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentationDiscussion', 'presentationSlides', 'users', 'projects'],
-});
+const uploadSchema = (jsonSchema) => {
+  const schema = schemaGenerator(db.models.analysis_report, {
+    jsonSchema,
+    baseUri: UPLOAD_BASE_URI,
+    exclude: ['createdBy_id', ...BASE_EXCLUDE],
+    associations: true,
+    excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentationDiscussion', 'presentationSlides', 'users', 'projects'],
+  });
 
-// set schema version and don't allow additional properties
-schema.additionalProperties = false;
+  // set schema version and don't allow additional properties
+  schema.additionalProperties = false;
+  
+  // inject all required associations into schema
+  schema.properties.project = {
+    type: 'string',
+    description: 'Project name',
+  };
+  schema.required.push('project');
 
-// inject all required associations into schema
-schema.properties.project = {
-  type: 'string',
-  description: 'Project name',
-};
-schema.required.push('project');
-
-// inject image directory
-schema.properties.images = {
-  type: 'array',
-  items: {
-    type: 'object',
-    required: ['path', 'key'],
-    properties: {
-      path: {
-        type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user)',
-      },
-      key: {
-        type: 'string',
-        pattern: VALID_IMAGE_KEY_PATTERN,
+  // inject image directory
+  schema.properties.images = {
+    type: 'array',
+    items: {
+      type: 'object',
+      required: ['path', 'key'],
+      properties: {
+        path: {
+          type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user)',
+        },
+        key: {
+          type: 'string',
+          pattern: VALID_IMAGE_KEY_PATTERN,
+        },
       },
     },
-  },
+  };
+
+  // get report associations
+  const {
+    ReportUserFilter, createdBy, signatures, presentationDiscussion,
+    presentationSlides, users, projects, ...associations
+  } = db.models.analysis_report.associations;
+
+  schema.definitions = {...variantSchemas(jsonSchema), kbMatches: kbMatchesSchema(jsonSchema)};
+
+  // add all associated schemas
+  Object.values(associations).forEach((association) => {
+    const model = association.target.name;
+
+    // generate schemas for the remaining sections
+    if (schema.definitions[model] === undefined) {
+      const generatedSchema = schemaGenerator(db.models[model], {
+        jsonSchema, baseUri: UPLOAD_BASE_URI, isSubSchema: true,
+      });
+
+      if (!generatedSchema.required) {
+        generatedSchema.required = [];
+      }
+      schema.definitions[model] = generatedSchema;
+    }
+  });
+
+  return schema;
 };
 
-// get report associations
-const {
-  ReportUserFilter, createdBy, signatures, presentationDiscussion,
-  presentationSlides, users, projects, ...associations
-} = db.models.analysis_report.associations;
 
-schema.definitions = {...variantSchemas, kbMatches: kbMatchesSchema};
-
-// add all associated schemas
-Object.values(associations).forEach((association) => {
-  const model = association.target.name;
-
-  // generate schemas for the remaining sections
-  if (schema.definitions[model] === undefined) {
-    const generatedSchema = schemaGenerator(db.models[model], {
-      baseUri: UPLOAD_BASE_URI, isSubSchema: true,
-    });
-
-    if (!generatedSchema.required) {
-      generatedSchema.required = [];
-    }
-    schema.definitions[model] = generatedSchema;
-  }
-});
-
-
-module.exports = schema;
+module.exports = uploadSchema;
