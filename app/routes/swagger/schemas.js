@@ -2,6 +2,7 @@ const db = require('../../models');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 const {GENE_LINKED_VARIANT_MODELS} = require('../../constants');
+const reportUpload = require('../../schemas/report/reportUpload')(false);
 
 
 const schemas = {};
@@ -84,6 +85,9 @@ schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report,
 });
 
 // *POST request body*
+
+// analysis report (report upload)
+schemas.analysis_reportCreate = reportUpload;
 
 
 // *PUT request body*
