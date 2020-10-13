@@ -3039,6 +3039,18 @@
             "$ref": "#/components/parameters/mutationSignature"
           }
         ],
+        "requestBody": {
+          "description": "The mutation signature to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/mutationSignature"
+              }
+            }
+          }
+        },
         "tags": [
           "Mutation Signatures"
         ],
