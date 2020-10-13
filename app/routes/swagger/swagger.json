@@ -2721,6 +2721,15 @@
             "$ref": "#/components/parameters/gene"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/genes"
+              }
+            }
+          }
+        },
         "tags": [
           "Genes"
         ],
