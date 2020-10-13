@@ -4,7 +4,7 @@ const IMAGE_TABLE = 'reports_image_data';
 const COMPARATORS_TABLE = 'reports_comparators';
 
 module.exports = {
-  up: (queryInterface) => {
+  up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
       // lowercase all the names
       console.log('lowercase all mutation burden image keys');
@@ -217,7 +217,7 @@ module.exports = {
       // image key twice in a report
       try {
         await addUniqueActiveFieldIndex(
-          queryInterface, Sq, transaction, IMAGE_TABLE, ['report_id', 'key']
+          queryInterface, Sequelize, transaction, IMAGE_TABLE, ['report_id', 'key']
         );
       } catch (err) {
         console.error(err);
