@@ -868,10 +868,10 @@
         }
       }
     },
-    "/reports/{report}/summary/mutation-summary": {
+    "/reports/{report}/mutation-burden": {
       "get": {
-        "summary": "Get Mutation Summary",
-        "description": "Retrieve summary of mutation details for the report",
+        "summary": "Get Mutation Burden",
+        "description": "Retrieve mutation burden details for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -879,7 +879,7 @@
         ],
         "tags": [
           "Genomic Report",
-          "Genomic Summary"
+          "Mutation Burden"
         ],
         "security": [
           {
@@ -888,11 +888,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns summary of mutation details",
+            "description": "Returns an array of all mutation burdens for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mutationSummary"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mutationBurdenAssociations"
+                  }
                 }
               }
             }
@@ -905,12 +908,12 @@
           }
         }
       },
-      "put": {
-        "summary": "Updated Mutation Summary",
-        "description": "Update some of the mutation summary details",
+      "post": {
+        "summary": "Create Mutation Burden",
+        "description": "Add a new mutation burden to this report",
         "tags": [
           "Genomic Report",
-          "Genomic Summary"
+          "Mutation Burden"
         ],
         "parameters": [
           {
@@ -926,18 +929,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/parameters/mutationSummaryUpdate"
+                "$ref": "#/components/schemas/mutationBurdenCreate"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Returns the update basic patient meta details",
+            "description": "Returns the newly created mutation burden",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mutationSummary"
+                  "$ref": "#/components/schemas/mutationBurdenAssociations"
                 }
               }
             }
@@ -947,6 +950,95 @@
           },
           "404": {
             "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mutation-burden/{burden}": {
+      "get": {
+        "summary": "Get Mutation Burden By Ident",
+        "description": "Retrieve a specific mutation burden from the report by ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/burden"
+          }
+        ],
+        "tags": [
+          "Genomic Report",
+          "Mutation Burden"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or mutation burden not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Mutation Burden",
+        "description": "Update the details of a specific mutation burden",
+        "tags": [
+          "Genomic Report",
+          "Mutation Burden"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/burden"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/mutationBurdenUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or mutation burden not found"
           }
         }
       }
@@ -2823,14 +2915,16 @@
     },
     "/reports/{report}/kb-matches": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get KB Matches",
+        "description": "Retrieve KB Matches for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "KB Match",
+          "KB Matches"
         ],
         "security": [
           {
@@ -2839,11 +2933,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of KB Matches for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/kbMatchesAssociations"
+                  }
                 }
               }
             }
@@ -2859,14 +2956,19 @@
     },
     "/reports/{report}/kb-matches/{kbMatch}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get KB Match by Ident",
+        "description": "Retrieve a specific KB Match from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
           }
         ],
         "tags": [
+          "KB Match",
+          "KB Matches"
         ],
         "security": [
           {
@@ -2875,11 +2977,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified KB Match",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/kbMatchesAssociations"
                 }
               }
             }
@@ -2888,7 +2990,39 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or KB Match not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete KB Match",
+        "description": "Removes the specified KB Match",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          }
+        ],
+        "tags": [
+          "KB Match",
+          "KB Matches"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or KB Match not found"
           }
         }
       }
@@ -4108,6 +4242,46 @@
           }
         }
       }
+    },
+    "/reports/{report}/comparators": {
+      "get": {
+        "summary": "Get Comparators",
+        "description": "Retrieve comparators for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Comparators"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of comparators for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/comparatorsAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
@@ -4196,6 +4370,26 @@
         "in": "path",
         "required": true,
         "description": "slide ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "kbMatch": {
+        "name": "kbMatch",
+        "in": "path",
+        "required": true,
+        "description": "KB Match ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "burden": {
+        "name": "burden",
+        "in": "path",
+        "required": true,
+        "description": "mutation burden ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
