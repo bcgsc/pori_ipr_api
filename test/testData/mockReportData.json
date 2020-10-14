@@ -165,7 +165,7 @@
     ],
     "kbMatches": [
         {
-            "category": "unknown",
+            "category": "pharmacogenomic",
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
