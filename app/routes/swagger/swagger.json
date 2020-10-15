@@ -785,82 +785,6 @@
         }
       }
     },
-    "/reports/{report}": {
-      "get": {
-        "summary": "Get details of a specific report",
-        "description": "Retrieve an object with details of a specific report",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully found the requested report",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Unable to find the requested report"
-          }
-        }
-      },
-      "put": {
-        "summary": "Update report",
-        "description": "Update an analysis report's settings",
-        "tags": [
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/parameters/analysis_reportUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successfully updated the report",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
     "/reports/{report}/patient-information": {
       "get": {
         "summary": "Get Patient Summary",
@@ -1370,8 +1294,8 @@
     },
     "/reports": {
       "get": {
-        "summary": "Get all analysis reports",
-        "description": "Get all analysis reports that you have acess to",
+        "summary": "Get Genomic Reports",
+        "description": "Retrieve all genomic reports that you have acess to",
         "tags": [
           "Reports"
         ],
@@ -1413,15 +1337,6 @@
             }
           },
           {
-            "name": "all",
-            "in": "query",
-            "required": false,
-            "description": "'true' if you want to retrieve all reports. Default is set to 'false'",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "role",
             "in": "query",
             "required": false,
@@ -1431,19 +1346,10 @@
             }
           },
           {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "description": "Filter the reports by 'genomic'or 'probe'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "paginated",
             "in": "query",
             "required": false,
-            "description": "'true', if you want to split the report, allowing to to choose the 'limit' and 'offset",
+            "description": "'true', if you want to split the report, allowing you to choose the 'limit' and 'offset",
             "schema": {
               "type": "boolean"
             }
@@ -1452,7 +1358,7 @@
             "name": "limit",
             "in": "query",
             "required": false,
-            "description": "The end of the set of reports to retrieve",
+            "description": "The number of reports to retrieve",
             "schema": {
               "type": "integer"
             }
@@ -1470,7 +1376,7 @@
             "name": "sort",
             "in": "query",
             "required": false,
-            "description": "Column for the reports to be sorted",
+            "description": "Column(s) for the reports to be sorted on",
             "schema": {
               "type": "string"
             }
@@ -1483,13 +1389,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of analysis reports",
+            "description": "Returns an object with the number of reports and an array of genomic reports",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/analysis_reportAssociations"
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "reports": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/analysis_reportAssociations"
+                      }
+                    }
                   }
                 }
               }
@@ -1500,6 +1414,164 @@
           },
           "403": {
             "description": "Insufficient access to get reports"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Genomic Report",
+        "description": "Upload a genomic report and all of the report sections",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/analysis_reportCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns an object containing a message and the ident of the new report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "ident": {
+                      "$ref": "#/components/schemas/ident"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/reports/{report}": {
+      "get": {
+        "summary": "Get Genomic Report",
+        "description": "Retrieve a specific genomic report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified genomic report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Genomic Report",
+        "description": "Update the details of a genomic report",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/analysis_reportUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated genomic report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Genomic Report",
+        "description": "Removes the specified genomic report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
