@@ -2727,7 +2727,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/genes"
+                "$ref": "#/components/schemas/genesUpdate"
               }
             }
           }
