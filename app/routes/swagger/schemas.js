@@ -6,7 +6,7 @@ const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../constants'
 
 const schemas = {};
 
-const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId'];
+const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId', 'gene1Id', 'gene2Id'];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
 const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germline_report', 'user_project', 'userGroupMember'];
@@ -48,6 +48,11 @@ const getExcludes = (model) => {
   // Remove all variant associations for polymorphic relation
   if (MODELS_WITH_VARIANTS.includes(model)) {
     excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(GENE_LINKED_VARIANT_MODELS).concat(['structuralVariants1', 'structuralVariants2']);
+  }
+
+  // Remove kbMatches from variant models
+  if (GENE_LINKED_VARIANT_MODELS.includes(model)) {
+    excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat('kbMatches');
   }
 
   return [publicExclude, exclude, excludeAssociations];

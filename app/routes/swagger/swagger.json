@@ -1858,47 +1858,6 @@
         }
       }
     },
-    "/reports/{report}/small-mutations": {
-      "get": {
-        "summary": "Get somatic small mutations",
-        "description": "Returns an analysis reports somatic small mutations",
-        "tags": [
-          "Mutations",
-          "Small Mutations"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns a reports somatic small mutations",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/smallMutations"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "User doesn't have permissions to access somatic small mutations"
-          }
-        }
-      }
-    },
     "/germline-small-mutation-reports": {
       "get": {
         "summary": "Get all germline small mutation reports",
@@ -2274,14 +2233,15 @@
     },
     "/reports/{report}/copy-variants": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Copy Variants",
+        "description": "Retrieve all copy variants for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Copy Variants"
         ],
         "security": [
           {
@@ -2290,11 +2250,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of copy variants for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/copyVariantsAssociations"
+                  }
                 }
               }
             }
@@ -2303,15 +2266,15 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/copy-variants/{cnv}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Copy Variant",
+        "description": "Retrieve a specific copy variant from a report by ident",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -2321,6 +2284,7 @@
           }
         ],
         "tags": [
+          "Copy Variants"
         ],
         "security": [
           {
@@ -2329,11 +2293,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified copy variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/copyVariantsAssociations"
                 }
               }
             }
@@ -2342,53 +2306,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or copy variant not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Copy Variant",
+        "description": "Update the details of a copy variant",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/cnv"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current copy variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/copyVariantsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Copy Variants"
         ],
         "security": [
           {
@@ -2397,11 +2343,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated copy variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/copyVariantsAssociations"
                 }
               }
             }
@@ -2410,21 +2356,53 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or copy variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Copy Variant",
+        "description": "Removes the specified copy variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/cnv"
+          }
+        ],
+        "tags": [
+          "Copy Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or copy variant not found"
           }
         }
       }
     },
     "/reports/{report}/expression-variants": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Expression Variants",
+        "description": "Retrieve all expression variants for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Expression Variants"
         ],
         "security": [
           {
@@ -2433,11 +2411,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of expression variants for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/expressionVariantsAssociations"
+                  }
                 }
               }
             }
@@ -2446,21 +2427,25 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
-    "/reports/{report}/expression-variants/{ExpressionVariant}": {
+    "/reports/{report}/expression-variants/{expression}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Expression Variant",
+        "description": "Retrieve a specific expression variant from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/expression"
           }
         ],
         "tags": [
+          "Expression Variants"
         ],
         "security": [
           {
@@ -2469,11 +2454,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified expression variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/expressionVariantsAssociations"
                 }
               }
             }
@@ -2482,53 +2467,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or expression variant not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Expression Variant",
+        "description": "Update the details of an expression variant",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/expression"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current expression variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/expressionVariantsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Expression Variants"
         ],
         "security": [
           {
@@ -2537,11 +2504,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated expression variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/expressionVariantsAssociations"
                 }
               }
             }
@@ -2550,7 +2517,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or expression variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Expression Variant",
+        "description": "Removes the specified expression variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/expression"
+          }
+        ],
+        "tags": [
+          "Expression Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or expression variant not found"
           }
         }
       }
@@ -2935,7 +2933,6 @@
           }
         ],
         "tags": [
-          "KB Match",
           "KB Matches"
         ],
         "security": [
@@ -2979,7 +2976,6 @@
           }
         ],
         "tags": [
-          "KB Match",
           "KB Matches"
         ],
         "security": [
@@ -3018,7 +3014,6 @@
           }
         ],
         "tags": [
-          "KB Match",
           "KB Matches"
         ],
         "security": [
@@ -3769,16 +3764,17 @@
         }
       }
     },
-    "/reports/{report}/small-mutations/{mutation}": {
+    "/reports/{report}/small-mutations": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Small Mutations",
+        "description": "Retrieve all small mutations for a given report",
+        "tags": [
+          "Small Mutations"
+        ],
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
-        ],
-        "tags": [
         ],
         "security": [
           {
@@ -3787,11 +3783,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of somatic small mutations for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/smallMutationsAssociations"
+                  }
                 }
               }
             }
@@ -3800,19 +3799,25 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
+      }
+    },
+    "/reports/{report}/small-mutations/{mutation}": {
+      "get": {
+        "summary": "Get Small Mutation",
+        "description": "Retrieves a small mutation from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutation"
           }
         ],
         "tags": [
+          "Small Mutations"
         ],
         "security": [
           {
@@ -3821,11 +3826,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified small mutation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/smallMutationsAssociations"
                 }
               }
             }
@@ -3834,19 +3839,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or small mutation not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Small Mutation",
+        "description": "Update the details of a small mutation",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutation"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current small mutation",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/smallMutationsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Small Mutations"
         ],
         "security": [
           {
@@ -3855,11 +3876,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated small mutation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/smallMutationsAssociations"
                 }
               }
             }
@@ -3868,21 +3889,53 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or small mutation not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Small Mutation",
+        "description": "Removes the specified small mutation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutation"
+          }
+        ],
+        "tags": [
+          "Small Mutations"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or small mutation not found"
           }
         }
       }
     },
     "/reports/{report}/structural-variants": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Structural Variants",
+        "description": "Retrieve all structural variants for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Structural Variants"
         ],
         "security": [
           {
@@ -3891,11 +3944,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of structural variants for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/structuralVariantsAssociations"
+                  }
                 }
               }
             }
@@ -3904,21 +3960,25 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/structural-variants/{structuralVariant}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Structural Variant",
+        "description": "Retrieves a structural variant from the report by ident",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/structuralVariant"
           }
         ],
         "tags": [
+          "Structural Variants"
         ],
         "security": [
           {
@@ -3927,11 +3987,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified structural variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/structuralVariantsAssociations"
                 }
               }
             }
@@ -3940,53 +4000,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or structural variant not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Structural Variant",
+        "description": "Update the details of a structural variant",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/structuralVariant"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current structural variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/structuralVariantsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Structural Variants"
         ],
         "security": [
           {
@@ -3995,11 +4037,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the updated structural variant",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/structuralVariantsAssociations"
                 }
               }
             }
@@ -4008,7 +4050,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or structural variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Structural Variant",
+        "description": "Removes the specified structural variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/structuralVariant"
+          }
+        ],
+        "tags": [
+          "Structural Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or structural variant not found"
           }
         }
       }
@@ -4352,9 +4425,10 @@
         "name": "Copy-Number Variant",
         "in": "path",
         "required": true,
-        "description": "Copy number variant",
+        "description": "Copy number variant ident",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "analysis": {
@@ -4402,6 +4476,36 @@
         "in": "path",
         "required": true,
         "description": "mutation burden ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "mutation": {
+        "name": "mutation",
+        "in": "path",
+        "required": true,
+        "description": "small mutation ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "expression": {
+        "name": "expression",
+        "in": "path",
+        "required": true,
+        "description": "expression variant ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "structuralVariant": {
+        "name": "structural variant",
+        "in": "path",
+        "required": true,
+        "description": "structural variant ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
