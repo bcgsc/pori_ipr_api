@@ -118,9 +118,12 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
     },
     ncbiBuild: {
-      name: 'ncbi_build',
+      name: 'ncbiBuild',
       field: 'ncbi_build',
       type: Sq.TEXT,
+    },
+    germline: {
+      type: Sq.BOOLEAN,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
