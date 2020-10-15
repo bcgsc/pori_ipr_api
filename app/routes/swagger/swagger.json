@@ -3072,14 +3072,15 @@
     },
     "/reports/{report}/mutation-signatures": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get mutation signatures",
+        "description": "Returns all mutation signatures for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Mutation Signatures"
         ],
         "security": [
           {
@@ -3088,11 +3089,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of mutation signatures",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mutationSignatureAssociations"
+                  }
                 }
               }
             }
@@ -3102,6 +3106,96 @@
           },
           "404": {
             "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mutation-signatures/{mutationSignature}": {
+      "get": {
+        "summary": "Get a specific mutation signature",
+        "description": "Returns a specified mutation signature",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutationSignature"
+          }
+        ],
+        "tags": [
+          "Mutation Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the specified mutation signature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationSignatureAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a mutation signature",
+        "description": "Updates and returns the specified mutation signature",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutationSignature"
+          }
+        ],
+        "requestBody": {
+          "description": "The mutation signature to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/mutationSignatureUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Mutation Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated mutation signature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationSignatureAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature not found"
           }
         }
       }
@@ -4476,6 +4570,16 @@
         "in": "path",
         "required": true,
         "description": "mutation burden ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "mutationSignature": {
+        "name": "mutationSignature",
+        "in": "path",
+        "required": true,
+        "description": "Mutation signature ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
