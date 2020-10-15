@@ -6,9 +6,15 @@ const schemaGenerator = require('../../schemaGenerator');
 const {VALID_IMAGE_KEY_PATTERN, UPLOAD_BASE_URI} = require('../../../constants');
 
 
-const uploadSchema = (jsonSchema) => {
+/**
+ * Generate schema for uploading a report
+ *
+ * @param {boolean} isJsonSchema - Whether to generate a json schema or an openAPI schema
+ * @returns {object} - Returns a report upload schema
+ */
+const generateReportUploadSchema = (isJsonSchema) => {
   const schema = schemaGenerator(db.models.analysis_report, {
-    jsonSchema,
+    isJsonSchema,
     baseUri: UPLOAD_BASE_URI,
     exclude: ['createdBy_id', ...BASE_EXCLUDE],
     associations: true,
@@ -49,7 +55,7 @@ const uploadSchema = (jsonSchema) => {
     presentationSlides, users, projects, ...associations
   } = db.models.analysis_report.associations;
 
-  schema.definitions = {...variantSchemas(jsonSchema), kbMatches: kbMatchesSchema(jsonSchema)};
+  schema.definitions = {...variantSchemas(isJsonSchema), kbMatches: kbMatchesSchema(isJsonSchema)};
 
   // add all associated schemas
   Object.values(associations).forEach((association) => {
@@ -58,7 +64,7 @@ const uploadSchema = (jsonSchema) => {
     // generate schemas for the remaining sections
     if (schema.definitions[model] === undefined) {
       const generatedSchema = schemaGenerator(db.models[model], {
-        jsonSchema, baseUri: UPLOAD_BASE_URI, isSubSchema: true,
+        isJsonSchema, baseUri: UPLOAD_BASE_URI, isSubSchema: true,
       });
 
       if (!generatedSchema.required) {
@@ -72,4 +78,4 @@ const uploadSchema = (jsonSchema) => {
 };
 
 
-module.exports = uploadSchema;
+module.exports = generateReportUploadSchema;

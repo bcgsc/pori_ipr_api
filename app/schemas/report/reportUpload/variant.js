@@ -3,10 +3,16 @@ const schemaGenerator = require('../../schemaGenerator');
 const {GENE_LINKED_VARIANT_MODELS, UPLOAD_BASE_URI} = require('../../../constants');
 const {REPORT_EXCLUDE} = require('../../exclude');
 
-const generatedSchema = (jsonSchema) => {
+/**
+ * Generate upload schemas for all variants
+ *
+ * @param {boolean} isJsonSchema - Whether generating a json schema or an openAPI schema
+ * @returns {object} - Returns variant upload schemas
+ */
+const generateVariantUploadSchemas = (isJsonSchema) => {
   const variantSchemas = {
     structuralVariants: schemaGenerator(db.models.structuralVariants, {
-      jsonSchema,
+      isJsonSchema,
       baseUri: UPLOAD_BASE_URI,
       properties: {
         gene1: {
@@ -27,7 +33,7 @@ const generatedSchema = (jsonSchema) => {
 
   GENE_LINKED_VARIANT_MODELS.filter((model) => { return model !== 'structuralVariants'; }).forEach((model) => {
     variantSchemas[model] = schemaGenerator(db.models[model], {
-      jsonSchema,
+      isJsonSchema,
       baseUri: UPLOAD_BASE_URI,
       properties: {
         gene: {
@@ -46,4 +52,4 @@ const generatedSchema = (jsonSchema) => {
 };
 
 
-module.exports = generatedSchema;
+module.exports = generateVariantUploadSchemas;

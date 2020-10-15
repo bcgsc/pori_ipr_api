@@ -67,22 +67,22 @@ for (const model of Object.keys(models)) {
 
   // generate public view of model (no associations)
   schemas[model] = schemaGenerator(db.models[model], {
-    jsonSchema: false, title: `${model}`, exclude: publicExclude,
+    isJsonSchema: false, title: `${model}`, exclude: publicExclude,
   });
 
   // generate public view of model (with associations)
   schemas[`${model}Associations`] = schemaGenerator(db.models[model], {
-    jsonSchema: false, title: `${model}Associations`, exclude: publicExclude, associations: true, excludeAssociations,
+    isJsonSchema: false, title: `${model}Associations`, exclude: publicExclude, associations: true, excludeAssociations,
   });
 
   // generate body of POST request schemas
   schemas[`${model}Create`] = schemaGenerator(db.models[model], {
-    jsonSchema: false, title: `${model}Create`, exclude,
+    isJsonSchema: false, title: `${model}Create`, exclude,
   });
 
   // generate body of PUT request schemas
   schemas[`${model}Update`] = schemaGenerator(db.models[model], {
-    jsonSchema: false, title: `${model}Update`, exclude, nothingRequired: true,
+    isJsonSchema: false, title: `${model}Update`, exclude, nothingRequired: true,
   });
 
   // Check if model has a polymorphic variants relationship
@@ -97,7 +97,7 @@ for (const model of Object.keys(models)) {
 
 // analysis report
 schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report, {
-  jsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
+  isJsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
 });
 
 // *POST request body*
@@ -110,7 +110,7 @@ schemas.analysis_reportCreate = reportUpload;
 
 // therapeutic targets bulk update
 schemas.therapeuticTargetRanksBulkUpdate = schemaGenerator(db.models.therapeuticTarget, {
-  jsonSchema: false, title: 'therapeuticTargetRanksBulkUpdate',
+  isJsonSchema: false, title: 'therapeuticTargetRanksBulkUpdate',
   include: ['ident', 'rank'], required: ['ident', 'rank'],
 });
 

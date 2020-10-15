@@ -2,9 +2,9 @@ const db = require('../../../models');
 const schemaGenerator = require('../../schemaGenerator');
 const {REPORT_EXCLUDE} = require('../../exclude');
 
-module.exports = (jsonSchema) => {
+module.exports = (isJsonSchema) => {
   return schemaGenerator(db.models.kbMatches, {
-    jsonSchema,
+    isJsonSchema,
     properties: {
       variant: {
         type: 'string', description: 'the variant key linking this to one of the variant records',
