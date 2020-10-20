@@ -7,6 +7,35 @@ const SIGNATURE_REMOVAL_EXCLUDE = {
   analysis_report: ['state', 'presentationDate', 'updatedAt'],
 };
 
+/**
+ * Remove report signatures
+ *
+ * @param {object} instance - Instance of report section (Sequelize model)
+ * @param {object} options - Additional options
+ * @returns {undefined} - If no errors are thrown remove was successful
+ */
+const REMOVE_REPORT_SIGNATURES = (instance, options = {}) => {
+  // check instance is a report section
+  if (!instance.reportId) {
+    return Promise.resolve(true);
+  }
+
+  // remove signatures
+  return instance.sequelize.models.signatures.update({
+    authorId: null,
+    authorSignedAt: null,
+    reviewerId: null,
+    reviewerSignedAt: null,
+  }, {
+    where: {
+      reportId: instance.reportId,
+    },
+    individualHooks: true,
+    paranoid: true,
+    transaction: options.transaction,
+  });
+};
+
 const DEFAULT_MAPPING_COLUMNS = {
   id: {
     type: Sq.INTEGER,
@@ -115,6 +144,12 @@ const DEFAULT_REPORT_OPTIONS = {
         transaction: options.transaction,
       });
     },
+    afterCreate: (instance, options = {}) => {
+      return REMOVE_REPORT_SIGNATURES(instance, options);
+    },
+    afterDestroy: (instance, options = {}) => {
+      return REMOVE_REPORT_SIGNATURES(instance, options);
+    },
   },
 };
 
@@ -124,4 +159,5 @@ module.exports = {
   DEFAULT_OPTIONS,
   DEFAULT_COLUMNS,
   DEFAULT_REPORT_OPTIONS,
+  REMOVE_REPORT_SIGNATURES,
 };
