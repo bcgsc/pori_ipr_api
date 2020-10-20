@@ -1,5 +1,7 @@
 const Sq = require('sequelize');
-const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
+const {
+  DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS, REMOVE_REPORT_SIGNATURES,
+} = require('../../../base');
 
 const {Op} = Sq;
 
@@ -89,8 +91,8 @@ module.exports = (sequelize) => {
     hooks: {
       ...DEFAULT_REPORT_OPTIONS.hooks,
       // update ranks after deleting therapeutic target
-      afterDestroy: (instance) => {
-        return instance.constructor.decrement('rank', {
+      afterDestroy: async (instance) => {
+        await instance.constructor.decrement('rank', {
           where: {
             reportId: instance.reportId,
             rank: {
@@ -98,6 +100,7 @@ module.exports = (sequelize) => {
             },
           },
         });
+        return REMOVE_REPORT_SIGNATURES(instance);
       },
     },
     tableName: 'reports_therapeutic_targets',
