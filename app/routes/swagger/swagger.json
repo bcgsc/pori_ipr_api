@@ -2203,14 +2203,15 @@
     },
     "/reports/{report}/appendices": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Appendix",
+        "description": "Retrieve appendix data for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Appendices"
         ],
         "security": [
           {
@@ -2219,11 +2220,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns a reports sample info., seqQC, and config data",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/appendices"
                 }
               }
             }
@@ -2232,21 +2233,22 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/appendices/tcga": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get TCGA",
+        "description": "Retrieve TCGA data for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Appendices"
         ],
         "security": [
           {
@@ -2255,11 +2257,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of objects that contain expression matrix data for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/expressionMatrix"
                 }
               }
             }
@@ -2268,7 +2270,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
@@ -4711,6 +4713,37 @@
         "properties": {
           "{key}": {
             "$ref": "#/components/schemas/imageDataAssociations"
+          }
+        }
+      },
+      "expressionMatrix": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "Full Name": {
+              "type": "string"
+            },
+            "Code Name": {
+              "type": "string"
+            },
+            "Data Source": {
+              "type": "string"
+            },
+            "Tumour Count": {
+              "oneOf": [
+                {"type": "string"},
+                {"type": "integer"}
+              ],
+              "example": 179
+            },
+            "Normal Count": {
+              "oneOf": [
+                {"type": "string"},
+                {"type": "integer"}
+              ],
+              "example": 0
+            }
           }
         }
       }
