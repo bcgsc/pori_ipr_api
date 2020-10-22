@@ -324,7 +324,7 @@ router.route('/')
     try {
       validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
-      const message = `There was an error validating validating the report content: ${error}`;
+      const message = `There was an error validating the report content ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
