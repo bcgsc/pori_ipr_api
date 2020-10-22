@@ -1677,8 +1677,8 @@
     },
     "/reports/{report}/therapeutic-targets": {
       "get": {
-        "summary": "Get therapeutic targets",
-        "description": "Returns all therapeutic targets for an analysis report",
+        "summary": "Get Therapeutic Targets",
+        "description": "Retrieve all therapeutic targets for a given report",
         "tags": [
           "Therapeutic Targets"
         ],
@@ -1694,13 +1694,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Get therapeutic targets for analysis report",
+            "description": "Returns an array of therapeutic targets for the given report",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/therapeuticTarget"
+                    "$ref": "#/components/schemas/therapeuticTargetAssociations"
                   }
                 }
               }
@@ -1718,8 +1718,8 @@
         }
       },
       "post": {
-        "summary": "Create a new therapeutic target",
-        "description": "Creates a new therapeutic target",
+        "summary": "Create Therapeutic Target",
+        "description": "Add a new therapeutic target to this report",
         "tags": [
           "Therapeutic Targets"
         ],
@@ -1729,13 +1729,13 @@
           }
         ],
         "requestBody": {
-          "description": "Therapeutic Target object to be created",
+          "description": "Values for creating a new therapeutic target",
           "required": true,
           "content": {
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/therapeuticTargetInput"
+                "$ref": "#/components/schemas/therapeuticTargetCreate"
               }
             }
           }
@@ -1747,45 +1747,44 @@
         ],
         "responses": {
           "201": {
-            "description": "Add therapeutic targets to analysis report",
+            "description": "Returns the newly created therapeutic target",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/therapeuticTarget"
+                  "$ref": "#/components/schemas/therapeuticTargetAssociations"
                 }
               }
             }
           },
           "400": {
-            "description": "Input is not valid"
+            "description": "Malformed request syntax"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
             "description": "Report not found"
-          },
-          "409": {
-            "description": "Rank already exists"
           }
         }
       },
       "put": {
-        "summary": "Update ranks of Therapeutic Targets for a report",
-        "description": "Return true if the targets are updated successfully",
+        "summary": "Update Therapeutic Target Ranks",
+        "description": "Update the ranks of multiple therapeutic targets for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "requestBody": {
-          "description": "An array of ranks and idents to be updated",
+          "description": "An array of objects containing the ident and rank to be updated",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/therapeuticTargetRanksBulkUpdate"
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/therapeuticTargetRanksBulkUpdate"
+                }
               }
             }
           }
@@ -1800,7 +1799,7 @@
         ],
         "responses": {
           "200": {
-            "description": "True if ranks were updated successfully",
+            "description": "Returns updated set to true if ranks were updated successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -1818,7 +1817,131 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/therapeutic-targets/{Therapeutic Target}": {
+      "get": {
+        "summary": "Get Therapeutic Target",
+        "description": "Retrieve a specific therapeutic target",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
+          }
+        ],
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified therapeutic target",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/therapeuticTargetAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or therapeutic target not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Therapeutic Target",
+        "description": "Update the details of a therapeutic target",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update specified therapeutic target",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/therapeuticTargetUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated therapeutic target",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/therapeuticTargetAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or therapeutic target not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Therapeutic Target",
+        "description": "Removes the specified therapeutic target",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/therapeuticTarget"
+          }
+        ],
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or therapeutic target not found"
           }
         }
       }
@@ -4367,133 +4490,6 @@
         }
       }
     },
-    "/reports/{report}/therapeutic-targets/{Therapeutic Target}": {
-      "get": {
-        "summary": "Get a Therapeutic Target for a given ident",
-        "description": "Return a single therapeutic target for an analysis report",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "$ref": "#/components/parameters/therapeuticTarget"
-          }
-        ],
-        "tags": [
-          "Therapeutic Targets"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Get therapeutic target for analysis report",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/therapeuticTarget"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete a Therapeutic Target for a given ident",
-        "description": "Returns 204 no content if delete was successful",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "$ref": "#/components/parameters/therapeuticTarget"
-          }
-        ],
-        "tags": [
-          "Therapeutic Targets"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "put": {
-        "summary": "Update a Therapeutic Target for a given ident",
-        "description": "Return the updated therapeutic target for an analysis report",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "$ref": "#/components/parameters/therapeuticTarget"
-          }
-        ],
-        "requestBody": {
-          "description": "The parameters to be updated, any of the parameters can be removed if does not need to be updated",
-          "required": true,
-          "content": {
-            "application/json":
-            {
-              "schema": {
-                "$ref": "#/components/schemas/therapeuticTargetInput"
-              }
-            }
-          }
-        },
-        "tags": [
-          "Therapeutic Targets"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Updated therapeutic target",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/therapeuticTarget"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Not valid input"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          },
-          "409": {
-            "description": "Rank already exists"
-          }
-        }
-      }
-    },
     "/reports/{report}/comparators": {
       "get": {
         "summary": "Get Comparators",
@@ -4560,10 +4556,10 @@
         }
       },
       "therapeuticTarget": {
-        "name": "Therapeutic Target",
+        "name": "therapeutic target",
         "in": "path",
         "required": true,
-        "description": "Therapeutic Target ident",
+        "description": "therapeutic target ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
