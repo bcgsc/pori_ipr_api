@@ -12,36 +12,6 @@
       "name": "Proprietary"
     }
   },
-  "tags": [
-    {
-      "name": "Genomic Report",
-      "description": "Genomic analysis report"
-    },
-    {
-      "name": "Probe Report",
-      "description": "Rapid analysis pipeline report"
-    },
-    {
-      "name": "Report",
-      "description": "Personalized Oncogenomics related object"
-    },
-    {
-      "name": "User",
-      "description": "User object"
-    },
-    {
-      "name": "Group",
-      "description": "User permissions - groups."
-    },
-    {
-      "name": "Genomic Summary",
-      "description": "Genomic Report - Summary details for a report"
-    },
-    {
-      "name": "Germline Report",
-      "description": "Routes associated with creating, reviewing, and exporting the Germline Report"
-    }
-  ],
   "paths": {
     "/user": {
       "get": {
