@@ -43,6 +43,9 @@ const getExcludes = (model) => {
     case 'project':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
       break;
+    case 'therapeuticTarget':
+      exclude = [...GENERAL_EXCLUDE, 'rank'];
+      break;
     default:
   }
 
