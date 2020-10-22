@@ -785,82 +785,6 @@
         }
       }
     },
-    "/reports/{report}": {
-      "get": {
-        "summary": "Get details of a specific report",
-        "description": "Retrieve an object with details of a specific report",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully found the requested report",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Unable to find the requested report"
-          }
-        }
-      },
-      "put": {
-        "summary": "Update report",
-        "description": "Update an analysis report's settings",
-        "tags": [
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/parameters/analysis_reportUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successfully updated the report",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
     "/reports/{report}/patient-information": {
       "get": {
         "summary": "Get Patient Summary",
@@ -1370,8 +1294,8 @@
     },
     "/reports": {
       "get": {
-        "summary": "Get all analysis reports",
-        "description": "Get all analysis reports that you have acess to",
+        "summary": "Get Genomic Reports",
+        "description": "Retrieve all genomic reports that you have acess to",
         "tags": [
           "Reports"
         ],
@@ -1413,15 +1337,6 @@
             }
           },
           {
-            "name": "all",
-            "in": "query",
-            "required": false,
-            "description": "'true' if you want to retrieve all reports. Default is set to 'false'",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "role",
             "in": "query",
             "required": false,
@@ -1431,19 +1346,10 @@
             }
           },
           {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "description": "Filter the reports by 'genomic'or 'probe'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "paginated",
             "in": "query",
             "required": false,
-            "description": "'true', if you want to split the report, allowing to to choose the 'limit' and 'offset",
+            "description": "'true', if you want to split the report, allowing you to choose the 'limit' and 'offset",
             "schema": {
               "type": "boolean"
             }
@@ -1452,7 +1358,7 @@
             "name": "limit",
             "in": "query",
             "required": false,
-            "description": "The end of the set of reports to retrieve",
+            "description": "The number of reports to retrieve",
             "schema": {
               "type": "integer"
             }
@@ -1470,7 +1376,7 @@
             "name": "sort",
             "in": "query",
             "required": false,
-            "description": "Column for the reports to be sorted",
+            "description": "Column(s) for the reports to be sorted on",
             "schema": {
               "type": "string"
             }
@@ -1483,13 +1389,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of analysis reports",
+            "description": "Returns an object with the number of reports and an array of genomic reports",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/analysis_reportAssociations"
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "reports": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/analysis_reportAssociations"
+                      }
+                    }
                   }
                 }
               }
@@ -1500,6 +1414,164 @@
           },
           "403": {
             "description": "Insufficient access to get reports"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Genomic Report",
+        "description": "Upload a genomic report and all of the report sections",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/analysis_reportCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns an object containing a message and the ident of the new report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "ident": {
+                      "$ref": "#/components/schemas/ident"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/reports/{report}": {
+      "get": {
+        "summary": "Get Genomic Report",
+        "description": "Retrieve a specific genomic report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified genomic report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Genomic Report",
+        "description": "Update the details of a genomic report",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/analysis_reportUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated genomic report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Genomic Report",
+        "description": "Removes the specified genomic report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
@@ -2758,16 +2830,43 @@
         }
       }
     },
-    "/reports/{report}/image/expression-density-graphs": {
-      "get": {
-        "summary": "",
-        "description": "",
+    "/reports/{report}/image": {
+      "post": {
+        "summary": "Add Images",
+        "description": "Upload new images to report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Images to upload (allows multiple images with different keys)",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "{key}": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "image to upload"
+                  },
+                  "{key}_title": {
+                    "type": "string",
+                    "description": "title of image specified by key"
+                  },
+                  "{key}_caption": {
+                    "type": "string",
+                    "description": "caption of image specified by key"
+                  }
+                }
+              }
+            }
+          }
+        },
         "tags": [
+          "Images"
         ],
         "security": [
           {
@@ -2775,71 +2874,53 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "",
+          "207": {
+            "description": "Returns an array of objects indicating which images were uploaded successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "upload": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
+          },
+          "400": {
+            "description": "Malformed request syntax"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/image/mutation-summary": {
-      "get": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/image/retrieve/{key} ": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Images by Key",
+        "description": "Retrieve image data for specified keys",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/key"
           }
         ],
         "tags": [
+          "Images"
         ],
         "security": [
           {
@@ -2848,11 +2929,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an object mapping image key to image data",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/imageReturnObject"
                 }
               }
             }
@@ -2861,21 +2942,22 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/image/subtype-plots": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Subtype Plot Images",
+        "description": "Retrieves all subtype plot images for report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Images"
         ],
         "security": [
           {
@@ -2884,11 +2966,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an object mapping image key to image data",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/imageReturnObject"
                 }
               }
             }
@@ -2897,7 +2979,81 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/mutation-burden": {
+      "get": {
+        "summary": "Get Mutation Burden Images",
+        "description": "Retrieve all mutation burden images for report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an object mapping image key to image data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imageReturnObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/expression-density-graphs": {
+      "get": {
+        "summary": "Get Expression Density Images",
+        "description": "Retrieve all expression density images for report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an object mapping image key to image data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imageReturnObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
@@ -3051,14 +3207,15 @@
     },
     "/reports/{report}/mutation-signatures": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get mutation signatures",
+        "description": "Returns all mutation signatures for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Mutation Signatures"
         ],
         "security": [
           {
@@ -3067,11 +3224,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of mutation signatures",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mutationSignatureAssociations"
+                  }
                 }
               }
             }
@@ -3081,6 +3241,96 @@
           },
           "404": {
             "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/mutation-signatures/{mutationSignature}": {
+      "get": {
+        "summary": "Get a specific mutation signature",
+        "description": "Returns a specified mutation signature",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutationSignature"
+          }
+        ],
+        "tags": [
+          "Mutation Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the specified mutation signature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationSignatureAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a mutation signature",
+        "description": "Updates and returns the specified mutation signature",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/mutationSignature"
+          }
+        ],
+        "requestBody": {
+          "description": "The mutation signature to be updated",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/mutationSignatureUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Mutation Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated mutation signature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mutationSignatureAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature not found"
           }
         }
       }
@@ -4470,6 +4720,16 @@
           "format": "UUIDv4"
         }
       },
+      "mutationSignature": {
+        "name": "mutationSignature",
+        "in": "path",
+        "required": true,
+        "description": "Mutation signature ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
       "mutation": {
         "name": "mutation",
         "in": "path",
@@ -4498,6 +4758,18 @@
         "schema": {
           "type": "string",
           "format": "UUIDv4"
+        }
+      },
+      "key": {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "description": "comma separated list of image keys (e.g. loh.3,loh.4)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -4534,6 +4806,14 @@
           "message": {
             "type": "string",
             "example": "You are not authorized to view this resource."
+          }
+        }
+      },
+      "imageReturnObject": {
+        "type": "object",
+        "properties": {
+          "{key}": {
+            "$ref": "#/components/schemas/imageDataAssociations"
           }
         }
       }

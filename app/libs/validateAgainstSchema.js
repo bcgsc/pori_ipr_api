@@ -28,14 +28,16 @@ const validateAgainstSchema = (schema, data) => {
 
     ajv.errors.forEach((error) => {
       logger.debug(error); // log bad request schema errors for debugging
+      const errorParams = Object.entries(error.params).map(([key, value]) => {
+        return `${key}: ${value}`;
+      }).join(', ');
+
       errors.push(
-        error.dataPath
-          ? `${error.dataPath} ${error.message}`
-          : error.message
+        `${error.dataPath ? `${error.dataPath} ${error.message}` : error.message} [${errorParams}]`
       );
     });
 
-    throw new Error(`Error validating schema: ${errors.join('; ')}`);
+    throw new Error(errors.join('; '));
   }
 };
 

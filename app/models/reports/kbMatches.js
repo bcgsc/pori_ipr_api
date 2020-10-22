@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
       },
     },
     category: {
-      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel'),
+      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel', 'pharmacogenomic'),
       allowNull: false,
     },
     approvedTherapy: {

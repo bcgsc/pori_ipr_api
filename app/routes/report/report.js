@@ -20,7 +20,7 @@ const {REPORT_UPDATE_BASE_URI} = require('../../constants');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema's
-const reportUploadSchema = require('../../schemas/report/reportUpload');
+const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
 const updateSchema = schemaGenerator(db.models.analysis_report, {
   baseUri: REPORT_UPDATE_BASE_URI,
@@ -52,7 +52,7 @@ router.route('/:report')
     // Update db entry
     try {
       await report.update(req.body);
-      report.reload();
+      await report.reload();
       return res.json(report.view('public'));
     } catch (error) {
       logger.error(`Unable to update the report ${error}`);
@@ -324,7 +324,7 @@ router.route('/')
     try {
       validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
-      const message = `There was an error validating validating the report content: ${error}`;
+      const message = `There was an error validating the report content ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
