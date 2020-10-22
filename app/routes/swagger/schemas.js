@@ -43,6 +43,9 @@ const getExcludes = (model) => {
     case 'project':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
       break;
+    case 'therapeuticTarget':
+      exclude = [...GENERAL_EXCLUDE, 'rank'];
+      break;
     default:
   }
 
@@ -108,6 +111,17 @@ schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report,
 // *POST request body*
 
 // analysis report (report upload)
+
+// Loop through generated schema and point to create version
+// of association instead of return version of association
+Object.keys(reportUpload.properties).forEach((key) => {
+  if (reportUpload.properties[key].$ref) {
+    reportUpload.properties[key].$ref += 'Create';
+  } else if (reportUpload.properties[key].type === 'array' && reportUpload.properties[key].items.$ref) {
+    reportUpload.properties[key].items.$ref += 'Create';
+  }
+});
+
 schemas.analysis_reportCreate = reportUpload;
 
 
