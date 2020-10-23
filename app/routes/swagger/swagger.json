@@ -2722,14 +2722,18 @@
     },
     "/reports/{report}/gene-viewer/{geneName} ": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get gene viewer data",
+        "description": "Returns gene data formatted for the front end gene viewer",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/gene"
           }
         ],
         "tags": [
+          "Genes"
         ],
         "security": [
           {
@@ -2738,11 +2742,49 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns gene information for all sections of a report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "object",
+                  "properties": {
+                    "kbMatches": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/kbMatchesAssociations"
+                      }
+                    },
+                    "smallMutations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/smallMutationsAssociations"
+                      }
+                    },
+                    "copyNumber": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/copyVariantsAssociations"
+                      }
+                    },
+                    "expRNA": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/expressionVariantsAssociations"
+                      }
+                    },
+                    "expDensityGraph": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/imageDataAssociations"
+                      }
+                    },
+                    "structuralVariants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/structuralVariantsAssociations"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -2756,16 +2798,17 @@
         }
       }
     },
-    "/reports/{reports}/genes": {
+    "/reports/{report}/genes": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get all genes for a report",
+        "description": "Returns all genes for a report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Genes"
         ],
         "security": [
           {
@@ -2774,11 +2817,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns a report's genes",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/genesAssociations"
+                  }
                 }
               }
             }
@@ -2792,16 +2838,20 @@
         }
       }
     },
-    "/reports/{reports}/genes/{geneName}": {
+    "/reports/{report}/genes/{geneName}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get a specific gene",
+        "description": "Returns details on a specific gene",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/gene"
           }
         ],
         "tags": [
+          "Genes"
         ],
         "security": [
           {
@@ -2810,11 +2860,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Get a single gene",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/genesAssociations"
                 }
               }
             }
@@ -2828,14 +2878,27 @@
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update a specific gene",
+        "description": "Updates a gene and returns the updated object",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/gene"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/genesUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Genes"
         ],
         "security": [
           {
@@ -2844,11 +2907,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Update a single gene",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/genesAssociations"
                 }
               }
             }
@@ -2857,7 +2920,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or gene not found"
           }
         }
       }
@@ -4610,6 +4673,16 @@
         "in": "path",
         "required": true,
         "description": "mutation burden ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "gene": {
+        "name": "gene",
+        "in": "path",
+        "required": true,
+        "description": "Gene name",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
