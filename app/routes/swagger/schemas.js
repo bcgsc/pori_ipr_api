@@ -46,6 +46,9 @@ const getExcludes = (model) => {
     case 'therapeuticTarget':
       exclude = [...GENERAL_EXCLUDE, 'rank'];
       break;
+    case 'signatures':
+      publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'reviewerId', 'authorId'];
+      break;
     default:
   }
 
