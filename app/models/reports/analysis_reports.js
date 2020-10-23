@@ -53,9 +53,27 @@ module.exports = (sequelize) => {
     },
     sampleInfo: {
       type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+          },
+          example: [{Sample: 'Tumour', 'Collection Date': '23-09-20'}],
+        },
+      },
     },
     seqQC: {
       type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+          },
+          example: [{Reads: '2534M', bioQC: 'passed'}],
+        },
+      },
     },
     config: {
       type: Sq.TEXT,

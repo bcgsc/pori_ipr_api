@@ -98,6 +98,12 @@ module.exports = (sequelize) => {
       name: 'kbData',
       field: 'kb_data',
       type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'object',
+          example: {inferred: true},
+        },
+      },
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
