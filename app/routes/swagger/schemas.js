@@ -108,6 +108,11 @@ schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report,
   isJsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
 });
 
+// appendices
+schemas.appendices = schemaGenerator(db.models.analysis_report, {
+  isJsonSchema: false, title: 'appendices', include: ['sampleInfo', 'seqQC', 'config'],
+});
+
 // *POST request body*
 
 // analysis report (report upload)
