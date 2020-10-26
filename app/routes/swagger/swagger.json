@@ -4003,14 +4003,15 @@
     },
     "/reports/{report}/signatures": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Signatures",
+        "description": "Retrieve signatures for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Signatures"
         ],
         "security": [
           {
@@ -4019,11 +4020,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the signatures for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/signaturesAssociations"
                 }
               }
             }
@@ -4032,57 +4033,25 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/signatures/revoke/{role}": {
-      "put": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/signatures/sign/{role}": {
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Add Signature",
+        "description": "Sign a report for the specified role",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/role"
           }
         ],
         "tags": [
+          "Signatures"
         ],
         "security": [
           {
@@ -4091,11 +4060,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the updated signatures",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/signaturesAssociations"
                 }
               }
             }
@@ -4104,7 +4073,47 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or role not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signatures/revoke/{role}": {
+      "put": {
+        "summary": "Remove Signature",
+        "description": "Remove the signature from the report with the specified role",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/role"
+          }
+        ],
+        "tags": [
+          "Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated signatures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/signaturesAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report, role or signatures not found"
           }
         }
       }
@@ -4769,6 +4778,19 @@
         "schema": {
           "type": "string",
           "format": "UUIDv4"
+        }
+      },
+      "role": {
+        "name": "role",
+        "in": "path",
+        "required": true,
+        "description": "Role of signee",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "author",
+            "reviewer"
+          ]
         }
       }
     },
