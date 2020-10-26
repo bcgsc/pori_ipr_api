@@ -3806,14 +3806,15 @@
     },
     "/reports/{report}/probe-results": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Probe Results",
+        "description": "Retrieve all probe results for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Probe Results"
         ],
         "security": [
           {
@@ -3822,11 +3823,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns an array of probe results for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/probeResultsAssociations"
+                  }
                 }
               }
             }
@@ -3835,21 +3839,25 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/probe-results/{target}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Probe Result",
+        "description": "Retrieve the specified probe result for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/target"
           }
         ],
         "tags": [
+          "Probe Results"
         ],
         "security": [
           {
@@ -3858,11 +3866,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the specified probe result for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/probeResultsAssociations"
                 }
               }
             }
@@ -3871,53 +3879,35 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": ""
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": ""
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Probe Result",
+        "description": "Update the details of the probe result",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/target"
           }
         ],
+        "requestBody": {
+          "description": "New values to update probe result",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/probeResultsUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Probe Results"
         ],
         "security": [
           {
@@ -3926,11 +3916,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the updated probe result",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/probeResultsAssociations"
                 }
               }
             }
@@ -3939,7 +3929,38 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or probe result not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Probe Result",
+        "description": "Remove the specified probe result",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/target"
+          }
+        ],
+        "tags": [
+          "Probe Results"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or probe results not found"
           }
         }
       }
@@ -4747,6 +4768,16 @@
           "items": {
             "type": "string"
           }
+        }
+      },
+      "target": {
+        "name": "target",
+        "in": "path",
+        "required": true,
+        "description": "probe result ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "role": {
