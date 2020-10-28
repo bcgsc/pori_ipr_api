@@ -146,8 +146,11 @@ router.get('/batch/download', async (req, res) => {
   try {
     // Mark all exported reports in DB
     await Promise.all(germlineReports.map(async (report) => {
-      report.exported = true;
-      return report.save({fields: ['exported'], hooks: false});
+      if (requiredReviews.every((state) => { return report.reviews.map((review) => { return review.type; }).includes(state); })) {
+        report.exported = true;
+        return report.save({fields: ['exported'], hooks: false});
+      }
+      return null;
     }));
     return res.end();
   } catch (error) {
