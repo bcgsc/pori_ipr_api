@@ -105,7 +105,7 @@ router.route('/discussion/:discussion')
   .put(async (req, res) => {
     // Validate request against schema
     try {
-      validateAgainstSchema(discussionUpdateSchema, req.body);
+      validateAgainstSchema(discussionUpdateSchema, req.body, false);
     } catch (err) {
       const message = `There was an error updating the discussion ${err}`;
       logger.error(message);
@@ -221,7 +221,7 @@ router.route('/slide/:slide')
   .put(async (req, res) => {
     // Validate request against schema
     try {
-      validateAgainstSchema(slideUpdateSchema, req.body);
+      validateAgainstSchema(slideUpdateSchema, req.body, false);
     } catch (err) {
       const message = `There was an error validating the slide update request ${err}`;
       logger.error(message);

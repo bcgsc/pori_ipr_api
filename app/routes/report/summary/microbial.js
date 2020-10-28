@@ -47,7 +47,7 @@ router.route('/:microbial([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Validate request against schema
     try {
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       const message = `Error while validating microbial update request ${error}`;
       logger.error(message);

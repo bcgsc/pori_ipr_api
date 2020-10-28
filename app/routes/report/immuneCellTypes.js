@@ -45,7 +45,7 @@ router.route('/:ict([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Validate request against schema
     try {
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       logger.error(`Error while validating immune cell type update request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating immune cell type update request ${error}`}});

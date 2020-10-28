@@ -43,7 +43,7 @@ router.route('/:report')
     const {report} = req;
     try {
       // validate against the model
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (err) {
       const message = `There was an error updating the report ${err}`;
       logger.error(message);

@@ -90,7 +90,7 @@ router.route('/:group([A-z0-9-]{36})')
 
     try {
       // Validate input
-      validateAgainstSchema(groupUpdateSchema, req.body);
+      validateAgainstSchema(groupUpdateSchema, req.body, false);
     } catch (error) {
       // if input is invalid return 400
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});

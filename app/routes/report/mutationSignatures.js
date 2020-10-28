@@ -62,7 +62,7 @@ router.route('/:mutationSignature([A-z0-9-]{36})')
     const {mutationSignature} = req;
     // Validate request against schema
     try {
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (err) {
       const message = `There was an error updating mutation signature ${err}`;
       logger.error(message);
