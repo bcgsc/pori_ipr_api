@@ -11,7 +11,7 @@ router.param('alteration', async (req, res, next, altIdent) => {
   let result;
   try {
     result = await db.models.genomicAlterationsIdentified.findOne({
-      where: {ident: altIdent},
+      where: {ident: altIdent, reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Unable to get genomic alterations ${error}`);

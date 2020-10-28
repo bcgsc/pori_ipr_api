@@ -20,7 +20,7 @@ router.param('mutationSignature', async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.mutationSignature.findOne({
-      where: {ident},
+      where: {ident, reportId: req.report.id},
     });
   } catch (error) {
     logger.log(`Error while trying to get mutation signature ${error}`);

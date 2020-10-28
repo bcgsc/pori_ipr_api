@@ -10,7 +10,7 @@ router.param('target', async (req, res, next, altIdent) => {
   let result;
   try {
     result = await db.models.probeResults.findOne({
-      where: {ident: altIdent},
+      where: {ident: altIdent, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
       ],

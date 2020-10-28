@@ -23,7 +23,7 @@ router.param('mutationBurden', async (req, res, next, mutIdent) => {
   let result;
   try {
     result = await db.models.mutationBurden.findOne({
-      where: {ident: mutIdent},
+      where: {ident: mutIdent, reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Unable to lookup mutation burden error: ${error}`);

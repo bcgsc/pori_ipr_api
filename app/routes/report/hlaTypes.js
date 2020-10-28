@@ -19,7 +19,7 @@ router.param('hlaType', async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.hlaTypes.findOne({
-      where: {ident},
+      where: {ident, reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Error while processing request ${error}`);

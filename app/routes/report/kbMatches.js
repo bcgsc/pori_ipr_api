@@ -14,7 +14,7 @@ router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
   let result;
   try {
     result = await db.models.kbMatches.findOne({
-      where: {ident: kbMatchIdent},
+      where: {ident: kbMatchIdent, reportId: req.report.id},
       include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
         return {model: db.models[modelName].scope('public'), as: modelName};
       }),

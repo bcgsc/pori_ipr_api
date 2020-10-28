@@ -20,7 +20,7 @@ router.param('ict', async (req, res, next, ictIdent) => {
   let result;
   try {
     result = await db.models.immuneCellTypes.findOne({
-      where: {ident: ictIdent},
+      where: {ident: ictIdent, reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Unable to get immune cell type ${error}`);
