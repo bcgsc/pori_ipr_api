@@ -9,7 +9,7 @@ const db = require('../../models');
 const Variants = require('./util/germline_small_mutation_variant');
 const Report = require('./util/germline_small_mutation');
 
-const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload');
+const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload')();
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation.middleware');
 
 const variantRouter = require('./variants');
