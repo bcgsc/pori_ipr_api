@@ -22,7 +22,7 @@ router.param('microbial', async (req, res, next, micIdent) => {
   let result;
   try {
     result = await db.models.summary_microbial.findOne({
-      where: {ident: micIdent},
+      where: {ident: micIdent, reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Error while trying to get microbial data for ident: ${micIdent} report: ${req.report.ident} error: ${error}`);

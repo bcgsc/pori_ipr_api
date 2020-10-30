@@ -36,7 +36,7 @@ router.param('discussion', async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.presentationDiscussion.findOne({
-      where: {ident},
+      where: {ident, reportId: req.report.id},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
       ],
@@ -140,7 +140,7 @@ router.param('slide', async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.presentationSlides.findOne({
-      where: {ident},
+      where: {ident, reportId: req.report.id},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
       ],

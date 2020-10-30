@@ -23,7 +23,7 @@ router.param('target', async (req, res, next, target) => {
   let result;
   try {
     result = await db.models.therapeuticTarget.findOne({
-      where: {ident: target},
+      where: {ident: target, reportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Unable to find therapeutic target ${error}`);
