@@ -24,9 +24,9 @@ const generateGermlimeUploadSchema = (isJsonSchema = true) => {
     version: {
       type: 'string',
     },
-    path: {
+    source: {
       type: 'string',
-    }
+    },
   };
 
   // Generate schema
