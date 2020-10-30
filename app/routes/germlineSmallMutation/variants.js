@@ -13,7 +13,7 @@ const {GERMLINE_UPDATE_BASE_URI} = require('../../constants');
 
 // Generate schema
 const updateSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patient_history', 'family_history'],
+  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patient_history', 'family_history'], nothingRequired: true,
 });
 
 router.param('variant', variantMiddleware);
@@ -55,7 +55,7 @@ router.route('/:variant')
   .put(async (req, res) => {
     // Validate request against schema
     try {
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       logger.error(`Germline variant validation failed ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Germline variant validation failed'}});

@@ -53,7 +53,7 @@ router.route('/')
       try {
         try {
           // validate against the model
-          validateAgainstSchema(updateSchema, req.body);
+          validateAgainstSchema(updateSchema, req.body, false);
         } catch (err) {
           const message = `There was an error updating the analyst comment ${err}`;
           logger.error(message);

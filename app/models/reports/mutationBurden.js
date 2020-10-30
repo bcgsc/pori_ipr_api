@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
       },
     },
     role: {
-      type: Sq.ENUM(['primary', 'secondary', 'tertiary', 'quarternary']),
+      type: Sq.ENUM(['primary', 'secondary', 'tertiary', 'quaternary']),
       allowNull: false,
     },
     codingSnvCount: {

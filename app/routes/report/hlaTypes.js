@@ -48,7 +48,7 @@ router.route('/:hlaType([A-z0-9-]{36})')
     const {hlaType} = req;
     try {
       // validate against the model
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (err) {
       const message = `There was an error updating hlaType ${err}`;
       logger.error(message);

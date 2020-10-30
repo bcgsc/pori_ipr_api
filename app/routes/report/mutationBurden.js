@@ -46,11 +46,9 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
     return res.json(req.mutationBurden.view('public'));
   })
   .put(async (req, res) => {
-    // Update db entry
-    const {mutationBurden} = req;
     // Validate request against schema
     try {
-      validateAgainstSchema(updateSchema, req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       const message = `Error while validating mutation burden update request ${error}`;
       logger.error(message);
@@ -58,8 +56,8 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
     }
     // Update db entry
     try {
-      await mutationBurden.update(req.body);
-      return res.json(mutationBurden.view('public'));
+      await req.mutationBurden.update(req.body);
+      return res.json(req.mutationBurden.view('public'));
     } catch (error) {
       logger.error(`Unable to update mutation burden ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutation burden'}});
