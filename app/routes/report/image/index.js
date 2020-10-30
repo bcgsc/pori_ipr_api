@@ -165,17 +165,12 @@ router.route('/expression-density-graphs')
     }
   });
 
-router.route('/mutation-summary')
+router.route('/mutation-burden')
   .get(async (req, res) => {
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {
-            [Op.or]: [
-              {[Op.like]: 'mutation_summary.%'},
-              {[Op.like]: 'mutSummary.%'},
-            ],
-          },
+          key: {[Op.like]: 'mutationBurden.%'},
           reportId: req.report.id,
         },
         order: [['key', 'ASC']],

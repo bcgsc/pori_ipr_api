@@ -2,7 +2,7 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize) => {
-  const presentationSlides = sequelize.define('presentation_slides', {
+  const presentationSlides = sequelize.define('presentationSlides', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -26,7 +26,7 @@ module.exports = (sequelize) => {
     },
     object: {
       type: Sq.TEXT,
-      allowNull: true,
+      allowNull: false,
     },
     object_type: {
       type: Sq.TEXT,

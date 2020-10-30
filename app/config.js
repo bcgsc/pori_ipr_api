@@ -70,6 +70,9 @@ const DEFAULTS = {
       probeDir: '/P*/jreport_genomic_summary_v*/',
     },
   },
+  swagger: {
+    url: null,
+  },
 };
 
 const processEnvVariables = (env = process.env, opt = {}) => {

@@ -1,10 +1,16 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
+const schemaGenerator = require('../../../schemas/schemaGenerator');
+const {REPORT_UPDATE_BASE_URI} = require('../../../constants');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 
 const logger = require('../../../log');
+
+// Generate schema's
+const updateSchema = schemaGenerator(db.models.analystComments, {baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true});
 
 // Middleware for analyst comments
 router.use('/', async (req, res, next) => {
@@ -45,6 +51,14 @@ router.route('/')
     } else {
       // Update DB Version for Entry
       try {
+        try {
+          // validate against the model
+          validateAgainstSchema(updateSchema, req.body, false);
+        } catch (err) {
+          const message = `There was an error updating the analyst comment ${err}`;
+          logger.error(message);
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+        }
         await req.analystComments.update(req.body);
         return res.json(req.analystComments.view('public'));
       } catch (error) {

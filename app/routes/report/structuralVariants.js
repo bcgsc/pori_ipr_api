@@ -10,7 +10,7 @@ router.param('sv', async (req, res, next, svIdent) => {
   let result;
   try {
     result = await db.models.structuralVariants.findOne({
-      where: {ident: svIdent},
+      where: {ident: svIdent, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), foreignKey: 'gene1Id', as: 'gene1'},
         {model: db.models.genes.scope('minimal'), foreignKey: 'gene2Id', as: 'gene2'},

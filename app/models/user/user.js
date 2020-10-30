@@ -40,6 +40,11 @@ module.exports = (sequelize) => {
       type: Sq.JSONB,
       allowNull: false,
       defaultValue: {},
+      jsonSchema: {
+        schema: {
+          type: 'object',
+        },
+      },
     },
     lastLogin: {
       type: Sq.DATE,

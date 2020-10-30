@@ -1,30 +1,30 @@
 /**
  * Schema for the germline report upload
  */
-const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../../models');
-const {BASE_EXCLUDE} = require('../exclude');
-const variant = require('./variants');
+const schemaGenerator = require('../schemaGenerator');
+const {BASE_EXCLUDE, GERMLINE_EXCLUDE} = require('../exclude');
+const {UPLOAD_BASE_URI} = require('../../constants');
 
-const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
+// Generate variants schema
+const variantSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
+  baseUri: UPLOAD_BASE_URI, exclude: GERMLINE_EXCLUDE,
+});
 
-const schema = schemaManager.generate(
-  db.models.germline_small_mutation, new JsonSchema7Strategy(), {
-    exclude: [...BASE_EXCLUDE, 'biofx_assigned_id'],
-    associations: false,
-  }
-);
-
-schema.properties.rows = {
-  type: 'array',
-  items: variant,
+// Set additional properties
+const properties = {
+  rows: {
+    type: 'array',
+    items: variantSchema,
+  },
+  project: {
+    type: 'string',
+  },
 };
 
-schema.properties.project = {
-  type: 'string',
-};
-
-
-schema.additionalProperties = false;
+// Generate schema
+const schema = schemaGenerator(db.models.germline_small_mutation, {
+  baseUri: UPLOAD_BASE_URI, exclude: [...BASE_EXCLUDE, 'biofx_assigned_id'], properties,
+});
 
 module.exports = schema;

@@ -21,6 +21,12 @@ module.exports = (sequelize) => {
       type: Sq.JSONB,
       allowNull: false,
       defaultValue: {},
+      jsonSchema: {
+        schema: {
+          type: 'string',
+          example: '{"#tracking_id": "upload test tracking id", "library": "upload test library"}',
+        },
+      },
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
