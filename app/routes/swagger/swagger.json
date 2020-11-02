@@ -2025,26 +2025,35 @@
     },
     "/germline-small-mutation-reports": {
       "get": {
-        "summary": "Get all germline small mutation reports",
-        "description": "Returns all germline small mutation reports the user has access to",
+        "summary": "Get Germline Reports",
+        "description": "Retrieve all germline small mutation reports the user has access to",
         "tags": [
-          "Germline Report"
+          "Germline Reports"
         ],
         "parameters": [
           {
-            "name": "search",
+            "name": "project",
             "in": "query",
             "required": false,
-            "description": "ID to search reports for",
+            "description": "Search for germline reports by project name",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "project",
+            "name": "patientId",
             "in": "query",
             "required": false,
-            "description": "Search report for project name",
+            "description": "Search for germline reports by patient id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "biopsyName",
+            "in": "query",
+            "required": false,
+            "description": "Search for germline reports by biopsy name",
             "schema": {
               "type": "string"
             }
@@ -2053,7 +2062,7 @@
             "name": "limit",
             "in": "query",
             "required": false,
-            "description": "The end of the set of reports to retrieve",
+            "description": "The number of reports to retrieve",
             "schema": {
               "type": "integer"
             }
@@ -2087,7 +2096,7 @@
                     "reports": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/germline_small_mutation"
+                        "$ref": "#/components/schemas/germline_small_mutationAssociations"
                       }
                     }
                   }
@@ -2099,21 +2108,63 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "403": {
-            "description": "User doesn't have permissions to access germline small mutations"
+            "description": "User doesn't have permissions to access germline reports"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Germline Report",
+        "description": "Upload a germline report and all of the report sections",
+        "parameters": [
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/germline_small_mutationCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Germline Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the newly created germline report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "User doesn't have permissions to upload germline reports"
           }
         }
       }
     },
-    "/germline-small-mutation-reports/{report}": {
+    "/germline-small-mutation-reports/{germline}": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Germline Report",
+        "description": "Retrieve the details of the specified germline report",
         "parameters": [
           {
-            "$ref": "#/components/parameters/report"
+            "$ref": "#/components/parameters/germline"
           }
         ],
         "tags": [
+          "Germline Reports"
         ],
         "security": [
           {
@@ -2122,11 +2173,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the details of the specified germline report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation"
+                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
                 }
               }
             }
@@ -2135,133 +2186,32 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/germline-small-mutation-reports/{report}/review": {
-      "put": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_review"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/germline-small-mutation-reports/{report}/review/{review}": {
-      "delete": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/review"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_review"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/germline-small-mutation-reports/{report}/variant/{variant}": {
-      "get": {
-        "summary": "",
-        "description": "",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/variant"
-          },
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_variant"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Germline report not found"
           }
         }
       },
       "put": {
-        "summary": "",
-        "description": "",
+        "summary": "Update Germline Report",
+        "description": "Update the details of a germline report",
         "parameters": [
           {
-            "$ref": "#/components/parameters/variant"
+            "$ref": "#/components/parameters/germline"
           }
         ],
+        "requestBody": {
+          "description": "New values to update current germline report",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/germline_small_mutationUpdate"
+              }
+            }
+          }
+        },
         "tags": [
+          "Germline Reports"
         ],
         "security": [
           {
@@ -2270,11 +2220,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the updated germline report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_variant"
+                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
                 }
               }
             }
@@ -2283,7 +2233,357 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Germline report not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Germline Report",
+        "description": "Removes the specified germline report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          }
+        ],
+        "tags": [
+          "Germline Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{germline}/review": {
+      "get": {
+        "summary": "Get Germline Reviews",
+        "description": "Retrieve all reviews for a given germline report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          }
+        ],
+        "tags": [
+          "Germline Reviews"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of reviews for the given germline report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{germline}/review/{review}": {
+      "get": {
+        "summary": "Get Germline Review",
+        "description": "Retrieve the specified review for a given germline report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/review"
+          }
+        ],
+        "tags": [
+          "Germline Reviews"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or review not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Germline Review",
+        "description": "Update the details of a germline review",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/review"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update current germline review",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/germline_small_mutation_reviewUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Germline Reviews"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated germline review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or review not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Germline Review",
+        "description": "Removes the specified germline review",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/review"
+          }
+        ],
+        "tags": [
+          "Germline Reviews"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or review not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{germline}/variant": {
+      "get": {
+        "summary": "Get Germline Variants",
+        "description": "Retrieve all variants for a given germline report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          }
+        ],
+        "tags": [
+          "Germline Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of variants for the given germline report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report not found"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{germline}/variant/{variant}": {
+      "get": {
+        "summary": "Get Germline Variant",
+        "description": "Retrieve the specified variant for a given germline report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/variant"
+          }
+        ],
+        "tags": [
+          "Germline Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or variant not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Germline Variant",
+        "description": "Update the details of a germline variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/variant"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update current germline variant",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/germline_small_mutation_variantUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Germline Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated germline variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Germline Variant",
+        "description": "Removes the specified germline variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/variant"
+          }
+        ],
+        "tags": [
+          "Germline Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or variant not found"
           }
         }
       }
@@ -4608,7 +4908,18 @@
         "required": true,
         "description": "Analysis report ident",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "germline": {
+        "name": "germline",
+        "in": "path",
+        "required": true,
+        "description": "Germline report ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "targetType": {
@@ -4634,18 +4945,20 @@
         "name": "review",
         "in": "path",
         "required": true,
-        "description": "Germline Review ID",
+        "description": "Germline review ident",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "variant": {
         "name": "variant",
         "in": "path",
         "required": true,
-        "description": "Germline Variant ID",
+        "description": "Germline variant ident",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "UUIDv4"
         }
       },
       "cnv": {

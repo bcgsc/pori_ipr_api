@@ -3,11 +3,12 @@ const schemaGenerator = require('../../schemas/schemaGenerator');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../constants');
 const reportUpload = require('../../schemas/report/reportUpload')(false);
+const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload')(false);
 
 
 const schemas = {};
 
-const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId', 'gene1Id', 'gene2Id'];
+const ID_FIELDS = ['germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId', 'gene1Id', 'gene2Id', 'reviewedBy_id', 'biofx_assigned_id'];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
 const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germline_report', 'user_project', 'userGroupMember'];
@@ -67,7 +68,7 @@ const getExcludes = (model) => {
 
 // Remove joining models from the list of models to use for generating schemas
 const {
-  germlineReportsToProjects, userGroupMember, reportProject, user_project, ...models
+  userGroupMember, reportProject, user_project, ...models
 } = db.models;
 
 // Generate schemas from Sequelize models. One for the public returned value, one
@@ -132,8 +133,16 @@ Object.keys(reportUpload.properties).forEach((key) => {
 
 schemas.analysis_reportCreate = reportUpload;
 
+// germline report upload
+schemas.germline_small_mutationCreate = germlineReportUploadSchema;
+
 
 // *PUT request body*
+
+// germline report update (add biofx_assigned user ident)
+schemas.germline_small_mutationUpdate.properties.biofx_assigned = {
+  type: 'string', format: 'UUIDv4',
+};
 
 // therapeutic targets bulk update
 schemas.therapeuticTargetRanksBulkUpdate = schemaGenerator(db.models.therapeuticTarget, {
