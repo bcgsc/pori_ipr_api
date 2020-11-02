@@ -1,15 +1,17 @@
 const db = require('../../../models');
-const {generateReportSubSchema} = require('./util');
+const schemaGenerator = require('../../schemaGenerator');
+const {REPORT_EXCLUDE} = require('../../exclude');
 
-module.exports = generateReportSubSchema(
-  db.models.kbMatches,
-  {
-    exclude: ['variantId'],
+module.exports = (isJsonSchema) => {
+  return schemaGenerator(db.models.kbMatches, {
+    isJsonSchema,
     properties: {
       variant: {
         type: 'string', description: 'the variant key linking this to one of the variant records',
       },
     },
+    isSubSchema: true,
+    exclude: [...REPORT_EXCLUDE, 'variantId'],
     required: ['variant'],
-  }
-);
+  });
+};

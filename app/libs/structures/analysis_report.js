@@ -114,7 +114,6 @@ class AnalysisReport {
       attributes: {exclude: ['config', 'deletedAt']},
       include: [
         {model: db.models.patientInformation, as: 'patientInformation', attributes: {exclude: ['id', 'deletedAt']}},
-        {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
           model: db.models.analysis_reports_user,

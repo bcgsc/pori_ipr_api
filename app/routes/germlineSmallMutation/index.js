@@ -9,7 +9,7 @@ const db = require('../../models');
 const Variants = require('./util/germline_small_mutation_variant');
 const Report = require('./util/germline_small_mutation');
 
-const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload');
+const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload')();
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation.middleware');
 
 const variantRouter = require('./variants');
@@ -52,13 +52,13 @@ router.post('/', async (req, res) => {
   const content = {...req.body};
 
   try {
+    // validate against the model
+    validateAgainstSchema(germlineReportUploadSchema, content);
     // fix for path names that do not current match model names
     content.source_path = content.source;
     content.source_version = content.version;
     delete content.source;
     delete content.version;
-    // validate against the model
-    validateAgainstSchema(germlineReportUploadSchema, content);
   } catch (err) {
     const message = `There was an error creating germline small mutation report ${err}`;
     logger.error(message);

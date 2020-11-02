@@ -12,7 +12,7 @@ router.param('expressionVariant', async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.expressionVariants.findOne({
-      where: {ident},
+      where: {ident, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
       ],

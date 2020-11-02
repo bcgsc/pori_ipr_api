@@ -81,34 +81,19 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
 
-    let deletedUserExists;
     let userExists;
     try {
       // Check for existing account.
-      deletedUserExists = await db.models.user.findOne({where: {username: req.body.username, deletedAt: {[Op.ne]: null}}, paranoid: false});
       userExists = await db.models.user.findOne({where: {username: req.body.username}});
     } catch (error) {
       logger.error(`SQL Error unable to check for existing username ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to check if this username has been taken'}});
     }
 
-    // if username exists and is not a deleted user return 409
+    // if username exists return 409
     if (userExists) {
       logger.error('Username already exists');
       return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Username already exists'}});
-    }
-
-    if (deletedUserExists) {
-      // set up user to restore with updated field values
-      req.body.deletedAt = null;
-
-      try {
-        await deletedUserExists.update(req.body);
-        return res.json(deletedUserExists.view('public'));
-      } catch (error) {
-        logger.error(`Unable to restore username ${error}`);
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to restore existing username'}});
-      }
     }
 
     // Hash password
@@ -139,7 +124,7 @@ router.route('/settings')
   .put(async (req, res) => {
     const {settings} = req;
     try {
-      await req.user.update(settings);
+      await req.user.update(settings, {fields: ['settings'], newEntryExclude: ['settings']});
       return res.json(req.user.get('settings'));
     } catch (error) {
       logger.error(`Unable to update user settings ${error}`);
@@ -212,7 +197,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Attempt user model update
     try {
-      await user.update({...updateBody, ident: req.params.ident});
+      await user.update({...updateBody, ident: req.params.ident}, {newEntryExclude: ['settings']});
       await user.reload();
       return res.json(user.view('public'));
     } catch (error) {

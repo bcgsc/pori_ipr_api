@@ -13,7 +13,7 @@ const router = express.Router({mergeParams: true});
 
 // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
 const parseMutationSignature = (arr) => {
-  return arr.map((ls) => { return `${ls.modifier} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
+  return arr.map((ls) => { return `${ls.kbCategory} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
 };
 
 /**
@@ -31,7 +31,9 @@ const parseMutationSignature = (arr) => {
  * @returns {Promise.<object>} - Returns response object
  */
 router.get('/batch/download', async (req, res) => {
-  const requiredReviews = req.query.reviews.split(',');
+  const requiredReviews = req.query.reviews
+    ? req.query.reviews.split(',')
+    : [];
 
   let germlineReports;
 
@@ -51,7 +53,7 @@ router.get('/batch/download', async (req, res) => {
         {
           model: db.models.germline_small_mutation_review,
           as: 'reviews',
-          required: true,
+          required: Boolean(requiredReviews.length),
           include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
         },
       ],
@@ -61,10 +63,13 @@ router.get('/batch/download', async (req, res) => {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while finding germline small mutation'}});
   }
 
-  let matchedReportSummaries; // find the most recent genomic report for the same patient/sample
+  let matchedMutationSignatures; // find the most recent genomic report for the same patient/sample
 
   try {
-    matchedReportSummaries = await db.models.tumourAnalysis.findAll({
+    matchedMutationSignatures = await db.models.mutationSignature.findAll({
+      where: {
+        selected: true,
+      },
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
         {
@@ -96,12 +101,12 @@ router.get('/batch/download', async (req, res) => {
 
     if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
       // contains all the required reviews
-      const summaryMatch = matchedReportSummaries.find((summary) => {
-        return summary.report.patientId === report.patientId;
+      const summaryMatch = matchedMutationSignatures.filter((signature) => {
+        return signature.report.patientId === report.patientId;
       });
 
-      const mutationSignature = summaryMatch
-        ? parseMutationSignature(summaryMatch.mutationSignature)
+      const mutationSignature = summaryMatch.length > 0
+        ? parseMutationSignature(summaryMatch)
         : 'N/A';
 
       for (const variant of report.variants.filter((v) => { return !v.hidden; })) {
@@ -146,8 +151,13 @@ router.get('/batch/download', async (req, res) => {
   try {
     // Mark all exported reports in DB
     await Promise.all(germlineReports.map(async (report) => {
-      report.exported = true;
-      return report.save({fields: ['exported'], hooks: false});
+      const reportReviews = report.reviews.map((review) => { return review.type; });
+
+      if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
+        report.exported = true;
+        return report.save({fields: ['exported'], hooks: false});
+      }
+      return null;
     }));
     return res.end();
   } catch (error) {

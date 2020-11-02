@@ -9,13 +9,24 @@ const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
 
 const reportMiddleware = require('../../middleware/analysis_report');
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const deleteModelEntries = require('../../libs/deleteModelEntries');
 const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
-const reportUploadSchema = require('../../schemas/report/reportUpload');
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
+
+// Generate schema's
+const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
+
+const updateSchema = schemaGenerator(db.models.analysis_report, {
+  baseUri: REPORT_UPDATE_BASE_URI,
+  exclude: [...BASE_EXCLUDE, 'createdBy_id', 'config'],
+  nothingRequired: true,
+});
 
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
@@ -29,13 +40,23 @@ router.route('/:report')
     return res.json(req.report.view('public'));
   })
   .put(async (req, res) => {
+    const {report} = req;
     try {
-      await req.report.update(req.body);
-      await req.report.reload();
-      return res.json(req.report.view('public'));
+      // validate against the model
+      validateAgainstSchema(updateSchema, req.body, false);
+    } catch (err) {
+      const message = `There was an error updating the report ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+    // Update db entry
+    try {
+      await report.update(req.body);
+      await report.reload();
+      return res.json(report.view('public'));
     } catch (error) {
-      logger.error(`Unable to update report ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update report'}});
+      logger.error(`Unable to update the report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update the report'}});
     }
   })
   .delete(async (req, res) => {
@@ -145,7 +166,6 @@ router.route('/')
           as: 'patientInformation',
           attributes: {exclude: ['id', 'deletedAt']},
         },
-        {model: db.models.tumourAnalysis.scope('public'), as: 'tumourAnalysis'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
           model: db.models.analysis_reports_user,
@@ -232,8 +252,6 @@ router.route('/')
           {'$patientInformation.biopsySite$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$tumourAnalysis.diseaseExpressionComparator$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$tumourAnalysis.ploidy$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {patientId: {[Op.iLike]: `%${req.query.searchText}%`}},
           {alternateIdentifier: {[Op.iLike]: `%${req.query.searchText}%`}},
         ],
@@ -258,21 +276,17 @@ router.route('/')
     if (req.query.states) {
       const states = req.query.states.split(',');
       opts.where.state = {[Op.in]: states};
-    } else {
-      opts.where.state = {[Op.not]: ['archived', 'nonproduction', 'reviewed']};
     }
 
     // Are we filtering on POGUser relationship?
-    if (req.query.all !== true || req.query.role) {
+    if (req.query.role) {
       const userFilter = {
         model: db.models.analysis_reports_user,
         as: 'ReportUserFilter',
         where: {},
       };
       userFilter.where.user_id = req.user.id;
-      if (req.query.role) {
-        userFilter.where.role = req.query.role; // Role filtering
-      }
+      userFilter.where.role = req.query.role; // Role filtering
       opts.include.push(userFilter);
     }
 
@@ -311,9 +325,9 @@ router.route('/')
     try {
       validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
-      const message = `There was an error validating validating the report content: ${error}`;
+      const message = `There was an error validating the report content ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error:{message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     // get project

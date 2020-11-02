@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
       },
     },
     category: {
-      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel'),
+      type: Sq.ENUM('therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown', 'novel', 'pharmacogenomic'),
       allowNull: false,
     },
     approvedTherapy: {
@@ -98,6 +98,12 @@ module.exports = (sequelize) => {
       name: 'kbData',
       field: 'kb_data',
       type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'object',
+          example: {inferred: true},
+        },
+      },
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
@@ -148,7 +154,9 @@ module.exports = (sequelize) => {
   // set instance methods
   KbMatches.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, variantId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, variantId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;

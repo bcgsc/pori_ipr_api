@@ -247,22 +247,26 @@ describe('/user/group', () => {
       });
 
       // Test for PUT /user/group/:ident 400 endpoint
-      test('PUT /{group} specific group - 400 name is required', async () => {
-        await request
+      test('PUT /{group} specific group - 200 update just group owner', async () => {
+        const res = await request
           .put(`/api/user/group/${groupIdent}`)
           .send({owner: users[0].ident})
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body.owner.ident).toBe(users[0].ident);
       });
 
-      test('PUT /{group} specific group - 400 owner is required', async () => {
-        await request
+      test('PUT /{group} specific group - 200 update just group name', async () => {
+        const res = await request
           .put(`/api/user/group/${groupIdent}`)
           .send({name: 'newGroupName'})
           .auth(username, password)
           .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body.name).toBe('newGroupName');
       });
 
       test('PUT /{group} specific group - 400 owner should have uuid format', async () => {

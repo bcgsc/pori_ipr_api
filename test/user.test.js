@@ -1,9 +1,9 @@
-process.env.NODE_ENV = 'test';
-
 const getPort = require('get-port');
 const supertest = require('supertest');
 const uuidv4 = require('uuid/v4');
 const HTTP_STATUS = require('http-status-codes');
+
+const db = require('../app/models');
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -14,7 +14,6 @@ CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
 let newUser;
-let newUserIdent;
 
 let server;
 let request;
@@ -94,7 +93,7 @@ describe('/user', () => {
   describe('POST', () => {
     // Test for POST /user 200 endpoint
     test('POST new user - Success', async () => {
-      await request
+      const res = await request
         .post('/api/user')
         .auth(username, password)
         .type('json')
@@ -106,6 +105,9 @@ describe('/user', () => {
           lastName: 'LastNameTest',
         })
         .expect(HTTP_STATUS.CREATED);
+
+      // Remove test user from db
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
     // Test for POST /user 400 endpoint
     test('POST new user - Password is required for local', async () => {
@@ -183,8 +185,74 @@ describe('/user', () => {
     });
   });
 
+  describe('PUT', () => {
+    let putTestUser;
+
+    beforeEach(async () => {
+      putTestUser = await db.models.user.create({
+        username: `putTestUser-${uuidv4()}`,
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
+    });
+
+    // Test successful update
+    // Test update not creating a new record (check that result has changed, but no new record is added (paranoid: false))
+    test('/{user} - 200 successful update', async () => {
+      const res = await request
+        .put(`/api/user/${putTestUser.ident}`)
+        .send({firstName: 'NewFirstName'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.firstName).toBe('NewFirstName');
+    });
+
+    test('/{user} - 200 success update, but new db record is not created', async () => {
+      const intialResults = await db.models.user.findAll({where: {ident: putTestUser.ident}, paranoid: false});
+
+      await request
+        .put(`/api/user/${putTestUser.ident}`)
+        .send({settings: {testSetting: true}})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      // Verify update was successful
+      const result = await db.models.user.findOne({where: {ident: putTestUser.ident}});
+      expect(result.settings).toEqual({testSetting: true});
+
+      const updateResults = await db.models.user.findAll({where: {ident: putTestUser.ident}, paranoid: false});
+      // Verify a new record wasn't added on update
+      expect(intialResults.length).toEqual(updateResults.length);
+    });
+  });
+
   describe('DELETE', () => {
     // Test for DELETE /user/ident 404 endpoint
+    let deleteTestUser;
+
+    // Create a unique user for each of the tests
+    beforeEach(async () => {
+      const deleteUserData = {
+        username: `Testuser-${uuidv4()}`,
+        type: 'bcgsc',
+        email: 'testuser@test.com',
+        firstName: 'FirstNameTest',
+        lastName: 'LastNameTest',
+      };
+
+      deleteTestUser = await db.models.user.create(deleteUserData);
+    });
+
+    // Delete the user after each test
+    afterEach(async () => {
+      await db.models.user.destroy({where: {ident: deleteTestUser.ident}, force: true});
+    });
+
     test('DELETE user - Not Found', async () => {
       await request
         .delete('/api/user/PROBABLY_NOT_A_USER')
@@ -195,23 +263,8 @@ describe('/user', () => {
 
     // Test for DELETE /user/ident 204 endpoint
     test('DELETE user - Success', async () => {
-      const res = await request
-        .post('/api/user')
-        .auth(username, password)
-        .type('json')
-        .send({
-          username: `Testuser-${uuidv4()}`,
-          type: 'bcgsc',
-          email: 'testuser@test.com',
-          firstName: 'FirstNameTest',
-          lastName: 'LastNameTest',
-        })
-        .expect(HTTP_STATUS.CREATED);
-
-      newUserIdent = res.body.ident;
-
       await request
-        .delete(`/api/user/${newUserIdent}`)
+        .delete(`/api/user/${deleteTestUser.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -219,6 +272,8 @@ describe('/user', () => {
   });
 
   describe('/user tests for new user dependent endpoints', () => {
+    let putTestUser;
+
     // Create a unique user for each of the tests
     beforeEach(async () => {
       newUser = {
@@ -228,14 +283,13 @@ describe('/user', () => {
         firstName: 'FirstNameTest',
         lastName: 'LastNameTest',
       };
-      const res = await request
-        .post('/api/user')
-        .auth(username, password)
-        .type('json')
-        .send(newUser)
-        .expect(HTTP_STATUS.CREATED);
 
-      newUserIdent = res.body.ident;
+      putTestUser = await db.models.user.create(newUser);
+    });
+
+    // Delete the user after each test
+    afterEach(async () => {
+      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
     });
 
     // Test for POST /user 409 endpoint
@@ -251,15 +305,6 @@ describe('/user', () => {
     describe('PUT', () => {
       // Tests for PUT /user/ident endpoint
       test.todo('PUT user tests - https://www.bcgsc.ca/jira/browse/DEVSU-831');
-    });
-
-    // Delete the user after each test
-    afterEach(async () => {
-      await request
-        .delete(`/api/user/${newUserIdent}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
     });
   });
 });

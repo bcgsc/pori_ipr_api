@@ -90,7 +90,7 @@ const imageData = sequelize.import('./reports/imageData');
 imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
 // Patient Information
-const patientInformation = sequelize.import('./patientInformation');
+const patientInformation = sequelize.import('./reports/patientInformation');
 analysisReports.hasOne(patientInformation, {
   as: 'patientInformation', foreignKey: 'reportId', onDelete: 'CASCADE', onUpdate: 'CASCADE', constraints: true,
 });
@@ -100,8 +100,6 @@ patientInformation.belongsTo(analysisReports, {
 
 // Summary
 const summary = {};
-summary.tumourAnalysis = sequelize.import('./reports/genomic/summary/tumourAnalysis');
-summary.mutationSummary = sequelize.import('./reports/genomic/summary/mutationSummary');
 summary.variantCounts = sequelize.import('./reports/genomic/summary/variantCounts');
 summary.genomicAlterationsIdentified = sequelize.import('./reports/genomic/summary/genomicAlterationsIdentified');
 summary.analystComments = sequelize.import('./reports/genomic/summary/analystComments');
@@ -113,9 +111,6 @@ summary.microbial = sequelize.import('./reports/genomic/summary/microbial');
 
 analysisReports.belongsTo(user, {
   as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true,
-});
-analysisReports.hasOne(summary.tumourAnalysis, {
-  as: 'tumourAnalysis', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasOne(summary.variantCounts, {
   as: 'variantCounts', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -138,13 +133,7 @@ analysisReports.hasMany(summary.therapeuticTargets, {
 analysisReports.hasOne(summary.microbial, {
   as: 'summary_microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(summary.mutationSummary, {
-  as: 'mutationSummary', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
 
-summary.mutationSummary.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 summary.variantCounts.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -166,13 +155,13 @@ summary.therapeuticTargets.belongsTo(analysisReports, {
 summary.microbial.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-summary.tumourAnalysis.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 
 // Somatic Mutations
 const smallMutations = sequelize.import('./reports/smallMutations');
 const mutationSignature = sequelize.import('./reports/mutationSignature');
+const hlaTypes = sequelize.import('./reports/hlaTypes');
+const pairwiseExpressionCorrelation = sequelize.import('./reports/pairwiseExpressionCorrelation');
+const immuneCellTypes = sequelize.import('./reports/immuneCellTypes');
 
 smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -180,11 +169,29 @@ smallMutations.belongsTo(analysisReports, {
 mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
+hlaTypes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+pairwiseExpressionCorrelation.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+immuneCellTypes.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
 analysisReports.hasMany(smallMutations, {
   as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(hlaTypes, {
+  as: 'hlaTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(pairwiseExpressionCorrelation, {
+  as: 'pairwiseExpressionCorrelation', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(immuneCellTypes, {
+  as: 'immuneCellTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Copy Number Analysis
@@ -226,6 +233,16 @@ expressionVariants.belongsTo(analysisReports, {
 });
 analysisReports.hasMany(expressionVariants, {
   as: 'expressionVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
+// protein variants
+const proteinVariants = sequelize.import('./reports/proteinVariants');
+
+proteinVariants.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(proteinVariants, {
+  as: 'proteinVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 
@@ -348,10 +365,10 @@ presentation.discussion.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 analysisReports.hasMany(presentation.discussion, {
-  as: 'presentation_discussion', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'presentationDiscussion', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(presentation.slides, {
-  as: 'presentation_slides', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'presentationSlides', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Probe Report
@@ -375,6 +392,22 @@ reportSignatures.belongsTo(user, {
 });
 analysisReports.hasOne(reportSignatures, {
   as: 'signatures', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
+const mutationBurden = sequelize.import('./reports/mutationBurden');
+analysisReports.hasMany(mutationBurden, {
+  as: 'mutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+mutationBurden.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+const comparators = sequelize.import('./reports/comparators');
+analysisReports.hasMany(comparators, {
+  as: 'comparators', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+comparators.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Germline Small Mutations
