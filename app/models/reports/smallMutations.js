@@ -31,26 +31,76 @@ module.exports = (sequelize) => {
       field: 'protein_change',
       type: Sq.TEXT,
     },
-    location: {
+    chromosome: {
       type: Sq.TEXT,
     },
-    refAlt: {
-      name: 'refAlt',
-      field: 'ref_alt',
+    startPosition: {
+      name: 'startPosition',
+      field: 'start_position',
+      type: Sq.INTEGER,
+    },
+    endPosition: {
+      name: 'endPosition',
+      field: 'end_position',
+      type: Sq.INTEGER,
+    },
+    refSeq: {
+      name: 'refSeq',
+      field: 'ref_seq',
+      type: Sq.TEXT,
+    },
+    altSeq: {
+      name: 'altSeq',
+      field: 'alt_seq',
       type: Sq.TEXT,
     },
     zygosity: {
       type: Sq.TEXT,
     },
-    tumourReads: {
-      name: 'tumourReads',
-      field: 'tumour_reads',
-      type: Sq.TEXT,
+    tumourAltCount: {
+      name: 'tumourAltCount',
+      field: 'tumour_alt_count',
+      type: Sq.INTEGER,
     },
-    rnaReads: {
-      name: 'rnaReads',
-      field: 'rna_reads',
-      type: Sq.TEXT,
+    tumourRefCount: {
+      name: 'tumourRefCount',
+      field: 'tumour_ref_count',
+      type: Sq.INTEGER,
+    },
+    tumourDepth: {
+      name: 'tumourDepth',
+      field: 'tumour_depth',
+      type: Sq.INTEGER,
+    },
+    rnaAltCount: {
+      name: 'rnaAltCount',
+      field: 'rna_alt_count',
+      type: Sq.INTEGER,
+    },
+    rnaRefCount: {
+      name: 'rnaRefCount',
+      field: 'rna_ref_count',
+      type: Sq.INTEGER,
+    },
+    rnaDepth: {
+      name: 'rnaDepth',
+      field: 'rna_depth',
+      type: Sq.INTEGER,
+    },
+    normalAltCount: {
+      name: 'normalAltCount',
+      field: 'normal_alt_count',
+      type: Sq.INTEGER,
+    },
+    normalRefCount: {
+      name: 'normalRefCount',
+      field: 'normal_ref_count',
+      type: Sq.INTEGER,
+    },
+    normalDepth: {
+      name: 'normalDepth',
+      field: 'normal_depth',
+      type: Sq.INTEGER,
     },
     hgvsProtein: {
       name: 'hgvsProtein',
@@ -66,6 +116,14 @@ module.exports = (sequelize) => {
       name: 'hgvsGenomic',
       field: 'hgvs_genomic',
       type: Sq.TEXT,
+    },
+    ncbiBuild: {
+      name: 'ncbiBuild',
+      field: 'ncbi_build',
+      type: Sq.TEXT,
+    },
+    germline: {
+      type: Sq.BOOLEAN,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
@@ -83,7 +141,9 @@ module.exports = (sequelize) => {
   // set instance methods
   smallMutations.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, geneId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;

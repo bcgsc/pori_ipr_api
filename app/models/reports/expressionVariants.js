@@ -12,6 +12,9 @@ module.exports = (sequelize) => {
         model: 'reports',
         key: 'id',
       },
+      allowNull: false,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     geneId: {
       name: 'geneId',
@@ -22,18 +25,23 @@ module.exports = (sequelize) => {
         key: 'id',
       },
       allowNull: false,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     location: {
       type: Sq.TEXT,
     },
     rnaReads: {
+      name: 'rnaReads',
+      field: 'rna_reads',
       type: Sq.TEXT,
     },
     rpkm: {
       type: Sq.FLOAT,
     },
-    foldChange: {
+    tpm: {
       type: Sq.FLOAT,
+      defaultValue: null,
     },
     expressionState: {
       name: 'expressionState',
@@ -41,98 +49,90 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       defaultValue: null,
     },
-    tcgaPerc: {
+    diseasePercentile: {
+      name: 'diseasePercentile',
+      field: 'disease_percentile',
       type: Sq.FLOAT,
     },
-    tcgaPercCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
-    tcgakIQR: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    tcgaQC: {
+    diseasekIQR: {
+      name: 'diseasekIQR',
+      field: 'disease_kiqr',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaQCCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
-    tcgaAvgPerc: {
+    diseaseQC: {
+      name: 'diseaseQC',
+      field: 'disease_qc',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaAvgkIQR: {
+    diseaseFoldChange: {
+      name: 'diseaseFoldChange',
+      field: 'disease_fold_change',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaAvgQC: {
+    diseaseZScore: {
+      name: 'diseaseZScore',
+      field: 'disease_zscore',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaAvgQCCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
-    tcgaNormPerc: {
+    primarySitePercentile: {
+      name: 'primarySitePercentile',
+      field: 'primary_site_percentile',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    tcgaNormkIQR: {
+    primarySitekIQR: {
+      name: 'primarySitekIQR',
+      field: 'primary_site_kiqr',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    ptxPerc: {
+    primarySiteQC: {
+      name: 'primarySiteQC',
+      field: 'primary_site_qc',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    ptxkIQR: {
+    primarySiteFoldChange: {
+      name: 'primarySiteFoldChange',
+      field: 'primary_site_fold_change',
+      type: Sq.FLOAT,
+    },
+    primarySiteZScore: {
+      name: 'primarySiteZScore',
+      field: 'primary_site_zscore',
+      type: Sq.FLOAT,
+    },
+    biopsySitePercentile: {
+      name: 'biopsySitePercentile',
+      field: 'biopsy_site_percentile',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    ptxQC: {
+    biopsySitekIQR: {
+      name: 'biopsySitekIQR',
+      field: 'biopsy_site_kiqr',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    ptxPercCol: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
-    ptxTotSampObs: {
-      type: Sq.INTEGER,
-      defaultValue: null,
-    },
-    ptxPogPerc: {
+    biopsySiteQC: {
+      name: 'biopsySiteQC',
+      field: 'biopsy_site_qc',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexComp: {
-      type: Sq.TEXT,
-      defaultValue: null,
-    },
-    gtexPerc: {
+    biopsySiteFoldChange: {
+      name: 'biopsySiteFoldChange',
+      field: 'biopsy_site_fold_change',
       type: Sq.FLOAT,
       defaultValue: null,
     },
-    gtexFC: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    gtexkIQR: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    gtexAvgPerc: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    gtexAvgFC: {
-      type: Sq.FLOAT,
-      defaultValue: null,
-    },
-    gtexAvgkIQR: {
+    biopsySiteZScore: {
+      name: 'biopsySiteZScore',
+      field: 'biopsy_site_zscore',
       type: Sq.FLOAT,
       defaultValue: null,
     },
@@ -152,7 +152,9 @@ module.exports = (sequelize) => {
         ],
       },
       minimal: {
-        attributes: ['expressionState', 'rpkm', 'tcgaPerc', 'foldChange'],
+        attributes: [
+          'expressionState', 'rpkm', 'diseasePercentile', 'primarySiteFoldChange',
+        ],
       },
     },
   });
@@ -160,7 +162,9 @@ module.exports = (sequelize) => {
   // set instance methods
   expressionVariants.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, reportId, geneId, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;

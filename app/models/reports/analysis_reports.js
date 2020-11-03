@@ -53,9 +53,27 @@ module.exports = (sequelize) => {
     },
     sampleInfo: {
       type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+          },
+          example: [{Sample: 'Tumour', 'Collection Date': '23-09-20'}],
+        },
+      },
     },
     seqQC: {
       type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+          },
+          example: [{Reads: '2534M', bioQC: 'passed'}],
+        },
+      },
     },
     config: {
       type: Sq.TEXT,
@@ -87,6 +105,23 @@ module.exports = (sequelize) => {
       name: 'kbDiseaseMatch',
       field: 'kb_disease_match',
       type: Sq.STRING,
+      defaultValue: null,
+    },
+    tumourContent: {
+      name: 'tumourContent',
+      field: 'tumour_content',
+      type: Sq.FLOAT,
+    },
+    ploidy: {
+      type: Sq.TEXT,
+    },
+    subtyping: {
+      type: Sq.TEXT,
+    },
+    analysisStartedAt: {
+      name: 'analysisStartedAt',
+      field: 'analysis_started_at',
+      type: Sq.DATE,
       defaultValue: null,
     },
   }, {
@@ -133,7 +168,9 @@ module.exports = (sequelize) => {
   // set instance methods
   report.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, config, createdBy_id, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, config, createdBy_id, deletedAt, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;

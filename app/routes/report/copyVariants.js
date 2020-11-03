@@ -11,7 +11,7 @@ router.param('cnv', async (req, res, next, mutIdent) => {
   let result;
   try {
     result = await db.models.copyVariants.findOne({
-      where: {ident: mutIdent},
+      where: {ident: mutIdent, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
       ],

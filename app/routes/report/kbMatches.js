@@ -14,7 +14,7 @@ router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
   let result;
   try {
     result = await db.models.kbMatches.findOne({
-      where: {ident: kbMatchIdent},
+      where: {ident: kbMatchIdent, reportId: req.report.id},
       include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
         return {model: db.models[modelName].scope('public'), as: modelName};
       }),
@@ -38,6 +38,16 @@ router.param('kbMatch', async (req, res, next, kbMatchIdent) => {
 router.route('/:kbMatch([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.kbMatch.view('public'));
+  })
+  .delete(async (req, res) => {
+    // Soft delete the entry
+    try {
+      await req.kbMatch.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Unable to remove kb match ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove kb match'}});
+    }
   });
 
 // Routing for kb matches

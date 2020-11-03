@@ -7,7 +7,7 @@ module.exports = async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.germline_small_mutation_review.findOne({
-      where: {ident},
+      where: {ident, germline_report_id: req.report.id},
       include: [
         {model: db.models.user.scope('public'), as: 'reviewedBy'},
       ],

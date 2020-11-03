@@ -36,7 +36,7 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'mutation_summary\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)(\\.\\w+)?',
+    pattern: 'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quarternary)',
     width: 560,
     height: 151,
     format: 'PNG',
@@ -92,6 +92,30 @@ const IMAGES_CONFIG = [
   {
     pattern: 'microbial\\.circos\\.(genome|transcriptome)',
     width: 900,
+    height: 900,
+    format: 'PNG',
+  },
+  {
+    pattern: 'cibersort\\.(cd8_positive|combined)_t-cell_scatter',
+    width: 1020,
+    height: 1020,
+    format: 'PNG',
+  },
+  {
+    pattern: 'mixcr\\.circos_trb_vj_gene_usage',
+    width: 1000,
+    height: 1000,
+    format: 'PNG',
+  },
+  {
+    pattern: 'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
+    width: 640,
+    height: 480,
+    format: 'PNG',
+  },
+  {
+    pattern: 'scpPlot',
+    width: 1400,
     height: 900,
     format: 'PNG',
   },

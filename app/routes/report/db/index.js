@@ -249,8 +249,8 @@ const createReportContent = async (report, content) => {
     'createdBy',
     'genes',
     'kbMatches',
-    'presentation_discussion',
-    'presentation_slides',
+    'presentationDiscussion',
+    'presentationSlides',
     'signatures',
     'projects',
     'ReportUserFilter',
@@ -271,6 +271,13 @@ const createReportContent = async (report, content) => {
       // sanitize html comment if it's not null
       if (model === 'analystComments' && content[model].comments) {
         content[model].comments = sanitizeHtml(content[model].comments);
+      }
+
+      // Add ranks to therapeutic targets
+      if (model === 'therapeuticTargets') {
+        content[model].forEach((target, i) => {
+          target.rank = i;
+        });
       }
       promises.push(createReportSection(report.id, model, content[model]));
     }

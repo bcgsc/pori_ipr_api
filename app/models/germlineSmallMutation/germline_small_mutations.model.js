@@ -62,6 +62,23 @@ module.exports = (sequelize) => {
         ],
       },
     },
+    hooks: {
+      ...DEFAULT_OPTIONS.hooks,
+      // NOTE: This hook only gets triggered on instance.destroy or
+      // when individualHooks is set to true
+      afterDestroy: async (instance, options = {force: false}) => {
+        if (options.force === true) {
+          // When hard deleting a report, also delete the "updated" versions of the report
+          return instance.constructor.destroy({where: {ident: instance.ident}, force: true});
+        }
+
+        // Remove review and variant on soft-delete
+        return Promise.all([
+          sequelize.models.germline_small_mutation_review.destroy({where: {germline_report_id: instance.id}}),
+          sequelize.models.germline_small_mutation_variant.destroy({where: {germline_report_id: instance.id}}),
+        ]);
+      },
+    },
   });
 
   // set instance methods

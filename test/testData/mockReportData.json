@@ -65,6 +65,8 @@
     "state": "ready",
     "expression_matrix": "v9",
     "patientId": "UPLOADPAT01",
+    "tumourContent": 75,
+    "ploidy": "diploid",
     "ageOfConsent": 20,
     "alternateIdentifier": "UPLOADPATIENT01",
     "biopsyName": "biop1",
@@ -72,6 +74,7 @@
     "presentationDate": null,
     "kbUrl": "https://ipr.bcgsc.ca/testurl",
     "kbDiseaseMatch": "Colorectal Cancer",
+    "analysisStartedAt": "2020-01-01T20:20:00+00:00",
     "patientInformation": {
         "physician": "Dr. Test Upload",
         "gender": "Male",
@@ -84,13 +87,6 @@
         "tumourProtocol": "WGS; RNA-seq",
         "constitutionalSample": "Peripheral Blood",
         "constitutionalProtocol": "WGS"
-    },
-    "tumourAnalysis": {
-        "tumourContent": 75,
-        "ploidy": "diploid",
-        "normalExpressionComparator": "average",
-        "diseaseExpressionComparator": "TARGET_RHD",
-        "tcgaColor": "0xC0C0C0"
     },
     "variantCounts": {
         "smallMutations": 2,
@@ -123,7 +119,6 @@
             "geneGraphkbId": "#2:3",
             "context": "resistance",
             "therapy": "EGFR inhibitors",
-            "rank": 1,
             "evidenceLevel": "OncoKB 1"
         }
     ],
@@ -131,23 +126,46 @@
         "species": "None",
         "integrationSite": "None"
     },
-    "mutationSummary": [
+    "comparators": [
         {
-            "comparator": "average",
-            "snv": 4,
-            "snv_truncating": 0,
-            "indels": 0,
-            "indels_frameshift": 0,
-            "sv": 92,
-            "sv_expressed": 40,
-            "snv_percentile": 4,
-            "indel_percentile": 10,
-            "sv_percentile": 60
+            "analysisRole": "mutation burden (primary)",
+            "name": "paad"
+        },
+        {
+            "analysisRole": "mutation burden (secondary)",
+            "name": "average"
+        },
+        {
+            "analysisRole": "expression (disease QC)",
+            "name": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
+            "size": 6
+        },
+        {
+            "analysisRole": "expression (primary site)",
+            "name": "average",
+            "size": 1024
+        }
+    ],
+    "mutationBurden": [
+        {
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": "primary",
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationsPerMb": 56.24
         }
     ],
     "kbMatches": [
         {
-            "category": "unknown",
+            "category": "pharmacogenomic",
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
@@ -177,14 +195,26 @@
             "gene": "ZFP36L2",
             "transcript": "ENST00000282388",
             "proteinChange": "p.Q401del",
-            "location": "2:43451739",
-            "refAlt": "CCTG>C",
+            "startPosition": 43451739,
+            "endPosition": 43451739,
+            "chromosome": "2",
+            "refSeq": "CCTG",
+            "altSeq": "C",
             "zygosity": "sub [0/3]",
-            "tumourReads": "583/4",
-            "rnaReads": "400/15",
+            "tumourRefCount": 583,
+            "tumourAltCount": 4,
+            "tumourDepth": 590,
+            "rnaRefCount": 400,
+            "rnaAltCount": 15,
+            "rnaDepth": 415,
+            "normalRefCount": 40,
+            "normalAltCount": 0,
+            "normalDepth": 40,
+            "ncbiBuild": "GRCh37",
             "hgvsProtein": "ZFP36L2:p.Q401del",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
-            "hgvsGenomic": "2:g.43451740_43451742delCTG"
+            "hgvsGenomic": "2:g.43451740_43451742delCTG",
+            "germline": false
         }
     ],
     "mutationSignature": [
@@ -195,13 +225,16 @@
             "associations": "Tobacco chewing",
             "features": "D,T",
             "numCancerTypes": 1,
-            "cancerTypes": "stomach cancer"
+            "cancerTypes": "stomach cancer",
+            "selected": false
         }
     ],
     "copyVariants": [
         {
             "gene": "MYCN",
-            "ploidyCorrCpChange": 2,
+            "copyChange": 2,
+            "log2Cna": 0.2,
+            "cna": 1.2,
             "lohState": "HET",
             "cnvState": "Amp",
             "chromosomeBand": "2p24.3",
@@ -238,40 +271,39 @@
             "highQuality": true
         }
     ],
+    "proteinVariants": [
+        {
+            "key": "hash1234567812345",
+            "gene": "MALAT1",
+            "percentile": 19,
+            "kiqr": 3.4,
+            "qc": 0.23,
+            "comparator": "PTX_POG_TARGET_RHD_percentile",
+            "totalSampleObserved": 10,
+            "secondaryPercentile": 2,
+            "secondaryComparator": "something else"
+        }
+    ],
     "expressionVariants": [
         {
             "key": "hash12345678",
             "gene": "MALAT1",
+            "biopsySiteFoldChange": 16,
+            "biopsySitekIQR": 16.82,
+            "biopsySitePercentile": 100,
+            "diseasePercentile": 88,
+            "diseasekIQR": 4.21,
+            "diseaseQC": 43,
+            "diseaseZScore": 1.2,
+            "expressionState": "outlier high",
+            "kbCategory": "increased expression",
             "location": "11:65265233-65273940",
+            "primarySiteFoldChange": 3.58,
+            "primarySitekIQR": 1.04,
+            "primarySitePercentile": 75,
             "rnaReads": null,
             "rpkm": 1889.11,
-            "foldChange": 3.58,
-            "expressionState": "outlier_high",
-            "tcgaPerc": 88,
-            "tcgaPercCol": "tcga_comp_TARGET_RHD_percentile",
-            "tcgakIQR": 4.21,
-            "tcgaQC": 43,
-            "tcgaQCCol": "qc_tcga_comp_TARGET_RHD_percentile_median_(6)",
-            "tcgaAvgPerc": 99,
-            "tcgaAvgkIQR": 30.84,
-            "tcgaAvgQC": 93,
-            "tcgaAvgQCCol": "qc_tcga_comp_average_percentile_median_(625)",
-            "tcgaNormPerc": 75,
-            "tcgaNormkIQR": 1.04,
-            "ptxPerc": null,
-            "ptxkIQR": null,
-            "ptxQC": 0.23,
-            "ptxPercCol": "PTX_POG_TARGET_RHD_percentile",
-            "ptxTotSampObs": null,
-            "ptxPogPerc": null,
-            "gtexComp": "average",
-            "gtexPerc": 100,
-            "gtexFC": 16,
-            "gtexkIQR": 16.82,
-            "gtexAvgPerc": 100,
-            "gtexAvgFC": 16,
-            "gtexAvgkIQR": 16,
-            "kbCategory": "Test Category"
+            "tpm": 12.3
         }
     ],
     "probe_test_information": [
@@ -288,6 +320,39 @@
     "analystComments": {
         "comments": "<p>Here is a test comment.</p>"
     },
+    "hlaTypes": [
+        {
+            "library": "S1234",
+            "pathology": "normal",
+            "protocol": "DNA",
+            "a1": "A*02:03",
+            "a2": "A*11:01",
+            "b1": "B*40:01",
+            "b2": "B*38:02",
+            "c1": "C*07:02",
+            "c2": "C*07:02",
+            "reads": 4152.0,
+            "objective": 4039.895999999993
+        }
+    ],
+    "pairwiseExpressionCorrelation": [
+        {
+            "patientId": "UPLOADPAT02",
+            "library": "LIB0002",
+            "correlation": 0.99,
+            "tumourType": "pancreatic cancer",
+            "tissueType": "liver",
+            "tumourContent": 15
+        }
+    ],
+    "immuneCellTypes": [
+        {
+            "cellType": "combined T cell",
+            "kbCategory": "moderate",
+            "score": 76,
+            "percentile": 50
+        }
+    ],
     "project": "TEST",
     "images": [
         {
@@ -371,36 +436,56 @@
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/CES2_ENSG00000172831.png"
         },
         {
-            "key": "mutation_summary.barplot_sv",
+            "key": "mutationBurden.barplot_sv.secondary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_sv.png"
         },
         {
-            "key": "mutation_summary.barplot_snv.paad",
+            "key": "mutationBurden.barplot_snv.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_snv.paad.png"
         },
         {
-            "key": "mutation_summary.barplot_indel.paad",
+            "key": "mutationBurden.barplot_indel.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_indel.paad.png"
         },
         {
-            "key": "mutation_summary.density_sv",
+            "key": "mutationBurden.density_sv.secondary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_sv.png"
         },
         {
-            "key": "mutation_summary.density_snv.paad",
+            "key": "mutationBurden.density_snv.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_snv.paad.png"
         },
         {
-            "key": "mutation_summary.density_indel.paad",
+            "key": "mutationBurden.density_indel.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_indel.paad.png"
         },
         {
-            "key": "mutation_summary.legend_sv",
+            "key": "mutationBurden.legend_sv.secondary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_sv.png"
         },
         {
-            "key": "mutation_summary.legend_snv_indel.paad",
+            "key": "mutationBurden.legend_snv_indel.primary",
             "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+        },
+        {
+            "key": "cibersort.cd8_positive_t-cell_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.cd8_positive_t-cell_scatter.png"
+        },
+        {
+            "key": "cibersort.combined_t-cell_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.combined_t-cell_scatter.png"
+        },
+        {
+            "key": "mixcr.circos_trb_vj_gene_usage",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.circos_trb_vj_gene_usage.png"
+        },
+        {
+            "key": "mixcr.dominance_vs_alpha_beta_t-cells_scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
+        },
+        {
+            "key": "scpPlot",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/scpPlot.png"
         }
     ]
 }

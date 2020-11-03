@@ -7,7 +7,7 @@ module.exports = async (req, res, next, ident) => {
   let result;
   try {
     result = await db.models.germline_small_mutation_variant.findOne({
-      where: {ident},
+      where: {ident, germline_report_id: req.report.id},
     });
   } catch (error) {
     logger.error(`Error while trying to get germline report variant ${error}`);

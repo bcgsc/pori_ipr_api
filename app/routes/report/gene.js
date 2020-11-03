@@ -12,7 +12,7 @@ router.param('geneName', async (req, res, next, geneName) => {
   try {
     result = await db.models.genes.findOne({
       where: {
-        report_id: req.report.id,
+        reportId: req.report.id,
         name: geneName,
       },
     });
