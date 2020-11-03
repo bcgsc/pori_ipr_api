@@ -253,6 +253,7 @@ router.route('/')
           {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
           {patientId: {[Op.iLike]: `%${req.query.searchText}%`}},
+          {alternateIdentifier: {[Op.iLike]: `%${req.query.searchText}%`}},
         ],
       };
     }
