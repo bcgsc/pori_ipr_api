@@ -32,6 +32,7 @@ module.exports = {
     'mixcr\\.circos_trb_vj_gene_usage',
     'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
     'scpPlot',
+    'msiScatter',
   ].map((patt) => { return `(${patt})`; }).join('|')}$`,
   REPORT_CREATE_BASE_URI: '/reports/create',
   REPORT_UPDATE_BASE_URI: '/reports/update',
