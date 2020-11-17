@@ -21,6 +21,7 @@ const pairwiseExpressionCorrelation = require('./pairwiseExpressionCorrelation')
 const immuneCellTypes = require('./immuneCellTypes');
 const mutationBurden = require('./mutationBurden');
 const comparators = require('./comparators');
+const msi = require('./msi');
 
 const router = express.Router({mergeParams: true});
 
@@ -46,5 +47,6 @@ router.use('/kb-matches', kbMatches);
 router.use('/probe-results', probeResults);
 router.use('/gene-viewer', geneViewer);
 router.use('/genes', gene);
+router.use('/msi', msi);
 
 module.exports = router;
