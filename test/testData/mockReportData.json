@@ -353,6 +353,12 @@
             "percentile": 50
         }
     ],
+    "msi": [
+        {
+            "score": 19.5,
+            "kbCategory": "moderate"
+        }
+    ],
     "project": "TEST",
     "images": [
         {
