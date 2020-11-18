@@ -494,8 +494,8 @@
             "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/scpPlot.png"
         },
         {
-            "key": "msiScatter",
-            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/msiScatter.png"
+            "key": "msi.scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/msi.scatter.png"
         }
     ]
 }

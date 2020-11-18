@@ -120,7 +120,7 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'msiScatter',
+    pattern: 'msi.scatter',
     width: '1000',
     height: '1000',
     format: 'PNG',
