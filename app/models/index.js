@@ -394,6 +394,7 @@ analysisReports.hasOne(reportSignatures, {
   as: 'signatures', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+// Mutation Burden
 const mutationBurden = sequelize.import('./reports/mutationBurden');
 analysisReports.hasMany(mutationBurden, {
   as: 'mutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -402,11 +403,21 @@ mutationBurden.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Comparators
 const comparators = sequelize.import('./reports/comparators');
 analysisReports.hasMany(comparators, {
   as: 'comparators', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 comparators.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// MSI
+const msi = sequelize.import('./reports/msi');
+analysisReports.hasMany(msi, {
+  as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 

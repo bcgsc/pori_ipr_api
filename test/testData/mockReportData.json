@@ -353,6 +353,12 @@
             "percentile": 50
         }
     ],
+    "msi": [
+        {
+            "score": 19.5,
+            "kbCategory": "moderate"
+        }
+    ],
     "project": "TEST",
     "images": [
         {
@@ -486,6 +492,10 @@
         {
             "key": "scpPlot",
             "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/scpPlot.png"
+        },
+        {
+            "key": "msi.scatter",
+            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/msi.scatter.png"
         }
     ]
 }
