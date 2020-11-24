@@ -4894,6 +4894,215 @@
           }
         }
       }
+    },
+    "/reports/{report}/msi": {
+      "get": {
+        "summary": "Get MSI Data",
+        "description": "Retrieve MSI data for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all MSI data for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/msiAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create MSI Entry",
+        "description": "Add a new MSI entry to this report",
+        "tags": [
+          "MSI"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Values for creating a new MSI entry",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/msiCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the newly created MSI entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/msiAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/msi/{msi}": {
+      "get": {
+        "summary": "Get MSI Entry",
+        "description": "Retrieve a specific MSI Entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/msi"
+          }
+        ],
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified MSI entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/msiAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or MSI not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update MSI Entry",
+        "description": "Update the details of a MSI entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/msi"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update specified MSI entry",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/msiUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated MSI entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/msiAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or MSI not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete MSI Entry",
+        "description": "Removes the specified MSI entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/msi"
+          }
+        ],
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or MSI not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
@@ -5104,6 +5313,16 @@
             "author",
             "reviewer"
           ]
+        }
+      },
+      "msi": {
+        "name": "msi",
+        "in": "path",
+        "required": true,
+        "description": "MSI ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
         }
       }
     },

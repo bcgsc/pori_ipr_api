@@ -23,6 +23,7 @@ const mutationBurden = require('./mutationBurden');
 const comparators = require('./comparators');
 const patientInformation = require('./patientInformation');
 const images = require('./image');
+const msi = require('./msi');
 
 const router = express.Router({mergeParams: true});
 
@@ -50,5 +51,6 @@ router.use('/probe-results', probeResults);
 router.use('/gene-viewer', geneViewer);
 router.use('/genes', gene);
 router.use('/patient-information', patientInformation);
+router.use('/msi', msi);
 
 module.exports = router;

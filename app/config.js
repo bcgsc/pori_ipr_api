@@ -5,7 +5,7 @@ const {merge} = require('lodash');
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
-let DEFAULT_DB_NAME = 'ipr-sync-dev';
+let DEFAULT_DB_NAME = 'DEVSU-1342-add-tables-and-figure-key-for-msi-data';
 
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';

@@ -36,7 +36,7 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quarternary)',
+    pattern: 'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quaternary)',
     width: 560,
     height: 151,
     format: 'PNG',
@@ -117,6 +117,12 @@ const IMAGES_CONFIG = [
     pattern: 'scpPlot',
     width: 1400,
     height: 900,
+    format: 'PNG',
+  },
+  {
+    pattern: 'msi.scatter',
+    width: '1000',
+    height: '1000',
     format: 'PNG',
   },
 ];
