@@ -31,7 +31,11 @@ const generateGermlimeUploadSchema = (isJsonSchema = true) => {
 
   // Generate schema
   const schema = schemaGenerator(db.models.germline_small_mutation, {
-    isJsonSchema, baseUri: UPLOAD_BASE_URI, exclude: [...BASE_EXCLUDE, 'biofx_assigned_id', 'source_version', 'source_path', 'exported'], properties,
+    isJsonSchema,
+    baseUri: UPLOAD_BASE_URI,
+    exclude: [...BASE_EXCLUDE, 'biofx_assigned_id', 'source_version', 'source_path', 'exported'],
+    properties,
+    required: ['project', 'version', 'source'],
   });
 
   return schema;
