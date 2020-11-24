@@ -1,162 +1,111 @@
 const HTTP_STATUS = require('http-status-codes');
-const uuidv4 = require('uuid/v4');
 const supertest = require('supertest');
 const getPort = require('get-port');
-
 const db = require('../../../app/models');
-// get test user info
+
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
-const mockData = require('../../testData/mockGermlineReportData.json');
-
-// get credentials from the CONFIG
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URL = '/api/germline-small-mutation-reports';
+const BASE_URI = '/api/germline-small-mutation-reports';
 
-// Template of a germline report for testing
-const checkGermlineReport = expect.objectContaining({
-  ident: expect.any(String),
-  source_version: expect.any(String),
-  source_path: expect.any(String),
-  exported: expect.any(Boolean),
-  createdAt: expect.any(String),
-  updatedAt: expect.any(String),
-  biofx_assigned: expect.objectContaining({ident: expect.any(String)}),
-  projects: expect.any(Array),
-  reviews: expect.any(Array),
-  variants: expect.any(Array),
-});
+let server;
+let request;
+let testUser;
+
+const mockData = require('../../testData/mockGermlineReportData.json');
+
+const CREATE_DATA = {
+  normalLibrary: 'test library',
+  source_version: 'v1.0.0',
+  source_path: '/some/random/source/path',
+  exported: false,
+  patientId: 'TESTPAT01',
+  biopsyName: 'TEST123',
+};
+const UPDATE_DATA = {
+  normalLibrary: 'updated library',
+  source_version: 'v2.0.0',
+  source_path: '/some/random/source/path/updated',
+  patientId: 'TESTPAT012345',
+  biopsyName: 'TEST12345',
+};
+
+const UPLOAD_DATA = {
+  normalLibrary: mockData.normalLibrary,
+  source_version: mockData.version,
+  source_path: mockData.source,
+  patientId: mockData.patientId,
+  biopsyName: mockData.biopsyName,
+};
+
+const germlineReportProperties = [
+  'ident', 'createdAt', 'updatedAt', 'biopsyName', 'normalLibrary', 'source_version',
+  'source_path', 'exported', 'biofx_assigned', 'projects', 'variants', 'reviews',
+  'patientId',
+];
+
+const checkGermlineReport = (reportObject) => {
+  germlineReportProperties.forEach((element) => {
+    expect(reportObject).toHaveProperty(element);
+  });
+  expect(reportObject).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    deletedAt: expect.any(String),
+  }));
+};
+
+const checkGermlineReports = (reports) => {
+  reports.forEach((report) => {
+    checkGermlineReport(report);
+  });
+};
 
 // Template of a GET all reports query for tests
 const checkGermlineReportList = expect.objectContaining({
   total: expect.any(Number),
-  reports: expect.arrayContaining([
-    checkGermlineReport,
-  ]),
+  reports: expect.any(Array),
 });
 
+// Start API
+beforeAll(async () => {
+  const port = await getPort({port: CONFIG.get('web:port')});
+  server = await listen(port);
+  request = supertest(server);
+
+  // get test user
+  testUser = await db.models.user.findOne({
+    where: {username},
+  });
+});
 
 describe('/germline-small-mutation-reports', () => {
-  // TODO:Add checks to ensure is not returning id
-  let server;
-  let request;
-  let testUser;
-  let fakeReportIdent;
+  let report;
 
   beforeAll(async () => {
-    const port = await getPort({port: CONFIG.get('web:port')});
-    server = await listen(port);
-    request = supertest(server);
-
-    // get test user
-    testUser = await db.models.user.findOne({
-      where: {username},
-    });
-
-    // Generate UUID that doesn't belong to a report
-    let result = 'Random Starting Value';
-    while (result !== null) {
-      fakeReportIdent = uuidv4();
-      result = await db.models.germline_small_mutation.findOne({where: {ident: fakeReportIdent}});
-    }
-  });
-
-  afterAll(async () => {
-    await server.close();
-  });
-
-
-  describe('POST (create) /', () => {
-    test('POST / - 201 Created', async () => {
-      const {body: record} = await request
-        .post(BASE_URL)
-        .auth(username, password)
-        .type('json')
-        .send({...mockData})
-        .expect(HTTP_STATUS.CREATED);
-      expect(record).toHaveProperty('ident');
-
-      // clean up the newly created report
-      await db.models.germline_small_mutation.destroy({
-        where: {ident: record.ident},
-        force: true,
-      });
-    });
-
-    test('POST / version is required - 400 Bad Request', async () => {
-      await request
-        .post(BASE_URL)
-        .auth(username, password)
-        .type('json')
-        .send({
-          normal_library: 'P0XXXXX',
-          project: 'TEST',
-          rows: [{}],
-          source: '/some/file/path',
-        })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-
-    test('POST / source is required - 400 Bad Request', async () => {
-      await request
-        .post(BASE_URL)
-        .auth(username, password)
-        .type('json')
-        .send({
-          normal_library: 'P0XXXXX',
-          project: 'TEST',
-          rows: [{}],
-          version: 'vX.X.X',
-        })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-
-    test('POST / project is required - 400 Bad Request', async () => {
-      await request
-        .post(BASE_URL)
-        .auth(username, password)
-        .type('json')
-        .send({
-          normal_library: 'P0XXXXX',
-          rows: [{}],
-          source: '/some/file/path',
-          version: 'vX.X.X',
-        })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-
-    test('POST / normal_library is required - 400 Bad Request', async () => {
-      await request
-        .post(BASE_URL)
-        .auth(username, password)
-        .type('json')
-        .send({
-          project: 'TEST',
-          rows: [{}],
-          source: '/some/file/path',
-          version: 'vX.X.X',
-        })
-        .expect(HTTP_STATUS.BAD_REQUEST);
+    // create a report to be used in tests
+    report = await db.models.germline_small_mutation.create({
+      ...CREATE_DATA, biofx_assigned_id: testUser.id,
     });
   });
 
   describe('GET', () => {
-    test('GET / all reports - 200 success', async () => {
+    test('/ - 200 Success', async () => {
       const res = await request
-        .get(BASE_URL)
+        .get(BASE_URI)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).toEqual(checkGermlineReportList);
+      checkGermlineReports(res.body.reports);
     });
 
-    test('GET / all reports + search query - 200 success', async () => {
+    test('/ - patient query - 200 success', async () => {
       const res = await request
-        .get(BASE_URL)
+        .get(BASE_URI)
         .query({patientId: 'POG'})
         .auth(username, password)
         .type('json')
@@ -168,49 +117,41 @@ describe('/germline-small-mutation-reports', () => {
       ]));
     });
 
-    test('GET / all reports + not existing search query - 200 success', async () => {
+    test('/ - biopsy name query - 200 success', async () => {
       const res = await request
-        .get(BASE_URL)
-        .query({project: 'PROBABLY_THIS_IS_NOT_A_POG_ID'})
+        .get(BASE_URI)
+        .query({biopsyName: 'biop1'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body).toEqual(expect.objectContaining({
-        total: 0,
-        reports: expect.arrayContaining([]),
-      }));
+      expect(res.body).toEqual(checkGermlineReportList);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({biopsyName: expect.stringContaining('biop1')}),
+      ]));
     });
 
-    test('GET / all reports + project query - 200 success', async () => {
+    test('/ - project query - 200 success', async () => {
       const res = await request
-        .get(BASE_URL)
+        .get(BASE_URI)
         .query({project: 'POG'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).toEqual(checkGermlineReportList);
-      expect(res.body.reports[0].projects[0].name).toEqual('POG');
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          projects: expect.arrayContaining([
+            expect.objectContaining({name: expect.stringContaining('POG')}),
+          ]),
+        }),
+      ]));
     });
 
-    test('GET / all reports + not existing project query - 200 success', async () => {
+    test('/ - limit and offset - 200 success', async () => {
       const res = await request
-        .get(BASE_URL)
-        .query({project: 'PROBABLY_THIS_IS_NOT_A_VALID_PROJECT_NAME'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      expect(res.body).toEqual(expect.objectContaining({
-        total: 0,
-        reports: expect.arrayContaining([]),
-      }));
-    });
-
-    test('GET / all reports + limit and offset - 200 success', async () => {
-      const res = await request
-        .get(BASE_URL)
+        .get(BASE_URI)
         .query({limit: 3, offset: 5})
         .auth(username, password)
         .type('json')
@@ -219,111 +160,185 @@ describe('/germline-small-mutation-reports', () => {
       expect(res.body).toEqual(checkGermlineReportList);
       expect(res.body.reports.length).toEqual(3);
     });
+
+    test('/{gsm_report} - 200 Success', async () => {
+      const res = await request
+        .get(`${BASE_URI}/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReport(res.body);
+      expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
+    });
   });
 
-  describe('tests dependent on existing report', () => {
-    let record;
+  describe('POST', () => {
+    test('/ - 201 Created', async () => {
+      const res = await request
+        .post(BASE_URI)
+        .send(mockData)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      checkGermlineReport(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPLOAD_DATA));
+
+      // Check that record was created in the db
+      const result = await db.models.germline_small_mutation.findOne({where: {ident: res.body.ident}});
+      expect(result).not.toBeNull();
+    });
+
+    test('/ - project is required - 400 Bad Request', async () => {
+      await request
+        .post(BASE_URI)
+        .auth(username, password)
+        .type('json')
+        .send({
+          normal_library: 'P0XXXXX',
+          rows: [{}],
+          source: '/some/file/path',
+          version: 'vX.X.X',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/ - source is required - 400 Bad Request', async () => {
+      await request
+        .post(BASE_URI)
+        .auth(username, password)
+        .type('json')
+        .send({
+          normal_library: 'P0XXXXX',
+          rows: [{}],
+          project: 'POG',
+          version: 'vX.X.X',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/ - version is required - 400 Bad Request', async () => {
+      await request
+        .post(BASE_URI)
+        .auth(username, password)
+        .type('json')
+        .send({
+          normal_library: 'P0XXXXX',
+          rows: [{}],
+          project: 'POG',
+          source: '/some/file/path',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+  });
+
+  describe('PUT', () => {
+    let germlineReportUpdate;
 
     beforeEach(async () => {
-      // Create a report through models to avoid using endpoints
-      record = await db.models.germline_small_mutation.create({
-        source_version: 'v1.0.0',
-        source_path: '/some/random/source/path',
-        biofx_assigned_id: testUser.id,
-        exported: false,
-        patientId: 'TESTPAT01',
-        biopsyName: 'TEST123',
+      germlineReportUpdate = await db.models.germline_small_mutation.create({
+        ...CREATE_DATA, biofx_assigned_id: testUser.id,
       });
     });
 
     afterEach(async () => {
-      // Hard delete recent created report
-      await db.models.germline_small_mutation.destroy({
-        where: {ident: record.ident},
-        force: true,
-      });
+      await db.models.germline_small_mutation.destroy({where: {ident: germlineReportUpdate.ident}, force: true});
     });
 
-    describe('GET', () => {
-      test('GET /:gsm_report - 200 success', async () => {
-        const res = await request
-          .get(`${BASE_URL}/${record.ident}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
+    test('/{gsm_report} - 200 Success', async () => {
+      const res = await request
+        .put(`${BASE_URI}/${germlineReportUpdate.ident}`)
+        .send({...UPDATE_DATA, assignToMe: true})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-        expect(res.body).toEqual(
-          checkGermlineReport,
-        );
-      });
-
-      test('GET /:gsm_report - 404 Not Found', async () => {
-        await request
-          .get(`${BASE_URL}/${fakeReportIdent}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
-      });
+      checkGermlineReport(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
     });
 
-    describe('PUT', () => {
-      test('PUT /:gsm_report - 200 Success', async () => {
-        const NEW_EXPORTED = true;
-        const res = await request
-          .put(`${BASE_URL}/${record.ident}`)
-          .send({exported: NEW_EXPORTED})
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
-
-        expect(res.body.exported).toBe(NEW_EXPORTED);
-      });
-
-      test('PUT /:gsm_report - 400 Bad Request', async () => {
-        const NEW_EXPORTED = true;
-        await request
-          .put(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
-          .send({exported: NEW_EXPORTED})
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
-      });
-
-      test('PUT /:gsm_report - 404 Not Found', async () => {
-        const NEW_EXPORTED = true;
-        await request
-          .put(`${BASE_URL}/${fakeReportIdent}`)
-          .send({exported: NEW_EXPORTED})
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
-      });
+    test('/{gsm_report} - 400 Bad Request Failed Validation', async () => {
+      await request
+        .put(`${BASE_URI}/${germlineReportUpdate.ident}`)
+        .send({...UPDATE_DATA, id: 6})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    describe('DELETE', () => {
-      test('DELETE /:gsm_report - 204 Success', async () => {
-        await request
-          .delete(`${BASE_URL}/${record.ident}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.NO_CONTENT);
-      });
+    test('/{gsm_report} - 404 Not Found no variant data to update', async () => {
+      // First soft-delete record
+      await db.models.germline_small_mutation.destroy({where: {ident: germlineReportUpdate.ident}});
 
-      test('DELETE /:gsm_report - 400 Bad Request', async () => {
-        await request
-          .delete(`${BASE_URL}/NOT_AN_EXISTING_RECORD`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
-      });
-
-      test('DELETE /:gsm_report - 404 Not Found', async () => {
-        await request
-          .delete(`${BASE_URL}/${fakeReportIdent}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.NOT_FOUND);
-      });
+      await request
+        .put(`${BASE_URI}/${germlineReportUpdate.ident}`)
+        .send(UPDATE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
     });
   });
+
+  describe('DELETE', () => {
+    let germlineReportDelete;
+
+    beforeEach(async () => {
+      germlineReportDelete = await db.models.germline_small_mutation.create({
+        ...CREATE_DATA, biofx_assigned_id: testUser.id,
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.germline_small_mutation.destroy({
+        where: {ident: germlineReportDelete.ident}, force: true,
+      });
+    });
+
+    test('/{gsm_report} - 204 No content', async () => {
+      await request
+        .delete(`${BASE_URI}/${germlineReportDelete.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify that the record was deleted
+      const result = await db.models.germline_small_mutation.findOne({where: {id: germlineReportDelete.id}});
+      expect(result).toBeNull();
+    });
+
+    test('/{gsm_report} - 400 Bad Request', async () => {
+      await request
+        .delete(`${BASE_URI}/NOT_AN_EXISTING_RECORD`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/{gsm_report} - 404 Not Found no germline report to delete', async () => {
+      // First soft-delete record
+      await db.models.germline_small_mutation.destroy({where: {ident: germlineReportDelete.ident}});
+
+      await request
+        .delete(`${BASE_URI}/${germlineReportDelete.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
+  });
+
+  // delete report
+  afterAll(async () => {
+    // delete newly created report and all of it's components
+    // indirectly by hard deleting newly created patient
+    await db.models.germline_small_mutation.destroy({where: {ident: report.ident}, force: true});
+
+    // verify report is deleted
+    const result = await db.models.germline_small_mutation.findOne({where: {ident: report.ident}, paranoid: false});
+    expect(result).toBeNull();
+  });
+});
+
+afterAll(async () => {
+  await server.close();
 });
