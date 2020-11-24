@@ -75,6 +75,18 @@ for report in content['reports']:
 
 ```
 
+Then the script can be run as follows. First export your password as an environment variable
+
+```bash
+export PASS='<MY PASSWORD>'
+```
+
+Then run the script
+
+```bash
+python my_ipr_script.py
+```
+
 The parameters and route names for other requests you may wish to try can be found from the
 [swagger specification](https://ipr-api.bcgsc.ca/api/spec). Simply sub in these values using the
 same technique as above.
