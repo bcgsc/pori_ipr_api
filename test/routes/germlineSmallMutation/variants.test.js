@@ -56,7 +56,7 @@ beforeAll(async () => {
   });
 });
 
-describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
+describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
   let report;
   let variant;
   let BASE_URI;
@@ -78,7 +78,7 @@ describe('/germline-small-mutation-reports/:gsm_report/variant', () => {
       germline_report_id: report.id,
     });
 
-    BASE_URI = `/api/germline-small-mutation-reports/${report.ident}/variant`;
+    BASE_URI = `/api/germline-small-mutation-reports/${report.ident}/variants`;
   });
 
   describe('GET', () => {

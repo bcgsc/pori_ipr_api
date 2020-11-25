@@ -53,7 +53,7 @@ beforeAll(async () => {
   });
 });
 
-describe('/germline-small-mutation-reports/:gsm_report/review', () => {
+describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
   let report;
   let review;
   let BASE_URI;
@@ -70,7 +70,7 @@ describe('/germline-small-mutation-reports/:gsm_report/review', () => {
       biopsyName: 'TEST123',
     });
 
-    BASE_URI = `/api/germline-small-mutation-reports/${report.ident}/review`;
+    BASE_URI = `/api/germline-small-mutation-reports/${report.ident}/reviews`;
 
     // Create initial review data
     review = await db.models.germline_small_mutation_review.create({...CREATE_DATA, reviewedBy_id: testUser.id, germline_report_id: report.id});

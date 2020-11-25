@@ -2266,7 +2266,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/review": {
+    "/germline-small-mutation-reports/{germline}/reviews": {
       "get": {
         "summary": "Get Germline Reviews",
         "description": "Retrieve all reviews for a given germline report",
@@ -2306,7 +2306,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/review/{review}": {
+    "/germline-small-mutation-reports/{germline}/reviews/{review}": {
       "get": {
         "summary": "Get Germline Review",
         "description": "Retrieve the specified review for a given germline report",
@@ -2427,7 +2427,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/variant": {
+    "/germline-small-mutation-reports/{germline}/variants": {
       "get": {
         "summary": "Get Germline Variants",
         "description": "Retrieve all variants for a given germline report",
@@ -2467,7 +2467,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/variant/{variant}": {
+    "/germline-small-mutation-reports/{germline}/variants/{variant}": {
       "get": {
         "summary": "Get Germline Variant",
         "description": "Retrieve the specified variant for a given germline report",
