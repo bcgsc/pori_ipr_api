@@ -5,7 +5,7 @@ const {Op} = require('sequelize');
 const express = require('express');
 
 const db = require('../../models');
-const Variants = require('./util/germline_small_mutation_variant');
+const Variants = require('./util/variants');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
@@ -39,22 +39,22 @@ router.get('/batch/download', async (req, res) => {
 
   try {
     // Build list of reports that have been reviewed by both projects and biofx
-    germlineReports = await db.models.germline_small_mutation.findAll({
+    germlineReports = await db.models.germlineSmallMutation.findAll({
       where: {
         exported: false,
       },
       include: [
         {
-          model: db.models.germline_small_mutation_variant,
+          model: db.models.germlineSmallMutationVariant,
           as: 'variants',
           required: true,
           order: [['gene', 'asc']],
         },
         {
-          model: db.models.germline_small_mutation_review,
+          model: db.models.germlineSmallMutationReview,
           as: 'reviews',
           required: Boolean(requiredReviews.length),
-          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
       ],
     });

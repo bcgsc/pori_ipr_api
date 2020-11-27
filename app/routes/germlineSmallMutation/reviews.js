@@ -19,11 +19,11 @@ const reviewerProperties = {
 };
 
 // Generate schema's
-const createSchema = schemaGenerator(db.models.germline_small_mutation_review, {
-  baseUri: GERMLINE_CREATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'reviewedBy_id'],
+const createSchema = schemaGenerator(db.models.germlineSmallMutationReview, {
+  baseUri: GERMLINE_CREATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'reviewerId'],
 });
-const updateSchema = schemaGenerator(db.models.germline_small_mutation_review, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'reviewedBy_id'], properties: reviewerProperties, nothingRequired: true,
+const updateSchema = schemaGenerator(db.models.germlineSmallMutationReview, {
+  baseUri: GERMLINE_UPDATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'reviewerId'], properties: reviewerProperties, nothingRequired: true,
 });
 
 
@@ -31,10 +31,10 @@ const updateSchema = schemaGenerator(db.models.germline_small_mutation_review, {
 router.param('review', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.germline_small_mutation_review.findOne({
-      where: {ident, germline_report_id: req.report.id},
+    result = await db.models.germlineSmallMutationReview.findOne({
+      where: {ident, germlineReportId: req.report.id},
       include: [
-        {model: db.models.user.scope('public'), as: 'reviewedBy'},
+        {model: db.models.user.scope('public'), as: 'reviewer'},
       ],
     });
   } catch (error) {
@@ -69,7 +69,7 @@ router.route('/:review')
 
     // check if the reviewer is being updated
     if (req.body.makeMeReviewer) {
-      req.body.reviewedBy_id = req.user.id;
+      req.body.reviewerId = req.user.id;
     }
 
     // Update db entry
@@ -98,8 +98,8 @@ router.route('/:review')
 router.route('/')
   .get(async (req, res) => {
     try {
-      const results = await db.models.germline_small_mutation_review.scope('public').findAll({
-        where: {germline_report_id: req.report.id},
+      const results = await db.models.germlineSmallMutationReview.scope('public').findAll({
+        where: {germlineReportId: req.report.id},
       });
       return res.json(results);
     } catch (error) {
@@ -120,28 +120,28 @@ router.route('/')
     let review;
     try {
       // Make sure review doesn't already exist
-      review = await db.models.germline_small_mutation_review.scope('public').findOne({where: {germline_report_id: req.report.id, type: req.body.type}});
+      review = await db.models.germlineSmallMutationReview.scope('public').findOne({where: {germlineReportId: req.report.id, type: req.body.type}});
     } catch (error) {
       logger.error(`There was an error while trying to find germline review ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find germline review'});
     }
   
     if (review) {
-      const message = `Report has already been reviewed by ${review.reviewedBy.firstName} ${review.reviewedBy.lastName} for ${req.body.type}`;
+      const message = `Report has already been reviewed by ${review.reviewer.firstName} ${review.reviewer.lastName} for ${req.body.type}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({message});
     }
 
     try {
       // Add new review to germline report
-      const newReview = await db.models.germline_small_mutation_review.create({
+      const newReview = await db.models.germlineSmallMutationReview.create({
         ...req.body,
-        reviewedBy_id: req.user.id,
-        germline_report_id: req.report.id,
+        reviewerId: req.user.id,
+        germlineReportId: req.report.id,
       });
 
       // Load new review with associations
-      const result = await db.models.germline_small_mutation_review.scope('public').findOne({where: {id: newReview.id}});
+      const result = await db.models.germlineSmallMutationReview.scope('public').findOne({where: {id: newReview.id}});
 
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
