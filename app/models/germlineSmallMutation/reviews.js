@@ -2,9 +2,11 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  const germlineReview = sequelize.define('germline_small_mutation_review', {
+  const germlineReview = sequelize.define('germlineSmallMutationReview', {
     ...DEFAULT_COLUMNS,
-    germline_report_id: {
+    germlineReportId: {
+      name: 'germlineReportId',
+      field: 'germline_report_id',
       type: Sq.INTEGER,
       allowNull: false,
       references: {
@@ -12,7 +14,9 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
-    reviewedBy_id: {
+    reviewerId: {
+      name: 'reviewerId',
+      field: 'reviewer_id',
       type: Sq.INTEGER,
       allowNull: false,
       references: {
@@ -35,10 +39,10 @@ module.exports = (sequelize) => {
       public: {
         order: [['createdAt', 'ASC']],
         attributes: {
-          exclude: ['id', 'germline_report_id', 'reviewedBy_id', 'deletedAt'],
+          exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt'],
         },
         include: [
-          {model: sequelize.models.user.scope('public'), as: 'reviewedBy'},
+          {model: sequelize.models.user.scope('public'), as: 'reviewer'},
         ],
       },
     },
@@ -47,7 +51,7 @@ module.exports = (sequelize) => {
   // set instance methods
   germlineReview.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, germline_report_id, reviewedBy_id, deletedAt, ...publicView} = this.dataValues;
+      const {id, germlineReportId, reviewerId, deletedAt, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;
