@@ -2096,7 +2096,7 @@
                     "reports": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                        "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                       }
                     }
                   }
@@ -2121,7 +2121,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutationCreate"
+                "$ref": "#/components/schemas/germlineSmallMutationCreate"
               }
             }
           }
@@ -2140,7 +2140,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                 }
               }
             }
@@ -2177,7 +2177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                 }
               }
             }
@@ -2205,7 +2205,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutationUpdate"
+                "$ref": "#/components/schemas/germlineSmallMutationUpdate"
               }
             }
           }
@@ -2224,7 +2224,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                 }
               }
             }
@@ -2291,7 +2291,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                    "$ref": "#/components/schemas/germlineSmallMutationReviewAssociations"
                   }
                 }
               }
@@ -2332,7 +2332,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationReviewAssociations"
                 }
               }
             }
@@ -2363,7 +2363,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutation_reviewUpdate"
+                "$ref": "#/components/schemas/germlineSmallMutationReviewUpdate"
               }
             }
           }
@@ -2382,7 +2382,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationReviewAssociations"
                 }
               }
             }
@@ -2452,7 +2452,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                    "$ref": "#/components/schemas/germlineSmallMutationVariantAssociations"
                   }
                 }
               }
@@ -2493,7 +2493,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationVariantAssociations"
                 }
               }
             }
@@ -2524,7 +2524,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutation_variantUpdate"
+                "$ref": "#/components/schemas/germlineSmallMutationVariantUpdate"
               }
             }
           }
@@ -2543,7 +2543,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationVariantAssociations"
                 }
               }
             }
