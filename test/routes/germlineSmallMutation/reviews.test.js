@@ -27,7 +27,7 @@ const UPDATE_DATA = {
 };
 
 const germlineReviewProperties = [
-  'ident', 'createdAt', 'updatedAt', 'type', 'comment', 'reviewedBy',
+  'ident', 'createdAt', 'updatedAt', 'type', 'comment', 'reviewer',
 ];
 
 const checkGermlineReview = (reviewObject) => {
@@ -36,7 +36,7 @@ const checkGermlineReview = (reviewObject) => {
   });
   expect(reviewObject).toEqual(expect.not.objectContaining({
     id: expect.any(Number),
-    germline_report_id: expect.any(Number),
+    germlineReportId: expect.any(Number),
     deletedAt: expect.any(String),
   }));
 };
@@ -61,10 +61,10 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
   beforeAll(async () => {
     // Create a user to be used
     // create a report to be used in tests
-    report = await db.models.germline_small_mutation.create({
-      source_version: 'v1.0.0',
-      source_path: '/some/random/source/path',
-      biofx_assigned_id: testUser.id,
+    report = await db.models.germlineSmallMutation.create({
+      sourceVersion: 'v1.0.0',
+      sourcePath: '/some/random/source/path',
+      biofxAssignedId: testUser.id,
       exported: false,
       patientId: 'TESTPAT01',
       biopsyName: 'TEST123',
@@ -73,7 +73,7 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
     BASE_URI = `/api/germline-small-mutation-reports/${report.ident}/reviews`;
 
     // Create initial review data
-    review = await db.models.germline_small_mutation_review.create({...CREATE_DATA, reviewedBy_id: testUser.id, germline_report_id: report.id});
+    review = await db.models.germlineSmallMutationReview.create({...CREATE_DATA, reviewerId: testUser.id, germlineReportId: report.id});
   });
 
   describe('GET', () => {
@@ -119,7 +119,7 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
       expect(res.body).toEqual(expect.objectContaining(NEW_CREATE_DATA));
 
       // Check that record was created in the db
-      const result = await db.models.germline_small_mutation_review.findOne({where: {ident: res.body.ident}});
+      const result = await db.models.germlineSmallMutationReview.findOne({where: {ident: res.body.ident}});
       expect(result).not.toBeNull();
     });
   });
@@ -128,13 +128,13 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
     let germlineReviewUpdate;
 
     beforeEach(async () => {
-      germlineReviewUpdate = await db.models.germline_small_mutation_review.create({
-        ...CREATE_DATA, reviewedBy_id: testUser.id, germline_report_id: report.id,
+      germlineReviewUpdate = await db.models.germlineSmallMutationReview.create({
+        ...CREATE_DATA, reviewerId: testUser.id, germlineReportId: report.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.germline_small_mutation_review.destroy({where: {ident: germlineReviewUpdate.ident}, force: true});
+      await db.models.germlineSmallMutationReview.destroy({where: {ident: germlineReviewUpdate.ident}, force: true});
     });
 
     test('/{review} - 200 Success', async () => {
@@ -160,7 +160,7 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
 
     test('/{review} - 404 Not Found no review data to update', async () => {
       // First soft-delete record
-      await db.models.germline_small_mutation_review.destroy({where: {ident: germlineReviewUpdate.ident}});
+      await db.models.germlineSmallMutationReview.destroy({where: {ident: germlineReviewUpdate.ident}});
 
       await request
         .put(`${BASE_URI}/${germlineReviewUpdate.ident}`)
@@ -175,13 +175,13 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
     let germlineReviewDelete;
 
     beforeEach(async () => {
-      germlineReviewDelete = await db.models.germline_small_mutation_review.create({
-        ...CREATE_DATA, reviewedBy_id: testUser.id, germline_report_id: report.id,
+      germlineReviewDelete = await db.models.germlineSmallMutationReview.create({
+        ...CREATE_DATA, reviewerId: testUser.id, germlineReportId: report.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.germline_small_mutation_review.destroy({
+      await db.models.germlineSmallMutationReview.destroy({
         where: {ident: germlineReviewDelete.ident}, force: true,
       });
     });
@@ -194,14 +194,14 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify that the record was deleted
-      const result = await db.models.germline_small_mutation_review.findOne({where: {id: germlineReviewDelete.id}});
+      const result = await db.models.germlineSmallMutationReview.findOne({where: {id: germlineReviewDelete.id}});
 
       expect(result).toBeNull();
     });
 
     test('/{review} - 404 Not Found no review data to delete', async () => {
       // First soft-delete record
-      await db.models.germline_small_mutation_review.destroy({where: {ident: germlineReviewDelete.ident}});
+      await db.models.germlineSmallMutationReview.destroy({where: {ident: germlineReviewDelete.ident}});
 
       await request
         .delete(`${BASE_URI}/${germlineReviewDelete.ident}`)
@@ -215,10 +215,10 @@ describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.germline_small_mutation.destroy({where: {ident: report.ident}, force: true});
+    await db.models.germlineSmallMutation.destroy({where: {ident: report.ident}, force: true});
 
     // verify report is deleted
-    const result = await db.models.germline_small_mutation.findOne({where: {ident: report.ident}, paranoid: false});
+    const result = await db.models.germlineSmallMutation.findOne({where: {ident: report.ident}, paranoid: false});
     expect(result).toBeNull();
   });
 });

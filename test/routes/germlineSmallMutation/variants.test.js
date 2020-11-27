@@ -15,22 +15,22 @@ let testUser;
 
 const CREATE_DATA = {
   gene: 'ARTBAN',
-  patient_history: 'default_patient',
-  family_history: 'default_family',
+  patientHistory: 'default patient',
+  familyHistory: 'default family',
   hidden: false,
 };
 const UPDATE_DATA = {
-  patient_history: 'Updated patient history',
-  family_history: 'updated family history',
+  patientHistory: 'Updated patient history',
+  familyHistory: 'updated family history',
 };
 
 const germlineVariantProperties = [
-  'ident', 'createdAt', 'updatedAt', 'hidden', 'flagged', 'clinvar', 'cgl_category', 'gmaf', 'transcript',
-  'gene', 'variant', 'impact', 'chromosome', 'position', 'dbSNP', 'reference', 'alteration', 'score',
-  'zygosity_germline', 'preferred_transcript', 'hgvs_cdna', 'hgvs_protein', 'zygosity_tumour',
-  'genomic_variant_reads', 'rna_variant_reads', 'gene_somatic_abberation', 'notes', 'type',
-  'patient_history', 'family_history', 'tcga_comp_norm_percentile', 'tcga_comp_percentile',
-  'gtex_comp_percentile', 'fc_bodymap', 'gene_expression_rpkm', 'additional_info',
+  'ident', 'createdAt', 'updatedAt', 'hidden', 'flagged', 'clinvar', 'cglCategory', 'gmaf',
+  'transcript', 'gene', 'variant', 'impact', 'chromosome', 'position', 'dbSnp', 'reference',
+  'alteration', 'score', 'zygosityGermline', 'preferredTranscript', 'hgvsCdna', 'hgvsProtein',
+  'zygosityTumour', 'genomicVariantReads', 'rnaVariantReads', 'geneSomaticAbberation', 'notes',
+  'type', 'patientHistory', 'familyHistory', 'tcgaCompNormPercentile', 'tcgaCompPercentile',
+  'gtexCompPercentile', 'fcBodymap', 'geneExpressionRpkm', 'additionalInfo',
 ];
 
 const checkGermlineVariant = (variantObject) => {
@@ -39,7 +39,7 @@ const checkGermlineVariant = (variantObject) => {
   });
   expect(variantObject).toEqual(expect.not.objectContaining({
     id: expect.any(Number),
-    germline_report_id: expect.any(Number),
+    germlineReportId: expect.any(Number),
     deletedAt: expect.any(String),
   }));
 };
@@ -63,19 +63,19 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
 
   beforeAll(async () => {
     // create a report to be used in tests
-    report = await db.models.germline_small_mutation.create({
-      source_version: 'v1.0.0',
-      source_path: '/some/random/source/path',
-      biofx_assigned_id: testUser.id,
+    report = await db.models.germlineSmallMutation.create({
+      sourceVersion: 'v1.0.0',
+      sourcePath: '/some/random/source/path',
+      biofxAssignedId: testUser.id,
       exported: false,
       patientId: 'TESTPAT01',
       biopsyName: 'TEST123',
     });
 
     // Create a initial variant data
-    variant = await db.models.germline_small_mutation_variant.create({
+    variant = await db.models.germlineSmallMutationVariant.create({
       ...CREATE_DATA,
-      germline_report_id: report.id,
+      germlineReportId: report.id,
     });
 
     BASE_URI = `/api/germline-small-mutation-reports/${report.ident}/variants`;
@@ -123,7 +123,7 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
       expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
 
       // Check that record was created in the db
-      const result = await db.models.germline_small_mutation_variant.findOne({where: {ident: res.body.ident}});
+      const result = await db.models.germlineSmallMutationVariant.findOne({where: {ident: res.body.ident}});
       expect(result).not.toBeNull();
     });
   });
@@ -132,13 +132,13 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
     let germlineVariantUpdate;
 
     beforeEach(async () => {
-      germlineVariantUpdate = await db.models.germline_small_mutation_variant.create({
-        ...CREATE_DATA, germline_report_id: report.id,
+      germlineVariantUpdate = await db.models.germlineSmallMutationVariant.create({
+        ...CREATE_DATA, germlineReportId: report.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.germline_small_mutation_variant.destroy({where: {ident: germlineVariantUpdate.ident}, force: true});
+      await db.models.germlineSmallMutationVariant.destroy({where: {ident: germlineVariantUpdate.ident}, force: true});
     });
 
     test('/{variant} - 200 Success', async () => {
@@ -164,7 +164,7 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
 
     test('/{variant} - 404 Not Found no variant data to update', async () => {
       // First soft-delete record
-      await db.models.germline_small_mutation_variant.destroy({where: {ident: germlineVariantUpdate.ident}});
+      await db.models.germlineSmallMutationVariant.destroy({where: {ident: germlineVariantUpdate.ident}});
 
       await request
         .put(`${BASE_URI}/${germlineVariantUpdate.ident}`)
@@ -179,13 +179,13 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
     let germlineVariantDelete;
 
     beforeEach(async () => {
-      germlineVariantDelete = await db.models.germline_small_mutation_variant.create({
-        ...CREATE_DATA, germline_report_id: report.id,
+      germlineVariantDelete = await db.models.germlineSmallMutationVariant.create({
+        ...CREATE_DATA, germlineReportId: report.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.germline_small_mutation_variant.destroy({
+      await db.models.germlineSmallMutationVariant.destroy({
         where: {ident: germlineVariantDelete.ident}, force: true,
       });
     });
@@ -198,14 +198,14 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify that the record was deleted
-      const result = await db.models.germline_small_mutation_variant.findOne({where: {id: germlineVariantDelete.id}});
+      const result = await db.models.germlineSmallMutationVariant.findOne({where: {id: germlineVariantDelete.id}});
 
       expect(result).toBeNull();
     });
 
     test('/{variant} - 404 Not Found no variant data to delete', async () => {
       // First soft-delete record
-      await db.models.germline_small_mutation_variant.destroy({where: {ident: germlineVariantDelete.ident}});
+      await db.models.germlineSmallMutationVariant.destroy({where: {ident: germlineVariantDelete.ident}});
 
       await request
         .delete(`${BASE_URI}/${germlineVariantDelete.ident}`)
@@ -219,10 +219,10 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.germline_small_mutation.destroy({where: {ident: report.ident}, force: true});
+    await db.models.germlineSmallMutation.destroy({where: {ident: report.ident}, force: true});
 
     // verify report is deleted
-    const result = await db.models.germline_small_mutation.findOne({where: {ident: report.ident}, paranoid: false});
+    const result = await db.models.germlineSmallMutation.findOne({where: {ident: report.ident}, paranoid: false});
     expect(result).toBeNull();
   });
 });
