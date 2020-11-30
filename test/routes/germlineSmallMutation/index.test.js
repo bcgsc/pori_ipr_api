@@ -163,7 +163,7 @@ describe('/germline-small-mutation-reports', () => {
       const {body: {reports}} = res;
 
       // Test offset
-      const results = await db.models.germline_small_mutation.scope('public').findAll({limit: 3, offset: 5});
+      const results = await db.models.germlineSmallMutation.scope('public').findAll({limit: 3, offset: 5});
       for (let i = 0; i < results.length; i++) {
         expect(reports[i].ident).toBe(results[i].ident);
       }
