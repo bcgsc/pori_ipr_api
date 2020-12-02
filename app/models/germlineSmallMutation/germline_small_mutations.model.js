@@ -52,12 +52,15 @@ module.exports = (sequelize) => {
         },
         include: [
           {as: 'biofx_assigned', model: sequelize.models.user.scope('public')},
-          {as: 'projects', model: sequelize.models.project},
+          {as: 'projects', model: sequelize.models.project.scope('public'), through: {attributes: []}},
           {
-            as: 'variants', model: sequelize.models.germline_small_mutation_variant, separate: true, order: [['gene', 'asc']],
+            as: 'variants', model: sequelize.models.germline_small_mutation_variant, order: [['gene', 'asc']], attributes: {exclude: ['id', 'germline_report_id', 'deletedAt']},
           },
           {
-            as: 'reviews', model: sequelize.models.germline_small_mutation_review, separate: true, include: [{model: sequelize.models.user.scope('public'), as: 'reviewedBy'}],
+            as: 'reviews',
+            model: sequelize.models.germline_small_mutation_review,
+            attributes: {exclude: ['id', 'germline_report_id', 'reviewedBy_id', 'deletedAt']},
+            include: [{model: sequelize.models.user.scope('public'), as: 'reviewedBy'}],
           },
         ],
       },
