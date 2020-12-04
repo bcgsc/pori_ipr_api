@@ -10,9 +10,8 @@ const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 const db = require('../../models');
 const logger = require('../../log');
 
-const Variants = require('./util/germline_small_mutation_variant');
-const gsmMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation.middleware');
-const batchExportRouter = require('./export.batch');
+const Variants = require('./util/variants');
+const gsmMiddleware = require('../../middleware/germlineSmallMutation/reports');
 
 const router = express.Router({mergeParams: true});
 
@@ -30,11 +29,9 @@ const reportProperties = {
 // Germline schema's
 const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload')();
 
-const updateSchema = schemaGenerator(db.models.germline_small_mutation, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'biofx_assigned_id'], properties: reportProperties, nothingRequired: true,
+const updateSchema = schemaGenerator(db.models.germlineSmallMutation, {
+  baseUri: GERMLINE_UPDATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'biofxAssignedId'], properties: reportProperties, nothingRequired: true,
 });
-
-router.use('/export/batch', batchExportRouter);
 
 // Middleware for germline report
 router.param('gsm_report', gsmMiddleware);
@@ -57,7 +54,7 @@ router.route('/:gsm_report')
 
     // check if biofx assigned is being updated
     if (req.body.assignToMe) {
-      req.body.biofx_assigned_id = req.user.id;
+      req.body.biofxAssignedId = req.user.id;
     }
 
     // Update db entry
@@ -120,17 +117,17 @@ router.route('/')
         opts.include.push(
           {
             as: 'reviews',
-            model: db.models.germline_small_mutation_review,
+            model: db.models.germlineSmallMutationReview,
             where: {type: 'biofx'},
-            attributes: {exclude: ['id', 'germline_report_id', 'reviewedBy_id', 'deletedAt']},
-            include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+            attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+            include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
           },
         );
       }
     }
 
     try {
-      const gsmReports = await db.models.germline_small_mutation.scope('public').findAndCountAll(opts);
+      const gsmReports = await db.models.germlineSmallMutation.scope('public').findAndCountAll(opts);
       return res.json({total: gsmReports.count, reports: gsmReports.rows});
     } catch (error) {
       logger.error(`There was an error while finding all germline reports ${error}`);
@@ -153,8 +150,8 @@ router.route('/')
     } = req.body;
 
     // Fix for path names that do not match model names
-    reportData.source_path = source;
-    reportData.source_version = version;
+    reportData.sourcePath = source;
+    reportData.sourceVersion = version;
 
     // Get project
     let project;
@@ -175,9 +172,9 @@ router.route('/')
     // Create germline report
     let report;
     try {
-      report = await db.models.germline_small_mutation.create({
+      report = await db.models.germlineSmallMutation.create({
         ...reportData,
-        biofx_assigned_id: req.user.id,
+        biofxAssignedId: req.user.id,
       });
     } catch (error) {
       const message = `Error while creating germline small mutation report ${error}`;
@@ -200,13 +197,13 @@ router.route('/')
     try {
       // create the variants for this report
       const processedVariants = Variants.processVariants(report, variants);
-      await db.models.germline_small_mutation_variant.bulkCreate(
+      await db.models.germlineSmallMutationVariant.bulkCreate(
         processedVariants.map((variant) => {
-          return {...variant, germline_report_id: report.id};
+          return {...variant, germlineReportId: report.id};
         })
       );
     } catch (error) {
-      db.models.germline_small_mutation.destroy({where: {id: report.id}, force: true});
+      db.models.germlineSmallMutation.destroy({where: {id: report.id}, force: true});
       const message = `Error while creating germline variants for report ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
@@ -214,7 +211,7 @@ router.route('/')
 
     // Get newly created germline report
     try {
-      const result = await db.models.germline_small_mutation.scope('public').findOne({
+      const result = await db.models.germlineSmallMutation.scope('public').findOne({
         where: {id: report.id},
       });
       return res.status(HTTP_STATUS.CREATED).json(result);

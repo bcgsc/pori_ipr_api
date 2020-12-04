@@ -19,31 +19,31 @@ const mockData = require('../../testData/mockGermlineReportData.json');
 
 const CREATE_DATA = {
   normalLibrary: 'test library',
-  source_version: 'v1.0.0',
-  source_path: '/some/random/source/path',
+  sourceVersion: 'v1.0.0',
+  sourcePath: '/some/random/source/path',
   exported: false,
   patientId: 'TESTPAT01',
   biopsyName: 'TEST123',
 };
 const UPDATE_DATA = {
   normalLibrary: 'updated library',
-  source_version: 'v2.0.0',
-  source_path: '/some/random/source/path/updated',
+  sourceVersion: 'v2.0.0',
+  sourcePath: '/some/random/source/path/updated',
   patientId: 'TESTPAT012345',
   biopsyName: 'TEST12345',
 };
 
 const UPLOAD_DATA = {
   normalLibrary: mockData.normalLibrary,
-  source_version: mockData.version,
-  source_path: mockData.source,
+  sourceVersion: mockData.version,
+  sourcePath: mockData.source,
   patientId: mockData.patientId,
   biopsyName: mockData.biopsyName,
 };
 
 const germlineReportProperties = [
-  'ident', 'createdAt', 'updatedAt', 'biopsyName', 'normalLibrary', 'source_version',
-  'source_path', 'exported', 'biofx_assigned', 'projects', 'variants', 'reviews',
+  'ident', 'createdAt', 'updatedAt', 'biopsyName', 'normalLibrary', 'sourceVersion',
+  'sourcePath', 'exported', 'biofxAssigned', 'projects', 'variants', 'reviews',
   'patientId',
 ];
 
@@ -86,8 +86,8 @@ describe('/germline-small-mutation-reports', () => {
 
   beforeAll(async () => {
     // create a report to be used in tests
-    report = await db.models.germline_small_mutation.create({
-      ...CREATE_DATA, biofx_assigned_id: testUser.id,
+    report = await db.models.germlineSmallMutation.create({
+      ...CREATE_DATA, biofxAssignedId: testUser.id,
     });
   });
 
@@ -163,7 +163,7 @@ describe('/germline-small-mutation-reports', () => {
       const {body: {reports}} = res;
 
       // Test offset
-      const results = await db.models.germline_small_mutation.scope('public').findAll({limit: 3, offset: 5});
+      const results = await db.models.germlineSmallMutation.scope('public').findAll({limit: 3, offset: 5});
       for (let i = 0; i < results.length; i++) {
         expect(reports[i].ident).toBe(results[i].ident);
       }
@@ -194,49 +194,37 @@ describe('/germline-small-mutation-reports', () => {
       expect(res.body).toEqual(expect.objectContaining(UPLOAD_DATA));
 
       // Check that record was created in the db
-      const result = await db.models.germline_small_mutation.findOne({where: {ident: res.body.ident}});
+      const result = await db.models.germlineSmallMutation.findOne({where: {ident: res.body.ident}});
       expect(result).not.toBeNull();
     });
 
     test('/ - project is required - 400 Bad Request', async () => {
+      const {project, ...testData} = mockData;
       await request
         .post(BASE_URI)
         .auth(username, password)
         .type('json')
-        .send({
-          normal_library: 'P0XXXXX',
-          rows: [{}],
-          source: '/some/file/path',
-          version: 'vX.X.X',
-        })
+        .send(testData)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
     test('/ - source is required - 400 Bad Request', async () => {
+      const {source, ...testData} = mockData;
       await request
         .post(BASE_URI)
         .auth(username, password)
         .type('json')
-        .send({
-          normal_library: 'P0XXXXX',
-          rows: [{}],
-          project: 'POG',
-          version: 'vX.X.X',
-        })
+        .send(testData)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
     test('/ - version is required - 400 Bad Request', async () => {
+      const {version, ...testData} = mockData;
       await request
         .post(BASE_URI)
         .auth(username, password)
         .type('json')
-        .send({
-          normal_library: 'P0XXXXX',
-          rows: [{}],
-          project: 'POG',
-          source: '/some/file/path',
-        })
+        .send(testData)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
@@ -245,13 +233,13 @@ describe('/germline-small-mutation-reports', () => {
     let germlineReportUpdate;
 
     beforeEach(async () => {
-      germlineReportUpdate = await db.models.germline_small_mutation.create({
-        ...CREATE_DATA, biofx_assigned_id: testUser.id,
+      germlineReportUpdate = await db.models.germlineSmallMutation.create({
+        ...CREATE_DATA, biofxAssignedId: testUser.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.germline_small_mutation.destroy({where: {ident: germlineReportUpdate.ident}, force: true});
+      await db.models.germlineSmallMutation.destroy({where: {ident: germlineReportUpdate.ident}, force: true});
     });
 
     test('/{gsm_report} - 200 Success', async () => {
@@ -277,7 +265,7 @@ describe('/germline-small-mutation-reports', () => {
 
     test('/{gsm_report} - 404 Not Found no variant data to update', async () => {
       // First soft-delete record
-      await db.models.germline_small_mutation.destroy({where: {ident: germlineReportUpdate.ident}});
+      await db.models.germlineSmallMutation.destroy({where: {ident: germlineReportUpdate.ident}});
 
       await request
         .put(`${BASE_URI}/${germlineReportUpdate.ident}`)
@@ -292,13 +280,13 @@ describe('/germline-small-mutation-reports', () => {
     let germlineReportDelete;
 
     beforeEach(async () => {
-      germlineReportDelete = await db.models.germline_small_mutation.create({
-        ...CREATE_DATA, biofx_assigned_id: testUser.id,
+      germlineReportDelete = await db.models.germlineSmallMutation.create({
+        ...CREATE_DATA, biofxAssignedId: testUser.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.germline_small_mutation.destroy({
+      await db.models.germlineSmallMutation.destroy({
         where: {ident: germlineReportDelete.ident}, force: true,
       });
     });
@@ -311,7 +299,7 @@ describe('/germline-small-mutation-reports', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify that the record was deleted
-      const result = await db.models.germline_small_mutation.findOne({where: {id: germlineReportDelete.id}});
+      const result = await db.models.germlineSmallMutation.findOne({where: {id: germlineReportDelete.id}});
       expect(result).toBeNull();
     });
 
@@ -325,7 +313,7 @@ describe('/germline-small-mutation-reports', () => {
 
     test('/{gsm_report} - 404 Not Found no germline report to delete', async () => {
       // First soft-delete record
-      await db.models.germline_small_mutation.destroy({where: {ident: germlineReportDelete.ident}});
+      await db.models.germlineSmallMutation.destroy({where: {ident: germlineReportDelete.ident}});
 
       await request
         .delete(`${BASE_URI}/${germlineReportDelete.ident}`)
@@ -339,10 +327,10 @@ describe('/germline-small-mutation-reports', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.germline_small_mutation.destroy({where: {ident: report.ident}, force: true});
+    await db.models.germlineSmallMutation.destroy({where: {ident: report.ident}, force: true});
 
     // verify report is deleted
-    const result = await db.models.germline_small_mutation.findOne({where: {ident: report.ident}, paranoid: false});
+    const result = await db.models.germlineSmallMutation.findOne({where: {ident: report.ident}, paranoid: false});
     expect(result).toBeNull();
   });
 });

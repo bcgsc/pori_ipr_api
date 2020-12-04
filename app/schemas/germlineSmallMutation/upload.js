@@ -8,7 +8,7 @@ const {UPLOAD_BASE_URI} = require('../../constants');
 
 // Generate variants schema
 const generateGermlimeUploadSchema = (isJsonSchema = true) => {
-  const variantSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
+  const variantSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
     isJsonSchema, baseUri: UPLOAD_BASE_URI, exclude: GERMLINE_EXCLUDE,
   });
 
@@ -30,10 +30,10 @@ const generateGermlimeUploadSchema = (isJsonSchema = true) => {
   };
 
   // Generate schema
-  const schema = schemaGenerator(db.models.germline_small_mutation, {
+  const schema = schemaGenerator(db.models.germlineSmallMutation, {
     isJsonSchema,
     baseUri: UPLOAD_BASE_URI,
-    exclude: [...BASE_EXCLUDE, 'biofx_assigned_id', 'source_version', 'source_path', 'exported'],
+    exclude: [...BASE_EXCLUDE, 'biofxAssignedId', 'sourceVersion', 'sourcePath', 'exported'],
     properties,
     required: ['project', 'version', 'source'],
   });
