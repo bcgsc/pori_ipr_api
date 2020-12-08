@@ -12,11 +12,11 @@ const {GERMLINE_CREATE_BASE_URI, GERMLINE_UPDATE_BASE_URI} = require('../../cons
 const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema's
-const createSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
+const createSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
   baseUri: GERMLINE_CREATE_BASE_URI, exclude: GERMLINE_EXCLUDE,
 });
-const updateSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patient_history', 'family_history'], nothingRequired: true,
+const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
+  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patientHistory', 'familyHistory'], nothingRequired: true,
 });
 
 
@@ -24,8 +24,8 @@ const updateSchema = schemaGenerator(db.models.germline_small_mutation_variant, 
 router.param('variant', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.germline_small_mutation_variant.findOne({
-      where: {ident, germline_report_id: req.report.id},
+    result = await db.models.germlineSmallMutationVariant.findOne({
+      where: {ident, germlineReportId: req.report.id},
     });
   } catch (error) {
     logger.error(`Error while trying to get germline report variant ${error}`);
@@ -82,8 +82,8 @@ router.route('/:variant')
 router.route('/')
   .get(async (req, res) => {
     try {
-      const results = await db.models.germline_small_mutation_variant.scope('public').findAll({
-        where: {germline_report_id: req.report.id},
+      const results = await db.models.germlineSmallMutationVariant.scope('public').findAll({
+        where: {germlineReportId: req.report.id},
       });
       return res.json(results);
     } catch (error) {
@@ -103,9 +103,9 @@ router.route('/')
 
     try {
       // Add new variant to germline report
-      const result = await db.models.germline_small_mutation_variant.create({
+      const result = await db.models.germlineSmallMutationVariant.create({
         ...req.body,
-        germline_report_id: req.report.id,
+        germlineReportId: req.report.id,
       });
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {

@@ -2,7 +2,7 @@ const express = require('express');
 
 // Get middleware files
 const reportMiddleware = require('../middleware/analysis_report');
-const germlineMiddleware = require('../middleware/germlineSmallMutation/germline_small_mutation.middleware');
+const germlineMiddleware = require('../middleware/germlineSmallMutation/reports');
 const authMiddleware = require('../middleware/auth');
 
 // Get route files

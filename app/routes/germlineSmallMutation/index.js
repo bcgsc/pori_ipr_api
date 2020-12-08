@@ -5,7 +5,7 @@ const reviews = require('./reviews');
 
 const router = express.Router({mergeParams: true});
 
-router.use('/variant', variant);
-router.use('/review', reviews);
+router.use('/variants', variant);
+router.use('/reviews', reviews);
 
 module.exports = router;

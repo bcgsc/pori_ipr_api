@@ -6,17 +6,20 @@ const logger = require('../../log');
 module.exports = async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.germline_small_mutation.findOne({
+    result = await db.models.germlineSmallMutation.findOne({
       where: {ident},
       order: [['createdAt', 'desc']],
       include: [
-        {as: 'biofx_assigned', model: db.models.user.scope('public')},
-        {as: 'projects', model: db.models.project},
+        {as: 'biofxAssigned', model: db.models.user.scope('public')},
+        {as: 'projects', model: db.models.project.scope('public'), through: {attributes: []}},
         {
-          as: 'variants', model: db.models.germline_small_mutation_variant, separate: true, order: [['gene', 'asc']],
+          as: 'variants', model: db.models.germlineSmallMutationVariant, order: [['gene', 'asc']], attributes: {exclude: ['id', 'germlineReportId', 'deletedAt']},
         },
         {
-          as: 'reviews', model: db.models.germline_small_mutation_review, separate: true, include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+          as: 'reviews',
+          model: db.models.germlineSmallMutationReview,
+          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
       ],
     });

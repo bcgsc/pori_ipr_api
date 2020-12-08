@@ -9,12 +9,12 @@ const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/
 const schemas = {};
 
 const ID_FIELDS = [
-  'germline_report_id', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId',
-  'gene1Id', 'gene2Id', 'reviewedBy_id', 'biofx_assigned_id', 'logoId', 'headerId',
+  'germlineReportId', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId',
+  'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId',
 ];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
-const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germline_report', 'user_project', 'userGroupMember'];
+const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germlineReport', 'user_project', 'userGroupMember'];
 
 const MODELS_WITH_VARIANTS = ['kbMatches', 'genes'];
 
@@ -150,7 +150,7 @@ Object.keys(reportUpload.properties).forEach((key) => {
 schemas.analysis_reportCreate = reportUpload;
 
 // germline report upload
-schemas.germline_small_mutationCreate = germlineReportUploadSchema;
+schemas.germlineSmallMutationCreate = germlineReportUploadSchema;
 
 // template upload
 // add images to properties
@@ -159,8 +159,8 @@ Object.assign(schemas.templateCreate.properties, TEMPLATE_IMAGES);
 
 // *PUT request body*
 
-// germline report update (add biofx_assigned user ident)
-schemas.germline_small_mutationUpdate.properties.biofx_assigned = {
+// germline report update (add biofxAssigned user ident)
+schemas.germlineSmallMutationUpdate.properties.biofxAssigned = {
   type: 'string', format: 'UUIDv4',
 };
 

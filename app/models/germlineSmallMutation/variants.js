@@ -2,9 +2,11 @@ const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize) => {
-  const germlineVariant = sequelize.define('germline_small_mutation_variant', {
+  const germlineVariant = sequelize.define('germlineSmallMutationVariant', {
     ...DEFAULT_COLUMNS,
-    germline_report_id: {
+    germlineReportId: {
+      name: 'germlineReportId',
+      field: 'germline_report_id',
       type: Sq.INTEGER,
       allowNull: false,
       references: {
@@ -25,7 +27,9 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-    cgl_category: {
+    cglCategory: {
+      name: 'cglCategory',
+      field: 'cgl_category',
       type: Sq.TEXT,
       allowNull: true,
     },
@@ -57,7 +61,9 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-    dbSNP: {
+    dbSnp: {
+      name: 'dbSnp',
+      field: 'db_snp',
       type: Sq.TEXT,
       allowNull: true,
     },
@@ -73,35 +79,51 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-    zygosity_germline: {
+    zygosityGermline: {
+      name: 'zygosityGermline',
+      field: 'zygosity_germline',
       type: Sq.TEXT,
       allowNull: true,
     },
-    preferred_transcript: {
+    preferredTranscript: {
+      name: 'preferredTranscript',
+      field: 'preferred_transcript',
       type: Sq.BOOLEAN,
       allowNull: true,
     },
-    hgvs_cdna: {
+    hgvsCdna: {
+      name: 'hgvsCdna',
+      field: 'hgvs_cdna',
       type: Sq.TEXT,
       allowNull: true,
     },
-    hgvs_protein: {
+    hgvsProtein: {
+      name: 'hgvsProtein',
+      field: 'hgvs_protein',
       type: Sq.TEXT,
       allowNull: true,
     },
-    zygosity_tumour: {
+    zygosityTumour: {
+      name: 'zygosityTumour',
+      field: 'zygosity_tumour',
       type: Sq.TEXT,
       allowNull: true,
     },
-    genomic_variant_reads: {
+    genomicVariantReads: {
+      name: 'genomicVariantReads',
+      field: 'genomic_variant_reads',
       type: Sq.TEXT,
       allowNull: true,
     },
-    rna_variant_reads: {
+    rnaVariantReads: {
+      name: 'rnaVariantReads',
+      field: 'rna_variant_reads',
       type: Sq.TEXT,
       allowNull: true,
     },
-    gene_somatic_abberation: {
+    geneSomaticAbberation: {
+      name: 'geneSomaticAbberation',
+      field: 'gene_somatic_abberation',
       type: Sq.TEXT,
       allowNull: true,
     },
@@ -113,35 +135,51 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-    patient_history: {
+    patientHistory: {
+      name: 'patientHistory',
+      field: 'patient_history',
       type: Sq.TEXT,
       allowNull: true,
     },
-    family_history: {
+    familyHistory: {
+      name: 'familyHistory',
+      field: 'family_history',
       type: Sq.TEXT,
       allowNull: true,
     },
-    tcga_comp_norm_percentile: {
+    tcgaCompNormPercentile: {
+      name: 'tcgaCompNormPercentile',
+      field: 'tcga_comp_norm_percentile',
       type: Sq.TEXT,
       allowNull: true,
     },
-    tcga_comp_percentile: {
+    tcgaCompPercentile: {
+      name: 'tcgaCompPercentile',
+      field: 'tcga_comp_percentile',
       type: Sq.TEXT,
       allowNull: true,
     },
-    gtex_comp_percentile: {
+    gtexCompPercentile: {
+      name: 'gtexCompPercentile',
+      field: 'gtex_comp_percentile',
       type: Sq.TEXT,
       allowNull: true,
     },
-    fc_bodymap: {
+    fcBodymap: {
+      name: 'fcBodymap',
+      field: 'fc_bodymap',
       type: Sq.TEXT,
       allowNull: true,
     },
-    gene_expression_rpkm: {
+    geneExpressionRpkm: {
+      name: 'geneExpressionRpkm',
+      field: 'gene_expression_rpkm',
       type: Sq.FLOAT,
       allowNull: true,
     },
-    additional_info: {
+    additionalInfo: {
+      name: 'additionalInfo',
+      field: 'additional_info',
       type: Sq.TEXT,
       allowNull: true,
     },
@@ -152,7 +190,7 @@ module.exports = (sequelize) => {
       public: {
         order: [['id', 'ASC']],
         attributes: {
-          exclude: ['id', 'germline_report_id', 'deletedAt'],
+          exclude: ['id', 'germlineReportId', 'deletedAt'],
         },
       },
     },
@@ -161,7 +199,7 @@ module.exports = (sequelize) => {
   // set instance methods
   germlineVariant.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, germline_report_id, deletedAt, ...publicView} = this.dataValues;
+      const {id, germlineReportId, deletedAt, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

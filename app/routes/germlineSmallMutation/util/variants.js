@@ -12,9 +12,9 @@ const p2s = require('../../../libs/pyToSql');
  */
 const processVariants = (report, variants) => {
   const processedVariants = variants.map((variant) => {
-    variant.germline_report_id = report.id;
-    variant.cgl_category = p2s(variant.cgl_category);
-    variant.preferred_transcript = p2s(variant.preferred_transcript);
+    variant.germlineReportId = report.id;
+    variant.cglCategory = p2s(variant.cglCategory);
+    variant.preferredTranscript = p2s(variant.preferredTranscript);
     variant.gmaf = p2s(variant.gmaf);
 
     return variant;
@@ -48,11 +48,11 @@ const createHeaders = () => {
     },
     {
       header: 'CGL Category',
-      key: 'cgl_category',
+      key: 'cglCategory',
     },
     {
       header: 'Mutation Landscape',
-      key: 'mutation_landscape',
+      key: 'mutationLandscape',
     },
     {
       header: 'GMAF',
@@ -84,7 +84,7 @@ const createHeaders = () => {
     },
     {
       header: 'dbSNP',
-      key: 'dbSNP',
+      key: 'dbSnp',
     },
     {
       header: 'Ref',
@@ -100,31 +100,31 @@ const createHeaders = () => {
     },
     {
       header: 'Zygosity in germline',
-      key: 'zygosity_germline',
+      key: 'zygosityGermline',
     },
     {
       header: 'HGVS-cDNA',
-      key: 'hgvs_cdna',
+      key: 'hgvsCdna',
     },
     {
       header: 'HGVS-protein',
-      key: 'hgvs_protein',
+      key: 'hgvsProtein',
     },
     {
       header: 'Zygosity in tumour',
-      key: 'zygosity_tumour',
+      key: 'zygosityTumour',
     },
     {
       header: 'Genomic variant reads (alt/total)',
-      key: 'genomic_variant_reads',
+      key: 'genomicVariantReads',
     },
     {
       header: 'RNA variant reads (alt/total)',
-      key: 'rna_variant_reads',
+      key: 'rnaVariantReads',
     },
     {
       header: 'Gene somatic aberration?',
-      key: 'gene_somatic_abberation',
+      key: 'geneSomaticAbberation',
     },
     {
       header: 'Notes',
@@ -136,55 +136,55 @@ const createHeaders = () => {
     },
     {
       header: 'Patient History',
-      key: 'patient_history',
+      key: 'patientHistory',
     },
     {
       header: 'Family History',
-      key: 'family_history',
+      key: 'familyHistory',
     },
     {
       header: 'TCGA Comparator',
-      key: 'tcga_comp',
+      key: 'tcgaComp',
     },
     {
       header: 'tcga_comp_[tcga_comparator]_percentile',
-      key: 'tcga_comp_average_percentile',
+      key: 'tcgaCompAveragePercentile',
     },
     {
       header: 'tcga_comp_average_norm_percentile',
-      key: 'tcga_comp_average_norm_percentile',
+      key: 'tcgaCompAverageNormPercentile',
     },
     {
       header: 'tcga_comp_[tcga_comparator]_norm_percentile',
-      key: 'tcga_comp_norm_percentile',
+      key: 'tcgaCompNormPercentile',
     },
     {
       header: 'tcga_comp_average_percentile',
-      key: 'gtex_comp_average_percentile',
+      key: 'gtexCompAveragePercentile',
     },
     {
       header: 'tcga_comp_[tcga_comparator]_percentile',
-      key: 'tcga_comp_percentile',
+      key: 'tcgaCompPercentile',
     },
     {
       header: 'GTex Comparator',
-      key: 'gtex_comp',
+      key: 'gtexComp',
     },
     {
       header: 'gtex_comp_[gtex_comparator]_average_percentile',
-      key: 'gtex_comp_percentile',
+      key: 'gtexCompPercentile',
     },
     {
       header: 'fc_bodymap',
-      key: 'fc_bodymap',
+      key: 'fcBodymap',
     },
     {
       header: 'Gene Expression RPKM',
-      key: 'gene_expression_rpkm',
+      key: 'geneExpressionRpkm',
     },
     {
       header: 'Additional Info',
-      key: 'additional_info',
+      key: 'additionalInfo',
     },
   ];
 };
