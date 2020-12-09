@@ -60,4 +60,42 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   return data;
 };
 
-module.exports = {graphkbAutocomplete};
+/**
+ * Get IPR evidence level descriptions from GraphKB
+ *
+ * @param {string} graphkbToken the Authorization token for the connection to GraphKB
+ *
+ * @returns {object} response body from graphkb
+ */
+const graphkbEvidenceLevels = async (graphkbToken) => {
+  const {uri} = CONFIG.get('graphkb');
+
+  query = {
+    filters: {
+      OR: [{
+        AND: [{
+          operator: '=',
+          source: "#38:7",
+        }],
+      }],
+    },
+    limit: 100,
+    neighbors: 2,
+    skip: 0,
+    target: 'EvidenceLevel',
+    returnProperties: ['@class', '@rid', 'displayName', 'description'],
+  };
+
+  const data = await request({
+    uri: `${uri}/query`,
+    method: 'POST',
+    body: query,
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+    },
+  });
+  return data;
+};
+
+module.exports = {graphkbAutocomplete, graphkbEvidenceLevels};
