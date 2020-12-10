@@ -72,15 +72,12 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
 
   query = {
     filters: {
-      OR: [{
-        AND: [{
-          operator: '=',
-          source: "#38:7",
-        }],
-      }],
+      source: {
+        target: 'Source',
+        filters: {name: 'ipr'},
+      },
     },
     limit: 100,
-    neighbors: 2,
     skip: 0,
     target: 'EvidenceLevel',
     returnProperties: ['@class', '@rid', 'displayName', 'description'],
