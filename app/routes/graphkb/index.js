@@ -31,7 +31,7 @@ router.post('/:targetType(variant|therapy|evidenceLevel|context)', async (req, r
  * Endpoint for retrieving IPR evidence levels from GraphKB. This endpoint is used by the client
  * for the therapeutic options table
  */
-router.get('/evidenceLevels', async (req, res) => {
+router.get('/evidence-levels', async (req, res) => {
   const {graphkbToken} = req;
   try {
     const data = await graphkbEvidenceLevels(graphkbToken);
