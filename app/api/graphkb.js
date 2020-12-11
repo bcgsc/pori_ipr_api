@@ -60,4 +60,39 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   return data;
 };
 
-module.exports = {graphkbAutocomplete};
+/**
+ * Get review status of entries from GraphKB
+ *
+ * @param {string} graphkbToken the Authorization token for the connection to GraphKB
+ * @param {array} graphkbEntries array of graphkb results from IPR database
+ *
+ * @returns {object} response body from graphkb
+ */
+const graphkbReviewStatus = async (graphkbToken, graphkbEntries) => {
+  const {uri} = CONFIG.get('graphkb');
+  const filter = graphkbEntries.map(({kbStatementId}) => ({operator: '=', '@rid': kbStatementId}));
+
+  const query = {
+    target: 'Statement',
+    filters: {
+      OR: filter,
+    },
+    returnProperties: ['@class', '@rid', 'reviewStatus'],
+    orderBy: ['@class'],
+  };
+
+  const {result} = await request({
+    uri: `${uri}/query`,
+    method: 'POST',
+    body: query,
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+    },
+  });
+
+  return result;
+};
+
+
+module.exports = {graphkbAutocomplete, graphkbReviewStatus};
