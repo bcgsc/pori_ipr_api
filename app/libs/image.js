@@ -79,7 +79,7 @@ const updateImage = async (ident, image, options = {}) => {
  * @returns {Promise<object>} - Returns the newly updated image data
  */
 const deleteImage = async (ident, force = false, transaction) => {
-  const image = await db.models.findOne({where: {ident}});
+  const image = await db.models.image.findOne({where: {ident}});
 
   if (!image) {
     throw new Error('Image doesn\'t exist');
