@@ -20,7 +20,10 @@ module.exports = (sequelize) => {
           items: {
             type: 'string',
           },
-          example: ['microbial', 'mutation-burden'],
+          example: [
+            'microbial', 'hla-types', 'small-mutation', 'mutation-burden',
+            'therapeutic-targets', 'expression-variants', 'structural-variants',
+          ],
           description: 'list of sections to display on the client',
         },
       },
