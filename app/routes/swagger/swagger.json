@@ -5181,7 +5181,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns the details of the updated MSI entry",
+            "description": "Returns the details of the created template",
             "content": {
               "application/json": {
                 "schema": {
