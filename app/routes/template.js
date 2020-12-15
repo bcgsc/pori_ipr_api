@@ -7,7 +7,7 @@ const router = express.Router({mergeParams: true});
 const Acl = require('../middleware/acl');
 const db = require('../models');
 const logger = require('../log');
-const {uploadImage, updateImage} = require('../libs/image');
+const {uploadImage} = require('../libs/image');
 
 const schemaGenerator = require('../schemas/schemaGenerator');
 const validateAgainstSchema = require('../libs/validateAgainstSchema');
@@ -98,68 +98,42 @@ router.route('/:template([A-z0-9-]{36})')
     // Check for logo image
     if (req.files && req.files.logo) {
       const {files: {logo}} = req;
+      // Upload logo image
       try {
-        let logoImage;
-        if (req.template.logoId) {
-          // update image
-          logoImage = await updateImage(req.template.logoImage.ident, {
-            data: logo.data,
-            filename: logo.name,
-            format: logo.mimetype,
-            height: DEFAULT_LOGO_HEIGHT,
-            width: DEFAULT_LOGO_WIDTH,
-            type: 'Logo',
-          }, {transaction});
-        } else {
-          // create new image
-          logoImage = await uploadImage({
-            data: logo.data,
-            filename: logo.name,
-            format: logo.mimetype,
-            height: DEFAULT_LOGO_HEIGHT,
-            width: DEFAULT_LOGO_WIDTH,
-            type: 'Logo',
-          }, {transaction});
-        }
+        const logoImage = await uploadImage({
+          data: logo.data,
+          filename: logo.name,
+          format: logo.mimetype,
+          height: DEFAULT_LOGO_HEIGHT,
+          width: DEFAULT_LOGO_WIDTH,
+          type: 'Logo',
+        }, {transaction});
         req.body.logoId = logoImage.id;
       } catch (error) {
         await transaction.rollback();
-        logger.error(`Error while updating template logo ${error}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while updating template logo'}});
+        logger.error(`Error while uploading template logo ${error}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while uploading template logo'}});
       }
     }
 
     // Check for header image
     if (req.files && req.files.header) {
       const {files: {header}} = req;
+      // Upload header image
       try {
-        let headerImage;
-        if (req.template.headerId) {
-          // update image
-          headerImage = await updateImage(req.template.headerImage.ident, {
-            data: header.data,
-            filename: header.name,
-            format: header.mimetype,
-            height: DEFAULT_HEADER_HEIGHT,
-            width: DEFAULT_HEADER_WIDTH,
-            type: 'Header',
-          }, {transaction});
-        } else {
-          // create new image
-          headerImage = await uploadImage({
-            data: header.data,
-            filename: header.name,
-            format: header.mimetype,
-            height: DEFAULT_HEADER_HEIGHT,
-            width: DEFAULT_HEADER_WIDTH,
-            type: 'Header',
-          }, {transaction});
-        }
+        const headerImage = await uploadImage({
+          data: header.data,
+          filename: header.name,
+          format: header.mimetype,
+          height: DEFAULT_HEADER_HEIGHT,
+          width: DEFAULT_HEADER_WIDTH,
+          type: 'Header',
+        }, {transaction});
         req.body.headerId = headerImage.id;
       } catch (error) {
         await transaction.rollback();
-        logger.error(`Error while updating template header ${error}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while updating template header'}});
+        logger.error(`Error while uploading template header ${error}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while uploading template header'}});
       }
     }
 
