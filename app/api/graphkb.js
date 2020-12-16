@@ -70,15 +70,13 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
  */
 const graphkbReviewStatus = async (graphkbToken, graphkbEntries) => {
   const {uri} = CONFIG.get('graphkb');
-  const filter = graphkbEntries.map(({kbStatementId}) => ({operator: '=', '@rid': kbStatementId}));
 
+  const filters = {'@rid': graphkbEntries.map(({kbStatementId}) => kbStatementId) , operator: 'IN'};
   const query = {
     target: 'Statement',
-    filters: {
-      OR: filter,
-    },
+    filters,
     returnProperties: ['@class', '@rid', 'reviewStatus'],
-    orderBy: ['@class'],
+    orderBy: ['@rid'],
   };
 
   const {result} = await request({
