@@ -18,7 +18,7 @@ const attachReviewStatus = async (graphkbToken, kbMatches) => {
     kbMatches.forEach(entry => {
       const matchingKbValue = reviewStatuses.find((status) => status['@rid'] === entry.kbStatementId);
       if (matchingKbValue) {
-        entry.dataValues.reviewStatus = matchingKbValue;
+        entry.dataValues.reviewStatus = matchingKbValue.reviewStatus;
       }
       return entry;
     });
