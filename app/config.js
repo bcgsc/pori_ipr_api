@@ -30,7 +30,7 @@ const DEFAULTS = {
   },
   keycloak: {
     uri: ENV === 'production'
-      ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
+      ? 'https://keycloak.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
