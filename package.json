@@ -9,7 +9,6 @@
     "start:prod": "NODE_ENV=production node --max-old-space-size=2800 bin/server.js",
     "start:dev": "NODE_ENV=development node --max-old-space-size=2800 bin/server.js",
     "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
-    "test:staging": "NODE_ENV=staging jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
   },
   "author": "IPR <ipr@bcgsc.ca>",
