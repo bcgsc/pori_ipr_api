@@ -5383,7 +5383,7 @@
             "type": "object",
             "properties": {
               "reviewStatus": {
-                "type": "boolean"
+                "type": "string"
               }
             }
           }
