@@ -2624,6 +2624,42 @@
         }
       }
     },
+    "/graphkb/evidence-levels": {
+      "get": {
+        "summary": "Get evidence levels",
+        "description": "Get IPR evidence levels from GraphKb",
+        "parameters": [],
+        "tags": [
+          "GraphKb"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response object from GraphKb API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/evidenceLevels"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          },
+          "503": {
+            "description": "GraphKb connection error"
+          }
+        }
+      }
+    },
     "/reports/{report}/appendices": {
       "get": {
         "summary": "Get Appendix",
@@ -5397,6 +5433,39 @@
                 {"type": "integer"}
               ],
               "example": 0
+            }
+          }
+        }
+      },
+      "evidenceLevels": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "records": {
+                "type": "integer"
+              }
+            }
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "@class": {
+                  "type": "string"
+                },
+                "@rid": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
