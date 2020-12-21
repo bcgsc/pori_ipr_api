@@ -15,10 +15,14 @@ const attachReviewStatus = async (graphkbToken, kbMatches) => {
   if (kbMatches.length) {
     const reviewStatuses = await graphkbReviewStatus(graphkbToken, kbMatches);
 
-    kbMatches.forEach(entry => {
-      const matchingKbValue = reviewStatuses.find((status) => status['@rid'] === entry.kbStatementId);
+    kbMatches.forEach((entry) => {
+      const matchingKbValue = reviewStatuses.find((status) => {
+        return status['@rid'] === entry.kbStatementId;
+      });
       if (matchingKbValue) {
         entry.dataValues.reviewStatus = matchingKbValue.reviewStatus;
+      } else {
+        entry.dataValues.reviewStatus = null;
       }
       return entry;
     });
