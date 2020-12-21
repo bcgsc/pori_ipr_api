@@ -105,10 +105,6 @@ module.exports = (sequelize) => {
         },
       },
     },
-    reviewStatus: {
-      name: 'reviewStatus',
-      type: Sq.BOOLEAN,
-    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matches',

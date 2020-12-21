@@ -3482,7 +3482,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/kbMatchesAssociations"
+                    "$ref": "#/components/schemas/kbMatchesReturnObject"
                   }
                 }
               }
@@ -3523,7 +3523,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/kbMatchesAssociations"
+                  "$ref": "#/components/schemas/kbMatchesReturnObject"
                 }
               }
             }
@@ -5373,6 +5373,21 @@
             "$ref": "#/components/schemas/imageDataAssociations"
           }
         }
+      },
+      "kbMatchesReturnObject": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/kbMatchesAssociations"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
       },
       "expressionMatrix": {
         "type": "array",
