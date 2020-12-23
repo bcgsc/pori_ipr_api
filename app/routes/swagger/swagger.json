@@ -2659,7 +2659,7 @@
             "description": "Report Not found"
           },
           "503": {
-            "description": "GraphKb connection error"
+            "$ref": "#/components/responses/ServiceUnavailableError"
           }
         }
       }
