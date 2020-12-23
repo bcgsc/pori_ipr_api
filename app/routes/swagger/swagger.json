@@ -5383,6 +5383,7 @@
             "type": "object",
             "properties": {
               "reviewStatus": {
+                "description": "Current review status of this record in GraphKb",
                 "type": "string"
               }
             }
