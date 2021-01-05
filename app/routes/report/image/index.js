@@ -1,15 +1,10 @@
-const fs = require('fs');
-const util = require('util');
-const tmp = require('tmp-promise');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
-const writeFile = util.promisify(fs.writeFile);
-
 const db = require('../../../models');
 const logger = require('../../../log');
-const {loadImage} = require('../images');
+const {uploadReportImage} = require('../images');
 const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
 const router = express.Router({mergeParams: true});
@@ -74,18 +69,7 @@ router.route('/')
           };
         }
 
-        let cleanup;
         try {
-          // Get temp folder
-          const tempDir = await tmp.dir({unsafeCleanup: true});
-          cleanup = tempDir.cleanup;
-
-          // Set filename and path
-          const file = `${tempDir.path}/${image.name.trim()}`;
-
-          // Write file to temp folder
-          await writeFile(file, image.data);
-
           // Set options
           const options = {};
           // Set image title to specified title or undefined
@@ -93,15 +77,14 @@ router.route('/')
           // Set image caption to specified caption or undefined
           options.caption = req.body[`${key}_caption`];
 
-          // Load image
-          await loadImage(req.report.id, key, file, options);
+          // Upload image
+          await uploadReportImage(req.report.id, key, image.data, image.name, options);
 
           // Return that this image was uploaded successfully
           return {key, upload: 'successful'};
         } catch (error) {
+          logger.error(`Image key: ${key} failed to upload ${error}`);
           return {key, upload: 'failed', error};
-        } finally {
-          cleanup();
         }
       }));
       return res.status(HTTP_STATUS.MULTI_STATUS).json(results);
