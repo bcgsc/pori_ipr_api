@@ -1,6 +1,4 @@
-const {spawn} = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const sharp = require('sharp');
 
 const logger = require('../../log');
 const db = require('../../models');
@@ -121,79 +119,18 @@ const IMAGES_CONFIG = [
   },
   {
     pattern: 'msi.scatter',
-    width: '1000',
-    height: '1000',
+    width: 1000,
+    height: 1000,
     format: 'PNG',
   },
 ];
-
-/**
- * Read, Resize, and Insert Image Data
- *
- * @param {string} imagePath absolute path to the image file
- * @param {Number} width width of the final image in pixels
- * @param {Number} height height of the final image in pixels
- * @param {string} format format of the output image (default: PNG)
- *
- * @returns {Promise.<string>} Returns the image data
- * @throws {Promise.<Error>} if the image fails to load/read
- */
-const processImage = (imagePath, width, height, format = 'PNG') => {
-  return new Promise((resolve, reject) => {
-    let imageData = '';
-
-    // Call Resize
-    const process = spawn('convert', [`${imagePath}`, '-resize', `${width}x${height}`, `${format}:-`]);
-    const base = spawn('base64');
-    process.stdout.pipe(base.stdin);
-
-    // On data, chunk
-    base.stdout.on('data', (res) => {
-      imageData += res;
-    });
-
-    base.stderr.on('data', (err) => {
-      reject(err);
-    });
-
-    // Done executing
-    base.on('close', () => {
-      if (imageData) {
-        resolve(imageData);
-      } else {
-        reject(new Error(`empty image for path: ${imagePath}`));
-      }
-    });
-  });
-};
-
-
-/**
- * Throws an error if a given image path does not exist
- *
- * @param {string} imagePath the absolute path to the image file
- *
- * @throws {Promise.<Error>} if the image path does not exist
- * @returns {Promise} if the image exists
- */
-const imagePathExists = (imagePath) => {
-  return new Promise((resolve, reject) => {
-    fs.access(imagePath, fs.F_OK, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        // file exists
-        resolve();
-      }
-    });
-  });
-};
 
 
 /**
  * @param {Number} reportId - The primary key for the report these images belong to (to create FK relationship)
  * @param {string} key - The image key, defines what type of image is being loaded
- * @param {string} imagePath - The absolute path to the image file
+ * @param {Buffer | string} imageData - Buffer containing supported image data or the absolute path to the image file
+ * @param {string} filename - Name of image file
  * @param {object} options - An object containing additional image upload options
  *
  * @property {string} options.caption - An optional caption for the image
@@ -202,11 +139,11 @@ const imagePathExists = (imagePath) => {
  * @returns {Promise} the image has been loaded successfully
  * @throws {Promise.<Error>} the image does not exist or did not load correctly
  */
-const loadImage = async (reportId, key, imagePath, options = {}) => {
-  logger.verbose(`loading (${key}) image: ${imagePath}`);
+const uploadReportImage = async (reportId, key, imageData, filename, options = {}) => {
+  logger.verbose(`loading (${key}) image: ${filename}`);
 
+  // Get image configuration options (height, width, etc.)
   let config;
-
   for (const {pattern, ...conf} of IMAGES_CONFIG) {
     const regexp = new RegExp(`^${pattern}$`);
     if (regexp.exec(key)) {
@@ -220,23 +157,22 @@ const loadImage = async (reportId, key, imagePath, options = {}) => {
     config = {format: DEFAULT_FORMAT, height: DEFAULT_HEIGHT, width: DEFAULT_WIDTH};
   }
 
-  try {
-    await imagePathExists(imagePath);
-  } catch (err) {
-    logger.error(`file not found: ${imagePath}`);
-    throw err;
-  }
+  // Resize and reformat image based on config
+  const image = await sharp(imageData)
+    .resize({height: config.height, width: config.width})
+    .toFormat(config.format.toLowerCase())
+    .toBuffer();
 
-  const imageData = await processImage(imagePath, config.width, config.height, config.format);
+  // Save image to db
   await db.models.imageData.create({
     reportId,
     format: config.format,
-    filename: path.basename(imagePath),
+    filename,
     key,
-    data: imageData,
+    data: image.toString('base64'),
     caption: options.caption,
     title: options.title,
   });
 };
 
-module.exports = {loadImage};
+module.exports = {uploadReportImage};
