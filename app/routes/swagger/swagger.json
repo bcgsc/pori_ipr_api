@@ -2590,14 +2590,15 @@
     },
     "/graphkb/{targetType}": {
       "post": {
-        "summary": "",
-        "description": "",
+        "summary": "Get targets by type",
+        "description": "Gets targets from GraphKB (for client autocomplete)",
         "parameters": [
           {
             "$ref": "#/components/parameters/targetType"
           }
         ],
         "tags": [
+          "GraphKb"
         ],
         "security": [
           {
@@ -2606,11 +2607,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the targets from GraphKB",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/graphkbTargets"
                 }
               }
             }
@@ -2620,6 +2621,45 @@
           },
           "404": {
             "description": "Report Not found"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
+          }
+        }
+      }
+    },
+    "/graphkb/evidence-levels": {
+      "get": {
+        "summary": "Get evidence levels",
+        "description": "Get IPR evidence levels from GraphKb",
+        "parameters": [],
+        "tags": [
+          "GraphKb"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response object from GraphKb API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/evidenceLevels"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
           }
         }
       }
@@ -3478,7 +3518,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/kbMatchesAssociations"
+                    "$ref": "#/components/schemas/kbMatchesReturnObject"
                   }
                 }
               }
@@ -3519,7 +3559,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/kbMatchesAssociations"
+                  "$ref": "#/components/schemas/kbMatchesReturnObject"
                 }
               }
             }
@@ -5589,6 +5629,22 @@
           }
         }
       },
+      "kbMatchesReturnObject": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/kbMatchesAssociations"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "description": "Current review status of this record in GraphKb",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "expressionMatrix": {
         "type": "array",
         "items": {
@@ -5619,6 +5675,69 @@
             }
           }
         }
+      },
+      "evidenceLevels": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "records": {
+                "type": "integer"
+              }
+            }
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "@class": {
+                  "type": "string"
+                },
+                "@rid": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "graphkbTargets": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "records": {
+                "type": "integer"
+              }
+            }
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "@class": {
+                  "type": "string"
+                },
+                "@rid": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "responses": {
@@ -5631,6 +5750,9 @@
             }
           }
         }
+      },
+      "ServiceUnavailableError": {
+        "description": "External service is unavailable"
       }
     }
   },
