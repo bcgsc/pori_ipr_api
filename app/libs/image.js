@@ -1,4 +1,4 @@
-const sharp = require('sharp');
+const jimp = require('jimp');
 const db = require('../models');
 
 /**
@@ -19,11 +19,15 @@ const uploadImage = async (image, options = {}) => {
   const {
     data, width, height, filename, format, type,
   } = image;
+
   // Resize image
-  const buffImage = await sharp(data).resize({width, height}).toBuffer();
+  const buffImage = await jimp.read(data);
+  await buffImage.resize(width, height);
+  const imageString = await buffImage.getBase64Async(jimp.AUTO);
+
   // Upload image data
   const result = await db.models.image.create({
-    data: buffImage.toString('base64'),
+    data: imageString,
     filename,
     format,
     type,
@@ -58,11 +62,13 @@ const updateImage = async (ident, image, options = {}) => {
   }
 
   // Resize image
-  const buffImage = await sharp(data).resize({width, height}).toBuffer();
+  const buffImage = await jimp.read(data);
+  await buffImage.resize(width, height);
+  const imageString = await buffImage.getBase64Async(jimp.AUTO);
 
   // Update image data
   const result = await oldImage.update({
-    data: buffImage.toString('base64'),
+    data: imageString,
     filename,
     format,
     type,
