@@ -25,10 +25,10 @@ const updateSchema = schemaGenerator(db.models.template, {
   baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'], nothingRequired: true,
 });
 
-// All template routes are admin only
+// All non-GET template routes are admin only
 router.use((req, res, next) => {
   const access = new Acl(req);
-  if (!access.isAdmin()) {
+  if (req.method !== 'GET' && !access.isAdmin()) {
     logger.error(`Only admins are allowed to access template routes User: ${req.user.username} is not an admin`);
     return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'Only admins are allowed to access template routes'}});
   }
