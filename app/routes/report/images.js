@@ -121,8 +121,8 @@ const IMAGES_CONFIG = [
   },
   {
     pattern: 'msi.scatter',
-    width: '1000',
-    height: '1000',
+    width: 1000,
+    height: 1000,
     format: 'PNG',
   },
 ];
