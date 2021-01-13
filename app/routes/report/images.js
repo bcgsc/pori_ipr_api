@@ -1,4 +1,4 @@
-const sharp = require('sharp');
+const {fork} = require('child_process');
 
 const logger = require('../../log');
 const db = require('../../models');
@@ -157,21 +157,27 @@ const uploadReportImage = async (reportId, key, imageData, filename, options = {
     config = {format: DEFAULT_FORMAT, height: DEFAULT_HEIGHT, width: DEFAULT_WIDTH};
   }
 
-  // Resize and reformat image based on config
-  const image = await sharp(imageData)
-    .resize({height: config.height, width: config.width})
-    .toFormat(config.format.toLowerCase())
-    .toBuffer();
+  return new Promise((resolve, reject) => {
+    const forked = fork('app/libs/processImage.js', {execArgv: []});
 
-  // Save image to db
-  await db.models.imageData.create({
-    reportId,
-    format: config.format,
-    filename,
-    key,
-    data: image.toString('base64'),
-    caption: options.caption,
-    title: options.title,
+    forked.on('message', async (imageString) => {
+      if (imageString.error) {
+        logger.error(`Error while processing image ${imageString.error}`);
+        reject(imageString.error);
+      }
+      // Save image to db
+      resolve(db.models.imageData.create({
+        reportId,
+        format: config.format,
+        filename,
+        key,
+        data: imageString,
+        caption: options.caption,
+        title: options.title,
+      }));
+    });
+
+    forked.send({imageData, config});
   });
 };
 
