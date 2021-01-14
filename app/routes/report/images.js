@@ -158,7 +158,7 @@ const uploadReportImage = async (reportId, key, imageData, filename, options = {
   }
 
   return new Promise((resolve, reject) => {
-    const forked = fork('app/libs/processImage.js', {execArgv: []});
+    const forked = fork('app/libs/processImage.js', [], {execArgv: [], silent: true});
 
     forked.on('message', async (imageString) => {
       if (imageString.error) {
@@ -177,7 +177,12 @@ const uploadReportImage = async (reportId, key, imageData, filename, options = {
       }));
     });
 
-    forked.send({imageData, config});
+    if (Buffer.isBuffer(imageData)) {
+      forked.send(config);
+      forked.stdin.write(imageData);
+    } else {
+      forked.send({imageData, config});
+    }
   });
 };
 

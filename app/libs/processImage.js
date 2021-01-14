@@ -1,5 +1,7 @@
 const jimp = require('jimp');
 
+let conf;
+
 /**
  * Get MIME type for a specific image format
  *
@@ -50,5 +52,13 @@ const processImage = async (imageData, config) => {
 };
 
 process.on('message', (msg) => {
-  processImage(msg.imageData, msg.config);
+  if (msg.imageData) {
+    processImage(msg.imageData, msg.config);
+  } else {
+    conf = msg;
+  }
+});
+
+process.stdin.on('data', (data) => {
+  processImage(data, conf);
 });
