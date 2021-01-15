@@ -39,4 +39,8 @@ module.exports = {
   GERMLINE_CREATE_BASE_URI: '/germline/create',
   GERMLINE_UPDATE_BASE_URI: '/germline/update',
   UPLOAD_BASE_URI: '/upload',
+  DEFAULT_LOGO_HEIGHT: 64,
+  DEFAULT_LOGO_WIDTH: 64,
+  DEFAULT_HEADER_HEIGHT: 96,
+  DEFAULT_HEADER_WIDTH: 300,
 };

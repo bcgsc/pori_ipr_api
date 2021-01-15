@@ -14,6 +14,7 @@ const reportsRoute = require('./report/report');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
+const templateRoute = require('./template');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
@@ -58,6 +59,7 @@ class Routing extends RouterInterface {
         '/reports',
         '/germline-small-mutation-reports',
         '/export',
+        '/templates',
       ].join('|')})`, authMiddleware);
 
     // Add Single Routes
@@ -83,6 +85,9 @@ class Routing extends RouterInterface {
 
     // Get Project Routes
     this.router.use('/project', projectRoute);
+
+    // Get template routes
+    this.router.use('/templates', templateRoute);
 
     return true;
   }

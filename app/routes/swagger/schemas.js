@@ -8,7 +8,10 @@ const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/
 
 const schemas = {};
 
-const ID_FIELDS = ['germlineReportId', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId', 'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId'];
+const ID_FIELDS = [
+  'germlineReportId', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId',
+  'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId',
+];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
 const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germlineReport', 'user_project', 'userGroupMember'];
@@ -21,6 +24,19 @@ const VARIANT_ASSOCIATIONS = {
       $ref: `#/components/schemas/${value}`,
     };
   }),
+};
+
+const TEMPLATE_IMAGES = {
+  logo: {
+    type: 'string',
+    format: 'binary',
+    description: 'logo image to upload',
+  },
+  header: {
+    type: 'string',
+    format: 'binary',
+    description: 'header image to upload',
+  }
 };
 
 
@@ -136,6 +152,10 @@ schemas.analysis_reportCreate = reportUpload;
 // germline report upload
 schemas.germlineSmallMutationCreate = germlineReportUploadSchema;
 
+// template upload
+// add images to properties
+Object.assign(schemas.templateCreate.properties, TEMPLATE_IMAGES);
+
 
 // *PUT request body*
 
@@ -149,6 +169,10 @@ schemas.therapeuticTargetRanksBulkUpdate = schemaGenerator(db.models.therapeutic
   isJsonSchema: false, title: 'therapeuticTargetRanksBulkUpdate',
   include: ['ident', 'rank'], required: ['ident', 'rank'],
 });
+
+// template update
+// add images to properties
+Object.assign(schemas.templateUpdate.properties, TEMPLATE_IMAGES);
 
 
 module.exports = schemas;

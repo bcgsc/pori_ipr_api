@@ -421,6 +421,18 @@ msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Images
+const image = sequelize.import('./image');
+
+// Template
+const template = sequelize.import('./template');
+template.belongsTo(image, {
+  as: 'logoImage', foreignKey: 'logoId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+});
+template.belongsTo(image, {
+  as: 'headerImage', foreignKey: 'headerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+});
+
 // Germline Small Mutations
 require('./germlineSmallMutation')(sequelize);
 
