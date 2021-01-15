@@ -99,6 +99,7 @@ router.route('/')
         ...((patientId) ? {patientId: {[Op.iLike]: `%${patientId}%`}} : {}),
         ...((biopsyName) ? {biopsyName: {[Op.iLike]: `%${biopsyName}%`}} : {}),
       },
+      distinct: 'id',
       offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
       limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
     };
