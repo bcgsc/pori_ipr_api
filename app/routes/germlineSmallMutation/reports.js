@@ -99,32 +99,32 @@ router.route('/')
         ...((patientId) ? {patientId: {[Op.iLike]: `%${patientId}%`}} : {}),
         ...((biopsyName) ? {biopsyName: {[Op.iLike]: `%${biopsyName}%`}} : {}),
       },
+      include: [],
       distinct: 'id',
       offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
       limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
     };
 
-    // See if filtering reports bassed on projects or type of review
-    if (project || inProjectsGroup) {
-      opts.include = [];
-      if (project) {
-        opts.include.push(
-          {
-            as: 'projects', model: db.models.project.scope('public'), where: {name: project}, through: {attributes: []},
-          },
-        );
-      }
-      if (inProjectsGroup) {
-        opts.include.push(
-          {
-            as: 'reviews',
-            model: db.models.germlineSmallMutationReview,
-            where: {type: 'biofx'},
-            attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
-            include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
-          },
-        );
-      }
+    // See if filtering reports bassed on project
+    if (project) {
+      opts.include.push(
+        {
+          as: 'projects', model: db.models.project.scope('public'), where: {name: project}, through: {attributes: []},
+        },
+      );
+    }
+
+    // Check if filtering by review
+    if (inProjectsGroup) {
+      opts.include.push(
+        {
+          as: 'reviews',
+          model: db.models.germlineSmallMutationReview,
+          where: {type: 'biofx'},
+          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
+        },
+      );
     }
 
     try {
