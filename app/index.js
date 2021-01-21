@@ -138,8 +138,9 @@ const listen = async (port = null) => {
   }
 
   app.close = async () => {
-    await sequelize.close();
-    return server.close();
+    server.close(async () => {
+      await sequelize.close();
+    });
   };
 
   logger.log('info', `started application server on port ${port || conf.get('web:port')}`);
