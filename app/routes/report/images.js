@@ -198,6 +198,7 @@ const imagePathExists = (imagePath) => {
  *
  * @property {string} options.caption - An optional caption for the image
  * @property {string} options.title - An optional title for the image
+ * @property {object} options.transaction - An optional transaction to run the create under
  *
  * @returns {Promise} the image has been loaded successfully
  * @throws {Promise.<Error>} the image does not exist or did not load correctly
@@ -236,7 +237,7 @@ const loadImage = async (reportId, key, imagePath, options = {}) => {
     data: imageData,
     caption: options.caption,
     title: options.title,
-  });
+  }, {transaction: options.transaction});
 };
 
 module.exports = {loadImage};
