@@ -138,6 +138,7 @@ const listen = async (port = null) => {
   }
 
   app.close = async () => {
+    await sequelize.close();
     return server.close();
   };
 
