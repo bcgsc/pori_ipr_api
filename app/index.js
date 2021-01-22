@@ -138,7 +138,7 @@ const listen = async (port = null) => {
   }
 
   app.close = async () => {
-    server.close();
+    return server.close();
   };
 
   logger.log('info', `started application server on port ${port || conf.get('web:port')}`);
