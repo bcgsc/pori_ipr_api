@@ -10,6 +10,8 @@ const {listen} = require('../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
+const LONGER_TIMEOUT = 50000;
+
 const BASE_URI = '/api/templates';
 
 let server;
@@ -100,7 +102,7 @@ describe('/templates', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       checkTemplates(res.body);
-    });
+    }, LONGER_TIMEOUT);
 
     test('/ - template name query - 200 success', async () => {
       const res = await request
@@ -114,7 +116,7 @@ describe('/templates', () => {
       expect(res.body).toEqual(expect.arrayContaining([
         expect.objectContaining({name: expect.stringContaining('Template')}),
       ]));
-    });
+    }, LONGER_TIMEOUT);
 
     test('/ - organization query - 200 success', async () => {
       const res = await request
@@ -128,7 +130,7 @@ describe('/templates', () => {
       expect(res.body).toEqual(expect.arrayContaining([
         expect.objectContaining({organization: expect.stringContaining('Test')}),
       ]));
-    });
+    }, LONGER_TIMEOUT);
 
     test('/{template} - 200 Success', async () => {
       const res = await request
@@ -139,7 +141,7 @@ describe('/templates', () => {
 
       checkTemplate(res.body);
       expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
-    });
+    }, LONGER_TIMEOUT);
   });
 
   describe('POST', () => {
@@ -171,7 +173,7 @@ describe('/templates', () => {
       // Delete template and images
       await db.models.image.destroy({where: {ident: {[Op.in]: newImages}}, force: true});
       await db.models.template.destroy({where: {ident: res.body.ident}, force: true});
-    });
+    }, LONGER_TIMEOUT);
 
     test('/ - name is required - 400 Bad Request', async () => {
       const {name, ...data} = UPLOAD_DATA;
@@ -243,7 +245,7 @@ describe('/templates', () => {
 
       // Delete template and images
       await db.models.image.destroy({where: {ident: {[Op.in]: newImages}}, force: true});
-    });
+    }, LONGER_TIMEOUT);
 
     test('/{template} - 400 Bad Request Failed Validation', async () => {
       await request
