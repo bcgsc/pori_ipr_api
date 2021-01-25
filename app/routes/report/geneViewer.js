@@ -3,7 +3,7 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models/');
-const {getGeneRelatedContent} = require('./db');
+const {getGeneRelatedContent} = require('../../libs/genes');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});

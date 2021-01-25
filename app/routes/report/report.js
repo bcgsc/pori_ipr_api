@@ -2,6 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
+const createReport = require('../../libs/createReport');
 const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
@@ -9,8 +10,6 @@ const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
 
 const reportMiddleware = require('../../middleware/analysis_report');
-const deleteModelEntries = require('../../libs/deleteModelEntries');
-const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
@@ -330,80 +329,15 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    // get project
-    let project;
-    try {
-      project = await db.models.project.findOne({
-        where: {
-          name: {
-            [Op.iLike]: req.body.project.trim(),
-          },
-        },
-      });
-    } catch (error) {
-      logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project'}});
-    }
-
-    if (!project) {
-      logger.error(`Project ${req.body.project} doesn't currently exist`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
-    }
-
-    const createdComponents = {};
-    const cleanUpReport = async (error) => {
-      logger.error(`Unable to create report ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report'}});
-    };
-
-    // create report
-    let report;
     try {
       req.body.createdBy_id = req.user.id;
+      const reportIdent = await createReport(req.body);
 
-      report = await db.models.analysis_report.create(req.body);
-
-      createdComponents.analysis_report = report.id;
+      return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: reportIdent});
     } catch (error) {
-      return cleanUpReport(error);
+      logger.error(error.message || error);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
-
-    // find or create report-project association
-    try {
-      const reportProjectData = {reportId: report.id, project_id: project.id};
-      const [reportProject, createdReportProject] = await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData});
-
-      if (createdReportProject) {
-        createdComponents.reportProject = reportProject.id;
-      }
-    } catch (error) {
-      return cleanUpReport(error);
-    }
-
-    try {
-      await createReportContent(report, req.body);
-    } catch (error) {
-      logger.error(`Unable to create all report components ${error}`);
-
-      // delete already created report/report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created report/components of the report ${err}`);
-      }
-
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to create all report components'}});
-    }
-
-    return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
   });
 
 module.exports = router;
