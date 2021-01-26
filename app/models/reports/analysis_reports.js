@@ -46,6 +46,16 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
+    templateId: {
+      name: 'templateId',
+      field: 'template_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'templates',
+        key: 'id',
+      },
+      allowNull: true,
+    },
     type: {
       type: Sq.ENUM('genomic', 'probe'),
       defaultValue: 'genomic',
@@ -130,12 +140,12 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'config', 'createdBy_id', 'deletedAt'],
+          exclude: ['id', 'config', 'createdBy_id', 'templateId', 'deletedAt'],
         },
       },
       extended: {
         attributes: {
-          exclude: ['id', 'createdBy_id', 'deletedAt'],
+          exclude: ['id', 'createdBy_id', 'templateId', 'deletedAt'],
         },
       },
     },
@@ -150,7 +160,7 @@ module.exports = (sequelize) => {
         }
         // get associations from model
         const {
-          ReportUserFilter, createdBy, projects, users, ...associations
+          ReportUserFilter, createdBy, template, projects, users, ...associations
         } = sequelize.models.analysis_report.associations;
         const promises = [];
 
@@ -169,7 +179,7 @@ module.exports = (sequelize) => {
   report.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, config, createdBy_id, deletedAt, ...publicView
+        id, config, createdBy_id, templateId, deletedAt, ...publicView
       } = this.dataValues;
       return publicView;
     }
