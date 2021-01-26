@@ -159,6 +159,11 @@ Object.assign(schemas.templateCreate.properties, TEMPLATE_IMAGES);
 
 // *PUT request body*
 
+// add template name to report update
+schemas.analysis_reportUpdate.properties.template = {
+  type: 'string', description: 'Template name',
+};
+
 // germline report update (add biofxAssigned user ident)
 schemas.germlineSmallMutationUpdate.properties.biofxAssigned = {
   type: 'string', format: 'UUIDv4',
