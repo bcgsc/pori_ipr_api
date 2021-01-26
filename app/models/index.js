@@ -433,6 +433,10 @@ template.belongsTo(image, {
   as: 'headerImage', foreignKey: 'headerId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 
+analysisReports.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+});
+
 // Germline Small Mutations
 require('./germlineSmallMutation')(sequelize);
 
