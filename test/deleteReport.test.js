@@ -30,7 +30,7 @@ describe('Tests for deleting a report and all of its components', () => {
   let report;
   // get analysis report associations
   const {
-    ReportUserFilter, createdBy, projects, users, ...associations
+    ReportUserFilter, createdBy, template, projects, users, ...associations
   } = db.models.analysis_report.associations;
 
   beforeAll(async () => {

@@ -5,6 +5,14 @@ const db = require('../app/models');
 
 const mockReportData = require('./testData/mockReportData.json');
 
+const TEMPLATE_DATA = {
+  name: 'TEST_TEMPLATE',
+  organization: 'Test Org.',
+  sections: [
+    'summary', 'analyst-comments', 'pathway-analysis',
+  ],
+};
+
 const CONFIG = require('../app/config');
 const {listen} = require('../app');
 
@@ -28,8 +36,16 @@ beforeAll(async () => {
 describe('Tests for uploading a report and all of its components', () => {
   let reportId;
   let reportIdent;
+  let templateId;
 
   beforeAll(async () => {
+    // create template
+    const temp = await db.models.template.create(TEMPLATE_DATA);
+    templateId = temp.id;
+
+    // Add template name to mockReport data
+    mockReportData.template = temp.name;
+
     // create report
     let res = await request
       .post('/api/reports')
@@ -55,11 +71,11 @@ describe('Tests for uploading a report and all of its components', () => {
   }, LONGER_TIMEOUT);
 
   // Test that all components were created
-  test('Test that all components were created', async () => {
+  test('All components were created correctly', async () => {
     // for all components, do a find where report_id
     // is the same as the created report id
     const {
-      ReportUserFilter, createdBy, signatures,
+      ReportUserFilter, createdBy, template, signatures,
       presentationDiscussion, presentationSlides,
       users, projects, ...associations
     } = db.models.analysis_report.associations;
@@ -80,7 +96,7 @@ describe('Tests for uploading a report and all of its components', () => {
     });
   }, LONGER_TIMEOUT);
 
-  test('genes entries were created from variant and gene rows', async () => {
+  test('Genes entries were created correctly from variant and gene rows', async () => {
     const genes = await db.models.genes.findAll({where: {reportId}});
     expect(genes).toHaveProperty('length', 5);
 
@@ -89,6 +105,12 @@ describe('Tests for uploading a report and all of its components', () => {
       name: 'ZFP36L2',
       oncogene: true,
     })]));
+  });
+
+  test('Template was linked correctly', async () => {
+    // Get Report and test that the template data in the report is correct
+    const report = await db.models.analysis_report.findOne({where: {id: reportId}, attributes: ['templateId']});
+    expect(templateId).toBe(report.templateId);
   });
 
   // delete report
@@ -103,6 +125,9 @@ describe('Tests for uploading a report and all of its components', () => {
       .auth(username, password)
       .type('json')
       .expect(HTTP_STATUS.NOT_FOUND);
+
+    // Delete template
+    await db.models.template.destroy({where: {id: templateId}, force: true});
   }, LONGER_TIMEOUT);
 });
 
