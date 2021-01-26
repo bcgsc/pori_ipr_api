@@ -16,9 +16,9 @@ const generateReportUploadSchema = (isJsonSchema) => {
   const schema = schemaGenerator(db.models.analysis_report, {
     isJsonSchema,
     baseUri: UPLOAD_BASE_URI,
-    exclude: ['createdBy_id', ...BASE_EXCLUDE],
+    exclude: ['createdBy_id', 'templateId', ...BASE_EXCLUDE],
     associations: true,
-    excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentationDiscussion', 'presentationSlides', 'users', 'projects'],
+    excludeAssociations: ['ReportUserFilter', 'createdBy', 'template', 'signatures', 'presentationDiscussion', 'presentationSlides', 'users', 'projects'],
   });
 
   // set schema version and don't allow additional properties
@@ -30,6 +30,11 @@ const generateReportUploadSchema = (isJsonSchema) => {
     description: 'Project name',
   };
   schema.required.push('project');
+
+  schema.properties.template = {
+    type: 'string',
+    description: 'Template name',
+  };
 
   // inject image directory
   schema.properties.images = {
@@ -51,7 +56,7 @@ const generateReportUploadSchema = (isJsonSchema) => {
 
   // get report associations
   const {
-    ReportUserFilter, createdBy, signatures, presentationDiscussion,
+    ReportUserFilter, createdBy, template, signatures, presentationDiscussion,
     presentationSlides, users, projects, ...associations
   } = db.models.analysis_report.associations;
 
