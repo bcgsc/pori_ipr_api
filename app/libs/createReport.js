@@ -245,27 +245,25 @@ const createReportSections = async (report, content, transaction) => {
  */
 const createReport = async (data) => {
   // get template
-  if (data.template && data.template.toLowerCase() !== 'default') {
-    let template;
-    try {
-      template = await db.models.template.findOne({
-        where: {
-          name: {
-            [Op.iLike]: data.template,
-          },
+  let template;
+  try {
+    template = await db.models.template.findOne({
+      where: {
+        name: {
+          [Op.iLike]: data.template,
         },
-      });
-    } catch (error) {
-      throw new Error(`Error while trying to find template ${data.template} with error ${error.message || error}`);
-    }
-
-    if (!template) {
-      throw new Error(`Template ${data.template} doesn't currently exist`);
-    }
-
-    // Set template id
-    data.templateId = template.id;
+      },
+    });
+  } catch (error) {
+    throw new Error(`Error while trying to find template ${data.template} with error ${error.message || error}`);
   }
+
+  if (!template) {
+    throw new Error(`Template ${data.template} doesn't currently exist`);
+  }
+
+  // Set template id
+  data.templateId = template.id;
 
   // get project
   let project;
