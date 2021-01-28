@@ -1,5 +1,5 @@
 {
-    "type": "genomic",
+    "template": "genomic",
     "sampleInfo": [
         {
             "Sample": "Tumour",
