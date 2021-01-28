@@ -434,7 +434,10 @@ template.belongsTo(image, {
 });
 
 analysisReports.belongsTo(template, {
-  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'RESTRICT', constraints: true,
+});
+template.hasMany(analysisReports, {
+  as: 'reports', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Germline Small Mutations
