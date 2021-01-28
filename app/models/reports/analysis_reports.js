@@ -54,11 +54,6 @@ module.exports = (sequelize) => {
         model: 'templates',
         key: 'id',
       },
-      allowNull: true,
-    },
-    type: {
-      type: Sq.ENUM('genomic', 'probe'),
-      defaultValue: 'genomic',
       allowNull: false,
     },
     sampleInfo: {
