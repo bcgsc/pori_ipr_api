@@ -52,9 +52,6 @@ const generateReportUploadSchema = (isJsonSchema) => {
     required: ['project', 'template'],
   });
 
-  // set schema version and don't allow additional properties
-  schema.additionalProperties = false;
-
 
   // get report associations
   const {
