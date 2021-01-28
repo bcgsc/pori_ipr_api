@@ -48,9 +48,11 @@ describe('/reports/{REPORTID}/msi', () => {
   let msi;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // create a report to be used in tests
     report = await db.models.analysis_report.create({
-      type: 'genomic',
+      templateId: template.id,
       patientId: 'PATIENT1234',
     });
 

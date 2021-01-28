@@ -60,9 +60,11 @@ describe('/reports/{REPORTID}/summary/variant-counts', () => {
   let report;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create test report
     report = await db.models.analysis_report.create({
-      type: 'genomic',
+      templateId: template.id,
       patientId: 'PATIENT1234',
     });
 

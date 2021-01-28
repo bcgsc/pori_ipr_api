@@ -39,8 +39,11 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
   };
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and discussion
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     user = await db.models.user.findOne({
@@ -204,8 +207,11 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
   };
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and discussion
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     user = await db.models.user.findOne({

@@ -52,7 +52,10 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
   let selectedSignature;
 
   beforeEach(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     signature = await db.models.mutationSignature.create({

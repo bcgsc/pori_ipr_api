@@ -44,8 +44,11 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let createData;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and kbMatch
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     gene = await db.models.genes.create({

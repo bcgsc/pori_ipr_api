@@ -53,8 +53,11 @@ describe('/reports/{REPORTID}/comparators', () => {
   };
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and discussion
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     await db.models.comparators.create({

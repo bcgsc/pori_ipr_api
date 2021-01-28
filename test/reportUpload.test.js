@@ -5,14 +5,6 @@ const db = require('../app/models');
 
 const mockReportData = require('./testData/mockReportData.json');
 
-const TEMPLATE_DATA = {
-  name: 'TEST_TEMPLATE',
-  organization: 'Test Org.',
-  sections: [
-    'summary', 'analyst-comments', 'pathway-analysis',
-  ],
-};
-
 const CONFIG = require('../app/config');
 const {listen} = require('../app');
 
@@ -36,16 +28,8 @@ beforeAll(async () => {
 describe('Tests for uploading a report and all of its components', () => {
   let reportId;
   let reportIdent;
-  let templateId;
 
   beforeAll(async () => {
-    // create template
-    const temp = await db.models.template.create(TEMPLATE_DATA);
-    templateId = temp.id;
-
-    // Add template name to mockReport data
-    mockReportData.template = temp.name;
-
     // create report
     let res = await request
       .post('/api/reports')
@@ -110,7 +94,9 @@ describe('Tests for uploading a report and all of its components', () => {
   test('Template was linked correctly', async () => {
     // Get Report and test that the template data in the report is correct
     const report = await db.models.analysis_report.findOne({where: {id: reportId}, attributes: ['templateId']});
-    expect(templateId).toBe(report.templateId);
+    const template = await db.models.template.findOne({where: {name: 'genomic'}, attributes: ['id']});
+
+    expect(template.id).toBe(report.templateId);
   });
 
   // delete report
@@ -125,9 +111,6 @@ describe('Tests for uploading a report and all of its components', () => {
       .auth(username, password)
       .type('json')
       .expect(HTTP_STATUS.NOT_FOUND);
-
-    // Delete template
-    await db.models.template.destroy({where: {id: templateId}, force: true});
   }, LONGER_TIMEOUT);
 });
 
