@@ -13,45 +13,49 @@ const {VALID_IMAGE_KEY_PATTERN, UPLOAD_BASE_URI} = require('../../../constants')
  * @returns {object} - Returns a report upload schema
  */
 const generateReportUploadSchema = (isJsonSchema) => {
-  const schema = schemaGenerator(db.models.analysis_report, {
-    isJsonSchema,
-    baseUri: UPLOAD_BASE_URI,
-    exclude: ['createdBy_id', ...BASE_EXCLUDE],
-    associations: true,
-    excludeAssociations: ['ReportUserFilter', 'createdBy', 'signatures', 'presentationDiscussion', 'presentationSlides', 'users', 'projects'],
-  });
-
-  // set schema version and don't allow additional properties
-  schema.additionalProperties = false;
-  
-  // inject all required associations into schema
-  schema.properties.project = {
-    type: 'string',
-    description: 'Project name',
-  };
-  schema.required.push('project');
-
-  // inject image directory
-  schema.properties.images = {
-    type: 'array',
-    items: {
-      type: 'object',
-      required: ['path', 'key'],
-      properties: {
-        path: {
-          type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user)',
-        },
-        key: {
-          type: 'string',
-          pattern: VALID_IMAGE_KEY_PATTERN,
+  // Inject additional properties in the schema
+  const properties = {
+    project: {
+      type: 'string',
+      description: 'Project name',
+    },
+    template: {
+      type: 'string',
+      description: 'Template name',
+    },
+    images: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['path', 'key'],
+        properties: {
+          path: {
+            type: 'string', description: 'Absolute path to image file (must be accessible to the report loader user)',
+          },
+          key: {
+            type: 'string',
+            pattern: VALID_IMAGE_KEY_PATTERN,
+          },
         },
       },
     },
   };
 
+
+  const schema = schemaGenerator(db.models.analysis_report, {
+    isJsonSchema,
+    baseUri: UPLOAD_BASE_URI,
+    exclude: ['createdBy_id', 'templateId', ...BASE_EXCLUDE],
+    associations: true,
+    excludeAssociations: ['ReportUserFilter', 'createdBy', 'template', 'signatures', 'presentationDiscussion', 'presentationSlides', 'users', 'projects'],
+    properties,
+    required: ['project', 'template'],
+  });
+
+
   // get report associations
   const {
-    ReportUserFilter, createdBy, signatures, presentationDiscussion,
+    ReportUserFilter, createdBy, template, signatures, presentationDiscussion,
     presentationSlides, users, projects, ...associations
   } = db.models.analysis_report.associations;
 

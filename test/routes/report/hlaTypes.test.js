@@ -53,7 +53,11 @@ describe('/reports/{REPORTID}/hla-types', () => {
   let hlaType;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
+
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     hlaType = await db.models.hlaTypes.create({

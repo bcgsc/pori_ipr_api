@@ -33,11 +33,13 @@ describe('/reports/{REPORTID}/signatures', () => {
   let report;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // create a report to be used in tests
     // TODO: Update report upload to report mocking once metadata is simplified
     // const project = await db.models.project.findOne(); // any project is fine
     report = await db.models.analysis_report.create({
-      type: 'genomic',
+      templateId: template.id,
       patientId: 'PATIENT1234',
     });
 

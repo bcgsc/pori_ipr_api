@@ -52,8 +52,11 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
   let mutationBurden;
 
   beforeEach(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and Mutation Burden
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
 

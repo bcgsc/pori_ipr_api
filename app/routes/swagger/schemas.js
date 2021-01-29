@@ -10,7 +10,7 @@ const schemas = {};
 
 const ID_FIELDS = [
   'germlineReportId', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId',
-  'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId',
+  'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId', 'templateId',
 ];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
@@ -125,7 +125,7 @@ for (const model of Object.keys(models)) {
 
 // analysis report
 schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report, {
-  isJsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'users'],
+  isJsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'template', 'users'],
 });
 
 // appendices
@@ -158,6 +158,11 @@ Object.assign(schemas.templateCreate.properties, TEMPLATE_IMAGES);
 
 
 // *PUT request body*
+
+// add template name to report update
+schemas.analysis_reportUpdate.properties.template = {
+  type: 'string', description: 'Template name',
+};
 
 // germline report update (add biofxAssigned user ident)
 schemas.germlineSmallMutationUpdate.properties.biofxAssigned = {

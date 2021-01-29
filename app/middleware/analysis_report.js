@@ -12,6 +12,7 @@ module.exports = async (req, res, next, ident) => {
       include: [
         {model: db.models.patientInformation.scope('public'), as: 'patientInformation'},
         {model: db.models.user.scope('public'), as: 'createdBy'},
+        {model: db.models.template.scope('public'), as: 'template'},
         {
           model: db.models.analysis_reports_user,
           as: 'users',

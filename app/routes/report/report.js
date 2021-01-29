@@ -23,8 +23,14 @@ const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
 const updateSchema = schemaGenerator(db.models.analysis_report, {
   baseUri: REPORT_UPDATE_BASE_URI,
-  exclude: [...BASE_EXCLUDE, 'createdBy_id', 'config'],
+  exclude: [...BASE_EXCLUDE, 'createdBy_id', 'templateId', 'config'],
   nothingRequired: true,
+  properties: {
+    template: {
+      type: 'string',
+      description: 'Template name',
+    },
+  },
 });
 
 const DEFAULT_PAGE_LIMIT = 25;
@@ -48,6 +54,29 @@ router.route('/:report')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
+
+    // Check for switching template
+    if (req.body.template) {
+      let temp;
+      // Try to find template
+      try {
+        temp = await db.models.template.findOne({where: {name: {[Op.iLike]: req.body.template}}});
+      } catch (error) {
+        const message = `Error while trying to find ${req.body.template} with error: ${error.message || error}`;
+        logger.error(message);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      }
+
+      if (!temp) {
+        const message = `Template ${req.body.template} doesn't currently exist`;
+        logger.error(message);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      }
+
+      // Set new template id
+      req.body.templateId = temp.id;
+    }
+
     // Update db entry
     try {
       await report.update(req.body);
@@ -166,6 +195,7 @@ router.route('/')
           attributes: {exclude: ['id', 'deletedAt']},
         },
         {model: db.models.user.scope('public'), as: 'createdBy'},
+        {model: db.models.template.scope('public'), as: 'template'},
         {
           model: db.models.analysis_reports_user,
           as: 'users',
@@ -215,13 +245,6 @@ router.route('/')
         ['state', 'desc'],
         ['patientId', 'desc'],
       ];
-    }
-
-    // Check for types
-    if (req.query.type === 'probe') {
-      opts.where.type = 'probe';
-    } else if (req.query.type === 'genomic') {
-      opts.where.type = 'genomic';
     }
 
     if (req.query.project) { // check access if filtering on project
