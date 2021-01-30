@@ -20,6 +20,8 @@ jobs:
         image: postgres:9.6-alpine # Should match Dockerfile.db
         env:
           POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
