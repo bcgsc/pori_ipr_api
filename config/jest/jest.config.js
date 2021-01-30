@@ -43,6 +43,6 @@ module.exports = {
     'json',
   ],
   setupFiles: [
-    'test/keycloak.mock.js'
+    '<rootDir>/test/keycloak.mock.js'
   ]
 };
