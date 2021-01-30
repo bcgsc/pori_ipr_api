@@ -35,9 +35,14 @@ module.exports = {
     'test/repo/query/util.js',
     'test/util.js',
     'test/testData/',
+    '*.mock.js',
+    'test/keys'
   ],
   moduleFileExtensions: [
     'js',
     'json',
   ],
+  setupFiles: [
+    'test/keycloak.mock.js'
+  ]
 };
