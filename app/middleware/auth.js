@@ -80,7 +80,7 @@ module.exports = async (req, res, next) => {
     });
 
     if (!respUser) {
-      logger.error('User does not exist');
+      logger.error(`User (${username}) does not exist`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'User does not exist'});
     }
 
