@@ -33,7 +33,6 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - run: convert
       - run: bash ./demo/restore_iprdb_dump.sh
         env:
           POSTGRES_PASSWORD: postgres
