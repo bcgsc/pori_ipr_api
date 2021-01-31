@@ -44,13 +44,14 @@ jobs:
       - run: npm ci
       - run: npm run test
         env:
-          IPR_DATABASE_USER: ipr_service
-          IPR_DATABASE_PASSWORD: demo
-          IPR_DATABASE_NAME: ipr_demo
           IPR_DATABASE_HOSTNAME: localhost
-          IPR_GRAPHKB_PASSWORD: iprdemo
-          IPR_TESTING_PASSWORD: iprdemo
+          IPR_DATABASE_NAME: ipr_demo
+          IPR_DATABASE_PASSWORD: demo
+          IPR_DATABASE_USER: ipr_service
+          IPR_GRAPHKB_PASSWORD: demo
           IPR_KEYCLOAK_KEYFILE: test/keys/authkey.pem
+          IPR_TESTING_PASSWORD: iprdemo
+          IPR_TESTING_USERNAME: iprdemo
       - uses: codecov/codecov-action@v1
         with:
           yml: codecov.yml
