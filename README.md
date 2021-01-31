@@ -1,7 +1,7 @@
 ### Integrated Pipeline Reports API
 ======================================
 
-![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
+![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_graphkb_api/branch/master/graph/badge.svg?token=XDTDIQ5793)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-10%20%7C%2012%20%7C%2014-blue) [![postgres versions](https://img.shields.io/badge/postgres-9.6%20-blue)](https://www.orientdb.org/)
 
 The Integrated pipeline reports API manages data access to the IPR database on iprdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic, probe reports, and Germline Small Mutation reports.
