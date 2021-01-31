@@ -30,12 +30,18 @@ beforeAll(async () => {
   // make sure there are at least 2 users
   await db.models.user.create({
     ident: uuidv4(),
-    name: uuidv4()
+    username: uuidv4(),
+    firstName: 'firstName',
+    lastName: 'lastName',
+    email: 'email@email.com'
   });
 
   await db.models.user.create({
     ident: uuidv4(),
-    name: uuidv4()
+    username: uuidv4(),
+    firstName: 'firstName',
+    lastName: 'lastName',
+    email: 'email@email.com'
   });
 
   users = await db.models.user.findAll();

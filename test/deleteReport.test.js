@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 const supertest = require('supertest');
 const getPort = require('get-port');
 const {Op} = require('sequelize');
+const uuidv4 = require('uuid/v4')
 const db = require('../app/models');
 
 // get test user info
