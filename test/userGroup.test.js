@@ -27,6 +27,17 @@ beforeAll(async () => {
   server = await listen(port);
   request = supertest(server);
 
+  // make sure there are at least 2 users
+  await db.models.user.create({
+    ident: uuidv4(),
+    name: uuidv4()
+  });
+
+  await db.models.user.create({
+    ident: uuidv4(),
+    name: uuidv4()
+  });
+
   users = await db.models.user.findAll();
 });
 
