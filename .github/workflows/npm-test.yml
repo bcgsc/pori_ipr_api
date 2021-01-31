@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - run: apt install imagemagick
+      - run: sudo apt install imagemagick
       - run: bash ./demo/restore_iprdb_dump.sh
         env:
           POSTGRES_PASSWORD: postgres
