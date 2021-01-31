@@ -7,7 +7,7 @@ const nconf = require('../config');
 
 const logger = require('../log');
 
-const pubKey = fs.readFileSync(nconf.get('keycloak:keyFile')).toString();
+const pubKey = fs.readFileSync(nconf.get('keycloak:keyfile')).toString();
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
@@ -46,7 +46,7 @@ module.exports = async (req, res, next) => {
   try {
     decoded = await jwt.verify(token, pubKey, {algorithms: ['RS256']});
   } catch (err) {
-    logger.debug(`token verification failed against key ${nconf.get('keycloak:keyFile')}`);
+    logger.debug(`token verification failed against key ${nconf.get('keycloak:keyfile')}`);
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: `Invalid or expired authorization token: (${err.message})`});
   }
   // Check for IPR access
