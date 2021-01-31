@@ -311,7 +311,7 @@ const cleanDb = async () => {
     await queryInterface.sequelize.query(
       `DELETE FROM projects
         WHERE deleted_at IS NOT NULL OR NOT (name in (:projects))`,
-      {transaction, replacements: {projects: ['PORI']}}
+      {transaction, replacements: {projects: ['PORI', 'TEST']}}
     );
 
     await queryInterface.sequelize.query(
