@@ -38,6 +38,7 @@ jobs:
           DATABASE_NAME: ipr_demo
           TEMPLATE_NAME: templateipr
           DB_DUMP_LOCATION: ./demo/ipr_demodb.postgres.dump
+          PGHOST: localhost
       - run: npm ci
       - run: npm run test
         env:
