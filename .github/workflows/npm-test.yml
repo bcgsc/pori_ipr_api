@@ -55,3 +55,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_if_ci_error: true
         if: matrix.node == 12
+  docker:
+    runs-on: ubuntu-latest
+    name: docker build
+    steps:
+      - uses: actions/checkout@v2
+      - name: build the API docker container
+        run: |
+          docker build --file Dockerfile --tag pori/ipr-api .

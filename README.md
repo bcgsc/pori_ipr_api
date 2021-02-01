@@ -306,3 +306,30 @@ pm2 start current/pm2.config.js --env production
 └── migrations                          # Migrations
                                         Special one-use functions used to migrate data, and models to updated schemas.
 ```
+
+## Docker
+
+The API image requires the DB image and the keycloak image to already been build and running. If you
+are setting up the entire platform, see the [full platform repository](https://github.com/bcgsc/pori)
+
+To build the API image
+
+```bash
+docker build -t pori/ipr-api -f Dockerfile .
+```
+
+Then to start the container
+
+```bash
+docker run -e IPR_DATABASE_HOSTNAME=localhost \
+  -e IPR_DATABASE_NAME=ipr_demo \
+  -e IPR_DATABASE_PASSWORD=root \
+  -e IPR_DATABASE_USERNAME=ipr_service \
+  -e IPR_GRAPHKB_PASSWORD=ipr_graphkb_link \
+  -e IPR_GRAPHKB_USERNAME=ipr_graphkb_link \
+  -e IPR_GRAPHKB_URI='http://localhost:8080/api' \
+  -e IPR_KEYCLOAK_KEYFILE=/keys/keycloak.key \
+  -e IPR_KEYCLOAK_URI='http://localhost:8888/auth/realms/PORI/protocol/openid-connect/token' \
+  --mount type=bind,source="$(pwd)"/keys,target=/keys \
+  pori/ipr-api:latest
+```
