@@ -16,6 +16,9 @@ const sequelize = new Sq(
     port: dbSettings.port,
     schema: dbSettings.schema,
     logging: null,
+    pool: {
+      acquire: 60000, // https://github.com/sequelize/sequelize/issues/10858
+    }
   }
 );
 
