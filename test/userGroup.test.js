@@ -61,11 +61,6 @@ describe('/user/group', () => {
         .get('/api/user/group')
         .auth(username, password)
         .type('json')
-        .expect(function(res) {
-          if(res.status != HTTP_STATUS.OK){
-            console.log(JSON.stringify(res.body, null, 2));
-            }
-        })
         .expect(HTTP_STATUS.OK)
 
       expect(res.body).toEqual(
