@@ -45,6 +45,7 @@ jobs:
         env:
           SERVICE_USER: ipr_service
           DATABASE_NAME: ipr_demo
+          PGPASSWORD: demo
       - run: npm run test
         env:
           IPR_DATABASE_HOSTNAME: localhost
