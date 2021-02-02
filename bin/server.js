@@ -1,3 +1,7 @@
 const {listen} = require('../app');
 
-listen();
+listen()
+    .catch(err => {
+        console.error(err);
+        process.exit(1);
+    });

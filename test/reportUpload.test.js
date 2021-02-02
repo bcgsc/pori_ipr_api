@@ -119,7 +119,7 @@ describe('Test for uploading a report with empty image data', () => {
   test('Upload fails on empty image data', async () => {
     // create report
     const emptyImageMockReportData = mockReportData;
-    emptyImageMockReportData.images[0].path = '/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors_empty.png';
+    emptyImageMockReportData.images[0].path = 'test/testData/images/empty_image.png';
     const res = await request
       .post('/api/reports')
       .auth(username, password)
