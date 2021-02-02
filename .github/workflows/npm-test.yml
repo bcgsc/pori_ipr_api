@@ -62,6 +62,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_if_ci_error: true
         if: matrix.node == 12
+      - uses: EnricoMi/publish-unit-test-result-action@v1.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: coverage/junit.xml
+        if: matrix.node == 12
   docker:
     runs-on: ubuntu-latest
     name: docker build
