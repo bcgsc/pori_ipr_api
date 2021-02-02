@@ -315,7 +315,7 @@ are setting up the entire platform, see the [full platform repository](https://g
 To build the API image
 
 ```bash
-docker build -t pori/ipr-api -f Dockerfile .
+docker build -t bcgsc/pori-ipr-api -f Dockerfile .
 ```
 
 Then to start the container
@@ -331,5 +331,5 @@ docker run -e IPR_DATABASE_HOSTNAME=localhost \
   -e IPR_KEYCLOAK_KEYFILE=/keys/keycloak.key \
   -e IPR_KEYCLOAK_URI='http://localhost:8888/auth/realms/PORI/protocol/openid-connect/token' \
   --mount type=bind,source="$(pwd)"/keys,target=/keys \
-  pori/ipr-api:latest
+  bcgsc/pori-ipr-api:latest
 ```
