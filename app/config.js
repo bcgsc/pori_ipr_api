@@ -34,7 +34,7 @@ const DEFAULTS = {
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
-    keyFile: ENV === 'production'
+    keyfile: ENV === 'production'
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
   },

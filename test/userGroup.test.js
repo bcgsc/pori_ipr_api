@@ -27,6 +27,23 @@ beforeAll(async () => {
   server = await listen(port);
   request = supertest(server);
 
+  // make sure there are at least 2 users
+  await db.models.user.create({
+    ident: uuidv4(),
+    username: uuidv4(),
+    firstName: 'firstName',
+    lastName: 'lastName',
+    email: 'email@email.com'
+  });
+
+  await db.models.user.create({
+    ident: uuidv4(),
+    username: uuidv4(),
+    firstName: 'firstName',
+    lastName: 'lastName',
+    email: 'email@email.com'
+  });
+
   users = await db.models.user.findAll();
 });
 
@@ -44,7 +61,7 @@ describe('/user/group', () => {
         .get('/api/user/group')
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.OK)
 
       expect(res.body).toEqual(
         expect.arrayContaining([

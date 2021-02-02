@@ -55,7 +55,7 @@ const testAutocompleteWithoutKeyword = async (request, type) => {
   return body.result;
 };
 
-describe('GET /graphkb/:targetType', () => {
+describe.skip('GET /graphkb/:targetType', () => {
   let server;
   let request;
 
@@ -111,7 +111,7 @@ describe('GET /graphkb/:targetType', () => {
   });
 });
 
-describe('GET /graphkb/evidence-levels', () => {
+describe.skip('GET /graphkb/evidence-levels', () => {
   let server;
   let request;
 

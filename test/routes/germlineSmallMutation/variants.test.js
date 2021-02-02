@@ -56,7 +56,7 @@ beforeAll(async () => {
   });
 });
 
-describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
+describe.skip('/germline-small-mutation-reports/:gsm_report/variants', () => {
   let report;
   let variant;
   let BASE_URI;
