@@ -170,14 +170,18 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Project ${projectName} doesn't currently exist`}});
     }
 
+    // Create transaction
+    const transaction = await db.transaction();
+
     // Create germline report
     let report;
     try {
       report = await db.models.germlineSmallMutation.create({
         ...reportData,
         biofxAssignedId: req.user.id,
-      });
+      }, {transaction});
     } catch (error) {
+      await transaction.rollback();
       const message = `Error while creating germline small mutation report ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
@@ -187,8 +191,9 @@ router.route('/')
     try {
       await db.models.germlineReportsToProjects.create({
         germlineReportId: report.id, projectId: project.id,
-      });
+      }, {transaction});
     } catch (error) {
+      await transaction.rollback();
       const message = `Error while creating germline report-project association ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(message);
@@ -201,10 +206,10 @@ router.route('/')
       await db.models.germlineSmallMutationVariant.bulkCreate(
         processedVariants.map((variant) => {
           return {...variant, germlineReportId: report.id};
-        })
+        }), {transaction},
       );
     } catch (error) {
-      db.models.germlineSmallMutation.destroy({where: {id: report.id}, force: true});
+      await transaction.rollback();
       const message = `Error while creating germline variants for report ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
@@ -214,9 +219,13 @@ router.route('/')
     try {
       const result = await db.models.germlineSmallMutation.scope('public').findOne({
         where: {id: report.id},
+        transaction,
       });
+
+      await transaction.commit();
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
+      await transaction.rollback();
       const message = `Error while trying to retrieve newly created germline report ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
