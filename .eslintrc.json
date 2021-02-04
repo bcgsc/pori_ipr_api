@@ -137,6 +137,7 @@
         "default-case": "off",
         "no-return-await": "error",
         "block-spacing": ["error", "never"],
-        "no-var": "error"
+        "no-var": "error",
+        "global-require": "warn"
     }
 }
