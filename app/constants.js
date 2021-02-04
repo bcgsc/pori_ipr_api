@@ -33,7 +33,9 @@ module.exports = {
     'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
     'scpPlot',
     'msi.scatter',
-  ].map((patt) => { return `(${patt})`; }).join('|')}$`,
+  ].map((patt) => {
+    return `(${patt})`;
+  }).join('|')}$`,
   REPORT_CREATE_BASE_URI: '/reports/create',
   REPORT_UPDATE_BASE_URI: '/reports/update',
   GERMLINE_CREATE_BASE_URI: '/germline/create',

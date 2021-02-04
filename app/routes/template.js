@@ -85,7 +85,7 @@ router.route('/:template([A-z0-9-]{36})')
         logger.error(`Error while trying to update template name ${error}`);
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to update template name'}});
       }
-  
+
       if (updateName) {
         logger.error(`The template name "${req.body.name}" already exists`);
         return res.status(HTTP_STATUS.CONFLICT).json({error: {message: `The template name "${req.body.name}" already exists`}});

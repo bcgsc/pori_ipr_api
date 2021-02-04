@@ -24,7 +24,7 @@ module.exports = {
     [
       'jest-junit',
       {
-        outputDirectory: '<rootDir>/coverage'
+        outputDirectory: '<rootDir>/coverage',
       },
     ],
   ],
@@ -36,13 +36,13 @@ module.exports = {
     'test/util.js',
     'test/testData/',
     '.*.mock.js',
-    'test/keys'
+    'test/keys',
   ],
   moduleFileExtensions: [
     'js',
     'json',
   ],
   setupFiles: [
-    '<rootDir>/test/keycloak.mock.js'
-  ]
+    '<rootDir>/test/keycloak.mock.js',
+  ],
 };

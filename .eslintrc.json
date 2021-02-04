@@ -25,6 +25,7 @@
             }
         ],
         "jest/no-standalone-expect": "off",
+        "jest/expect-expect": "off",
         "linebreak-style": [
             "error",
             "unix"
@@ -44,6 +45,16 @@
         "object-curly-spacing": [
             "error",
             "never"
+        ],
+        "object-curly-newline": [
+            "error", 
+            {
+                "consistent": true
+            }
+        ],
+        "array-bracket-newline": [
+            "error",
+            "consistent"
         ],
         "array-bracket-spacing": [
             "error",
@@ -90,15 +101,7 @@
         "no-continue": "off",
         "no-bitwise": "off",
         "no-use-before-define": "warn",
-        "no-param-reassign": [
-            "warn",
-            {
-                "props": true,
-                "ignorePropertyModificationsFor": [
-                    "opt"
-                ]
-            }
-        ],
+        "no-param-reassign": "off",
         "no-multi-assign": "off",
         "one-var": [
             "warn",
@@ -130,6 +133,11 @@
             "ignoreDestructuring": true,
             "properties": "never"
         }],
-        "func-names": "off"
+        "func-names": "off",
+        "default-case": "off",
+        "no-return-await": "error",
+        "block-spacing": ["error", "never"],
+        "no-var": "error",
+        "global-require": "warn"
     }
 }

@@ -125,7 +125,7 @@ router.route('/')
       logger.error(`There was an error while trying to find germline review ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find germline review'});
     }
-  
+
     if (review) {
       const message = `Report has already been reviewed by ${review.reviewer.firstName} ${review.reviewer.lastName} for ${req.body.type}`;
       logger.error(message);
