@@ -1,10 +1,10 @@
-const fs = require('fs'); // eslint-disable-line
-const jwt = require('jsonwebtoken');  // eslint-disable-line
-const PRIVATE_KEY = fs.readFileSync('test/keys/authkey');
-const nconf = require('../app/config');
-
 // fake the KC token
 jest.mock('../app/api/keycloak', () => {
+  const fs = require('fs'); // eslint-disable-line
+  const jwt = require('jsonwebtoken');  // eslint-disable-line
+  const PRIVATE_KEY = fs.readFileSync('test/keys/authkey');
+  const nconf = require('../app/config');
+
   return {
     getToken: async (username) => {
       const {clientId} = nconf.get('keycloak');
