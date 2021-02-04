@@ -31,7 +31,9 @@ const generateVariantUploadSchemas = (isJsonSchema) => {
     }),
   };
 
-  GENE_LINKED_VARIANT_MODELS.filter((model) => { return model !== 'structuralVariants'; }).forEach((model) => {
+  GENE_LINKED_VARIANT_MODELS.filter((model) => {
+    return model !== 'structuralVariants';
+  }).forEach((model) => {
     variantSchemas[model] = schemaGenerator(db.models[model], {
       isJsonSchema,
       baseUri: UPLOAD_BASE_URI,
