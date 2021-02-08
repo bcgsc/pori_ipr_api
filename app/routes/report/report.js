@@ -239,7 +239,9 @@ router.route('/')
       let {sort} = req.query;
 
       sort = sort.split(',');
-      opts.order = sort.map((sortGroup) => { return modelMapping(...sortGroup.split(':')); });
+      opts.order = sort.map((sortGroup) => {
+        return modelMapping(...sortGroup.split(':'));
+      });
     } else {
       opts.order = [
         ['state', 'desc'],

@@ -13,7 +13,9 @@ const router = express.Router({mergeParams: true});
 
 // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
 const parseMutationSignature = (arr) => {
-  return arr.map((ls) => { return `${ls.kbCategory} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
+  return arr.map((ls) => {
+    return `${ls.kbCategory} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`;
+  }).join('; ');
 };
 
 /**
@@ -77,7 +79,9 @@ router.get('/batch/download', async (req, res) => {
           as: 'report',
           where: {
             patientId: {
-              [Op.in]: germlineReports.map((germReport) => { return germReport.patientId; }),
+              [Op.in]: germlineReports.map((germReport) => {
+                return germReport.patientId;
+              }),
             },
             state: {
               [Op.in]: ['reviewed', 'active', 'archived'],
@@ -97,9 +101,13 @@ router.get('/batch/download', async (req, res) => {
   // Loop through reports, and ensure they have all required reviews
   for (const report of germlineReports) {
     // Ensure all required reviews are present on report
-    const reportReviews = report.reviews.map((review) => { return review.type; });
+    const reportReviews = report.reviews.map((review) => {
+      return review.type;
+    });
 
-    if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
+    if (requiredReviews.every((state) => {
+      return reportReviews.includes(state);
+    })) {
       // contains all the required reviews
       const summaryMatch = matchedMutationSignatures.filter((signature) => {
         return signature.report.patientId === report.patientId;
@@ -109,7 +117,9 @@ router.get('/batch/download', async (req, res) => {
         ? parseMutationSignature(summaryMatch)
         : 'N/A';
 
-      for (const variant of report.variants.filter((v) => { return !v.hidden; })) {
+      for (const variant of report.variants.filter((v) => {
+        return !v.hidden;
+      })) {
         variants.push({
           ...variant.toJSON(),
           sample: `${report.patientId}_${report.normalLibrary}`,
@@ -151,9 +161,13 @@ router.get('/batch/download', async (req, res) => {
   try {
     // Mark all exported reports in DB
     await Promise.all(germlineReports.map(async (report) => {
-      const reportReviews = report.reviews.map((review) => { return review.type; });
+      const reportReviews = report.reviews.map((review) => {
+        return review.type;
+      });
 
-      if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
+      if (requiredReviews.every((state) => {
+        return reportReviews.includes(state);
+      })) {
         report.exported = true;
         return report.save({fields: ['exported'], hooks: false});
       }

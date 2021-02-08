@@ -83,12 +83,12 @@ const checkReportsCount = async (queryInterface, transaction, minReports = 3) =>
 const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupName) => {
   //  group id
   const [group] = await queryInterface.sequelize.query(
-    `SELECT * FROM user_groups WHERE deleted_at IS NULL AND name = :name`,
+    'SELECT * FROM user_groups WHERE deleted_at IS NULL AND name = :name',
     {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {
-        name: groupName
+        name: groupName,
       },
     }
   );
@@ -101,7 +101,7 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
       replacements: {
         userId: demoUser.id,
         groupId: group.id,
-      }
+      },
     }
   );
 
@@ -120,7 +120,7 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
         replacements: {
           userId: demoUser.id,
           groupId: group.id,
-        }
+        },
       }
     );
   }
@@ -129,12 +129,12 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
 
 const addDemoUserToProject = async (queryInterface, transaction, demoUser, projectName) => {
   let [project] = await queryInterface.sequelize.query(
-    `SELECT * FROM projects WHERE deleted_at IS NULL AND name = :name`,
+    'SELECT * FROM projects WHERE deleted_at IS NULL AND name = :name',
     {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {
-        name: projectName
+        name: projectName,
       },
     }
   );
@@ -152,7 +152,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
       {
         transaction,
         replacements: {
-          projectName
+          projectName,
         },
       }
     );
@@ -166,7 +166,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
       replacements: {
         userId: demoUser.id,
         projectId: project.id,
-      }
+      },
     }
   );
 
@@ -185,7 +185,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
         replacements: {
           userId: demoUser.id,
           projectId: project.id,
-        }
+        },
       }
     );
   }
@@ -255,7 +255,7 @@ const cleanUsers = async (queryInterface, transaction) => {
     'DELETE FROM users WHERE username != :username',
     {transaction, replacements: {username: 'iprdemo'}}
   );
-}
+};
 
 const cleanDb = async () => {
   const queryInterface = sequelize.getQueryInterface();
@@ -275,7 +275,9 @@ const cleanDb = async () => {
         type: queryInterface.sequelize.QueryTypes.SELECT,
         replacements: {name: 'PORI'},
       }
-    )).map((r) => { return r.id; });
+    )).map((r) => {
+      return r.id;
+    });
     console.log('reports to keep', reportsToKeep.length);
 
     await queryInterface.sequelize.query(
@@ -320,7 +322,7 @@ const cleanDb = async () => {
     );
     await checkReportsCount(queryInterface, transaction);
 
-    await cleanUsers(queryInterface, transaction)
+    await cleanUsers(queryInterface, transaction);
     await checkReportsCount(queryInterface, transaction);
 
     // anonymize reports_pairwise_expression_correlation patient id data
@@ -329,7 +331,9 @@ const cleanDb = async () => {
       {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
     );
       // sort by ident to avoid chronological ordering
-    correlations.sort((a, b) => { return a.ident.localeCompare(b.ident); });
+    correlations.sort((a, b) => {
+      return a.ident.localeCompare(b.ident);
+    });
 
     for (let i = 0; i < correlations.length; i++) {
       const corr = correlations[i];
@@ -363,7 +367,9 @@ const cleanDb = async () => {
       }
     );
       // sort by ident to avoid chronological ordering
-    reports.sort((a, b) => { return a.ident.localeCompare(b.ident); });
+    reports.sort((a, b) => {
+      return a.ident.localeCompare(b.ident);
+    });
 
     for (let i = 0; i < reports.length; i++) {
       await queryInterface.sequelize.query(

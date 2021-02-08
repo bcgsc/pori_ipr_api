@@ -36,7 +36,7 @@ const TEMPLATE_IMAGES = {
     type: 'string',
     format: 'binary',
     description: 'header image to upload',
-  }
+  },
 };
 
 
@@ -171,8 +171,10 @@ schemas.germlineSmallMutationUpdate.properties.biofxAssigned = {
 
 // therapeutic targets bulk update
 schemas.therapeuticTargetRanksBulkUpdate = schemaGenerator(db.models.therapeuticTarget, {
-  isJsonSchema: false, title: 'therapeuticTargetRanksBulkUpdate',
-  include: ['ident', 'rank'], required: ['ident', 'rank'],
+  isJsonSchema: false,
+  title: 'therapeuticTargetRanksBulkUpdate',
+  include: ['ident', 'rank'],
+  required: ['ident', 'rank'],
 });
 
 // template update

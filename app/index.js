@@ -145,7 +145,9 @@ const listen = async (port = null) => {
 
   // list all the routes that are found from the express router
   const routes = fetchRoutes(routing.getRouter())
-    .sort((r1, r2) => { return r1.path.localeCompare(r2.path); });
+    .sort((r1, r2) => {
+      return r1.path.localeCompare(r2.path);
+    });
 
   for (const {methods, path} of routes) {
     logger.info(`Registered route: (${Object.keys(methods).sort().join('|')}) ${path}`);
