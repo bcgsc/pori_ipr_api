@@ -5,7 +5,7 @@
   "description": "Integrated Pipeline Reports API",
   "main": "bin/server.js",
   "scripts": {
-    "start": "node --unhandled-rejections=strict --max-old-space-size=2800 bin/server.js",
+    "start": "node --max-old-space-size=2800 bin/server.js",
     "start:prod": "NODE_ENV=production node --max-old-space-size=2800 bin/server.js",
     "start:dev": "NODE_ENV=development node --max-old-space-size=2800 bin/server.js",
     "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
