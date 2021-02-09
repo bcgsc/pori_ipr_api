@@ -122,7 +122,7 @@ router.route('/')
         {
           as: 'reviews',
           model: db.models.germlineSmallMutationReview,
-          where: {type: reviewType},
+          where: {type: reviewType.split(',') || reviewType},
           attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
           include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
