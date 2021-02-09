@@ -84,7 +84,7 @@ router.route('/')
   .get(async (req, res) => {
     const {
       query: {
-        limit, offset, patientId, biopsyName, project,
+        limit, offset, patientId, biopsyName, project, reviewFilter,
       },
     } = req;
 
@@ -98,6 +98,7 @@ router.route('/')
       where: {
         ...((patientId) ? {patientId: {[Op.iLike]: `%${patientId}%`}} : {}),
         ...((biopsyName) ? {biopsyName: {[Op.iLike]: `%${biopsyName}%`}} : {}),
+        ...((reviewFilter) ? {exported: {[Op.eq]: false}} : {}),
       },
       include: [],
       distinct: 'id',
@@ -115,7 +116,7 @@ router.route('/')
     }
 
     // Check if filtering by review
-    if (inProjectsGroup) {
+    if (inProjectsGroup || reviewFilter) {
       opts.include.push(
         {
           as: 'reviews',
