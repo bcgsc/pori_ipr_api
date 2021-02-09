@@ -84,7 +84,7 @@ router.route('/')
   .get(async (req, res) => {
     const {
       query: {
-        limit, offset, patientId, biopsyName, project, reviewFilter,
+        limit, offset, patientId, biopsyName, project, exported, reviewType,
       },
     } = req;
 
@@ -98,7 +98,7 @@ router.route('/')
       where: {
         ...((patientId) ? {patientId: {[Op.iLike]: `%${patientId}%`}} : {}),
         ...((biopsyName) ? {biopsyName: {[Op.iLike]: `%${biopsyName}%`}} : {}),
-        ...((reviewFilter) ? {exported: {[Op.eq]: false}} : {}),
+        ...((exported !== undefined) ? {exported: {[Op.eq]: exported}} : {}),
       },
       include: [],
       distinct: 'id',
@@ -115,8 +115,19 @@ router.route('/')
       );
     }
 
+    
     // Check if filtering by review
-    if (inProjectsGroup || reviewFilter) {
+    if (reviewType) {
+      opts.include.push(
+        {
+          as: 'reviews',
+          model: db.models.germlineSmallMutationReview,
+          where: {type: reviewType},
+          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
+        },
+      );
+    } else if (inProjectsGroup) {
       opts.include.push(
         {
           as: 'reviews',
