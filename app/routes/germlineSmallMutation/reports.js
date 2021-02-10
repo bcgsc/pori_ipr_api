@@ -98,7 +98,7 @@ router.route('/')
       where: {
         ...((patientId) ? {patientId: {[Op.iLike]: `%${patientId}%`}} : {}),
         ...((biopsyName) ? {biopsyName: {[Op.iLike]: `%${biopsyName}%`}} : {}),
-        ...((exported !== undefined) ? {exported: {[Op.eq]: exported}} : {}),
+        ...((typeof exported === 'boolean') ? {exported} : {}),
       },
       include: [],
       distinct: 'id',
