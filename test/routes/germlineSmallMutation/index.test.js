@@ -169,6 +169,56 @@ describe.skip('/germline-small-mutation-reports', () => {
       }
     });
 
+    test('/ - exported query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({exported: false})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(checkGermlineReportList);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({exported: false}),
+      ]));
+    });
+
+    test('/ - reviewType string query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({reviewType: 'biofx'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(checkGermlineReportList);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          reviews: expect.arrayContaining([
+            expect.objectContaining({type: expect.stringContaining('biofx')}),
+          ]),
+        }),
+      ]));
+    });
+
+    test('/ - reviewType array query - 200 success', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({reviewType: 'biofx,projects'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual(checkGermlineReportList);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          reviews: expect.arrayContaining([
+            expect.objectContaining({type: expect.stringMatching(/(biofx|projects)/)}),
+          ]),
+        }),
+      ]));
+    });
+
     test('/{gsm_report} - 200 Success', async () => {
       const res = await request
         .get(`${BASE_URI}/${report.ident}`)
