@@ -2066,6 +2066,31 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "exported",
+            "in": "query",
+            "required": false,
+            "description": "Returns reports with exported set to true/false",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "reviewType",
+            "in": "query",
+            "required": false,
+            "description": "Returns reports with reviews of type reviewType",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            }
           }
         ],
         "security": [
