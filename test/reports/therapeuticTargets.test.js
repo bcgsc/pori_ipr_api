@@ -113,8 +113,12 @@ describe('/therapeutic-targets', () => {
           .type('json')
           .expect(HTTP_STATUS.OK);
         expect(Array.isArray(result)).toBe(true);
-        expect(result.map((r) => { return r.gene; })).toContain(original.gene); // easier to debug failures
-        expect(result.map((r) => { return r.ident; })).toContain(original.ident);
+        expect(result.map((r) => {
+          return r.gene;
+        })).toContain(original.gene); // easier to debug failures
+        expect(result.map((r) => {
+          return r.ident;
+        })).toContain(original.ident);
       });
 
       test('a single target by ID', async () => {

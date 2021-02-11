@@ -34,7 +34,7 @@ describe('/copy-variants', () => {
           model: db.models.analysis_report,
           as: 'report',
           attributes: ['ident', 'id'],
-          required: true
+          required: true,
         },
       ],
       where: {deletedAt: null},

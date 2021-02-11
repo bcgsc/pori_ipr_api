@@ -1,6 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
 
-const path = require('path');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../../app/models');

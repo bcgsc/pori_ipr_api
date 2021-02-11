@@ -33,7 +33,7 @@ beforeAll(async () => {
     username: uuidv4(),
     firstName: 'firstName',
     lastName: 'lastName',
-    email: 'email@email.com'
+    email: 'email@email.com',
   });
 
   await db.models.user.create({
@@ -41,7 +41,7 @@ beforeAll(async () => {
     username: uuidv4(),
     firstName: 'firstName',
     lastName: 'lastName',
-    email: 'email@email.com'
+    email: 'email@email.com',
   });
 
   users = await db.models.user.findAll();
@@ -61,7 +61,7 @@ describe('/user/group', () => {
         .get('/api/user/group')
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.OK)
+        .expect(HTTP_STATUS.OK);
 
       expect(res.body).toEqual(
         expect.arrayContaining([

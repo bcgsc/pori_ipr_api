@@ -73,7 +73,9 @@ describe('/reports/{REPORTID}/pairwise-expression-correlation', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      res.body.forEach((corr) => { return checkCorrelation(corr); });
+      res.body.forEach((corr) => {
+        return checkCorrelation(corr);
+      });
     });
   });
 
