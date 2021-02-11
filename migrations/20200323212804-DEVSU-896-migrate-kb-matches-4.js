@@ -30,7 +30,9 @@ const checkMissingMatches = async (queryInterface, transaction, variantType) => 
     }
   );
   if (rows.length) {
-    throw new Error(`Failed to link ${variantType} variants (${rows.map((r) => { return r.id; })})`);
+    throw new Error(`Failed to link ${variantType} variants (${rows.map((r) => {
+      return r.id;
+    })})`);
   }
 };
 
@@ -62,7 +64,9 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
   if (missingVariants.length) {
     await queryInterface.bulkInsert(
       table,
-      missingVariants.map((rec) => { return {...rec, ident: uuidv4()}; }),
+      missingVariants.map((rec) => {
+        return {...rec, ident: uuidv4()};
+      }),
       {transaction}
     );
   }
@@ -86,7 +90,9 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
     }
   );
   if (rows.length > 0) {
-    throw new Error(`Duplicate mappings to kb matches table (${rows.slice(0, 10).map((r) => { return r.id; })}) from ${table}`);
+    throw new Error(`Duplicate mappings to kb matches table (${rows.slice(0, 10).map((r) => {
+      return r.id;
+    })}) from ${table}`);
   }
 
 
@@ -131,7 +137,9 @@ const transferKbExpressionData = async (queryInterface, Sq, transaction) => {
   );
 
   if (multiMatch.length) {
-    throw new Error(`Duplicate mappings (${multiMatch.slice(0, 10).map((r) => { return r.id; })}) from ${KB_TABLE} to ${table}`);
+    throw new Error(`Duplicate mappings (${multiMatch.slice(0, 10).map((r) => {
+      return r.id;
+    })}) from ${KB_TABLE} to ${table}`);
   }
   // update expression variants that don't have a expression_class using the kb variant if there is one
   console.log('updating null expression variants from kb matches');
@@ -222,7 +230,9 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
   if (missingVariants.length) {
     await queryInterface.bulkInsert(
       MUT_TABLE,
-      missingVariants.map((rec) => { return {...rec, ident: uuidv4()}; }),
+      missingVariants.map((rec) => {
+        return {...rec, ident: uuidv4()};
+      }),
       {transaction}
     );
   }
@@ -334,7 +344,9 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
   if (missingVariants.length) {
     await queryInterface.bulkInsert(
       SV_TABLE,
-      missingVariants.map((rec) => { return {...rec, ident: uuidv4()}; }),
+      missingVariants.map((rec) => {
+        return {...rec, ident: uuidv4()};
+      }),
       {transaction}
     );
   }
@@ -407,7 +419,9 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
   console.log(`adding ${missingGenes.length} genes`);
   await queryInterface.bulkInsert(
     GENE_TABLE,
-    missingGenes.map((rec) => { return {...rec, ident: uuidv4()}; }),
+    missingGenes.map((rec) => {
+      return {...rec, ident: uuidv4()};
+    }),
     {transaction}
   );
 
@@ -436,7 +450,9 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
     console.log(`adding ${genes.length} genes`);
     await queryInterface.bulkInsert(
       GENE_TABLE,
-      genes.map((rec) => { return {...rec, ident: uuidv4()}; }),
+      genes.map((rec) => {
+        return {...rec, ident: uuidv4()};
+      }),
       {transaction}
     );
   }

@@ -27,7 +27,8 @@ const tables = [
   'pog_analysis_reports_summary_mutation_summary',
   'pog_analysis_reports_summary_tumour_analysis',
   'pog_recent_reports',
-  'report_projects'];
+  'report_projects',
+];
 
 
 module.exports = {

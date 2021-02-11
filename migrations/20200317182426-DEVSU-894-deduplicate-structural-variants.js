@@ -71,7 +71,9 @@ module.exports = {
         console.log(`copying ${records.length} records from ${SV_TABLE} to ${EXPRESSION_TABLE}`);
         await queryInterface.bulkInsert(
           EXPRESSION_TABLE,
-          records.map((r) => { return {...r, ident: uuidv4()}; }),
+          records.map((r) => {
+            return {...r, ident: uuidv4()};
+          }),
           {transaction}
         );
       }
