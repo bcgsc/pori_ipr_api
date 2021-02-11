@@ -115,7 +115,7 @@ router.route('/')
       );
     }
 
-    
+
     // Check if filtering by review
     if (reviewType) {
       opts.include.push(

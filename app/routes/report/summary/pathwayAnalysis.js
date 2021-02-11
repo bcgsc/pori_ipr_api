@@ -96,6 +96,9 @@ router.route('/')
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create pathway analysis'}});
           }
         }
+
+        logger.error('Unable to create an entry because one already exists');
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to create an entry because one already exists'}});
       },
     });
   });
