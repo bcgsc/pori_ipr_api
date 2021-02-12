@@ -113,7 +113,7 @@ module.exports = {
     return Promise.resolve(true);
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async () => {
     return Promise.resolve(true);
   },
 };

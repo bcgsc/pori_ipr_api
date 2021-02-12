@@ -76,7 +76,9 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
-      res.body.forEach((burden) => { return checkMutationBurden(burden); });
+      res.body.forEach((burden) => {
+        return checkMutationBurden(burden);
+      });
     });
 
     test('fetches known ident ok', async () => {
@@ -145,7 +147,7 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
     });
 
     test('error on unexpected value', async () => {
-      const res = await request
+      await request
         .put(`/api/reports/${report.ident}/mutation-burden/${mutationBurden.ident}`)
         .auth(username, password)
         .type('json')

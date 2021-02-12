@@ -1,4 +1,5 @@
-const camelCaseTables = ['germline_small_mutations', 'germline_small_mutations_review',
+const camelCaseTables = [
+  'germline_small_mutations', 'germline_small_mutations_review',
   'germline_small_mutations_variant', 'reports_mavis_summary', 'reports_presentation_discussion',
   'reports_presentation_slides', 'reports_probe_test_information',
   'reports_users', 'user_group_members', 'user_groups', 'user_projects',

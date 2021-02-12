@@ -157,7 +157,9 @@ describe('/reports/{REPORTID}', () => {
 
       res.body.reports.forEach((reportObject) => {
         expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
-        expect(reportObject.users.some((user) => { return user.role === 'bioinformatician'; })).toBeTruthy();
+        expect(reportObject.users.some((user) => {
+          return user.role === 'bioinformatician';
+        })).toBeTruthy();
       });
     });
 

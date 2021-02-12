@@ -1,5 +1,5 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface) => {
     await queryInterface.dropTable('pog_tracking_hook_events', {cascade: true});
     console.log('pog_tracking_hook_events table dropped');
 
@@ -24,6 +24,6 @@ module.exports = {
     return true;
   },
 
-  down: (queryInterface, Sequelize) => {
+  down: () => {
   },
 };

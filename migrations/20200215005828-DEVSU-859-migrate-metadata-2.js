@@ -55,7 +55,9 @@ module.exports = {
       const missingLinks = missingProjectLinks.map((rec) => {
         return {
           germline_report_id: rec.id,
-          project_id: newProjects.find((proj) => { return proj.name === rec.name; }).id,
+          project_id: newProjects.find((proj) => {
+            return proj.name === rec.name;
+          }).id,
           created_at: rec.created_at,
           updated_at: rec.created_at,
         };

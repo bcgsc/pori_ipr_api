@@ -67,7 +67,9 @@ describe('Testing ACL methods', () => {
         access.groups = ['Clinician'];
         access.nGroups = ['Clinician'];
 
-        expect(() => { access.check(); }).toThrow('Group(s) in both allowed and not allowed');
+        expect(() => {
+          access.check();
+        }).toThrow('Group(s) in both allowed and not allowed');
       });
 
       test('User doesn\'t belongs to an allowed group', async () => {
