@@ -23,5 +23,5 @@ module.exports = {
 
   down: () => {
     throw new Error('Not Implemented');
-  }
+  },
 };

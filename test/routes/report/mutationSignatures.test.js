@@ -84,7 +84,9 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body).toHaveLength(2);
-      res.body.map((s) => { return checkMutationSignature(s); });
+      res.body.map((s) => {
+        return checkMutationSignature(s);
+      });
     });
 
     test('?selected=true', async () => {
@@ -97,7 +99,9 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body).toHaveLength(1);
-      res.body.map((s) => { return checkMutationSignature(s); });
+      res.body.map((s) => {
+        return checkMutationSignature(s);
+      });
       expect(res.body[0]).toHaveProperty('ident', selectedSignature.ident);
     });
 
@@ -111,7 +115,9 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body).toHaveLength(1);
-      res.body.map((s) => { return checkMutationSignature(s); });
+      res.body.map((s) => {
+        return checkMutationSignature(s);
+      });
       expect(res.body[0]).toHaveProperty('ident', signature.ident);
     });
   });

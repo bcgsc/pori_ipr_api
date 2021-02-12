@@ -22,7 +22,9 @@ module.exports = {
 
       await queryInterface.bulkInsert(
         'pog_analysis_reports_summary_probe_target',
-        recordsToMove.map(({id, ...row}) => { return row; }), // remove the id, let the table re-generate PK
+        recordsToMove.map(({id, ...row}) => {
+          return row;
+        }), // remove the id, let the table re-generate PK
         {transaction}
       );
 

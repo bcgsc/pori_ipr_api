@@ -1,5 +1,5 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface) => {
     await queryInterface.dropTable('kb_events');
     console.log('kb_events table dropped');
 
@@ -12,6 +12,6 @@ module.exports = {
     return true;
   },
 
-  down: (queryInterface, Sequelize) => {
+  down: () => {
   },
 };

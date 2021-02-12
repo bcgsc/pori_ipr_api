@@ -19,7 +19,9 @@ const transformTherapeuticTargetData = (records) => {
     } else if (record.targetContext) {
       therapies.push(`${record.targetContext} (targeted therapy)`);
     } else {
-      therapies.push(...record.target.map((t) => { return `${t.geneVar || t} (targeted therapy)`; }));
+      therapies.push(...record.target.map((t) => {
+        return `${t.geneVar || t} (targeted therapy)`;
+      }));
     }
 
     for (const therapy of therapies) {
