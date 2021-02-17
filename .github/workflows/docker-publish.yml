@@ -1,0 +1,21 @@
+name: docker-publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - run: docker build --file Dockerfile --tag bcgsc/pori-ipr-api:latest --tag bcgsc/pori-ipr-api:${{ github.event.release.tag_name }} .
+      - run: docker push bcgsc/pori-ipr-api:${{ github.event.release.tag_name }}
+      - run: docker push bcgsc/pori-ipr-api:latest
+      - run: docker build --file Dockerfile.db --tag bcgsc/pori-ipr-demodb:latest --tag bcgsc/pori-ipr-demodb:${{ github.event.release.tag_name }} .
+      - run: docker push bcgsc/pori-ipr-demodb:${{ github.event.release.tag_name }}
+      - run: docker push bcgsc/pori-ipr-demodb:latest

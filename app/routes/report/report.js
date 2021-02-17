@@ -2,6 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
+const createReport = require('../../libs/createReport');
 const tableFilter = require('../../libs/tableFilter');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
@@ -9,8 +10,6 @@ const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
 
 const reportMiddleware = require('../../middleware/analysis_report');
-const deleteModelEntries = require('../../libs/deleteModelEntries');
-const {createReportContent} = require('./db');
 
 const router = express.Router({mergeParams: true});
 
@@ -24,8 +23,14 @@ const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
 const updateSchema = schemaGenerator(db.models.analysis_report, {
   baseUri: REPORT_UPDATE_BASE_URI,
-  exclude: [...BASE_EXCLUDE, 'createdBy_id', 'config'],
+  exclude: [...BASE_EXCLUDE, 'createdBy_id', 'templateId', 'config'],
   nothingRequired: true,
+  properties: {
+    template: {
+      type: 'string',
+      description: 'Template name',
+    },
+  },
 });
 
 const DEFAULT_PAGE_LIMIT = 25;
@@ -49,6 +54,29 @@ router.route('/:report')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
+
+    // Check for switching template
+    if (req.body.template) {
+      let temp;
+      // Try to find template
+      try {
+        temp = await db.models.template.findOne({where: {name: {[Op.iLike]: req.body.template}}});
+      } catch (error) {
+        const message = `Error while trying to find ${req.body.template} with error: ${error.message || error}`;
+        logger.error(message);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      }
+
+      if (!temp) {
+        const message = `Template ${req.body.template} doesn't currently exist`;
+        logger.error(message);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      }
+
+      // Set new template id
+      req.body.templateId = temp.id;
+    }
+
     // Update db entry
     try {
       await report.update(req.body);
@@ -167,6 +195,7 @@ router.route('/')
           attributes: {exclude: ['id', 'deletedAt']},
         },
         {model: db.models.user.scope('public'), as: 'createdBy'},
+        {model: db.models.template.scope('public'), as: 'template'},
         {
           model: db.models.analysis_reports_user,
           as: 'users',
@@ -210,19 +239,14 @@ router.route('/')
       let {sort} = req.query;
 
       sort = sort.split(',');
-      opts.order = sort.map((sortGroup) => { return modelMapping(...sortGroup.split(':')); });
+      opts.order = sort.map((sortGroup) => {
+        return modelMapping(...sortGroup.split(':'));
+      });
     } else {
       opts.order = [
         ['state', 'desc'],
         ['patientId', 'desc'],
       ];
-    }
-
-    // Check for types
-    if (req.query.type === 'probe') {
-      opts.where.type = 'probe';
-    } else if (req.query.type === 'genomic') {
-      opts.where.type = 'genomic';
     }
 
     if (req.query.project) { // check access if filtering on project
@@ -330,80 +354,15 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    // get project
-    let project;
-    try {
-      project = await db.models.project.findOne({
-        where: {
-          name: {
-            [Op.iLike]: req.body.project.trim(),
-          },
-        },
-      });
-    } catch (error) {
-      logger.error(`Unable to find project ${req.body.project} with error ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find project'}});
-    }
-
-    if (!project) {
-      logger.error(`Project ${req.body.project} doesn't currently exist`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Project ${req.body.project} doesn't currently exist`}});
-    }
-
-    const createdComponents = {};
-    const cleanUpReport = async (error) => {
-      logger.error(`Unable to create report ${error}`);
-
-      // delete already created report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created components of the report ${err}`);
-      }
-
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create report'}});
-    };
-
-    // create report
-    let report;
     try {
       req.body.createdBy_id = req.user.id;
+      const reportIdent = await createReport(req.body);
 
-      report = await db.models.analysis_report.create(req.body);
-
-      createdComponents.analysis_report = report.id;
+      return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: reportIdent});
     } catch (error) {
-      return cleanUpReport(error);
+      logger.error(error.message || error);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});
     }
-
-    // find or create report-project association
-    try {
-      const reportProjectData = {reportId: report.id, project_id: project.id};
-      const [reportProject, createdReportProject] = await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData});
-
-      if (createdReportProject) {
-        createdComponents.reportProject = reportProject.id;
-      }
-    } catch (error) {
-      return cleanUpReport(error);
-    }
-
-    try {
-      await createReportContent(report, req.body);
-    } catch (error) {
-      logger.error(`Unable to create all report components ${error}`);
-
-      // delete already created report/report components
-      try {
-        await deleteModelEntries(createdComponents);
-      } catch (err) {
-        logger.error(`Unable to delete the already created report/components of the report ${err}`);
-      }
-
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to create all report components'}});
-    }
-
-    return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
   });
 
 module.exports = router;

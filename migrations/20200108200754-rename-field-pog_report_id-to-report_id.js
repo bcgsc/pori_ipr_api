@@ -26,7 +26,8 @@ const tables = [
   'pog_analysis_reports_summary_variant_counts',
   'pog_analysis_reports_therapeutic_targets',
   'pog_patient_information',
-  'pog_recent_reports'];
+  'pog_recent_reports',
+];
 
 
 module.exports = {

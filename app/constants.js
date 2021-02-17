@@ -32,10 +32,17 @@ module.exports = {
     'mixcr\\.circos_trb_vj_gene_usage',
     'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
     'scpPlot',
-  ].map((patt) => { return `(${patt})`; }).join('|')}$`,
+    'msi.scatter',
+  ].map((patt) => {
+    return `(${patt})`;
+  }).join('|')}$`,
   REPORT_CREATE_BASE_URI: '/reports/create',
   REPORT_UPDATE_BASE_URI: '/reports/update',
   GERMLINE_CREATE_BASE_URI: '/germline/create',
   GERMLINE_UPDATE_BASE_URI: '/germline/update',
   UPLOAD_BASE_URI: '/upload',
+  DEFAULT_LOGO_HEIGHT: 64,
+  DEFAULT_LOGO_WIDTH: 64,
+  DEFAULT_HEADER_HEIGHT: 96,
+  DEFAULT_HEADER_WIDTH: 300,
 };

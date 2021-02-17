@@ -1,0 +1,318 @@
+const {Op} = require('sequelize');
+
+const db = require('../models');
+const {loadImage} = require('../routes/report/images');
+const logger = require('../log');
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../constants');
+const {sanitizeHtml} = require('./helperFunctions');
+
+/**
+ * Creates a new section for the report with the provided data
+ *
+ * @param {Number} reportId - The id of the report this section belongs to
+ * @param {string} modelName - Name of the model for this section
+ * @param {Array|Object} sectionContent - The record or records to be created for this section
+ * @param {object} options - Options for creating report sections
+ * @property {object} options.transaction - Transaction to run bulkCreate under
+ *
+ * @returns {undefined}
+ */
+const createReportSection = async (reportId, modelName, sectionContent, options = {}) => {
+  const records = Array.isArray(sectionContent)
+    ? sectionContent
+    : [sectionContent];
+
+  try {
+    await db.models[modelName].bulkCreate(
+      records.map((newEntry) => {
+        return {...newEntry, reportId};
+      }), options
+    );
+  } catch (error) {
+    throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+  }
+};
+
+/**
+ * Given the content for a report to be created, pull gene names from
+ * the variant sections and create the genes which will be used as
+ * foreign keys in these records
+ *
+ * @param {object} report - The report to create the genes for
+ * @param {object} content - The data for the report upload
+ * @param {object} options - The options for the create
+ * @property {object} options.transaction - The transaction to run the create under
+ *
+ * @returns {object} - Mapping of gene names to the id of gene record created
+ */
+const createReportGenes = async (report, content, options = {}) => {
+  // create the genes first since they will need to be linked to the variant records
+  const geneDefns = {};
+  for (const model of GENE_LINKED_VARIANT_MODELS) {
+    for (const variant of content[model] || []) {
+      if (model === 'structuralVariants') {
+        if (variant.gene1) {
+          geneDefns[variant.gene1] = {name: variant.gene1};
+        }
+        if (variant.gene2) {
+          geneDefns[variant.gene2] = {name: variant.gene2};
+        }
+      } else {
+        geneDefns[variant.gene] = {name: variant.gene};
+      }
+    }
+  }
+
+  for (const gene of content.genes || []) {
+    geneDefns[gene.name] = gene;
+  }
+
+  logger.debug(`creating gene definitions for the report ${report.ident}`);
+
+  try {
+    const genes = await db.models.genes.bulkCreate(
+      Object.values(geneDefns).map((newEntry) => {
+        return {...newEntry, reportId: report.id};
+      }), options
+    );
+
+    for (const gene of genes) {
+      geneDefns[gene.name] = gene.id;
+    }
+
+    return geneDefns;
+  } catch (error) {
+    throw new Error(`Unable to create report genes ${error.message || error}`);
+  }
+};
+
+
+/**
+ * Create varaint sections of a report
+ *
+ * @param {integer} reportId - The id of the report these variants belong to
+ * @param {object} genesRecordsByName - An object mapping gene names to their data
+ * @param {string} modelName - The model name of the varaint section
+ * @param {Array<object>} sectionContent - An array of variant objects to create
+ * @param {object} options - The options for creating the variants
+ * @property {object} options.transaction - A transaction to run the creates under
+ * @returns {object} - Returns an object mapping the variant key to the id of the created section
+ */
+const createReportVariantsSection = async (reportId, genesRecordsByName, modelName, sectionContent, options = {}) => {
+  const keyCheck = new Set();
+  let records;
+  // check the 'key' is unique
+  for (const {key} of sectionContent) {
+    if (key) {
+      if (keyCheck.has(key)) {
+        throw new Error(`Bad input. The variant key violated unique constraint (key=${key})`);
+      }
+      keyCheck.add(key);
+    }
+  }
+
+  try {
+    if (modelName === 'structuralVariants') {
+      // add the gene FK associations
+      records = await db.models[modelName].bulkCreate(
+        sectionContent.map(({
+          key, gene1, gene2, ...newEntry
+        }) => {
+          return {
+            ...newEntry,
+            reportId,
+            gene1Id: genesRecordsByName[gene1],
+            gene2Id: genesRecordsByName[gene2],
+          };
+        }), options
+      );
+    } else {
+      // add the gene FK association
+      records = await db.models[modelName].bulkCreate(
+        sectionContent.map(({key, gene, ...newEntry}) => {
+          return {
+            ...newEntry,
+            reportId,
+            geneId: genesRecordsByName[gene],
+          };
+        }), options
+      );
+    }
+  } catch (error) {
+    throw new Error(`Unable to create variant section (${modelName}) ${error.message || error}`);
+  }
+
+
+  const mapping = {};
+  for (let i = 0; i < sectionContent.length; i++) {
+    if (sectionContent[i].key) {
+      mapping[sectionContent[i].key] = records[i].id;
+    }
+  }
+  return mapping;
+};
+
+/**
+ * Creates all the sections of a report
+ *
+ * @param {object} report - The report to create all sections for
+ * @param {object} content - The data for all the reports sections
+ * @param {object} transaction - The transaction to run all the creates under
+ * @returns {undefined}
+ */
+const createReportSections = async (report, content, transaction) => {
+  // create the genes first since they will need to be linked to the variant records
+  const geneDefns = await createReportGenes(report, content, {transaction});
+
+  // create the variants and create a mapping from their input 'key' value to the new records
+  const variantMapping = {};
+  const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
+    const variantModel = KB_PIVOT_MAPPING[variantType];
+    const mapping = await createReportVariantsSection(
+      report.id, geneDefns, variantModel, content[variantModel] || [], {transaction}
+    );
+    variantMapping[variantType] = mapping;
+  });
+
+  // create the probe results (linked to gene but not to kbMatches)
+  variantPromises.push(createReportVariantsSection(
+    report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction}
+  ));
+
+  await Promise.all(variantPromises);
+  // then the kb matches which must be linked to the variants
+  const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
+    if (variantMapping[variantType] === undefined) {
+      throw new Error(`cannot link kb-matches to variant type ${variantType} as none were specified`);
+    }
+    if (variantMapping[variantType][variant] === undefined) {
+      throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
+    }
+    return {...match, variantId: variantMapping[variantType][variant], variantType};
+  });
+
+  await createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+
+  // finally all other sections can be built
+  const excludeSections = new Set([
+    ...GENE_LINKED_VARIANT_MODELS,
+    'createdBy',
+    'template',
+    'genes',
+    'kbMatches',
+    'presentationDiscussion',
+    'presentationSlides',
+    'signatures',
+    'projects',
+    'ReportUserFilter',
+    'users',
+  ]);
+
+  // add images to db
+  const promises = (content.images || []).map(async ({path, key, caption, title}) => {
+    return loadImage(report.id, key, path, {caption, title, transaction});
+  });
+
+  // add the other sections
+  Object.keys(db.models.analysis_report.associations).filter((model) => {
+    return !excludeSections.has(model);
+  }).forEach((model) => {
+    logger.debug(`creating report (${model}) section (${report.ident})`);
+    if (content[model]) {
+      // sanitize html comment if it's not null
+      if (model === 'analystComments' && content[model].comments) {
+        content[model].comments = sanitizeHtml(content[model].comments);
+      }
+
+      // Add ranks to therapeutic targets
+      if (model === 'therapeuticTargets') {
+        content[model].forEach((target, i) => {
+          target.rank = i;
+        });
+      }
+      promises.push(createReportSection(report.id, model, content[model], {transaction}));
+    }
+  });
+
+  await Promise.all(promises);
+};
+
+/**
+ * Creates a genomic report and all report sections
+ *
+ * @param {object} data - An object containing all report and report section data
+ * @returns {string} - Returns the ident of the created report
+ */
+const createReport = async (data) => {
+  // get template
+  let template;
+  try {
+    template = await db.models.template.findOne({
+      where: {
+        name: {
+          [Op.iLike]: data.template,
+        },
+      },
+    });
+  } catch (error) {
+    throw new Error(`Error while trying to find template ${data.template} with error ${error.message || error}`);
+  }
+
+  if (!template) {
+    throw new Error(`Template ${data.template} doesn't currently exist`);
+  }
+
+  // Set template id
+  data.templateId = template.id;
+
+  // get project
+  let project;
+  try {
+    project = await db.models.project.findOne({
+      where: {
+        name: {
+          [Op.iLike]: data.project.trim(),
+        },
+      },
+    });
+  } catch (error) {
+    throw new Error(`Unable to find project ${data.project} with error ${error.message || error}`);
+  }
+
+  if (!project) {
+    throw new Error(`Project ${data.project} doesn't currently exist`);
+  }
+
+  // Create transaction for creates
+  const transaction = await db.transaction();
+
+  // create report
+  let report;
+  try {
+    report = await db.models.analysis_report.create(data, {transaction});
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(`Unable to create report ${error.message || error}`);
+  }
+
+  // find or create report-project association
+  try {
+    const reportProjectData = {reportId: report.id, project_id: project.id};
+    await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData, transaction});
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(`Unable to find or create report-project association ${error.message || error}`);
+  }
+
+  // Create report sections
+  try {
+    await createReportSections(report, data, transaction);
+    await transaction.commit();
+    return report.ident;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+module.exports = createReport;

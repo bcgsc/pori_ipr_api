@@ -17,6 +17,7 @@ let newUser;
 
 let server;
 let request;
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -48,6 +49,7 @@ describe('/user', () => {
         ])
       );
     });
+
     // Test for GET /user/me 200 endpoint
     test('GET current user /me', async () => {
       const res = await request
@@ -67,6 +69,7 @@ describe('/user', () => {
         })
       );
     });
+
     // Test for GET /user/settings 200 endpoint
     test('GET user settings', async () => {
       const res = await request
@@ -77,6 +80,7 @@ describe('/user', () => {
 
       expect(typeof res).toBe('object');
     });
+
     // Test for GET /user/search 200 endpoint
     test('GET search user', async () => {
       const res = await request
@@ -86,7 +90,7 @@ describe('/user', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body.length >= 1);
+      expect(res.body.length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -109,6 +113,7 @@ describe('/user', () => {
       // Remove test user from db
       await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
+
     // Test for POST /user 400 endpoint
     test('POST new user - Password is required for local', async () => {
       await request
@@ -124,6 +129,7 @@ describe('/user', () => {
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
+
     // Test for POST /user 400 endpoint
     test('POST new user - Password longer than 8 characters', async () => {
       await request
@@ -140,6 +146,7 @@ describe('/user', () => {
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
+
     // Test for POST /user 400 endpoint
     test('POST new user - Email should be valid', async () => {
       await request
@@ -155,6 +162,7 @@ describe('/user', () => {
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
+
     // Test for POST /user 400 endpoint
     test('POST new user - Type should be either local or bcgsc', async () => {
       await request
@@ -170,6 +178,7 @@ describe('/user', () => {
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
+
     // Test for POST /user 400 endpoint
     test('POST new user - All fields are required', async () => {
       await request

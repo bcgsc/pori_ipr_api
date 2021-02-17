@@ -38,9 +38,11 @@ describe('/therapeutic-targets', () => {
   let createdIdent;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // create report
     report = await db.models.analysis_report.create({
-      type: 'genomic',
+      templateId: template.id,
       patientId: 'PATIENT1234',
     });
   });
@@ -111,8 +113,12 @@ describe('/therapeutic-targets', () => {
           .type('json')
           .expect(HTTP_STATUS.OK);
         expect(Array.isArray(result)).toBe(true);
-        expect(result.map((r) => { return r.gene; })).toContain(original.gene); // easier to debug failures
-        expect(result.map((r) => { return r.ident; })).toContain(original.ident);
+        expect(result.map((r) => {
+          return r.gene;
+        })).toContain(original.gene); // easier to debug failures
+        expect(result.map((r) => {
+          return r.ident;
+        })).toContain(original.ident);
       });
 
       test('a single target by ID', async () => {

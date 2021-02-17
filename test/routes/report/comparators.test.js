@@ -42,19 +42,12 @@ const checkComparator = (comp) => {
 describe('/reports/{REPORTID}/comparators', () => {
   let report;
 
-  const comparatorSchema = {
-    ident: expect.any(String),
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
-    name: expect.any(String),
-    analysisRole: expect.any(String),
-    description: expect.any(String),
-    size: expect.any(Number),
-  };
-
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and discussion
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     await db.models.comparators.create({

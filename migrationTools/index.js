@@ -25,7 +25,11 @@ const addUniqueActiveFieldIndex = async (queryInterface, Sequelize, transaction,
 };
 
 
-const wrapColumnNames = (names) => { return names.map((c) => { return `"${c}"`; }); };
+const wrapColumnNames = (names) => {
+  return names.map((c) => {
+    return `"${c}"`;
+  });
+};
 
 const countDistinctRowFrequency = async (queryInterface, transaction, table, attributes) => {
   const columns = wrapColumnNames(attributes);

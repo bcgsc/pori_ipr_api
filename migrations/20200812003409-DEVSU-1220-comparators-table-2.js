@@ -132,7 +132,9 @@ module.exports = {
         const luads = [];
 
         for (let {comp, report_id: reportId} of reportComparators) {
-          comp = Array.from(new Set(comp)).sort().filter((c) => { return c; });
+          comp = Array.from(new Set(comp)).sort().filter((c) => {
+            return c;
+          });
           if (comp.length === 1) {
             singlePrimary.push(reportId);
           } else if (comp.length === 2 && comp.includes('average')) {

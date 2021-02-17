@@ -51,7 +51,9 @@ module.exports = {
         console.log(`copying ${expRecords.length} records from ${MUT_TABLE} to ${EXPRESSION_TABLE}`);
         await queryInterface.bulkInsert(
           EXPRESSION_TABLE,
-          expRecords.map((r) => { return {...r, ident: uuidv4()}; }),
+          expRecords.map((r) => {
+            return {...r, ident: uuidv4()};
+          }),
           {transaction}
         );
       }
@@ -87,7 +89,9 @@ module.exports = {
         console.log(`copying ${cnvRecords.length} records from ${MUT_TABLE} to ${CNV_TABLE}`);
         await queryInterface.bulkInsert(
           CNV_TABLE,
-          cnvRecords.map((r) => { return {...r, ident: uuidv4()}; }),
+          cnvRecords.map((r) => {
+            return {...r, ident: uuidv4()};
+          }),
           {transaction}
         );
       }

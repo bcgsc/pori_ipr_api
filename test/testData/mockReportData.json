@@ -1,5 +1,5 @@
 {
-    "type": "genomic",
+    "template": "genomic",
     "sampleInfo": [
         {
             "Sample": "Tumour",
@@ -353,139 +353,145 @@
             "percentile": 50
         }
     ],
+    "msi": [
+        {
+            "score": 19.5,
+            "kbCategory": "moderate"
+        }
+    ],
     "project": "TEST",
     "images": [
         {
-            "key": "mutSignature.corPcors.sbs",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors.png"
-        },
-        {
             "key": "mutSignature.barplot.sbs",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_snvs_all_strelka.png",
+            "path": "test/testData/images/msig_snvs_all_strelka.png",
             "title": "Test adding a title to an image"
         },
         {
             "key": "cnvLoh.circos",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_cnv_loh/circos.png",
+            "path": "test/testData/images/cnvLoh.png",
             "caption": "Test adding a caption to an image"
         },
         {
             "key": "cnv.1",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_1.png",
+            "path": "test/testData/images/cnv_set_1.png",
             "title": "Test adding a title and a caption to an image",
             "caption": "Test adding a title and a caption to an image"
         },
         {
             "key": "cnv.2",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_2.png"
+            "path": "test/testData/images/cnv_set_2.png"
         },
         {
             "key": "cnv.3",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_3.png"
+            "path": "test/testData/images/cnv_set_3.png"
         },
         {
             "key": "cnv.4",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_4.png"
+            "path": "test/testData/images/cnv_set_4.png"
         },
         {
             "key": "cnv.5",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/cnv/cnv_set_5.png"
+            "path": "test/testData/images/cnv_set_5.png"
         },
         {
             "key": "loh.1",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_1.png"
+            "path": "test/testData/images/loh_set_1.png"
         },
         {
             "key": "loh.2",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_2.png"
+            "path": "test/testData/images/loh_set_2.png"
         },
         {
             "key": "loh.3",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_3.png"
+            "path": "test/testData/images/loh_set_3.png"
         },
         {
             "key": "loh.4",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_4.png"
+            "path": "test/testData/images/loh_set_4.png"
         },
         {
             "key": "loh.5",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/loh/loh_set_5.png"
+            "path": "test/testData/images/loh_set_5.png"
         },
         {
             "key": "circosSv.genome",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_strct_var/circos_strct_var_genome.png"
+            "path": "test/testData/images/circos_strct_var_genome.png"
         },
         {
             "key": "circosSv.transcriptome",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/circos_strct_var/circos_strct_var_transcriptome.png"
+            "path": "test/testData/images/circos_strct_var_transcriptome.png"
         },
         {
             "key": "expression.chart",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expression/expression.png"
+            "path": "test/testData/images/expression.png"
         },
         {
             "key": "expression.legend",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expression/expression_legend.png"
+            "path": "test/testData/images/expression_legend.png"
         },
         {
             "key": "expDensity.MYC_ENSG00000136997",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/MYC_ENSG00000136997.png"
+            "path": "test/testData/images/expDensity.MYC.png"
         },
         {
             "key": "expDensity.CES2",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/expr_density/CES2_ENSG00000172831.png"
+            "path": "test/testData/images/expDensity.CES2.png"
         },
         {
             "key": "mutationBurden.barplot_sv.secondary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_sv.png"
+            "path": "test/testData/images/mutation_summary_barplot_sv.png"
         },
         {
             "key": "mutationBurden.barplot_snv.primary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_snv.paad.png"
+            "path": "test/testData/images/mutation_summary_barplot_snv.paad.png"
         },
         {
             "key": "mutationBurden.barplot_indel.primary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_barplot_indel.paad.png"
+            "path": "test/testData/images/mutation_summary_barplot_indel.paad.png"
         },
         {
             "key": "mutationBurden.density_sv.secondary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_sv.png"
+            "path": "test/testData/images/mutation_summary_density_plot_sv.png"
         },
         {
             "key": "mutationBurden.density_snv.primary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_snv.paad.png"
+            "path": "test/testData/images/mutation_summary_density_plot_snv.paad.png"
         },
         {
             "key": "mutationBurden.density_indel.primary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_density_plot_indel.paad.png"
+            "path": "test/testData/images/mutation_summary_density_plot_indel.paad.png"
         },
         {
             "key": "mutationBurden.legend_sv.secondary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_sv.png"
+            "path": "test/testData/images/mutation_summary_legend_sv.png"
         },
         {
             "key": "mutationBurden.legend_snv_indel.primary",
-            "path": "/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_summary_image/mutation_summary_legend_snv_indel.paad.png"
+            "path": "test/testData/images/mutation_summary_legend_snv_indel.paad.png"
         },
         {
             "key": "cibersort.cd8_positive_t-cell_scatter",
-            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.cd8_positive_t-cell_scatter.png"
+            "path": "test/testData/images/cibersort.cd8_positive_t-cell_scatter.png"
         },
         {
             "key": "cibersort.combined_t-cell_scatter",
-            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/cibersort.combined_t-cell_scatter.png"
+            "path": "test/testData/images/cibersort.combined_t-cell_scatter.png"
         },
         {
             "key": "mixcr.circos_trb_vj_gene_usage",
-            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.circos_trb_vj_gene_usage.png"
+            "path": "test/testData/images/mixcr.circos_trb_vj_gene_usage.png"
         },
         {
             "key": "mixcr.dominance_vs_alpha_beta_t-cells_scatter",
-            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
+            "path": "test/testData/images/mixcr.dominance_vs_alpha_beta_t-cells_scatter.png"
         },
         {
             "key": "scpPlot",
-            "path": "/projects/dat/integration_testing/ipr/gsc20_test_report/images/scpPlot.png"
+            "path": "test/testData/images/scpPlot.png"
+        },
+        {
+            "key": "msi.scatter",
+            "path": "test/testData/images/msi.scatter.png"
         }
     ]
 }

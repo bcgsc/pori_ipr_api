@@ -47,8 +47,11 @@ describe('/reports/{REPORTID}/pairwise-expression-correlation', () => {
   let report;
 
   beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and discussion
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
     await db.models.pairwiseExpressionCorrelation.create({
@@ -70,7 +73,9 @@ describe('/reports/{REPORTID}/pairwise-expression-correlation', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      res.body.forEach((corr) => { return checkCorrelation(corr); });
+      res.body.forEach((corr) => {
+        return checkCorrelation(corr);
+      });
     });
   });
 

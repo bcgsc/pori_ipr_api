@@ -55,7 +55,7 @@ const testAutocompleteWithoutKeyword = async (request, type) => {
   return body.result;
 };
 
-describe('/graphkb', () => {
+describe.skip('GET /graphkb/:targetType', () => {
   let server;
   let request;
 
@@ -108,5 +108,31 @@ describe('/graphkb', () => {
     test('without keyword', async () => {
       await testAutocompleteWithoutKeyword(request, 'therapy');
     });
+  });
+});
+
+describe.skip('GET /graphkb/evidence-levels', () => {
+  let server;
+  let request;
+
+  beforeAll(async () => {
+    const port = await getPort({port: CONFIG.get('web:port')});
+    server = await listen(port);
+    request = supertest(server);
+  });
+
+  afterAll(async () => {
+    await server.close();
+  });
+
+  test('returns at least one evidence level and the description is included', async () => {
+    const {body} = await request
+      .get(`${BASE_URL}/evidence-levels`)
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+
+    expect(body.result.length).toBeGreaterThan(0);
+    expect(body.result[0]).toHaveProperty('description');
   });
 });

@@ -105,12 +105,12 @@ router.route('/:group([A-z0-9-]{36})')
         logger.error('SQL Error while trying to find owner/user');
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find owner/user'}});
       }
-  
+
       if (!user) {
         logger.error('Unable to find the specified owner');
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the specified owner'}});
       }
-  
+
       req.body.owner_id = user.id;
     }
 

@@ -1,32 +1,32 @@
-### Integrated Pipeline Reports API
-======================================
+# Integrated Pipeline Reports API
 
-![Build Status](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API)
+![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-10%20%7C%2012%20-blue) [![postgres versions](https://img.shields.io/badge/postgres-9.6%20-blue)](https://www.orientdb.org/)
 
 The Integrated pipeline reports API manages data access to the IPR database on iprdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic, probe reports, and Germline Small Mutation reports.
 
-#### Installation
-======================================
+## Installation
 
 After cloning the repository, the application's dependencies need to be installed:
-```
+
+```bash
 npm install
 ```
 
 This process can take between 1-5 minutes depending on caches, and connection speed. Once NPM has finished installing
 all required dependencies, the server can be started with the following command:
-```
+
+```bash
 NODE_ENV=[local|development|production|staging|test] npm start
 ```
 
 If NPM is not available, the application server can be booted by executing through node directly:
-```
+
+```bash
 NODE_ENV=[local|development|production] node bin/www
 ```
 
-#### Configuration
-======================================
+## Configuration
 
 This repository contains configuration profiles for production, testing, and development environments. A profile will be
 selected based on the NODE_ENV environment setting, or by explicitly calling --env [production|development] when
@@ -55,9 +55,7 @@ of `--<section>.<setting>`. For Example
 app.js --database.hostname someTestServerName
 ```
 
-
-#### Running Tests with Jest
-======================================
+## Running Tests with Jest
 
 Unit and Integration tests are run and written using Jest + Supertest with code coverage reports generated using Clover. Tests are configured to run using a local environment variable - this currently cannot be overridden.
 
@@ -75,19 +73,16 @@ export IPR_TESTING_PASSWORD=someApiPassword
 npm run test
 ```
 
-#### Generating JSDocs
-======================================
+## Generating JSDocs
 
 Developer documentation is generated using the JSDoc library. To generate a local copy of the documentation, cd into the root of the project directory and run the command `npm run jsdoc`. This should automatically create documentation within folder named 'jsdoc' that can be viewed in a web browser.
 
-#### Coding Specifications
-======================================
+## Coding Specifications
 
 1. When updating a models data please use the `model.update` method instead of `instance.save`. We currently have an update hook that doesn't run properly on `instance.save`.
 However, this is being investigated in this ticket https://www.bcgsc.ca/jira/browse/DEVSU-905.
 
-#### Migrating Database Changes
-======================================
+## Migrating Database Changes
 
 * Create a migration: `npx sequelize migration:create --name name_of_migratrion`
 * Write up and down functions in your migration file
@@ -101,7 +96,7 @@ npx sequelize-cli db:migrate --url "postgres://ipr_service:$IPR_SERVICE_PASS@ipr
 
 Sequelize Migration Docs: http://docs.sequelizejs.com/manual/migrations.html
 
-##### Testing Migration Changes
+### Testing Migration Changes
 
 To avoid breaking the standard development setup or having your migrations overwritten by the sync
 crons. You can create a temporary copy of the database as follows
@@ -137,8 +132,7 @@ Once you are done with testing, delete the temporary database
 dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
-#### Migrations in Pull Requests
-======================================
+## Migrations in Pull Requests
 
 1. Create temp db for ticket (see the `Testing Migration Changes` section)
 2. Point `DEFAULT_DB_NAME` varaible to your new temp db in `app/config.js`
@@ -151,8 +145,7 @@ dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 9. Merge code changes into development branch
 10. Delete the temp db you created
 
-#### Process Manager
-======================================
+## Process Manager
 
 The production installation of IPR is run & managed by a [pm2](http://pm2.keymetrics.io/) instance on `iprweb03.bcgsc.ca`. The test API is run off of iprweb01 and the development API is run off of iprdev01.
 
@@ -160,7 +153,7 @@ As of this writing, pm2 is instantiated by bpierce, and as a result, the process
 
 To interact with pm2, ssh to iprweb03 and cd to `/var/www/ipr/api/[production]`. From here, running pm2 will list the running instances:
 
-```
+```text
 bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
 ┌────────────────────┬─────┬──────┬───────┬────────┬─────────┬────────┬─────┬───────────┬──────────┐
 │ App name           │ id  │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ watching │
@@ -183,23 +176,25 @@ bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
 It is possible to use pm2 to actively monitor the console of the applications by using `pm2 monit`.
 
 Note: The pm2 daemon will sometimes launch a new instance of pm2 when running pm2 commands as opposed to accessing the currently running version of pm2. You can tell if there are multiple instances running by executing the command `ps aux | grep pm2`
-```
+
+```text
 [nmartin@iprweb03 ~]$ ps aux | grep pm2
 bpierce  13787  0.1  1.2 952276 50004 ?        Ssl  Jul20   9:28 PM2 v3.0.0: God Daemon (/home/bpierce/.pm2)
 bpierce  13800  0.1  1.5 1224456 61028 ?       Ssl  Jul20   9:49 node /home/bpierce/.pm2/node_modules/pm2-logrotate/app.js
 nmartin  18162  0.0  0.0 103312   856 pts/0    S+   10:55   0:00 grep pm2
 ```
+
 At any given time, there should only be three processes listed in this command: one for the daemon, one for the node pm2 instance, and one for the grep command. If there are additional instances running (usually in a pair of a daemon process and node process) you should execute the kill command as bpierce for any daemon instances that are not the most recent one. Note that the logs are streamed in from the most recently activated instance of pm2 - therefore, if you have multiple instances running off of the same port, the logs will only indicate that the API initialization has failed due to the port already being in use until you kill old instances and allow the newest one to connect.
 
 It is also important to note that the issue mentioned above will sometimes cause the production API deployment to fail. Before deploying a new production build of the API, you should instantiate a new pm2 instance by running the following on the production API server and then killing any old pm2 instances:
-```
+
+```bash
 cd /var/www/ipr/api/production
 
 pm2 start current/pm2.config.js --env production
 ```
 
-
-```
+```text
 ┌─ Process list ──────────────────────┐┌─ Global Logs ───────────────────────────────────────────────────────────────────────────┐
 │[101] IPR-API        Mem:  88 MB     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Retrieved     │
 │                                     ││ assembly results                                                                        │
@@ -236,12 +231,9 @@ pm2 start current/pm2.config.js --env production
 └─────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+## Structure
 
-
-#### Structure
-======================================
-
-```
+```text
 .
 ├── app                                 # Application files
 |   |
@@ -313,4 +305,31 @@ pm2 start current/pm2.config.js --env production
 │
 └── migrations                          # Migrations
                                         Special one-use functions used to migrate data, and models to updated schemas.
+```
+
+## Docker
+
+The API image requires the DB image and the keycloak image to already been build and running. If you
+are setting up the entire platform, see the [full platform repository](https://github.com/bcgsc/pori)
+
+To build the API image
+
+```bash
+docker build -t bcgsc/pori-ipr-api -f Dockerfile .
+```
+
+Then to start the container
+
+```bash
+docker run -e IPR_DATABASE_HOSTNAME=localhost \
+  -e IPR_DATABASE_NAME=ipr_demo \
+  -e IPR_DATABASE_PASSWORD=root \
+  -e IPR_DATABASE_USERNAME=ipr_service \
+  -e IPR_GRAPHKB_PASSWORD=ipr_graphkb_link \
+  -e IPR_GRAPHKB_USERNAME=ipr_graphkb_link \
+  -e IPR_GRAPHKB_URI='http://localhost:8080/api' \
+  -e IPR_KEYCLOAK_KEYFILE=/keys/keycloak.key \
+  -e IPR_KEYCLOAK_URI='http://localhost:8888/auth/realms/PORI/protocol/openid-connect/token' \
+  --mount type=bind,source="$(pwd)"/keys,target=/keys \
+  bcgsc/pori-ipr-api:latest
 ```

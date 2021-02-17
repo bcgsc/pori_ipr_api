@@ -6,69 +6,113 @@ const router = express.Router({mergeParams: true});
 const db = require('../../models');
 const logger = require('../../log');
 
-const variantMiddleware = require('../../middleware/germlineSmallMutation/germline_small_mutation_variant.middleware');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {GERMLINE_UPDATE_BASE_URI} = require('../../constants');
+const {GERMLINE_CREATE_BASE_URI, GERMLINE_UPDATE_BASE_URI} = require('../../constants');
+const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 
-// Generate schema
-const updateSchema = schemaGenerator(db.models.germline_small_mutation_variant, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patient_history', 'family_history'], nothingRequired: true,
+// Generate schema's
+const createSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
+  baseUri: GERMLINE_CREATE_BASE_URI, exclude: GERMLINE_EXCLUDE,
+});
+const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
+  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patientHistory', 'familyHistory'], nothingRequired: true,
 });
 
-router.param('variant', variantMiddleware);
 
-// Resource endpoints for Variants
+// Middleware for germline variants
+router.param('variant', async (req, res, next, ident) => {
+  let result;
+  try {
+    result = await db.models.germlineSmallMutationVariant.findOne({
+      where: {ident, germlineReportId: req.report.id},
+    });
+  } catch (error) {
+    logger.error(`Error while trying to get germline report variant ${error}`);
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to get germline report variant'}});
+  }
+
+  if (!result) {
+    logger.error('Unable to find germline report variant');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find germline report variant'}});
+  }
+
+  req.variant = result;
+  return next();
+});
+
+
+// Handles requests for a single germline variant
 router.route('/:variant')
-  /**
-   * Get an existing variant
-   *
-   * GET /{gsm_report}/variant/{variant}
-   *
-   * @urlParam {stirng} report - Report UUID
-   * @urlParam {string} variant - Variant id (ident)
-   *
-   * @param {object} req - Express request
-   * @param {object} res - Express response
-   *
-   * @returns {object} - Returns requested variant
-   */
   .get((req, res) => {
     return res.json(req.variant.view('public'));
   })
-
-  /**
-   * Update an existing variant
-   *
-   * PUT /{gsm_report}/variant/{variant}
-   *
-   * @urlParam {stirng} report - Report UUID
-   * @urlParam {string} variant - Variant id (ident)
-   *
-   * @param {object} req - Express request
-   * @param {object} res - Express response
-   *
-   * @property {object} req.variant - Requested variant
-   *
-   * @returns {object} - Returns updated variant
-   */
   .put(async (req, res) => {
-    // Validate request against schema
     try {
+      // validate against the model
       validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
-      logger.error(`Germline variant validation failed ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Germline variant validation failed'}});
+      const message = `There was an error validating the germline variant update request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    // Update db entry
+    try {
+      await req.variant.update(req.body);
+      return res.json(req.variant.view('public'));
+    } catch (error) {
+      logger.error(`Unable to update germline variant ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update germline variant'}});
+    }
+  })
+  .delete(async (req, res) => {
+    // Soft delete germline variant
+    try {
+      await req.variant.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`There was an error while trying to remove the requested germline variant ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline variant'});
+    }
+  });
+
+
+// Handles requests for all germline variants for a report
+router.route('/')
+  .get(async (req, res) => {
+    try {
+      const results = await db.models.germlineSmallMutationVariant.scope('public').findAll({
+        where: {germlineReportId: req.report.id},
+      });
+      return res.json(results);
+    } catch (error) {
+      logger.error(`Unable to retrieve germline variants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve germline variants'}});
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      // validate against the model
+      validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the germline variant create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     try {
-      await req.variant.update(req.body);
-      await req.variant.reload();
-      return res.json(req.variant.view('public'));
+      // Add new variant to germline report
+      const result = await db.models.germlineSmallMutationVariant.create({
+        ...req.body,
+        germlineReportId: req.report.id,
+      });
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
-      logger.error(`Error while trying to update germline variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to update germline variant'});
+      logger.error(`Unable to create new germline variant ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new germline variant'}});
     }
   });
+
 
 module.exports = router;

@@ -1271,15 +1271,6 @@
         ],
         "parameters": [
           {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "description": "Filter the reports by 'genomic'or 'probe'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "project",
             "in": "query",
             "required": false,
@@ -2075,6 +2066,31 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "exported",
+            "in": "query",
+            "required": false,
+            "description": "Returns reports with exported set to true/false",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "reviewType",
+            "in": "query",
+            "required": false,
+            "description": "Returns reports with reviews of type reviewType",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            }
           }
         ],
         "security": [
@@ -2096,7 +2112,7 @@
                     "reports": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                        "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                       }
                     }
                   }
@@ -2121,7 +2137,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutationCreate"
+                "$ref": "#/components/schemas/germlineSmallMutationCreate"
               }
             }
           }
@@ -2140,7 +2156,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                 }
               }
             }
@@ -2177,7 +2193,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                 }
               }
             }
@@ -2205,7 +2221,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutationUpdate"
+                "$ref": "#/components/schemas/germlineSmallMutationUpdate"
               }
             }
           }
@@ -2224,7 +2240,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutationAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
                 }
               }
             }
@@ -2266,7 +2282,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/review": {
+    "/germline-small-mutation-reports/{germline}/reviews": {
       "get": {
         "summary": "Get Germline Reviews",
         "description": "Retrieve all reviews for a given germline report",
@@ -2291,7 +2307,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                    "$ref": "#/components/schemas/germlineSmallMutationReviewAssociations"
                   }
                 }
               }
@@ -2306,7 +2322,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/review/{review}": {
+    "/germline-small-mutation-reports/{germline}/reviews/{review}": {
       "get": {
         "summary": "Get Germline Review",
         "description": "Retrieve the specified review for a given germline report",
@@ -2332,7 +2348,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationReviewAssociations"
                 }
               }
             }
@@ -2363,7 +2379,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutation_reviewUpdate"
+                "$ref": "#/components/schemas/germlineSmallMutationReviewUpdate"
               }
             }
           }
@@ -2382,7 +2398,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_reviewAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationReviewAssociations"
                 }
               }
             }
@@ -2427,7 +2443,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/variant": {
+    "/germline-small-mutation-reports/{germline}/variants": {
       "get": {
         "summary": "Get Germline Variants",
         "description": "Retrieve all variants for a given germline report",
@@ -2452,7 +2468,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                    "$ref": "#/components/schemas/germlineSmallMutationVariantAssociations"
                   }
                 }
               }
@@ -2467,7 +2483,7 @@
         }
       }
     },
-    "/germline-small-mutation-reports/{germline}/variant/{variant}": {
+    "/germline-small-mutation-reports/{germline}/variants/{variant}": {
       "get": {
         "summary": "Get Germline Variant",
         "description": "Retrieve the specified variant for a given germline report",
@@ -2493,7 +2509,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationVariantAssociations"
                 }
               }
             }
@@ -2524,7 +2540,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/germline_small_mutation_variantUpdate"
+                "$ref": "#/components/schemas/germlineSmallMutationVariantUpdate"
               }
             }
           }
@@ -2543,7 +2559,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/germline_small_mutation_variantAssociations"
+                  "$ref": "#/components/schemas/germlineSmallMutationVariantAssociations"
                 }
               }
             }
@@ -2590,14 +2606,15 @@
     },
     "/graphkb/{targetType}": {
       "post": {
-        "summary": "",
-        "description": "",
+        "summary": "Get targets by type",
+        "description": "Gets targets from GraphKB (for client autocomplete)",
         "parameters": [
           {
             "$ref": "#/components/parameters/targetType"
           }
         ],
         "tags": [
+          "GraphKb"
         ],
         "security": [
           {
@@ -2606,11 +2623,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the targets from GraphKB",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/graphkbTargets"
                 }
               }
             }
@@ -2620,6 +2637,45 @@
           },
           "404": {
             "description": "Report Not found"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
+          }
+        }
+      }
+    },
+    "/graphkb/evidence-levels": {
+      "get": {
+        "summary": "Get evidence levels",
+        "description": "Get IPR evidence levels from GraphKb",
+        "parameters": [],
+        "tags": [
+          "GraphKb"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response object from GraphKb API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/evidenceLevels"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
           }
         }
       }
@@ -3478,7 +3534,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/kbMatchesAssociations"
+                    "$ref": "#/components/schemas/kbMatchesReturnObject"
                   }
                 }
               }
@@ -3519,7 +3575,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/kbMatchesAssociations"
+                  "$ref": "#/components/schemas/kbMatchesReturnObject"
                 }
               }
             }
@@ -4894,6 +4950,424 @@
           }
         }
       }
+    },
+    "/reports/{report}/msi": {
+      "get": {
+        "summary": "Get MSI Data",
+        "description": "Retrieve MSI data for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all MSI data for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/msiAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create MSI Entry",
+        "description": "Add a new MSI entry to this report",
+        "tags": [
+          "MSI"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Values for creating a new MSI entry",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/msiCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the newly created MSI entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/msiAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/msi/{msi}": {
+      "get": {
+        "summary": "Get MSI Entry",
+        "description": "Retrieve a specific MSI Entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/msi"
+          }
+        ],
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified MSI entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/msiAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or MSI not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update MSI Entry",
+        "description": "Update the details of a MSI entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/msi"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update specified MSI entry",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/msiUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated MSI entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/msiAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or MSI not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete MSI Entry",
+        "description": "Removes the specified MSI entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/msi"
+          }
+        ],
+        "tags": [
+          "MSI"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or MSI not found"
+          }
+        }
+      }
+    },
+    "/templates": {
+      "get": {
+        "summary": "Get Templates",
+        "description": "Retrieve all templates",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organization",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by organization",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Templates"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/templateAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Template",
+        "description": "Upload a new template",
+        "parameters": [
+        ],
+        "requestBody": {
+          "description": "Template data and images",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/templateCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Templates"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the created template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/templates/{template}": {
+      "get": {
+        "summary": "Get Template",
+        "description": "Retrieve a specific template",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Templates"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Template",
+        "description": "Update the details of a template",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "requestBody": {
+          "description": "Template data and images",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/templateUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Templates"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Template",
+        "description": "Removes the specified template",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Templates"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
@@ -5105,6 +5579,26 @@
             "reviewer"
           ]
         }
+      },
+      "msi": {
+        "name": "msi",
+        "in": "path",
+        "required": true,
+        "description": "MSI ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "template": {
+        "name": "template",
+        "in": "path",
+        "required": true,
+        "description": "template ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
       }
     },
     "securitySchemes": {
@@ -5151,6 +5645,22 @@
           }
         }
       },
+      "kbMatchesReturnObject": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/kbMatchesAssociations"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "description": "Current review status of this record in GraphKb",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "expressionMatrix": {
         "type": "array",
         "items": {
@@ -5181,6 +5691,69 @@
             }
           }
         }
+      },
+      "evidenceLevels": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "records": {
+                "type": "integer"
+              }
+            }
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "@class": {
+                  "type": "string"
+                },
+                "@rid": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "graphkbTargets": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "records": {
+                "type": "integer"
+              }
+            }
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "@class": {
+                  "type": "string"
+                },
+                "@rid": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "responses": {
@@ -5193,6 +5766,9 @@
             }
           }
         }
+      },
+      "ServiceUnavailableError": {
+        "description": "External service is unavailable"
       }
     }
   },

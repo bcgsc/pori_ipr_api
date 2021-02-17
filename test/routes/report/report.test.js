@@ -54,6 +54,8 @@ describe('/reports/{REPORTID}', () => {
   let totalReports;
 
   beforeEach(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and associate projects
     const project = await db.models.project.findOne({
       where: {
@@ -62,6 +64,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
       tumourContent: 100,
     });
@@ -71,6 +74,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     reportReady = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
       state: 'ready',
     });
@@ -80,6 +84,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     reportReviewed = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
       state: 'reviewed',
     });
@@ -89,6 +94,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     reportArchived = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
       state: 'archived',
     });
@@ -151,7 +157,9 @@ describe('/reports/{REPORTID}', () => {
 
       res.body.reports.forEach((reportObject) => {
         expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
-        expect(reportObject.users.some((user) => { return user.role === 'bioinformatician'; })).toBeTruthy();
+        expect(reportObject.users.some((user) => {
+          return user.role === 'bioinformatician';
+        })).toBeTruthy();
       });
     });
 

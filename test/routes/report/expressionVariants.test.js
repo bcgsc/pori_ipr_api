@@ -30,6 +30,12 @@ describe('/expression-variants', () => {
       attributes: ['id', 'ident', 'reportId'],
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
+        {
+          model: db.models.analysis_report,
+          as: 'report',
+          attributes: ['ident', 'id'],
+          required: true,
+        },
       ],
       where: {deletedAt: null},
     });

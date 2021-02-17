@@ -1,6 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
 
-const path = require('path');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../../app/models');
@@ -41,8 +40,11 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
   let report;
 
   beforeEach(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and Mutation Summary
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
 

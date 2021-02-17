@@ -55,11 +55,11 @@ describe('Tests for uploading a report and all of its components', () => {
   }, LONGER_TIMEOUT);
 
   // Test that all components were created
-  test('Test that all components were created', async () => {
+  test('All components were created correctly', async () => {
     // for all components, do a find where report_id
     // is the same as the created report id
     const {
-      ReportUserFilter, createdBy, signatures,
+      ReportUserFilter, createdBy, template, signatures,
       presentationDiscussion, presentationSlides,
       users, projects, ...associations
     } = db.models.analysis_report.associations;
@@ -80,7 +80,7 @@ describe('Tests for uploading a report and all of its components', () => {
     });
   }, LONGER_TIMEOUT);
 
-  test('genes entries were created from variant and gene rows', async () => {
+  test('Genes entries were created correctly from variant and gene rows', async () => {
     const genes = await db.models.genes.findAll({where: {reportId}});
     expect(genes).toHaveProperty('length', 5);
 
@@ -89,6 +89,14 @@ describe('Tests for uploading a report and all of its components', () => {
       name: 'ZFP36L2',
       oncogene: true,
     })]));
+  });
+
+  test('Template was linked correctly', async () => {
+    // Get Report and test that the template data in the report is correct
+    const report = await db.models.analysis_report.findOne({where: {id: reportId}, attributes: ['templateId']});
+    const template = await db.models.template.findOne({where: {name: 'genomic'}, attributes: ['id']});
+
+    expect(template.id).toBe(report.templateId);
   });
 
   // delete report
@@ -111,7 +119,7 @@ describe('Test for uploading a report with empty image data', () => {
   test('Upload fails on empty image data', async () => {
     // create report
     const emptyImageMockReportData = mockReportData;
-    emptyImageMockReportData.images[0].path = '/projects/vardb/integration_testing/ipr/gsc20_test_report/images/mut_signature_image/msig_cor_pcors_empty.png';
+    emptyImageMockReportData.images[0].path = 'test/testData/images/empty_image.png';
     const res = await request
       .post('/api/reports')
       .auth(username, password)

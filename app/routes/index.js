@@ -2,6 +2,7 @@ const express = require('express');
 
 // Get middleware files
 const reportMiddleware = require('../middleware/analysis_report');
+const germlineMiddleware = require('../middleware/germlineSmallMutation/reports');
 const authMiddleware = require('../middleware/auth');
 
 // Get route files
@@ -9,18 +10,19 @@ const APIVersion = require('./version');
 const userRoute = require('./user');
 const groupRoute = require('./user/group');
 
-const patientInformationRoute = require('./report/patientInformation');
 const reportsRoute = require('./report/report');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
+const templateRoute = require('./template');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
-const germlineReports = require('./germlineSmallMutation');
+const germlineReports = require('./germlineSmallMutation/reports');
+const germlineReportSections = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const graphkbRouter = require('./graphkb');
-const report = require('./report/base');
+const reportSections = require('./report');
 
 const router = express.Router({mergeParams: true});
 
@@ -46,6 +48,7 @@ class Routing extends RouterInterface {
 
     // Add MiddleWare to routing
     this.router.param('report', reportMiddleware);
+    this.router.param('gsm_report', germlineMiddleware);
 
     // Add Authentication coverage
     this.router.use(`(${
@@ -56,6 +59,7 @@ class Routing extends RouterInterface {
         '/reports',
         '/germline-small-mutation-reports',
         '/export',
+        '/templates',
       ].join('|')})`, authMiddleware);
 
     // Add Single Routes
@@ -67,13 +71,14 @@ class Routing extends RouterInterface {
     this.router.use('/user/group', groupRoute);
 
     this.router.use('/reports', reportsRoute);
-    this.router.use('/reports/:report/patient-information', patientInformationRoute);
+    this.router.use('/reports/:report', reportSections);
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
 
     // Get Germline Reports Routes
     this.router.use('/germline-small-mutation-reports', germlineReports);
+    this.router.use('/germline-small-mutation-reports/:gsm_report', germlineReportSections);
 
     // Get Export Germline Reports Routes
     this.router.use('/export/germline-small-mutation-reports', germlineReportsExport);
@@ -81,8 +86,9 @@ class Routing extends RouterInterface {
     // Get Project Routes
     this.router.use('/project', projectRoute);
 
-    // Auto-Build routes
-    this.router.use('/reports/:report', report);
+    // Get template routes
+    this.router.use('/templates', templateRoute);
+
     return true;
   }
 }

@@ -52,8 +52,11 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
   let mutationBurden;
 
   beforeEach(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and Mutation Burden
     report = await db.models.analysis_report.create({
+      templateId: template.id,
       patientId: mockReportData.patientId,
     });
 
@@ -73,7 +76,9 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
-      res.body.forEach((burden) => { return checkMutationBurden(burden); });
+      res.body.forEach((burden) => {
+        return checkMutationBurden(burden);
+      });
     });
 
     test('fetches known ident ok', async () => {
@@ -142,7 +147,7 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
     });
 
     test('error on unexpected value', async () => {
-      const res = await request
+      await request
         .put(`/api/reports/${report.ident}/mutation-burden/${mutationBurden.ident}`)
         .auth(username, password)
         .type('json')

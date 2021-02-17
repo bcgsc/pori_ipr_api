@@ -24,20 +24,25 @@ module.exports = {
     [
       'jest-junit',
       {
-        outputDirectory: '<rootDir>/coverage'
+        outputDirectory: '<rootDir>/coverage',
       },
     ],
   ],
-  testRegex: 'test/.*\\.js',
+  testRegex: 'test/.*\\.test\\.js',
   testEnvironment: 'node',
   testPathIgnorePatterns: [
     '/node_modules/',
     'test/repo/query/util.js',
     'test/util.js',
     'test/testData/',
+    '.*.mock.js',
+    'test/keys',
   ],
   moduleFileExtensions: [
     'js',
     'json',
+  ],
+  setupFiles: [
+    '<rootDir>/test/keycloak.mock.js',
   ],
 };

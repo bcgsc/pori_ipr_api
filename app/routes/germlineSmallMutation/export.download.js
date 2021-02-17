@@ -5,7 +5,7 @@ const {Op} = require('sequelize');
 const express = require('express');
 
 const db = require('../../models');
-const Variants = require('./util/germline_small_mutation_variant');
+const Variants = require('./util/variants');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
@@ -13,7 +13,9 @@ const router = express.Router({mergeParams: true});
 
 // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
 const parseMutationSignature = (arr) => {
-  return arr.map((ls) => { return `${ls.kbCategory} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`; }).join('; ');
+  return arr.map((ls) => {
+    return `${ls.kbCategory} ${(ls.associations !== '-') ? ls.associations : `Signature ${ls.signature}`}`;
+  }).join('; ');
 };
 
 /**
@@ -39,22 +41,22 @@ router.get('/batch/download', async (req, res) => {
 
   try {
     // Build list of reports that have been reviewed by both projects and biofx
-    germlineReports = await db.models.germline_small_mutation.findAll({
+    germlineReports = await db.models.germlineSmallMutation.findAll({
       where: {
         exported: false,
       },
       include: [
         {
-          model: db.models.germline_small_mutation_variant,
+          model: db.models.germlineSmallMutationVariant,
           as: 'variants',
           required: true,
           order: [['gene', 'asc']],
         },
         {
-          model: db.models.germline_small_mutation_review,
+          model: db.models.germlineSmallMutationReview,
           as: 'reviews',
           required: Boolean(requiredReviews.length),
-          include: [{model: db.models.user.scope('public'), as: 'reviewedBy'}],
+          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
       ],
     });
@@ -77,7 +79,9 @@ router.get('/batch/download', async (req, res) => {
           as: 'report',
           where: {
             patientId: {
-              [Op.in]: germlineReports.map((germReport) => { return germReport.patientId; }),
+              [Op.in]: germlineReports.map((germReport) => {
+                return germReport.patientId;
+              }),
             },
             state: {
               [Op.in]: ['reviewed', 'active', 'archived'],
@@ -97,9 +101,13 @@ router.get('/batch/download', async (req, res) => {
   // Loop through reports, and ensure they have all required reviews
   for (const report of germlineReports) {
     // Ensure all required reviews are present on report
-    const reportReviews = report.reviews.map((review) => { return review.type; });
+    const reportReviews = report.reviews.map((review) => {
+      return review.type;
+    });
 
-    if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
+    if (requiredReviews.every((state) => {
+      return reportReviews.includes(state);
+    })) {
       // contains all the required reviews
       const summaryMatch = matchedMutationSignatures.filter((signature) => {
         return signature.report.patientId === report.patientId;
@@ -109,7 +117,9 @@ router.get('/batch/download', async (req, res) => {
         ? parseMutationSignature(summaryMatch)
         : 'N/A';
 
-      for (const variant of report.variants.filter((v) => { return !v.hidden; })) {
+      for (const variant of report.variants.filter((v) => {
+        return !v.hidden;
+      })) {
         variants.push({
           ...variant.toJSON(),
           sample: `${report.patientId}_${report.normalLibrary}`,
@@ -151,9 +161,13 @@ router.get('/batch/download', async (req, res) => {
   try {
     // Mark all exported reports in DB
     await Promise.all(germlineReports.map(async (report) => {
-      const reportReviews = report.reviews.map((review) => { return review.type; });
+      const reportReviews = report.reviews.map((review) => {
+        return review.type;
+      });
 
-      if (requiredReviews.every((state) => { return reportReviews.includes(state); })) {
+      if (requiredReviews.every((state) => {
+        return reportReviews.includes(state);
+      })) {
         report.exported = true;
         return report.save({fields: ['exported'], hooks: false});
       }

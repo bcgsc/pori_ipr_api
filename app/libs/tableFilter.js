@@ -22,7 +22,9 @@ const tableFilter = (req, opts, columnMapping) => {
 
   /* Grab the filters and check to see if the columns are in the list of filterable ones */
   const queryFilters = Object.entries(req.query)
-    .filter(([key]) => Object.keys(columnMapping).includes(key));
+    .filter(([key]) => {
+      return Object.keys(columnMapping).includes(key);
+    });
 
   if (queryFilters.length) {
     /* Get the column, operation, and value for each filter */
