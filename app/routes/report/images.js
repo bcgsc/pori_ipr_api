@@ -130,7 +130,7 @@ const IMAGES_CONFIG = [
     width: 990,
     height: 765,
     format: 'PNG',
-  }
+  },
 ];
 
 /**
