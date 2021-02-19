@@ -125,6 +125,12 @@ const IMAGES_CONFIG = [
     height: 1000,
     format: 'PNG',
   },
+  {
+    pattern: 'pathwayAnalysis.legend',
+    width: 990,
+    height: 765,
+    format: 'PNG',
+  }
 ];
 
 /**

@@ -33,6 +33,7 @@ module.exports = {
     'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
     'scpPlot',
     'msi.scatter',
+    'pathwayAnalysis.legend',
   ].map((patt) => {
     return `(${patt})`;
   }).join('|')}$`,
