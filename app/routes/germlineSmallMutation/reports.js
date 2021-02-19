@@ -117,22 +117,12 @@ router.route('/')
 
 
     // Check if filtering by review
-    if (reviewType) {
+    if (reviewType || inProjectsGroup) {
       opts.include.push(
         {
           as: 'reviews',
           model: db.models.germlineSmallMutationReview,
-          where: {type: reviewType.split(',') || reviewType},
-          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
-          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
-        },
-      );
-    } else if (inProjectsGroup) {
-      opts.include.push(
-        {
-          as: 'reviews',
-          model: db.models.germlineSmallMutationReview,
-          where: {type: 'biofx'},
+          where: (reviewType) ? {type: reviewType.split(',') || reviewType} : {type: 'biofx'},
           attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
           include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
