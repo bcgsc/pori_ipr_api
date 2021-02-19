@@ -21,6 +21,11 @@ module.exports = (sequelize) => {
       type: Sq.TEXT,
       allowNull: true,
     },
+    legend: {
+      type: Sq.ENUM(['v1', 'v2', 'custom']),
+      allowNull: false,
+      defaultValue: 'v1',
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_pathway_analysis',
