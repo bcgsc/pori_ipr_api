@@ -20,12 +20,12 @@ const sequelize = new Sq(
 );
 
 // Import Application Models
-const user = sequelize.import('./user/user');
+const user = require('./user/user')(sequelize, Sq);
 
 // Projects
-const project = sequelize.import('./project/project');
-const userProject = sequelize.import('./project/user_project');
-const reportProject = sequelize.import('./project/reportProject');
+const project = require('./project/project')(sequelize, Sq);
+const userProject = require('./project/user_project')(sequelize, Sq);
+const reportProject = require('./project/reportProject')(sequelize, Sq);
 
 project.belongsToMany(user, {
   as: 'users', through: {model: userProject, unique: false}, foreignKey: 'project_id', otherKey: 'user_id', onDelete: 'CASCADE',
@@ -35,8 +35,8 @@ user.belongsToMany(project, {
 });
 
 // Pog Analysis Reports
-const analysisReports = sequelize.import('./reports/analysis_reports');
-const analysisReportsUsers = sequelize.import('./analysis_report_user');
+const analysisReports = require('./reports/analysis_reports')(sequelize, Sq);
+const analysisReportsUsers = require('./analysis_report_user')(sequelize, Sq);
 
 project.belongsToMany(analysisReports, {
   as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
@@ -65,8 +65,9 @@ user.belongsToMany(analysisReports, {
   as: 'reports', through: {model: analysisReportsUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 
-const userGroup = sequelize.import('./user/userGroup.js');
-const userGroupMember = sequelize.import('./user/userGroupMember.js');
+const userGroup = require('./user/userGroup.js')(sequelize, Sq);
+const userGroupMember = require('./user/userGroupMember.js')(sequelize, Sq);
+
 user.belongsToMany(userGroup, {
   as: 'groups', through: {model: userGroupMember, unique: false}, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE',
 });
@@ -78,7 +79,8 @@ userGroup.belongsTo(user, {
 });
 
 // IMPORTANT must be done before the variant models are defined
-const genes = sequelize.import('./reports/genes');
+const genes = require('./reports/genes')(sequelize, Sq);
+
 genes.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -86,11 +88,13 @@ analysisReports.hasMany(genes, {
   as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-const imageData = sequelize.import('./reports/imageData');
+const imageData = require('./reports/imageData')(sequelize, Sq);
+
 imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
 // Patient Information
-const patientInformation = sequelize.import('./reports/patientInformation');
+const patientInformation = require('./reports/patientInformation')(sequelize, Sq);
+
 analysisReports.hasOne(patientInformation, {
   as: 'patientInformation', foreignKey: 'reportId', onDelete: 'CASCADE', onUpdate: 'CASCADE', constraints: true,
 });
@@ -100,13 +104,13 @@ patientInformation.belongsTo(analysisReports, {
 
 // Summary
 const summary = {};
-summary.variantCounts = sequelize.import('./reports/genomic/summary/variantCounts');
-summary.genomicAlterationsIdentified = sequelize.import('./reports/genomic/summary/genomicAlterationsIdentified');
-summary.analystComments = sequelize.import('./reports/genomic/summary/analystComments');
-summary.pathwayAnalysis = sequelize.import('./reports/genomic/summary/pathwayAnalysis');
-summary.probeResults = sequelize.import('./reports/probeResults');
-summary.therapeuticTargets = sequelize.import('./reports/genomic/summary/therapeuticTargets');
-summary.microbial = sequelize.import('./reports/genomic/summary/microbial');
+summary.variantCounts = require('./reports/genomic/summary/variantCounts')(sequelize, Sq);
+summary.genomicAlterationsIdentified = require('./reports/genomic/summary/genomicAlterationsIdentified')(sequelize, Sq);
+summary.analystComments = require('./reports/genomic/summary/analystComments')(sequelize, Sq);
+summary.pathwayAnalysis = require('./reports/genomic/summary/pathwayAnalysis')(sequelize, Sq);
+summary.probeResults = require('./reports/probeResults')(sequelize, Sq);
+summary.therapeuticTargets = require('./reports/genomic/summary/therapeuticTargets')(sequelize, Sq);
+summary.microbial = require('./reports/genomic/summary/microbial')(sequelize, Sq);
 
 
 analysisReports.belongsTo(user, {
@@ -156,12 +160,12 @@ summary.microbial.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-// Somatic Mutations
-const smallMutations = sequelize.import('./reports/smallMutations');
-const mutationSignature = sequelize.import('./reports/mutationSignature');
-const hlaTypes = sequelize.import('./reports/hlaTypes');
-const pairwiseExpressionCorrelation = sequelize.import('./reports/pairwiseExpressionCorrelation');
-const immuneCellTypes = sequelize.import('./reports/immuneCellTypes');
+
+const smallMutations = require('./reports/smallMutations')(sequelize, Sq);
+const mutationSignature = require('./reports/mutationSignature')(sequelize, Sq);
+const hlaTypes = require('./reports/hlaTypes')(sequelize, Sq);
+const pairwiseExpressionCorrelation = require('./reports/pairwiseExpressionCorrelation')(sequelize, Sq);
+const immuneCellTypes = require('./reports/immuneCellTypes')(sequelize, Sq);
 
 smallMutations.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -195,7 +199,7 @@ analysisReports.hasMany(immuneCellTypes, {
 });
 
 // Copy Number Analysis
-const copyVariants = sequelize.import('./reports/copyVariants');
+const copyVariants = require('./reports/copyVariants')(sequelize, Sq);
 
 copyVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -206,7 +210,8 @@ analysisReports.hasMany(copyVariants, {
 
 
 // MAVIS Summary
-const mavis = sequelize.import('./reports/genomic/mavis/mavis');
+const mavis = require('./reports/genomic/mavis/mavis')(sequelize, Sq);
+
 mavis.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -215,7 +220,7 @@ analysisReports.hasMany(mavis, {
 });
 
 // Structural Variation
-const structuralVariants = sequelize.import('./reports/structuralVariants');
+const structuralVariants = require('./reports/structuralVariants')(sequelize, Sq);
 
 structuralVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -226,7 +231,7 @@ analysisReports.hasMany(structuralVariants, {
 
 
 // expression variants
-const expressionVariants = sequelize.import('./reports/expressionVariants');
+const expressionVariants = require('./reports/expressionVariants')(sequelize, Sq);
 
 expressionVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -236,7 +241,7 @@ analysisReports.hasMany(expressionVariants, {
 });
 
 // protein variants
-const proteinVariants = sequelize.import('./reports/proteinVariants');
+const proteinVariants = require('./reports/proteinVariants')(sequelize, Sq);
 
 proteinVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -324,7 +329,7 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
 }
 
 // IMPORTANT: Must be defined after variant models so that the includes can be found
-const kbMatches = sequelize.import('./reports/kbMatches');
+const kbMatches = require('./reports/kbMatches')(sequelize, Sq);
 
 kbMatches.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -350,8 +355,9 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
 
 // Presentation Data
 const presentation = {};
-presentation.discussion = sequelize.import('./reports/genomic/presentation/discussion.model');
-presentation.slides = sequelize.import('./reports/genomic/presentation/slides.model');
+presentation.discussion = require('./reports/genomic/presentation/discussion.model')(sequelize, Sq);
+presentation.slides = require('./reports/genomic/presentation/slides.model')(sequelize, Sq);
+
 presentation.discussion.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -372,7 +378,8 @@ analysisReports.hasMany(presentation.slides, {
 });
 
 // Probe Report
-const probeTestInformation = sequelize.import('./reports/probe/test_information');
+const probeTestInformation = require('./reports/probe/test_information')(sequelize, Sq);
+
 probeTestInformation.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -380,7 +387,8 @@ analysisReports.hasMany(probeTestInformation, {
   as: 'probe_test_information', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-const reportSignatures = sequelize.import('./reports/signatures');
+const reportSignatures = require('./reports/signatures')(sequelize, Sq);
+
 reportSignatures.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -395,7 +403,8 @@ analysisReports.hasOne(reportSignatures, {
 });
 
 // Mutation Burden
-const mutationBurden = sequelize.import('./reports/mutationBurden');
+const mutationBurden = require('./reports/mutationBurden')(sequelize, Sq);
+
 analysisReports.hasMany(mutationBurden, {
   as: 'mutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
@@ -404,7 +413,8 @@ mutationBurden.belongsTo(analysisReports, {
 });
 
 // Comparators
-const comparators = sequelize.import('./reports/comparators');
+const comparators = require('./reports/comparators')(sequelize, Sq);
+
 analysisReports.hasMany(comparators, {
   as: 'comparators', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
@@ -413,7 +423,8 @@ comparators.belongsTo(analysisReports, {
 });
 
 // MSI
-const msi = sequelize.import('./reports/msi');
+const msi = require('./reports/msi')(sequelize, Sq);
+
 analysisReports.hasMany(msi, {
   as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
@@ -422,10 +433,11 @@ msi.belongsTo(analysisReports, {
 });
 
 // Images
-const image = sequelize.import('./image');
+const image = require('./image')(sequelize, Sq);
 
 // Template
-const template = sequelize.import('./template');
+const template = require('./template')(sequelize, Sq);
+
 template.belongsTo(image, {
   as: 'logoImage', foreignKey: 'logoId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
@@ -441,6 +453,6 @@ template.hasMany(analysisReports, {
 });
 
 // Germline Small Mutations
-require('./germlineSmallMutation')(sequelize);
+require('./germlineSmallMutation')(sequelize, Sq);
 
 module.exports = sequelize;
