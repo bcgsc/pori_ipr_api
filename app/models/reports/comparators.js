@@ -1,7 +1,6 @@
-const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   const comparators = sequelize.define('comparators', {
     ...DEFAULT_COLUMNS,
     reportId: {

@@ -1,10 +1,8 @@
-const Sq = require('sequelize');
-
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   const KbMatches = sequelize.define('kbMatches', {
     ...DEFAULT_COLUMNS,
     reportId: {
