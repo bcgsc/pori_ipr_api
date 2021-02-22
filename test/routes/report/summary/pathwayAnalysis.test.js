@@ -18,7 +18,7 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
-const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'original', 'pathway'];
+const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'original', 'pathway', 'legend'];
 
 const checkPathwayAnalysis = (pathwayObject) => {
   pathwayProperties.forEach((element) => {
