@@ -9,7 +9,8 @@ module.exports = {
         await queryInterface.removeConstraint(TABLE, FOREIGN_KEY, {transaction});
 
         // Add new correct foreign key
-        await queryInterface.addConstraint(TABLE, ['report_id'], {
+        await queryInterface.addConstraint(TABLE, {
+          fields: ['report_id'],
           type: 'foreign key',
           name: FOREIGN_KEY,
           references: {

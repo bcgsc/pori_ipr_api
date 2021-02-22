@@ -19,7 +19,8 @@ module.exports = {
 
         // Add new correct foreign keys
         return Promise.all([
-          queryInterface.addConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, ['germline_report_id'], {
+          queryInterface.addConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, {
+            fields: ['germline_report_id'],
             type: 'foreign key',
             name: GERMLINE_REP_TO_PROJ_REPORT_ID_FK,
             references: {
@@ -30,7 +31,8 @@ module.exports = {
             onUpdate: 'cascade',
             transaction,
           }),
-          queryInterface.addConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, ['project_id'], {
+          queryInterface.addConstraint(GERMLINE_REPORTS_TO_PROJECTS_TABLE, {
+            fields: ['project_id'],
             type: 'foreign key',
             name: GERMLINE_REP_TO_PROJ_PROJECT_ID_FK,
             references: {
@@ -41,7 +43,8 @@ module.exports = {
             onUpdate: 'cascade',
             transaction,
           }),
-          queryInterface.addConstraint(REPORT_PROJECTS_TABLE, ['project_id'], {
+          queryInterface.addConstraint(REPORT_PROJECTS_TABLE, {
+            fields: ['project_id'],
             type: 'foreign key',
             name: REP_PROJ_PROJECT_ID_FK,
             references: {
@@ -52,7 +55,8 @@ module.exports = {
             onUpdate: 'cascade',
             transaction,
           }),
-          queryInterface.addConstraint(REPORT_PROJECTS_TABLE, ['report_id'], {
+          queryInterface.addConstraint(REPORT_PROJECTS_TABLE, {
+            fields: ['report_id'],
             type: 'foreign key',
             name: REP_PROJ_REPORT_ID_FK,
             references: {
