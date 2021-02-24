@@ -1,7 +1,8 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     return Promise.all([
-      queryInterface.addConstraint('pog_patient_information', ['pog_report_id'], {
+      queryInterface.addConstraint('pog_patient_information', {
+        fields: ['pog_report_id'],
         type: 'foreign key',
         name: 'pog_report_id_foreign_key_constraint',
         references: {
