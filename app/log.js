@@ -2,6 +2,7 @@ const {createLogger, format, transports} = require('winston');
 const nconf = require('./config');
 
 const logger = createLogger({
+  level: nconf.get('log:level'),
   format: format.combine(
     format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
     format.printf(({level, message, timestamp, ...meta}) => {
