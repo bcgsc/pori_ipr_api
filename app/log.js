@@ -1,30 +1,17 @@
-const winston = require('winston'); // Logging
-const moment = require('moment');
+const {createLogger, format, transports} = require('winston');
 const nconf = require('./config');
 
-const logger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)({
-      colorize: true,
-      timestamp: () => {
-        return moment().format('YYYY-MM-DD HH:mm:ss');
-      },
-      formatter: (options) => {
-        return `[${options.timestamp()}][${options.level.toUpperCase()}] ${options.message
-          ? options.message
-          : ''} ${options.meta && Object.keys(options.meta).length
-          ? `\n\t${JSON.stringify(options.meta)}`
-          : ''}`;
-      },
+const logger = createLogger({
+  format: format.combine(
+    format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
+    format.printf(({level, message, timestamp, ...meta}) => {
+      return `[${timestamp}][${level.toUpperCase()}] ${message} ${(meta && Object.keys(meta).length) ? `\n\t${JSON.stringify(meta)}` : ''}`;
     }),
-    // new (winston.transports.File)({
-    // filename: process.cwd() + '../persist/logs/syncWorker/combined.err.log'})
-  ],
+  ),
+  transports: [new transports.Console()],
 });
 
 logger.info('Initializing logging');
-
-logger.level = nconf.get('log:level');
 logger.debug(`Log level set to ${nconf.get('log:level')}`);
 
 module.exports = logger;
