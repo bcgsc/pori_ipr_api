@@ -139,7 +139,7 @@ describe('/reports/{REPORTID}', () => {
     // Test GET with offset
     test('/ - offset - 200 Success', async () => {
       const res = await request
-        .get('/api/reports?paginated=true&offset=2')
+        .get(`/api/reports?paginated=true&offset=${totalReports - 3}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);

@@ -28,7 +28,7 @@ describe('Parsing report sort query tests', () => {
     expect(Array.isArray(results)).toBe(true);
     expect(results.length).toBe(3);
 
-    const [rest] = results.shift();
+    const rest = results.shift();
     rest.shift();
 
     expect(rest).toEqual(['physician', 'asc']);
