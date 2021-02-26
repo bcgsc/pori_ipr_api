@@ -37,6 +37,12 @@ const checkReport = (report) => {
   }));
 };
 
+const checkReports = (reports) => {
+  reports.forEach((report) => {
+    checkReport(report);
+  });
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -107,6 +113,128 @@ describe('/reports/{REPORTID}', () => {
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
+    let numberOfReports;
+
+    beforeAll(async () => {
+      const res = await request
+        .get('/api/reports')
+        .auth(username, password)
+        .type('json');
+
+      numberOfReports = res.total;
+    });
+
+    // Test regular GET
+    test('/ - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+    }, LONGER_TIMEOUT);
+
+    // Test GET with limit
+    test('/ - limit - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?paginated=true&limit=4')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(res.body.reports.length).toBeLessThanOrEqual(4);
+    }, LONGER_TIMEOUT);
+
+    // Test GET with offset
+    test('/ - offset - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?paginated=true&limit=5&offset=${numberOfReports - 3}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(res.body.reports.length).toBe(3);
+    }, LONGER_TIMEOUT);
+
+    // Test GET with sort
+    test('/ - sort - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?sort=patientId:desc')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(res.body.reports[0].patientId).toBeGreaterThanOrEqual(res.body.reports[1].patientId);
+    }, LONGER_TIMEOUT);
+
+    // Test GET with project
+    test('/ - project - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?project=POG')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({projects: expect.arrayContaining([
+          expect.objectContaining({name: expect.stringContaining('POG')}),
+        ])}),
+      ]));
+    }, LONGER_TIMEOUT);
+
+    // Test GET with states
+    test('/ - states - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?states=ready')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({state: expect.stringContaining('ready')}),
+      ]));
+    }, LONGER_TIMEOUT);
+
+    // Test GET with role
+    test('/ - role - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?role=clinician')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({users: expect.arrayContaining([
+          expect.objectContaining({role: expect.stringContaining('clinician')}),
+        ])}),
+      ]));
+    }, LONGER_TIMEOUT);
+
+    // Test GET with search text
+    test('/ - search text - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?searchText=UPLOADPAT01')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({patientId: expect.stringContaining('UPLOADPAT01')}),
+      ]));
+    }, LONGER_TIMEOUT);
+
     test('fetches known ident ok', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}`)
