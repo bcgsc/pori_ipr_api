@@ -1,4 +1,3 @@
-const {Op} = require('sequelize');
 const {parseReportSortQuery} = require('../../app/libs/queryOperations');
 
 
@@ -9,7 +8,7 @@ describe('Parsing report sort query tests', () => {
     const results = parseReportSortQuery(sortQuery);
 
 
-    expect(typeof results).toBe('array');
+    expect(Array.isArray(results)).toBe(true);
     expect(results.length).toBe(3);
     expect(results.shift()).toEqual(['patientId', 'asc']);
     expect(results.shift()).toEqual(['biopsyName', 'desc']);
@@ -26,7 +25,7 @@ describe('Parsing report sort query tests', () => {
     const results = parseReportSortQuery(sortQuery);
 
 
-    expect(typeof results).toBe('array');
+    expect(Array.isArray(results)).toBe(true);
     expect(results.length).toBe(3);
 
     const [rest] = results.shift();
@@ -46,7 +45,7 @@ describe('Parsing report sort query tests', () => {
 
     const results = parseReportSortQuery(sortQuery);
 
-    expect(typeof results).toBe('array');
+    expect(Array.isArray(results)).toBe(true);
     expect(results.length).toBe(1);
 
     expect(results.shift()).toEqual(['alternateIdentifier', 'desc']);
