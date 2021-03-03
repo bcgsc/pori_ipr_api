@@ -73,6 +73,12 @@ const graphkbReviewStatus = async (graphkbToken, graphkbEntries) => {
 
   const filters = {
     '@rid': graphkbEntries
+        .reduce((filtered, {kbStatementId}) => {
+            if (kbStatementId.match(/^#\d+:\d+$/)) {
+                filtered.push(kbStatementId);
+            }
+            return filtered;
+        }, []);
       .filter(({kbStatementId}) => {
         return kbStatementId.match(/^#\d+:\d+$/);
       })
