@@ -72,9 +72,13 @@ const graphkbReviewStatus = async (graphkbToken, graphkbEntries) => {
   const {uri} = CONFIG.get('graphkb');
 
   const filters = {
-    '@rid': graphkbEntries.map(({kbStatementId}) => {
-      return kbStatementId;
-    }),
+    '@rid': graphkbEntries
+      .reduce((filtered, {kbStatementId}) => {
+        if (kbStatementId.match(/^#\d+:\d+$/)) {
+          filtered.push(kbStatementId);
+        }
+        return filtered;
+      }, []),
     operator: 'IN',
   };
   const query = {
