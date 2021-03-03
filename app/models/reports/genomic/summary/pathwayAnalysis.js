@@ -1,7 +1,6 @@
-const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   const pathwayAnalysis = sequelize.define('pathwayAnalysis', {
     ...DEFAULT_COLUMNS,
     reportId: {
@@ -20,6 +19,11 @@ module.exports = (sequelize) => {
     pathway: {
       type: Sq.TEXT,
       allowNull: true,
+    },
+    legend: {
+      type: Sq.ENUM(['v1', 'v2', 'custom']),
+      allowNull: false,
+      defaultValue: 'v1',
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,

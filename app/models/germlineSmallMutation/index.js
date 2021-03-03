@@ -1,9 +1,9 @@
-module.exports = (sequelize) => {
-  const review = sequelize.import('./reviews');
-  const variant = sequelize.import('./variants');
+module.exports = (sequelize, Sq) => {
+  const review = require('./reviews')(sequelize, Sq);
+  const variant = require('./variants')(sequelize, Sq);
 
-  const report = sequelize.import('./reports'); // Order is important
-  const germlineReportsToProjects = sequelize.import('./germlineReportsToProjects');
+  const report = require('./reports')(sequelize, Sq); // Order is important
+  const germlineReportsToProjects = require('./germlineReportsToProjects')(sequelize, Sq);
   const {models: {project}} = sequelize;
 
   // M2M relationship between reports and projects

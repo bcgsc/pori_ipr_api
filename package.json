@@ -8,7 +8,7 @@
     "start": "node --max-old-space-size=2800 bin/server.js",
     "start:prod": "NODE_ENV=production node --max-old-space-size=2800 bin/server.js",
     "start:dev": "NODE_ENV=development node --max-old-space-size=2800 bin/server.js",
-    "test": "NODE_ENV=test jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
+    "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=2800 jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
   },
   "author": "IPR <ipr@bcgsc.ca>",
@@ -36,18 +36,18 @@
     "morgan": "^1.9.1",
     "multer": "~1.3.0",
     "nconf": "~0.8.4",
-    "pg": "~6.1.2",
+    "pg": "^8.5.1",
     "pg-native": "^3.0.0",
     "request": "^2.88.2",
     "request-promise-native": "~1.0.5",
     "sanitize-html": "^1.27.1",
-    "sequelize": "^5.21.1",
+    "sequelize": "^6.5.0",
     "sequelize-cli": "^5.5.0",
     "swagger-ui-express": "^4.0.2",
     "tmp-promise": "^3.0.2",
     "uuid": "~3.1.0",
     "uuid-validate": "0.0.3",
-    "winston": "~2.3.1"
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "docdash": "~1.0.0",
