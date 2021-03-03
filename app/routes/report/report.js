@@ -226,7 +226,13 @@ router.route('/')
         } : {}),
       },
       distinct: 'id',
-      ...((paginated) ? {
+      // **searchText with paginated with patientInformation set to required: true
+      // should work and does for the most part, no errors, console logged query is correct
+      // (I tested the generated SQL on the db and it worked fine), the returned
+      // count is correct, but Sequelize never returns any rows.
+      // Paginated can be added to searchText once this Sequelize bug is fixed.
+      // Sequelize version is 6.5.0**
+      ...((paginated && !searchText) ? {
         offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
         limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
       } : {}),
