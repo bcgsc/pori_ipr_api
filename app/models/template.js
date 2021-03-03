@@ -62,6 +62,9 @@ module.exports = (sequelize, Sq) => {
           {as: 'headerImage', model: sequelize.models.image.scope('public')},
         ],
       },
+      minimal: {
+        attributes: ['ident', 'name'],
+      },
     },
   });
 
