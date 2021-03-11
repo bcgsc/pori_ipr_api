@@ -48,7 +48,7 @@ module.exports = async (req, res, next, ident) => {
       logger.error(`Error while trying to get germline report ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to get germline report'}});
     }
-  
+
     if (!result) {
       logger.error('Unable to find germline report');
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find germline report'}});
