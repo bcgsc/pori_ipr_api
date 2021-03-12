@@ -210,8 +210,13 @@ router.route('/')
       }
     }
 
+    // Remove states from query
+    const {states: repStates, ...query} = req.query;
+
     // Generate cache key
-    const key = Object.keys(req.query).length ? null : `/reports?projectAccess=${projects.sort().join(',')}`;
+    const key = Object.keys(query).length
+      ? null
+      : `/reports?projectAccess=${projects.sort().join(',')}${states ? `?states=${states.toLowerCase().split(',').sort().join(',')}` : ''}`;
 
     try {
       const cacheResults = await cache.get(key);
@@ -226,7 +231,7 @@ router.route('/')
     // Generate options for report query
     const opts = {
       where: {
-        ...((states) ? {state: states.split(',')} : {}),
+        ...((states) ? {state: states.toLowerCase().split(',')} : {}),
         ...((searchText) ? {
           [Op.or]: [
             {'$patientInformation.diagnosis$': {[Op.iLike]: `%${searchText}%`}},
