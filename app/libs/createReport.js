@@ -1,4 +1,5 @@
 const {Op} = require('sequelize');
+const path = require('path');
 
 const db = require('../models');
 const {loadImage} = require('../routes/report/images');
@@ -209,8 +210,10 @@ const createReportSections = async (report, content, transaction) => {
   ]);
 
   // add images to db
-  const promises = (content.images || []).map(async ({path, key, caption, title}) => {
-    return loadImage(report.id, key, path, {caption, title, transaction});
+  const promises = (content.images || []).map(async ({imagePath, key, caption, title}) => {
+    return loadImage(report.id, key, imagePath, {
+      filename: path.basename(imagePath), caption, title, transaction,
+    });
   });
 
   // add the other sections
