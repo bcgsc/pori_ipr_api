@@ -1,11 +1,6 @@
-const fs = require('fs');
-const util = require('util');
-const tmp = require('tmp-promise');
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
-
-const writeFile = util.promisify(fs.writeFile);
 
 const db = require('../../../models');
 const logger = require('../../../log');
@@ -74,34 +69,22 @@ router.route('/')
           };
         }
 
-        let cleanup;
+
         try {
-          // Get temp folder
-          const tempDir = await tmp.dir({unsafeCleanup: true});
-          cleanup = tempDir.cleanup;
-
-          // Set filename and path
-          const file = `${tempDir.path}/${image.name.trim()}`;
-
-          // Write file to temp folder
-          await writeFile(file, image.data);
-
-          // Set options
-          const options = {};
-          // Set image title to specified title or undefined
-          options.title = req.body[`${key}_title`];
-          // Set image caption to specified caption or undefined
-          options.caption = req.body[`${key}_caption`];
+          // Set options (value or undefined)
+          const options = {
+            filename: image.name.trim(),
+            title: req.body[`${key}_title`],
+            caption: req.body[`${key}_caption`],
+          };
 
           // Load image
-          await loadImage(req.report.id, key, file, options);
+          await loadImage(req.report.id, key, image.data, options);
 
           // Return that this image was uploaded successfully
           return {key, upload: 'successful'};
         } catch (error) {
           return {key, upload: 'failed', error};
-        } finally {
-          cleanup();
         }
       }));
       return res.status(HTTP_STATUS.MULTI_STATUS).json(results);
