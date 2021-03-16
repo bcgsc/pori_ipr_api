@@ -79,9 +79,6 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 
 ## Coding Specifications
 
-1. When updating a models data please use the `model.update` method instead of `instance.save`. We currently have an update hook that doesn't run properly on `instance.save`.
-However, this is being investigated in this ticket https://www.bcgsc.ca/jira/browse/DEVSU-905.
-
 ## Migrating Database Changes
 
 * Create a migration: `npx sequelize migration:create --name name_of_migratrion`
