@@ -210,7 +210,7 @@ const createReportSections = async (report, content, transaction) => {
   ]);
 
   // add images to db
-  const promises = (content.images || []).map(async ({imagePath, key, caption, title}) => {
+  const promises = (content.images || []).map(async ({path: imagePath, key, caption, title}) => {
     return loadImage(report.id, key, imagePath, {
       filename: path.basename(imagePath), caption, title, transaction,
     });
