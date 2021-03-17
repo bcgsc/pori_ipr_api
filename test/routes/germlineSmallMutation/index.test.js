@@ -81,7 +81,7 @@ beforeAll(async () => {
   });
 });
 
-describe.skip('/germline-small-mutation-reports', () => {
+describe('/germline-small-mutation-reports', () => {
   let report;
 
   beforeAll(async () => {
