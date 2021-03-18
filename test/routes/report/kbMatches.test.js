@@ -18,8 +18,12 @@ const LONGER_TIMEOUT = 50000;
 let server;
 let request;
 
-const kbMatchProperties = ['ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease', 'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
-  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant', 'inferred', 'reviewStatus'];
+const kbMatchProperties = [
+  'ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease',
+  'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
+  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant', 'inferred',
+  'reviewStatus',
+];
 
 const checkKbMatch = (kbMatchObject) => {
   kbMatchProperties.forEach((element) => {
@@ -36,7 +40,7 @@ beforeAll(async () => {
 });
 
 // Tests for /kb-matches endpoint
-describe.skip('/reports/{REPORTID}/kb-matches', () => {
+describe('/reports/{REPORTID}/kb-matches', () => {
   let report;
   let gene;
   let variant;
