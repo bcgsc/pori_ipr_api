@@ -25,6 +25,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        # Docker Hub image
+        image: redis:6.2-alpine
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -56,6 +68,7 @@ jobs:
           IPR_KEYCLOAK_KEYFILE: test/keys/authkey.pem
           IPR_TESTING_PASSWORD: iprdemo
           IPR_TESTING_USERNAME: iprdemo
+          IPR_REDIS_HOST: localhost
       - uses: codecov/codecov-action@v1
         with:
           yml: codecov.yml

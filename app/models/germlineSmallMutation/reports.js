@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS, CLEAR_CACHED_REPORTS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const germlineReport = sequelize.define('germlineSmallMutation', {
@@ -77,11 +77,15 @@ module.exports = (sequelize, Sq) => {
       afterDestroy: async (instance, options = {force: false}) => {
         if (options.force === true) {
           // When hard deleting a report, also delete the "updated" versions of the report
-          return instance.constructor.destroy({where: {ident: instance.ident}, force: true});
+          return Promise.all([
+            CLEAR_CACHED_REPORTS(instance.constructor.name),
+            instance.constructor.destroy({where: {ident: instance.ident}, force: true}),
+          ]);
         }
 
         // Remove review and variant on soft-delete
         return Promise.all([
+          CLEAR_CACHED_REPORTS(instance.constructor.name),
           sequelize.models.germlineSmallMutationReview.destroy({where: {germlineReportId: instance.id}}),
           sequelize.models.germlineSmallMutationVariant.destroy({where: {germlineReportId: instance.id}}),
         ]);
