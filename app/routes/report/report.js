@@ -8,6 +8,7 @@ const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const reportMiddleware = require('../../middleware/analysis_report');
 
@@ -209,11 +210,28 @@ router.route('/')
       }
     }
 
+    // Remove states from query
+    const {states: repStates, ...query} = req.query;
+
+    // Generate cache key
+    const key = Object.keys(query).length
+      ? null
+      : `/reports?projectAccess=${projects.sort().join(',')}${states ? `?states=${states.toLowerCase().split(',').sort().join(',')}` : ''}`;
+
+    try {
+      const cacheResults = await cache.get(key);
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for reports ${error}`);
+    }
 
     // Generate options for report query
     const opts = {
       where: {
-        ...((states) ? {state: states.split(',')} : {}),
+        ...((states) ? {state: states.toLowerCase().split(',')} : {}),
         ...((searchText) ? {
           [Op.or]: [
             {'$patientInformation.diagnosis$': {[Op.iLike]: `%${searchText}%`}},
@@ -282,7 +300,13 @@ router.route('/')
 
     try {
       const reports = await db.models.analysis_report.scope('public').findAndCountAll(opts);
-      return res.json({total: reports.count, reports: reports.rows});
+      const results = {total: reports.count, reports: reports.rows};
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 3600);
+      }
+
+      return res.json(results);
     } catch (error) {
       logger.error(`Unable to lookup reports ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup reports'}});
