@@ -44,5 +44,6 @@ module.exports = {
   ],
   setupFiles: [
     '<rootDir>/test/keycloak.mock.js',
+    '<rootDir>/test/graphkb.mock.js',
   ],
 };
