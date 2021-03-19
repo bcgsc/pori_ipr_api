@@ -61,6 +61,14 @@ const DEFAULTS = {
     port: 5432,
     name: DEFAULT_DB_NAME,
   },
+  redis: {
+    host: ENV === 'production'
+      ? 'iprredis.bcgsc.ca'
+      : 'iprdevredis.bcgsc.ca',
+    port: ENV === 'staging'
+      ? 6380
+      : 6379,
+  },
   paths: {
     data: {
       POGdata: '/projects/tumour_char/pog/reports/genomic',
@@ -131,6 +139,12 @@ const CONFIG = nconf
     },
     'graphkb.password': {
       alias: 'graphkb:password',
+    },
+    'redis.host': {
+      alias: 'redis:host',
+    },
+    'redis.port': {
+      alias: 'redis:port',
     },
     port: {
       alias: 'web:port',
