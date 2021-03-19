@@ -1,10 +1,34 @@
 const Sq = require('sequelize');
 const {includesAll} = require('../libs/helperFunctions');
+const {batchDeleteKeysByPattern, flushAll} = require('../libs/cacheFunctions');
 
 const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
 
 const SIGNATURE_REMOVAL_EXCLUDE = {
   analysis_report: ['state', 'presentationDate', 'updatedAt'],
+};
+
+const FLUSH_ALL_MODELS = ['user', 'project'];
+
+const CLEAR_REPORT_CACHE_MODELS = [
+  'analysis_report', 'patientInformation', 'template', 'analysis_reports_user',
+];
+
+const CLEAR_GERMLINE_CACHE_MODELS = [
+  'germlineSmallMutation', 'germlineSmallMutationVariant', 'germlineSmallMutationReview',
+];
+
+const CLEAR_CACHED_REPORTS = async (modelName) => {
+  if (FLUSH_ALL_MODELS.includes(modelName)) {
+    return flushAll();
+  }
+  if (CLEAR_REPORT_CACHE_MODELS.includes(modelName)) {
+    return batchDeleteKeysByPattern('/reports*');
+  }
+  if (CLEAR_GERMLINE_CACHE_MODELS.includes(modelName)) {
+    return batchDeleteKeysByPattern('/germline*');
+  }
+  return true;
 };
 
 /**
@@ -92,7 +116,7 @@ const DEFAULT_OPTIONS = {
     },
   ],
   hooks: {
-    beforeUpdate: (instance, options = {}) => {
+    beforeUpdate: async (instance, options = {}) => {
       // check if the data has changed or if the fields updated
       // are excluded from creating a new record
       const changed = instance.changed();
@@ -110,6 +134,15 @@ const DEFAULT_OPTIONS = {
         transaction: options.transaction,
       });
     },
+    afterCreate: async (instance) => {
+      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+    },
+    afterUpdate: async (instance) => {
+      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+    },
+    afterDestroy: async (instance) => {
+      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+    },
   },
 };
 
@@ -118,37 +151,42 @@ const DEFAULT_REPORT_OPTIONS = {
   hooks: {
     ...DEFAULT_OPTIONS.hooks,
 
-    afterUpdate: (instance, options = {}) => {
+    afterUpdate: async (instance, options = {}) => {
       const modelName = instance.constructor.name;
       // check if the data has changed or if the fields updated
       // are excluded from removing the report signatures
       const changed = instance.changed();
       const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
 
-      if (!changed || includesAll(updateExclude, changed)) {
-        return Promise.resolve(true);
-      }
-
-      // remove signatures from report
-      return instance.sequelize.models.signatures.update({
-        authorId: null,
-        authorSignedAt: null,
-        reviewerId: null,
-        reviewerSignedAt: null,
-      }, {
-        where: {
-          reportId: (modelName === 'analysis_report') ? instance.id : instance.reportId,
-        },
-        individualHooks: true,
-        paranoid: true,
-        transaction: options.transaction,
-      });
+      return Promise.all([
+        CLEAR_CACHED_REPORTS(instance.constructor.name),
+        (!changed || includesAll(updateExclude, changed)) ? Promise.resolve(true)
+          : instance.sequelize.models.signatures.update({
+            authorId: null,
+            authorSignedAt: null,
+            reviewerId: null,
+            reviewerSignedAt: null,
+          }, {
+            where: {
+              reportId: (modelName === 'analysis_report') ? instance.id : instance.reportId,
+            },
+            individualHooks: true,
+            paranoid: true,
+            transaction: options.transaction,
+          }),
+      ]);
     },
-    afterCreate: (instance, options = {}) => {
-      return REMOVE_REPORT_SIGNATURES(instance, options);
+    afterCreate: async (instance, options = {}) => {
+      return Promise.all([
+        CLEAR_CACHED_REPORTS(instance.constructor.name),
+        REMOVE_REPORT_SIGNATURES(instance, options),
+      ]);
     },
-    afterDestroy: (instance, options = {}) => {
-      return REMOVE_REPORT_SIGNATURES(instance, options);
+    afterDestroy: async (instance, options = {}) => {
+      return Promise.all([
+        CLEAR_CACHED_REPORTS(instance.constructor.name),
+        REMOVE_REPORT_SIGNATURES(instance, options),
+      ]);
     },
   },
 };
@@ -160,4 +198,5 @@ module.exports = {
   DEFAULT_COLUMNS,
   DEFAULT_REPORT_OPTIONS,
   REMOVE_REPORT_SIGNATURES,
+  CLEAR_CACHED_REPORTS,
 };
