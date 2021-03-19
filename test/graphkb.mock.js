@@ -1,14 +1,12 @@
 // Mock graphkb middleware calls
 jest.mock('../app/middleware/graphkb', () => {
   const nconf = require('../app/config');
-  return {
-    graphkbLoginMiddleware: async (req, res, next) => {
-      const {username, password} = nconf.get('graphkb');
-      if (username && password) {
-        req.graphkbToken = 'Valid token';
-      }
-      return next();
-    },
+  return async (req, res, next) => {
+    const {username, password} = nconf.get('graphkb');
+    if (username && password) {
+      req.graphkbToken = 'Valid token';
+    }
+    return next();
   };
 });
 
