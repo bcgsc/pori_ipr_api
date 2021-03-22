@@ -24,6 +24,14 @@ const sequelize = new Sq(
 
 // Import Application Models
 const user = require('./user/user')(sequelize, Sq);
+const userMetadata = require('./user/userMetadata')(sequelize, Sq);
+
+user.hasOne(userMetadata, {
+  as: 'metadata', foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE', constraints: true,
+});
+userMetadata.belongsTo(user, {
+  as: 'user', foreignKey: 'userId', targetKey: 'id', onDelete: 'CASCADE', onUpdate: 'CASCADE', constraints: true,
+});
 
 // Projects
 const project = require('./project/project')(sequelize, Sq);
