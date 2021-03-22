@@ -54,8 +54,8 @@ const getExcludes = (model) => {
 
   switch (model) {
     case 'user':
-      publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'jiraToken', 'jiraXsrf', 'settings', 'password'];
-      exclude = [...GENERAL_EXCLUDE, 'jiraToken', 'jiraXsrf', 'lastLogin', 'settings', 'password'];
+      publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'password'];
+      exclude = [...GENERAL_EXCLUDE, 'password'];
       break;
     case 'project':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
