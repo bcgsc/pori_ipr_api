@@ -76,6 +76,10 @@ module.exports = async (req, res, next) => {
             exclude: ['deletedAt', 'updatedAt', 'createdAt'],
           },
         },
+        {
+          model: db.models.userMetadata.scope('public'),
+          as: 'metadata',
+        },
       ],
     });
 
