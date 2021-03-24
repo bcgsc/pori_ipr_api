@@ -81,13 +81,115 @@ beforeAll(async () => {
   });
 });
 
-describe.skip('/germline-small-mutation-reports', () => {
+describe('/germline-small-mutation-reports', () => {
   let report;
+  const reports = [];
+  const projects = [];
 
   beforeAll(async () => {
-    // create a report to be used in tests
+    // create a bunch of reports to be used in tests
     report = await db.models.germlineSmallMutation.create({
       ...CREATE_DATA, biofxAssignedId: testUser.id,
+    });
+
+    reports.push(report);
+
+    // Create projects
+    const fakeProject = await db.models.project.create({
+      name: 'Fake project',
+    });
+
+    projects.push(fakeProject);
+
+    const realProject = await db.models.project.create({
+      name: 'Real project',
+    });
+
+    projects.push(realProject);
+
+
+    // Create a bunch of reports
+    const report2 = await db.models.germlineSmallMutation.create({
+      ...CREATE_DATA,
+      biofxAssignedId: testUser.id,
+      patientId: 'Patient002',
+      biopsyName: 'biopsy002',
+    });
+
+    reports.push(report2);
+
+    await db.models.germlineReportsToProjects.create({
+      germlineReportId: report2.id,
+      projectId: fakeProject.id,
+    });
+
+    await db.models.germlineSmallMutationReview.create({
+      reviewerId: testUser.id,
+      germlineReportId: report2.id,
+      type: 'biofx',
+    });
+
+
+    const report3 = await db.models.germlineSmallMutation.create({
+      ...CREATE_DATA,
+      biofxAssignedId: testUser.id,
+      patientId: 'Client001',
+      biopsyName: 'biopsy003',
+    });
+
+    reports.push(report3);
+
+    await db.models.germlineReportsToProjects.create({
+      germlineReportId: report3.id,
+      projectId: fakeProject.id,
+    });
+
+    await db.models.germlineSmallMutationReview.create({
+      reviewerId: testUser.id,
+      germlineReportId: report3.id,
+      type: 'projects',
+    });
+
+
+    const report4 = await db.models.germlineSmallMutation.create({
+      ...CREATE_DATA,
+      biofxAssignedId: testUser.id,
+      patientId: 'Client002',
+      biopsyName: 'sample001',
+    });
+
+    reports.push(report4);
+
+    await db.models.germlineReportsToProjects.create({
+      germlineReportId: report4.id,
+      projectId: realProject.id,
+    });
+
+    await db.models.germlineSmallMutationReview.create({
+      reviewerId: testUser.id,
+      germlineReportId: report4.id,
+      type: 'diff',
+    });
+
+
+    const report5 = await db.models.germlineSmallMutation.create({
+      ...CREATE_DATA,
+      biofxAssignedId: testUser.id,
+      patientId: 'Admin001',
+      biopsyName: 'sample002',
+    });
+
+    reports.push(report5);
+
+    await db.models.germlineReportsToProjects.create({
+      germlineReportId: report5.id,
+      projectId: realProject.id,
+    });
+
+    await db.models.germlineSmallMutationReview.create({
+      reviewerId: testUser.id,
+      germlineReportId: report5.id,
+      type: 'biofx',
     });
   });
 
@@ -106,35 +208,35 @@ describe.skip('/germline-small-mutation-reports', () => {
     test('/ - patient query - 200 success', async () => {
       const res = await request
         .get(BASE_URI)
-        .query({patientId: 'POG'})
+        .query({patientId: 'Patient'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).toEqual(checkGermlineReportList);
       expect(res.body.reports).toEqual(expect.arrayContaining([
-        expect.objectContaining({patientId: expect.stringContaining('POG')}),
+        expect.objectContaining({patientId: expect.stringContaining('Patient')}),
       ]));
     });
 
     test('/ - biopsy name query - 200 success', async () => {
       const res = await request
         .get(BASE_URI)
-        .query({biopsyName: 'biop1'})
+        .query({biopsyName: 'biopsy'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).toEqual(checkGermlineReportList);
       expect(res.body.reports).toEqual(expect.arrayContaining([
-        expect.objectContaining({biopsyName: expect.stringContaining('biop1')}),
+        expect.objectContaining({biopsyName: expect.stringContaining('biopsy')}),
       ]));
     });
 
     test('/ - project query - 200 success', async () => {
       const res = await request
         .get(BASE_URI)
-        .query({project: 'POG'})
+        .query({project: 'Real project'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -143,7 +245,7 @@ describe.skip('/germline-small-mutation-reports', () => {
       expect(res.body.reports).toEqual(expect.arrayContaining([
         expect.objectContaining({
           projects: expect.arrayContaining([
-            expect.objectContaining({name: expect.stringContaining('POG')}),
+            expect.objectContaining({name: expect.stringContaining('Real project')}),
           ]),
         }),
       ]));
@@ -152,7 +254,7 @@ describe.skip('/germline-small-mutation-reports', () => {
     test('/ - limit and offset - 200 success', async () => {
       const res = await request
         .get(BASE_URI)
-        .query({limit: 3, offset: 5})
+        .query({limit: 3, offset: 1})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -160,12 +262,12 @@ describe.skip('/germline-small-mutation-reports', () => {
       expect(res.body).toEqual(checkGermlineReportList);
       expect(res.body.reports.length).toEqual(3);
 
-      const {body: {reports}} = res;
+      const {body: {reports: germReports}} = res;
 
       // Test offset
-      const results = await db.models.germlineSmallMutation.scope('public').findAll({limit: 3, offset: 5});
+      const results = await db.models.germlineSmallMutation.scope('public').findAll({limit: 3, offset: 1});
       for (let i = 0; i < results.length; i++) {
-        expect(reports[i].ident).toBe(results[i].ident);
+        expect(germReports[i].ident).toBe(results[i].ident);
       }
     });
 
@@ -246,6 +348,8 @@ describe.skip('/germline-small-mutation-reports', () => {
       // Check that record was created in the db
       const result = await db.models.germlineSmallMutation.findOne({where: {ident: res.body.ident}});
       expect(result).not.toBeNull();
+
+      reports.push(result);
     });
 
     test('/ - project is required - 400 Bad Request', async () => {
@@ -373,15 +477,23 @@ describe.skip('/germline-small-mutation-reports', () => {
     });
   });
 
-  // delete report
+  // delete reports and projects
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // indirectly by hard deleting newly created patient
-    await db.models.germlineSmallMutation.destroy({where: {ident: report.ident}, force: true});
+    // delete newly created reports and all of their components
+    await db.models.germlineSmallMutation.destroy({
+      where: {
+        ident: reports.map((rep) => {return rep.ident;}),
+      },
+      force: true,
+    });
 
-    // verify report is deleted
-    const result = await db.models.germlineSmallMutation.findOne({where: {ident: report.ident}, paranoid: false});
-    expect(result).toBeNull();
+    // Delete projects
+    await db.models.project.destroy({
+      where: {
+        id: projects.map((project) => {return project.id;}),
+      },
+      force: true,
+    });
   });
 });
 
