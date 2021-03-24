@@ -13,7 +13,7 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
-const signatureProperties = ['ident', 'createdAt', 'updatedAt', 'username', 'type', 'firstName', 'lastName', 'email', 'lastLogin'];
+const signatureProperties = ['ident', 'createdAt', 'updatedAt', 'username', 'type', 'firstName', 'lastName', 'email'];
 // Properties of res.body.reviewerSignature and res.body.authorSignature
 const checkSignatureProperties = (signature) => {
   // Function for checking reviewer and author signatures

@@ -62,7 +62,7 @@ router.param('group', async (req, res, next, ident) => {
     req.group = await db.models.userGroup.findOne({
       where: {ident},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password']}},
         {as: 'owner', model: db.models.user.scope('public')},
       ],
     });
@@ -167,7 +167,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password']}});
     } catch (error) {
       logger.error(`SQL Error trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to find user'}});
@@ -188,7 +188,6 @@ router.route('/:group([A-z0-9-]{36})/member')
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        lastLogin: user.lastLogin,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         userGroupMember: {
@@ -221,7 +220,7 @@ router.route('/:group([A-z0-9-]{36})/member')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password']}});
     } catch (error) {
       logger.error(`SQL Error trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'SQL Error unable to find user'}});

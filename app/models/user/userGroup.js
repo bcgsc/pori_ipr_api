@@ -25,7 +25,7 @@ module.exports = (sequelize, Sq) => {
           exclude: ['id', 'owner_id', 'deletedAt'],
         },
         include: [
-          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
+          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password']}},
           {as: 'owner', model: sequelize.models.user.scope('public')},
         ],
       },

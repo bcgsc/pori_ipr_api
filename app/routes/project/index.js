@@ -36,7 +36,7 @@ router.param('project', async (req, res, next, ident) => {
     req.project = await db.models.project.findOne({
       where: {ident},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project']}, through: {attributes: []}},
         {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
       ],
     });
@@ -171,7 +171,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
@@ -215,7 +215,6 @@ router.route('/:project([A-z0-9-]{36})/user')
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        lastLogin: user.lastLogin,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         user_project: {
@@ -243,7 +242,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'jiraToken']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
@@ -367,7 +366,7 @@ router.route('/')
 
     if (access.check() && req.query.admin === true) {
       includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings', 'user_project']}, through: {attributes: []}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project']}, through: {attributes: []}});
     }
 
     let projectAccess;
