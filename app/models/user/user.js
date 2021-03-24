@@ -27,28 +27,6 @@ module.exports = (sequelize, Sq) => {
         isEmail: true,
       },
     },
-    jiraToken: {
-      type: Sq.STRING,
-      defaultValue: null,
-    },
-    jiraXsrf: {
-      type: Sq.STRING,
-      defaultValue: null,
-    },
-    settings: {
-      type: Sq.JSONB,
-      allowNull: false,
-      defaultValue: {},
-      jsonSchema: {
-        schema: {
-          type: 'object',
-        },
-      },
-    },
-    lastLogin: {
-      type: Sq.DATE,
-      defaultValue: null,
-    },
   }, {
     ...DEFAULT_OPTIONS,
     indexes: [
@@ -66,7 +44,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings'],
+          exclude: ['id', 'deletedAt', 'password'],
         },
       },
     },
@@ -76,7 +54,7 @@ module.exports = (sequelize, Sq) => {
   user.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, deletedAt, password, jiraToken, jiraXsrf, settings, ...publicView
+        id, deletedAt, password, ...publicView
       } = this.dataValues;
       return publicView;
     }

@@ -101,12 +101,20 @@ router.route('/')
       req.body.password = bcrypt.hashSync(req.body.password, 10);
     }
 
+    let transaction;
     try {
-      // Everything looks good, create the account!
-      const resp = await db.models.user.create(req.body);
-      // Account created, send details
+      // Create transaction
+      transaction = await db.transaction();
+      // Create user
+      const resp = await db.models.user.create(req.body, {transaction});
+      // Create user metadata
+      await db.models.userMetadata.create({userId: resp.id}, {transaction});
+      // Commit changes
+      await transaction.commit();
+      // Return new user
       return res.status(HTTP_STATUS.CREATED).json(resp.view('public'));
     } catch (error) {
+      await transaction.rollback();
       logger.error(`Unable to create user account ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({status: false, message: 'Unable to create user account.'});
     }
@@ -119,13 +127,19 @@ router.route('/me')
 
 router.route('/settings')
   .get((req, res) => {
-    return res.json(req.user.get('settings'));
+    return res.json(req.user.metadata.get('settings'));
   })
   .put(async (req, res) => {
-    const {settings} = req;
     try {
-      await req.user.update(settings, {fields: ['settings'], newEntryExclude: ['settings']});
-      return res.json(req.user.get('settings'));
+      await db.models.userMetadata.update({settings: req.body}, {
+        where: {
+          ident: req.user.metadata.ident,
+        },
+        fields: ['settings'],
+        hooks: false,
+        limit: 1,
+      });
+      return res.json(req.body);
     } catch (error) {
       logger.error(`Unable to update user settings ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update user settings'}});
@@ -168,10 +182,6 @@ router.route('/:ident([A-z0-9-]{36})')
       email: req.body.email,
     };
 
-    if (req.body.settings) {
-      updateBody.settings = req.body.settings;
-    }
-
     if (req.body.password && req.body.password.length > 7) {
       updateBody.password = bcrypt.hashSync(req.body.password, 10);
     }
@@ -197,7 +207,7 @@ router.route('/:ident([A-z0-9-]{36})')
 
     // Attempt user model update
     try {
-      await user.update({...updateBody, ident: req.params.ident}, {newEntryExclude: ['settings']});
+      await user.update({...updateBody, ident: req.params.ident});
       await user.reload();
       return res.json(user.view('public'));
     } catch (error) {
@@ -243,7 +253,7 @@ router.route('/search')
     };
 
     try {
-      const users = await db.models.user.findAll({where, attributes: {exclude: ['deletedAt', 'id', 'password', 'jiraToken']}});
+      const users = await db.models.user.findAll({where, attributes: {exclude: ['deletedAt', 'id', 'password']}});
       return res.json(users);
     } catch (error) {
       logger.error(`SQL Error while trying to find all users ${error}`);
