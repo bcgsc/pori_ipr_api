@@ -39,6 +39,19 @@ const TEMPLATE_IMAGES = {
   },
 };
 
+const PATHWAY_IMAGES = {
+  original: {
+    type: 'string',
+    format: 'xml',
+    description: 'original image as svg to upload',
+  },
+  pathway: {
+    type: 'string',
+    format: 'xml',
+    description: 'pathway image as svg to upload',
+  },
+};
+
 
 /**
  * Check if model has specific excludes or
@@ -156,6 +169,10 @@ schemas.germlineSmallMutationCreate = germlineReportUploadSchema;
 // add images to properties
 Object.assign(schemas.templateCreate.properties, TEMPLATE_IMAGES);
 
+// pathway analysis upload
+// add image properties
+Object.assign(schemas.pathwayAnalysisCreate.properties, PATHWAY_IMAGES);
+
 
 // *PUT request body*
 
@@ -180,6 +197,10 @@ schemas.therapeuticTargetRanksBulkUpdate = schemaGenerator(db.models.therapeutic
 // template update
 // add images to properties
 Object.assign(schemas.templateUpdate.properties, TEMPLATE_IMAGES);
+
+// pathway analysis update
+// add images to properties
+Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGES);
 
 
 module.exports = schemas;

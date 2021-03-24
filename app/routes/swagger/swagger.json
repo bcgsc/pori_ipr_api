@@ -1909,8 +1909,8 @@
     },
     "/reports/{report}/summary/pathway-analysis": {
       "get": {
-        "summary": "Get report pathway analysis",
-        "description": "Get a reports pathway analysis image",
+        "summary": "Get Pathway Analysis",
+        "description": "Retrieve reports pathway analysis",
         "tags": [
           "Pathway Analysis"
         ],
@@ -1926,11 +1926,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns a reports pathway analysis image",
+            "description": "Returns the details of a reports pathway analysis",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/pathwayAnalysis"
+                  "$ref": "#/components/schemas/pathwayAnalysisAssociations"
                 }
               }
             }
@@ -1943,9 +1943,9 @@
           }
         }
       },
-      "put": {
-        "summary": "Create/update pathway analysis image",
-        "description": "Create a new pathway analysis image or update an existing pathway analysis image",
+      "post": {
+        "summary": "Create Pathway Analysis",
+        "description": "Add a new pathway analysis to this report",
         "tags": [
           "Pathway Analysis"
         ],
@@ -1954,33 +1954,50 @@
             "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Pathway analysis data and images",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/pathwayAnalysisCreate"
+              }
+            }
+          }
+        },
         "security": [
           {
             "basicAuth": []
           }
         ],
         "responses": {
-          "200": {
-            "description": "Returns the newly created/updated pathway analysis model",
+          "201": {
+            "description": "Returns the details of the created pathway analysis",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/pathwayAnalysis"
+                  "$ref": "#/components/schemas/pathwayAnalysisAssociations"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Malformed request syntax"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "403": {
-            "description": "User doesn't have permissions to create/update a pathway analysis image"
+            "description": "User doesn't have permissions to upload pathway analysis"
+          },
+          "409": {
+            "description": "Pathway analysis already exists"
           }
         }
       },
-      "post": {
-        "summary": "Upload new pathway analysis file",
-        "description": "Upload a new pathway analysis file and create new db entry",
+      "put": {
+        "summary": "Update Pathway Analysis",
+        "description": "Update the details of a reports pathway analysis",
         "tags": [
           "Pathway Analysis"
         ],
@@ -1989,6 +2006,17 @@
             "$ref": "#/components/parameters/report"
           }
         ],
+        "requestBody": {
+          "description": "Template data and images",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/pathwayAnalysisUpdate"
+              }
+            }
+          }
+        },
         "security": [
           {
             "basicAuth": []
@@ -1996,20 +2024,57 @@
         ],
         "responses": {
           "200": {
-            "description": "Uploads new pathway analysis image and returns new pathway analysis object",
+            "description": "Returns the details of the updated pathway analysis",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/pathwayAnalysis"
+                  "$ref": "#/components/schemas/pathwayAnalysisAssociations"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Malformed request syntax"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "403": {
-            "description": "User doesn't have permissions to upload pathway analysis image"
+            "description": "User doesn't have permissions to update pathway analysis"
+          },
+          "404": {
+            "description": "No pathway analysis available to update for this report"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Pathway Analysis",
+        "description": "Removes the reports pathway analysis",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Pathway Analysis"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "User doesn't have permissions to delete pathway analysis"
+          },
+          "404": {
+            "description": "No pathway analysis available to delete"
           }
         }
       }
