@@ -4,6 +4,7 @@ const path = require('path');
 const BASE_DIR = path.resolve(__dirname, '../..');
 
 module.exports = {
+  showConsoleMessageOrigin: false,
   rootDir: BASE_DIR,
   collectCoverage: true,
   coverageDirectory: 'coverage',
