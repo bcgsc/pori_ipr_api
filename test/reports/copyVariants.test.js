@@ -22,7 +22,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/copy-variants', () => {
+describe.skip('/copy-variants', () => {
   let report;
   let variant;
 
