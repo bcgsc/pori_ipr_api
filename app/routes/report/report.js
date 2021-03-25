@@ -10,6 +10,8 @@ const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
 const cache = require('../../cache');
 
+const {generateKey} = require('../../libs/cacheFunctions');
+
 const reportMiddleware = require('../../middleware/analysis_report');
 
 const router = express.Router({mergeParams: true});
@@ -210,13 +212,8 @@ router.route('/')
       }
     }
 
-    // Remove states from query
-    const {states: repStates, ...query} = req.query;
-
     // Generate cache key
-    const key = Object.keys(query).length
-      ? null
-      : `/reports?projectAccess=${projects.sort().join(',')}${states ? `?states=${states.toLowerCase().split(',').sort().join(',')}` : ''}`;
+    const key = (req.query.role) ? null : generateKey('/reports', req.query, {projectAccess: projects});
 
     try {
       const cacheResults = await cache.get(key);
