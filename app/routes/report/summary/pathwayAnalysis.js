@@ -138,14 +138,6 @@ router.route('/')
       req.body.pathway = req.files.pathway.data.toString();
     }
 
-
-    // Check for pathway analysis file
-    if (req.files && req.files.pathway) {
-      // Only works for SVGs
-      req.body.pathway = req.files.pathway.data.toString();
-    }
-
-
     try {
       // validate against the model
       validateAgainstSchema(createSchema, req.body);
