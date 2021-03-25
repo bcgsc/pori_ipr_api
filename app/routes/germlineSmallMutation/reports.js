@@ -11,6 +11,8 @@ const db = require('../../models');
 const logger = require('../../log');
 const cache = require('../../cache');
 
+const {generateKey} = require('../../libs/cacheFunctions');
+
 const Variants = require('./util/variants');
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/reports');
 
@@ -95,7 +97,7 @@ router.route('/')
     });
 
     // Generate cache key
-    const key = Object.keys(req.query).length ? null : `/germline?inProjectsGroup=${inProjectsGroup}`;
+    const key = generateKey('/germline', req.query, {inProjectsGroup});
 
     try {
       const cacheResults = await cache.get(key);
