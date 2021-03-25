@@ -39,12 +39,7 @@ const TEMPLATE_IMAGES = {
   },
 };
 
-const PATHWAY_IMAGES = {
-  original: {
-    type: 'string',
-    format: 'xml',
-    description: 'original image as svg to upload',
-  },
+const PATHWAY_IMAGE = {
   pathway: {
     type: 'string',
     format: 'xml',
@@ -171,7 +166,7 @@ Object.assign(schemas.templateCreate.properties, TEMPLATE_IMAGES);
 
 // pathway analysis upload
 // add image properties
-Object.assign(schemas.pathwayAnalysisCreate.properties, PATHWAY_IMAGES);
+Object.assign(schemas.pathwayAnalysisCreate.properties, PATHWAY_IMAGE);
 
 
 // *PUT request body*
@@ -200,7 +195,7 @@ Object.assign(schemas.templateUpdate.properties, TEMPLATE_IMAGES);
 
 // pathway analysis update
 // add images to properties
-Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGES);
+Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGE);
 
 
 module.exports = schemas;

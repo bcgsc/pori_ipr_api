@@ -12,10 +12,6 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
-    original: {
-      type: Sq.TEXT,
-      allowNull: true,
-    },
     pathway: {
       type: Sq.TEXT,
       allowNull: true,

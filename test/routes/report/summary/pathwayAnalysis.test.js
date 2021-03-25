@@ -12,7 +12,7 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
-const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'original', 'pathway', 'legend'];
+const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'pathway', 'legend'];
 
 const checkPathwayAnalysis = (pathwayObject) => {
   pathwayProperties.forEach((element) => {
