@@ -89,23 +89,31 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('original', 'Test String')
         .field('legend', 'v2')
         .expect(HTTP_STATUS.OK);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.original).toBe('Test String');
       expect(res.body.legend).toBe('v2');
     });
 
-    test('/ - 400 Bad request', async () => {
+    test('/ - 400 Bad request - Invalid legend', async () => {
       await request
         .put(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .send({legend: 'Not valid legend'})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/ - 400 Bad request - Invalid pathway image', async () => {
+      await request
+        .put(`/api/reports/${report.ident}/summary/pathway-analysis`)
+        .auth(username, password)
+        .type('json')
+        .attach('pathway', 'test/testData/images/golden.jpg')
+        .field('legend', 'v1')
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -165,28 +173,35 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('original', 'Test value')
         .field('legend', 'custom')
         .expect(HTTP_STATUS.CREATED);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.original).toBe('Test value');
       expect(res.body.legend).toBe('custom');
 
       // Remove pathway analysis
       await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
     });
 
-    test('/ - 400 Bad request', async () => {
+    test('/ - 400 Bad request - Invalid legend', async () => {
       await request
         .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('original', 'Test String')
         .field('legend', 'Not valid legend')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/ - 400 Bad request - Invalid pathway image', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
+        .auth(username, password)
+        .type('json')
+        .attach('pathway', 'test/testData/images/golden.jpg')
+        .field('legend', 'v1')
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -201,7 +216,6 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('original', 'Test String')
         .field('legend', 'v2')
         .expect(HTTP_STATUS.CONFLICT);
 
