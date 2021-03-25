@@ -53,7 +53,15 @@ router.route('/')
 
     // Check for pathway analysis file
     if (req.files && req.files.pathway) {
-      // Only works for SVGs
+      // Check that file is an svg
+      if (req.files.pathway.mimetype !== 'image/svg+xml') {
+        logger.error('Pathway must be an svg');
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Pathway must be an svg'},
+        });
+      }
+
+      // Add svg data to request
       req.body.pathway = req.files.pathway.data.toString();
     }
 
@@ -115,6 +123,21 @@ router.route('/')
         error: {message: 'There is already a pathway analysis for this report'},
       });
     }
+
+    // Check for pathway analysis file
+    if (req.files && req.files.pathway) {
+      // Check that file is an svg
+      if (req.files.pathway.mimetype !== 'image/svg+xml') {
+        logger.error('Pathway must be an svg');
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Pathway must be an svg'},
+        });
+      }
+
+      // Add svg data to request
+      req.body.pathway = req.files.pathway.data.toString();
+    }
+
 
     // Check for pathway analysis file
     if (req.files && req.files.pathway) {
