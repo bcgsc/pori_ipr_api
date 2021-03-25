@@ -2,6 +2,27 @@ const logger = require('../log');
 const cache = require('../cache');
 
 /**
+ * Generates a cache key based on route, query parameters
+ * and any extra parameters.
+ *
+ * @param {string} route - Route used for caching
+ * @param {object} params - Query parameters of request
+ * @param {object} extra - Extra parameters
+ * @returns {string} - Returns a generated key
+ */
+const generateKey = (route, params, extra = {}) => {
+  Object.assign(params, extra);
+
+  if (!Object.keys(params).length) {
+    return route;
+  }
+
+  return `${route}?${Object.keys(params).sort().map((value) => {
+    return `${value}=${params[value].toString().toLowerCase().split(',').sort().join(',')}`;
+  }).join('&')}`;
+};
+
+/**
  * Remove all keys from the cache.
  *
  * @returns {Promise<string>} - Returns Promise<"OK">
@@ -49,6 +70,7 @@ const batchDeleteKeysByPattern = async (pattern) => {
 };
 
 module.exports = {
+  generateKey,
   flushAll,
   batchDeleteKeysByPattern,
 };
