@@ -1,7 +1,6 @@
-const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   const userGroup = sequelize.define('userGroup', {
     ...DEFAULT_COLUMNS,
     name: {
@@ -26,7 +25,7 @@ module.exports = (sequelize) => {
           exclude: ['id', 'owner_id', 'deletedAt'],
         },
         include: [
-          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'jiraToken']}},
+          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password']}},
           {as: 'owner', model: sequelize.models.user.scope('public')},
         ],
       },

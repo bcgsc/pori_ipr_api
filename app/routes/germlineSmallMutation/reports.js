@@ -9,6 +9,9 @@ const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
+
+const {generateKey} = require('../../libs/cacheFunctions');
 
 const Variants = require('./util/variants');
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/reports');
@@ -93,6 +96,19 @@ router.route('/')
       return group.name.trim().toLowerCase() === 'projects';
     });
 
+    // Generate cache key
+    const key = generateKey('/germline', req.query, {inProjectsGroup});
+
+    try {
+      const cacheResults = await cache.get(key);
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for germline reports ${error}`);
+    }
+
     // Setup query options
     const opts = {
       where: {
@@ -117,22 +133,12 @@ router.route('/')
 
 
     // Check if filtering by review
-    if (reviewType) {
+    if (reviewType || inProjectsGroup) {
       opts.include.push(
         {
           as: 'reviews',
           model: db.models.germlineSmallMutationReview,
-          where: {type: reviewType.split(',') || reviewType},
-          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
-          include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
-        },
-      );
-    } else if (inProjectsGroup) {
-      opts.include.push(
-        {
-          as: 'reviews',
-          model: db.models.germlineSmallMutationReview,
-          where: {type: 'biofx'},
+          where: (reviewType) ? {type: reviewType.split(',') || reviewType} : {type: 'biofx'},
           attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
           include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
@@ -141,7 +147,13 @@ router.route('/')
 
     try {
       const gsmReports = await db.models.germlineSmallMutation.scope('public').findAndCountAll(opts);
-      return res.json({total: gsmReports.count, reports: gsmReports.rows});
+      const results = {total: gsmReports.count, reports: gsmReports.rows};
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 3600);
+      }
+
+      return res.json(results);
     } catch (error) {
       logger.error(`There was an error while finding all germline reports ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'There was an error while finding all germline reports'}});

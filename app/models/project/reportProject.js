@@ -1,7 +1,6 @@
-const Sq = require('sequelize');
 const {DEFAULT_MAPPING_COLUMNS, DEFAULT_MAPPING_OPTIONS} = require('../base');
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   return sequelize.define('reportProject', {
     ...DEFAULT_MAPPING_COLUMNS,
     reportId: {

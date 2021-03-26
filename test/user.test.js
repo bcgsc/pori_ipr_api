@@ -27,6 +27,15 @@ beforeAll(async () => {
 
 // Tests for user related endpoints
 describe('/user', () => {
+  let testUser;
+
+  beforeAll(async () => {
+    // get test user
+    testUser = await db.models.user.findOne({
+      where: {username},
+    });
+  });
+
   describe('GET', () => {
     // Test for GET /user 200 endpoint
     test('GET list of users', async () => {
@@ -220,21 +229,21 @@ describe('/user', () => {
       expect(res.body.firstName).toBe('NewFirstName');
     });
 
-    test('/{user} - 200 success update, but new db record is not created', async () => {
-      const intialResults = await db.models.user.findAll({where: {ident: putTestUser.ident}, paranoid: false});
+    test('/settings - 200 successfully update user settings', async () => {
+      const intialResults = await db.models.userMetadata.findAll({where: {userId: testUser.id}, paranoid: false});
 
       await request
-        .put(`/api/user/${putTestUser.ident}`)
-        .send({settings: {testSetting: true}})
+        .put('/api/user/settings')
+        .send({testSetting: true})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       // Verify update was successful
-      const result = await db.models.user.findOne({where: {ident: putTestUser.ident}});
+      const result = await db.models.userMetadata.findOne({where: {userId: testUser.id}});
       expect(result.settings).toEqual({testSetting: true});
 
-      const updateResults = await db.models.user.findAll({where: {ident: putTestUser.ident}, paranoid: false});
+      const updateResults = await db.models.userMetadata.findAll({where: {userId: testUser.id}, paranoid: false});
       // Verify a new record wasn't added on update
       expect(intialResults.length).toEqual(updateResults.length);
     });

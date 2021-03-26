@@ -3,11 +3,14 @@ const express = require('express');
 const {Op} = require('sequelize');
 
 const createReport = require('../../libs/createReport');
-const tableFilter = require('../../libs/tableFilter');
+const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
 const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
+const cache = require('../../cache');
+
+const {generateKey} = require('../../libs/cacheFunctions');
 
 const reportMiddleware = require('../../middleware/analysis_report');
 
@@ -176,161 +179,131 @@ router.route('/:report/user')
 // Act on all reports
 router.route('/')
   .get(async (req, res) => {
-    // Check user permission and filter by project
+    const {
+      query: {
+        paginated, limit, offset, sort, project, states, role, searchText,
+      },
+    } = req;
+
+    // Get projects the user has access to
     const access = new Acl(req);
-    let projectAccess = null;
+    let projects;
     try {
-      projectAccess = await access.getProjectAccess();
-      logger.info('Successfully got project access');
-    } catch (error) {
-      logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: error.message}});
-    }
-    let opts = {
-      where: {},
-      include: [
-        {
-          model: db.models.patientInformation,
-          as: 'patientInformation',
-          attributes: {exclude: ['id', 'deletedAt']},
-        },
-        {model: db.models.user.scope('public'), as: 'createdBy'},
-        {model: db.models.template.scope('public'), as: 'template'},
-        {
-          model: db.models.analysis_reports_user,
-          as: 'users',
-          separate: true,
-          include: [
-            {model: db.models.user.scope('public'), as: 'user'},
-          ],
-        },
-        {model: db.models.project.scope('public'), as: 'projects'},
-      ],
-    };
-
-    /* Sort fields
-     * args expected to take the form: ?sort=column:direction,column:direction...
-     * where direction = asc or desc and column is one of:
-     * patientID, analysisBiopsy, diagnosis, physician, state, caseType, or alternateIdentifier */
-    if (req.query.sort) {
-      const modelMapping = (index, order) => {
-        return {
-          patientID: ['patientId', order],
-          analysisBiopsy: ['biopsyName', order],
-          diagnosis: [
-            {model: db.models.patientInformation, as: 'patientInformation'},
-            'diagnosis',
-            order,
-          ],
-          physician: [
-            {model: db.models.patientInformation, as: 'patientInformation'},
-            'physician',
-            order,
-          ],
-          state: ['state', order],
-          caseType: [
-            {model: db.models.patientInformation, as: 'patientInformation'},
-            'caseType',
-            order,
-          ],
-          alternateIdentifier: ['alternateIdentifier', order],
-        }[index];
-      };
-      let {sort} = req.query;
-
-      sort = sort.split(',');
-      opts.order = sort.map((sortGroup) => {
-        return modelMapping(...sortGroup.split(':'));
-      });
-    } else {
-      opts.order = [
-        ['state', 'desc'],
-        ['patientId', 'desc'],
-      ];
-    }
-
-    if (req.query.project) { // check access if filtering on project
+      const projectAccess = await access.getProjectAccess();
       // Get the names of the projects the user has access to
-      const projectAccessNames = projectAccess.map((project) => {
-        return project.name;
+      projects = projectAccess.map((proj) => {
+        return proj.name;
       });
-      if (projectAccessNames.includes(req.query.project)) {
-        opts.where['$projects.name$'] = req.query.project;
+    } catch (error) {
+      const message = `Error while trying to get project access ${error.message || error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
+    }
+
+    // Check if they want reports from a specific project
+    // and that they have access to that project
+    if (project) {
+      if (projects.includes(project)) {
+        projects = project;
       } else {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           error: {message: 'You do not have access to the selected project'},
         });
       }
-    } else {
-      // otherwise filter by accessible projects
-      const projectAccessIdent = projectAccess.map((project) => {
-        return project.ident;
-      });
-      opts.where['$projects.ident$'] = {[Op.in]: projectAccessIdent};
     }
 
-    if (req.query.searchText) {
-      opts.where = {
-        [Op.or]: [
-          {'$patientInformation.diagnosis$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$patientInformation.biopsySite$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$patientInformation.physician$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {'$patientInformation.caseType$': {[Op.iLike]: `%${req.query.searchText}%`}},
-          {patientId: {[Op.iLike]: `%${req.query.searchText}%`}},
-          {alternateIdentifier: {[Op.iLike]: `%${req.query.searchText}%`}},
-        ],
-      };
-    }
-
-    // Create mapping for available columns to filter on
-    const columnMapping = {
-      patientID: {column: 'patientId', table: null},
-      analysisBiopsy: {column: 'biopsyName', table: null},
-      diagnosis: {column: 'diagnosis', table: 'patientInformation'},
-      physician: {column: 'physician', table: 'patientInformation'},
-      state: {column: 'state', table: null},
-      caseType: {column: 'caseType', table: 'patientInformation'},
-      alternateIdentifier: {column: 'alternateIdentifier', table: null},
-    };
-
-    // Add filters to query if available
-    opts = tableFilter(req, opts, columnMapping);
-
-    // States
-    if (req.query.states) {
-      const states = req.query.states.split(',');
-      opts.where.state = {[Op.in]: states};
-    }
-
-    // Are we filtering on POGUser relationship?
-    if (req.query.role) {
-      const userFilter = {
-        model: db.models.analysis_reports_user,
-        as: 'ReportUserFilter',
-        where: {},
-      };
-      userFilter.where.user_id = req.user.id;
-      userFilter.where.role = req.query.role; // Role filtering
-      opts.include.push(userFilter);
-    }
+    // Generate cache key
+    const key = (req.query.role) ? null : generateKey('/reports', req.query, {projectAccess: projects});
 
     try {
-      // return all reports
-      let reports = await db.models.analysis_report.scope('public').findAll(opts);
-      const total = reports.length;
-      if (req.query.paginated) {
-        // limits and offsets are causing the query to break due to the public scope and subqueries
-        // i.e. fields are not available for joining onto subquery selection
-        // dealing w/ applying the pagination here
-        const limit = parseInt(req.query.limit, 10) || DEFAULT_PAGE_LIMIT;
-        const offset = parseInt(req.query.offset, 10) || DEFAULT_PAGE_OFFSET;
-
-        // apply limit and offset to results
-        const start = offset;
-        const finish = offset + limit;
-        reports = reports.slice(start, finish);
+      const cacheResults = await cache.get(key);
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
       }
-      return res.json({total, reports});
+    } catch (error) {
+      logger.error(`Error while checking cache for reports ${error}`);
+    }
+
+    // Generate options for report query
+    const opts = {
+      where: {
+        ...((states) ? {state: states.toLowerCase().split(',')} : {}),
+        ...((searchText) ? {
+          [Op.or]: [
+            {'$patientInformation.diagnosis$': {[Op.iLike]: `%${searchText}%`}},
+            {'$patientInformation.biopsySite$': {[Op.iLike]: `%${searchText}%`}},
+            {'$patientInformation.physician$': {[Op.iLike]: `%${searchText}%`}},
+            {'$patientInformation.caseType$': {[Op.iLike]: `%${searchText}%`}},
+            {patientId: {[Op.iLike]: `%${searchText}%`}},
+            {alternateIdentifier: {[Op.iLike]: `%${searchText}%`}},
+          ],
+        } : {}),
+      },
+      distinct: 'id',
+      // **searchText with paginated with patientInformation set to required: true
+      // should work and does for the most part, no errors, console logged query is correct
+      // (I tested the generated SQL on the db and it worked fine), the returned
+      // count is correct, but Sequelize never returns any rows.
+      // Paginated can be added to searchText once this Sequelize bug is fixed.
+      // Sequelize version is 6.5.0**
+      ...((paginated && !searchText) ? {
+        offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
+        limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
+      } : {}),
+      order: (sort) ? parseReportSortQuery(sort) : [
+        ['state', 'desc'],
+        ['patientId', 'desc'],
+      ],
+      include: [
+        {
+          model: db.models.patientInformation,
+          as: 'patientInformation',
+          attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        },
+        {model: db.models.user.scope('public'), as: 'createdBy'},
+        {
+          model: db.models.template.scope('minimal'),
+          as: 'template',
+          required: true,
+        },
+        {
+          model: db.models.analysis_reports_user,
+          as: 'users',
+          attributes: ['ident', 'role', 'createdAt', 'updatedAt'],
+          include: [
+            {model: db.models.user.scope('public'), as: 'user'},
+          ],
+        },
+        {
+          model: db.models.project,
+          as: 'projects',
+          where: {
+            name: projects,
+          },
+          attributes: {exclude: ['id', 'deletedAt']},
+          through: {attributes: []},
+        },
+        ...((role) ? [{
+          model: db.models.analysis_reports_user,
+          as: 'ReportUserFilter',
+          where: {
+            user_id: req.user.id,
+            role,
+          },
+        }] : []),
+      ],
+    };
+
+    try {
+      const reports = await db.models.analysis_report.scope('public').findAndCountAll(opts);
+      const results = {total: reports.count, reports: reports.rows};
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 3600);
+      }
+
+      return res.json(results);
     } catch (error) {
       logger.error(`Unable to lookup reports ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup reports'}});

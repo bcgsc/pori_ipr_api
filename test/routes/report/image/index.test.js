@@ -12,6 +12,22 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
+const imageProperties = [
+  'ident', 'createdAt', 'updatedAt', 'format', 'filename',
+  'key', 'data', 'title', 'caption',
+];
+
+const checkImage = (imageObject) => {
+  imageProperties.forEach((field) => {
+    expect(imageObject).toHaveProperty(field);
+  });
+  expect(imageObject).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    reportId: expect.any(Number),
+    deletedAt: expect.any(String),
+  }));
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -21,6 +37,7 @@ beforeAll(async () => {
 
 describe('/reports/{REPORTID}/image', () => {
   let report;
+  let fakeImageData;
 
   beforeAll(async () => {
     // Get genomic template
@@ -30,9 +47,43 @@ describe('/reports/{REPORTID}/image', () => {
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
+
+    fakeImageData = {
+      reportId: report.id,
+      filename: 'TestFile.png',
+      key: 'cnv.3',
+      data: 'TestFileData',
+    };
   });
 
   describe('GET', () => {
+    let image;
+
+    beforeAll(async () => {
+      // Create image
+      image = await db.models.imageData.create(fakeImageData);
+    });
+
+    afterAll(async () => {
+      // Delete image
+      await db.models.imageData.destroy({where: {id: image.id}, force: true});
+    });
+
+    test('/{image} - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/${image.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      // Check that all fields are present and that data is correct
+      checkImage(res.body);
+
+      // Remove reportId before checking
+      const {reportId, ...imageData} = fakeImageData;
+      expect(res.body).toEqual(expect.objectContaining(imageData));
+    });
+
     test.todo('All image GET tests');
   });
 
@@ -120,6 +171,48 @@ describe('/reports/{REPORTID}/image', () => {
     });
 
     test.todo('All other POST tests');
+  });
+
+  describe('DELETE', () => {
+    let image;
+
+    beforeEach(async () => {
+      // Create image
+      image = await db.models.imageData.create(fakeImageData);
+    });
+
+    test('/{image} - 204 No Content - Soft delete', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/image/${image.ident}`)
+        .auth(username, password)
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Check that image was soft deleted
+      const deletedImage = await db.models.imageData.findOne({
+        where: {id: image.id},
+        paranoid: false,
+      });
+
+      // Expect record to still exist, but deletedAt now has a date
+      expect(deletedImage).toEqual(expect.objectContaining(fakeImageData));
+      expect(deletedImage.deletedAt).not.toBeNull();
+    });
+
+    test('/{image} - 204 No Content - Hard delete', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/image/${image.ident}?force=true`)
+        .auth(username, password)
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Check that image was hard deleted
+      const deletedImage = await db.models.imageData.findOne({
+        where: {id: image.id},
+        paranoid: false,
+      });
+
+      // Expect nothing to be returned
+      expect(deletedImage).toBeNull();
+    });
   });
 
   // delete report

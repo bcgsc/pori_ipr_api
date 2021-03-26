@@ -1,6 +1,6 @@
 # Integrated Pipeline Reports API
 
-![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-10%20%7C%2012%20-blue) [![postgres versions](https://img.shields.io/badge/postgres-9.6%20-blue)](https://www.orientdb.org/)
+![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-10%20%7C%2012%20%7C%2014-blue) [![postgres versions](https://img.shields.io/badge/postgres-9.6%20-blue)](https://www.orientdb.org/)
 
 The Integrated pipeline reports API manages data access to the IPR database on iprdb01.bcgsc.ca.
 The API is responsible for providing all data for GSC genomic, probe reports, and Germline Small Mutation reports.
@@ -78,9 +78,6 @@ npm run test
 Developer documentation is generated using the JSDoc library. To generate a local copy of the documentation, cd into the root of the project directory and run the command `npm run jsdoc`. This should automatically create documentation within folder named 'jsdoc' that can be viewed in a web browser.
 
 ## Coding Specifications
-
-1. When updating a models data please use the `model.update` method instead of `instance.save`. We currently have an update hook that doesn't run properly on `instance.save`.
-However, this is being investigated in this ticket https://www.bcgsc.ca/jira/browse/DEVSU-905.
 
 ## Migrating Database Changes
 

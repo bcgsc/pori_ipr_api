@@ -60,6 +60,15 @@ const DEFAULTS = {
       : 'iprdevdb.bcgsc.ca',
     port: 5432,
     name: DEFAULT_DB_NAME,
+    maxConn: 30,
+  },
+  redis: {
+    host: ENV === 'production'
+      ? 'iprredis.bcgsc.ca'
+      : 'iprdevredis.bcgsc.ca',
+    port: ENV === 'staging'
+      ? 6380
+      : 6379,
   },
   paths: {
     data: {
@@ -131,6 +140,12 @@ const CONFIG = nconf
     },
     'graphkb.password': {
       alias: 'graphkb:password',
+    },
+    'redis.host': {
+      alias: 'redis:host',
+    },
+    'redis.port': {
+      alias: 'redis:port',
     },
     port: {
       alias: 'web:port',

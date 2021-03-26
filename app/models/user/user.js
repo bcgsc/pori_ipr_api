@@ -1,7 +1,6 @@
-const Sq = require('sequelize');
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   const user = sequelize.define('user', {
     ...DEFAULT_COLUMNS,
     username: {
@@ -28,28 +27,6 @@ module.exports = (sequelize) => {
         isEmail: true,
       },
     },
-    jiraToken: {
-      type: Sq.STRING,
-      defaultValue: null,
-    },
-    jiraXsrf: {
-      type: Sq.STRING,
-      defaultValue: null,
-    },
-    settings: {
-      type: Sq.JSONB,
-      allowNull: false,
-      defaultValue: {},
-      jsonSchema: {
-        schema: {
-          type: 'object',
-        },
-      },
-    },
-    lastLogin: {
-      type: Sq.DATE,
-      defaultValue: null,
-    },
   }, {
     ...DEFAULT_OPTIONS,
     indexes: [
@@ -67,7 +44,7 @@ module.exports = (sequelize) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt', 'password', 'jiraToken', 'jiraXsrf', 'settings'],
+          exclude: ['id', 'deletedAt', 'password'],
         },
       },
     },
@@ -77,7 +54,7 @@ module.exports = (sequelize) => {
   user.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, deletedAt, password, jiraToken, jiraXsrf, settings, ...publicView
+        id, deletedAt, password, ...publicView
       } = this.dataValues;
       return publicView;
     }

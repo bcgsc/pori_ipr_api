@@ -53,7 +53,7 @@ beforeAll(async () => {
   });
 });
 
-describe.skip('/germline-small-mutation-reports/:gsm_report/reviews', () => {
+describe('/germline-small-mutation-reports/:gsm_report/reviews', () => {
   let report;
   let review;
   let BASE_URI;

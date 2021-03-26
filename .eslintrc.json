@@ -138,6 +138,7 @@
         "no-return-await": "error",
         "block-spacing": ["error", "never"],
         "no-var": "error",
-        "global-require": "warn"
+        "global-require": "warn",
+        "newline-per-chained-call": "off"
     }
 }

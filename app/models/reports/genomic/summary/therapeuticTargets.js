@@ -1,11 +1,8 @@
-const Sq = require('sequelize');
 const {
   DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS, REMOVE_REPORT_SIGNATURES,
 } = require('../../../base');
 
-const {Op} = Sq;
-
-module.exports = (sequelize) => {
+module.exports = (sequelize, Sq) => {
   const therapeuticTarget = sequelize.define('therapeuticTarget', {
     ...DEFAULT_COLUMNS,
     reportId: {
@@ -96,7 +93,7 @@ module.exports = (sequelize) => {
           where: {
             reportId: instance.reportId,
             rank: {
-              [Op.gt]: instance.rank,
+              [Sq.Op.gt]: instance.rank,
             },
           },
         });

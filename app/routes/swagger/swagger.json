@@ -3358,7 +3358,90 @@
         }
       }
     },
-    "/reports/{report}/image/retrieve/{key} ": {
+    "/reports/{report}/image/{image}": {
+      "get": {
+        "summary": "Get Image",
+        "description": "Retrieve a specific image",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/image"
+          }
+        ],
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified image",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imageDataAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or image not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Image",
+        "description": "Removes the specified image",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/image"
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "description": "Whether to do a hard delete or not",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "User doesn't have correct permissions to delete an image"
+          },
+          "404": {
+            "description": "Report of image not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/image/retrieve/{key}": {
       "get": {
         "summary": "Get Images by Key",
         "description": "Retrieve image data for specified keys",
@@ -5595,6 +5678,16 @@
         "in": "path",
         "required": true,
         "description": "template ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "image": {
+        "name": "image",
+        "in": "path",
+        "required": true,
+        "description": "image ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"

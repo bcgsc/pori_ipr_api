@@ -1,6 +1,5 @@
 const {spawn} = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const {PassThrough} = require('stream');
 
 const logger = require('../../log');
 const db = require('../../models');
@@ -125,27 +124,40 @@ const IMAGES_CONFIG = [
     height: 1000,
     format: 'PNG',
   },
+  {
+    pattern: 'pathwayAnalysis.legend',
+    width: 990,
+    height: 765,
+    format: 'PNG',
+  },
 ];
 
 /**
- * Read, Resize, and Insert Image Data
+ * Resize, reformat and return base64 representation of image.
  *
- * @param {string} imagePath absolute path to the image file
- * @param {Number} width width of the final image in pixels
- * @param {Number} height height of the final image in pixels
- * @param {string} format format of the output image (default: PNG)
+ * @param {Buffer|string} image - Buffer containing image data or the absolute path to an image file
+ * @param {number} width - Width of the final image in pixels
+ * @param {number} height - Height of the final image in pixels
+ * @param {string} format - Format of the output image (default: PNG)
  *
- * @returns {Promise.<string>} Returns the image data
- * @throws {Promise.<Error>} if the image fails to load/read
+ * @returns {Promise<string>} - Returns base64 representation of image
+ * @throws {Promise<Error>} - File doesn't exist, incorrect permissions, etc.
  */
-const processImage = (imagePath, width, height, format = 'PNG') => {
+const processImage = (image, width, height, format = 'PNG') => {
   return new Promise((resolve, reject) => {
     let imageData = '';
 
-    // Call Resize
-    const process = spawn('convert', [`${imagePath}`, '-resize', `${width}x${height}`, `${format}:-`]);
+    // Resize and reformat image
+    const convert = spawn('convert', [`${Buffer.isBuffer(image) ? '-' : image}`, '-resize', `${width}x${height}`, `${format}:-`]);
+
+    if (Buffer.isBuffer(image)) {
+      const stream = PassThrough();
+      stream.end(image);
+      stream.pipe(convert.stdin);
+    }
+
     const base = spawn('base64');
-    process.stdout.pipe(base.stdin);
+    convert.stdout.pipe(base.stdin);
 
     // On data, chunk
     base.stdout.on('data', (res) => {
@@ -161,29 +173,7 @@ const processImage = (imagePath, width, height, format = 'PNG') => {
       if (imageData) {
         resolve(imageData);
       } else {
-        reject(new Error(`empty image for path: ${imagePath}`));
-      }
-    });
-  });
-};
-
-
-/**
- * Throws an error if a given image path does not exist
- *
- * @param {string} imagePath the absolute path to the image file
- *
- * @throws {Promise.<Error>} if the image path does not exist
- * @returns {Promise} if the image exists
- */
-const imagePathExists = (imagePath) => {
-  return new Promise((resolve, reject) => {
-    fs.access(imagePath, fs.F_OK, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        // file exists
-        resolve();
+        reject(new Error('No image data found'));
       }
     });
   });
@@ -193,21 +183,21 @@ const imagePathExists = (imagePath) => {
 /**
  * @param {Number} reportId - The primary key for the report these images belong to (to create FK relationship)
  * @param {string} key - The image key, defines what type of image is being loaded
- * @param {string} imagePath - The absolute path to the image file
+ * @param {Buffer|string} image - Buffer containing image data or the absolute path to the image file
  * @param {object} options - An object containing additional image upload options
  *
+ * @property {string} options.filename - An optional filename for the image
  * @property {string} options.caption - An optional caption for the image
  * @property {string} options.title - An optional title for the image
  * @property {object} options.transaction - An optional transaction to run the create under
  *
- * @returns {Promise} the image has been loaded successfully
- * @throws {Promise.<Error>} the image does not exist or did not load correctly
+ * @returns {Promise<object>} - Returns the created imageData db entry
+ * @throws {Promise<Error>} - Something goes wrong with image processing and saving entry
  */
-const loadImage = async (reportId, key, imagePath, options = {}) => {
-  logger.verbose(`loading (${key}) image: ${imagePath}`);
+const loadImage = async (reportId, key, image, options = {}) => {
+  logger.verbose(`Loading (${key}) image`);
 
   let config;
-
   for (const {pattern, ...conf} of IMAGES_CONFIG) {
     const regexp = new RegExp(`^${pattern}$`);
     if (regexp.exec(key)) {
@@ -217,27 +207,30 @@ const loadImage = async (reportId, key, imagePath, options = {}) => {
   }
 
   if (!config) {
-    logger.warn(`no format/size configuration for ${key}. Using default values`);
+    logger.warn(`No format/size configuration for ${key}. Using default values`);
     config = {format: DEFAULT_FORMAT, height: DEFAULT_HEIGHT, width: DEFAULT_WIDTH};
   }
 
-  try {
-    await imagePathExists(imagePath);
-  } catch (err) {
-    logger.error(`file not found: ${imagePath}`);
-    throw err;
-  }
 
-  const imageData = await processImage(imagePath, config.width, config.height, config.format);
-  await db.models.imageData.create({
-    reportId,
-    format: config.format,
-    filename: path.basename(imagePath),
-    key,
-    data: imageData,
-    caption: options.caption,
-    title: options.title,
-  }, {transaction: options.transaction});
+  try {
+    const imageData = await processImage(image, config.width, config.height, config.format);
+
+    return db.models.imageData.create({
+      reportId,
+      format: config.format,
+      filename: options.filename,
+      key,
+      data: imageData,
+      caption: options.caption,
+      title: options.title,
+    }, {transaction: options.transaction});
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
 };
 
-module.exports = {loadImage};
+module.exports = {
+  loadImage,
+  processImage,
+};
