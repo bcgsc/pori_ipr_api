@@ -1,11 +1,33 @@
-const jimp = require('jimp');
+const sharp = require('sharp');
 const db = require('../models');
 
+
 /**
- * Resize and upload image to database
+ * Resize, reformat and return base64 representation of image.
+ *
+ * @param {Buffer|string} image - Buffer containing image data or the absolute path to an image file
+ * @param {number} width - Width of the final image in pixels
+ * @param {number} height - Height of the final image in pixels
+ * @param {string} format - Format of the output image (default: PNG)
+ *
+ * @returns {Promise<string>} - Returns base64 representation of image
+ * @throws {Promise<Error>} - File doesn't exist, incorrect permissions, etc.
+ */
+const processImage = async (image, width, height, format = 'png') => {
+  const imageData = await sharp(image)
+    .resize(width, height)
+    .toFormat(format.toLowerCase())
+    .toBuffer();
+
+  return imageData.toString('base64');
+};
+
+
+/**
+ * Resize, reformat and upload image to images table
  *
  * @param {object} image - All image data for upload
- * @param {Buffer} image.data - Binary image data
+ * @param {Buffer|string} image.data - Binary image data or absolute file path
  * @param {string} image.filename - Name of the image file
  * @param {string} image.format - Format of the image (i.e png)
  * @param {integer} image.height - Height of resized image (px)
@@ -21,63 +43,19 @@ const uploadImage = async (image, options = {}) => {
   } = image;
 
   // Resize image
-  const buffImage = await jimp.read(data);
-  await buffImage.resize(width, height);
-  const imageString = await buffImage.getBase64Async(jimp.AUTO);
+  const imageData = await processImage(data, width, height, format.replace('image/', ''));
 
   // Upload image data
-  const result = await db.models.image.create({
-    data: imageString,
+  return db.models.image.create({
+    data: imageData,
     filename,
     format,
     type,
   }, options);
-  return result;
 };
 
 /**
- * Resize and update image data in the database
- *
- * @param {string} ident - Ident of image to update
- * @param {object} image - All image data for update
- * @param {Buffer} image.data - Binary image data
- * @param {string} image.filename - Name of the image file
- * @param {string} image.format - Format of the image (i.e png)
- * @param {integer} image.height - Height of resized image (px)
- * @param {integer} image.width - Width of resized image (px)
- * @param {string} image.type - Type of image (i.e Logo, header)
- * @param {object} options - Additional options for update
- * @param {object} options.transaction - Transaction to run update under
- * @returns {Promise<object>} - Returns the newly updated image data
- */
-const updateImage = async (ident, image, options = {}) => {
-  const {
-    data, filename, format, type, width, height,
-  } = image;
-
-  const oldImage = await db.models.image.findOne({where: {ident}});
-
-  if (!oldImage) {
-    throw new Error('Image doesn\'t exist');
-  }
-
-  // Resize image
-  const buffImage = await jimp.read(data);
-  await buffImage.resize(width, height);
-  const imageString = await buffImage.getBase64Async(jimp.AUTO);
-
-  // Update image data
-  const result = await oldImage.update({
-    data: imageString,
-    filename,
-    format,
-    type,
-  }, options);
-  return result;
-};
-
-/**
- * Delete image from images database
+ * Delete image from images table
  *
  * @param {string} ident - Ident of image to delete
  * @param {boolean} force - Whether it is a hard delete or not
@@ -94,8 +72,9 @@ const deleteImage = async (ident, force = false, transaction) => {
   return image.destroy({where: {ident}, force, transaction});
 };
 
+
 module.exports = {
+  processImage,
   uploadImage,
-  updateImage,
   deleteImage,
 };
