@@ -101,7 +101,6 @@
         }
     ],
     "pathwayAnalysis": {
-        "original": null,
         "pathway": "Test pathway string",
         "legend": "v2"
     },
