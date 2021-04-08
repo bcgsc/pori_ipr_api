@@ -94,49 +94,54 @@ router.route('/:template([A-z0-9-]{36})')
 
     // Create transaction
     const transaction = await db.transaction();
+    const promises = [];
 
     // Check for logo image
     if (req.files && req.files.logo) {
       const {files: {logo}} = req;
-      // Upload logo image
-      try {
-        const logoImage = await uploadImage({
+      promises.push(
+        uploadImage({
           data: logo.data,
           filename: logo.name,
           format: logo.mimetype,
           height: DEFAULT_LOGO_HEIGHT,
           width: DEFAULT_LOGO_WIDTH,
           type: 'Logo',
-        }, {transaction});
-        req.body.logoId = logoImage.id;
-      } catch (error) {
-        await transaction.rollback();
-        logger.error(`Error while uploading template logo ${error}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while uploading template logo'}});
-      }
+        }, {transaction})
+      );
     }
 
     // Check for header image
     if (req.files && req.files.header) {
       const {files: {header}} = req;
-      // Upload header image
-      try {
-        const headerImage = await uploadImage({
+      promises.push(
+        uploadImage({
           data: header.data,
           filename: header.name,
           format: header.mimetype,
           height: DEFAULT_HEADER_HEIGHT,
           width: DEFAULT_HEADER_WIDTH,
           type: 'Header',
-        }, {transaction});
-        req.body.headerId = headerImage.id;
-      } catch (error) {
-        await transaction.rollback();
-        logger.error(`Error while uploading template header ${error}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while uploading template header'}});
-      }
+        }, {transaction})
+      );
     }
 
+    try {
+      const images = await Promise.all(promises);
+
+      images.forEach((image) => {
+        if (image.type === 'Logo') {
+          req.body.logoId = image.id;
+        } else if (image.type === 'Header') {
+          req.body.headerId = image.id;
+        }
+      });
+    } catch (error) {
+      await transaction.rollback();
+      const message = `Error while updating template images ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
 
     // Update db entry
     try {
@@ -206,47 +211,53 @@ router.route('/')
 
     // Create transaction
     const transaction = await db.transaction();
+    const promises = [];
 
     // Check for logo image
-    let logoImage;
     if (req.files && req.files.logo) {
       const {files: {logo}} = req;
-      try {
-        logoImage = await uploadImage({
+      promises.push(
+        uploadImage({
           data: logo.data,
           filename: logo.name,
           format: logo.mimetype,
           height: DEFAULT_LOGO_HEIGHT,
           width: DEFAULT_LOGO_WIDTH,
           type: 'Logo',
-        }, {transaction});
-        req.body.logoId = logoImage.id;
-      } catch (error) {
-        await transaction.rollback();
-        logger.error(`Error while trying to upload logo ${error}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to upload logo'}});
-      }
+        }, {transaction})
+      );
     }
 
     // Check for header image
-    let headerImage;
     if (req.files && req.files.header) {
       const {files: {header}} = req;
-      try {
-        headerImage = await uploadImage({
+      promises.push(
+        uploadImage({
           data: header.data,
           filename: header.name,
           format: header.mimetype,
           height: DEFAULT_HEADER_HEIGHT,
           width: DEFAULT_HEADER_WIDTH,
           type: 'Header',
-        }, {transaction});
-        req.body.headerId = headerImage.id;
-      } catch (error) {
-        await transaction.rollback();
-        logger.error(`Error while trying to upload header ${error}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to upload header'}});
-      }
+        }, {transaction})
+      );
+    }
+
+    try {
+      const images = await Promise.all(promises);
+
+      images.forEach((image) => {
+        if (image.type === 'Logo') {
+          req.body.logoId = image.id;
+        } else if (image.type === 'Header') {
+          req.body.headerId = image.id;
+        }
+      });
+    } catch (error) {
+      await transaction.rollback();
+      const message = `Error while uploading template images ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     // Create new entry in db

@@ -5,7 +5,7 @@ const {Op} = require('sequelize');
 const db = require('../../../models');
 const logger = require('../../../log');
 const Acl = require('../../../middleware/acl');
-const {loadImage} = require('../images');
+const {uploadReportImage} = require('../images');
 const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
 const router = express.Router({mergeParams: true});
@@ -134,7 +134,7 @@ router.route('/')
           };
 
           // Load image
-          await loadImage(req.report.id, key, image.data, options);
+          await uploadReportImage(req.report.id, key, image.data, options);
 
           // Return that this image was uploaded successfully
           return {key, upload: 'successful'};

@@ -1,8 +1,6 @@
-const {spawn} = require('child_process');
-const {PassThrough} = require('stream');
-
 const logger = require('../../log');
 const db = require('../../models');
+const {processImage} = require('../../libs/image');
 
 const DEFAULT_WIDTH = 500;
 const DEFAULT_HEIGHT = 500;
@@ -132,56 +130,11 @@ const IMAGES_CONFIG = [
   },
 ];
 
-/**
- * Resize, reformat and return base64 representation of image.
- *
- * @param {Buffer|string} image - Buffer containing image data or the absolute path to an image file
- * @param {number} width - Width of the final image in pixels
- * @param {number} height - Height of the final image in pixels
- * @param {string} format - Format of the output image (default: PNG)
- *
- * @returns {Promise<string>} - Returns base64 representation of image
- * @throws {Promise<Error>} - File doesn't exist, incorrect permissions, etc.
- */
-const processImage = (image, width, height, format = 'PNG') => {
-  return new Promise((resolve, reject) => {
-    let imageData = '';
-
-    // Resize and reformat image
-    const convert = spawn('convert', [`${Buffer.isBuffer(image) ? '-' : image}`, '-resize', `${width}x${height}`, `${format}:-`]);
-
-    if (Buffer.isBuffer(image)) {
-      const stream = PassThrough();
-      stream.end(image);
-      stream.pipe(convert.stdin);
-    }
-
-    const base = spawn('base64');
-    convert.stdout.pipe(base.stdin);
-
-    // On data, chunk
-    base.stdout.on('data', (res) => {
-      imageData += res;
-    });
-
-    base.stderr.on('data', (err) => {
-      reject(err);
-    });
-
-    // Done executing
-    base.on('close', () => {
-      if (imageData) {
-        resolve(imageData);
-      } else {
-        reject(new Error('No image data found'));
-      }
-    });
-  });
-};
-
 
 /**
- * @param {Number} reportId - The primary key for the report these images belong to (to create FK relationship)
+ * Resize, reformat and upload a report image to the reports_image_data table
+ *
+ * @param {Number} reportId - The primary key for the report this image belong to (to create FK relationship)
  * @param {string} key - The image key, defines what type of image is being loaded
  * @param {Buffer|string} image - Buffer containing image data or the absolute path to the image file
  * @param {object} options - An object containing additional image upload options
@@ -194,7 +147,7 @@ const processImage = (image, width, height, format = 'PNG') => {
  * @returns {Promise<object>} - Returns the created imageData db entry
  * @throws {Promise<Error>} - Something goes wrong with image processing and saving entry
  */
-const loadImage = async (reportId, key, image, options = {}) => {
+const uploadReportImage = async (reportId, key, image, options = {}) => {
   logger.verbose(`Loading (${key}) image`);
 
   let config;
@@ -225,12 +178,11 @@ const loadImage = async (reportId, key, image, options = {}) => {
       title: options.title,
     }, {transaction: options.transaction});
   } catch (error) {
-    logger.error(error);
-    throw error;
+    logger.error(`Error processing report image ${options.filename} ${error}`);
+    throw new Error(`Error processing report image ${options.filename} ${error}`);
   }
 };
 
 module.exports = {
-  loadImage,
-  processImage,
+  uploadReportImage,
 };

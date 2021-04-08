@@ -9,7 +9,6 @@ const boolParser = require('express-query-boolean'); // Converts strings with tr
 const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
-const {exec} = require('child_process');
 const fileUpload = require('express-fileupload'); // File upload support
 
 require('colors'); // Console colours
@@ -112,15 +111,6 @@ const listen = async (port = null) => {
 
 
   // DEPENDENCIES CHECK ------------------------------------------------------
-  const check = exec('convert');
-
-  // Done executing
-  check.on('close', (resp) => {
-    if (resp !== 0) {
-      logger.warn('ImageMagick is not installed. Reports will fail to load as a result.');
-    }
-  });
-
   // ensure the db connection is ready
   await sequelize.authenticate();
 
