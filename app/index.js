@@ -3,15 +3,12 @@
  */
 const http = require('http');
 const express = require('express'); // Call express
-const bodyParser = require('body-parser'); // Body parsing lib
 const compression = require('compression'); // Compression middleware
 const boolParser = require('express-query-boolean'); // Converts strings with true/false to a boolean
 const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
 const fileUpload = require('express-fileupload'); // File upload support
-
-require('colors'); // Console colours
 
 const conf = require('../app/config');
 const sequelize = require('./models');
@@ -77,11 +74,12 @@ const listen = async (port = null) => {
   logger.info(`starting http server on port ${port || conf.get('web:port')}`);
   const server = http.createServer(app).listen(port || conf.get('web:port'));
   // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-985 reduce when images are a separate upload
-  app.use(bodyParser.json({limit: '100mb'}));
+  app.use(express.json({limit: '100mb'}));
   app.use(boolParser());
   app.use(compression());
   app.use(cors());
-  app.use(fileUpload());
+  // Set max image size to 50MB, max num of images to 20 and max fields + files to 50
+  app.use(fileUpload({limits: {fileSize: 50 * 1024 * 1024, files: 20, parts: 50}}));
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Expose-Headers', 'X-token, X-Requested-With ,Origin, Content-Type, Accept');
