@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const isSvg = require('is-svg');
 
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
@@ -54,7 +55,7 @@ router.route('/')
     // Check for pathway analysis file
     if (req.files && req.files.pathway) {
       // Check that file is an svg
-      if (req.files.pathway.mimetype !== 'image/svg+xml') {
+      if (!isSvg(req.files.pathway.data)) {
         logger.error('Pathway must be an svg');
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           error: {message: 'Pathway must be an svg'},
@@ -127,7 +128,7 @@ router.route('/')
     // Check for pathway analysis file
     if (req.files && req.files.pathway) {
       // Check that file is an svg
-      if (req.files.pathway.mimetype !== 'image/svg+xml') {
+      if (!isSvg(req.files.pathway.data)) {
         logger.error('Pathway must be an svg');
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           error: {message: 'Pathway must be an svg'},
