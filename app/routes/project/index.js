@@ -125,16 +125,16 @@ router.route('/search')
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'Error while geting user\'s access to projects'}});
     }
 
-    // Get the id's of the projects the user has access to
-    const projectIds = projectAccess.map((project) => {
-      return project.id;
+    // Get the ident's of the projects the user has access to
+    const projectIdents = projectAccess.map((project) => {
+      return project.ident;
     });
 
     let projects;
     try {
       projects = await db.models.project.scope('public').findAll({
         where: {
-          id: {[Op.in]: projectIds},
+          ident: projectIdents,
           name: {[Op.iLike]: `%${query}%`},
         },
       });
