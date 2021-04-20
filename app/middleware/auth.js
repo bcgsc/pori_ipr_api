@@ -4,10 +4,30 @@ const fs = require('fs');
 const db = require('../models');
 const keycloak = require('../api/keycloak');
 const nconf = require('../config');
+const cache = require('../cache');
 
 const logger = require('../log');
 
 const pubKey = fs.readFileSync(nconf.get('keycloak:keyfile')).toString();
+
+const include = [
+  {
+    model: db.models.userGroup,
+    as: 'groups',
+    attributes: {
+      exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+    },
+    through: {attributes: []},
+  },
+  {
+    model: db.models.project,
+    as: 'projects',
+    attributes: {
+      exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt'],
+    },
+    through: {attributes: []},
+  },
+];
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
@@ -56,43 +76,46 @@ module.exports = async (req, res, next) => {
   const username = decoded.preferred_username;
   const expiry = decoded.exp;
 
-  // Lookup token in IPR database
   // Middleware for user
+  // Check cache for user
+  const key = `/user/${username}`;
+  let respUser;
+  let cacheUser;
+
   try {
-    const respUser = await db.models.user.findOne({
-      where: {username},
-      include: [
-        {
-          model: db.models.userGroup,
-          as: 'groups',
-          attributes: {
-            exclude: ['owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
-          },
-        },
-        {
-          model: db.models.project,
-          as: 'projects',
-          attributes: {
-            exclude: ['deletedAt', 'updatedAt', 'createdAt'],
-          },
-        },
-        {
-          model: db.models.userMetadata.scope('public'),
-          as: 'metadata',
-        },
-      ],
+    cacheUser = await cache.get(key);
+  } catch (error) {
+    logger.error(`Error during user cache get ${error}`);
+  }
+
+  if (cacheUser) {
+    respUser = db.models.user.build(JSON.parse(cacheUser), {
+      raw: true,
+      isNewRecord: false,
+      include,
     });
+  } else {
+    try {
+      respUser = await db.models.user.findOne({
+        where: {username},
+        attributes: {exclude: ['password']},
+        include,
+      });
+    } catch (err) {
+      logger.error(err);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Invalid authorization token'});
+    }
 
     if (!respUser) {
       logger.error(`User (${username}) does not exist`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'User does not exist'});
     }
 
-    respUser.dataValues.expiry = expiry;
-    req.user = respUser;
-    return next();
-  } catch (err) {
-    logger.error(err);
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Invalid authorization token'});
+    // Add result to cache
+    cache.set(key, JSON.stringify(respUser), 'EX', 7200);
   }
+
+  respUser.dataValues.expiry = expiry;
+  req.user = respUser;
+  return next();
 };
