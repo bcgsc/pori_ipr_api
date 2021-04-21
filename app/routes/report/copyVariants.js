@@ -61,22 +61,15 @@ router.route('/:cnv([A-z0-9-]{36})')
 // Routing for report copy variants
 router.route('/')
   .get(async (req, res) => {
-    const {report: {ident: reportIdent}} = req;
     // Get all cnv's for this report
     try {
       const result = await db.models.copyVariants.scope('extended').findAll({
         order: [['geneId', 'ASC']],
         where: {
+          reportId: req.report.id,
           cnvState: {[Op.ne]: null},
         },
         include: [
-          {
-            model: db.models.analysis_report,
-            where: {ident: reportIdent},
-            attributes: [],
-            required: true,
-            as: 'report',
-          },
           {
             model: db.models.kbMatches,
             attributes: ['ident', 'category'],

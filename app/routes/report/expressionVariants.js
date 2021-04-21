@@ -62,22 +62,14 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
 // Routing for all expression variants
 router.route('/')
   .get(async (req, res) => {
-    const {report: {ident: reportIdent}} = req;
-
     try {
       const results = await db.models.expressionVariants.scope('extended').findAll({
         order: [['geneId', 'ASC']],
         where: {
+          reportId: req.report.id,
           expressionState: {[Op.ne]: null},
         },
         include: [
-          {
-            model: db.models.analysis_report,
-            where: {ident: reportIdent},
-            attributes: [],
-            required: true,
-            as: 'report',
-          },
           {
             model: db.models.kbMatches,
             attributes: ['ident', 'category'],

@@ -61,20 +61,14 @@ router.route('/:mutation([A-z0-9-]{36})')
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    const {report: {ident: reportIdent}} = req;
-
     // Get all small mutations for this report
     try {
       const results = await db.models.smallMutations.scope('extended').findAll({
         order: [['geneId', 'ASC']],
+        where: {
+          reportId: req.report.id,
+        },
         include: [
-          {
-            model: db.models.analysis_report,
-            where: {ident: reportIdent},
-            attributes: [],
-            required: true,
-            as: 'report',
-          },
           {
             model: db.models.kbMatches,
             attributes: ['ident', 'category'],
