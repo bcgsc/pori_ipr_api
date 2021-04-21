@@ -18,6 +18,10 @@ const CLEAR_GERMLINE_CACHE_MODELS = [
   'germlineSmallMutation', 'germlineSmallMutationVariant', 'germlineSmallMutationReview',
 ];
 
+const CLEAR_USER_CACHE_MODELS = [
+  'userGroup', 'userGroupMember', 'user_project',
+];
+
 const CLEAR_CACHED_REPORTS = async (modelName) => {
   if (FLUSH_ALL_MODELS.includes(modelName)) {
     return flushAll();
@@ -27,6 +31,9 @@ const CLEAR_CACHED_REPORTS = async (modelName) => {
   }
   if (CLEAR_GERMLINE_CACHE_MODELS.includes(modelName)) {
     return batchDeleteKeysByPattern('/germline*');
+  }
+  if (CLEAR_USER_CACHE_MODELS.includes(modelName)) {
+    return batchDeleteKeysByPattern('/user*');
   }
   return true;
 };
@@ -99,6 +106,18 @@ const DEFAULT_MAPPING_OPTIONS = {
   timestamps: true,
   // Use soft-deletes!
   paranoid: true,
+  // hooks
+  hooks: {
+    afterCreate: async (instance) => {
+      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+    },
+    afterUpdate: async (instance) => {
+      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+    },
+    afterDestroy: async (instance) => {
+      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+    },
+  },
 };
 
 // basically everything except tablename can be here
@@ -116,6 +135,7 @@ const DEFAULT_OPTIONS = {
     },
   ],
   hooks: {
+    ...DEFAULT_MAPPING_OPTIONS.hooks,
     beforeUpdate: async (instance, options = {}) => {
       // check if the data has changed or if the fields updated
       // are excluded from creating a new record
@@ -133,15 +153,6 @@ const DEFAULT_OPTIONS = {
         silent: true,
         transaction: options.transaction,
       });
-    },
-    afterCreate: async (instance) => {
-      return CLEAR_CACHED_REPORTS(instance.constructor.name);
-    },
-    afterUpdate: async (instance) => {
-      return CLEAR_CACHED_REPORTS(instance.constructor.name);
-    },
-    afterDestroy: async (instance) => {
-      return CLEAR_CACHED_REPORTS(instance.constructor.name);
     },
   },
 };

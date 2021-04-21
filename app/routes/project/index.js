@@ -125,16 +125,16 @@ router.route('/search')
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'Error while geting user\'s access to projects'}});
     }
 
-    // Get the id's of the projects the user has access to
-    const projectIds = projectAccess.map((project) => {
-      return project.id;
+    // Get the ident's of the projects the user has access to
+    const projectIdents = projectAccess.map((project) => {
+      return project.ident;
     });
 
     let projects;
     try {
       projects = await db.models.project.scope('public').findAll({
         where: {
-          id: {[Op.in]: projectIds},
+          ident: projectIdents,
           name: {[Op.iLike]: `%${query}%`},
         },
       });
@@ -193,11 +193,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     // exists - set deletedAt to null
     if (hasBinding) {
       try {
-        await db.models.user_project.update({deletedAt: null}, {
-          where: {id: hasBinding.id},
-          individualHooks: true,
-          paranoid: true,
-        });
+        await hasBinding.update({deletedAt: null});
         return res.status(HTTP_STATUS.CREATED).json(user);
       } catch (error) {
         logger.error(`Error while restoring user project binding ${error}`);
@@ -254,12 +250,15 @@ router.route('/:project([A-z0-9-]{36})/user')
     }
 
     try {
-      // Unbind User
-      const unboundUser = await db.models.user_project.destroy({where: {project_id: req.project.id, user_id: user.id}});
+      // Find user binding
+      const unboundUser = await db.models.user_project.findOne({where: {project_id: req.project.id, user_id: user.id}});
+
       if (!unboundUser) {
-        logger.error('Unable to remove user from project');
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to remove user from project'}});
+        logger.error('User isn\'t bound to project');
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'User isn\'t bound to project'}});
       }
+      // Remove user binding
+      await unboundUser.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while removing user from project ${error}`);
