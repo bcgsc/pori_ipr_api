@@ -2,7 +2,7 @@ const {Op} = require('sequelize');
 const path = require('path');
 
 const db = require('../models');
-const {loadImage} = require('../routes/report/images');
+const {uploadReportImage} = require('../routes/report/images');
 const logger = require('../log');
 const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../constants');
 const {sanitizeHtml} = require('./helperFunctions');
@@ -211,7 +211,7 @@ const createReportSections = async (report, content, transaction) => {
 
   // add images to db
   const promises = (content.images || []).map(async ({path: imagePath, key, caption, title}) => {
-    return loadImage(report.id, key, imagePath, {
+    return uploadReportImage(report.id, key, imagePath, {
       filename: path.basename(imagePath), caption, title, transaction,
     });
   });

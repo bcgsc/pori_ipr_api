@@ -232,12 +232,15 @@ router.route('/:group([A-z0-9-]{36})/member')
     }
 
     try {
-      // Remove membership
-      const membership = await db.models.userGroupMember.destroy({where: {group_id: req.group.id, user_id: user.id}});
+      // Find membership
+      const membership = await db.models.userGroupMember.findOne({where: {group_id: req.group.id, user_id: user.id}});
+
       if (!membership) {
-        logger.error('Unable to remove group member');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to remove group member'}});
+        logger.error('User doesn\'t belong to group');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'User doesn\'t belong to group'}});
       }
+      // Remove membership
+      await membership.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`SQL Error trying to remove member ${error}`);

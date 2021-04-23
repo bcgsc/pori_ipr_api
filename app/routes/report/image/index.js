@@ -5,17 +5,10 @@ const {Op} = require('sequelize');
 const db = require('../../../models');
 const logger = require('../../../log');
 const Acl = require('../../../middleware/acl');
-const {loadImage} = require('../images');
+const {uploadReportImage} = require('../images');
 const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
 const router = express.Router({mergeParams: true});
-
-// Maximum number of images per upload
-const MAXIMUM_NUM_IMAGES = 20;
-// The size of 1 MB, which is 1048576 bytes
-const ONE_MB = 1048576;
-// Maximum image size (50 MB)
-const MAXIMUM_IMG_SIZE = ONE_MB * 50;
 
 // Middleware for report image
 router.param('image', async (req, res, next, imgIdent) => {
@@ -81,12 +74,6 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
     }
 
-    // Check that upload doesn't exceed maximum number of images allowed
-    if (Object.keys(req.files).length > MAXIMUM_NUM_IMAGES) {
-      logger.error(`Tried to upload more images than the maximum allowed per request. Max: ${MAXIMUM_NUM_IMAGES}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `You tried to upload more than the allowed max number of images per request. Max: ${MAXIMUM_NUM_IMAGES}`}});
-    }
-
     // Check for valid and duplicate keys
     const keys = [];
     const pattern = new RegExp(VALID_IMAGE_KEY_PATTERN);
@@ -114,17 +101,6 @@ router.route('/')
         // Remove trailing space from key
         key = key.trim();
 
-        // Check image isn't too large
-        if (image.size > MAXIMUM_IMG_SIZE) {
-          logger.error(`Image ${image.name.trim()} is too large it's ${(image.size / ONE_MB).toFixed(2)} MBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_MB).toFixed(2)} MBs`);
-          return {
-            key,
-            upload: 'failed',
-            error: `Image ${image.name.trim()} is too large it's ${(image.size / ONE_MB).toFixed(2)} MBs. The maximum allowed image size is ${(MAXIMUM_IMG_SIZE / ONE_MB).toFixed(2)} MBs`,
-          };
-        }
-
-
         try {
           // Set options (value or undefined)
           const options = {
@@ -134,7 +110,7 @@ router.route('/')
           };
 
           // Load image
-          await loadImage(req.report.id, key, image.data, options);
+          await uploadReportImage(req.report.id, key, image.data, options);
 
           // Return that this image was uploaded successfully
           return {key, upload: 'successful'};

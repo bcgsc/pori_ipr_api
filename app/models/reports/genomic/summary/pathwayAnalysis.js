@@ -12,13 +12,13 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
-    original: {
-      type: Sq.TEXT,
-      allowNull: true,
-    },
     pathway: {
       type: Sq.TEXT,
       allowNull: true,
+      jsonSchema: {
+        description: 'SVG image of pathway',
+        schema: {format: 'svg', type: 'string'},
+      },
     },
     legend: {
       type: Sq.ENUM(['v1', 'v2', 'custom']),

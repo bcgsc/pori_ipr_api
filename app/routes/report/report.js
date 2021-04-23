@@ -300,7 +300,7 @@ router.route('/')
       const results = {total: reports.count, reports: reports.rows};
 
       if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 3600);
+        cache.set(key, JSON.stringify(results), 'EX', 9000);
       }
 
       return res.json(results);

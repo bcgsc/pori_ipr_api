@@ -126,14 +126,24 @@ router.route('/me')
   });
 
 router.route('/settings')
-  .get((req, res) => {
-    return res.json(req.user.metadata.get('settings'));
+  .get(async (req, res) => {
+    try {
+      const settings = await db.models.userMetadata.findOne({
+        where: {user_id: req.user.id}, attributes: ['settings'],
+      });
+      return res.json(settings);
+    } catch (error) {
+      logger.error(`Unable to find user settings for ${req.user.username} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to find user settings'},
+      });
+    }
   })
   .put(async (req, res) => {
     try {
       await db.models.userMetadata.update({settings: req.body}, {
         where: {
-          ident: req.user.metadata.ident,
+          user_id: req.user.id,
         },
         fields: ['settings'],
         hooks: false,
