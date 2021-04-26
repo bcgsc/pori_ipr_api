@@ -185,11 +185,17 @@ class AnalysisReport {
    */
   async unbindUser(user, role) {
     const unbindUser = await getUser(user);
-    // Remove binding from DB (soft-delete)
-    const result = await db.models.analysis_reports_user.destroy({where: {reportId: this.instance.id, user_id: unbindUser.id, role}});
-    if (result === 0) {
+    // Find binding
+    const binding = await db.models.analysis_reports_user.findOne({
+      where: {reportId: this.instance.id, user_id: unbindUser.id, role},
+    });
+
+    if (!binding) {
       throw new Error('No binding found');
     }
+
+    // Remove binding from DB (soft-delete)
+    await binding.destroy();
 
     return this.public();
   }
