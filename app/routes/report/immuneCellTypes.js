@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -74,15 +75,35 @@ router.route('/:ict([A-z0-9-]{36})')
 // Routing requests for all immune cell types
 router.route('/')
   .get(async (req, res) => {
+    const key = req.originalUrl.slice(4);
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for immune cell types ${error}`);
+    }
+
     // Get all immune cell types for this report
     try {
       const results = await db.models.immuneCellTypes.scope('public').findAll({
         where: {reportId: req.report.id},
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve immune cell types ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve immune cell types'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve immune cell types'},
+      });
     }
   });
 

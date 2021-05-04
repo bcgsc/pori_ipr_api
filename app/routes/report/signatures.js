@@ -4,20 +4,47 @@ const moment = require('moment');
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const router = express.Router({mergeParams: true});
 
+const include = [
+  {model: db.models.user.scope('public'), as: 'reviewerSignature'},
+  {model: db.models.user.scope('public'), as: 'authorSignature'},
+];
+
 // Middleware for report signatures
 router.use('/', async (req, res, next) => {
+  const key = `/reports/${req.report.ident}/signatures`;
+  let cacheResult;
+
+  try {
+    cacheResult = await cache.get(key);
+  } catch (error) {
+    logger.error(`Error during signatures cache get ${error}`);
+  }
+
+  if (cacheResult) {
+    // Build Sequelize model from cached string without calling db
+    req.signatures = db.models.signatures.build(JSON.parse(cacheResult), {
+      raw: true,
+      isNewRecord: false,
+      include,
+    });
+    return next();
+  }
+
   try {
     // Get report signatures
     req.signatures = await db.models.signatures.findOne({
       where: {reportId: req.report.id},
-      include: [
-        {model: db.models.user.scope('public'), as: 'reviewerSignature'},
-        {model: db.models.user.scope('public'), as: 'authorSignature'},
-      ],
+      include,
     });
+
+    if (req.signatures) {
+      cache.set(key, JSON.stringify(req.signatures), 'EX', 5400);
+    }
+
     return next();
   } catch (error) {
     logger.error(`Unable to get signatures for report ${req.report.ident} error: ${error}`);
