@@ -139,8 +139,8 @@ router.route('/retrieve/:key')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.in]: keys},
           reportId: req.report.id,
+          key: {[Op.in]: keys},
         },
       });
 
@@ -161,8 +161,8 @@ router.route('/expression-density-graphs')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.like]: 'expDensity.%'},
           reportId: req.report.id,
+          key: {[Op.like]: 'expDensity.%'},
         },
         order: [['key', 'ASC']],
       });
@@ -184,8 +184,8 @@ router.route('/mutation-burden')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.like]: 'mutationBurden.%'},
           reportId: req.report.id,
+          key: {[Op.like]: 'mutationBurden.%'},
         },
         order: [['key', 'ASC']],
       });
@@ -207,8 +207,8 @@ router.route('/subtype-plots')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.like]: 'subtypePlot.%'},
           reportId: req.report.id,
+          key: {[Op.like]: 'subtypePlot.%'},
         },
         order: [['key', 'ASC']],
       });
