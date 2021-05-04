@@ -41,7 +41,7 @@ const flushAll = async () => {
 const batchDeleteKeysByPattern = async (pattern) => {
   return new Promise((resolve, reject) => {
     const stream = cache.scanStream({
-      // only returns keys following the pattern of "key"
+      // only returns keys matching the pattern
       match: pattern,
       // returns approximately 100 elements per call
       count: 100,
