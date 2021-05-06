@@ -68,7 +68,7 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
 // Handle requests for mutation summaries
 router.route('/')
   .get(async (req, res) => {
-    const key = req.originalUrl.slice(4);
+    const key = `/reports/${req.report.ident}/mutation-burden`;
 
     try {
       const cacheResults = await cache.get(key);

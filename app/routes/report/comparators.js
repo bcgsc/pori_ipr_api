@@ -8,7 +8,7 @@ const router = express.Router({mergeParams: true});
 
 router.route('/')
   .get(async (req, res) => {
-    const key = req.originalUrl.slice(4);
+    const key = `/reports/${req.report.ident}/comparators`;
 
     try {
       const cacheResults = await cache.get(key);

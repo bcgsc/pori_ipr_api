@@ -75,7 +75,7 @@ router.route('/:ict([A-z0-9-]{36})')
 // Routing requests for all immune cell types
 router.route('/')
   .get(async (req, res) => {
-    const key = req.originalUrl.slice(4);
+    const key = `/reports/${req.report.ident}/immune-cell-types`;
 
     try {
       const cacheResults = await cache.get(key);

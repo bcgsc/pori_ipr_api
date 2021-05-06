@@ -78,7 +78,7 @@ router.route('/:microbial([A-z0-9-]{36})')
 // Handle requests for all report microbial data
 router.route('/')
   .get(async (req, res) => {
-    const key = req.originalUrl.slice(4);
+    const key = `/reports/${req.report.ident}/summary/microbial`;
 
     try {
       const cacheResults = await cache.get(key);

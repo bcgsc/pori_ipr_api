@@ -40,7 +40,7 @@ router.param('mutationSignature', async (req, res, next, ident) => {
 
 router.route('/')
   .get(async (req, res) => {
-    const key = generateKey(req.originalUrl.slice(4), req.query);
+    const key = generateKey(`/reports/${req.report.ident}/mutation-signatures`, req.query);
 
     try {
       const cacheResults = await cache.get(key);

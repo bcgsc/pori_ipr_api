@@ -78,7 +78,7 @@ router.route('/:msi([A-z0-9-]{36})')
 // Handle requests for MSI's
 router.route('/')
   .get(async (req, res) => {
-    const key = req.originalUrl.slice(4);
+    const key = `/reports/${req.report.ident}/msi`;
 
     try {
       const cacheResults = await cache.get(key);

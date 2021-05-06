@@ -75,7 +75,7 @@ router.route('/:alteration([A-z0-9-]{36})')
 router.route('/')
   .get(async (req, res) => {
     // Get all the genomic alterations for this report
-    const key = req.originalUrl.slice(4);
+    const key = `/reports/${req.report.ident}/summary/genomic-alterations-identified`;
 
     try {
       const cacheResults = await cache.get(key);
