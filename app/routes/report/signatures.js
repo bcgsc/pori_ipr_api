@@ -9,8 +9,8 @@ const cache = require('../../cache');
 const router = express.Router({mergeParams: true});
 
 const include = [
-  {model: db.models.user.scope('public'), as: 'reviewerSignature'},
-  {model: db.models.user.scope('public'), as: 'authorSignature'},
+  {model: db.models.user, as: 'reviewerSignature', attributes: {exclude: ['id', 'deletedAt', 'password']}},
+  {model: db.models.user, as: 'authorSignature', attributes: {exclude: ['id', 'deletedAt', 'password']}},
 ];
 
 // Middleware for report signatures
@@ -48,22 +48,15 @@ router.use('/', async (req, res, next) => {
     return next();
   } catch (error) {
     logger.error(`Unable to get signatures for report ${req.report.ident} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to get signatures for report ${req.report.ident}`}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: `Unable to get signatures for report ${req.report.ident}`},
+    });
   }
 });
 
 router.route('/')
-  /**
-    *Note: The reload in the GET is because of a bug/inconsistency in Sequelize.
-    Applying a scope to the includes is causing a null value/null foreign key
-    to be wrapped in the scoped model where all the values are null.
-    The reload can be removed once this is fixed in Sequelize.
-    This applies to Sequelize version 5.21.1
-    Jira Ticket: DEVSU-1175
-  */
   .get(async (req, res) => {
     if (req.signatures) {
-      await req.signatures.reload();
       return res.json(req.signatures.view('public'));
     }
     return res.json(null);
