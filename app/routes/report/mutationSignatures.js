@@ -5,6 +5,8 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
+const {generateKey} = require('../../libs/cacheFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -38,15 +40,32 @@ router.param('mutationSignature', async (req, res, next, ident) => {
 
 router.route('/')
   .get(async (req, res) => {
-    // Get all mutation signatures for this report
-    const filters = {reportId: req.report.id};
-    if (req.query.selected !== undefined) {
-      filters.selected = req.query.selected;
+    const key = generateKey(`/reports/${req.report.ident}/mutation-signatures`, req.query);
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for mutation signatures ${error}`);
     }
+
+    // Get all mutation signatures for this report
     try {
       const results = await db.models.mutationSignature.scope('public').findAll({
-        where: filters,
+        where: {
+          reportId: req.report.id,
+          ...((req.query.selected !== undefined) ? {selected: req.query.selected} : {}),
+        },
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve mutation signatures ${error}`);
