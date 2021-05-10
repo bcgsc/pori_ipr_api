@@ -80,13 +80,13 @@ const DEFAULT_MAPPING_OPTIONS = {
   // hooks
   hooks: {
     afterCreate: async (instance) => {
-      return clearCache(instance.constructor.name);
+      return clearCache(instance, 'POST');
     },
     afterUpdate: async (instance) => {
-      return clearCache(instance.constructor.name);
+      return clearCache(instance, 'PUT');
     },
     afterDestroy: async (instance) => {
-      return clearCache(instance.constructor.name);
+      return clearCache(instance, 'DELETE');
     },
   },
 };
@@ -141,7 +141,7 @@ const DEFAULT_REPORT_OPTIONS = {
       const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
 
       return Promise.all([
-        clearCache(instance.constructor.name),
+        clearCache(instance, 'PUT'),
         (!changed || includesAll(updateExclude, changed)) ? Promise.resolve(true)
           : instance.sequelize.models.signatures.update({
             authorId: null,
@@ -160,13 +160,13 @@ const DEFAULT_REPORT_OPTIONS = {
     },
     afterCreate: async (instance, options = {}) => {
       return Promise.all([
-        clearCache(instance.constructor.name),
+        clearCache(instance, 'POST'),
         REMOVE_REPORT_SIGNATURES(instance, options),
       ]);
     },
     afterDestroy: async (instance, options = {}) => {
       return Promise.all([
-        clearCache(instance.constructor.name),
+        clearCache(instance, 'DELETE'),
         REMOVE_REPORT_SIGNATURES(instance, options),
       ]);
     },
