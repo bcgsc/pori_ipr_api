@@ -277,20 +277,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/userAssociations"
-                        }
-                      }
-                    ]
-                  }
+                  "type": "object"
                 }
               }
             }
@@ -349,8 +336,7 @@
         "summary": "Get all groups",
         "description": "Return all groups currently listed in the report ACL database. This is\nnot linked or connected to the BCGSC LDAP database. Changes in one do\nnot affect the other.",
         "tags": [
-          "Group",
-          "User"
+          "Group"
         ],
         "security": [
           {
@@ -383,7 +369,6 @@
         "summary": "Create new group",
         "description": "Create a new ACL group in the Report API",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -439,7 +424,6 @@
         "summary": "Get a group",
         "description": "Get detailed group object from ident.",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -481,7 +465,6 @@
         "summary": "Update a group",
         "description": "Update the groups definition in the IPR API database",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -549,7 +532,6 @@
         "summary": "Remove a group",
         "description": "Remove a group entry from the database. Doing this will immediately\nrevoke group member's access to defined resources.",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -589,7 +571,6 @@
         "summary": "Get group members",
         "description": "Get detailed description of all group members.",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -637,7 +618,6 @@
         "summary": "Add group member",
         "description": "Add an existing user as a member to the specified group",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -701,7 +681,6 @@
         "summary": "Remove group member",
         "description": "Remove an existing user from a group of which they are a member",
         "tags": [
-          "User",
           "Group"
         ],
         "security": [
@@ -765,8 +744,7 @@
           }
         ],
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "security": [
           {
@@ -796,8 +774,7 @@
         "summary": "Updated Patient Information",
         "description": "Updated some of the tracked patient meta details",
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "parameters": [
           {
@@ -848,7 +825,6 @@
           }
         ],
         "tags": [
-          "Genomic Report",
           "Mutation Burden"
         ],
         "security": [
@@ -882,7 +858,6 @@
         "summary": "Create Mutation Burden",
         "description": "Add a new mutation burden to this report",
         "tags": [
-          "Genomic Report",
           "Mutation Burden"
         ],
         "parameters": [
@@ -937,7 +912,6 @@
           }
         ],
         "tags": [
-          "Genomic Report",
           "Mutation Burden"
         ],
         "security": [
@@ -968,7 +942,6 @@
         "summary": "Update Mutation Burden",
         "description": "Update the details of a specific mutation burden",
         "tags": [
-          "Genomic Report",
           "Mutation Burden"
         ],
         "parameters": [
@@ -1023,8 +996,7 @@
           }
         ],
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "security": [
           {
@@ -1054,8 +1026,7 @@
         "summary": "Updated Tumour Analysis Summary",
         "description": "Update some of the Tumour Analysis summary details",
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "parameters": [
           {
@@ -1120,8 +1091,7 @@
           }
         ],
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "security": [
           {
@@ -1158,8 +1128,7 @@
           }
         ],
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "security": [
           {
@@ -1194,8 +1163,7 @@
           }
         ],
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "security": [
           {
@@ -1241,8 +1209,7 @@
           }
         ],
         "tags": [
-          "Genomic Report",
-          "Genomic Summary"
+          "Genomic Report"
         ],
         "security": [
           {
@@ -5912,7 +5879,9 @@
             }
           }
         }
-      }
+      },
+      "user_project": {},
+      "userGroupMember": {}
     },
     "responses": {
       "UnauthorizedError": {
