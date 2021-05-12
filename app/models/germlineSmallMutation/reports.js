@@ -79,14 +79,14 @@ module.exports = (sequelize, Sq) => {
         if (options.force === true) {
           // When hard deleting a report, also delete the "updated" versions of the report
           return Promise.all([
-            clearCache(instance.constructor.name),
+            clearCache(instance, 'DELETE'),
             instance.constructor.destroy({where: {ident: instance.ident}, force: true}),
           ]);
         }
 
         // Remove review and variant on soft-delete
         return Promise.all([
-          clearCache(instance.constructor.name),
+          clearCache(instance, 'DELETE'),
           sequelize.models.germlineSmallMutationReview.destroy({where: {germlineReportId: instance.id}}),
           sequelize.models.germlineSmallMutationVariant.destroy({where: {germlineReportId: instance.id}}),
         ]);

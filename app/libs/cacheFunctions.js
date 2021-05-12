@@ -32,6 +32,16 @@ const flushAll = async () => {
 };
 
 /**
+ * Remove key(s) from cache
+ *
+ * @param {Array<string>|string} keys - Keys to remove from cache
+ * @returns {Promise<string>} - Returns Promise<"OK">
+ */
+const removeKeys = async (keys) => {
+  return cache.unlink(keys);
+};
+
+/**
  * Remove all keys from the cache that follow the
  * provided pattern.
  *
@@ -41,7 +51,7 @@ const flushAll = async () => {
 const batchDeleteKeysByPattern = async (pattern) => {
   return new Promise((resolve, reject) => {
     const stream = cache.scanStream({
-      // only returns keys matching the pattern
+      // returns keys that match "pattern"
       match: pattern,
       // returns approximately 100 elements per call
       count: 100,
@@ -73,4 +83,5 @@ module.exports = {
   generateKey,
   flushAll,
   batchDeleteKeysByPattern,
+  removeKeys,
 };

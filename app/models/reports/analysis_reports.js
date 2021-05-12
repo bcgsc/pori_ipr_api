@@ -152,7 +152,7 @@ module.exports = (sequelize, Sq) => {
         if (options.force === true) {
           // when hard deleting a report, also delete the "updated" versions of the report
           return Promise.all([
-            clearCache(instance.constructor.name),
+            clearCache(instance, 'DELETE'),
             sequelize.models.analysis_report.destroy({where: {ident: instance.ident}, force: true}),
           ]);
         }
@@ -162,7 +162,7 @@ module.exports = (sequelize, Sq) => {
         } = sequelize.models.analysis_report.associations;
 
         const promises = [
-          clearCache(instance.constructor.name),
+          clearCache(instance, 'DELETE'),
         ];
 
         // delete all report associations
