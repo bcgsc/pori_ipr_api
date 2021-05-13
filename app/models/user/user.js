@@ -6,9 +6,15 @@ module.exports = (sequelize, Sq) => {
     username: {
       type: Sq.STRING,
       allowNull: false,
+      jsonSchema: {
+        schema: {type: 'string', minLength: 2},
+      },
     },
     password: {
       type: Sq.STRING,
+      jsonSchema: {
+        schema: {type: 'string', minLength: 8},
+      },
     },
     type: {
       type: Sq.ENUM('bcgsc', 'local'),
@@ -16,15 +22,26 @@ module.exports = (sequelize, Sq) => {
     },
     firstName: {
       type: Sq.STRING,
+      allowNull: false,
+      jsonSchema: {
+        schema: {type: 'string', minLength: 2},
+      },
     },
     lastName: {
       type: Sq.STRING,
+      allowNull: false,
+      jsonSchema: {
+        schema: {type: 'string', minLength: 2},
+      },
     },
     email: {
       type: Sq.STRING,
-      allowNull: true,
+      allowNull: false,
       validate: {
         isEmail: true,
+      },
+      jsonSchema: {
+        schema: {type: 'string', format: 'email'},
       },
     },
   }, {

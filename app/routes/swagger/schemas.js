@@ -64,6 +64,7 @@ const getExcludes = (model) => {
     case 'user':
       publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'password'];
       exclude = [...GENERAL_EXCLUDE, 'password'];
+      excludeAssociations = [...GENERAL_EXCLUDE_ASSOCIATIONS, 'metadata'];
       break;
     case 'project':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
