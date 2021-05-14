@@ -28,7 +28,7 @@ const checkReportUser = (reportUserObject) => {
       type: expect.any(String),
       firstName: expect.any(String),
       lastName: expect.any(String),
-      email: expect.any(String)
+      email: expect.any(String),
     }),
   }));
   expect(reportUserObject).toEqual(expect.not.objectContaining({
