@@ -76,14 +76,14 @@ const IMAGES_CONFIG = [
   },
   {
     pattern: 'expression\\.chart',
-    width: 1000,
-    height: 900,
+    width: 800,
+    height: 1500,
     format: 'JPG',
   },
   {
     pattern: 'expression\\.legend',
-    width: 500,
-    height: 500,
+    width: 800,
+    height: 400,
     format: 'JPG',
   },
   {
