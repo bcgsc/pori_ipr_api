@@ -1,6 +1,6 @@
 const Sq = require('sequelize');
 const {includesAll} = require('../libs/helperFunctions');
-const {batchDeleteKeysByPattern, flushAll} = require('../libs/cacheFunctions');
+const clearCache = require('./clearCache');
 
 const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
 
@@ -8,35 +8,6 @@ const SIGNATURE_REMOVAL_EXCLUDE = {
   analysis_report: ['state', 'presentationDate', 'updatedAt'],
 };
 
-const FLUSH_ALL_MODELS = ['user', 'project'];
-
-const CLEAR_REPORT_CACHE_MODELS = [
-  'analysis_report', 'patientInformation', 'template', 'analysis_reports_user',
-];
-
-const CLEAR_GERMLINE_CACHE_MODELS = [
-  'germlineSmallMutation', 'germlineSmallMutationVariant', 'germlineSmallMutationReview',
-];
-
-const CLEAR_USER_CACHE_MODELS = [
-  'userGroup', 'userGroupMember', 'user_project',
-];
-
-const CLEAR_CACHED_REPORTS = async (modelName) => {
-  if (FLUSH_ALL_MODELS.includes(modelName)) {
-    return flushAll();
-  }
-  if (CLEAR_REPORT_CACHE_MODELS.includes(modelName)) {
-    return batchDeleteKeysByPattern('/reports*');
-  }
-  if (CLEAR_GERMLINE_CACHE_MODELS.includes(modelName)) {
-    return batchDeleteKeysByPattern('/germline*');
-  }
-  if (CLEAR_USER_CACHE_MODELS.includes(modelName)) {
-    return batchDeleteKeysByPattern('/user*');
-  }
-  return true;
-};
 
 /**
  * Remove report signatures
@@ -109,13 +80,13 @@ const DEFAULT_MAPPING_OPTIONS = {
   // hooks
   hooks: {
     afterCreate: async (instance) => {
-      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+      return clearCache(instance, 'POST');
     },
     afterUpdate: async (instance) => {
-      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+      return clearCache(instance, 'PUT');
     },
     afterDestroy: async (instance) => {
-      return CLEAR_CACHED_REPORTS(instance.constructor.name);
+      return clearCache(instance, 'DELETE');
     },
   },
 };
@@ -170,7 +141,7 @@ const DEFAULT_REPORT_OPTIONS = {
       const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
 
       return Promise.all([
-        CLEAR_CACHED_REPORTS(instance.constructor.name),
+        clearCache(instance, 'PUT'),
         (!changed || includesAll(updateExclude, changed)) ? Promise.resolve(true)
           : instance.sequelize.models.signatures.update({
             authorId: null,
@@ -189,13 +160,13 @@ const DEFAULT_REPORT_OPTIONS = {
     },
     afterCreate: async (instance, options = {}) => {
       return Promise.all([
-        CLEAR_CACHED_REPORTS(instance.constructor.name),
+        clearCache(instance, 'POST'),
         REMOVE_REPORT_SIGNATURES(instance, options),
       ]);
     },
     afterDestroy: async (instance, options = {}) => {
       return Promise.all([
-        CLEAR_CACHED_REPORTS(instance.constructor.name),
+        clearCache(instance, 'DELETE'),
         REMOVE_REPORT_SIGNATURES(instance, options),
       ]);
     },
@@ -209,5 +180,4 @@ module.exports = {
   DEFAULT_COLUMNS,
   DEFAULT_REPORT_OPTIONS,
   REMOVE_REPORT_SIGNATURES,
-  CLEAR_CACHED_REPORTS,
 };

@@ -214,7 +214,9 @@
             "hgvsProtein": "ZFP36L2:p.Q401del",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
             "hgvsGenomic": "2:g.43451740_43451742delCTG",
-            "germline": false
+            "germline": false,
+            "tumourRefCopies": 60,
+            "tumourAltCopies": 20
         }
     ],
     "mutationSignature": [

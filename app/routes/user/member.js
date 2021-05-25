@@ -1,0 +1,131 @@
+const HTTP_STATUS = require('http-status-codes');
+const express = require('express');
+
+const db = require('../../models');
+const logger = require('../../log');
+
+const router = express.Router({mergeParams: true});
+
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
+
+// Generate schema
+const memberSchema = schemaGenerator(db.models.userGroupMember, {
+  baseUri: '/create-delete',
+  exclude: [...BASE_EXCLUDE, 'user_id', 'group_id'],
+  properties: {
+    user: {type: 'string', format: 'uuid'},
+  },
+  required: ['user'],
+});
+
+router.route('/')
+  .get((req, res) => {
+    return res.json(req.group.users);
+  })
+  .post(async (req, res) => {
+    try {
+      // Validate input
+      validateAgainstSchema(memberSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the group member create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    let user;
+    try {
+      // Lookup User
+      user = await db.models.user.findOne({
+        where: {ident: req.body.user},
+        attributes: {exclude: ['deletedAt', 'password']},
+        include: [
+          {
+            model: db.models.userGroup,
+            as: 'groups',
+            attributes: {
+              exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+            },
+            through: {attributes: []},
+          },
+        ],
+      });
+    } catch (error) {
+      logger.error(`Error while trying to find group member user ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to find group member user'},
+      });
+    }
+
+    if (!user) {
+      logger.error('User doesn\'t exist');
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'User doesn\'t exist'}});
+    }
+
+    try {
+      // Add user to group
+      await db.models.userGroupMember.create({group_id: req.group.id, user_id: user.id});
+      await user.reload();
+      return res.status(HTTP_STATUS.CREATED).json(user.view('public'));
+    } catch (error) {
+      logger.error(`Error while trying to add user to group ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to add user to group'},
+      });
+    }
+  })
+  .delete(async (req, res) => {
+    try {
+      // Validate input
+      validateAgainstSchema(memberSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the group member delete request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    let user;
+    try {
+      // Lookup User
+      user = await db.models.user.findOne({
+        where: {ident: req.body.user},
+        attributes: ['id', 'ident'],
+      });
+    } catch (error) {
+      logger.error(`Error while trying to find group member user ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to find group member user'},
+      });
+    }
+
+    if (!user) {
+      logger.error('User doesn\'t exist');
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'User doesn\'t exist'}});
+    }
+
+    try {
+      // Find membership
+      const membership = await db.models.userGroupMember.findOne({
+        where: {group_id: req.group.id, user_id: user.id},
+      });
+
+      if (!membership) {
+        logger.error('User doesn\'t belong to group');
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          error: {message: 'User doesn\'t belong to group'},
+        });
+      }
+
+      // Remove membership
+      await membership.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Error while trying to remove user from group ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to remove user from group'},
+      });
+    }
+  });
+
+module.exports = router;
