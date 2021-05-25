@@ -76,15 +76,15 @@ const IMAGES_CONFIG = [
   },
   {
     pattern: 'expression\\.chart',
-    width: 1000,
-    height: 900,
-    format: 'JPG',
+    width: 800,
+    height: 1500,
+    format: 'PNG',
   },
   {
     pattern: 'expression\\.legend',
-    width: 500,
-    height: 500,
-    format: 'JPG',
+    width: 800,
+    height: 400,
+    format: 'PNG',
   },
   {
     pattern: 'microbial\\.circos\\.(genome|transcriptome)',
