@@ -736,15 +736,15 @@
     },
     "/reports/{report}/patient-information": {
       "get": {
-        "summary": "Get Patient Summary",
-        "description": "Retrieve basic metadata patient details for a report",
+        "summary": "Get Patient Information",
+        "description": "Retrieve patient information for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Patient Information"
         ],
         "security": [
           {
@@ -753,11 +753,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns basic patient meta details",
+            "description": "Returns an object containing patient information",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/patientInformation"
+                  "$ref": "#/components/schemas/patientInformationAssociations"
                 }
               }
             }
@@ -766,15 +766,15 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or patient information not found"
           }
         }
       },
       "put": {
-        "summary": "Updated Patient Information",
-        "description": "Updated some of the tracked patient meta details",
+        "summary": "Update Patient Information",
+        "description": "Update the patient information for a report",
         "tags": [
-          "Genomic Report"
+          "Patient Information"
         ],
         "parameters": [
           {
@@ -790,18 +790,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/parameters/patientInformationUpdate"
+                "$ref": "#/components/schemas/patientInformationUpdate"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Returns the update basic patient meta details",
+            "description": "Returns the updated patient information",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/patientInformation"
+                  "$ref": "#/components/schemas/patientInformationAssociations"
                 }
               }
             }
@@ -810,7 +810,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or patient information not found"
           }
         }
       }
@@ -986,17 +986,17 @@
         }
       }
     },
-    "/reports/{report}/summary/tumour-analysis": {
+    "/reports/{report}/summary/variant-counts": {
       "get": {
-        "summary": "Get Tumour Analysis Summary",
-        "description": "Retrieve summary of Tumour Analysis details for the report",
+        "summary": "Get Variant Count",
+        "description": "Retrieve the variant count for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Variant Count"
         ],
         "security": [
           {
@@ -1005,11 +1005,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns summary of Tumour Analysis details",
+            "description": "Returns variant count details for a report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tumourAnalysis"
+                  "$ref": "#/components/schemas/variantCountsAssociations"
                 }
               }
             }
@@ -1018,15 +1018,15 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or variant count not found"
           }
         }
       },
       "put": {
-        "summary": "Updated Tumour Analysis Summary",
-        "description": "Update some of the Tumour Analysis summary details",
+        "summary": "Update Variant Count",
+        "description": "Update the variant count for a report",
         "tags": [
-          "Genomic Report"
+          "Variant Count"
         ],
         "parameters": [
           {
@@ -1042,32 +1042,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "update": {
-                    "description": "The updated mutation summary object",
-                    "type": "object",
-                    "properties": {
-                      "subtyping": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "update"
-                ]
+                "$ref": "#/components/schemas/variantCountsUpdate"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Returns summary of Tumour Analysis details",
+            "description": "Returns the updated variant count",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tumourAnalysis"
+                  "$ref": "#/components/schemas/variantCountsAssociations"
                 }
               }
             }
@@ -1076,59 +1062,22 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/summary/variant-counts": {
-      "get": {
-        "summary": "Get Variant counts",
-        "description": "This endpoint is soon to be deprecated. Returns static analysis of variant\ncounts",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Genomic Report"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns static counts of detected variants",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/variantCounts"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
+            "description": "Report or variant count not found"
           }
         }
       }
     },
     "/reports/{report}/summary/genomic-alterations-identified": {
       "get": {
-        "summary": "Get key genomic alterations",
-        "description": "Retrieve list of key identified genomic alterations",
+        "summary": "Get Genomic Alterations Identified",
+        "description": "Retrieve all genomic alterations identified for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genomic Alterations Identified"
         ],
         "security": [
           {
@@ -1137,11 +1086,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of key identified gemomic alterations",
+            "description": "Returns an array of genomic alterations identified for a report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/genomicAlterationsIdentified"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/genomicAlterationsIdentifiedAssociations"
+                  }
                 }
               }
             }
@@ -1150,33 +1102,44 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       },
       "post": {
-        "summary": "Add key genomic alterations",
-        "description": "Add new key genomic alterations to a analysis report",
+        "summary": "Create Genomic Alterations Identified",
+        "description": "Add a new genomic alterations identified",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genomic Alterations Identified"
         ],
         "security": [
           {
             "basicAuth": []
           }
         ],
+        "requestBody": {
+          "description": "Genomic alterations data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/genomicAlterationsIdentifiedCreate"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Returns newly created key genomic alterations",
+            "description": "Returns newly created genomic alteration identified",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/genomicAlterationsIdentified"
+                  "$ref": "#/components/schemas/genomicAlterationsIdentifiedAssociations"
                 }
               }
             }
@@ -1186,30 +1149,115 @@
           },
           "403": {
             "description": "User is not authorized to add key genomic alterations"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
     },
     "/reports/{report}/summary/genomic-alterations-identified/{alteration}": {
-      "delete": {
-        "summary": "Remove key genomic alterations",
-        "description": "Remove a key identified genomic alteration entry.",
+      "get": {
+        "summary": "Get Genomic Alterations Identified",
+        "description": "Retrieves a specific identified genomic alteration",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
           },
           {
-            "name": "alteration",
-            "in": "path",
-            "required": true,
-            "description": "The alteration to be removed summary object",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/alteration"
           }
         ],
         "tags": [
-          "Genomic Report"
+          "Genomic Alterations Identified"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified genomic alterations identified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genomicAlterationsIdentifiedAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or genomic alterations identified not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Genomic Alterations Identified",
+        "description": "Update the details of a genomic alterations identified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/alteration"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update specified genomic alterations identified",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/genomicAlterationsIdentifiedUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Genomic Alterations Identified"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated genomic alterations identified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genomicAlterationsIdentifiedAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or genomic alterations identified not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Genomic Alterations Identified",
+        "description": "Remove an identified genomic alteration",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/alteration"
+          }
+        ],
+        "tags": [
+          "Genomic Alterations Identified"
         ],
         "security": [
           {
@@ -1218,13 +1266,13 @@
         ],
         "responses": {
           "204": {
-            "description": "Alteration was successfully removed"
+            "description": "No Content"
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report or genomic alterations identified not found"
           }
         }
       }
@@ -3108,84 +3156,6 @@
         }
       }
     },
-    "/reports/{report}/gene-viewer/{geneName} ": {
-      "get": {
-        "summary": "Get gene viewer data",
-        "description": "Returns gene data formatted for the front end gene viewer",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "$ref": "#/components/parameters/gene"
-          }
-        ],
-        "tags": [
-          "Genes"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns gene information for all sections of a report",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "kbMatches": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/kbMatchesAssociations"
-                      }
-                    },
-                    "smallMutations": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/smallMutationsAssociations"
-                      }
-                    },
-                    "copyNumber": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/copyVariantsAssociations"
-                      }
-                    },
-                    "expRNA": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/expressionVariantsAssociations"
-                      }
-                    },
-                    "expDensityGraph": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/imageDataAssociations"
-                      }
-                    },
-                    "structuralVariants": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/structuralVariantsAssociations"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report Not found"
-          }
-        }
-      }
-    },
     "/reports/{report}/genes": {
       "get": {
         "summary": "Get all genes for a report",
@@ -3309,6 +3279,84 @@
           },
           "404": {
             "description": "Report or gene not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/gene-viewer/{geneName} ": {
+      "get": {
+        "summary": "Get gene viewer data",
+        "description": "Returns gene data formatted for the front end gene viewer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/gene"
+          }
+        ],
+        "tags": [
+          "Genes"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns gene information for all sections of a report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kbMatches": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/kbMatchesAssociations"
+                      }
+                    },
+                    "smallMutations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/smallMutationsAssociations"
+                      }
+                    },
+                    "copyNumber": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/copyVariantsAssociations"
+                      }
+                    },
+                    "expRNA": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/expressionVariantsAssociations"
+                      }
+                    },
+                    "expDensityGraph": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/imageDataAssociations"
+                      }
+                    },
+                    "structuralVariants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/structuralVariantsAssociations"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
           }
         }
       }
@@ -3737,14 +3785,15 @@
     },
     "/reports/{report}/mavis": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Mavis Summaries",
+        "description": "Retrieve all mavis summaries for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Mavis"
         ],
         "security": [
           {
@@ -3753,11 +3802,14 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns all mavis summaries for a report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mavisAssociations"
+                  }
                 }
               }
             }
@@ -3766,7 +3818,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
@@ -4438,14 +4490,15 @@
     },
     "/reports/{report}/probe-test-information": {
       "get": {
-        "summary": "",
-        "description": "",
+        "summary": "Get Probe Test Information",
+        "description": "Retrieve probe test information for a given report",
         "parameters": [
           {
-            "$ref": ""
+            "$ref": "#/components/parameters/report"
           }
         ],
         "tags": [
+          "Probe Test Information"
         ],
         "security": [
           {
@@ -4454,11 +4507,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Returns the probe test information for a report",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": ""
+                  "$ref": "#/components/schemas/probe_test_informationAssociations"
                 }
               }
             }
@@ -4467,7 +4520,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report Not found"
+            "description": "Report not found"
           }
         }
       }
@@ -5720,6 +5773,16 @@
         "in": "path",
         "required": true,
         "description": "image ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "alteration": {
+        "name": "alteration",
+        "in": "path",
+        "required": true,
+        "description": "Identified genomic alteration ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
