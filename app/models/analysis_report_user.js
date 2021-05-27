@@ -1,7 +1,7 @@
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('./base');
 
 module.exports = (sequelize, Sq) => {
-  return sequelize.define('analysis_reports_user', {
+  const reportUser = sequelize.define('analysis_reports_user', {
     ...DEFAULT_COLUMNS,
     role: {
       type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'reviewer', 'admin'),
@@ -46,4 +46,15 @@ module.exports = (sequelize, Sq) => {
       },
     },
   });
+
+  // set instance methods
+  reportUser.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {id, reportId, user_id, addedBy_id, deletedAt, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
+  return reportUser;
 };
