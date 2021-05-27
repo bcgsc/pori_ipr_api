@@ -24,6 +24,7 @@ const comparators = require('./comparators');
 const patientInformation = require('./patientInformation');
 const images = require('./image');
 const msi = require('./msi');
+const reportUser = require('./reportUser');
 
 const router = express.Router({mergeParams: true});
 
@@ -52,5 +53,6 @@ router.use('/gene-viewer', geneViewer);
 router.use('/genes', gene);
 router.use('/patient-information', patientInformation);
 router.use('/msi', msi);
+router.use('/user', reportUser);
 
 module.exports = router;

@@ -6,7 +6,6 @@ const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const Acl = require('../../middleware/acl');
-const Report = require('../../libs/structures/analysis_report');
 const logger = require('../../log');
 const cache = require('../../cache');
 
@@ -107,74 +106,6 @@ router.route('/:report')
     }
   });
 
-/**
- * Report User Binding
- */
-router.route('/:report/user')
-  .post(async (req, res) => {
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to add a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
-      );
-    }
-
-    if (!req.body.user) {
-      logger.error('No user provided for binding');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided for binding'}});
-    }
-    if (!req.body.role) {
-      logger.error('No role provided for binding');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for binding'}});
-    }
-
-    const report = new Report(req.report);
-
-    try {
-      const result = await report.bindUser(req.body.user, req.body.role, req.user);
-      logger.info(`Response from bind user ${result}`);
-      return res.status(HTTP_STATUS.CREATED).json(result);
-    } catch (error) {
-      logger.error(error);
-      const code = (error.code === 'userNotFound') ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
-      return res.status(code).json(error);
-    }
-  })
-  .delete(async (req, res) => {
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
-      );
-    }
-
-    if (!req.body.user) {
-      logger.error('No user provided to remove binding');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No user provided to remove binding'}});
-    }
-    if (!req.body.role) {
-      logger.error('No role provided for removal');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No role provided for removal'}});
-    }
-
-    const report = new Report(req.report);
-
-    try {
-      const result = await report.unbindUser(req.body.user, req.body.role);
-      logger.info(`Response from unbind ${result}`);
-      return res.json(result);
-    } catch (error) {
-      logger.error(error);
-      const code = ['userNotFound', 'noBindingFound'].includes(error.code) ? HTTP_STATUS.NOT_FOUND : HTTP_STATUS.BAD_REQUEST;
-      return res.status(code).json(error);
-    }
-  });
 
 // Act on all reports
 router.route('/')
