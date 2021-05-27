@@ -1504,6 +1504,170 @@
         }
       }
     },
+    "/reports/{report}/user": {
+      "get": {
+        "summary": "Get Report Users",
+        "description": "Retrieve all users bound to a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Report Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all the users bound to a report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/analysis_reports_userAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Report-User Binding",
+        "description": "Bind a user to a report",
+        "tags": [
+          "Report Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "Values for binding a user to a report",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/analysis_reports_userCreate"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Returns the report with the user now bound",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or user not found"
+          },
+          "409": {
+            "description": "User already bound to report"
+          }
+        }
+      }
+    },
+    "/reports/{report}/user/{binding}": {
+      "get": {
+        "summary": "Get Report-User Binding",
+        "description": "Retrieve a specific report-user binding",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/reportUser"
+          }
+        ],
+        "tags": [
+          "Report Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified report-user binding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/analysis_reports_userAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or report-user binding not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Report-User Binding",
+        "description": "Removes a report-user binding",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/reportUser"
+          }
+        ],
+        "tags": [
+          "Report Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or report-user binding not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/summary/microbial": {
       "get": {
         "summary": "Get microbial data",
@@ -5720,6 +5884,16 @@
         "in": "path",
         "required": true,
         "description": "image ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "reportUser": {
+        "name": "reportUser",
+        "in": "path",
+        "required": true,
+        "description": "report-user binding ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
