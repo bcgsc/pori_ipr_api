@@ -3659,11 +3659,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an object mapping image key to image data",
+            "description": "Returns an array of images that match key pattern",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/imageReturnObject"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/imageDataAssociations"
+                  }
                 }
               }
             }
@@ -3696,11 +3699,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an object mapping image key to image data",
+            "description": "Returns an array of subtype plot images",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/imageReturnObject"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/imageDataAssociations"
+                  }
                 }
               }
             }
@@ -3733,11 +3739,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an object mapping image key to image data",
+            "description": "Returns an array of mutation burden images",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/imageReturnObject"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/imageDataAssociations"
+                  }
                 }
               }
             }
@@ -3770,11 +3779,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an object mapping image key to image data",
+            "description": "Returns an array of expression density graphs",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/imageReturnObject"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/imageDataAssociations"
+                  }
                 }
               }
             }
@@ -5933,14 +5945,6 @@
           "message": {
             "type": "string",
             "example": "You are not authorized to view this resource."
-          }
-        }
-      },
-      "imageReturnObject": {
-        "type": "object",
-        "properties": {
-          "{key}": {
-            "$ref": "#/components/schemas/imageDataAssociations"
           }
         }
       },
