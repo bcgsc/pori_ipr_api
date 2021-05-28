@@ -28,6 +28,12 @@ const checkImage = (imageObject) => {
   }));
 };
 
+const checkImages = (images) => {
+  images.forEach((image) => {
+    checkImage(image);
+  });
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -57,19 +63,9 @@ describe('/reports/{REPORTID}/image', () => {
   });
 
   describe('GET', () => {
-    let image;
-
-    beforeAll(async () => {
-      // Create image
-      image = await db.models.imageData.create(fakeImageData);
-    });
-
-    afterAll(async () => {
-      // Delete image
-      await db.models.imageData.destroy({where: {id: image.id}, force: true});
-    });
-
     test('/{image} - 200 Success', async () => {
+      const image = await db.models.imageData.create(fakeImageData);
+
       const res = await request
         .get(`/api/reports/${report.ident}/image/${image.ident}`)
         .auth(username, password)
@@ -82,9 +78,81 @@ describe('/reports/{REPORTID}/image', () => {
       // Remove reportId before checking
       const {reportId, ...imageData} = fakeImageData;
       expect(res.body).toEqual(expect.objectContaining(imageData));
+
+      await db.models.imageData.destroy({where: {id: image.id}, force: true});
     });
 
-    test.todo('All image GET tests');
+    test('/retrieve/:key - 200 Success', async () => {
+      const key = 'loh.2';
+      const testImage = await db.models.imageData.create({...fakeImageData, key});
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/retrieve/${key}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkImages(res.body);
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining({key: expect.stringContaining(key)}),
+      ]));
+
+      await db.models.imageData.destroy({where: {ident: testImage.ident}, force: true});
+    });
+
+    test('/subtype-plots - 200 Success', async () => {
+      const key = 'subtypePlot.primary';
+      const testImage = await db.models.imageData.create({...fakeImageData, key});
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/subtype-plots`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkImages(res.body);
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining({key: expect.stringContaining('subtypePlot.')}),
+      ]));
+
+      await db.models.imageData.destroy({where: {ident: testImage.ident}, force: true});
+    });
+
+    test('/mutation-burden - 200 Success', async () => {
+      const key = 'mutationBurden.barplot_snv.primary';
+      const testImage = await db.models.imageData.create({...fakeImageData, key});
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/mutation-burden`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkImages(res.body);
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining({key: expect.stringContaining('mutationBurden.')}),
+      ]));
+
+      await db.models.imageData.destroy({where: {ident: testImage.ident}, force: true});
+    });
+
+    test('/expression-density-graphs - 200 Success', async () => {
+      const key = 'expDensity.CES2';
+      const testImage = await db.models.imageData.create({...fakeImageData, key});
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/expression-density-graphs`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkImages(res.body);
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining({key: expect.stringContaining('expDensity.')}),
+      ]));
+
+      await db.models.imageData.destroy({where: {ident: testImage.ident}, force: true});
+    });
   });
 
   describe('POST', () => {
