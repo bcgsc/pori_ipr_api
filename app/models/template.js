@@ -23,7 +23,7 @@ module.exports = (sequelize, Sq) => {
             'summary', 'analyst-comments', 'pathway-analysis', 'therapeutic-targets',
             'kb-matches', 'slides', 'discussion', 'microbial', 'expression-correlation',
             'mutation-signatures', 'mutation-burden', 'immune', 'small-mutations',
-            'copy-number', 'structural-variants', 'expression', 'appendices',
+            'copy-number', 'structural-variants', 'expression', 'appendices', 'pharmacogenomic',
           ],
           description: 'list of sections to display on the client',
         },
