@@ -9,6 +9,8 @@ module.exports = {
     {
       name: 'IPR-API',
       script: 'npm',
+      instances: 'max',
+      exec_mode: 'cluster',
       args: 'start',
       watch: false,
       log_date_format: 'YYYY-MM-DD HH:mm Z',

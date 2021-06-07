@@ -15,12 +15,16 @@ router.use('/', async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Unable to lookup variant counts for report: ${req.report.ident} error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to lookup variant counts for report: ${req.report.ident}`}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: `Unable to lookup variant counts for report: ${req.report.ident}`},
+    });
   }
 
   if (!result) {
     logger.error(`Unable to find variant counts for report: ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find variant counts for ${req.report.ident}`}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Unable to find variant counts for ${req.report.ident}`},
+    });
   }
 
   // Add variant counts to request
@@ -40,7 +44,9 @@ router.route('/')
       return res.json(req.variantCounts.view('public'));
     } catch (error) {
       logger.error(`Unable to update variant counts ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update variant counts'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update variant counts'},
+      });
     }
   });
 

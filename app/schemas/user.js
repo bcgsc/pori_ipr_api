@@ -1,19 +1,31 @@
-const {JsonSchemaManager, JsonSchema7Strategy} = require('@alt3/sequelize-to-json-schemas');
 const db = require('../models');
+const schemaGenerator = require('./schemaGenerator');
 const {BASE_EXCLUDE} = require('./exclude');
 
-const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
+const passwordConditional = (required) => {
+  return {
+    if: {
+      properties: {type: {const: 'local'}},
+    },
+    then: {
+      required: required.concat(['password']),
+    },
+  };
+};
 
-// user specific excluded fields from model
-const USER_EXCLUDES = ['password'];
-
-const exclude = BASE_EXCLUDE.concat(USER_EXCLUDES);
-
-const schema = schemaManager.generate(db.models.user, new JsonSchema7Strategy(), {
-  exclude,
-  associations: false,
+// Generate user create schema
+const createSchema = schemaGenerator(db.models.user, {
+  baseUri: '/create', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'],
 });
 
-schema.additionalProperties = false;
+Object.assign(createSchema, passwordConditional(createSchema.required));
 
-module.exports = schema;
+// Generate user update schema
+const updateSchema = schemaGenerator(db.models.user, {
+  baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'], nothingRequired: true,
+});
+
+module.exports = {
+  createSchema,
+  updateSchema,
+};

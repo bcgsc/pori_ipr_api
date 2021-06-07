@@ -128,31 +128,23 @@ router.route('/')
 // Route for getting an image
 router.route('/retrieve/:key')
   .get(async (req, res) => {
-    let keys = [];
-
-    if (!req.params.key.includes(',')) {
-      keys.push(req.params.key);
-    } else {
-      keys = req.params.key.split(',');
-    }
+    const keys = (req.params.key.includes(',')) ? req.params.key.split(',') : [req.params.key];
 
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.in]: keys},
           reportId: req.report.id,
+          key: keys,
         },
+        order: [['key', 'ASC']],
       });
 
-      const output = {};
-      results.forEach((value) => {
-        output[value.key] = value;
-      });
-
-      return res.json(output);
+      return res.json(results);
     } catch (error) {
-      logger.error(`There was an error finding image data ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
+      logger.error(`Error while getting report images with key: ${req.params.key} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while getting report images by key'},
+      });
     }
   });
 
@@ -161,21 +153,18 @@ router.route('/expression-density-graphs')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.like]: 'expDensity.%'},
           reportId: req.report.id,
+          key: {[Op.like]: 'expDensity.%'},
         },
         order: [['key', 'ASC']],
       });
 
-      const output = {};
-      results.forEach((value) => {
-        output[value.key] = value;
-      });
-
-      return res.json(output);
+      return res.json(results);
     } catch (error) {
-      logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
+      logger.error(`Error while getting expression density graphs ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error whilte getting expression density graphs'},
+      });
     }
   });
 
@@ -184,21 +173,18 @@ router.route('/mutation-burden')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.like]: 'mutationBurden.%'},
           reportId: req.report.id,
+          key: {[Op.like]: 'mutationBurden.%'},
         },
         order: [['key', 'ASC']],
       });
 
-      const output = {};
-      results.forEach((value) => {
-        output[value.key] = value;
-      });
-
-      return res.json(output);
+      return res.json(results);
     } catch (error) {
-      logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
+      logger.error(`Error while getting mutation burden images ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while getting mutation burden images'},
+      });
     }
   });
 
@@ -207,21 +193,18 @@ router.route('/subtype-plots')
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
-          key: {[Op.like]: 'subtypePlot.%'},
           reportId: req.report.id,
+          key: {[Op.like]: 'subtypePlot.%'},
         },
         order: [['key', 'ASC']],
       });
 
-      const output = {};
-      results.forEach((value) => {
-        output[value.key] = value;
-      });
-
-      return res.json(output);
+      return res.json(results);
     } catch (error) {
-      logger.error(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to query image data'}});
+      logger.error(`Error while getting subtype plots ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while getting subtype plots'},
+      });
     }
   });
 

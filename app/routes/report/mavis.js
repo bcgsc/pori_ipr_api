@@ -16,7 +16,9 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to get mavis summaries ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get mavis summaries'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to get mavis summaries'},
+      });
     }
   });
 

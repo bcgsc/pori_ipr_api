@@ -8,7 +8,6 @@ const authMiddleware = require('../middleware/auth');
 // Get route files
 const APIVersion = require('./version');
 const userRoute = require('./user');
-const groupRoute = require('./user/group');
 
 const reportsRoute = require('./report/report');
 const swaggerSpec = require('./swagger/swaggerSpec');
@@ -68,7 +67,6 @@ class Routing extends RouterInterface {
     this.router.use('/version', APIVersion);
 
     this.router.use('/user', userRoute);
-    this.router.use('/user/group', groupRoute);
 
     this.router.use('/reports', reportsRoute);
     this.router.use('/reports/:report', reportSections);
