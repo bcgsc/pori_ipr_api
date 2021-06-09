@@ -208,6 +208,37 @@ const cleanUsers = async (queryInterface, transaction) => {
     console.log('created', demoUser);
   }
 
+  console.log('create the demo user metadata if not exists');
+
+  const [userMetadata] = await queryInterface.sequelize.query(
+    'SELECT * FROM user_metadata where id = :id AND deleted_at IS NULL',
+    {
+      transaction,
+      type: queryInterface.sequelize.QueryTypes.SELECT,
+      replacements: {
+        id: demoUser.id,
+      },
+    }
+  );
+  if (!userMetadata) {
+    await queryInterface.sequelize.query(
+      `INSERT INTO user_metadata (
+        ident, user_id,
+        created_at, updated_at
+      ) values (
+        :uuid, ':id', 
+        NOW(), NOW()
+      )`,
+      {
+        transaction,
+        replacements: {
+          uuid: uuidv4(),
+          id: demoUser.id,
+        },
+      }
+    );
+  }
+
   console.log('make iprdemo user the group owner of all groups');
   await queryInterface.sequelize.query(
     'UPDATE user_groups SET owner_id = :owner',
