@@ -5,9 +5,9 @@ const {Op} = require('sequelize');
 const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 const cache = require('../../cache');
+const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {generateKey} = require('../../libs/cacheFunctions');
 
@@ -90,13 +90,6 @@ router.route('/:report')
     }
   })
   .delete(async (req, res) => {
-    // first check user permissions before delete
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error('User doesn\'t have correct permissions to delete report');
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
-    }
-
     try {
       await req.report.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
@@ -117,16 +110,14 @@ router.route('/')
     } = req;
 
     // Get projects the user has access to
-    const access = new Acl(req);
     let projects;
     try {
-      const projectAccess = await access.getProjectAccess();
-      // Get the names of the projects the user has access to
-      projects = projectAccess.map((proj) => {
+      projects = await getUserProjects(req.user);
+      projects = projects.map((proj) => {
         return proj.name;
       });
     } catch (error) {
-      const message = `Error while trying to get project access ${error.message || error}`;
+      const message = `Error while trying to get project access ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
     }
@@ -241,14 +232,6 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // verify user is allowed to upload a report
-    const access = new Acl(req);
-    access.write = ['*'];
-    if (!access.check()) {
-      logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
-    }
-
     // validate loaded report against schema
     try {
       validateAgainstSchema(reportUploadSchema, req.body);

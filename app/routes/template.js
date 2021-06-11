@@ -4,7 +4,6 @@ const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 
-const Acl = require('../middleware/acl');
 const db = require('../models');
 const logger = require('../log');
 const {uploadImage} = require('../libs/image');
@@ -25,15 +24,6 @@ const updateSchema = schemaGenerator(db.models.template, {
   baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'], nothingRequired: true,
 });
 
-// All non-GET template routes are admin only
-router.use((req, res, next) => {
-  const access = new Acl(req);
-  if (req.method !== 'GET' && !access.isAdmin()) {
-    logger.error(`Only admins are allowed to access template routes User: ${req.user.username} is not an admin`);
-    return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'Only admins are allowed to access template routes'}});
-  }
-  return next();
-});
 
 // Middleware for templates
 router.param('template', async (req, res, next, ident) => {

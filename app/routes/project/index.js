@@ -3,8 +3,8 @@ const express = require('express');
 const {Op} = require('sequelize');
 const _ = require('lodash');
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
+const {getUserProjects} = require('../../libs/helperFunctions');
 
 const router = express.Router({mergeParams: true});
 
@@ -15,13 +15,14 @@ const ERRORS = Object.freeze({
 // Middleware for project
 router.param('project', async (req, res, next, ident) => {
   // Check user permission and filter by project
-  const access = new Acl(req);
   let projectAccess;
   try {
-    projectAccess = await access.getProjectAccess();
+    projectAccess = await getUserProjects(req.user);
   } catch (error) {
     logger.error(`Error while geting user's access to projects ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while geting user\'s access to projects'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Error while geting user\'s access to projects'},
+    });
   }
 
   const projects = _.intersection(_.map(projectAccess, 'ident'), [ident]);
@@ -50,37 +51,10 @@ router.param('project', async (req, res, next, ident) => {
 // Project routes
 router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
-    // Getting project
-    // Check user permission and filter by project
-    const access = new Acl(req);
-    let projectAccess;
-    try {
-      projectAccess = await access.getProjectAccess();
-    } catch (error) {
-      logger.error(`Error while checking if user has access to project ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while checking if user has access to project'}});
-    }
-
-    // User has access to project
-    if (_.includes(_.map(projectAccess, 'ident'), req.project.ident)) {
-      return res.json(req.project.view('public'));
-    }
-
-    // User doesn't have access to project
-    logger.error('User doesn\'t have access to project');
-    return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
+    return res.json(req.project.view('public'));
   })
 
   .put(async (req, res) => {
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to add new project');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
-    // Attempt project model update
     try {
       await req.project.update(req.body);
       await req.project.reload();
@@ -90,16 +64,7 @@ router.route('/:project([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to update project'}});
     }
   })
-  // Remove a project
   .delete(async (req, res) => {
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to remove projects');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
     try {
       // Delete project
       await req.project.destroy();
@@ -116,13 +81,14 @@ router.route('/search')
     const {query} = req.query;
 
     // Check user permission and filter by project
-    const access = new Acl(req);
     let projectAccess;
     try {
-      projectAccess = await access.getProjectAccess();
+      projectAccess = await getUserProjects(req.user);
     } catch (error) {
       logger.error(`Error while geting user's access to projects ${error}`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'Error while geting user\'s access to projects'}});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: 'Error while geting user\'s access to projects'},
+      });
     }
 
     // Get the ident's of the projects the user has access to
@@ -141,33 +107,18 @@ router.route('/search')
       return res.json(projects);
     } catch (error) {
       logger.error(`Error while trying to find projects ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find projects'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to find projects'},
+      });
     }
   });
 
 // User Binding Functions
 router.route('/:project([A-z0-9-]{36})/user')
   .get((req, res) => {
-    // Access Control
-    const access = new Acl(req);
-    access.read = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to get project users');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-    // Get Project Users
     return res.json(req.project.users);
   })
   .post(async (req, res) => {
-    // Add Project User
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to add project users');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
     let user;
     try {
       // Lookup User
@@ -226,15 +177,6 @@ router.route('/:project([A-z0-9-]{36})/user')
     }
   })
   .delete(async (req, res) => {
-    // Remove Project User
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to remove project user');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
     let user;
     try {
       // Lookup User
@@ -269,27 +211,9 @@ router.route('/:project([A-z0-9-]{36})/user')
 // Report Binding Functions
 router.route('/:project([A-z0-9-]{36})/reports')
   .get((req, res) => {
-    // Access Control
-    const access = new Acl(req);
-    access.read = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to get project reports');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
-    // get project reports
     return res.json(req.project.reports);
   })
   .post(async (req, res) => {
-    // Add Project report
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin', 'Full Project Access'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to add project reports');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
     let report;
     try {
       // Lookup report
@@ -320,15 +244,6 @@ router.route('/:project([A-z0-9-]{36})/reports')
     }
   })
   .delete(async (req, res) => {
-    // Remove project-report association
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin', 'Full Project Access'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to delete project reports');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
     let report;
     try {
       // Lookup report
@@ -360,22 +275,22 @@ router.route('/')
   .get(async (req, res) => {
     // Access Control
     const includeOpts = [];
-    const access = new Acl(req);
-    access.read = ['admin'];
 
-    if (access.check() && req.query.admin === true) {
+    if (req.query.admin === true) {
       includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
       includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project']}, through: {attributes: []}});
     }
 
     let projectAccess;
     try {
-      // getting project access/filter
-      projectAccess = await access.getProjectAccess();
+      projectAccess = await getUserProjects(req.user);
     } catch (error) {
       logger.error(`Error while geting user's access to projects ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while geting user\'s access to projects'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while geting user\'s access to projects'},
+      });
     }
+
     // getting project access/filter
     const opts = {
       order: [['createdAt', 'desc']],
@@ -391,19 +306,12 @@ router.route('/')
       return res.json(projects);
     } catch (error) {
       logger.error(`Error while trying to retrieve projects${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve projects'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve projects'},
+      });
     }
   })
   .post(async (req, res) => {
-    // Add new project
-    // Access Control
-    const access = new Acl(req);
-    access.write = ['admin'];
-    if (!access.check()) {
-      logger.error('User isn\'t allowed to add new project');
-      return res.status(HTTP_STATUS.FORBIDDEN).json(ERRORS.AccessForbidden);
-    }
-
     // Validate input
     const requiredInputs = ['name'];
     const inputErrors = [];
