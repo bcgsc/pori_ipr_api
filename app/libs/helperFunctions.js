@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const sanitize = require('sanitize-html');
+const db = require('../models');
 
 /**
  * Checks that all target values exist
@@ -46,8 +47,41 @@ const sanitizeHtml = (html) => {
   });
 };
 
+/**
+ * Get all of the projects a user has access to
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {Array<string>} - Returns an array of projects
+ */
+const getUserProjects = async (user) => {
+  const allProjectsAccess = user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager';
+  });
+
+  if (allProjectsAccess) {
+    return db.models.project.scope('public').findAll();
+  }
+
+  return user.projects;
+};
+
+/**
+ * Checks if user is an admin
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user is an admin
+ */
+const isAdmin = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin';
+  });
+};
+
 module.exports = {
   includesAll,
   caseInsensitiveIntersect,
   sanitizeHtml,
+  getUserProjects,
+  isAdmin,
 };
