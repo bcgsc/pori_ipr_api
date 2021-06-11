@@ -112,7 +112,7 @@ router.route('/')
     // Get projects the user has access to
     let projects;
     try {
-      projects = await getUserProjects(req.user);
+      projects = await getUserProjects(db.models.project, req.user);
       projects = projects.map((proj) => {
         return proj.name;
       });

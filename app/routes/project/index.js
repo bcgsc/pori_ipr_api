@@ -17,7 +17,7 @@ router.param('project', async (req, res, next, ident) => {
   // Check user permission and filter by project
   let projectAccess;
   try {
-    projectAccess = await getUserProjects(req.user);
+    projectAccess = await getUserProjects(db.models.project, req.user);
   } catch (error) {
     logger.error(`Error while geting user's access to projects ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -83,7 +83,7 @@ router.route('/search')
     // Check user permission and filter by project
     let projectAccess;
     try {
-      projectAccess = await getUserProjects(req.user);
+      projectAccess = await getUserProjects(db.models.project, req.user);
     } catch (error) {
       logger.error(`Error while geting user's access to projects ${error}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
@@ -283,7 +283,7 @@ router.route('/')
 
     let projectAccess;
     try {
-      projectAccess = await getUserProjects(req.user);
+      projectAccess = await getUserProjects(db.models.project, req.user);
     } catch (error) {
       logger.error(`Error while geting user's access to projects ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
