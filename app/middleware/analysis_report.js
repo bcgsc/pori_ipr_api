@@ -2,6 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
 const cache = require('../cache');
+const aclMiddleware = require('../middleware/acl');
 
 // Lookup report middleware
 module.exports = async (req, res, next, ident) => {
@@ -10,6 +11,12 @@ module.exports = async (req, res, next, ident) => {
     {model: db.models.patientInformation.scope('public'), as: 'patientInformation'},
     {model: db.models.user.scope('public'), as: 'createdBy'},
     {model: db.models.template.scope('minimal'), as: 'template'},
+    {
+      model: db.models.project,
+      as: 'projects',
+      attributes: ['ident', 'name'],
+      through: {attributes: []},
+    },
     {
       model: db.models.analysis_reports_user,
       as: 'users',
@@ -62,5 +69,5 @@ module.exports = async (req, res, next, ident) => {
 
   // Add report to request
   req.report = result;
-  return next();
+  return aclMiddleware(req, res, next);
 };
