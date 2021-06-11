@@ -1,9 +1,17 @@
+const {FORBIDDEN} = require('http-status-codes');
 const db = require('../../app/models');
 const Acl = require('../../app/middleware/acl');
 const CONFIG = require('../../app/config');
 
 CONFIG.set('env', 'test');
 const {username} = CONFIG.get('testing');
+
+const mockResponse = () => {
+  const res = {};
+  res.status = jest.fn().mockReturnValue(res);
+  res.json = jest.fn().mockReturnValue(res);
+  return res;
+};
 
 
 describe('Testing ACL methods', () => {
@@ -17,198 +25,206 @@ describe('Testing ACL methods', () => {
     });
   });
 
-  describe('Test ACL getProjectAccess method', () => {
+  describe('Test ACL general methods', () => {
+    let res;
+
     beforeEach(async () => {
+      res = mockResponse();
       req.user = testUser;
     });
 
     afterEach(async () => {
+      res = null;
       req = {};
     });
 
-    test('Test when user has full project access', async () => {
-      req.user.groups = [{name: 'admin'}];
+    test('Admins have full access', async () => {
+      req.user.groups = [{name: 'Admin'}];
+      req.originalUrl = '/api/project/dfgfdgddsf';
+      req.method = 'DELETE';
 
-      const access = new Acl(req);
+      await Acl(req, res, () => {});
 
-      const allProjects = await db.models.project.findAll();
-
-      const projectAccess = await access.getProjectAccess();
-
-      expect(projectAccess).toEqual(allProjects);
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
     });
 
-    test('Test when user does not have full project access', async () => {
+    test('Query parameters work', async () => {
       req.user.groups = [{name: 'Clinician'}];
-      req.user.projects = [{name: 'POG'}];
+      req.originalUrl = '/api/user?par=true';
+      req.method = 'GET';
 
-      const access = new Acl(req);
+      await Acl(req, res, () => {});
 
-      const projectAccess = await access.getProjectAccess();
-
-      expect(projectAccess).toEqual([{name: 'POG'}]);
+      expect(res.status).toHaveBeenCalledWith(FORBIDDEN);
     });
   });
 
-  describe('Test ACL check method', () => {
-    describe('Test groups in check method', () => {
-      beforeEach(async () => {
-        req.user = testUser;
-      });
+  describe('Test ACL report routes', () => {
+    let res;
 
-      afterEach(async () => {
-        req = {};
-      });
-
-      test('Allowed and disallowed contains same group', async () => {
-        req.user.groups = [{name: 'Clinician'}];
-
-        const access = new Acl(req);
-        access.groups = ['Clinician'];
-        access.nGroups = ['Clinician'];
-
-        expect(() => {
-          access.check();
-        }).toThrow('Group(s) in both allowed and not allowed');
-      });
-
-      test('User doesn\'t belongs to an allowed group', async () => {
-        req.user.groups = [{name: 'Bioinformatician'}];
-
-        const access = new Acl(req);
-        access.groups = ['Clinician'];
-
-        expect(access.check()).toBe(false);
-      });
-
-      test('User belongs to a disallowed group', async () => {
-        req.user.groups = [{name: 'Clinician'}];
-
-        const access = new Acl(req);
-        access.nGroups = ['Clinician'];
-
-        expect(access.check()).toBe(false);
-      });
-    });
-
-    describe('Test report endpoints in check method', () => {
-      let report;
-
-      beforeAll(() => {
-        report = {users: [{user: testUser}]};
-      });
-
-      beforeEach(async () => {
-        req.user = testUser;
-      });
-
-      afterEach(async () => {
-        req = {};
-      });
-
-      test('Test valid report GET', async () => {
-        req.method = 'GET';
-        req.report = report;
-
-        const access = new Acl(req);
-
-        expect(access.check()).toBe(true);
-      });
-
-      test('Test valid report PUT/POST/DELETE with admin', async () => {
-        req.method = 'PUT';
-        req.user.groups = [{name: 'admin'}];
-        req.report = {users: []};
-
-        const access = new Acl(req);
-
-        expect(access.check()).toBe(true);
-      });
-
-      test('Test valid report PUT/POST/DELETE with bound user', async () => {
-        req.method = 'PUT';
-        req.report = report;
-
-        const access = new Acl(req);
-
-        expect(access.check()).toBe(true);
-      });
-
-      test('Test invalid report GET', async () => {
-        req.method = 'GET';
-        req.report = report;
-
-        const access = new Acl(req);
-        access.read = ['clinician'];
-
-        expect(access.check()).toBe(false);
-      });
-    });
-
-    describe('Test non-report endpoints in check method', () => {
-      beforeEach(async () => {
-        req.user = testUser;
-      });
-
-      afterEach(async () => {
-        req = {};
-      });
-
-      test('Test valid non-report GET', async () => {
-        req.method = 'GET';
-        req.user.groups = [{name: 'Bioinformatician'}];
-
-        const access = new Acl(req);
-        access.read = ['*'];
-
-        expect(access.check()).toBe(true);
-      });
-
-      test('Test valid non-report PUT/POST/DELETE', async () => {
-        req.method = 'PUT';
-        req.user.groups = [{name: 'Clinician'}];
-
-        const access = new Acl(req);
-        access.write = ['Clinician'];
-
-        expect(access.check()).toBe(true);
-      });
-
-      test('Test invalid non-report GET', async () => {
-        req.method = 'GET';
-        req.user.groups = [{name: 'Bioinformatician'}];
-
-        const access = new Acl(req);
-        access.read = ['admin'];
-
-        expect(access.check()).toBe(false);
-      });
-    });
-  });
-
-  describe('Test ACL isAdmin method', () => {
     beforeEach(async () => {
+      res = mockResponse();
+      req.user = testUser;
+      req.report = {};
+    });
+
+    afterEach(async () => {
+      res = null;
+      req = {};
+    });
+
+    test('GET request when user has master access', async () => {
+      req.user.groups = [{name: 'manager'}];
+      req.user.projects = [];
+
+      req.report.projects = [];
+      req.report.users = [];
+
+      req.originalUrl = '/api/reports/sdfsfs';
+      req.method = 'GET';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('GET request when user has project access', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.user.projects = [{ident: 'matching-test-ident'}];
+
+      req.report.projects = [{ident: 'matching-test-ident'}];
+      req.report.users = [];
+
+      req.originalUrl = '/api/reports/sdfsfs';
+      req.method = 'GET';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('GET request when user does not have project access', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.user.projects = [{ident: 'not-matching-test-ident'}];
+
+      req.report.projects = [{ident: 'matching-test-ident'}];
+      req.report.users = [];
+
+      req.originalUrl = '/api/reports/sdfsfs';
+      req.method = 'GET';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('Update request when user has master access', async () => {
+      req.user.groups = [{name: 'manager'}];
+      req.user.projects = [{ident: 'matching-test-ident'}];
+
+      req.report.projects = [{ident: 'matching-test-ident'}];
+      req.report.users = [{user: {ident: 'random-ident'}}];
+
+      req.originalUrl = '/api/reports/sdfsfs';
+      req.method = 'PUT';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('Update request when user is bound to report', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.user.projects = [{ident: 'matching-test-ident'}];
+
+      req.report.projects = [{ident: 'matching-test-ident'}];
+      req.report.users = [{user: {ident: req.user.ident}}];
+
+      req.originalUrl = '/api/reports/sdfsfs';
+      req.method = 'PUT';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('Update request when user is not bound to the report and does not have master access', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.user.projects = [{ident: 'matching-test-ident'}];
+
+      req.report.projects = [{ident: 'matching-test-ident'}];
+      req.report.users = [{user: {ident: 'random-ident'}}];
+
+      req.originalUrl = '/api/reports/sdfsfs';
+      req.method = 'PUT';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).toHaveBeenCalledWith(FORBIDDEN);
+    });
+  });
+
+  describe('Test ACL non-report routes', () => {
+    let res;
+
+    beforeEach(async () => {
+      res = mockResponse();
       req.user = testUser;
     });
 
     afterEach(async () => {
+      res = null;
       req = {};
     });
 
-    test('Test when user is an admin', async () => {
-      req.user.groups = [{name: 'admin'}];
+    test('Update request when user has master access', async () => {
+      req.user.groups = [{name: 'manager'}];
+      req.originalUrl = '/api/project/fdgfdgfd/user';
+      req.method = 'POST';
 
-      const access = new Acl(req);
+      await Acl(req, res, () => {});
 
-      expect(access.isAdmin()).toBe(true);
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
     });
 
-    test('Test when user is not an admin', async () => {
+    test('Update request when user does not have master access', async () => {
       req.user.groups = [{name: 'Clinician'}];
+      req.originalUrl = '/api/project/fdgfdgfd/user';
+      req.method = 'POST';
 
-      const access = new Acl(req);
+      await Acl(req, res, () => {});
 
-      expect(access.isAdmin()).toBe(false);
+      expect(res.status).toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('GET request that is not a special case', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.originalUrl = '/api/template';
+      req.method = 'GET';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('Special case (matching route and method) where the user is allowed to edit', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.originalUrl = '/api/reports';
+      req.method = 'POST';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('Special case (matching route and method) where the user is not allowed to edit', async () => {
+      req.user.groups = [{name: 'Clinician'}];
+      req.originalUrl = '/api/template/fsddfds';
+      req.method = 'PUT';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).toHaveBeenCalledWith(FORBIDDEN);
     });
   });
 });
