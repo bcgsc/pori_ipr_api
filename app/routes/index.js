@@ -4,6 +4,7 @@ const express = require('express');
 const reportMiddleware = require('../middleware/analysis_report');
 const germlineMiddleware = require('../middleware/germlineSmallMutation/reports');
 const authMiddleware = require('../middleware/auth');
+const aclMiddleware = require('../middleware/acl');
 
 // Get route files
 const APIVersion = require('./version');
@@ -60,6 +61,9 @@ class Routing extends RouterInterface {
         '/export',
         '/templates',
       ].join('|')})`, authMiddleware);
+
+    // Acl middleware
+    this.router.use(/^(?!\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);
 
     // Add Single Routes
     // Setup other routes
