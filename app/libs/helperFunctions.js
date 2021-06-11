@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const sanitize = require('sanitize-html');
-const db = require('../models');
 
 /**
  * Checks that all target values exist
@@ -50,17 +49,18 @@ const sanitizeHtml = (html) => {
 /**
  * Get all of the projects a user has access to
  *
+ * @param {object} project - Sequelize project model
  * @param {object} user - Sequelize user model
  * @returns {Array<string>} - Returns an array of projects
  */
-const getUserProjects = async (user) => {
+const getUserProjects = async (project, user) => {
   const allProjectsAccess = user.groups.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager';
   });
 
   if (allProjectsAccess) {
-    return db.models.project.scope('public').findAll();
+    return project.scope('public').findAll();
   }
 
   return user.projects;
