@@ -161,12 +161,20 @@ describe('/reports/{REPORTID}', () => {
     }, LONGER_TIMEOUT);
 
     // Test GET with project
-    test('/ - project - 403 Forbidden', async () => {
-      await request
-        .get('/api/reports?project=POG')
+    test('/ - project - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?project=TEST')
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.FORBIDDEN);
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({projects: expect.arrayContaining([
+          expect.objectContaining({name: expect.stringContaining('TEST')}),
+        ])}),
+      ]));
     });
 
     // Test GET with states
