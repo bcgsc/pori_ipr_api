@@ -177,6 +177,14 @@ describe('/reports/{REPORTID}', () => {
       ]));
     });
 
+    test('/ - project - 403 Forbidden', async () => {
+      await request
+        .get('/api/reports?project=SUPER-SECURE')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     // Test GET with states
     test('/ - states - 200 Success', async () => {
       const res = await request
