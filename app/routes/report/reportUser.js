@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
@@ -56,16 +55,6 @@ router.route('/:reportUser([A-z0-9-]{36})')
     return res.json(req.reportUser.view('public'));
   })
   .delete(async (req, res) => {
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
-      );
-    }
-
     try {
       await req.reportUser.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
@@ -84,16 +73,6 @@ router.route('/')
   })
   .post(async (req, res) => {
     const {body: {user, role}} = req;
-
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to add a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
-      );
-    }
 
     try {
       // Validate request against schema

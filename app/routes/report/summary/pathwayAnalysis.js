@@ -5,7 +5,6 @@ const isSvg = require('is-svg');
 const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 const logger = require('../../../log');
-const Acl = require('../../../middleware/acl');
 
 const schemaGenerator = require('../../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
@@ -92,17 +91,6 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: 'There is no pathway analysis to delete'},
       });
-    }
-
-    // Check if user is allowed to delete a pathway analysis
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to delete a pathway analysis ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to delete a pathway analysis'}},
-      );
     }
 
     // Soft delete pathway analysis
