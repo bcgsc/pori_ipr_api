@@ -87,7 +87,7 @@ router.route('/sign/:role(author|reviewer)')
       }
     } else {
       try {
-        await req.signatures.update(data);
+        await req.signatures.update(data, {userId: req.user.id});
         await req.signatures.reload();
         return res.json(req.signatures.view('public'));
       } catch (error) {
@@ -115,7 +115,7 @@ router.route('/revoke/:role(author|reviewer)')
 
     // update signatures
     try {
-      await req.signatures.update(data);
+      await req.signatures.update(data, {userId: req.user.id});
       await req.signatures.reload();
       return res.json(req.signatures.view('public'));
     } catch (error) {

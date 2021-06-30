@@ -38,7 +38,7 @@ router.route('/:target([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.target.update(req.body);
+      await req.target.update(req.body, {userId: req.user.id});
       await req.target.reload();
       return res.json(req.target.view('public'));
     } catch (error) {

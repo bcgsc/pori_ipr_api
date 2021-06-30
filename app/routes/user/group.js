@@ -78,7 +78,7 @@ router.route('/:group([A-z0-9-]{36})')
 
     // Update Group
     try {
-      await req.group.update(req.body);
+      await req.group.update(req.body, {userId: req.user.id});
       await req.group.reload();
       return res.json(req.group.view('public'));
     } catch (error) {

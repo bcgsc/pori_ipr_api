@@ -81,7 +81,7 @@ router.route('/:report')
 
     // Update db entry
     try {
-      await report.update(req.body);
+      await report.update(req.body, {userId: req.user.id});
       await report.reload();
       return res.json(report.view('public'));
     } catch (error) {

@@ -39,7 +39,7 @@ router.route('/:mutation([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.mutation.update(req.body);
+      await req.mutation.update(req.body, {userId: req.user.id});
       await req.mutation.reload();
       return res.json(req.mutation.view('public'));
     } catch (error) {
