@@ -69,6 +69,15 @@ const DEFAULT_COLUMNS = {
     defaultValue: Sq.UUIDV4,
     allowNull: false,
   },
+  updatedBy: {
+    name: 'updatedBy',
+    field: 'updated_by',
+    type: Sq.INTEGER,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
   ...DEFAULT_MAPPING_COLUMNS,
 };
 
