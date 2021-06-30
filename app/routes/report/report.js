@@ -181,7 +181,7 @@ router.route('/')
         {
           model: db.models.patientInformation,
           as: 'patientInformation',
-          attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
         },
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
@@ -203,7 +203,7 @@ router.route('/')
           where: {
             name: projects,
           },
-          attributes: {exclude: ['id', 'deletedAt']},
+          attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
           through: {attributes: []},
         },
         ...((role) ? [{

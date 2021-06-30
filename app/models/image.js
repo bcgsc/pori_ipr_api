@@ -25,7 +25,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt'],
+          exclude: ['id', 'deletedAt', 'updatedBy'],
         },
       },
     },
@@ -34,7 +34,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   image.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, deletedAt, ...publicView} = this.dataValues;
+      const {id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

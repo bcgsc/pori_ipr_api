@@ -139,7 +139,7 @@ router.route('/')
           as: 'reviews',
           model: db.models.germlineSmallMutationReview,
           where: (reviewType) ? {type: reviewType.split(',') || reviewType} : {type: 'biofx'},
-          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt', 'updatedBy']},
           include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
       );

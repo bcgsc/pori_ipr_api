@@ -75,10 +75,10 @@ module.exports = (sequelize, Sq) => {
     ],
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
       },
       minimal: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'createdAt', 'updatedAt', 'ident']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy', 'createdAt', 'updatedAt', 'ident']},
       },
     },
   });
@@ -86,7 +86,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   genes.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

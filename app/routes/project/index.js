@@ -37,7 +37,7 @@ router.param('project', async (req, res, next, ident) => {
     req.project = await db.models.project.findOne({
       where: {ident},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project']}, through: {attributes: []}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project', 'updatedBy']}, through: {attributes: []}},
         {as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}},
       ],
     });
@@ -56,7 +56,7 @@ router.route('/:project([A-z0-9-]{36})')
 
   .put(async (req, res) => {
     try {
-      await req.project.update(req.body);
+      await req.project.update(req.body, {userId: req.user.id});
       await req.project.reload();
       return res.json(req.project.view('public'));
     } catch (error) {
@@ -122,7 +122,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'updatedBy']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
@@ -180,7 +180,7 @@ router.route('/:project([A-z0-9-]{36})/user')
     let user;
     try {
       // Lookup User
-      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password']}});
+      user = await db.models.user.findOne({where: {ident: req.body.user}, attributes: {exclude: ['deletedAt', 'password', 'updatedBy']}});
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to find user'}});
@@ -278,7 +278,7 @@ router.route('/')
 
     if (req.query.admin === true) {
       includeOpts.push({as: 'reports', model: db.models.analysis_report, attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'], through: {attributes: []}});
-      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project']}, through: {attributes: []}});
+      includeOpts.push({as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project', 'updatedBy']}, through: {attributes: []}});
     }
 
     let projectAccess;
@@ -295,7 +295,7 @@ router.route('/')
     const opts = {
       order: [['createdAt', 'desc']],
       attributes: {
-        exclude: ['deletedAt', 'id'],
+        exclude: ['deletedAt', 'id', 'updatedBy'],
       },
       include: includeOpts,
       where: {ident: {[Op.in]: _.map(projectAccess, 'ident')}},

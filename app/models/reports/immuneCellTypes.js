@@ -34,7 +34,7 @@ module.exports = (sequelize, Sq) => {
     tableName: 'reports_immune_cell_types',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
       },
     },
   });
@@ -43,7 +43,7 @@ module.exports = (sequelize, Sq) => {
   immuneCellTypes.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, reportId, deletedAt, ...publicView
+        id, reportId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }

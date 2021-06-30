@@ -9,8 +9,8 @@ const cache = require('../../cache');
 const router = express.Router({mergeParams: true});
 
 const include = [
-  {model: db.models.user, as: 'reviewerSignature', attributes: {exclude: ['id', 'deletedAt', 'password']}},
-  {model: db.models.user, as: 'authorSignature', attributes: {exclude: ['id', 'deletedAt', 'password']}},
+  {model: db.models.user, as: 'reviewerSignature', attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
+  {model: db.models.user, as: 'authorSignature', attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
 ];
 
 // Middleware for report signatures
