@@ -144,6 +144,16 @@ dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 9. Merge code changes into development branch
 10. Delete the temp db you created
 
+## Database Insert Not Through API
+
+When adding/inserting entries directly into a database table without using the API, be sure to update the primary key (id)
+sequence by running this SQL command after the insert:
+
+`SELECT setval('table_name_id_seq', (SELECT MAX(id) FROM "table_name"));`
+
+Otherwise, you will get a unique constraint error when inserting via the API because Sequelize will try use an id
+that is now taken.
+
 ## Process Manager
 
 The production installation of IPR is run & managed by a [pm2](http://pm2.keymetrics.io/) instance on `iprweb03.bcgsc.ca`. The test API is run off of iprweb01 and the development API is run off of iprdev01.
