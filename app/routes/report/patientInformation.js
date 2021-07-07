@@ -38,7 +38,7 @@ router.route('/')
   })
   .put(async (req, res) => {
     try {
-      await req.patientInformation.update(req.body);
+      await req.patientInformation.update(req.body, {userId: req.user.id});
       return res.json(req.patientInformation.view('public'));
     } catch (error) {
       logger.error(`Unable to update patient information ${error}`);

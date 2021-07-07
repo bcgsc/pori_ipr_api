@@ -51,7 +51,7 @@ module.exports = (sequelize, Sq) => {
     tableName: 'reports_mutation_signature',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
       },
     },
   });
@@ -60,7 +60,7 @@ module.exports = (sequelize, Sq) => {
   mutationSignature.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, reportId, deletedAt, ...publicView
+        id, reportId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }

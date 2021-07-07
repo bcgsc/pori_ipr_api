@@ -35,6 +35,9 @@ const REMOVE_REPORT_SIGNATURES = (instance, options = {}) => {
     individualHooks: true,
     paranoid: true,
     transaction: options.transaction,
+    // Note: This won't do anything now, but when the deletedBy
+    // functionality is added it will
+    userId: options.userId,
   });
 };
 
@@ -68,6 +71,15 @@ const DEFAULT_COLUMNS = {
     unique: false,
     defaultValue: Sq.UUIDV4,
     allowNull: false,
+  },
+  updatedBy: {
+    name: 'updatedBy',
+    field: 'updated_by',
+    type: Sq.INTEGER,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
   },
   ...DEFAULT_MAPPING_COLUMNS,
 };
@@ -118,6 +130,9 @@ const DEFAULT_OPTIONS = {
 
       const {id, ...content} = instance._previousDataValues;
 
+      // Set the updateBy value for update
+      instance.updatedBy = options.userId;
+
       return instance.constructor.create({
         ...content, deletedAt: new Date().getTime(),
       }, {
@@ -155,6 +170,7 @@ const DEFAULT_REPORT_OPTIONS = {
             individualHooks: true,
             paranoid: true,
             transaction: options.transaction,
+            userId: options.userId,
           }),
       ]);
     },

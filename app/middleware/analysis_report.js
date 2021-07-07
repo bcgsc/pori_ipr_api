@@ -21,7 +21,7 @@ module.exports = async (req, res, next, ident) => {
       model: db.models.analysis_reports_user,
       as: 'users',
       separate: true,
-      attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt']},
+      attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt', 'updatedBy']},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
       ],

@@ -54,7 +54,7 @@ router.route('/:ict([A-z0-9-]{36})')
 
     // Update db entry
     try {
-      await req.immuneCellType.update(req.body);
+      await req.immuneCellType.update(req.body, {userId: req.user.id});
       return res.json(req.immuneCellType.view('public'));
     } catch (error) {
       logger.error(`Unable to update immune cell type ${error}`);
