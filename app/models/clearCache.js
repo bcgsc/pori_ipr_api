@@ -138,9 +138,9 @@ module.exports = async (instance, method) => {
     case 'expressionVariants':
     case 'kbMatches':
     case 'genes':
-      return Promise.all([
-        removeKeys(`/reports/${report.ident}/copy-variants`),
-        removeKeys(`/reports/${report.ident}/expression-variants`),
+      return removeKeys([
+        `/reports/${report.ident}/copy-variants`,
+        `/reports/${report.ident}/expression-variants`,
       ]);
     default:
       return true;
