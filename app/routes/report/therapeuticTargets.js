@@ -55,7 +55,7 @@ router.route('/:target([A-z0-9-]{36})')
     }
 
     try {
-      await req.target.update(req.body);
+      await req.target.update(req.body, {userId: req.user.id});
       return res.json(req.target.view('public'));
     } catch (error) {
       logger.error(`Unable to update therapeutic target ${error}`);

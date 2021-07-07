@@ -40,7 +40,7 @@ router.route('/:cnv([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.cnv.update(req.body);
+      await req.cnv.update(req.body, {userId: req.user.id});
       await req.cnv.reload();
       return res.json(req.cnv.view('public'));
     } catch (error) {

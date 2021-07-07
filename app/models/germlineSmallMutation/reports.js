@@ -54,18 +54,21 @@ module.exports = (sequelize, Sq) => {
       public: {
         order: [['createdAt', 'desc']],
         attributes: {
-          exclude: ['id', 'biofxAssignedId', 'deletedAt'],
+          exclude: ['id', 'biofxAssignedId', 'deletedAt', 'updatedBy'],
         },
         include: [
           {as: 'biofxAssigned', model: sequelize.models.user.scope('public'), required: true},
           {as: 'projects', model: sequelize.models.project.scope('public'), through: {attributes: []}},
           {
-            as: 'variants', model: sequelize.models.germlineSmallMutationVariant, order: [['gene', 'asc']], attributes: {exclude: ['id', 'germlineReportId', 'deletedAt']},
+            as: 'variants',
+            model: sequelize.models.germlineSmallMutationVariant,
+            order: [['gene', 'asc']],
+            attributes: {exclude: ['id', 'germlineReportId', 'deletedAt', 'updatedBy']},
           },
           {
             as: 'reviews',
             model: sequelize.models.germlineSmallMutationReview,
-            attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+            attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt', 'updatedBy']},
             include: [{model: sequelize.models.user.scope('public'), as: 'reviewer'}],
           },
         ],
@@ -97,7 +100,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   germlineReport.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, biofxAssignedId, deletedAt, ...publicView} = this.dataValues;
+      const {id, biofxAssignedId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

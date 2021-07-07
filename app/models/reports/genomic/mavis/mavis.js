@@ -32,7 +32,7 @@ module.exports = (sequelize, Sq) => {
     tableName: 'reports_mavis_summary',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'product_id', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'product_id', 'deletedAt', 'updatedBy']},
       },
     },
   });
@@ -40,7 +40,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   mavis.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, product_id, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, product_id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

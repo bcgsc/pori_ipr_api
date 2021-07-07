@@ -266,7 +266,7 @@ analysisReports.hasMany(proteinVariants, {
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
   const extendedScope = {
-    attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+    attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
     include: [],
   };
 

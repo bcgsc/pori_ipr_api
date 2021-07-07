@@ -57,7 +57,7 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
     }
     // Update db entry
     try {
-      await req.mutationBurden.update(req.body);
+      await req.mutationBurden.update(req.body, {userId: req.user.id});
       return res.json(req.mutationBurden.view('public'));
     } catch (error) {
       logger.error(`Unable to update mutation burden ${error}`);

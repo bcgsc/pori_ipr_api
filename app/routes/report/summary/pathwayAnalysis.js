@@ -77,7 +77,7 @@ router.route('/')
 
     // Update db entry
     try {
-      await req.pathwayAnalysis.update(req.body);
+      await req.pathwayAnalysis.update(req.body, {userId: req.user.id});
       return res.json(req.pathwayAnalysis.view('public'));
     } catch (error) {
       logger.error(`Unable to update pathway analysis ${error}`);

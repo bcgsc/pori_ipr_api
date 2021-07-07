@@ -41,7 +41,7 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.expressionVariants.update(req.body);
+      await req.expressionVariants.update(req.body, {userId: req.user.id});
       await req.expressionVariants.reload();
       return res.json(req.expressionVariants.view('public'));
     } catch (error) {
