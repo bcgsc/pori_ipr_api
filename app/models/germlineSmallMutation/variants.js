@@ -189,7 +189,7 @@ module.exports = (sequelize, Sq) => {
       public: {
         order: [['id', 'ASC']],
         attributes: {
-          exclude: ['id', 'germlineReportId', 'deletedAt'],
+          exclude: ['id', 'germlineReportId', 'deletedAt', 'updatedBy'],
         },
       },
     },
@@ -198,7 +198,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   germlineVariant.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, germlineReportId, deletedAt, ...publicView} = this.dataValues;
+      const {id, germlineReportId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

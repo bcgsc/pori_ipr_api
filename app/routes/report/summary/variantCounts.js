@@ -40,7 +40,7 @@ router.route('/')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.variantCounts.update(req.body);
+      await req.variantCounts.update(req.body, {userId: req.user.id});
       return res.json(req.variantCounts.view('public'));
     } catch (error) {
       logger.error(`Unable to update variant counts ${error}`);

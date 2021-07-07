@@ -104,7 +104,7 @@ module.exports = (sequelize, Sq) => {
     tableName: 'reports_structural_variants',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'gene1Id', 'gene2Id', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'gene1Id', 'gene2Id', 'deletedAt', 'updatedBy']},
         include: [
           {
             model: sequelize.models.genes.scope('minimal'),
@@ -124,7 +124,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   structuralVariants.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, gene1Id, gene2Id, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, gene1Id, gene2Id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

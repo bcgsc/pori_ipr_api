@@ -113,7 +113,7 @@ router.route('/discussion/:discussion')
     }
 
     try {
-      await req.discussion.update(req.body);
+      await req.discussion.update(req.body, {userId: req.user.id});
       await req.discussion.reload();
       return res.json(req.discussion.view('public'));
     } catch (error) {
@@ -229,7 +229,7 @@ router.route('/slide/:slide')
     }
 
     try {
-      await req.slide.update(req.body);
+      await req.slide.update(req.body, {userId: req.user.id});
       await req.slide.reload();
       return res.json(req.slide.view('public'));
     } catch (error) {

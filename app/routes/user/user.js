@@ -23,7 +23,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
           model: db.models.userGroup,
           as: 'groups',
           attributes: {
-            exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+            exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
           through: {attributes: []},
         },
@@ -31,7 +31,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
           model: db.models.project,
           as: 'projects',
           attributes: {
-            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt'],
+            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
           through: {attributes: []},
         },
@@ -107,7 +107,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
 
     try {
-      await req.userByIdent.update(req.body);
+      await req.userByIdent.update(req.body, {userId: req.user.id});
       await req.userByIdent.reload();
       return res.json(req.userByIdent.view('public'));
     } catch (error) {
@@ -140,13 +140,13 @@ router.route('/')
           {
             as: 'groups',
             model: db.models.userGroup,
-            attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']},
+            attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
             through: {attributes: []},
           },
           {
             as: 'projects',
             model: db.models.project,
-            attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']},
+            attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
             through: {attributes: []},
           },
         ],

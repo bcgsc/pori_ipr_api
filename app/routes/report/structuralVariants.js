@@ -39,7 +39,7 @@ router.route('/:sv([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.variation.update(req.body);
+      await req.variation.update(req.body, {userId: req.user.id});
       await req.variation.reload();
       return res.json(req.variation.view('public'));
     } catch (error) {
