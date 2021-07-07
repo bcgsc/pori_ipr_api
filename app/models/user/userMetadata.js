@@ -29,7 +29,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'userId', 'deletedAt'],
+          exclude: ['id', 'userId', 'deletedAt', 'updatedBy'],
         },
       },
     },
@@ -39,7 +39,7 @@ module.exports = (sequelize, Sq) => {
   userMetadata.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, userId, deletedAt, ...publicView
+        id, userId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }

@@ -59,7 +59,7 @@ router.route('/')
           logger.error(message);
           return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
         }
-        await req.analystComments.update(req.body);
+        await req.analystComments.update(req.body, {userId: req.user.id});
         return res.json(req.analystComments.view('public'));
       } catch (error) {
         logger.error(`Unable to update analysis comments ${error}`);

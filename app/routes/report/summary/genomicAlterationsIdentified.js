@@ -40,7 +40,7 @@ router.route('/:alteration([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update dn entry
     try {
-      await req.alteration.update(req.body);
+      await req.alteration.update(req.body, {userId: req.user.id});
       return res.json(req.alteration.view('public'));
     } catch (error) {
       logger.error(`Unable to update genomic alterations ${error}`);

@@ -62,7 +62,7 @@ router.route('/:gsm_report')
 
     // Update db entry
     try {
-      await req.report.update(req.body);
+      await req.report.update(req.body, {userId: req.user.id});
       await req.report.reload();
       return res.json(req.report.view('public'));
     } catch (error) {
@@ -139,7 +139,7 @@ router.route('/')
           as: 'reviews',
           model: db.models.germlineSmallMutationReview,
           where: (reviewType) ? {type: reviewType.split(',') || reviewType} : {type: 'biofx'},
-          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+          attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt', 'updatedBy']},
           include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
         },
       );

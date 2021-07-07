@@ -10,12 +10,15 @@ module.exports = async (req, res, next, ident) => {
     {as: 'biofxAssigned', model: db.models.user.scope('public')},
     {as: 'projects', model: db.models.project.scope('public'), through: {attributes: []}},
     {
-      as: 'variants', model: db.models.germlineSmallMutationVariant, order: [['gene', 'asc']], attributes: {exclude: ['id', 'germlineReportId', 'deletedAt']},
+      as: 'variants',
+      model: db.models.germlineSmallMutationVariant,
+      order: [['gene', 'asc']],
+      attributes: {exclude: ['id', 'germlineReportId', 'deletedAt', 'updatedBy']},
     },
     {
       as: 'reviews',
       model: db.models.germlineSmallMutationReview,
-      attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt']},
+      attributes: {exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt', 'updatedBy']},
       include: [{model: db.models.user.scope('public'), as: 'reviewer'}],
     },
   ];

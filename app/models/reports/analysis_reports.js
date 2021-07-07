@@ -135,12 +135,12 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'config', 'createdBy_id', 'templateId', 'deletedAt'],
+          exclude: ['id', 'config', 'createdBy_id', 'templateId', 'deletedAt', 'updatedBy'],
         },
       },
       extended: {
         attributes: {
-          exclude: ['id', 'createdBy_id', 'templateId', 'deletedAt'],
+          exclude: ['id', 'createdBy_id', 'templateId', 'deletedAt', 'updatedBy'],
         },
       },
     },
@@ -180,7 +180,7 @@ module.exports = (sequelize, Sq) => {
   report.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, config, createdBy_id, templateId, deletedAt, ...publicView
+        id, config, createdBy_id, templateId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }
