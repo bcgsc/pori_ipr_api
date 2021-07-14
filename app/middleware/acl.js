@@ -36,8 +36,12 @@ const SPECIAL_CASES = [
     DELETE: [{name: 'admin'}],
   },
   {
+    path: pathToRegexp('/api/project/:project/user'),
+    GET: [{name: 'admin'}, {name: 'manager'}],
+  },
+  {
     path: pathToRegexp('/api/project/:project/reports'),
-    POST: [{name: 'admin'}],
+    GET: [{name: 'admin'}, {name: 'manager'}],
   },
 ];
 
