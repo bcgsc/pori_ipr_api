@@ -6,6 +6,9 @@ module.exports = (sequelize, Sq) => {
     name: {
       type: Sq.STRING,
       allowNull: false,
+      jsonSchema: {
+        schema: {type: 'string', minLength: 2},
+      },
     },
   }, {
     ...DEFAULT_OPTIONS,
@@ -35,6 +38,10 @@ module.exports = (sequelize, Sq) => {
   project.prototype.view = function (scope) {
     if (scope === 'public') {
       const {id, deletedAt, updatedBy, ...publicView} = this.dataValues;
+      return publicView;
+    }
+    if (scope === 'nonMaster') {
+      const {id, deletedAt, updatedBy, users, reports, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;
