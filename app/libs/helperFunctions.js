@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const sanitize = require('sanitize-html');
 
 /**
@@ -16,16 +15,24 @@ const includesAll = (arr, targets) => {
 };
 
 /**
- * Performs a case insensitice intersection on
- * two arrays of strings
+ * Checks for any intersecting values in two arrays
+ * of objects, both containing the specified key
  *
- * @param {Array<string>} array1 - First array of strings
- * @param {Array<string>} array2 - Second array of strings
- * @returns {Array<string>} - Returns a new array of intersecting values
+ * @param {Array<object>} arr1 - First array of objects
+ * @param {Array<object>} arr2 - Second array of objects
+ * @param {string} key - Key to use, which should be present in both arrays
+ * @returns {boolean} - Returns a boolean indicating if there is an intersection or not
  */
+const isIntersectionBy = (arr1, arr2, key) => {
+  const dict = {};
 
-const caseInsensitiveIntersect = (array1, array2) => {
-  return _.intersectionBy(array1, array2, _.lowerCase);
+  arr1.forEach((val) => {
+    dict[val[key]] = true;
+  });
+
+  return arr2.some((value) => {
+    return dict[value[key]];
+  });
 };
 
 /**
@@ -80,8 +87,8 @@ const isAdmin = (user) => {
 
 module.exports = {
   includesAll,
-  caseInsensitiveIntersect,
   sanitizeHtml,
   getUserProjects,
   isAdmin,
+  isIntersectionBy,
 };
