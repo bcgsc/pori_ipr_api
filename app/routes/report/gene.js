@@ -3,6 +3,7 @@ const express = require('express');
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const router = express.Router({mergeParams: true});
 
@@ -50,15 +51,35 @@ router.route('/:geneName')
 router.route('/')
   .get(async (req, res) => {
     // Get all targeted genes for this report
+    const key = `/reports/${req.report.ident}/genes`;
+
     try {
-      const result = await db.models.genes.scope('public').findAll({
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for genes ${error}`);
+    }
+
+    try {
+      const results = await db.models.genes.scope('public').findAll({
         where: {reportId: req.report.id},
         order: [['name', 'ASC']],
       });
-      return res.json(result);
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
+      return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve genes ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to retrieve genes'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        error: {message: 'Unable to retrieve genes'},
+      });
     }
   });
 
