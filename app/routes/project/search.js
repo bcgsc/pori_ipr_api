@@ -19,9 +19,9 @@ router.route('/')
     try {
       projectAccess = await getUserProjects(db.models.project, req.user);
     } catch (error) {
-      logger.error(`Error while geting user's access to projects ${error}`);
+      logger.error(`Error while getting user's access to projects ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Error while geting user\'s access to projects'},
+        error: {message: 'Error while getting user\'s access to projects'},
       });
     }
 
