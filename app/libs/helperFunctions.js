@@ -9,8 +9,14 @@ const sanitize = require('sanitize-html');
  * @returns {boolean} - Returns true if all targets exist in array
  */
 const includesAll = (arr, targets) => {
+  const dict = {};
+
+  arr.forEach((val) => {
+    dict[val] = true;
+  });
+
   return targets.every((value) => {
-    return arr.includes(value);
+    return dict[value];
   });
 };
 

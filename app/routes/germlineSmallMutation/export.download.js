@@ -7,6 +7,7 @@ const express = require('express');
 const db = require('../../models');
 const Variants = require('./util/variants');
 const logger = require('../../log');
+const {includesAll} = require('../../libs/helperFunctions');
 
 const router = express.Router({mergeParams: true});
 
@@ -105,9 +106,7 @@ router.get('/batch/download', async (req, res) => {
       return review.type;
     });
 
-    if (requiredReviews.every((state) => {
-      return reportReviews.includes(state);
-    })) {
+    if (includesAll(reportReviews, requiredReviews)) {
       // contains all the required reviews
       const summaryMatch = matchedMutationSignatures.filter((signature) => {
         return signature.report.patientId === report.patientId;
@@ -165,9 +164,7 @@ router.get('/batch/download', async (req, res) => {
         return review.type;
       });
 
-      if (requiredReviews.every((state) => {
-        return reportReviews.includes(state);
-      })) {
+      if (includesAll(reportReviews, requiredReviews)) {
         report.exported = true;
         return report.save({fields: ['exported'], hooks: false});
       }
