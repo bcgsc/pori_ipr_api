@@ -103,6 +103,16 @@ module.exports = (sequelize, Sq) => {
         },
       },
     },
+    externalSource: {
+      name: 'externalSource',
+      field: 'external_source',
+      type: Sq.TEXT,
+    },
+    externalStatementId: {
+      name: 'externalStatementId',
+      field: 'external_statement_id',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matches',
