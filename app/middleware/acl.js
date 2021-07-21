@@ -1,7 +1,6 @@
-const {intersectionBy} = require('lodash');
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
-const {isAdmin} = require('../libs/helperFunctions');
+const {isAdmin, isIntersectionBy} = require('../libs/helperFunctions');
 const logger = require('../log');
 
 const SPECIAL_CASES = [
@@ -55,7 +54,7 @@ const projectAccess = (user, report) => {
   if (hasMasterAccess(user)) {
     return true;
   }
-  return intersectionBy(user.projects, report.projects, 'ident').length;
+  return isIntersectionBy(user.projects, report.projects, 'ident');
 };
 
 module.exports = async (req, res, next) => {
@@ -93,7 +92,7 @@ module.exports = async (req, res, next) => {
     // Check that route and method have special rules
     if (spCase && spCase[req.method]) {
       if (spCase[req.method].includes('*')
-        || intersectionBy(req.user.groups, spCase[req.method], 'name').length
+        || isIntersectionBy(req.user.groups, spCase[req.method], 'name')
       ) {
         return next();
       }
