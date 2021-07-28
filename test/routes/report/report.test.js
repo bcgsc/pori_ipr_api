@@ -124,6 +124,15 @@ describe('/reports/{REPORTID}', () => {
       checkReports(res.body.reports);
     }, LONGER_TIMEOUT);
 
+    // Test GET with paginated
+    test('/ - paginated - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?paginated=NOT_BOOLEAN')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     // Test GET with limit
     test('/ - limit - 200 Success', async () => {
       const res = await request
@@ -135,6 +144,14 @@ describe('/reports/{REPORTID}', () => {
       checkReports(res.body.reports);
       expect(res.body.reports.length).toBeLessThanOrEqual(4);
     }, LONGER_TIMEOUT);
+
+    test('/ - limit - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?paginated=true&limit=NOT_INTEGER')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
     // Test GET with offset
     test('/ - offset - 200 Success', async () => {
@@ -148,6 +165,14 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.reports.length).toBe(3);
     }, LONGER_TIMEOUT);
 
+    test('/ - offset - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?paginated=true&offset=NOT_INTEGER')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     // Test GET with sort
     test('/ - sort - 200 Success', async () => {
       const res = await request
@@ -159,6 +184,14 @@ describe('/reports/{REPORTID}', () => {
       checkReports(res.body.reports);
       expect(res.body.reports[0].patientId).toEqual(res.body.reports[1].patientId);
     }, LONGER_TIMEOUT);
+
+    test('/ - sort - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?sort=INVALID_FIELD:desc')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
     // Test GET with project
     test('/ - project - 200 Success', async () => {
@@ -200,6 +233,14 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
+    test('/ - states - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?states=INVALID_STATE')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     // Test GET with role
     test('/ - role - 200 Success', async () => {
       const res = await request
@@ -212,6 +253,14 @@ describe('/reports/{REPORTID}', () => {
 
       expect(res.body.reports).toEqual([]);
     }, LONGER_TIMEOUT);
+
+    test('/ - role - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?role=INVALID_ROLE')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
     // Test GET with search text
     test('/ - search text - 200 Success', async () => {
