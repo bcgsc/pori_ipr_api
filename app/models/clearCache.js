@@ -134,6 +134,23 @@ module.exports = async (instance, method) => {
       return removeKeys(`/reports/${report.ident}/msi`);
     case 'signatures':
       return removeKeys(`/reports/${report.ident}/signatures`);
+    case 'smallMutations':
+      return removeKeys(`/reports/${report.ident}/small-mutations`);
+    case 'copyVariants':
+    case 'expressionVariants':
+    case 'kbMatches':
+      return removeKeys([
+        `/reports/${report.ident}/copy-variants`,
+        `/reports/${report.ident}/expression-variants`,
+        `/reports/${report.ident}/small-mutations`,
+      ]);
+    case 'genes':
+      return removeKeys([
+        `/reports/${report.ident}/genes`,
+        `/reports/${report.ident}/copy-variants`,
+        `/reports/${report.ident}/expression-variants`,
+        `/reports/${report.ident}/small-mutations`,
+      ]);
     default:
       return true;
   }

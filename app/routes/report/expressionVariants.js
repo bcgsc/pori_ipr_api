@@ -6,6 +6,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 // Middleware for expression variants
 router.param('expressionVariant', async (req, res, next, ident) => {
@@ -40,7 +41,7 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Update db entry
     try {
-      await req.expressionVariants.update(req.body);
+      await req.expressionVariants.update(req.body, {userId: req.user.id});
       await req.expressionVariants.reload();
       return res.json(req.expressionVariants.view('public'));
     } catch (error) {
@@ -62,6 +63,19 @@ router.route('/:expressionVariant([A-z0-9-]{36})')
 // Routing for all expression variants
 router.route('/')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/expression-variants`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for expression variants ${error}`);
+    }
+
     try {
       const results = await db.models.expressionVariants.scope('extended').findAll({
         order: [['geneId', 'ASC']],
@@ -76,6 +90,11 @@ router.route('/')
           },
         ],
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve expressionVariants ${error}`);

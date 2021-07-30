@@ -74,7 +74,7 @@ router.route('/:review')
 
     // Update db entry
     try {
-      await req.review.update(req.body);
+      await req.review.update(req.body, {userId: req.user.id});
       await req.review.reload();
       return res.json(req.review.view('public'));
     } catch (error) {

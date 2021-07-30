@@ -55,7 +55,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt', 'logoId', 'headerId'],
+          exclude: ['id', 'deletedAt', 'logoId', 'headerId', 'updatedBy'],
         },
         include: [
           {as: 'logoImage', model: sequelize.models.image.scope('public')},
@@ -71,7 +71,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   template.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, deletedAt, logoId, headerId, ...publicView} = this.dataValues;
+      const {id, deletedAt, logoId, headerId, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

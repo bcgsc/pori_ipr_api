@@ -39,13 +39,13 @@ router.route('/')
       // Lookup User
       user = await db.models.user.findOne({
         where: {ident: req.body.user},
-        attributes: {exclude: ['deletedAt', 'password']},
+        attributes: {exclude: ['deletedAt', 'password', 'updatedBy']},
         include: [
           {
             model: db.models.userGroup,
             as: 'groups',
             attributes: {
-              exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+              exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
             },
             through: {attributes: []},
           },

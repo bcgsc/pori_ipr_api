@@ -38,7 +38,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'reportId', 'user_id'],
+          exclude: ['id', 'reportId', 'user_id', 'updatedBy'],
         },
         include: [
           {model: sequelize.models.user.scope('public'), as: 'user'},
@@ -50,7 +50,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   reportUser.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, user_id, addedBy_id, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, user_id, addedBy_id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

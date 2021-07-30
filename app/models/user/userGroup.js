@@ -22,10 +22,10 @@ module.exports = (sequelize, Sq) => {
       public: {
         order: [['name', 'ASC']],
         attributes: {
-          exclude: ['id', 'owner_id', 'deletedAt'],
+          exclude: ['id', 'owner_id', 'deletedAt', 'updatedBy'],
         },
         include: [
-          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password']}, through: {attributes: []}},
+          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}, through: {attributes: []}},
           {as: 'owner', model: sequelize.models.user.scope('public')},
         ],
       },
@@ -35,7 +35,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   userGroup.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, owner_id, deletedAt, ...publicView} = this.dataValues;
+      const {id, owner_id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

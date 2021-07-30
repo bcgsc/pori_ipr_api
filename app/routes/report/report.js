@@ -20,6 +20,7 @@ const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {REPORT_UPDATE_BASE_URI} = require('../../constants');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
+const reportGetSchema = require('../../schemas/report/retrieve/reportGetQueryParamSchema');
 // Generate schema's
 const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
@@ -81,7 +82,7 @@ router.route('/:report')
 
     // Update db entry
     try {
-      await report.update(req.body);
+      await report.update(req.body, {userId: req.user.id});
       await report.reload();
       return res.json(report.view('public'));
     } catch (error) {
@@ -103,11 +104,35 @@ router.route('/:report')
 // Act on all reports
 router.route('/')
   .get(async (req, res) => {
-    const {
+    let {
       query: {
         paginated, limit, offset, sort, project, states, role, searchText,
       },
     } = req;
+
+    // Parse query parameters
+    try {
+      limit = (limit) ? parseInt(limit, 10) : DEFAULT_PAGE_LIMIT;
+      offset = (offset) ? parseInt(offset, 10) : DEFAULT_PAGE_OFFSET;
+      sort = (sort) ? parseReportSortQuery(sort) : undefined;
+      states = (states) ? states.toLowerCase().split(',') : undefined;
+    } catch (error) {
+      logger.error(`Error with query parameters ${error}`);
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
+        error: {message: 'Error with one or more query parameters'},
+      });
+    }
+
+    try {
+      // validate request query parameters
+      validateAgainstSchema(reportGetSchema, {
+        paginated, limit, offset, sort, project, states, role, searchText,
+      }, false);
+    } catch (err) {
+      const message = `Error while validating the query params of the report GET request ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
 
     // Get projects the user has access to
     let projects;
@@ -150,7 +175,7 @@ router.route('/')
     // Generate options for report query
     const opts = {
       where: {
-        ...((states) ? {state: states.toLowerCase().split(',')} : {}),
+        ...((states) ? {state: states} : {}),
         ...((searchText) ? {
           [Op.or]: [
             {'$patientInformation.diagnosis$': {[Op.iLike]: `%${searchText}%`}},
@@ -170,18 +195,18 @@ router.route('/')
       // Paginated can be added to searchText once this Sequelize bug is fixed.
       // Sequelize version is 6.5.0**
       ...((paginated && !searchText) ? {
-        offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
-        limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
+        offset,
+        limit,
       } : {}),
-      order: (sort) ? parseReportSortQuery(sort) : [
+      order: (!sort) ? [
         ['state', 'desc'],
         ['patientId', 'desc'],
-      ],
+      ] : sort,
       include: [
         {
           model: db.models.patientInformation,
           as: 'patientInformation',
-          attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
         },
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
@@ -203,7 +228,7 @@ router.route('/')
           where: {
             name: projects,
           },
-          attributes: {exclude: ['id', 'deletedAt']},
+          attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
           through: {attributes: []},
         },
         ...((role) ? [{

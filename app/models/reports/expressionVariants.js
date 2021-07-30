@@ -145,7 +145,7 @@ module.exports = (sequelize, Sq) => {
     tableName: 'reports_expression_variants',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt', 'updatedBy']},
         include: [
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
@@ -162,7 +162,7 @@ module.exports = (sequelize, Sq) => {
   expressionVariants.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, reportId, geneId, deletedAt, ...publicView
+        id, reportId, geneId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }

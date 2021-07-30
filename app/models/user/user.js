@@ -61,7 +61,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt', 'password'],
+          exclude: ['id', 'deletedAt', 'password', 'updatedBy'],
         },
       },
     },
@@ -71,7 +71,7 @@ module.exports = (sequelize, Sq) => {
   user.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, deletedAt, password, ...publicView
+        id, deletedAt, password, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }
