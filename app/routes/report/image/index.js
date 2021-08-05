@@ -4,8 +4,11 @@ const {Op} = require('sequelize');
 
 const db = require('../../../models');
 const logger = require('../../../log');
+const cache = require('../../../cache');
+
 const {uploadReportImage} = require('../images');
 const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
+const {generateKey} = require('../../../libs/cacheFunctions');
 
 const router = express.Router({mergeParams: true});
 
@@ -18,7 +21,9 @@ router.param('image', async (req, res, next, imgIdent) => {
     });
   } catch (error) {
     logger.error(`Unable to lookup image error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup image'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Unable to lookup image'},
+    });
   }
 
   if (!result) {
@@ -50,7 +55,9 @@ router.route('/:image([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while deleting report image ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while deleting report image'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while deleting report image'},
+      });
     }
   });
 
@@ -60,7 +67,9 @@ router.route('/')
     // Check that image files were uploaded
     if (!req.files || Object.keys(req.files).length === 0) {
       logger.error('No attached images to upload');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        error: {message: 'No attached images to upload'},
+      });
     }
 
     // Check for valid and duplicate keys
@@ -79,7 +88,9 @@ router.route('/')
       // Check if key is a duplicate
       if (keys.includes(key) || Array.isArray(value)) {
         logger.error(`Duplicate keys are not allowed. Duplicate key: ${key}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Duplicate keys are not allowed. Duplicate key: ${key}`}});
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: `Duplicate keys are not allowed. Duplicate key: ${key}`},
+        });
       }
 
       keys.push(key);
@@ -110,14 +121,29 @@ router.route('/')
       return res.status(HTTP_STATUS.MULTI_STATUS).json(results);
     } catch (error) {
       logger.error(`Error while uploading images ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while uploading images ${error}`}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        error: {message: `Error while uploading images ${error}`},
+      });
     }
   });
 
 // Route for getting an image
 router.route('/retrieve/:key')
   .get(async (req, res) => {
-    const keys = (req.params.key.includes(',')) ? req.params.key.split(',') : [req.params.key];
+    const key = generateKey(`/reports/${req.report.ident}/image/retrieve`, {keys: req.params.key});
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for images by key ${error}`);
+    }
+
+    const keys = (req.params.key.includes(',')) ? req.params.key.split(',') : req.params.key;
 
     try {
       const results = await db.models.imageData.scope('public').findAll({
@@ -127,6 +153,10 @@ router.route('/retrieve/:key')
         },
         order: [['key', 'ASC']],
       });
+
+      if (key && results.length) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
 
       return res.json(results);
     } catch (error) {
@@ -139,6 +169,19 @@ router.route('/retrieve/:key')
 
 router.route('/expression-density-graphs')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/image/expression-density-graphs`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for expression density graphs ${error}`);
+    }
+
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
@@ -147,6 +190,10 @@ router.route('/expression-density-graphs')
         },
         order: [['key', 'ASC']],
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
 
       return res.json(results);
     } catch (error) {
@@ -159,6 +206,19 @@ router.route('/expression-density-graphs')
 
 router.route('/mutation-burden')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/image/mutation-burden`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for mutation burden images ${error}`);
+    }
+
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
@@ -167,6 +227,10 @@ router.route('/mutation-burden')
         },
         order: [['key', 'ASC']],
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
 
       return res.json(results);
     } catch (error) {
@@ -179,6 +243,19 @@ router.route('/mutation-burden')
 
 router.route('/subtype-plots')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/image/subtype-plots`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for subtype plots ${error}`);
+    }
+
     try {
       const results = await db.models.imageData.scope('public').findAll({
         where: {
@@ -187,6 +264,10 @@ router.route('/subtype-plots')
         },
         order: [['key', 'ASC']],
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
 
       return res.json(results);
     } catch (error) {
