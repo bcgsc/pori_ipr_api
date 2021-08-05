@@ -151,6 +151,8 @@ module.exports = async (instance, method) => {
         `/reports/${report.ident}/expression-variants`,
         `/reports/${report.ident}/small-mutations`,
       ]);
+    case 'imageData':
+      return batchDeleteKeysByPattern(`/reports/${report.ident}/image/*`);
     default:
       return true;
   }
