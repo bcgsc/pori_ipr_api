@@ -201,31 +201,28 @@ const createReportVariantSections = async (report, content, transaction) => {
   await createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
 };
 
-  // finally all other sections can be built
-  const excludeSections = new Set([
-    ...GENE_LINKED_VARIANT_MODELS,
-    'createdBy',
-    'template',
-    'genes',
-    'kbMatches',
-    'presentationDiscussion',
-    'presentationSlides',
-    'signatures',
-    'projects',
-    'ReportUserFilter',
-    'users',
-  ]);
-
-  // add images to db
+/**
+ * Creates all the sections of a report
+ *
+ * @param {object} report - The report to create all sections for
+ * @param {object} content - The data for all the reports sections
+ * @param {object} transaction - The transaction to run all the creates under
+ * @returns {undefined}
+ */
+const createReportSections = async (report, content, transaction) => {
+  // add images
   const promises = (content.images || []).map(async ({path: imagePath, key, caption, title}) => {
     return uploadReportImage(report.id, key, imagePath, {
       filename: path.basename(imagePath), caption, title, transaction,
     });
   });
 
-  // add the other sections
+  // add variant sections
+  promises.push(createReportVariantSections(report, content, transaction));
+
+  // add all other sections
   Object.keys(db.models.analysis_report.associations).filter((model) => {
-    return !excludeSections.has(model);
+    return !EXCLUDE_SECTIONS.has(model);
   }).forEach((model) => {
     logger.debug(`creating report (${model}) section (${report.ident})`);
     if (content[model]) {
@@ -244,7 +241,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     }
   });
 
-  await Promise.all(promises);
+  return Promise.all(promises);
 };
 
 /**
