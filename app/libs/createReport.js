@@ -187,6 +187,7 @@ const createReportVariantSections = async (report, content, transaction) => {
   ));
 
   await Promise.all(variantPromises);
+
   // then the kb matches which must be linked to the variants
   const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
     if (variantMapping[variantType] === undefined) {
@@ -198,7 +199,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     return {...match, variantId: variantMapping[variantType][variant], variantType};
   });
 
-  await createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+  return createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
 };
 
 /**
