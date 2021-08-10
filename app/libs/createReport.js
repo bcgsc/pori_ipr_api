@@ -251,44 +251,40 @@ const createReportSections = async (report, content, transaction) => {
  * @returns {string} - Returns the ident of the created report
  */
 const createReport = async (data) => {
-  // get template
   let template;
+  let project;
+
   try {
-    template = await db.models.template.findOne({
-      where: {
-        name: {
-          [Op.iLike]: data.template,
+    [template, project] = await Promise.all([
+      db.models.template.findOne({
+        where: {
+          name: {
+            [Op.iLike]: data.template,
+          },
         },
-      },
-    });
+      }),
+      db.models.project.findOne({
+        where: {
+          name: {
+            [Op.iLike]: data.project.trim(),
+          },
+        },
+      }),
+    ]);
   } catch (error) {
-    throw new Error(`Error while trying to find template ${data.template} with error ${error.message || error}`);
+    throw new Error(`Error while trying to find template ${data.template} and/or project ${data.project} with error ${error.message || error}`);
   }
 
   if (!template) {
     throw new Error(`Template ${data.template} doesn't currently exist`);
   }
 
-  // Set template id
-  data.templateId = template.id;
-
-  // get project
-  let project;
-  try {
-    project = await db.models.project.findOne({
-      where: {
-        name: {
-          [Op.iLike]: data.project.trim(),
-        },
-      },
-    });
-  } catch (error) {
-    throw new Error(`Unable to find project ${data.project} with error ${error.message || error}`);
-  }
-
   if (!project) {
     throw new Error(`Project ${data.project} doesn't currently exist`);
   }
+
+  // Set template id
+  data.templateId = template.id;
 
   // Create transaction for creates
   const transaction = await db.transaction();
