@@ -167,15 +167,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   return mapping;
 };
 
-/**
- * Creates all the sections of a report
- *
- * @param {object} report - The report to create all sections for
- * @param {object} content - The data for all the reports sections
- * @param {object} transaction - The transaction to run all the creates under
- * @returns {undefined}
- */
-const createReportSections = async (report, content, transaction) => {
+const createReportVariantSections = async (report, content, transaction) => {
   // create the genes first since they will need to be linked to the variant records
   const geneDefns = await createReportGenes(report, content, {transaction});
 
@@ -207,6 +199,7 @@ const createReportSections = async (report, content, transaction) => {
   });
 
   await createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+};
 
   // finally all other sections can be built
   const excludeSections = new Set([
