@@ -7,6 +7,20 @@ const logger = require('../log');
 const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../constants');
 const {sanitizeHtml} = require('./helperFunctions');
 
+const EXCLUDE_SECTIONS = new Set([
+  ...GENE_LINKED_VARIANT_MODELS,
+  'createdBy',
+  'template',
+  'genes',
+  'kbMatches',
+  'presentationDiscussion',
+  'presentationSlides',
+  'signatures',
+  'projects',
+  'ReportUserFilter',
+  'users',
+]);
+
 /**
  * Creates a new section for the report with the provided data
  *
