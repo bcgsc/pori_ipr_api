@@ -153,6 +153,16 @@ module.exports = async (instance, method) => {
       ]);
     case 'imageData':
       return batchDeleteKeysByPattern(`/reports/${report.ident}/image/*`);
+    case 'hlaTypes':
+      return removeKeys(`/reports/${report.ident}/hla-types`);
+    case 'mavis':
+      return removeKeys(`/reports/${report.ident}/mavis`);
+    case 'pairwiseExpressionCorrelation':
+      return removeKeys(`/reports/${report.ident}/pairwise-expression-correlation`);
+    case 'presentationDiscussion':
+      return removeKeys(`/reports/${report.ident}/presentation/discussion`);
+    case 'presentationSlides':
+      return removeKeys(`/reports/${report.ident}/presentation/slide`);
     default:
       return true;
   }
