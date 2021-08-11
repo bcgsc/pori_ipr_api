@@ -5,13 +5,32 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 router.route('/')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/pairwise-expression-correlation`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for pairwise expression correlation ${error}`);
+    }
+
     try {
       const results = await db.models.pairwiseExpressionCorrelation.scope('public').findAll({
         where: {reportId: req.report.id},
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve pairwise expression correlation ${error}`);
