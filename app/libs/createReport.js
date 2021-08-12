@@ -7,6 +7,20 @@ const logger = require('../log');
 const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../constants');
 const {sanitizeHtml} = require('./helperFunctions');
 
+const EXCLUDE_SECTIONS = new Set([
+  ...GENE_LINKED_VARIANT_MODELS,
+  'createdBy',
+  'template',
+  'genes',
+  'kbMatches',
+  'presentationDiscussion',
+  'presentationSlides',
+  'signatures',
+  'projects',
+  'ReportUserFilter',
+  'users',
+]);
+
 /**
  * Creates a new section for the report with the provided data
  *
@@ -153,15 +167,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   return mapping;
 };
 
-/**
- * Creates all the sections of a report
- *
- * @param {object} report - The report to create all sections for
- * @param {object} content - The data for all the reports sections
- * @param {object} transaction - The transaction to run all the creates under
- * @returns {undefined}
- */
-const createReportSections = async (report, content, transaction) => {
+const createReportVariantSections = async (report, content, transaction) => {
   // create the genes first since they will need to be linked to the variant records
   const geneDefns = await createReportGenes(report, content, {transaction});
 
@@ -181,6 +187,7 @@ const createReportSections = async (report, content, transaction) => {
   ));
 
   await Promise.all(variantPromises);
+
   // then the kb matches which must be linked to the variants
   const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
     if (variantMapping[variantType] === undefined) {
@@ -192,33 +199,31 @@ const createReportSections = async (report, content, transaction) => {
     return {...match, variantId: variantMapping[variantType][variant], variantType};
   });
 
-  await createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+  return createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+};
 
-  // finally all other sections can be built
-  const excludeSections = new Set([
-    ...GENE_LINKED_VARIANT_MODELS,
-    'createdBy',
-    'template',
-    'genes',
-    'kbMatches',
-    'presentationDiscussion',
-    'presentationSlides',
-    'signatures',
-    'projects',
-    'ReportUserFilter',
-    'users',
-  ]);
-
-  // add images to db
+/**
+ * Creates all the sections of a report
+ *
+ * @param {object} report - The report to create all sections for
+ * @param {object} content - The data for all the reports sections
+ * @param {object} transaction - The transaction to run all the creates under
+ * @returns {undefined}
+ */
+const createReportSections = async (report, content, transaction) => {
+  // add images
   const promises = (content.images || []).map(async ({path: imagePath, key, caption, title}) => {
     return uploadReportImage(report.id, key, imagePath, {
       filename: path.basename(imagePath), caption, title, transaction,
     });
   });
 
-  // add the other sections
+  // add variant sections
+  promises.push(createReportVariantSections(report, content, transaction));
+
+  // add all other sections
   Object.keys(db.models.analysis_report.associations).filter((model) => {
-    return !excludeSections.has(model);
+    return !EXCLUDE_SECTIONS.has(model);
   }).forEach((model) => {
     logger.debug(`creating report (${model}) section (${report.ident})`);
     if (content[model]) {
@@ -237,7 +242,7 @@ const createReportSections = async (report, content, transaction) => {
     }
   });
 
-  await Promise.all(promises);
+  return Promise.all(promises);
 };
 
 /**
@@ -247,44 +252,40 @@ const createReportSections = async (report, content, transaction) => {
  * @returns {string} - Returns the ident of the created report
  */
 const createReport = async (data) => {
-  // get template
   let template;
+  let project;
+
   try {
-    template = await db.models.template.findOne({
-      where: {
-        name: {
-          [Op.iLike]: data.template,
+    [template, project] = await Promise.all([
+      db.models.template.findOne({
+        where: {
+          name: {
+            [Op.iLike]: data.template,
+          },
         },
-      },
-    });
+      }),
+      db.models.project.findOne({
+        where: {
+          name: {
+            [Op.iLike]: data.project.trim(),
+          },
+        },
+      }),
+    ]);
   } catch (error) {
-    throw new Error(`Error while trying to find template ${data.template} with error ${error.message || error}`);
+    throw new Error(`Error while trying to find template ${data.template} and/or project ${data.project} with error ${error.message || error}`);
   }
 
   if (!template) {
     throw new Error(`Template ${data.template} doesn't currently exist`);
   }
 
-  // Set template id
-  data.templateId = template.id;
-
-  // get project
-  let project;
-  try {
-    project = await db.models.project.findOne({
-      where: {
-        name: {
-          [Op.iLike]: data.project.trim(),
-        },
-      },
-    });
-  } catch (error) {
-    throw new Error(`Unable to find project ${data.project} with error ${error.message || error}`);
-  }
-
   if (!project) {
     throw new Error(`Project ${data.project} doesn't currently exist`);
   }
+
+  // Set template id
+  data.templateId = template.id;
 
   // Create transaction for creates
   const transaction = await db.transaction();
