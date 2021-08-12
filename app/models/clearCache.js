@@ -151,6 +151,16 @@ module.exports = async (instance, method) => {
         `/reports/${report.ident}/expression-variants`,
         `/reports/${report.ident}/small-mutations`,
       ]);
+    case 'hlaTypes':
+      return removeKeys(`/reports/${report.ident}/hla-types`);
+    case 'mavis':
+      return removeKeys(`/reports/${report.ident}/mavis`);
+    case 'pairwiseExpressionCorrelation':
+      return removeKeys(`/reports/${report.ident}/pairwise-expression-correlation`);
+    case 'presentationDiscussion':
+      return removeKeys(`/reports/${report.ident}/presentation/discussion`);
+    case 'presentationSlides':
+      return removeKeys(`/reports/${report.ident}/presentation/slide`);
     default:
       return true;
   }
