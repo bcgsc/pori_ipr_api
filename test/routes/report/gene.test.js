@@ -184,6 +184,19 @@ describe('/reports/{report}/genes', () => {
         .type('json')
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
+
+    test('/{geneName} - 409 Conflict - Gene name is already taken', async () => {
+      const dupGene = await db.models.genes.create({...GENE_UPDATE_DATA, reportId: report.id});
+
+      await request
+        .put(`/api/reports/${report.ident}/genes/${putGene.name}`)
+        .send(GENE_UPDATE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CONFLICT);
+
+      await dupGene.destroy({force: true});
+    });
   });
 });
 
