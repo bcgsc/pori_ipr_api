@@ -60,6 +60,32 @@ router.route('/:geneName')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
+    // If updating gene name, check that it is not already taken
+    if (req.body.name && req.body.name !== req.gene.name) {
+      let dupGene;
+      try {
+        dupGene = await db.models.genes.findOne({
+          where: {
+            reportId: req.report.id,
+            name: req.body.name,
+          },
+          attributes: ['id', 'ident'],
+        });
+      } catch (error) {
+        logger.error(`Error while trying to find duplicate gene ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Error while trying to find duplicate gene'},
+        });
+      }
+
+      if (dupGene) {
+        logger.error(`Gene name: ${req.body.name} is already taken for report: ${req.report.ident}`);
+        return res.status(HTTP_STATUS.CONFLICT).json({
+          error: {message: 'Gene name is already taken'},
+        });
+      }
+    }
+
     try {
       await req.gene.update(req.body, {userId: req.user.id});
       return res.json(req.gene.view('public'));
