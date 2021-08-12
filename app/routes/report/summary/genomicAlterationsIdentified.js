@@ -6,6 +6,18 @@ const db = require('../../../models');
 const logger = require('../../../log');
 const cache = require('../../../cache');
 
+const schemaGenerator = require('../../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
+const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../constants');
+
+// Generate schemas
+const createSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
+  baseUri: REPORT_CREATE_BASE_URI,
+});
+const updateSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
+  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
+});
+
 // Middleware for genomic alterations
 router.param('alteration', async (req, res, next, altIdent) => {
   let result;
@@ -38,7 +50,15 @@ router.route('/:alteration([A-z0-9-]{36})')
     return res.json(req.alteration.view('public'));
   })
   .put(async (req, res) => {
-    // Update dn entry
+    // Validate request against schema
+    try {
+      validateAgainstSchema(updateSchema, req.body, false);
+    } catch (error) {
+      const message = `Error while validating genomic alterations update request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     try {
       await req.alteration.update(req.body, {userId: req.user.id});
       return res.json(req.alteration.view('public'));
@@ -53,29 +73,11 @@ router.route('/:alteration([A-z0-9-]{36})')
     // Soft delete the entry
     try {
       await req.alteration.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove genomic alterations ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to remove genomic alterations'},
-      });
-    }
-
-    if (!req.query.cascade || req.query.cascade !== true) {
-      return res.status(HTTP_STATUS.NO_CONTENT).send();
-    }
-
-    // Check to see if we're propagating this down into Detailed Genomic
-    const gene = req.alteration.geneVariant.split(/\s(.+)/);
-    const where = {gene: gene[0], variant: gene[1].replace(/(\(|\))/g, ''), reportId: req.report.id};
-
-    // Cascade removal of variant through Detailed Genomic Analysis
-    try {
-      await db.models.alterations.destroy({where});
-      return res.status(HTTP_STATUS.NO_CONTENT).send();
-    } catch (error) {
-      logger.error(`Unable to cascade removal into detailed genomic analysis ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Unable to cascade removal into detailed genomic analysis'},
       });
     }
   });
@@ -117,7 +119,15 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // Add a new genomic alteration
+    // Validate request against schema
+    try {
+      await validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `Error while validating genomic alterations create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     try {
       req.body.reportId = req.report.id;
 
