@@ -51,10 +51,12 @@ class Routing extends RouterInterface {
     this.router.param('gsm_report', germlineMiddleware);
 
     // Add Authentication coverage
-    this.router.use(authMiddleware);
+    // To every route except for specification routes (/spec and /spec.json)
+    this.router.use(/^((?!^\/spec).)*$/i, authMiddleware);
 
     // Acl middleware
-    this.router.use(/^(?!\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);
+    // To every route except for specification and report routes
+    this.router.use(/^(?!^\/spec|\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);
 
     // Add Single Routes
     // Setup other routes

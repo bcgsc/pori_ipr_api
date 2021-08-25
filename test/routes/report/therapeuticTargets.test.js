@@ -3,10 +3,10 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 const {Op} = require('sequelize');
 
-const db = require('../../app/models');
+const db = require('../../../app/models');
 // get test user info
-const CONFIG = require('../../app/config');
-const {listen} = require('../../app');
+const CONFIG = require('../../../app/config');
+const {listen} = require('../../../app');
 
 const LONGER_TIMEOUT = 5000;
 
