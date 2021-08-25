@@ -99,19 +99,11 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(template.id).toBe(report.templateId);
   });
 
-  // delete report
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // by hard deleting newly created report
-    await db.models.analysis_report.destroy({where: {id: reportId}, force: true});
-
-    // verify report is deleted
-    await request
-      .get(`/api/reports/${reportIdent}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
-  }, LONGER_TIMEOUT);
+    // Delete newly created report and all of it's components
+    // by force deleting the report
+    return db.models.analysis_report.destroy({where: {id: reportId}, force: true});
+  });
 });
 
 // Tests for uploading a report and all of its components
