@@ -13,13 +13,13 @@ module.exports = (sequelize, Sq) => {
       },
     },
     geneId: {
+      name: 'geneId',
+      field: 'gene_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports_genes',
         key: 'id',
       },
-      field: 'gene_id',
-      name: 'geneId',
       allowNull: false,
     },
     variant: {

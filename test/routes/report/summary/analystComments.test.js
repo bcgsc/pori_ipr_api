@@ -1,10 +1,10 @@
 const supertest = require('supertest');
 const getPort = require('get-port');
-const db = require('../app/models');
+const db = require('../../../../app/models');
 
 // get test user info
-const CONFIG = require('../app/config');
-const {listen} = require('../app');
+const CONFIG = require('../../../../app/config');
+const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
