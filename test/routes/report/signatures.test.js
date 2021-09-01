@@ -70,7 +70,7 @@ describe('/reports/{REPORTID}/signatures', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-  
+
       const {body: {reviewerSignature, authorSignature}} = res;
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
@@ -83,7 +83,7 @@ describe('/reports/{REPORTID}/signatures', () => {
       expect(res.body).toHaveProperty('authorSignedAt');
       expect(reviewerSignature).toBe(null);
       checkSignatureProperties(authorSignature);
-  
+
       // check that an author was added and a reviewer wasn't
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
