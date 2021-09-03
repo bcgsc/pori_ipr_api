@@ -8,7 +8,7 @@
     "start": "node --max-old-space-size=2800 bin/server.js",
     "start:prod": "NODE_ENV=production node --max-old-space-size=2800 bin/server.js",
     "start:dev": "NODE_ENV=development node --max-old-space-size=2800 bin/server.js",
-    "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=2800 jest --config config/jest/jest.config.js --detectOpenHandles --forceExit",
+    "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=2800 jest --config config/jest/jest.config.js --forceExit",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
   },
   "author": "IPR <ipr@bcgsc.ca>",
@@ -19,7 +19,7 @@
     "bcryptjs": "~2.4.3",
     "compression": "^1.7.4",
     "cors": "~2.8.1",
-    "exceljs": "^3.3.1",
+    "exceljs": "^4.3.0",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
     "express-query-boolean": "^2.0.0",
@@ -37,7 +37,7 @@
     "pg-native": "^3.0.0",
     "request": "^2.88.2",
     "request-promise-native": "~1.0.5",
-    "sanitize-html": "^1.27.1",
+    "sanitize-html": "^2.4.0",
     "sequelize": "^6.5.0",
     "sequelize-cli": "^5.5.0",
     "sharp": "^0.28.1",
@@ -56,10 +56,10 @@
     "eslint-plugin-jsx-a11y": "~6.1.1",
     "eslint-plugin-react": "~7.11.1",
     "get-port": "^5.0.0",
-    "jest": "^24.9.0",
+    "jest": "^27.0.6",
     "jest-bamboo-formatter": "^1.0.1",
     "jest-junit": "^10.0.0",
-    "jsdoc": "^3.6.3",
-    "supertest": "^3.0.0"
+    "jsdoc": "^3.6.7",
+    "supertest": "^6.1.6"
   }
 }
