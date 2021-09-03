@@ -1,10 +1,8 @@
-process.env.NODE_ENV = 'test';
-
 const HTTP_STATUS = require('http-status-codes');
-
 const supertest = require('supertest');
 const uuidv4 = require('uuid/v4');
 const getPort = require('get-port');
+const db = require('../app/models');
 
 // get test user info
 const CONFIG = require('../app/config');
@@ -37,41 +35,18 @@ beforeAll(async () => {
 
 // Tests history changes and update changes
 describe('Tests for update changes', () => {
-  let ident;
+  let project;
 
   beforeAll(async () => {
-    // create project record
-    let res = await request
-      .post('/api/project')
-      .auth(username, password)
-      .type('json')
-      .send(projectData)
-      .expect(HTTP_STATUS.CREATED);
-    ident = res.body.ident;
-
-
-    // check that the created project record exists
-    res = await request
-      .get(`/api/project/search?query=${projectData.name}`)
-      .auth(username, password)
-      .type('json')
-      .expect(200);
-
-    res.body = res.body[0];
-
-    expect(res.body).toHaveProperty('ident');
-    expect(res.body).toHaveProperty('name');
-    expect(res.body).toHaveProperty('createdAt');
-    expect(res.body).toHaveProperty('updatedAt');
-
-    expect(res.body.ident).toEqual(ident);
+    // Create project record
+    project = await db.models.project.create(projectData);
   });
 
   // Test update changes
   test('Test update changes', async () => {
     // update project name for given ident
     await request
-      .put(`/api/project/${ident}`)
+      .put(`/api/project/${project.ident}`)
       .auth(username, password)
       .type('json')
       .send({...update})
@@ -91,21 +66,9 @@ describe('Tests for update changes', () => {
     expect(res.body.name).toEqual(update.name);
   });
 
-  // Remove newly created/updated project
   afterAll(async () => {
-    // delete newly created project
-    await request
-      .delete(`/api/project/${ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NO_CONTENT);
-
-    // verify project is deleted
-    await request
-      .get(`/api/project/search?query=${projectData.name}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
+    // Delete newly created project
+    return project.destroy({force: true});
   });
 });
 

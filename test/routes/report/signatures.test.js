@@ -211,18 +211,10 @@ describe('/reports/{REPORTID}/signatures', () => {
     });
   });
 
-  // delete report
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // indirectly by hard deleting newly created patient
-    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
-
-    // verify report is deleted
-    await request
-      .get(`/api/reports/${report.ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
+    // Delete newly created report and all of it's components
+    // indirectly by force deleting the report
+    return db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 
