@@ -212,5 +212,11 @@ Object.assign(schemas.templateUpdate.properties, TEMPLATE_IMAGES);
 // add images to properties
 Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGE);
 
+// probe results update
+// add gene ident property
+schemas.probeResultsUpdate.properties.gene = {
+  type: 'string', format: 'uuid',
+};
+
 
 module.exports = schemas;
