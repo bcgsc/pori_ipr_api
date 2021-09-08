@@ -178,7 +178,7 @@ Object.assign(schemas.pathwayAnalysisCreate.properties, PATHWAY_IMAGE);
 Object.assign(schemas.analysis_reports_userCreate.properties, {
   user: {
     type: 'string',
-    format: 'UUIDv4',
+    format: 'uuid',
     description: 'ident of user to bind to report',
   },
 });
@@ -193,7 +193,7 @@ schemas.analysis_reportUpdate.properties.template = {
 
 // germline report update (add biofxAssigned user ident)
 schemas.germlineSmallMutationUpdate.properties.biofxAssigned = {
-  type: 'string', format: 'UUIDv4',
+  type: 'string', format: 'uuid',
 };
 
 // therapeutic targets bulk update
@@ -211,6 +211,12 @@ Object.assign(schemas.templateUpdate.properties, TEMPLATE_IMAGES);
 // pathway analysis update
 // add images to properties
 Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGE);
+
+// probe results update
+// add gene ident property
+schemas.probeResultsUpdate.properties.gene = {
+  type: 'string', format: 'uuid',
+};
 
 
 module.exports = schemas;
