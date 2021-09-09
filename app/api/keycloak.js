@@ -1,5 +1,5 @@
-const request = require('request-promise-native');
 const form = require('form-urlencoded').default;
+const request = require('../request');
 const nconf = require('../config');
 const logger = require('../log');
 
@@ -9,7 +9,8 @@ $keycloak.getToken = async (username, password) => {
   const {clientId, uri} = nconf.get('keycloak');
   const options = {
     method: 'POST',
-    uri,
+    url: uri,
+    json: true,
     body: form({
       client_id: clientId,
       grant_type: 'password',
@@ -20,9 +21,8 @@ $keycloak.getToken = async (username, password) => {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
   };
-  logger.debug(`requesting token from ${uri}`);
-  const resp = JSON.parse(await request(options));
-  return resp;
+  logger.debug(`Requesting token from ${uri}`);
+  return request(options);
 };
 
 module.exports = $keycloak;
