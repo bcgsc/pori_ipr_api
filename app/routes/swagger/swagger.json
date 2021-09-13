@@ -3327,6 +3327,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Filter genes by search text",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "tags": [
