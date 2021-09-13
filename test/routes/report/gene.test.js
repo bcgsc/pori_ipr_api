@@ -211,6 +211,17 @@ describe('/reports/{report}/genes', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
+    test('/{geneName} - 400 Bad Request - Name too short', async () => {
+      await request
+        .put(`/api/reports/${report.ident}/genes/${putGene.name}`)
+        .send({
+          name: 'A',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     test('/{geneName} - 409 Conflict - Gene name is already taken', async () => {
       const dupGene = await db.models.genes.create({...GENE_UPDATE_DATA, reportId: report.id});
 
