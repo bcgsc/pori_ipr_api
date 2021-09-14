@@ -2,7 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
 const cache = require('../cache');
-const aclMiddleware = require('../middleware/acl');
+const aclMiddleware = require('./acl');
 
 // Lookup report middleware
 module.exports = async (req, res, next, ident) => {
