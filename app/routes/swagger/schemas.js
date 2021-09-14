@@ -137,12 +137,12 @@ for (const model of Object.keys(models)) {
 // *Returned object*
 
 // analysis report
-schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report, {
-  isJsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'template', 'users'],
+schemas.reportAssociations = schemaGenerator(db.models.report, {
+  isJsonSchema: false, title: 'reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'template', 'users'],
 });
 
 // appendices
-schemas.appendices = schemaGenerator(db.models.analysis_report, {
+schemas.appendices = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'appendices', include: ['sampleInfo', 'seqQC', 'config'],
 });
 
@@ -160,7 +160,7 @@ Object.keys(reportUpload.properties).forEach((key) => {
   }
 });
 
-schemas.analysis_reportCreate = reportUpload;
+schemas.reportCreate = reportUpload;
 
 // germline report upload
 schemas.germlineSmallMutationCreate = germlineReportUploadSchema;
@@ -187,7 +187,7 @@ Object.assign(schemas.reportUserCreate.properties, {
 // *PUT request body*
 
 // add template name to report update
-schemas.analysis_reportUpdate.properties.template = {
+schemas.reportUpdate.properties.template = {
   type: 'string', description: 'Template name',
 };
 

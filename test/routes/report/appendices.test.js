@@ -59,7 +59,7 @@ describe('/reports/{report}/appendices', () => {
 
     beforeEach(async () => {
     // Create report
-      report = await db.models.analysis_report.create({
+      report = await db.models.report.create({
         ...APPENDIX_DATA,
         templateId: template.id,
         patientId: 'APPENDIX_TEST_PATIENT',

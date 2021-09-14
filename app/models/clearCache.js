@@ -3,7 +3,7 @@ const {batchDeleteKeysByPattern, flushAll, removeKeys} = require('../libs/cacheF
 const FLUSH_ALL_MODELS = ['user', 'project', 'template'];
 
 const CLEAR_REPORT_CACHE_MODELS = [
-  'analysis_report', 'patientInformation', 'reportUser',
+  'report', 'patientInformation', 'reportUser',
 ];
 
 const CLEAR_GERMLINE_CACHE_MODELS = [
@@ -34,10 +34,10 @@ module.exports = async (instance, method) => {
     return flushAll();
   }
   if (CLEAR_REPORT_CACHE_MODELS.includes(modelName)) {
-    const id = (modelName === 'analysis_report') ? instance.id : instance.reportId;
+    const id = (modelName === 'report') ? instance.id : instance.reportId;
     let report;
     try {
-      report = await models.analysis_report.findOne({where: {id}, paranoid: false});
+      report = await models.report.findOne({where: {id}, paranoid: false});
     } catch (error) {
       return batchDeleteKeysByPattern('/reports*');
     }
@@ -47,7 +47,7 @@ module.exports = async (instance, method) => {
     }
 
     // If deleting report, remove all report sections from cache
-    if (modelName === 'analysis_report' && method === 'DELETE') {
+    if (modelName === 'report' && method === 'DELETE') {
       return Promise.all([
         batchDeleteKeysByPattern(`/reports/${report.ident}*`),
         removeKeys('/reports'),
@@ -104,7 +104,7 @@ module.exports = async (instance, method) => {
 
   let report;
   try {
-    report = await models.analysis_report.findOne({
+    report = await models.report.findOne({
       where: {id: instance.reportId}, paranoid: false,
     });
   } catch (error) {

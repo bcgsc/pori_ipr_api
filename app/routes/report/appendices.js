@@ -11,7 +11,7 @@ const tcgaV9 = require('../../../database/exp_matrix.v9.json');
 router.route('/')
   .get(async (req, res) => {
     try {
-      const result = await db.models.analysis_report.findOne({
+      const result = await db.models.report.findOne({
         where: {ident: req.report.ident},
         attributes: ['sampleInfo', 'seqQC', 'config'],
       });

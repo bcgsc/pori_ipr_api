@@ -11,7 +11,7 @@ const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {generateKey} = require('../../libs/cacheFunctions');
 
-const reportMiddleware = require('../../middleware/analysis_report');
+const reportMiddleware = require('../../middleware/report');
 
 const router = express.Router({mergeParams: true});
 
@@ -24,7 +24,7 @@ const reportGetSchema = require('../../schemas/report/retrieve/reportGetQueryPar
 // Generate schema's
 const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
-const updateSchema = schemaGenerator(db.models.analysis_report, {
+const updateSchema = schemaGenerator(db.models.report, {
   baseUri: REPORT_UPDATE_BASE_URI,
   exclude: [...BASE_EXCLUDE, 'createdBy_id', 'templateId', 'config'],
   nothingRequired: true,
@@ -243,7 +243,7 @@ router.route('/')
     };
 
     try {
-      const reports = await db.models.analysis_report.scope('public').findAndCountAll(opts);
+      const reports = await db.models.report.scope('public').findAndCountAll(opts);
       const results = {total: reports.count, reports: reports.rows};
 
       if (key) {

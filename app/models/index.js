@@ -46,7 +46,7 @@ user.belongsToMany(project, {
 });
 
 // Pog Analysis Reports
-const analysisReports = require('./reports/analysis_reports')(sequelize, Sq);
+const analysisReports = require('./reports/report')(sequelize, Sq);
 const reportUsers = require('./reportUser')(sequelize, Sq);
 
 project.belongsToMany(analysisReports, {

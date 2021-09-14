@@ -41,7 +41,7 @@ module.exports = async (req, res, next, ident) => {
         },
         {
           as: 'reports',
-          model: db.models.analysis_report,
+          model: db.models.report,
           attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'],
           through: {attributes: []},
         },

@@ -1,8 +1,8 @@
-const {models: {analysis_report, reportUser}} = require('../../../models');
+const {models: {report, reportUser}} = require('../../../models');
 
 module.exports = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: '/reports/get/params/analysis_report.json',
+  $id: '/reports/get/params/report.json',
   title: 'Report GET params',
   type: 'object',
   properties: {
@@ -42,7 +42,7 @@ module.exports = {
       type: 'array',
       items: {
         type: 'string',
-        enum: analysis_report.rawAttributes.state.values,
+        enum: report.rawAttributes.state.values,
       },
     },
     role: {
