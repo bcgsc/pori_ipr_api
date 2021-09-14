@@ -1577,7 +1577,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/analysis_reports_userAssociations"
+                    "$ref": "#/components/schemas/reportUserAssociations"
                   }
                 }
               }
@@ -1609,7 +1609,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/analysis_reports_userCreate"
+                "$ref": "#/components/schemas/reportUserCreate"
               }
             }
           }
@@ -1671,7 +1671,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_reports_userAssociations"
+                  "$ref": "#/components/schemas/reportUserAssociations"
                 }
               }
             }

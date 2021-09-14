@@ -18,7 +18,7 @@ module.exports = async (req, res, next, ident) => {
       through: {attributes: []},
     },
     {
-      model: db.models.analysis_reports_user,
+      model: db.models.reportUser,
       as: 'users',
       separate: true,
       attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt', 'updatedBy']},

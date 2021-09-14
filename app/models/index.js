@@ -47,7 +47,7 @@ user.belongsToMany(project, {
 
 // Pog Analysis Reports
 const analysisReports = require('./reports/analysis_reports')(sequelize, Sq);
-const analysisReportsUsers = require('./analysis_report_user')(sequelize, Sq);
+const reportUsers = require('./reportUser')(sequelize, Sq);
 
 project.belongsToMany(analysisReports, {
   as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
@@ -56,24 +56,24 @@ analysisReports.belongsToMany(project, {
   as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'reportId', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
-analysisReports.hasMany(analysisReportsUsers, {
+analysisReports.hasMany(reportUsers, {
   as: 'users', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(analysisReportsUsers, {
+analysisReports.hasMany(reportUsers, {
   as: 'ReportUserFilter', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReportsUsers.belongsTo(analysisReports, {
+reportUsers.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReportsUsers.belongsTo(user, {
+reportUsers.belongsTo(user, {
   as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL', constraints: true,
 });
-analysisReportsUsers.belongsTo(user, {
+reportUsers.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
 });
 
 user.belongsToMany(analysisReports, {
-  as: 'reports', through: {model: analysisReportsUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 
 const userGroup = require('./user/userGroup.js')(sequelize, Sq);

@@ -1,4 +1,4 @@
-const {models: {analysis_report, analysis_reports_user}} = require('../../../models');
+const {models: {analysis_report, reportUser}} = require('../../../models');
 
 module.exports = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -47,7 +47,7 @@ module.exports = {
     },
     role: {
       type: 'string',
-      enum: analysis_reports_user.rawAttributes.role.values,
+      enum: reportUser.rawAttributes.role.values,
     },
     searchText: {
       type: 'string',

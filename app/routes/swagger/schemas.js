@@ -76,7 +76,7 @@ const getExcludes = (model) => {
     case 'signatures':
       publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'reviewerId', 'authorId'];
       break;
-    case 'analysis_reports_user':
+    case 'reportUser':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['addedBy']);
       break;
     default:
@@ -175,7 +175,7 @@ Object.assign(schemas.pathwayAnalysisCreate.properties, PATHWAY_IMAGE);
 
 // report-user binding create
 // add user ident to properties
-Object.assign(schemas.analysis_reports_userCreate.properties, {
+Object.assign(schemas.reportUserCreate.properties, {
   user: {
     type: 'string',
     format: 'uuid',

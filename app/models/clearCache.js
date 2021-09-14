@@ -3,7 +3,7 @@ const {batchDeleteKeysByPattern, flushAll, removeKeys} = require('../libs/cacheF
 const FLUSH_ALL_MODELS = ['user', 'project', 'template'];
 
 const CLEAR_REPORT_CACHE_MODELS = [
-  'analysis_report', 'patientInformation', 'analysis_reports_user',
+  'analysis_report', 'patientInformation', 'reportUser',
 ];
 
 const CLEAR_GERMLINE_CACHE_MODELS = [

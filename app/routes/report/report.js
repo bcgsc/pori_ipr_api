@@ -215,7 +215,7 @@ router.route('/')
           required: true,
         },
         {
-          model: db.models.analysis_reports_user,
+          model: db.models.reportUser,
           as: 'users',
           attributes: ['ident', 'role', 'createdAt', 'updatedAt'],
           include: [
@@ -232,7 +232,7 @@ router.route('/')
           through: {attributes: []},
         },
         ...((role) ? [{
-          model: db.models.analysis_reports_user,
+          model: db.models.reportUser,
           as: 'ReportUserFilter',
           where: {
             user_id: req.user.id,
