@@ -90,7 +90,7 @@ router.route('/')
           {
             as: 'users',
             model: db.models.user,
-            attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project', 'updatedBy']},
+            attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']},
             through: {attributes: []},
           },
         ],

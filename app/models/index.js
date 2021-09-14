@@ -35,7 +35,7 @@ userMetadata.belongsTo(user, {
 
 // Projects
 const project = require('./project/project')(sequelize, Sq);
-const userProject = require('./project/user_project')(sequelize, Sq);
+const userProject = require('./project/userProject')(sequelize, Sq);
 const reportProject = require('./project/reportProject')(sequelize, Sq);
 
 project.belongsToMany(user, {
