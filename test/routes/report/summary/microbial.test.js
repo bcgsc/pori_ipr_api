@@ -65,7 +65,7 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
     });
 
     // Create initial microbial data
-    microbial = await db.models.summary_microbial.create({...MICROBIAL_DATA, reportId: report.id});
+    microbial = await db.models.microbial.create({...MICROBIAL_DATA, reportId: report.id});
   });
 
   describe('GET', () => {
@@ -110,7 +110,7 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
       expect(res.body).toEqual(expect.objectContaining(MICROBIAL_DATA));
 
       // Check that record was created in the db
-      let result = await db.models.summary_microbial.findOne({where: {ident: res.body.ident}});
+      let result = await db.models.microbial.findOne({where: {ident: res.body.ident}});
       expect(result).not.toBeNull();
 
       // Get public view of direct db query for testing
@@ -125,11 +125,11 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
     let microbialUpdate;
 
     beforeEach(async () => {
-      microbialUpdate = await db.models.summary_microbial.create({...MICROBIAL_CREATE_DATA, reportId: report.id});
+      microbialUpdate = await db.models.microbial.create({...MICROBIAL_CREATE_DATA, reportId: report.id});
     });
 
     afterEach(async () => {
-      await db.models.summary_microbial.destroy({where: {ident: microbialUpdate.ident}, force: true});
+      await db.models.microbial.destroy({where: {ident: microbialUpdate.ident}, force: true});
     });
 
     test('/{microbial} - 200 Success', async () => {
@@ -155,7 +155,7 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
 
     test('/{microbial} - 404 Not Found No microbial data to update', async () => {
       // First soft-delete record
-      await db.models.summary_microbial.destroy({where: {ident: microbialUpdate.ident}});
+      await db.models.microbial.destroy({where: {ident: microbialUpdate.ident}});
 
       await request
         .put(`/api/reports/${report.ident}/summary/microbial/${microbialUpdate.ident}`)
@@ -170,11 +170,11 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
     let microbialDelete;
 
     beforeEach(async () => {
-      microbialDelete = await db.models.summary_microbial.create({...MICROBIAL_CREATE_DATA, reportId: report.id});
+      microbialDelete = await db.models.microbial.create({...MICROBIAL_CREATE_DATA, reportId: report.id});
     });
 
     afterEach(async () => {
-      await db.models.summary_microbial.destroy({where: {ident: microbialDelete.ident}, force: true});
+      await db.models.microbial.destroy({where: {ident: microbialDelete.ident}, force: true});
     });
 
     test('/{microbial} - 204 No content', async () => {
@@ -185,14 +185,14 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify that the record was deleted
-      const result = await db.models.summary_microbial.findOne({where: {id: microbialDelete.id}});
+      const result = await db.models.microbial.findOne({where: {id: microbialDelete.id}});
 
       expect(result).toBeNull();
     });
 
     test('/{microbial} - 404 Not Found No microbial data to delete', async () => {
       // First soft-delete record
-      await db.models.summary_microbial.destroy({where: {ident: microbialDelete.ident}});
+      await db.models.microbial.destroy({where: {ident: microbialDelete.ident}});
 
       await request
         .delete(`/api/reports/${report.ident}/summary/microbial/${microbialDelete.ident}`)

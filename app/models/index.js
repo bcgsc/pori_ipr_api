@@ -146,7 +146,7 @@ analysisReports.hasMany(summary.therapeuticTargets, {
   as: 'therapeuticTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasOne(summary.microbial, {
-  as: 'summary_microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 summary.variantCounts.belongsTo(analysisReports, {

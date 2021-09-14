@@ -118,7 +118,7 @@ module.exports = async (instance, method) => {
 
   // Report summary sections
   switch (modelName) {
-    case 'summary_microbial':
+    case 'microbial':
       return removeKeys(`/reports/${report.ident}/summary/microbial`);
     case 'genomicAlterationsIdentified':
       return removeKeys(`/reports/${report.ident}/summary/genomic-alterations-identified`);
