@@ -389,13 +389,13 @@ analysisReports.hasMany(presentation.slides, {
 });
 
 // Probe Report
-const probeTestInformation = require('./reports/probe/test_information')(sequelize, Sq);
+const probeTestInformation = require('./reports/probeTestInformation')(sequelize, Sq);
 
 probeTestInformation.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(probeTestInformation, {
-  as: 'probe_test_information', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'probeTestInformation', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 const reportSignatures = require('./reports/signatures')(sequelize, Sq);

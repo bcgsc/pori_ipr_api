@@ -310,7 +310,7 @@
             "tpm": 12.3
         }
     ],
-    "probe_test_information": [
+    "probeTestInformation": [
         {
             "kbVersion": "v2.8.3",
             "snpProbe": "2.8.3.0",

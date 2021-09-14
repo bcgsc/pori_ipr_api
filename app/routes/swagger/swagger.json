@@ -4687,7 +4687,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/probe_test_informationAssociations"
+                  "$ref": "#/components/schemas/probeTestInformationAssociations"
                 }
               }
             }
