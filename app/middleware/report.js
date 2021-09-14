@@ -40,14 +40,14 @@ module.exports = async (req, res, next, ident) => {
 
   if (result) {
     // Build Sequelize model from cached string without calling db
-    result = db.models.analysis_report.build(JSON.parse(result), {
+    result = db.models.report.build(JSON.parse(result), {
       raw: true,
       isNewRecord: false,
       include,
     });
   } else {
     try {
-      result = await db.models.analysis_report.findOne({
+      result = await db.models.report.findOne({
         where: {ident},
         attributes: {exclude: ['config']},
         include,
