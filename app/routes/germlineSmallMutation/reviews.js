@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const logger = require('../../log');
 const db = require('../../models');
+const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -23,7 +24,10 @@ const createSchema = schemaGenerator(db.models.germlineSmallMutationReview, {
   baseUri: GERMLINE_CREATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'reviewerId'],
 });
 const updateSchema = schemaGenerator(db.models.germlineSmallMutationReview, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, exclude: [...GERMLINE_EXCLUDE, 'reviewerId'], properties: reviewerProperties, nothingRequired: true,
+  baseUri: GERMLINE_UPDATE_BASE_URI,
+  exclude: [...GERMLINE_EXCLUDE, 'reviewerId'],
+  properties: reviewerProperties,
+  nothingRequired: true,
 });
 
 
@@ -39,12 +43,16 @@ router.param('review', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Error while trying to get germline report reviews ${error}`);
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to get germline report reviews'}});
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      error: {message: 'Error while trying to get germline report reviews'},
+    });
   }
 
   if (!result) {
     logger.error('Unable to find germline report reviews');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find germline report reviews'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: 'Unable to find germline report reviews'},
+    });
   }
 
   req.review = result;
@@ -79,7 +87,9 @@ router.route('/:review')
       return res.json(req.review.view('public'));
     } catch (error) {
       logger.error(`Unable to update germline review ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update germline review'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update germline review'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -89,7 +99,9 @@ router.route('/:review')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`There was an error while trying to remove the requested germline review ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline review'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to remove the requested germline review'},
+      });
     }
   });
 
@@ -97,14 +109,34 @@ router.route('/:review')
 // Handles requests for all germline reviews for a report
 router.route('/')
   .get(async (req, res) => {
+    const key = `/germline/${req.report.ident}/reviews`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for germline reviews ${error}`);
+    }
+
     try {
       const results = await db.models.germlineSmallMutationReview.scope('public').findAll({
         where: {germlineReportId: req.report.id},
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve germline reviews ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve germline reviews'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve germline reviews'},
+      });
     }
   })
   .post(async (req, res) => {
@@ -120,16 +152,20 @@ router.route('/')
     let review;
     try {
       // Make sure review doesn't already exist
-      review = await db.models.germlineSmallMutationReview.scope('public').findOne({where: {germlineReportId: req.report.id, type: req.body.type}});
+      review = await db.models.germlineSmallMutationReview.scope('public').findOne({
+        where: {germlineReportId: req.report.id, type: req.body.type},
+      });
     } catch (error) {
       logger.error(`There was an error while trying to find germline review ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'There was an error while trying to find germline review'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'There was an error while trying to find germline review'},
+      });
     }
 
     if (review) {
       const message = `Report has already been reviewed by ${review.reviewer.firstName} ${review.reviewer.lastName} for ${req.body.type}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({message});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     try {
@@ -141,12 +177,16 @@ router.route('/')
       });
 
       // Load new review with associations
-      const result = await db.models.germlineSmallMutationReview.scope('public').findOne({where: {id: newReview.id}});
+      const result = await db.models.germlineSmallMutationReview.scope('public').findOne({
+        where: {id: newReview.id},
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Unable to create new germline review ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new germline review'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create new germline review'},
+      });
     }
   });
 
