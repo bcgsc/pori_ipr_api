@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -119,13 +120,30 @@ router.route('/:target([A-z0-9-]{36})')
 
 router.route('/')
   .get(async (req, res) => {
-    // Get all targeted genes for this report
+    const key = `/reports/${req.report.ident}/probe-results`;
+
     try {
-      const result = await db.models.probeResults.scope('public').findAll({
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for probe results ${error}`);
+    }
+
+    try {
+      const results = await db.models.probeResults.scope('public').findAll({
         where: {reportId: req.report.id},
         order: [['geneId', 'ASC']],
       });
-      return res.json(result);
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
+      return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve resource ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
