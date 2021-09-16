@@ -145,11 +145,13 @@ module.exports = async (instance, method) => {
         `/reports/${report.ident}/small-mutations`,
       ]);
     case 'genes':
-      return removeKeys([
-        `/reports/${report.ident}/genes`,
-        `/reports/${report.ident}/copy-variants`,
-        `/reports/${report.ident}/expression-variants`,
-        `/reports/${report.ident}/small-mutations`,
+      return Promise.all([
+        batchDeleteKeysByPattern(`/reports/${report.ident}/genes*`),
+        removeKeys([
+          `/reports/${report.ident}/copy-variants`,
+          `/reports/${report.ident}/expression-variants`,
+          `/reports/${report.ident}/small-mutations`,
+        ]),
       ]);
     case 'hlaTypes':
       return removeKeys(`/reports/${report.ident}/hla-types`);

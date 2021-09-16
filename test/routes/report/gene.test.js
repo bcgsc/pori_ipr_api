@@ -112,6 +112,32 @@ describe('/reports/{report}/genes', () => {
       checkGenes(res.body);
     });
 
+    test('/ - 200 Success - Search Text With Results', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/genes?search=test`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+      checkGenes(res.body);
+      expect(res.body).toEqual(expect.arrayContaining([
+        expect.objectContaining({name: expect.stringContaining('TEST')}),
+      ]));
+    });
+
+    test('/ - 200 Success - Search Text With No Results', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/genes?search=not_gene`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(0);
+    });
+
     test('/{geneName} - 200 Success', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}/genes/${getGene.name}`)
@@ -179,6 +205,17 @@ describe('/reports/{report}/genes', () => {
         .send({
           ...GENE_UPDATE_DATA,
           cancerRelated: 'NOT_A_BOOLEAN',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/{geneName} - 400 Bad Request - Name too short', async () => {
+      await request
+        .put(`/api/reports/${report.ident}/genes/${putGene.name}`)
+        .send({
+          name: 'A',
         })
         .auth(username, password)
         .type('json')
