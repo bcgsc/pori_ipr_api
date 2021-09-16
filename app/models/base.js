@@ -5,7 +5,7 @@ const clearCache = require('./clearCache');
 const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
 
 const SIGNATURE_REMOVAL_EXCLUDE = {
-  analysis_report: ['state', 'presentationDate', 'updatedAt'],
+  report: ['state', 'presentationDate', 'updatedAt'],
 };
 
 
@@ -165,7 +165,7 @@ const DEFAULT_REPORT_OPTIONS = {
             reviewerSignedAt: null,
           }, {
             where: {
-              reportId: (modelName === 'analysis_report') ? instance.id : instance.reportId,
+              reportId: (modelName === 'report') ? instance.id : instance.reportId,
             },
             individualHooks: true,
             paranoid: true,

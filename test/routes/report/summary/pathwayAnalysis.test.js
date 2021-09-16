@@ -37,7 +37,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and Mutation Summary
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'TESTPATIENT1234',
     });
@@ -226,7 +226,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 
   // Delete report
   afterAll(async () => {
-    await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}, force: true});
   });
 });
 

@@ -32,7 +32,7 @@ router.route('/')
 
     let binding;
     try {
-      binding = await db.models.user_project.findOne({
+      binding = await db.models.userProject.findOne({
         where: {user_id: user.id, project_id: req.project.id},
       });
     } catch (error) {
@@ -50,7 +50,7 @@ router.route('/')
     }
 
     try {
-      const result = await db.models.user_project.create({
+      const result = await db.models.userProject.create({
         project_id: req.project.id, user_id: user.id,
       });
 
@@ -92,7 +92,7 @@ router.route('/')
 
     try {
       // Find user binding
-      const binding = await db.models.user_project.findOne({
+      const binding = await db.models.userProject.findOne({
         where: {project_id: req.project.id, user_id: user.id},
       });
 

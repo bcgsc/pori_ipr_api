@@ -50,7 +50,7 @@ describe('Tests for uploading a report and all of its components', () => {
       .expect(HTTP_STATUS.OK);
 
     // get report id from doing a db find because it's not returned by the API
-    const result = await db.models.analysis_report.findOne({where: {ident: reportIdent}, attributes: ['id']});
+    const result = await db.models.report.findOne({where: {ident: reportIdent}, attributes: ['id']});
     reportId = result.id;
   }, LONGER_TIMEOUT);
 
@@ -62,7 +62,7 @@ describe('Tests for uploading a report and all of its components', () => {
       ReportUserFilter, createdBy, template, signatures,
       presentationDiscussion, presentationSlides,
       users, projects, ...associations
-    } = db.models.analysis_report.associations;
+    } = db.models.report.associations;
 
     const promises = [];
     // verify all report components were created
@@ -93,7 +93,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
   test('Template was linked correctly', async () => {
     // Get Report and test that the template data in the report is correct
-    const report = await db.models.analysis_report.findOne({where: {id: reportId}, attributes: ['templateId']});
+    const report = await db.models.report.findOne({where: {id: reportId}, attributes: ['templateId']});
     const template = await db.models.template.findOne({where: {name: 'genomic'}, attributes: ['id']});
 
     expect(template.id).toBe(report.templateId);
@@ -102,7 +102,7 @@ describe('Tests for uploading a report and all of its components', () => {
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // by force deleting the report
-    return db.models.analysis_report.destroy({where: {id: reportId}, force: true});
+    return db.models.report.destroy({where: {id: reportId}, force: true});
   });
 });
 

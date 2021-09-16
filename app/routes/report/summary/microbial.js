@@ -11,10 +11,10 @@ const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
 const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../constants');
 
 // Generate schema's
-const createSchema = schemaGenerator(db.models.summary_microbial, {
+const createSchema = schemaGenerator(db.models.microbial, {
   baseUri: REPORT_CREATE_BASE_URI,
 });
-const updateSchema = schemaGenerator(db.models.summary_microbial, {
+const updateSchema = schemaGenerator(db.models.microbial, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
 
@@ -22,7 +22,7 @@ const updateSchema = schemaGenerator(db.models.summary_microbial, {
 router.param('microbial', async (req, res, next, micIdent) => {
   let result;
   try {
-    result = await db.models.summary_microbial.findOne({
+    result = await db.models.microbial.findOne({
       where: {ident: micIdent, reportId: req.report.id},
     });
   } catch (error) {
@@ -92,7 +92,7 @@ router.route('/')
     }
 
     try {
-      const results = await db.models.summary_microbial.scope('public').findAll({
+      const results = await db.models.microbial.scope('public').findAll({
         where: {reportId: req.report.id},
       });
 
@@ -120,7 +120,7 @@ router.route('/')
     try {
       req.body.reportId = req.report.id;
 
-      const result = await db.models.summary_microbial.create(req.body);
+      const result = await db.models.microbial.create(req.body);
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create microbial data entry ${error}`);

@@ -1,7 +1,7 @@
 const express = require('express');
 
 // Get middleware files
-const reportMiddleware = require('../middleware/analysis_report');
+const reportMiddleware = require('../middleware/report');
 const germlineMiddleware = require('../middleware/germlineSmallMutation/reports');
 const authMiddleware = require('../middleware/auth');
 const aclMiddleware = require('../middleware/acl');

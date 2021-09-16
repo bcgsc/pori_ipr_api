@@ -12,7 +12,7 @@ const {REPORT_CREATE_BASE_URI} = require('../../constants');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate create schema
-const createSchema = schemaGenerator(db.models.analysis_reports_user, {
+const createSchema = schemaGenerator(db.models.reportUser, {
   baseUri: REPORT_CREATE_BASE_URI,
   exclude: [...REPORT_EXCLUDE, 'user_id', 'addedBy_id'],
   properties: {user: {type: 'string', format: 'uuid'}},
@@ -24,7 +24,7 @@ const createSchema = schemaGenerator(db.models.analysis_reports_user, {
 router.param('reportUser', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.analysis_reports_user.findOne({
+    result = await db.models.reportUser.findOne({
       where: {ident, reportId: req.report.id},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
@@ -104,7 +104,7 @@ router.route('/')
     // Check if binding exists
     let binding;
     try {
-      binding = await db.models.analysis_reports_user.findOne({
+      binding = await db.models.reportUser.findOne({
         where: {reportId: req.report.id, user_id: bindUser.id, role},
       });
     } catch (error) {
@@ -123,7 +123,7 @@ router.route('/')
 
     // Create binding
     try {
-      await db.models.analysis_reports_user.create({
+      await db.models.reportUser.create({
         user_id: bindUser.id,
         reportId: req.report.id,
         role,

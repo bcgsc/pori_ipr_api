@@ -1,7 +1,7 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
-  const probeTestInformation = sequelize.define('probe_test_information', {
+  const probeTestInformation = sequelize.define('probeTestInformation', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',

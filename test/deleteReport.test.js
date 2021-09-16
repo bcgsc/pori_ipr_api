@@ -31,11 +31,11 @@ describe('Tests for deleting a report and all of its components', () => {
   // get analysis report associations
   const {
     ReportUserFilter, createdBy, template, projects, users, ...associations
-  } = db.models.analysis_report.associations;
+  } = db.models.report.associations;
 
   beforeAll(async () => {
     // find a report (any report not deleted)
-    report = await db.models.analysis_report.findOne({
+    report = await db.models.report.findOne({
       attributes: ['ident', 'id'],
       where: {deletedAt: null},
     });
@@ -96,7 +96,7 @@ describe('Tests for deleting a report and all of its components', () => {
   // Restore report and all of its deleted components
   afterAll(async () => {
     // restore report
-    await db.models.analysis_report.restore({where: {id: report.id}});
+    await db.models.report.restore({where: {id: report.id}});
 
     // verify report was restored
     await request

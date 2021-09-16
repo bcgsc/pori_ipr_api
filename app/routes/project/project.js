@@ -83,14 +83,14 @@ router.route('/')
         include: [
           {
             as: 'reports',
-            model: db.models.analysis_report,
+            model: db.models.report,
             attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'],
             through: {attributes: []},
           },
           {
             as: 'users',
             model: db.models.user,
-            attributes: {exclude: ['id', 'deletedAt', 'password', 'user_project', 'updatedBy']},
+            attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']},
             through: {attributes: []},
           },
         ],

@@ -54,7 +54,7 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
   beforeEach(async () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
     });
@@ -159,7 +159,7 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
 
   // delete report
   afterEach(async () => {
-    await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 

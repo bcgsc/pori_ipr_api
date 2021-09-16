@@ -75,7 +75,7 @@ router.get('/batch/download', async (req, res) => {
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
         {
-          model: db.models.analysis_report,
+          model: db.models.report,
           as: 'report',
           where: {
             patientId: {
