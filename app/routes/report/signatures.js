@@ -1,6 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const moment = require('moment');
 
 const db = require('../../models');
 const logger = require('../../log');
@@ -70,7 +69,7 @@ router.route('/sign/:role(author|reviewer)')
     // add author or reviewer
     const data = {};
     data[`${role}Id`] = req.user.id;
-    data[`${role}SignedAt`] = moment().toISOString();
+    data[`${role}SignedAt`] = new Date().toISOString();
 
     // check if report has signatures
     if (!req.signatures) {
