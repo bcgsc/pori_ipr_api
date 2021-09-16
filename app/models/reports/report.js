@@ -2,7 +2,7 @@ const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 const clearCache = require('../clearCache');
 
 module.exports = (sequelize, Sq) => {
-  const report = sequelize.define('analysis_report', {
+  const report = sequelize.define('report', {
     ...DEFAULT_COLUMNS,
     patientId: {
       name: 'patientId',
@@ -153,13 +153,13 @@ module.exports = (sequelize, Sq) => {
           // when hard deleting a report, also delete the "updated" versions of the report
           return Promise.all([
             clearCache(instance, 'DELETE'),
-            sequelize.models.analysis_report.destroy({where: {ident: instance.ident}, force: true}),
+            sequelize.models.report.destroy({where: {ident: instance.ident}, force: true}),
           ]);
         }
         // get associations from model
         const {
           ReportUserFilter, createdBy, template, projects, users, ...associations
-        } = sequelize.models.analysis_report.associations;
+        } = sequelize.models.report.associations;
 
         const promises = [
           clearCache(instance, 'DELETE'),

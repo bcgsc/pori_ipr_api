@@ -48,7 +48,7 @@ describe('/small-mutations', () => {
     // *Note: There shouldn't be an issue with finding
     // a deleted report because even on soft-delete
     // the variant should be soft-deleted too*
-    report = await db.models.analysis_report.findOne({
+    report = await db.models.report.findOne({
       attributes: ['ident', 'id'],
       where: {id: variant.reportId, deletedAt: null},
     });

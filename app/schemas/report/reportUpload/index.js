@@ -42,7 +42,7 @@ const generateReportUploadSchema = (isJsonSchema) => {
   };
 
 
-  const schema = schemaGenerator(db.models.analysis_report, {
+  const schema = schemaGenerator(db.models.report, {
     isJsonSchema,
     baseUri: UPLOAD_BASE_URI,
     exclude: ['createdBy_id', 'templateId', ...BASE_EXCLUDE],
@@ -57,7 +57,7 @@ const generateReportUploadSchema = (isJsonSchema) => {
   const {
     ReportUserFilter, createdBy, template, signatures, presentationDiscussion,
     presentationSlides, users, projects, ...associations
-  } = db.models.analysis_report.associations;
+  } = db.models.report.associations;
 
   schema.definitions = {...variantSchemas(isJsonSchema), kbMatches: kbMatchesSchema(isJsonSchema)};
 
