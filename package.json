@@ -34,8 +34,6 @@
     "path-to-regexp": "^6.2.0",
     "pg": "^8.5.1",
     "pg-native": "^3.0.0",
-    "request": "^2.88.2",
-    "request-promise-native": "~1.0.5",
     "sanitize-html": "^2.4.0",
     "sequelize": "^6.5.0",
     "sequelize-cli": "^5.5.0",
