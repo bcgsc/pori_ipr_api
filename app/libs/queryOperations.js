@@ -9,6 +9,7 @@ const db = require('../models');
  * @returns {Array<string|object>} - An array containing the field and the direction to sort
  */
 const _getSortProperty = (field, direction) => {
+  direction = direction.toLowerCase();
   return {
     patientId: ['patientId', direction],
     biopsyName: ['biopsyName', direction],

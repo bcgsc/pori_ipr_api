@@ -1,7 +1,7 @@
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../../../base');
 
 module.exports = (sequelize, Sq) => {
-  const microbial = sequelize.define('summary_microbial', {
+  const microbial = sequelize.define('microbial', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -24,7 +24,7 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'reportId', 'deletedAt'],
+          exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
         },
       },
     },
@@ -33,7 +33,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   microbial.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

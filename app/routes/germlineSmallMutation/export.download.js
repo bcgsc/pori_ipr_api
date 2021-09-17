@@ -1,12 +1,12 @@
 const HTTP_STATUS = require('http-status-codes');
 const Excel = require('exceljs');
-const moment = require('moment');
 const {Op} = require('sequelize');
 const express = require('express');
 
 const db = require('../../models');
 const Variants = require('./util/variants');
 const logger = require('../../log');
+const {includesAll} = require('../../libs/helperFunctions');
 
 const router = express.Router({mergeParams: true});
 
@@ -75,7 +75,7 @@ router.get('/batch/download', async (req, res) => {
       order: [['updatedAt', 'DESC']], // Gets us the most recent report worked on.
       include: [
         {
-          model: db.models.analysis_report,
+          model: db.models.report,
           as: 'report',
           where: {
             patientId: {
@@ -105,9 +105,7 @@ router.get('/batch/download', async (req, res) => {
       return review.type;
     });
 
-    if (requiredReviews.every((state) => {
-      return reportReviews.includes(state);
-    })) {
+    if (includesAll(reportReviews, requiredReviews)) {
       // contains all the required reviews
       const summaryMatch = matchedMutationSignatures.filter((signature) => {
         return signature.report.patientId === report.patientId;
@@ -132,8 +130,10 @@ router.get('/batch/download', async (req, res) => {
 
   // Prepare export
   const workbook = new Excel.Workbook();
+  // Get current date in format: YYYY-MM-DD
+  const date = new Date().toISOString().replace(/T(.*)/, '');
 
-  workbook.subject = `Germline Small Mutation Reports Batch Export - ${moment().format('YYYY-MM-DD')}`;
+  workbook.subject = `Germline Small Mutation Reports Batch Export - ${date}`;
   workbook.creator = `Integrated Pipeline Reports - C/O ${req.user.firstName} ${req.user.lastName}`;
   workbook.company = 'BC Cancer Agency - Michael Smith Genome Sciences Center';
   workbook.comment = 'For research purposes only';
@@ -148,7 +148,7 @@ router.get('/batch/download', async (req, res) => {
   });
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYY-MM-DD')}.ipr.germline.export.xlsx`);
+  res.setHeader('Content-Disposition', `attachment; filename=${date}.ipr.germline.export.xlsx`);
   res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
 
   try {
@@ -165,9 +165,7 @@ router.get('/batch/download', async (req, res) => {
         return review.type;
       });
 
-      if (requiredReviews.every((state) => {
-        return reportReviews.includes(state);
-      })) {
+      if (includesAll(reportReviews, requiredReviews)) {
         report.exported = true;
         return report.save({fields: ['exported'], hooks: false});
       }

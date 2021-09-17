@@ -59,7 +59,7 @@ app.js --database.hostname someTestServerName
 
 ## Running Tests with Jest
 
-Unit and Integration tests are run and written using Jest + Supertest with code coverage reports generated using Clover. Tests are configured to run using a local environment variable - this currently cannot be overridden.
+Unit and Integration tests are run and written using Jest + Supertest with code coverage reports generated using Clover. Tests are configured to run using the `test` environment variable - this currently cannot be overridden.
 
 To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run
 
@@ -108,7 +108,7 @@ That creates the dump file. Then create the new temp database. Add temp or the t
 obvious later that it can be deleted
 
 ```bash
-createdb -U ipr_service -T templateipr -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
+createdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
 This then needs to be restored as a new database.
@@ -116,7 +116,7 @@ This then needs to be restored as a new database.
 **WARNING: DO NOT RESTORE TO THE PRODUCTION DB SERVER**
 
 ```bash
-pg_restore -Fc -U ipr_service -T templateipr -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
+pg_restore -Fc -U ipr_service -h iprdevdb.bcgsc.ca ipr-sync-dev.dump -d DEVSU-777-temp-ipr-sync-dev
 ```
 
 Finally connect to the newly created database
@@ -131,59 +131,44 @@ Once you are done with testing, delete the temporary database
 dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
-## Migrations in Pull Requests
+## Database Insert Not Through API
 
-1. Create temp db for ticket (see the `Testing Migration Changes` section)
-2. Point `DEFAULT_DB_NAME` varaible to your new temp db in `app/config.js`
-3. Test migration and code changes on temp db
-4. Once the code works, create a PR and wait for it to be approved
-5. Update the migration date to be the latest migration by running `migrationTools/moveMigration.sh`
-6. Run migration on `ipr-sync-dev` (helpful to mention you're running a migration on dev in IPR chat)
-7. Point `DEFAULT_DB_NAME` variable back to the dev db
-8. Wait for PR approval
-9. Merge code changes into development branch
-10. Delete the temp db you created
+When adding/inserting entries directly into a database table without using the API, be sure to update the primary key (id)
+sequence by running this SQL command after the insert:
+
+`SELECT setval('table_name_id_seq', (SELECT MAX(id) FROM "table_name"));`
+
+Otherwise, you will get a unique constraint error when inserting via the API because Sequelize will try use an id
+that is now taken.
 
 ## Process Manager
 
-The production installation of IPR is run & managed by a [pm2](http://pm2.keymetrics.io/) instance on `iprweb03.bcgsc.ca`. The test API is run off of iprweb01 and the development API is run off of iprdev01.
+The production installation of IPR is run & managed by [pm2](http://pm2.keymetrics.io/)
 
-As of this writing, pm2 is instantiated by bpierce, and as a result, the processes it manages execute as bpierce.
-
-To interact with pm2, ssh to iprweb03 and cd to `/var/www/ipr/api/[production]`. From here, running pm2 will list the running instances:
+To interact with pm2, ssh to the server and cd to `/var/www/ipr/api/[production]`. From here, run pm2 commands to get information about the application.
 
 ```text
-bpierce@iprweb01:/var/www/ipr/api/production$ pm2 list
+<user>@<server>:/var/www/ipr/api/production$ pm2 list
 ┌────────────────────┬─────┬──────┬───────┬────────┬─────────┬────────┬─────┬───────────┬──────────┐
 │ App name           │ id  │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ watching │
 ├────────────────────┼─────┼──────┼───────┼────────┼─────────┼────────┼─────┼───────────┼──────────┤
 │ IPR-API            │ 101 │ fork │ 23409 │ online │ 0       │ 23h    │ 0%  │ 92.7 MB   │ disabled │
 └────────────────────┴─────┴──────┴───────┴────────┴─────────┴────────┴─────┴───────────┴──────────┘
- Module activated
-┌───────────────┬─────────┬────────────┬────────┬─────────┬─────┬─────────────┐
-│ Module        │ version │ target PID │ status │ restart │ cpu │ memory      │
-├───────────────┼─────────┼────────────┼────────┼─────────┼─────┼─────────────┤
-│ pm2-logrotate │ 2.2.0   │ N/A        │ online │ 5       │ 0%  │ 91.727 MB   │
-└───────────────┴─────────┴────────────┴────────┴─────────┴─────┴─────────────┘
  Use `pm2 show <id|name>` to get more details about an app
 ```
-
-`IPR-API` is the main, production application server running on port 8001 on iprweb03.
-`IPR-API-dev` is the development API server running on port 8081 on iprdev01.
-`IPR-API-test` is the test API server running on port 8081 on iprweb01.
 
 It is possible to use pm2 to actively monitor the console of the applications by using `pm2 monit`.
 
 Note: The pm2 daemon will sometimes launch a new instance of pm2 when running pm2 commands as opposed to accessing the currently running version of pm2. You can tell if there are multiple instances running by executing the command `ps aux | grep pm2`
 
 ```text
-[nmartin@iprweb03 ~]$ ps aux | grep pm2
-bpierce  13787  0.1  1.2 952276 50004 ?        Ssl  Jul20   9:28 PM2 v3.0.0: God Daemon (/home/bpierce/.pm2)
-bpierce  13800  0.1  1.5 1224456 61028 ?       Ssl  Jul20   9:49 node /home/bpierce/.pm2/node_modules/pm2-logrotate/app.js
-nmartin  18162  0.0  0.0 103312   856 pts/0    S+   10:55   0:00 grep pm2
+[<user>@<server> ~]$ ps aux | grep pm2
+user  13787  0.1  1.2 952276 50004 ?        Ssl  Jul20   9:28 PM2 v3.0.0: God Daemon (/home/user/.pm2)
+user  13800  0.1  1.5 1224456 61028 ?       Ssl  Jul20   9:49 node /home/user/.pm2/node_modules/pm2-logrotate/app.js
+user  18162  0.0  0.0 103312   856 pts/0    S+   10:55   0:00 grep pm2
 ```
 
-At any given time, there should only be three processes listed in this command: one for the daemon, one for the node pm2 instance, and one for the grep command. If there are additional instances running (usually in a pair of a daemon process and node process) you should execute the kill command as bpierce for any daemon instances that are not the most recent one. Note that the logs are streamed in from the most recently activated instance of pm2 - therefore, if you have multiple instances running off of the same port, the logs will only indicate that the API initialization has failed due to the port already being in use until you kill old instances and allow the newest one to connect.
+At any given time, there should only be three processes listed in this command: one for the daemon, one for the node pm2 instance, and one for the grep command. If there are additional instances running (usually in a pair of a daemon process and node process) you should execute the kill for any daemon instances that are not the most recent one. Note that the logs are streamed in from the most recently activated instance of pm2 - therefore, if you have multiple instances running off of the same port, the logs will only indicate that the API initialization has failed due to the port already being in use until you kill old instances and allow the newest one to connect.
 
 It is also important to note that the issue mentioned above will sometimes cause the production API deployment to fail. Before deploying a new production build of the API, you should instantiate a new pm2 instance by running the following on the production API server and then killing any old pm2 instances:
 
@@ -195,31 +180,23 @@ pm2 start current/pm2.config.js --env production
 
 ```text
 ┌─ Process list ──────────────────────┐┌─ Global Logs ───────────────────────────────────────────────────────────────────────────┐
-│[101] IPR-API        Mem:  88 MB     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Retrieved     │
-│                                     ││ assembly results                                                                        │
-│[ 0] pm2-logrotate     Mem:  91 MB   ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Checked in    │
-│                                     ││ assembly for 0 tasks.                                                                   │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Querying DB   │
-│                                     ││ for all tracking tasks with symlinks pending                                            │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Tasks         │
-│                                     ││ requiring symlink lookup 17                                                             │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Starting      │
-│                                     ││ query for retrieving library lane targets for 51 libraries                              │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Target        │
-│                                     ││ lanes determined for each library. Querying for aligned libcores                        │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Checked in    │
-│                                     ││ symlinks for 0 tasks.                                                                   │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Finished      │
-│                                     ││ processing BioApps syncing.                                                             │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Found 7       │
-│                                     ││ results from LIMS sample endpoint.                                                      │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Starting to   │
-│                                     ││ process sample results.                                                                 │
-│                                     ││ IPR-API-syncWorker > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Resulting     │
-│                                     ││ in 7 disease libraries that have pathology information and need additional library      │
+│[101] IPR-API        Mem:  88 MB     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Retrieved assembly       │
+│                                     ││ results                                                                                 │
+│                                     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Querying DB for all      │
+│                                     ││ tracking tasks with symlinks pending                                                    │
+│                                     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Tasks requiring symlink  │
+│                                     ││ lookup 17                                                                               │
+│                                     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Starting query for       │
+│                                     ││ retrieving library lane targets for 51 libraries                                        │
+│                                     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:20][INFO] Target lanes determined  │
+│                                     ││ for each library. Querying for aligned libcores                                         │
+│                                     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Checked in symlinks for  │
+│                                     ││ 0 tasks.                                                                                │
+│                                     ││ IPR-API > 2018-01-05 14:22 -08:00: [2018-01-05 14:22:21][INFO] Resulting in 7 disease   │
+│                                     ││ libraries that have pathology information and need additional library                   │
 │                                     ││ details to differentiate RNA vs DNA.                                                    │
 └─────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────────────────┘
-┌─ Custom metrics (http://bit.ly/code─┐┌─ Metadata ──────────────────────────────────────────────────────────────────────────────┐
+┌─ Custom metrics ────────────────────┐┌─ Metadata ──────────────────────────────────────────────────────────────────────────────┐
 │ Loop delay                  0.81ms  ││ App Name              IPR-API                                                           │
 │                                     ││ Restarts              0                                                                 │
 │                                     ││ Uptime                23h                                                               │
@@ -241,74 +218,73 @@ pm2 start current/pm2.config.js --env production
 │   ├── api                             # API Interfaces
 │   │                                   Factories for interacting with API services.
 │   │
-│   ├── libs                            # Application specific libraries
+│   ├── libs                            # Libs
+│   │                                   Application specific libraries
 │   │
 │   ├── middleware                      # Middleware
 │   │                                   Location for all globally required middleware definitions.
+│   │ 
+│   ├── schemas                         # Schemas
+│   │                                   Location for all globally required schema definitions.
 │   │
 │   ├── models                          # Models
 │   │                                   Application DB models. Sequelizejs models describe table schemas.
 │   │
-│   ├── modules                         # Modules
-│   │   │                               Isolated, independant application modules. Germline reports, biopsy/analysis.
-│   │   │                                Most logic for these modules is kept within the /module/ directory. There might be a few exceptions to this rule.
-│   │   │
-│   │   ├── module_a                      An individual model component. Each module has packing for exceptions, middleware, models, routing, and
-│   │   │   │                            unique elements
-│   │   │   │
-│   │   │   ├── exceptions              Custom exceptions for the module
-│   │   │   │
-│   │   │   ├── middleware              Middleware definitions
-│   │   │   │
-│   │   │   ├── models                  Any DB schema models
-│   │   │   │
-│   │   │   ├── routing                 Routing & controllers for the module
-│   │   │   │
-│   │   │   ├── other                   Custom/one-off directories for special functions
-│   │   │   │
-│   │   │   ├── objectA.js               OOP or library for a given object/model in the module
-│   │   │   ├── objectB.js               OOP or library for a given object/model in the module
-│   │   │   └── objectC.js               OOP or library for a given object/model in the module
-│   │   │
-│   │   │
-│   │   └── module_n
-│   │
-│   │
 │   └── routes                          # Routes
 │       ├── dir                         Subdirectories contain .js files that return Express.router implementations that handle defined routes.
-│       │                                Routes are namespaced into the Express route handler based on parent directory structure.
+│       │                               Routes are namespaced into the Express route handler based on parent directory structure.
 │       │
 │       └── index.js                    Routing index file. Loads special routing files first, then recursively loads child folder structure
 │                                       routes. Route namespaces are defined on their nested directory structure.
 │
 │
 │
-├── config                              # Other Configuration files
+├── config                              # Config
+│                                       Other configuration files
 │
 ├── database                            # Databases
-│   ├── development.sqlite              Local development DB - not to be commited to source
-│   └── tcga.json                       Local json TCGA definitions DB
-│
-├── lib                                 # Non-Application specific Libs
+│                                       Local expression and disease data
 │
 ├── package.json                        NodeJS package.json dependency and application definitions file.
 │
-├── server.js                           Main application file. Run node server.js to initialize the API server
+├── pm2.config.js                       Configuration settings for running the app using PM2
+│
+├── Dockerfile                          Instructions for creating API docker image
+│
+├── Dockerfile.db                       Instructions for creating demo db docker image
+│
+├── bin                                 # Bin
+│                                       Contains main application file. Run node server.js to initialize the API server
+│
+├── demo                                # Demo
+│                                       Contains files related to the IPR demo
+│
+├── docs                                # Docs
+│                                       Contains document related files
+│
+├── keys                                # Keys
+│                                       Keycloak dev and production keys
 │
 ├── test                                # Testing
-│    ├── exclude                        Folder exlcuded from recursively auto-loading test files.
+│    ├── dir                            Files and directories of files used for testing
 │    │
-│    ├── dir                            Directory containing namespace'd test definitions
+│    ├── graphkb.mock.js                Mock graphkb reponses used for testing
 │    │
-│    └── tests.js                       Root test file, recursive test loader.
+│    ├── keycloak.mock.js               Mock keycloak reponses used for testing
+│    │
+│    └── testData                       # Test Data
+│                                       Files (images, json files, etc.) used by the test files for testing
 │
-└── migrations                          # Migrations
-                                        Special one-use functions used to migrate data, and models to updated schemas.
+├── migrations                          # Migrations
+│                                       Contains files for updating db schemas and data
+│ 
+└── migrationTools                      # Migration Tools
+                                        Contains files with functions to help with migrations
 ```
 
 ## Docker
 
-The API image requires the DB image and the keycloak image to already been build and running. If you
+The API image requires the DB image and the keycloak image to already have been build and running. If you
 are setting up the entire platform, see the [full platform repository](https://github.com/bcgsc/pori)
 
 To build the API image

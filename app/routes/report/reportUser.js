@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
@@ -13,7 +12,7 @@ const {REPORT_CREATE_BASE_URI} = require('../../constants');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate create schema
-const createSchema = schemaGenerator(db.models.analysis_reports_user, {
+const createSchema = schemaGenerator(db.models.reportUser, {
   baseUri: REPORT_CREATE_BASE_URI,
   exclude: [...REPORT_EXCLUDE, 'user_id', 'addedBy_id'],
   properties: {user: {type: 'string', format: 'uuid'}},
@@ -25,7 +24,7 @@ const createSchema = schemaGenerator(db.models.analysis_reports_user, {
 router.param('reportUser', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.analysis_reports_user.findOne({
+    result = await db.models.reportUser.findOne({
       where: {ident, reportId: req.report.id},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
@@ -56,16 +55,6 @@ router.route('/:reportUser([A-z0-9-]{36})')
     return res.json(req.reportUser.view('public'));
   })
   .delete(async (req, res) => {
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to remove a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to remove a user binding'}},
-      );
-    }
-
     try {
       await req.reportUser.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
@@ -84,16 +73,6 @@ router.route('/')
   })
   .post(async (req, res) => {
     const {body: {user, role}} = req;
-
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to add a user binding ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to add a user binding'}},
-      );
-    }
 
     try {
       // Validate request against schema
@@ -125,7 +104,7 @@ router.route('/')
     // Check if binding exists
     let binding;
     try {
-      binding = await db.models.analysis_reports_user.findOne({
+      binding = await db.models.reportUser.findOne({
         where: {reportId: req.report.id, user_id: bindUser.id, role},
       });
     } catch (error) {
@@ -144,7 +123,7 @@ router.route('/')
 
     // Create binding
     try {
-      await db.models.analysis_reports_user.create({
+      await db.models.reportUser.create({
         user_id: bindUser.id,
         reportId: req.report.id,
         role,

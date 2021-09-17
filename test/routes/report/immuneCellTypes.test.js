@@ -58,7 +58,7 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // create a report to be used in tests
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
@@ -148,18 +148,10 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
     });
   });
 
-  // delete report
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // indirectly by hard deleting newly created patient
-    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
-
-    // verify report is deleted
-    await request
-      .get(`/api/reports/${report.ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
+    // Delete newly created report and all of it's components
+    // indirectly by hard deleting report
+    return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 

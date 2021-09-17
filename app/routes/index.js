@@ -1,9 +1,10 @@
 const express = require('express');
 
 // Get middleware files
-const reportMiddleware = require('../middleware/analysis_report');
+const reportMiddleware = require('../middleware/report');
 const germlineMiddleware = require('../middleware/germlineSmallMutation/reports');
 const authMiddleware = require('../middleware/auth');
+const aclMiddleware = require('../middleware/acl');
 
 // Get route files
 const APIVersion = require('./version');
@@ -50,16 +51,12 @@ class Routing extends RouterInterface {
     this.router.param('gsm_report', germlineMiddleware);
 
     // Add Authentication coverage
-    this.router.use(`(${
-      [
-        '/user/*',
-        '/user',
-        '/project',
-        '/reports',
-        '/germline-small-mutation-reports',
-        '/export',
-        '/templates',
-      ].join('|')})`, authMiddleware);
+    // To every route except for specification routes (/spec and /spec.json)
+    this.router.use(/^((?!^\/spec).)*$/i, authMiddleware);
+
+    // Acl middleware
+    // To every route except for specification and report routes
+    this.router.use(/^(?!^\/spec|\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);
 
     // Add Single Routes
     // Setup other routes

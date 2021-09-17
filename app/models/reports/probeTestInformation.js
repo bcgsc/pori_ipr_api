@@ -1,7 +1,7 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
-  const probeTestInformation = sequelize.define('probe_test_information', {
+  const probeTestInformation = sequelize.define('probeTestInformation', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -40,12 +40,40 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
       allowNull: false,
     },
+    germlineGenes: {
+      name: 'germlineGenes',
+      field: 'germline_genes',
+      type: Sq.INTEGER,
+      allowNull: false,
+      defaultValue: -1,
+    },
+    germlineVars: {
+      name: 'germlineVars',
+      field: 'germline_vars',
+      type: Sq.INTEGER,
+      allowNull: false,
+      defaultValue: -1,
+    },
+    pharmacogenomicGenes: {
+      name: 'pharmacogenomicGenes',
+      field: 'pharmacogenomic_genes',
+      type: Sq.INTEGER,
+      allowNull: false,
+      defaultValue: -1,
+    },
+    pharmacogenomicVars: {
+      name: 'pharmacogenomicVars',
+      field: 'pharmacogenomic_vars',
+      type: Sq.INTEGER,
+      allowNull: false,
+      defaultValue: -1,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'reports_probe_test_information',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
       },
     },
   });
@@ -53,7 +81,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   probeTestInformation.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

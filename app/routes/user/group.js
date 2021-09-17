@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 
 const groupMiddleware = require('../../middleware/group');
@@ -33,19 +32,6 @@ const groupUpdateSchema = schemaGenerator(db.models.userGroup, {
   nothingRequired: true,
 });
 
-
-// Middleware for all group functions
-router.use('/', (req, res, next) => {
-  // Access Control
-  const access = new Acl(req);
-  if (!access.check()) {
-    logger.error('User isn\'t allowed to access this');
-    return res.status(HTTP_STATUS.FORBIDDEN).send({
-      error: {message: 'You are not allowed to perform this action'},
-    });
-  }
-  return next();
-});
 
 // Register group middleware
 router.param('group', groupMiddleware);
@@ -92,7 +78,7 @@ router.route('/:group([A-z0-9-]{36})')
 
     // Update Group
     try {
-      await req.group.update(req.body);
+      await req.group.update(req.body, {userId: req.user.id});
       await req.group.reload();
       return res.json(req.group.view('public'));
     } catch (error) {

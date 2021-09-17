@@ -13,13 +13,13 @@ module.exports = (sequelize, Sq) => {
       },
     },
     geneId: {
+      name: 'geneId',
+      field: 'gene_id',
       type: Sq.INTEGER,
       references: {
         model: 'reports_genes',
         key: 'id',
       },
-      field: 'gene_id',
-      name: 'geneId',
       allowNull: false,
     },
     variant: {
@@ -38,7 +38,7 @@ module.exports = (sequelize, Sq) => {
     tableName: 'reports_probe_results',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'geneId', 'deletedAt', 'updatedBy']},
         include: [
           {model: sequelize.models.genes.scope('minimal'), as: 'gene'},
         ],
@@ -49,7 +49,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   probeResults.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, geneId, deletedAt, ...publicView} = this.dataValues;
+      const {id, reportId, geneId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

@@ -11,26 +11,29 @@ const tcgaV9 = require('../../../database/exp_matrix.v9.json');
 router.route('/')
   .get(async (req, res) => {
     try {
-      const result = await db.models.analysis_report.findOne({
+      const result = await db.models.report.findOne({
         where: {ident: req.report.ident},
         attributes: ['sampleInfo', 'seqQC', 'config'],
       });
       return res.json(result);
     } catch (error) {
-      logger.error(`Unable to find report ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Unable to find report'}});
+      logger.error(`Error while getting report ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while getting report'},
+      });
     }
   });
 
 router.route('/tcga')
   .get((req, res) => {
-    if (req.report.expression_matrix === 'v8') {
-      return res.json(tcgaV8);
+    switch (req.report.expression_matrix) {
+      case 'v8':
+        return res.json(tcgaV8);
+      case 'v9':
+        return res.json(tcgaV9);
+      default:
+        return res.json([]);
     }
-    if (req.report.expression_matrix === 'v9') {
-      return res.json(tcgaV9);
-    }
-    return res.json([]);
   });
 
 module.exports = router;

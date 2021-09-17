@@ -3,7 +3,7 @@ const {batchDeleteKeysByPattern, flushAll, removeKeys} = require('../libs/cacheF
 const FLUSH_ALL_MODELS = ['user', 'project', 'template'];
 
 const CLEAR_REPORT_CACHE_MODELS = [
-  'analysis_report', 'patientInformation', 'analysis_reports_user',
+  'report', 'patientInformation', 'reportUser',
 ];
 
 const CLEAR_GERMLINE_CACHE_MODELS = [
@@ -11,7 +11,7 @@ const CLEAR_GERMLINE_CACHE_MODELS = [
 ];
 
 const CLEAR_USER_CACHE_MODELS = [
-  'userGroup', 'userGroupMember', 'user_project',
+  'userGroup', 'userGroupMember', 'userProject',
 ];
 
 /**
@@ -34,10 +34,10 @@ module.exports = async (instance, method) => {
     return flushAll();
   }
   if (CLEAR_REPORT_CACHE_MODELS.includes(modelName)) {
-    const id = (modelName === 'analysis_report') ? instance.id : instance.reportId;
+    const id = (modelName === 'report') ? instance.id : instance.reportId;
     let report;
     try {
-      report = await models.analysis_report.findOne({where: {id}, paranoid: false});
+      report = await models.report.findOne({where: {id}, paranoid: false});
     } catch (error) {
       return batchDeleteKeysByPattern('/reports*');
     }
@@ -47,7 +47,7 @@ module.exports = async (instance, method) => {
     }
 
     // If deleting report, remove all report sections from cache
-    if (modelName === 'analysis_report' && method === 'DELETE') {
+    if (modelName === 'report' && method === 'DELETE') {
       return Promise.all([
         batchDeleteKeysByPattern(`/reports/${report.ident}*`),
         removeKeys('/reports'),
@@ -73,10 +73,38 @@ module.exports = async (instance, method) => {
       return batchDeleteKeysByPattern('/germline*');
     }
 
-    return Promise.all([
-      removeKeys([`/germline/${report.ident}`, '/germline']),
-      batchDeleteKeysByPattern('/germline\\?*'),
-    ]);
+    switch (modelName) {
+      case 'germlineSmallMutation':
+        if (method === 'DELETE') {
+          return Promise.all([
+            removeKeys('/germline'),
+            batchDeleteKeysByPattern('/germline\\?*'),
+            batchDeleteKeysByPattern(`/germline/${report.ident}*`),
+          ]);
+        }
+        return Promise.all([
+          removeKeys([`/germline/${report.ident}`, '/germline']),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+      case 'germlineSmallMutationVariant':
+        return Promise.all([
+          removeKeys([
+            `/germline/${report.ident}`,
+            '/germline',
+            `/germline/${report.ident}/variants`,
+          ]),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+      case 'germlineSmallMutationReview':
+        return Promise.all([
+          removeKeys([
+            `/germline/${report.ident}`,
+            '/germline',
+            `/germline/${report.ident}/reviews`,
+          ]),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+    }
   }
   if (CLEAR_USER_CACHE_MODELS.includes(modelName)) {
     if (modelName === 'userGroup') {
@@ -104,7 +132,7 @@ module.exports = async (instance, method) => {
 
   let report;
   try {
-    report = await models.analysis_report.findOne({
+    report = await models.report.findOne({
       where: {id: instance.reportId}, paranoid: false,
     });
   } catch (error) {
@@ -118,7 +146,7 @@ module.exports = async (instance, method) => {
 
   // Report summary sections
   switch (modelName) {
-    case 'summary_microbial':
+    case 'microbial':
       return removeKeys(`/reports/${report.ident}/summary/microbial`);
     case 'genomicAlterationsIdentified':
       return removeKeys(`/reports/${report.ident}/summary/genomic-alterations-identified`);
@@ -134,6 +162,41 @@ module.exports = async (instance, method) => {
       return removeKeys(`/reports/${report.ident}/msi`);
     case 'signatures':
       return removeKeys(`/reports/${report.ident}/signatures`);
+    case 'smallMutations':
+      return removeKeys(`/reports/${report.ident}/small-mutations`);
+    case 'copyVariants':
+    case 'expressionVariants':
+    case 'structuralVariants':
+    case 'kbMatches':
+      return removeKeys([
+        `/reports/${report.ident}/copy-variants`,
+        `/reports/${report.ident}/expression-variants`,
+        `/reports/${report.ident}/small-mutations`,
+        `/reports/${report.ident}/structural-variants`,
+      ]);
+    case 'genes':
+      return Promise.all([
+        batchDeleteKeysByPattern(`/reports/${report.ident}/genes*`),
+        removeKeys([
+          `/reports/${report.ident}/copy-variants`,
+          `/reports/${report.ident}/expression-variants`,
+          `/reports/${report.ident}/small-mutations`,
+          `/reports/${report.ident}/structural-variants`,
+          `/reports/${report.ident}/probe-results`,
+        ]),
+      ]);
+    case 'hlaTypes':
+      return removeKeys(`/reports/${report.ident}/hla-types`);
+    case 'mavis':
+      return removeKeys(`/reports/${report.ident}/mavis`);
+    case 'pairwiseExpressionCorrelation':
+      return removeKeys(`/reports/${report.ident}/pairwise-expression-correlation`);
+    case 'presentationDiscussion':
+      return removeKeys(`/reports/${report.ident}/presentation/discussion`);
+    case 'presentationSlides':
+      return removeKeys(`/reports/${report.ident}/presentation/slide`);
+    case 'probeResults':
+      return removeKeys(`/reports/${report.ident}/probe-results`);
     default:
       return true;
   }

@@ -38,7 +38,7 @@ module.exports = (sequelize, Sq) => {
       public: {
         order: [['createdAt', 'ASC']],
         attributes: {
-          exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt'],
+          exclude: ['id', 'germlineReportId', 'reviewerId', 'deletedAt', 'updatedBy'],
         },
         include: [
           {model: sequelize.models.user.scope('public'), as: 'reviewer'},
@@ -50,7 +50,9 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   germlineReview.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, germlineReportId, reviewerId, deletedAt, ...publicView} = this.dataValues;
+      const {
+        id, germlineReportId, reviewerId, deletedAt, updatedBy, ...publicView
+      } = this.dataValues;
       return publicView;
     }
     return this;
