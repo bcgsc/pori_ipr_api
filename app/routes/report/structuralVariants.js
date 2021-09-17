@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 router.param('sv', async (req, res, next, svIdent) => {
   let result;
@@ -18,12 +19,16 @@ router.param('sv', async (req, res, next, svIdent) => {
     });
   } catch (error) {
     logger.error(`Unable to get structural variant ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get structural variant'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Unable to get structural variant'},
+    });
   }
 
   if (!result) {
     logger.error('Unable to locate structural variant');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate structural variant'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: 'Unable to locate structural variant'},
+    });
   }
 
   // Add structural variant to request
@@ -44,7 +49,9 @@ router.route('/:sv([A-z0-9-]{36})')
       return res.json(req.variation.view('public'));
     } catch (error) {
       logger.error(`Unable to update structural variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update structural variant'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update structural variant'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -54,7 +61,9 @@ router.route('/:sv([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove structural variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove structural variant'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to remove structural variant'},
+      });
     }
   });
 
@@ -62,6 +71,19 @@ router.route('/:sv([A-z0-9-]{36})')
 router.route('/')
   .get(async (req, res) => {
     // Get all structural variants (sv) for this report
+    const key = `/reports/${req.report.ident}/structural-variants`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for structural variants ${error}`);
+    }
+
     try {
       const results = await db.models.structuralVariants.scope('extended').findAll({
         order: [['gene1Id', 'ASC'], ['gene2Id', 'ASC']],
@@ -75,10 +97,17 @@ router.route('/')
           },
         ],
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve structural variants ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve structural variants'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve structural variants'},
+      });
     }
   });
 
