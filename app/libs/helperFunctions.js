@@ -1,4 +1,5 @@
 const sanitize = require('sanitize-html');
+const {MASTER_ACCESS} = require('../constants');
 
 /**
  * Checks that all target values exist
@@ -72,16 +73,42 @@ const isAdmin = (user) => {
 };
 
 /**
+ * Checks if a user belongs to atleast one
+ * of the access groups
+ *
+ * @param {object} user - Sequelize user model
+ * @param {Array<string>} accessGroups - Groups that have access
+ * @returns {boolean} - Returns true if user belongs to one of the access groups
+ */
+const hasAccess = (user, accessGroups) => {
+  return user.groups.some((group) => {
+    return accessGroups.includes(group.name.toLowerCase());
+  });
+};
+
+/**
  * Checks if user has master access
  *
  * @param {object} user - Sequelize user model
  * @returns {boolean} - Returns a boolean indicating if the user has master access
  */
 const hasMasterAccess = (user) => {
-  return user.groups.some((group) => {
-    return group.name.toLowerCase() === 'admin'
-    || group.name.toLowerCase() === 'manager';
-  });
+  return hasAccess(user, MASTER_ACCESS);
+};
+
+/**
+ * Checks if user has access to the project
+ * that the report belongs to
+ *
+ * @param {object} user - Sequelize user model
+ * @param {object} report - Sequelize report model
+ * @returns {boolean} - Returns true if user is allowed to access report
+ */
+const projectAccess = (user, report) => {
+  if (hasMasterAccess(user)) {
+    return true;
+  }
+  return isIntersectionBy(user.projects, report.projects, 'ident');
 };
 
 /**
@@ -104,6 +131,8 @@ module.exports = {
   sanitizeHtml,
   getUserProjects,
   isAdmin,
+  hasAccess,
   hasMasterAccess,
+  projectAccess,
   isIntersectionBy,
 };
