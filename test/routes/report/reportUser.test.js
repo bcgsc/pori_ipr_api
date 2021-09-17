@@ -63,7 +63,7 @@ describe('/reports/{REPORTID}/user', () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // create a report to be used in tests
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
@@ -78,7 +78,7 @@ describe('/reports/{REPORTID}/user', () => {
       email: 'fake@email.com',
     });
 
-    userReportBinding = await db.models.analysis_reports_user.create({
+    userReportBinding = await db.models.reportUser.create({
       user_id: createUser.id,
       reportId: report.id,
       role: 'clinician',
@@ -126,14 +126,14 @@ describe('/reports/{REPORTID}/user', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Find created binding
-      const binding = await db.models.analysis_reports_user.findOne({
+      const binding = await db.models.reportUser.findOne({
         where: {reportId: report.id, user_id: createUser.id, role: 'bioinformatician'},
       });
       expect(binding).not.toBeNull();
       expect(binding.deletedAt).toBeNull();
 
       // Delete binding
-      await db.models.analysis_reports_user.destroy({where: {ident: binding.ident}, force: true});
+      await db.models.reportUser.destroy({where: {ident: binding.ident}, force: true});
     });
 
     test('/ - 400 Bad Request - Invalid user', async () => {
@@ -174,7 +174,7 @@ describe('/reports/{REPORTID}/user', () => {
 
     test('/ - 409 Conflict - Binding already exists', async () => {
       // Create binding
-      const binding = await db.models.analysis_reports_user.create({
+      const binding = await db.models.reportUser.create({
         user_id: createUser.id,
         reportId: report.id,
         role: 'clinician',
@@ -189,7 +189,7 @@ describe('/reports/{REPORTID}/user', () => {
         .expect(HTTP_STATUS.CONFLICT);
 
       // Destroy binding
-      await db.models.analysis_reports_user.destroy({where: {ident: binding.ident}, force: true});
+      await db.models.reportUser.destroy({where: {ident: binding.ident}, force: true});
     });
   });
 
@@ -197,7 +197,7 @@ describe('/reports/{REPORTID}/user', () => {
     let deleteBinding;
 
     beforeEach(async () => {
-      deleteBinding = await db.models.analysis_reports_user.create({
+      deleteBinding = await db.models.reportUser.create({
         user_id: createUser.id,
         reportId: report.id,
         role: 'analyst',
@@ -206,7 +206,7 @@ describe('/reports/{REPORTID}/user', () => {
     });
 
     afterEach(async () => {
-      return db.models.analysis_reports_user.destroy({
+      return db.models.reportUser.destroy({
         where: {ident: deleteBinding.ident}, force: true,
       });
     });
@@ -219,7 +219,7 @@ describe('/reports/{REPORTID}/user', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify that the record was soft-deleted
-      const result = await db.models.analysis_reports_user.findOne({
+      const result = await db.models.reportUser.findOne({
         where: {ident: deleteBinding.ident}, paranoid: false,
       });
       expect(result.deletedAt).not.toBeNull();
@@ -238,7 +238,7 @@ describe('/reports/{REPORTID}/user', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 

@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -43,12 +44,16 @@ router.param('discussion', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Unable to get report discussion ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get report discussion'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Unable to get report discussion'},
+    });
   }
 
   if (!result) {
     logger.error(`Unable to find discussion for report ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find discussion for report ${req.report.ident}`}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Unable to find discussion for report ${req.report.ident}`},
+    });
   }
 
   // Add discussion to request
@@ -60,15 +65,35 @@ router.param('discussion', async (req, res, next, ident) => {
 // Handle requests for report discussions
 router.route('/discussion')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/presentation/discussion`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for presentation discussions ${error}`);
+    }
+
     try {
       const results = await db.models.presentationDiscussion.scope('public').findAll({
         where: {reportId: req.report.id},
         order: [['createdAt', 'ASC']],
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Failed to retrieve presentation discussion ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to retrieve presentation discussion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to retrieve presentation discussion'},
+      });
     }
   })
   .post(async (req, res) => {
@@ -89,11 +114,15 @@ router.route('/discussion')
 
     try {
       let result = await db.models.presentationDiscussion.create(data);
-      result = await db.models.presentationDiscussion.scope('public').findOne({where: {id: result.id}});
+      result = await db.models.presentationDiscussion.scope('public').findOne({
+        where: {id: result.id},
+      });
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create new discussion ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create new discussion'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to create new discussion'},
+      });
     }
   });
 
@@ -113,12 +142,14 @@ router.route('/discussion/:discussion')
     }
 
     try {
-      await req.discussion.update(req.body);
+      await req.discussion.update(req.body, {userId: req.user.id});
       await req.discussion.reload();
       return res.json(req.discussion.view('public'));
     } catch (error) {
       logger.error(`Failed to update the discussion ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to update the discussion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to update the discussion'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -127,7 +158,9 @@ router.route('/discussion/:discussion')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Failed to remove discussion ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to remove discussion'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to remove discussion'},
+      });
     }
   });
 
@@ -147,12 +180,16 @@ router.param('slide', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Unable to get presentation slides ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get presentation slides'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Unable to get presentation slides'},
+    });
   }
 
   if (!result) {
     logger.error(`Unable to find presentation slides for report ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find presentation slides for report ${req.report.ident}`}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Unable to find presentation slides for report ${req.report.ident}`},
+    });
   }
 
   // Add presentation slides to request
@@ -164,14 +201,34 @@ router.param('slide', async (req, res, next, ident) => {
 // Handle requests for slides
 router.route('/slide')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/presentation/slide`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for presentation slides ${error}`);
+    }
+
     try {
       const results = await db.models.presentationSlides.scope('public').findAll({
         where: {reportId: req.report.id},
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Failed to retrieve presentation slides ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to retrieve presentation slides'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to retrieve presentation slides'},
+      });
     }
   })
   .post(async (req, res) => {
@@ -209,7 +266,9 @@ router.route('/slide')
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Failed to create a new presentation slide ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Failed to create a new presentation slide'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to create a new presentation slide'},
+      });
     }
   });
 
@@ -229,12 +288,14 @@ router.route('/slide/:slide')
     }
 
     try {
-      await req.slide.update(req.body);
+      await req.slide.update(req.body, {userId: req.user.id});
       await req.slide.reload();
       return res.json(req.slide.view('public'));
     } catch (error) {
       logger.error(`Failed to update the slide ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to update the slide'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to update the slide'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -243,7 +304,9 @@ router.route('/slide/:slide')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Failed to remove slide ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Failed to remove slide'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Failed to remove slide'},
+      });
     }
   });
 

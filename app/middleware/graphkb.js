@@ -1,7 +1,7 @@
-const request = require('request-promise-native');
 const HTTP_STATUS = require('http-status-codes');
 const jwt = require('jsonwebtoken');
 
+const request = require('../request');
 const logger = require('../log');
 const {getToken} = require('../api/keycloak');
 const CONFIG = require('../config');
@@ -11,7 +11,7 @@ const CONFIG = require('../config');
  * or re-logs in if the token has timed out.
  */
 const graphkbLoginMiddleware = async (req, res, next) => {
-  const {graphkbToken: currentToken} = req;
+  const currentToken = req.graphkbToken;
 
   let validToken = false;
   if (currentToken) {
@@ -29,15 +29,17 @@ const graphkbLoginMiddleware = async (req, res, next) => {
   if (!validToken) {
     try {
       // expired or not logged in, retry
-      const {username, uri, password} = CONFIG.get('graphkb');
-      const loginURI = `${uri}/token`;
+      const {username, password, uri} = CONFIG.get('graphkb');
       const token = await getToken(username, password);
       const options = {
         method: 'POST',
-        uri: loginURI,
+        url: `${uri}/token`,
         json: true,
-        body: {
+        body: JSON.stringify({
           keyCloakToken: token.access_token,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
         },
       };
       const {kbToken} = await request(options);

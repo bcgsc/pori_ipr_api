@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -56,11 +57,13 @@ router.route('/:hlaType([A-z0-9-]{36})')
     }
     // Update db entry
     try {
-      await hlaType.update(req.body);
+      await hlaType.update(req.body, {userId: req.user.id});
       return res.json(hlaType.view('public'));
     } catch (error) {
       logger.error(`Unable to update hlaType ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update hlaType'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update hlaType'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -79,10 +82,28 @@ router.route('/:hlaType([A-z0-9-]{36})')
 
 router.route('/')
   .get(async (req, res) => {
+    const key = `/reports/${req.report.ident}/hla-types`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for hla types ${error}`);
+    }
+
     try {
       const results = await db.models.hlaTypes.scope('public').findAll({
         where: {reportId: req.report.id},
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve hla types ${error}`);
@@ -109,7 +130,9 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create new hla type entry ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new hla type entry'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create new hla type entry'},
+      });
     }
   });
 

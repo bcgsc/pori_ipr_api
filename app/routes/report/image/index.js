@@ -4,7 +4,6 @@ const {Op} = require('sequelize');
 
 const db = require('../../../models');
 const logger = require('../../../log');
-const Acl = require('../../../middleware/acl');
 const {uploadReportImage} = require('../images');
 const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
@@ -42,16 +41,6 @@ router.route('/:image([A-z0-9-]{36})')
     return res.json(req.image.view('public'));
   })
   .delete(async (req, res) => {
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(
-        `User doesn't have correct permissions to delete a report image ${req.user.username}`,
-      );
-      return res.status(HTTP_STATUS.FORBIDDEN).json(
-        {error: {message: 'User doesn\'t have correct permissions to delete a report image'}},
-      );
-    }
-
     // Whether to hard or soft delete image
     const force = (typeof req.query.force === 'boolean') ? req.query.force : false;
 

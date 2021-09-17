@@ -1,10 +1,10 @@
 const supertest = require('supertest');
 const getPort = require('get-port');
-const db = require('../app/models');
+const db = require('../../../../app/models');
 
 // get test user info
-const CONFIG = require('../app/config');
-const {listen} = require('../app');
+const CONFIG = require('../../../../app/config');
+const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
@@ -28,7 +28,7 @@ describe('/reports/{REPORTID}/summary/analyst-comments', () => {
     // create a report to be used in tests
     // TODO: Update report upload to report mocking once metadata is simplified
     // const project = await db.models.project.findOne(); // any project is fine
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
@@ -101,18 +101,10 @@ describe('/reports/{REPORTID}/summary/analyst-comments', () => {
     });
   });
 
-  // delete report
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // indirectly by hard deleting newly created patient
-    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
-
-    // verify report is deleted
-    await request
-      .get(`/api/reports/${report.ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(404);
+    // Delete newly created report and all of it's components
+    // indirectly by force deleting the report
+    return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 

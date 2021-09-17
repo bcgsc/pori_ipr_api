@@ -5,13 +5,13 @@ const {Op} = require('sequelize');
 const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
 const cache = require('../../cache');
+const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {generateKey} = require('../../libs/cacheFunctions');
 
-const reportMiddleware = require('../../middleware/analysis_report');
+const reportMiddleware = require('../../middleware/report');
 
 const router = express.Router({mergeParams: true});
 
@@ -20,10 +20,11 @@ const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {REPORT_UPDATE_BASE_URI} = require('../../constants');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
+const reportGetSchema = require('../../schemas/report/retrieve/reportGetQueryParamSchema');
 // Generate schema's
 const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
-const updateSchema = schemaGenerator(db.models.analysis_report, {
+const updateSchema = schemaGenerator(db.models.report, {
   baseUri: REPORT_UPDATE_BASE_URI,
   exclude: [...BASE_EXCLUDE, 'createdBy_id', 'templateId', 'config'],
   nothingRequired: true,
@@ -81,7 +82,7 @@ router.route('/:report')
 
     // Update db entry
     try {
-      await report.update(req.body);
+      await report.update(req.body, {userId: req.user.id});
       await report.reload();
       return res.json(report.view('public'));
     } catch (error) {
@@ -90,13 +91,6 @@ router.route('/:report')
     }
   })
   .delete(async (req, res) => {
-    // first check user permissions before delete
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error('User doesn\'t have correct permissions to delete report');
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to delete report'}});
-    }
-
     try {
       await req.report.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
@@ -110,23 +104,45 @@ router.route('/:report')
 // Act on all reports
 router.route('/')
   .get(async (req, res) => {
-    const {
+    let {
       query: {
         paginated, limit, offset, sort, project, states, role, searchText,
       },
     } = req;
 
+    // Parse query parameters
+    try {
+      limit = (limit) ? parseInt(limit, 10) : DEFAULT_PAGE_LIMIT;
+      offset = (offset) ? parseInt(offset, 10) : DEFAULT_PAGE_OFFSET;
+      sort = (sort) ? parseReportSortQuery(sort) : undefined;
+      states = (states) ? states.toLowerCase().split(',') : undefined;
+    } catch (error) {
+      logger.error(`Error with query parameters ${error}`);
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
+        error: {message: 'Error with one or more query parameters'},
+      });
+    }
+
+    try {
+      // validate request query parameters
+      validateAgainstSchema(reportGetSchema, {
+        paginated, limit, offset, sort, project, states, role, searchText,
+      }, false);
+    } catch (err) {
+      const message = `Error while validating the query params of the report GET request ${err}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     // Get projects the user has access to
-    const access = new Acl(req);
     let projects;
     try {
-      const projectAccess = await access.getProjectAccess();
-      // Get the names of the projects the user has access to
-      projects = projectAccess.map((proj) => {
+      projects = await getUserProjects(db.models.project, req.user);
+      projects = projects.map((proj) => {
         return proj.name;
       });
     } catch (error) {
-      const message = `Error while trying to get project access ${error.message || error}`;
+      const message = `Error while trying to get project access ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
     }
@@ -159,7 +175,7 @@ router.route('/')
     // Generate options for report query
     const opts = {
       where: {
-        ...((states) ? {state: states.toLowerCase().split(',')} : {}),
+        ...((states) ? {state: states} : {}),
         ...((searchText) ? {
           [Op.or]: [
             {'$patientInformation.diagnosis$': {[Op.iLike]: `%${searchText}%`}},
@@ -179,18 +195,18 @@ router.route('/')
       // Paginated can be added to searchText once this Sequelize bug is fixed.
       // Sequelize version is 6.5.0**
       ...((paginated && !searchText) ? {
-        offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
-        limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
+        offset,
+        limit,
       } : {}),
-      order: (sort) ? parseReportSortQuery(sort) : [
+      order: (!sort) ? [
         ['state', 'desc'],
         ['patientId', 'desc'],
-      ],
+      ] : sort,
       include: [
         {
           model: db.models.patientInformation,
           as: 'patientInformation',
-          attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
         },
         {model: db.models.user.scope('public'), as: 'createdBy'},
         {
@@ -199,7 +215,7 @@ router.route('/')
           required: true,
         },
         {
-          model: db.models.analysis_reports_user,
+          model: db.models.reportUser,
           as: 'users',
           attributes: ['ident', 'role', 'createdAt', 'updatedAt'],
           include: [
@@ -212,11 +228,11 @@ router.route('/')
           where: {
             name: projects,
           },
-          attributes: {exclude: ['id', 'deletedAt']},
+          attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
           through: {attributes: []},
         },
         ...((role) ? [{
-          model: db.models.analysis_reports_user,
+          model: db.models.reportUser,
           as: 'ReportUserFilter',
           where: {
             user_id: req.user.id,
@@ -227,7 +243,7 @@ router.route('/')
     };
 
     try {
-      const reports = await db.models.analysis_report.scope('public').findAndCountAll(opts);
+      const reports = await db.models.report.scope('public').findAndCountAll(opts);
       const results = {total: reports.count, reports: reports.rows};
 
       if (key) {
@@ -241,14 +257,6 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // verify user is allowed to upload a report
-    const access = new Acl(req);
-    access.write = ['*'];
-    if (!access.check()) {
-      logger.error(`User: ${req.user.username} doesn't have correct permissions to upload a report`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User doesn\'t have correct permissions to upload a report'}});
-    }
-
     // validate loaded report against schema
     try {
       validateAgainstSchema(reportUploadSchema, req.body);

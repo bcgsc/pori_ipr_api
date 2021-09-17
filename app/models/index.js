@@ -35,7 +35,7 @@ userMetadata.belongsTo(user, {
 
 // Projects
 const project = require('./project/project')(sequelize, Sq);
-const userProject = require('./project/user_project')(sequelize, Sq);
+const userProject = require('./project/userProject')(sequelize, Sq);
 const reportProject = require('./project/reportProject')(sequelize, Sq);
 
 project.belongsToMany(user, {
@@ -46,8 +46,8 @@ user.belongsToMany(project, {
 });
 
 // Pog Analysis Reports
-const analysisReports = require('./reports/analysis_reports')(sequelize, Sq);
-const analysisReportsUsers = require('./analysis_report_user')(sequelize, Sq);
+const analysisReports = require('./reports/report')(sequelize, Sq);
+const reportUsers = require('./reportUser')(sequelize, Sq);
 
 project.belongsToMany(analysisReports, {
   as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
@@ -56,24 +56,24 @@ analysisReports.belongsToMany(project, {
   as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'reportId', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
-analysisReports.hasMany(analysisReportsUsers, {
+analysisReports.hasMany(reportUsers, {
   as: 'users', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasMany(analysisReportsUsers, {
+analysisReports.hasMany(reportUsers, {
   as: 'ReportUserFilter', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReportsUsers.belongsTo(analysisReports, {
+reportUsers.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReportsUsers.belongsTo(user, {
+reportUsers.belongsTo(user, {
   as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL', constraints: true,
 });
-analysisReportsUsers.belongsTo(user, {
+reportUsers.belongsTo(user, {
   as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
 });
 
 user.belongsToMany(analysisReports, {
-  as: 'reports', through: {model: analysisReportsUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 
 const userGroup = require('./user/userGroup.js')(sequelize, Sq);
@@ -146,7 +146,7 @@ analysisReports.hasMany(summary.therapeuticTargets, {
   as: 'therapeuticTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasOne(summary.microbial, {
-  as: 'summary_microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 summary.variantCounts.belongsTo(analysisReports, {
@@ -266,7 +266,7 @@ analysisReports.hasMany(proteinVariants, {
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
   const extendedScope = {
-    attributes: {exclude: ['id', 'reportId', 'deletedAt']},
+    attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
     include: [],
   };
 
@@ -389,13 +389,13 @@ analysisReports.hasMany(presentation.slides, {
 });
 
 // Probe Report
-const probeTestInformation = require('./reports/probe/test_information')(sequelize, Sq);
+const probeTestInformation = require('./reports/probeTestInformation')(sequelize, Sq);
 
 probeTestInformation.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(probeTestInformation, {
-  as: 'probe_test_information', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'probeTestInformation', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 const reportSignatures = require('./reports/signatures')(sequelize, Sq);

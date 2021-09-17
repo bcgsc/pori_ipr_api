@@ -103,18 +103,28 @@ module.exports = (sequelize, Sq) => {
         },
       },
     },
+    externalSource: {
+      name: 'externalSource',
+      field: 'external_source',
+      type: Sq.TEXT,
+    },
+    externalStatementId: {
+      name: 'externalStatementId',
+      field: 'external_statement_id',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matches',
     scopes: {
       public: {
-        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
         include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
           return {model: sequelize.models[modelName].scope('public'), as: modelName};
         }),
       },
       extended: {
-        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt']},
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
         include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
           return {model: sequelize.models[modelName].scope('extended'), as: modelName};
         }),
@@ -153,7 +163,7 @@ module.exports = (sequelize, Sq) => {
   KbMatches.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
-        id, reportId, variantId, deletedAt, ...publicView
+        id, reportId, variantId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
     }

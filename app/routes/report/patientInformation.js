@@ -5,6 +5,15 @@ const db = require('../../models');
 const router = express.Router({mergeParams: true});
 const logger = require('../../log');
 
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+
+// Generate schemas
+const updateSchema = schemaGenerator(db.models.patientInformation, {
+  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
+});
+
 // Middleware for Patient Information
 router.use('/', async (req, res, next) => {
   let result;
@@ -37,8 +46,17 @@ router.route('/')
     return res.json(req.patientInformation.view('public'));
   })
   .put(async (req, res) => {
+    // Validate request against schema
     try {
-      await req.patientInformation.update(req.body);
+      validateAgainstSchema(updateSchema, req.body, false);
+    } catch (error) {
+      const message = `Error while validating patient information update request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    try {
+      await req.patientInformation.update(req.body, {userId: req.user.id});
       return res.json(req.patientInformation.view('public'));
     } catch (error) {
       logger.error(`Unable to update patient information ${error}`);

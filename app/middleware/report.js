@@ -2,6 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
 const cache = require('../cache');
+const aclMiddleware = require('./acl');
 
 // Lookup report middleware
 module.exports = async (req, res, next, ident) => {
@@ -11,10 +12,16 @@ module.exports = async (req, res, next, ident) => {
     {model: db.models.user.scope('public'), as: 'createdBy'},
     {model: db.models.template.scope('minimal'), as: 'template'},
     {
-      model: db.models.analysis_reports_user,
+      model: db.models.project,
+      as: 'projects',
+      attributes: ['ident', 'name'],
+      through: {attributes: []},
+    },
+    {
+      model: db.models.reportUser,
       as: 'users',
       separate: true,
-      attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt']},
+      attributes: {exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'deletedAt', 'updatedBy']},
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
       ],
@@ -33,14 +40,14 @@ module.exports = async (req, res, next, ident) => {
 
   if (result) {
     // Build Sequelize model from cached string without calling db
-    result = db.models.analysis_report.build(JSON.parse(result), {
+    result = db.models.report.build(JSON.parse(result), {
       raw: true,
       isNewRecord: false,
       include,
     });
   } else {
     try {
-      result = await db.models.analysis_report.findOne({
+      result = await db.models.report.findOne({
         where: {ident},
         attributes: {exclude: ['config']},
         include,
@@ -62,5 +69,5 @@ module.exports = async (req, res, next, ident) => {
 
   // Add report to request
   req.report = result;
-  return next();
+  return aclMiddleware(req, res, next);
 };

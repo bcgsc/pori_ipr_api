@@ -31,7 +31,7 @@ describe('/expression-variants', () => {
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
         {
-          model: db.models.analysis_report,
+          model: db.models.report,
           as: 'report',
           attributes: ['ident', 'id'],
           required: true,
@@ -54,7 +54,7 @@ describe('/expression-variants', () => {
     // *Note: There shouldn't be an issue with finding
     // a deleted report because even on soft-delete
     // the variant should be soft-deleted too*
-    report = await db.models.analysis_report.findOne({
+    report = await db.models.report.findOne({
       attributes: ['ident', 'id'],
       where: {id: variant.reportId, deletedAt: null},
     });

@@ -3,10 +3,10 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 const {Op} = require('sequelize');
 
-const db = require('../../app/models');
+const db = require('../../../app/models');
 // get test user info
-const CONFIG = require('../../app/config');
-const {listen} = require('../../app');
+const CONFIG = require('../../../app/config');
+const {listen} = require('../../../app');
 
 const LONGER_TIMEOUT = 5000;
 
@@ -41,7 +41,7 @@ describe('/therapeutic-targets', () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // create report
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
@@ -264,18 +264,10 @@ describe('/therapeutic-targets', () => {
     });
   });
 
-  // delete created report
   afterAll(async () => {
-    // delete newly created report and all of it's components
-    // indirectly by hard deleting newly created patient
-    await db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
-
-    // verify report is deleted
-    await request
-      .get(`/api/reports/${report.ident}`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.NOT_FOUND);
+    // Delete newly created report and all of it's components
+    // indirectly by force deleting the report
+    return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 

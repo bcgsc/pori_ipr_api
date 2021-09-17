@@ -3,8 +3,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
-const Acl = require('../../middleware/acl');
 const logger = require('../../log');
+const {isAdmin} = require('../../libs/helperFunctions');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema} = require('../../schemas/user');
@@ -23,7 +23,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
           model: db.models.userGroup,
           as: 'groups',
           attributes: {
-            exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt'],
+            exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
           through: {attributes: []},
         },
@@ -31,7 +31,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
           model: db.models.project,
           as: 'projects',
           attributes: {
-            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt'],
+            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
           through: {attributes: []},
         },
@@ -59,8 +59,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
 // Routes for operating on a single user
 router.route('/:userByIdent([A-z0-9-]{36})')
   .get((req, res) => {
-    const access = new Acl(req);
-    if (!access.isAdmin() && req.user.id !== req.userByIdent.id) {
+    if (!isAdmin(req.user) && req.user.id !== req.userByIdent.id) {
       logger.error(`User: ${req.user.username} is not allowed to view this user`);
       return res.status(HTTP_STATUS.FORBIDDEN).send({
         error: {message: 'You are not allowed to perform this action'},
@@ -69,9 +68,9 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     return res.json(req.userByIdent.view('public'));
   })
   .put(async (req, res) => {
-    const access = new Acl(req);
-    // Is the user neither itself or admin?
-    if (!access.isAdmin() && req.user.id !== req.userByIdent.id) {
+    const admin = isAdmin(req.user);
+
+    if (!admin && req.user.id !== req.userByIdent.id) {
       logger.error(`User: ${req.user.username} is not allowed to edit another user`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         error: {message: 'You are not allowed to perform this action'},
@@ -79,7 +78,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
 
     // Check that user isn't editing columns dfss
-    if (!access.isAdmin()) {
+    if (!admin) {
       if (req.body.username) {
         logger.error(`User: ${req.user.username} is not allowed to update their username`);
         return res.status(HTTP_STATUS.FORBIDDEN).json({
@@ -108,7 +107,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
 
     try {
-      await req.userByIdent.update(req.body);
+      await req.userByIdent.update(req.body, {userId: req.user.id});
       await req.userByIdent.reload();
       return res.json(req.userByIdent.view('public'));
     } catch (error) {
@@ -119,14 +118,6 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
-    const access = new Acl(req);
-    if (!access.isAdmin()) {
-      logger.error(`User: ${req.user.username} is not allowed to remove a user`);
-      return res.status(HTTP_STATUS.FORBIDDEN).send({
-        error: {message: 'You are not allowed to perform this action'},
-      });
-    }
-
     try {
       await req.userByIdent.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
@@ -142,15 +133,6 @@ router.route('/:userByIdent([A-z0-9-]{36})')
 router.route('/')
   // Get All Users
   .get(async (req, res) => {
-    // Access Control
-    const access = new Acl(req);
-    if (!access.isAdmin()) {
-      logger.error(`User: ${req.user.username} is not allowed to get all users`);
-      return res.status(HTTP_STATUS.FORBIDDEN).send({
-        error: {message: 'You are not allowed to perform this action'},
-      });
-    }
-
     try {
       const users = await db.models.user.scope('public').findAll({
         order: [['username', 'ASC']],
@@ -158,13 +140,13 @@ router.route('/')
           {
             as: 'groups',
             model: db.models.userGroup,
-            attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt']},
+            attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
             through: {attributes: []},
           },
           {
             as: 'projects',
             model: db.models.project,
-            attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt']},
+            attributes: {exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
             through: {attributes: []},
           },
         ],
@@ -179,15 +161,6 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // Access control
-    const access = new Acl(req);
-    if (!access.check()) {
-      logger.error(`User: ${req.user.username} is not allowed to add a new user`);
-      return res.status(HTTP_STATUS.FORBIDDEN).send({
-        error: {message: 'You are not allowed to perform this action'},
-      });
-    }
-
     try {
       // Validate input
       validateAgainstSchema(createSchema, req.body);

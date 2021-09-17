@@ -13,9 +13,9 @@ const ID_FIELDS = [
   'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId', 'templateId',
   'product_id',
 ];
-const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt'];
+const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt', 'updatedBy'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
-const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germlineReport', 'user_project', 'userGroupMember'];
+const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germlineReport', 'userProject', 'userGroupMember'];
 
 const MODELS_WITH_VARIANTS = ['kbMatches', 'genes'];
 
@@ -68,7 +68,7 @@ const getExcludes = (model) => {
       excludeAssociations = [...GENERAL_EXCLUDE_ASSOCIATIONS, 'metadata'];
       break;
     case 'project':
-      excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'user_projects']);
+      excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['user', 'users', 'userProject']);
       break;
     case 'therapeuticTarget':
       exclude = [...GENERAL_EXCLUDE, 'rank'];
@@ -76,7 +76,7 @@ const getExcludes = (model) => {
     case 'signatures':
       publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'reviewerId', 'authorId'];
       break;
-    case 'analysis_reports_user':
+    case 'reportUser':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['addedBy']);
       break;
     default:
@@ -97,7 +97,7 @@ const getExcludes = (model) => {
 
 // Remove joining models from the list of models to use for generating schemas
 const {
-  userGroupMember, reportProject, user_project, ...models
+  userGroupMember, reportProject, userProject, ...models
 } = db.models;
 
 // Generate schemas from Sequelize models. One for the public returned value, one
@@ -137,14 +137,24 @@ for (const model of Object.keys(models)) {
 // *Returned object*
 
 // analysis report
-schemas.analysis_reportAssociations = schemaGenerator(db.models.analysis_report, {
-  isJsonSchema: false, title: 'analysis_reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'template', 'users'],
+schemas.reportAssociations = schemaGenerator(db.models.report, {
+  isJsonSchema: false, title: 'reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'template', 'users'],
 });
 
 // appendices
-schemas.appendices = schemaGenerator(db.models.analysis_report, {
+schemas.appendices = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'appendices', include: ['sampleInfo', 'seqQC', 'config'],
 });
+
+// signatures - earliest signoff
+schemas.earliestSignOff = {
+  ...schemas.signaturesAssociations,
+};
+
+schemas.earliestSignOff.properties.signedOffOn = {
+  type: 'string',
+  format: 'date-time',
+};
 
 // *POST request body*
 
@@ -160,7 +170,7 @@ Object.keys(reportUpload.properties).forEach((key) => {
   }
 });
 
-schemas.analysis_reportCreate = reportUpload;
+schemas.reportCreate = reportUpload;
 
 // germline report upload
 schemas.germlineSmallMutationCreate = germlineReportUploadSchema;
@@ -175,10 +185,10 @@ Object.assign(schemas.pathwayAnalysisCreate.properties, PATHWAY_IMAGE);
 
 // report-user binding create
 // add user ident to properties
-Object.assign(schemas.analysis_reports_userCreate.properties, {
+Object.assign(schemas.reportUserCreate.properties, {
   user: {
     type: 'string',
-    format: 'UUIDv4',
+    format: 'uuid',
     description: 'ident of user to bind to report',
   },
 });
@@ -187,13 +197,13 @@ Object.assign(schemas.analysis_reports_userCreate.properties, {
 // *PUT request body*
 
 // add template name to report update
-schemas.analysis_reportUpdate.properties.template = {
+schemas.reportUpdate.properties.template = {
   type: 'string', description: 'Template name',
 };
 
 // germline report update (add biofxAssigned user ident)
 schemas.germlineSmallMutationUpdate.properties.biofxAssigned = {
-  type: 'string', format: 'UUIDv4',
+  type: 'string', format: 'uuid',
 };
 
 // therapeutic targets bulk update
@@ -211,6 +221,12 @@ Object.assign(schemas.templateUpdate.properties, TEMPLATE_IMAGES);
 // pathway analysis update
 // add images to properties
 Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGE);
+
+// probe results update
+// add gene ident property
+schemas.probeResultsUpdate.properties.gene = {
+  type: 'string', format: 'uuid',
+};
 
 
 module.exports = schemas;

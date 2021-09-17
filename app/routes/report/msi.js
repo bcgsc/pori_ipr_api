@@ -57,7 +57,7 @@ router.route('/:msi([A-z0-9-]{36})')
     }
     // Update db entry
     try {
-      await req.msi.update(req.body);
+      await req.msi.update(req.body, {userId: req.user.id});
       return res.json(req.msi.view('public'));
     } catch (error) {
       logger.error(`Unable to update MSI data ${error}`);

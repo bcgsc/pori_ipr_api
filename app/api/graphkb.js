@@ -1,7 +1,5 @@
-const request = require('request-promise-native');
-
+const request = require('../request');
 const CONFIG = require('../config');
-
 
 const AUTOCOMPLETE_LIMIT = 50;
 
@@ -48,16 +46,17 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
       query.queryType = 'keyword';
     }
   }
-  const data = await request({
-    uri: `${uri}/query`,
+
+  return request({
+    url: `${uri}/query`,
     method: 'POST',
-    body: query,
+    body: JSON.stringify(query),
     json: true,
     headers: {
       Authorization: graphkbToken,
+      'Content-Type': 'application/json',
     },
   });
-  return data;
 };
 
 /**
@@ -89,14 +88,16 @@ const graphkbReviewStatus = async (graphkbToken, graphkbEntries) => {
   };
 
   const {result} = await request({
-    uri: `${uri}/query`,
+    url: `${uri}/query`,
     method: 'POST',
-    body: query,
+    body: JSON.stringify(query),
     json: true,
     headers: {
       Authorization: graphkbToken,
+      'Content-Type': 'application/json',
     },
   });
+
   return result;
 };
 
@@ -122,17 +123,20 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
     returnProperties: ['@class', '@rid', 'displayName', 'description'],
   };
 
-  const data = await request({
-    uri: `${uri}/query`,
+  return request({
+    url: `${uri}/query`,
     method: 'POST',
-    body: query,
+    body: JSON.stringify(query),
     json: true,
     headers: {
       Authorization: graphkbToken,
+      'Content-Type': 'application/json',
     },
   });
-
-  return data;
 };
 
-module.exports = {graphkbAutocomplete, graphkbEvidenceLevels, graphkbReviewStatus};
+module.exports = {
+  graphkbAutocomplete,
+  graphkbEvidenceLevels,
+  graphkbReviewStatus,
+};

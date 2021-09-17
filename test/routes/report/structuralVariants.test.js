@@ -2,10 +2,10 @@ const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
 
-const db = require('../../app/models');
+const db = require('../../../app/models');
 // get test user info
-const CONFIG = require('../../app/config');
-const {listen} = require('../../app');
+const CONFIG = require('../../../app/config');
+const {listen} = require('../../../app');
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
@@ -51,7 +51,7 @@ describe('/structural-variants', () => {
     // *Note: There shouldn't be an issue with finding
     // a deleted report because even on soft-delete
     // the variant should be soft-deleted too*
-    report = await db.models.analysis_report.findOne({
+    report = await db.models.report.findOne({
       attributes: ['ident', 'id'],
       where: {id: variant.reportId, deletedAt: null},
     });

@@ -5,6 +5,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
+const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -16,7 +17,9 @@ const createSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
   baseUri: GERMLINE_CREATE_BASE_URI, exclude: GERMLINE_EXCLUDE,
 });
 const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
-  baseUri: GERMLINE_UPDATE_BASE_URI, include: ['hidden', 'patientHistory', 'familyHistory'], nothingRequired: true,
+  baseUri: GERMLINE_UPDATE_BASE_URI,
+  include: ['hidden', 'patientHistory', 'familyHistory'],
+  nothingRequired: true,
 });
 
 
@@ -29,12 +32,16 @@ router.param('variant', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Error while trying to get germline report variant ${error}`);
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Error while trying to get germline report variant'}});
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      error: {message: 'Error while trying to get germline report variant'},
+    });
   }
 
   if (!result) {
     logger.error('Unable to find germline report variant');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find germline report variant'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: 'Unable to find germline report variant'},
+    });
   }
 
   req.variant = result;
@@ -59,11 +66,13 @@ router.route('/:variant')
 
     // Update db entry
     try {
-      await req.variant.update(req.body);
+      await req.variant.update(req.body, {userId: req.user.id});
       return res.json(req.variant.view('public'));
     } catch (error) {
       logger.error(`Unable to update germline variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update germline variant'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update germline variant'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -73,7 +82,9 @@ router.route('/:variant')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`There was an error while trying to remove the requested germline variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({message: 'Error while trying to remove the requested germline variant'});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to remove the requested germline variant'},
+      });
     }
   });
 
@@ -81,14 +92,34 @@ router.route('/:variant')
 // Handles requests for all germline variants for a report
 router.route('/')
   .get(async (req, res) => {
+    const key = `/germline/${req.report.ident}/variants`;
+
+    try {
+      const cacheResults = await cache.get(key);
+
+      if (cacheResults) {
+        res.type('json');
+        return res.send(cacheResults);
+      }
+    } catch (error) {
+      logger.error(`Error while checking cache for germline variants ${error}`);
+    }
+
     try {
       const results = await db.models.germlineSmallMutationVariant.scope('public').findAll({
         where: {germlineReportId: req.report.id},
       });
+
+      if (key) {
+        cache.set(key, JSON.stringify(results), 'EX', 5400);
+      }
+
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve germline variants ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve germline variants'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve germline variants'},
+      });
     }
   })
   .post(async (req, res) => {
@@ -110,7 +141,9 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create new germline variant ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new germline variant'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create new germline variant'},
+      });
     }
   });
 
