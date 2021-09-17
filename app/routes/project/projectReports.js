@@ -14,7 +14,7 @@ router.route('/')
   .post(async (req, res) => {
     let report;
     try {
-      report = await db.models.analysis_report.findOne({
+      report = await db.models.report.findOne({
         where: {ident: req.body.report},
         attributes: ['id', 'ident'],
       });
@@ -75,7 +75,7 @@ router.route('/')
   .delete(async (req, res) => {
     let report;
     try {
-      report = await db.models.analysis_report.findOne({
+      report = await db.models.report.findOne({
         where: {ident: req.body.report},
         attributes: ['id', 'ident'],
       });

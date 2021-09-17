@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const moment = require('moment');
+const {Op} = require('sequelize');
+
 
 const db = require('../../models');
 const logger = require('../../log');
@@ -70,7 +71,7 @@ router.route('/sign/:role(author|reviewer)')
     // add author or reviewer
     const data = {};
     data[`${role}Id`] = req.user.id;
-    data[`${role}SignedAt`] = moment().toISOString();
+    data[`${role}SignedAt`] = new Date().toISOString();
 
     // check if report has signatures
     if (!req.signatures) {
@@ -122,6 +123,45 @@ router.route('/revoke/:role(author|reviewer)')
       logger.error(`Unable to revoke ${role} ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: `Unable to revoke ${role}`}});
     }
+  });
+
+router.route('/earliest-signoff')
+  .get(async (req, res) => {
+    let result;
+    try {
+      [result] = await db.models.signatures.scope('public').findAll({
+        where: {
+          reportId: req.report.id,
+          reviewerId: {
+            [Op.ne]: null,
+          },
+          authorId: {
+            [Op.ne]: null,
+          },
+        },
+        paranoid: false,
+        limit: 1,
+        order: [['updatedAt', 'desc']],
+      });
+    } catch (error) {
+      logger.error(`Error while searching for earliest signature ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while searching for earliest signature'},
+      });
+    }
+
+    if (!result) {
+      logger.error(`Report ${req.report.ident} has not been signed off on yet`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        error: {message: 'This report has not been signed off on yet'},
+      });
+    }
+
+    // Set the signedOffOn date, which should be the last update.
+    // Since the only updates are adding and removing signatures.
+    result.dataValues.signedOffOn = result.updatedAt;
+
+    return res.json(result);
   });
 
 module.exports = router;

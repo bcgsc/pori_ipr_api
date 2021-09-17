@@ -31,6 +31,7 @@ beforeAll(async () => {
 
 describe('/reports/{REPORTID}/signatures', () => {
   let report;
+  let user;
 
   beforeAll(async () => {
     // Get genomic template
@@ -38,46 +39,99 @@ describe('/reports/{REPORTID}/signatures', () => {
     // create a report to be used in tests
     // TODO: Update report upload to report mocking once metadata is simplified
     // const project = await db.models.project.findOne(); // any project is fine
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
 
-    // Create initial report signature
-    await request
-      .put(`/api/reports/${report.ident}/signatures/sign/author`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
+    user = await db.models.user.findOne({
+      where: {username},
+    });
   });
 
-  test('GET / - 200 Success', async () => {
-    // Test GET endpoint and also if signature was created successfully
-    const res = await request
-      .get(`/api/reports/${report.ident}/signatures`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
+  describe('GET', () => {
+    let signature;
 
-    const {body: {reviewerSignature, authorSignature}} = res;
-    expect(res.body).toEqual(expect.objectContaining({
-      ident: expect.any(String),
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
-      reviewerSignature: expect.any(Object),
-      authorSignature: expect.any(Object),
-    }));
-    expect(res.body).toHaveProperty('reviewerSignedAt');
-    expect(res.body).toHaveProperty('authorSignedAt');
-    expect(reviewerSignature).toBe(null);
-    checkSignatureProperties(authorSignature);
+    beforeEach(async () => {
+      signature = await db.models.signatures.create({
+        reportId: report.id,
+        authorId: user.id,
+        authorSignedAt: new Date(),
+      });
+    });
 
-    // check that an author was added and a reviewer wasn't
-    expect(res.body).toEqual(expect.objectContaining({
-      ident: expect.any(String),
-      authorSignedAt: expect.any(String),
-      reviewerSignedAt: null,
-    }));
+    afterEach(async () => {
+      return signature.destroy({force: true});
+    });
+
+    test('/ - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/signatures`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const {body: {reviewerSignature, authorSignature}} = res;
+      expect(res.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        reviewerSignature: expect.any(Object),
+        authorSignature: expect.any(Object),
+      }));
+      expect(res.body).toHaveProperty('reviewerSignedAt');
+      expect(res.body).toHaveProperty('authorSignedAt');
+      expect(reviewerSignature).toBe(null);
+      checkSignatureProperties(authorSignature);
+
+      // check that an author was added and a reviewer wasn't
+      expect(res.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        authorSignedAt: expect.any(String),
+        reviewerSignedAt: null,
+      }));
+    });
+
+    test('/earliest-signoff - 200 Success', async () => {
+      // Add reviewer signature to complete
+      await signature.update({
+        reviewerId: user.id,
+        reviewerSignedAt: new Date(),
+      });
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/signatures/earliest-signoff`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).not.toBeNull();
+      expect(res.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        reviewerSignedAt: expect.any(String),
+        authorSignedAt: expect.any(String),
+        reviewerSignature: expect.any(Object),
+        authorSignature: expect.any(Object),
+        signedOffOn: expect.any(String),
+      }));
+      expect(res.body).toEqual(expect.not.objectContaining({
+        id: expect.any(Number),
+        reportId: expect.any(Number),
+        updatedBy: expect.any(Number),
+        deletedAt: expect.any(String),
+      }));
+      expect(res.body.signedOffOn).toBe(res.body.updatedAt);
+    });
+
+    test('/earliest-signoff - 404 Not Found', async () => {
+      await request
+        .get(`/api/reports/${report.ident}/signatures/earliest-signoff`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
   });
 
   describe('PUT', () => {
@@ -160,7 +214,7 @@ describe('/reports/{REPORTID}/signatures', () => {
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // indirectly by force deleting the report
-    return db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
+    return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 

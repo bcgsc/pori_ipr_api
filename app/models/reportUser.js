@@ -1,7 +1,7 @@
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('./base');
 
 module.exports = (sequelize, Sq) => {
-  const reportUser = sequelize.define('analysis_reports_user', {
+  const reportUser = sequelize.define('reportUser', {
     ...DEFAULT_COLUMNS,
     role: {
       type: Sq.ENUM('clinician', 'bioinformatician', 'analyst', 'reviewer', 'admin'),

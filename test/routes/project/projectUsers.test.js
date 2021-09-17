@@ -78,8 +78,8 @@ describe('/project/:project/user', () => {
 
     // Bind users to project
     return Promise.all([
-      db.models.user_project.create({project_id: project.id, user_id: user01.id}),
-      db.models.user_project.create({project_id: project.id, user_id: user02.id}),
+      db.models.userProject.create({project_id: project.id, user_id: user01.id}),
+      db.models.userProject.create({project_id: project.id, user_id: user02.id}),
     ]);
   });
 
@@ -115,14 +115,14 @@ describe('/project/:project/user', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Check the binding was created
-      const result = await db.models.user_project.findOne({
+      const result = await db.models.userProject.findOne({
         where: {project_id: project.id, user_id: testUser.id},
       });
 
       expect(result).not.toBeNull();
 
       // Remove the just created test user-project binding
-      await db.models.user_project.destroy({
+      await db.models.userProject.destroy({
         where: {project_id: project.id, user_id: testUser.id},
         force: true,
       });
@@ -139,7 +139,7 @@ describe('/project/:project/user', () => {
 
     test('/ - 409 Conflict - User is already bound to project', async () => {
       // Create binding
-      const binding = await db.models.user_project.create({
+      const binding = await db.models.userProject.create({
         project_id: project.id, user_id: testUser.id,
       });
 
@@ -151,14 +151,14 @@ describe('/project/:project/user', () => {
         .expect(HTTP_STATUS.CONFLICT);
 
       // Remove the just created test user-project binding
-      await db.models.user_project.destroy({where: {id: binding.id}, force: true});
+      await db.models.userProject.destroy({where: {id: binding.id}, force: true});
     });
   });
 
   describe('DELETE', () => {
     test('/ - 204 Success', async () => {
       // Create binding
-      const binding = await db.models.user_project.create({
+      const binding = await db.models.userProject.create({
         project_id: project.id, user_id: testUser.id,
       });
 
@@ -170,7 +170,7 @@ describe('/project/:project/user', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify user-project binding is soft-deleted
-      const deletedBinding = await db.models.user_project.findOne({
+      const deletedBinding = await db.models.userProject.findOne({
         where: {id: binding.id},
         paranoid: false,
       });

@@ -66,7 +66,7 @@ describe('/reports/{report}/probe-test-information', () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create report
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PROBE_TEST_PATIENT',
     });
@@ -80,13 +80,13 @@ describe('/reports/{report}/probe-test-information', () => {
     let getProbeTest;
 
     beforeEach(async () => {
-      getProbeTest = await db.models.probe_test_information.create({
+      getProbeTest = await db.models.probeTestInformation.create({
         ...PROBE_TEST_DATA, reportId: report.id,
       });
     });
 
     afterEach(async () => {
-      return db.models.probe_test_information.destroy({
+      return db.models.probeTestInformation.destroy({
         where: {ident: getProbeTest.ident},
         force: true,
       });
@@ -119,7 +119,7 @@ describe('/reports/{report}/probe-test-information', () => {
     let putProbeTest;
 
     beforeEach(async () => {
-      putProbeTest = await db.models.probe_test_information.create({
+      putProbeTest = await db.models.probeTestInformation.create({
         ...PROBE_TEST_DATA, reportId: report.id,
       });
     });
