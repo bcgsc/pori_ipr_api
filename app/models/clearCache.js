@@ -179,6 +179,7 @@ module.exports = async (instance, method) => {
           `/reports/${report.ident}/copy-variants`,
           `/reports/${report.ident}/expression-variants`,
           `/reports/${report.ident}/small-mutations`,
+          `/reports/${report.ident}/probe-results`,
         ]),
       ]);
     case 'hlaTypes':
@@ -191,6 +192,8 @@ module.exports = async (instance, method) => {
       return removeKeys(`/reports/${report.ident}/presentation/discussion`);
     case 'presentationSlides':
       return removeKeys(`/reports/${report.ident}/presentation/slide`);
+    case 'probeResults':
+      return removeKeys(`/reports/${report.ident}/probe-results`);
     default:
       return true;
   }
