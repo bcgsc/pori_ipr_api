@@ -17,6 +17,9 @@ module.exports = (sequelize, Sq) => {
     name: {
       type: Sq.TEXT,
       allowNull: false,
+      jsonSchema: {
+        schema: {type: 'string', minLength: 2},
+      },
     },
     tumourSuppressor: {
       name: 'tumourSuppressor',

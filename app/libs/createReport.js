@@ -222,7 +222,7 @@ const createReportSections = async (report, content, transaction) => {
   promises.push(createReportVariantSections(report, content, transaction));
 
   // add all other sections
-  Object.keys(db.models.analysis_report.associations).filter((model) => {
+  Object.keys(db.models.report.associations).filter((model) => {
     return !EXCLUDE_SECTIONS.has(model);
   }).forEach((model) => {
     logger.debug(`creating report (${model}) section (${report.ident})`);
@@ -293,7 +293,7 @@ const createReport = async (data) => {
   // create report
   let report;
   try {
-    report = await db.models.analysis_report.create(data, {transaction});
+    report = await db.models.report.create(data, {transaction});
   } catch (error) {
     await transaction.rollback();
     throw new Error(`Unable to create report ${error.message || error}`);
