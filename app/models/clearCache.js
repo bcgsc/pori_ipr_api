@@ -166,11 +166,13 @@ module.exports = async (instance, method) => {
       return removeKeys(`/reports/${report.ident}/small-mutations`);
     case 'copyVariants':
     case 'expressionVariants':
+    case 'structuralVariants':
     case 'kbMatches':
       return removeKeys([
         `/reports/${report.ident}/copy-variants`,
         `/reports/${report.ident}/expression-variants`,
         `/reports/${report.ident}/small-mutations`,
+        `/reports/${report.ident}/structural-variants`,
       ]);
     case 'genes':
       return Promise.all([
@@ -179,6 +181,7 @@ module.exports = async (instance, method) => {
           `/reports/${report.ident}/copy-variants`,
           `/reports/${report.ident}/expression-variants`,
           `/reports/${report.ident}/small-mutations`,
+          `/reports/${report.ident}/structural-variants`,
           `/reports/${report.ident}/probe-results`,
         ]),
       ]);
