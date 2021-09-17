@@ -1,6 +1,9 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
-const {isAdmin, isIntersectionBy} = require('../libs/helperFunctions');
+const {
+  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess,
+} = require('../libs/helperFunctions');
+const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
 const logger = require('../log');
 
 const SPECIAL_CASES = [
@@ -45,22 +48,6 @@ const SPECIAL_CASES = [
 ];
 
 
-const UPDATE_METHODS = ['POST', 'PUT', 'DELETE'];
-const MASTER_ACCESS = ['admin', 'manager'];
-
-const hasMasterAccess = (user) => {
-  return user.groups.some((group) => {
-    return MASTER_ACCESS.includes(group.name.toLowerCase());
-  });
-};
-
-const projectAccess = (user, report) => {
-  if (hasMasterAccess(user)) {
-    return true;
-  }
-  return isIntersectionBy(user.projects, report.projects, 'ident');
-};
-
 module.exports = async (req, res, next) => {
   // Check if user is an admin
   if (isAdmin(req.user)) {
@@ -80,7 +67,8 @@ module.exports = async (req, res, next) => {
     // belongs to or the user is trying to make an update
     // and they don't have update permissions throw an error
     if (!projectAccess(req.user, req.report)
-      || (UPDATE_METHODS.includes(req.method) && !(boundUser || hasMasterAccess(req.user)))
+      || (UPDATE_METHODS.includes(req.method)
+      && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
     ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({

@@ -73,10 +73,38 @@ module.exports = async (instance, method) => {
       return batchDeleteKeysByPattern('/germline*');
     }
 
-    return Promise.all([
-      removeKeys([`/germline/${report.ident}`, '/germline']),
-      batchDeleteKeysByPattern('/germline\\?*'),
-    ]);
+    switch (modelName) {
+      case 'germlineSmallMutation':
+        if (method === 'DELETE') {
+          return Promise.all([
+            removeKeys('/germline'),
+            batchDeleteKeysByPattern('/germline\\?*'),
+            batchDeleteKeysByPattern(`/germline/${report.ident}*`),
+          ]);
+        }
+        return Promise.all([
+          removeKeys([`/germline/${report.ident}`, '/germline']),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+      case 'germlineSmallMutationVariant':
+        return Promise.all([
+          removeKeys([
+            `/germline/${report.ident}`,
+            '/germline',
+            `/germline/${report.ident}/variants`,
+          ]),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+      case 'germlineSmallMutationReview':
+        return Promise.all([
+          removeKeys([
+            `/germline/${report.ident}`,
+            '/germline',
+            `/germline/${report.ident}/reviews`,
+          ]),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+    }
   }
   if (CLEAR_USER_CACHE_MODELS.includes(modelName)) {
     if (modelName === 'userGroup') {
