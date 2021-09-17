@@ -1377,7 +1377,7 @@
                     "reports": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/analysis_reportAssociations"
+                        "$ref": "#/components/schemas/reportAssociations"
                       }
                     }
                   }
@@ -1410,7 +1410,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/analysis_reportCreate"
+                "$ref": "#/components/schemas/reportCreate"
               }
             }
           }
@@ -1466,7 +1466,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                  "$ref": "#/components/schemas/reportAssociations"
                 }
               }
             }
@@ -1499,7 +1499,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/analysis_reportUpdate"
+                "$ref": "#/components/schemas/reportUpdate"
               }
             }
           }
@@ -1510,7 +1510,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                  "$ref": "#/components/schemas/reportAssociations"
                 }
               }
             }
@@ -1577,7 +1577,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/analysis_reports_userAssociations"
+                    "$ref": "#/components/schemas/reportUserAssociations"
                   }
                 }
               }
@@ -1609,7 +1609,7 @@
             "application/json":
             {
               "schema": {
-                "$ref": "#/components/schemas/analysis_reports_userCreate"
+                "$ref": "#/components/schemas/reportUserCreate"
               }
             }
           }
@@ -1625,7 +1625,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_reportAssociations"
+                  "$ref": "#/components/schemas/reportAssociations"
                 }
               }
             }
@@ -1671,7 +1671,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/analysis_reports_userAssociations"
+                  "$ref": "#/components/schemas/reportUserAssociations"
                 }
               }
             }
@@ -1739,13 +1739,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/microbialAssociations"
                 }
               }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
           }
         }
       }
@@ -3327,6 +3330,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Filter genes by search text",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "tags": [
@@ -4687,7 +4699,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/probe_test_informationAssociations"
+                  "$ref": "#/components/schemas/probeTestInformationAssociations"
                 }
               }
             }
@@ -6158,7 +6170,7 @@
           }
         }
       },
-      "user_project": {},
+      "userProject": {},
       "userGroupMember": {}
     },
     "responses": {

@@ -74,7 +74,7 @@ describe('/reports/{report}/patient-information', () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create report
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT_INFORMATION_PATIENT',
     });

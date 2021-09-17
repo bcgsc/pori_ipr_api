@@ -10,7 +10,7 @@ const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {REPORT_UPDATE_BASE_URI} = require('../../constants');
 
 // Generate schema's
-const updateSchema = schemaGenerator(db.models.probe_test_information, {
+const updateSchema = schemaGenerator(db.models.probeTestInformation, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
 
@@ -19,7 +19,7 @@ const updateSchema = schemaGenerator(db.models.probe_test_information, {
 router.use('/', async (req, res, next) => {
   let result;
   try {
-    result = await db.models.probe_test_information.findOne({
+    result = await db.models.probeTestInformation.findOne({
       where: {reportId: req.report.id},
     });
   } catch (error) {

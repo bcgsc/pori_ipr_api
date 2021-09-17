@@ -1,9 +1,11 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {Op} = require('sequelize');
 
 const db = require('../../models');
 const logger = require('../../log');
 const cache = require('../../cache');
+const {generateKey} = require('../../libs/cacheFunctions');
 
 const router = express.Router({mergeParams: true});
 
@@ -101,7 +103,10 @@ router.route('/:geneName')
 router.route('/')
   .get(async (req, res) => {
     // Get all targeted genes for this report
-    const key = `/reports/${req.report.ident}/genes`;
+    const {search} = req.query;
+    const queryParams = (search) ? {search} : {};
+
+    const key = generateKey(`/reports/${req.report.ident}/genes`, queryParams);
 
     try {
       const cacheResults = await cache.get(key);
@@ -116,7 +121,10 @@ router.route('/')
 
     try {
       const results = await db.models.genes.scope('public').findAll({
-        where: {reportId: req.report.id},
+        where: {
+          reportId: req.report.id,
+          ...((search) ? {name: {[Op.iLike]: `%${search}%`}} : {}),
+        },
         order: [['name', 'ASC']],
       });
 

@@ -39,7 +39,7 @@ describe('/reports/{REPORTID}/signatures', () => {
     // create a report to be used in tests
     // TODO: Update report upload to report mocking once metadata is simplified
     // const project = await db.models.project.findOne(); // any project is fine
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
     });
@@ -214,7 +214,7 @@ describe('/reports/{REPORTID}/signatures', () => {
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // indirectly by force deleting the report
-    return db.models.analysis_report.destroy({where: {ident: report.ident}, force: true});
+    return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 
