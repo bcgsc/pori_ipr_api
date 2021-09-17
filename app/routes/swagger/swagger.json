@@ -4830,6 +4830,43 @@
         }
       }
     },
+    "/reports/{report}/signatures/earliest-signoff": {
+      "get": {
+        "summary": "Get Earliest Signoff",
+        "description": "Retreives the record with the earliest date that the report was signed by both the author and reviewer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the earliest signed off record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/earliestSignOff"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/small-mutations": {
       "get": {
         "summary": "Get Small Mutations",
