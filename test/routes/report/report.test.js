@@ -69,7 +69,7 @@ describe('/reports/{REPORTID}', () => {
       },
     });
 
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
       tumourContent: 100,
@@ -79,7 +79,7 @@ describe('/reports/{REPORTID}', () => {
       project_id: project.id,
     });
 
-    reportReady = await db.models.analysis_report.create({
+    reportReady = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
       state: 'ready',
@@ -89,7 +89,7 @@ describe('/reports/{REPORTID}', () => {
       project_id: project.id,
     });
 
-    reportReviewed = await db.models.analysis_report.create({
+    reportReviewed = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
       state: 'reviewed',
@@ -99,7 +99,7 @@ describe('/reports/{REPORTID}', () => {
       project_id: project.id,
     });
 
-    reportArchived = await db.models.analysis_report.create({
+    reportArchived = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
       state: 'archived',
@@ -109,7 +109,7 @@ describe('/reports/{REPORTID}', () => {
       project_id: project.id,
     });
 
-    totalReports = await db.models.analysis_report.count();
+    totalReports = await db.models.report.count();
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -399,10 +399,10 @@ describe('/reports/{REPORTID}', () => {
 
   // delete report
   afterEach(async () => {
-    await db.models.analysis_report.destroy({where: {id: report.id}, force: true});
-    await db.models.analysis_report.destroy({where: {id: reportReady.id}, force: true});
-    await db.models.analysis_report.destroy({where: {id: reportReviewed.id}, force: true});
-    await db.models.analysis_report.destroy({where: {id: reportArchived.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}, force: true});
+    await db.models.report.destroy({where: {id: reportReady.id}, force: true});
+    await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
+    await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 

@@ -57,19 +57,19 @@ describe('/project/:project/reports', () => {
     project = await db.models.project.create({name: 'report-project-test01'});
 
     // Create reports
-    report = await db.models.analysis_report.create({
+    report = await db.models.report.create({
       templateId: template.id,
       patientId: 'REPORT-PROJECT-TEST',
       alternateIdentifier: 'reportProjectTest',
     });
 
-    report01 = await db.models.analysis_report.create({
+    report01 = await db.models.report.create({
       templateId: template.id,
       patientId: 'REPORT-PROJECT-TEST01',
       alternateIdentifier: 'reportProjectTest01',
     });
 
-    report02 = await db.models.analysis_report.create({
+    report02 = await db.models.report.create({
       templateId: template.id,
       patientId: 'REPORT-PROJECT-TEST02',
       alternateIdentifier: 'reportProjectTest02',
