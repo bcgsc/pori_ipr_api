@@ -146,6 +146,16 @@ schemas.appendices = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'appendices', include: ['sampleInfo', 'seqQC', 'config'],
 });
 
+// signatures - earliest signoff
+schemas.earliestSignOff = {
+  ...schemas.signaturesAssociations,
+};
+
+schemas.earliestSignOff.properties.signedOffOn = {
+  type: 'string',
+  format: 'date-time',
+};
+
 // *POST request body*
 
 // analysis report (report upload)
