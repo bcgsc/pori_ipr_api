@@ -215,7 +215,7 @@ describe('/reports/{report}/genes', () => {
       await request
         .put(`/api/reports/${report.ident}/genes/${putGene.name}`)
         .send({
-          name: 'A',
+          name: '',
         })
         .auth(username, password)
         .type('json')
