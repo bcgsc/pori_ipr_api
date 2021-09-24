@@ -7,7 +7,8 @@ const CLEAR_REPORT_CACHE_MODELS = [
 ];
 
 const CLEAR_GERMLINE_CACHE_MODELS = [
-  'germlineSmallMutation', 'germlineSmallMutationVariant', 'germlineSmallMutationReview',
+  'germlineSmallMutation', 'germlineSmallMutationVariant',
+  'germlineSmallMutationReview', 'germlineReportUser',
 ];
 
 const CLEAR_USER_CACHE_MODELS = [
@@ -102,6 +103,11 @@ module.exports = async (instance, method) => {
             '/germline',
             `/germline/${report.ident}/reviews`,
           ]),
+          batchDeleteKeysByPattern('/germline\\?*'),
+        ]);
+      case 'germlineReportUser':
+        return Promise.all([
+          removeKeys([`/germline/${report.ident}`, '/germline']),
           batchDeleteKeysByPattern('/germline\\?*'),
         ]);
     }
