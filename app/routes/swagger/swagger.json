@@ -2851,6 +2851,170 @@
         }
       }
     },
+    "/germline-small-mutation-reports/{germline}/users": {
+      "get": {
+        "summary": "Get Germline Report Users",
+        "description": "Retrieve all users bound to a germline report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          }
+        ],
+        "tags": [
+          "Germline Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all the users bound to a germline report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/germlineReportUserAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Germline-User Binding",
+        "description": "Bind a user to a germline report",
+        "tags": [
+          "Germline Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          }
+        ],
+        "requestBody": {
+          "description": "Values for binding a user to a germline report",
+          "required": true,
+          "content": {
+            "application/json":
+            {
+              "schema": {
+                "$ref": "#/components/schemas/germlineReportUserCreate"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Returns the germline report with the user now bound",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germlineSmallMutationAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or user not found"
+          },
+          "409": {
+            "description": "User already bound to germline report"
+          }
+        }
+      }
+    },
+    "/germline-small-mutation-reports/{germline}/users/{binding}": {
+      "get": {
+        "summary": "Get Germline-User Binding",
+        "description": "Retrieve a specific germline-user binding",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/germlineReportUser"
+          }
+        ],
+        "tags": [
+          "Germline Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified germline-user binding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/germlineReportUserAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or germline-user binding not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Germline-User Binding",
+        "description": "Removes a germline-user binding",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/germline"
+          },
+          {
+            "$ref": "#/components/parameters/germlineReportUser"
+          }
+        ],
+        "tags": [
+          "Germline Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Germline report or germline-user binding not found"
+          }
+        }
+      }
+    },
     "/graphkb/{targetType}": {
       "post": {
         "summary": "Get targets by type",
@@ -6018,6 +6182,16 @@
         "in": "path",
         "required": true,
         "description": "report-user binding ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "germlineReportUser": {
+        "name": "germlineReportUser",
+        "in": "path",
+        "required": true,
+        "description": "germline-user binding ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"

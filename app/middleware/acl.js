@@ -20,6 +20,10 @@ const SPECIAL_CASES = [
     POST: ['*'],
   },
   {
+    path: pathToRegexp('/api/germline-small-mutation-reports'),
+    POST: ['*'],
+  },
+  {
     path: pathToRegexp('/api/template'),
     POST: [{name: 'admin'}],
   },

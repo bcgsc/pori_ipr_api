@@ -60,6 +60,16 @@ module.exports = (sequelize, Sq) => {
           {as: 'biofxAssigned', model: sequelize.models.user.scope('public'), required: true},
           {as: 'projects', model: sequelize.models.project.scope('public'), through: {attributes: []}},
           {
+            as: 'users',
+            model: sequelize.models.germlineReportUser,
+            attributes: {
+              exclude: ['id', 'germlineReportId', 'user_id', 'addedById', 'deletedAt', 'updatedBy'],
+            },
+            include: [
+              {model: sequelize.models.user.scope('public'), as: 'user'},
+            ],
+          },
+          {
             as: 'variants',
             model: sequelize.models.germlineSmallMutationVariant,
             order: [['gene', 'asc']],
