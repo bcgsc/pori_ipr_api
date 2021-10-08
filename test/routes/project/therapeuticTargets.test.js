@@ -14,6 +14,7 @@ const targetProperties = [
   'gene', 'geneGraphkbId', 'variant', 'variantGraphkbId',
   'therapy', 'therapyGraphkbId', 'context', 'contextGraphkbId',
   'evidenceLevel', 'evidenceLevelGraphkbId', 'kbStatementIds',
+  'report',
 ];
 
 const checkTarget = (targetObject) => {
