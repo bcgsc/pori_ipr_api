@@ -17,6 +17,13 @@ router.route('/')
             [Op.in]: literal(`(SELECT DISTINCT report_id FROM report_projects WHERE project_id = ${req.project.id} AND deleted_at IS NULL)`),
           },
         },
+        include: [
+          {
+            model: db.models.report,
+            as: 'report',
+            attributes: ['ident', 'patientId'],
+          },
+        ],
       });
       return res.json(results);
     } catch (error) {
