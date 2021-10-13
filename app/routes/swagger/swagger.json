@@ -1818,6 +1818,57 @@
         }
       }
     },
+    "/project/{project}/therapeutic-targets": {
+      "get": {
+        "summary": "Get All Therapeutic Targets For a Project",
+        "description": "Returns all therapeutic targets for a project that the user has access to",
+        "tags": [
+          "Project Therapeutic Targets"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all the therapeutic targets for a project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/therapeuticTargetAssociations"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "User does not have access to this project"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/therapeutic-targets": {
       "get": {
         "summary": "Get Therapeutic Targets",
@@ -5933,6 +5984,16 @@
   },
   "components": {
     "parameters": {
+      "project": {
+        "name": "project",
+        "in": "path",
+        "required": true,
+        "description": "Project ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
       "report": {
         "name": "report",
         "in": "path",
