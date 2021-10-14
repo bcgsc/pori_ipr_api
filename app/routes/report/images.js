@@ -128,6 +128,12 @@ const IMAGES_CONFIG = [
     height: 765,
     format: 'PNG',
   },
+  {
+    pattern: 'expression.spearman\\.(tcga|gtex)',
+    width: 1000,
+    height: 3000,
+    format: 'PNG',
+  },
 ];
 
 
