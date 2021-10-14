@@ -504,6 +504,14 @@
         {
             "key": "pathwayAnalysis.legend",
             "path": "test/testData/images/pathway_legend_v1.png"
+        },
+        {
+            "key": "expression.spearman.tcga",
+            "path": "test/testData/images/spearman_tcga.png"
+        },
+        {
+            "key": "expression.spearman.gtex",
+            "path": "test/testData/images/spearman_gtex.png"
         }
     ]
 }
