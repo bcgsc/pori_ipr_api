@@ -512,6 +512,18 @@
         {
             "key": "expression.spearman.gtex",
             "path": "test/testData/images/spearman_gtex.png"
+        },
+        {
+            "key": "expression.spearman.cser",
+            "path": "test/testData/images/spearman_cser.png"
+        },
+        {
+            "key": "expression.spearman.hartwig",
+            "path": "test/testData/images/spearman_hartwig.png"
+        },
+        {
+            "key": "expression.spearman.target",
+            "path": "test/testData/images/spearman_target.png"
         }
     ]
 }
