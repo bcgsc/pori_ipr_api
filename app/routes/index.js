@@ -56,7 +56,7 @@ class Routing extends RouterInterface {
 
     // Acl middleware
     // To every route except for specification and report routes
-    this.router.use(/^(?!^\/spec|\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);
+    this.router.use(/^(?!^\/spec|\/germline-small-mutation-reports(?:\/([^\\?]+?))|\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);
 
     // Add Single Routes
     // Setup other routes
