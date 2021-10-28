@@ -105,6 +105,9 @@ module.exports = (sequelize, Sq) => {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
       },
+      publicWithoutRank: {
+        attributes: {exclude: ['id', 'reportId', 'rank', 'deletedAt', 'updatedBy']},
+      },
     },
   });
 
@@ -113,6 +116,10 @@ module.exports = (sequelize, Sq) => {
     if (scope === 'public') {
       const {id, reportId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
+    }
+    if (scope === 'publicWithoutRank') {
+      const {id, reportId, deletedAt, updatedBy, rank, ...view} = this.dataValues;
+      return view;
     }
     return this;
   };

@@ -43,7 +43,7 @@ const UPLOAD_DATA = {
 
 const germlineReportProperties = [
   'ident', 'createdAt', 'updatedAt', 'biopsyName', 'normalLibrary', 'sourceVersion',
-  'sourcePath', 'exported', 'biofxAssigned', 'projects', 'variants', 'reviews',
+  'sourcePath', 'exported', 'biofxAssigned', 'projects', 'users', 'variants', 'reviews',
   'patientId',
 ];
 

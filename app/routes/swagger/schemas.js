@@ -11,7 +11,7 @@ const schemas = {};
 const ID_FIELDS = [
   'germlineReportId', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId',
   'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId', 'templateId',
-  'product_id',
+  'product_id', 'addedById',
 ];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt', 'updatedBy'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
@@ -77,6 +77,7 @@ const getExcludes = (model) => {
       publicExclude = [...PUBLIC_VIEW_EXCLUDE, 'reviewerId', 'authorId'];
       break;
     case 'reportUser':
+    case 'germlineReportUser':
       excludeAssociations = GENERAL_EXCLUDE_ASSOCIATIONS.concat(['addedBy']);
       break;
     default:
@@ -190,6 +191,16 @@ Object.assign(schemas.reportUserCreate.properties, {
     type: 'string',
     format: 'uuid',
     description: 'ident of user to bind to report',
+  },
+});
+
+// germline-user binding create
+// add user ident to properties
+Object.assign(schemas.germlineReportUserCreate.properties, {
+  user: {
+    type: 'string',
+    format: 'uuid',
+    description: 'ident of user to bind to germline report',
   },
 });
 

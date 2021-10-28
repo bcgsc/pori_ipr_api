@@ -1,10 +1,31 @@
-module.exports = (sequelize, Sq) => {
-  const review = require('./reviews')(sequelize, Sq);
-  const variant = require('./variants')(sequelize, Sq);
+const reviewModel = require('./reviews');
+const variantModel = require('./variants');
+const reportModel = require('./reports');
+const reportProjectModel = require('./germlineReportsToProjects');
+const reportUserModel = require('./users');
 
-  const report = require('./reports')(sequelize, Sq); // Order is important
-  const germlineReportsToProjects = require('./germlineReportsToProjects')(sequelize, Sq);
-  const {models: {project}} = sequelize;
+module.exports = (sequelize, Sq) => {
+  const review = reviewModel(sequelize, Sq);
+  const variant = variantModel(sequelize, Sq);
+  const germlineReportsToProjects = reportProjectModel(sequelize, Sq);
+  const germlineReportUsers = reportUserModel(sequelize, Sq);
+
+  const report = reportModel(sequelize, Sq); // Order is important
+  const {models: {project, user}} = sequelize;
+
+  report.hasMany(germlineReportUsers, {
+    as: 'users', foreignKey: 'germlineReportId', onDelete: 'CASCADE', constraints: true,
+  });
+
+  germlineReportUsers.belongsTo(report, {
+    as: 'report', foreignKey: 'germlineReportId', onDelete: 'CASCADE', constraints: true,
+  });
+  germlineReportUsers.belongsTo(user, {
+    as: 'addedBy', foreignKey: 'addedById', onDelete: 'SET NULL', constraints: true,
+  });
+  germlineReportUsers.belongsTo(user, {
+    as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE', constraints: true,
+  });
 
   // M2M relationship between reports and projects
   report.belongsToMany(project, {
