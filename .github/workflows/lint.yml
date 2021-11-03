@@ -10,6 +10,6 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - run: yarn global
+      - run: npm install -g
       - name: Run ESLint
         run: eslint . --ext .js
