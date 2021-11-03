@@ -17,7 +17,7 @@ const logger = createLogger({
     format.printf(({level, message, timestamp, ...meta}) => {
       return colorizer.colorize(
         level,
-        `[${timestamp}][${level.toUpperCase()}] ${message} ${(meta && Object.keys(meta).length) ? `\n\t${JSON.stringify(meta)}` : ''}`
+        `[${timestamp}][${level.toUpperCase()}] ${message} ${(meta && Object.keys(meta).length) ? `\n\t${JSON.stringify(meta)}` : ''}`,
       );
     }),
   ),

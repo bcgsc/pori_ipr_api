@@ -27,7 +27,7 @@ const checkMissingMatches = async (queryInterface, transaction, variantType) => 
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
   if (rows.length) {
     throw new Error(`Failed to link ${variantType} variants (${rows.map((r) => {
@@ -58,7 +58,7 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
   console.log(`copy missing variants (${missingVariants.length}) to the ${table} table`);
   if (missingVariants.length) {
@@ -67,7 +67,7 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
       missingVariants.map((rec) => {
         return {...rec, ident: uuidv4()};
       }),
-      {transaction}
+      {transaction},
     );
   }
 
@@ -87,7 +87,7 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
   if (rows.length > 0) {
     throw new Error(`Duplicate mappings to kb matches table (${rows.slice(0, 10).map((r) => {
@@ -109,7 +109,7 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
     {
       transaction,
       replacements: {variantType},
-    }
+    },
   );
   // now check if any were unset
   await checkMissingMatches(queryInterface, transaction, variantType);
@@ -133,7 +133,7 @@ const transferKbExpressionData = async (queryInterface, Sq, transaction) => {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
 
   if (multiMatch.length) {
@@ -153,7 +153,7 @@ const transferKbExpressionData = async (queryInterface, Sq, transaction) => {
     {
       transaction,
       replacements: {variantType},
-    }
+    },
   );
 
   await transferMissingVariants(queryInterface, transaction, variantType, 'expression_class');
@@ -202,7 +202,7 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
     {
       transaction,
       replacements: {variantType},
-    }
+    },
   );
 
 
@@ -224,7 +224,7 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
   console.log(`copy missing variants (${missingVariants.length}) to the ${MUT_TABLE} table`);
   if (missingVariants.length) {
@@ -233,7 +233,7 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
       missingVariants.map((rec) => {
         return {...rec, ident: uuidv4()};
       }),
-      {transaction}
+      {transaction},
     );
   }
 
@@ -244,7 +244,7 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
     WHERE m.id = main.id`,
     {
       transaction,
-    }
+    },
   );
   await queryInterface.sequelize.query(`DROP VIEW ${matchView}`, {transaction});
   // now check if any were unset
@@ -304,7 +304,7 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
 
   // create new SVs for any definitons on the KB table not matched in the individual SVs table
@@ -337,7 +337,7 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: {variantType},
-    }
+    },
   );
   console.log(`copy missing variants (${missingVariants.length}) to the ${SV_TABLE} table`);
 
@@ -347,7 +347,7 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
       missingVariants.map((rec) => {
         return {...rec, ident: uuidv4()};
       }),
-      {transaction}
+      {transaction},
     );
   }
 
@@ -379,7 +379,7 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
     ) foo ORDER BY id, deleted_at DESC, event_type_rank ASC, sv_matched_id`,
     {
       transaction,
-    }
+    },
   );
 
   // link variants from the SV table to the KB table
@@ -392,7 +392,7 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
     {
       transaction,
       replacements: {variantType},
-    }
+    },
   );
   await queryInterface.sequelize.query(`DROP VIEW ${matchView}`, {transaction});
   await queryInterface.sequelize.query(`DROP VIEW ${svFromKbView}`, {transaction});
@@ -414,7 +414,7 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
     {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
-    }
+    },
   );
   console.log(`adding ${missingGenes.length} genes`);
   await queryInterface.bulkInsert(
@@ -422,7 +422,7 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
     missingGenes.map((rec) => {
       return {...rec, ident: uuidv4()};
     }),
-    {transaction}
+    {transaction},
   );
 
   console.log('copy missing fusion-related genes');
@@ -445,7 +445,7 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
         transaction,
         replacements: {part},
         type: queryInterface.sequelize.QueryTypes.SELECT,
-      }
+      },
     );
     console.log(`adding ${genes.length} genes`);
     await queryInterface.bulkInsert(
@@ -453,7 +453,7 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
       genes.map((rec) => {
         return {...rec, ident: uuidv4()};
       }),
-      {transaction}
+      {transaction},
     );
   }
 };

@@ -30,7 +30,7 @@ module.exports = {
         console.log('trim gene names');
         await queryInterface.sequelize.query(
           `UPDATE ${table} SET gene = TRIM(gene)`,
-          {transaction}
+          {transaction},
         );
         console.log(`copy genes from ${table}`);
         const records = await queryInterface.sequelize.query(
@@ -44,13 +44,13 @@ module.exports = {
             WHERE gene.deleted_at IS NULL AND mut.report_id = gene.report_id AND mut.gene = gene.name
           )
           ORDER BY report_id, name, deleted_at DESC, updated_at DESC, created_at DESC`,
-          {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+          {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
         );
         console.log(`copying ${records.length} records from ${table} to ${GENE_TABLE}`);
         await queryInterface.bulkInsert(
           GENE_TABLE,
           records.map(addIdent),
-          {transaction}
+          {transaction},
         );
       }
 
@@ -68,13 +68,13 @@ module.exports = {
               WHERE gene.deleted_at IS NULL AND mut.report_id = gene.report_id AND mut.${geneCol} = gene.name
             )
             ORDER BY report_id, ${geneCol}, deleted_at DESC, updated_at DESC, created_at DESC`,
-          {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+          {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
         );
         console.log(`copying ${records.length} records from ${SV_TABLE}.${geneCol} to ${GENE_TABLE}`);
         await queryInterface.bulkInsert(
           GENE_TABLE,
           records.map(addIdent),
-          {transaction}
+          {transaction},
         );
       }
 
@@ -85,7 +85,7 @@ module.exports = {
           `UPDATE ${table} mut set gene_id = gene.id
           FROM (SELECT * FROM ${GENE_TABLE} WHERE deleted_at IS NULL) gene
           WHERE gene.report_id = mut.report_id AND gene.name = mut.gene`,
-          {transaction}
+          {transaction},
         );
       }
 
@@ -95,7 +95,7 @@ module.exports = {
           `UPDATE ${SV_TABLE} mut set ${col}_id = gene.id
           FROM (SELECT * FROM ${GENE_TABLE} WHERE deleted_at IS NULL) gene
           WHERE gene.report_id = mut.report_id AND gene.name = mut.${col}`,
-          {transaction}
+          {transaction},
         );
       }
       // add FK not null constraint
@@ -106,7 +106,7 @@ module.exports = {
           table,
           'gene_id',
           {type: Sq.INTEGER, allowNull: false},
-          {transaction}
+          {transaction},
         );
       }
       for (const table of GENE_LINKED_VARIANT_TABLES) {
@@ -114,7 +114,7 @@ module.exports = {
         await queryInterface.removeColumn(
           table,
           'gene',
-          {transaction}
+          {transaction},
         );
       }
 
@@ -122,12 +122,12 @@ module.exports = {
       await queryInterface.removeColumn(
         SV_TABLE,
         'gene1',
-        {transaction}
+        {transaction},
       );
       await queryInterface.removeColumn(
         SV_TABLE,
         'gene2',
-        {transaction}
+        {transaction},
       );
 
       // determine the annotations for each gene based on the sections their variant is in currently
@@ -150,7 +150,7 @@ module.exports = {
             AND exp.gene_id = gene.id
             AND exp."outlierType" = 'upreg_onco'
         )`,
-        {transaction}
+        {transaction},
       );
 
       console.log('annotate genes as tumour suppressors based on their values in variant tables');
@@ -169,7 +169,7 @@ module.exports = {
             AND exp.gene_id = gene.id
             AND exp."outlierType" = 'downreg_tsg'
         )`,
-        {transaction}
+        {transaction},
       );
 
       // currently all 'unknown' small mutations genes are 'cancer related'
@@ -182,7 +182,7 @@ module.exports = {
           WHERE target.report_id = gene.report_id
             AND target.gene_id = gene.id
         )`,
-        {transaction}
+        {transaction},
       );
 
       await transaction.commit();

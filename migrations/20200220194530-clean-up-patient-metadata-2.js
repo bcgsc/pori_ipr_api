@@ -57,7 +57,7 @@ module.exports = {
         await Promise.all(
           tablesWithPogId.map((table) => {
             return queryInterface.removeColumn(table, 'pog_id', {transaction});
-          })
+          }),
         );
 
         // remove subscription table because it isn't used

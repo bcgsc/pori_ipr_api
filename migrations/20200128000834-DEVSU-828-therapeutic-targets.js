@@ -114,7 +114,7 @@ module.exports = {
       console.log('Select all rows from pog_analysis_reports_therapeutic_targets');
       const records = await queryInterface.sequelize.query(
         'SELECT * FROM pog_analysis_reports_therapeutic_targets',
-        {type: queryInterface.sequelize.QueryTypes.SELECT, transaction}
+        {type: queryInterface.sequelize.QueryTypes.SELECT, transaction},
       );
 
       const newRecords = transformTherapeuticTargetData(records);
@@ -133,7 +133,7 @@ module.exports = {
         await queryInterface.removeColumn(
           'pog_analysis_reports_therapeutic_targets',
           col,
-          {transaction}
+          {transaction},
         );
       }
 
@@ -145,7 +145,7 @@ module.exports = {
           'pog_analysis_reports_therapeutic_targets',
           field,
           options,
-          {transaction}
+          {transaction},
         );
       }
       console.log('Bulk insert the transformed data');
@@ -153,7 +153,7 @@ module.exports = {
       await queryInterface.bulkInsert(
         'pog_analysis_reports_therapeutic_targets',
         newRecords,
-        {transaction}
+        {transaction},
       );
       await transaction.commit();
     } catch (err) {

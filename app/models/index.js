@@ -19,7 +19,7 @@ const sequelize = new Sq(
     pool: {
       max: dbSettings.maxConn,
     },
-  }
+  },
 );
 
 // Import Application Models

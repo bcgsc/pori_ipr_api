@@ -32,7 +32,7 @@ const cleanExpressionData = async (queryInterface, Sq, transaction) => {
           AND foo.gene_id = main_exp.gene_id
       ) AND expression_class = 'na'
     `,
-    {transaction}
+    {transaction},
   );
 
   // double check nothing we didn't expect to delete was deleted
@@ -70,7 +70,7 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
         WHERE zygosity in ('na', 'ns', '', 'nan [nan]')`,
     {
       transaction,
-    }
+    },
   );
   console.log(`standardize ${MUT_TABLE} ref_alt NULL values`);
   await queryInterface.sequelize.query(
@@ -78,7 +78,7 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
         WHERE "ref_alt" = 'na'`,
     {
       transaction,
-    }
+    },
   );
 
   console.log(`fill the ${MUT_TABLE}.detected_in column base on tumour/RNA read counts`);
@@ -127,7 +127,7 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
     WHERE mut1.id = alt_counts.id`,
     {
       transaction,
-    }
+    },
   );
 
   const distinguishingColumns = ['gene_id', 'transcript', 'protein_change', 'location', 'ref_alt', 'zygosity'];
@@ -150,14 +150,14 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
     )`,
     {
       transaction,
-    }
+    },
   );
 
   const genesBefore = await countDistinctRowFrequency(
     queryInterface,
     transaction,
     MUT_TABLE,
-    distinguishingColumns
+    distinguishingColumns,
   );
 
   // collapse duplicates that only differed on non-essential information
@@ -167,7 +167,7 @@ const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
     queryInterface,
     transaction,
     MUT_TABLE,
-    distinguishingColumns
+    distinguishingColumns,
   );
   if (genesBefore !== genesAfter) {
     throw new Error(`Removed more entries than expected. There are less genes (${genesAfter}) than there were previously (${genesBefore})`);
@@ -201,23 +201,23 @@ const cleanStructuralVariantData = async (queryInterface, Sq, transaction) => {
   await queryInterface.sequelize.query(
     `UPDATE ${SV_TABLE} SET exon1 = REPLACE(exon1, 'e', ''), exon2 = REPLACE(exon2, 'e', '')
     WHERE exon1 LIKE 'e%' OR exon2 LIKE 'e%'`,
-    {transaction}
+    {transaction},
   );
   await queryInterface.sequelize.query(
     `UPDATE ${SV_TABLE} SET exon1 = null
     WHERE exon1 = '' OR exon1 = 'na' OR exon1 = '?'`,
-    {transaction}
+    {transaction},
   );
   await queryInterface.sequelize.query(
     `UPDATE ${SV_TABLE} SET exon2 = null
     WHERE exon2 = '' OR exon2 = 'na' OR exon2 = '?'`,
-    {transaction}
+    {transaction},
   );
   console.log('standardize breakpoint notation');
   await queryInterface.sequelize.query(
     `UPDATE ${SV_TABLE} SET breakpoint = REPLACE(breakpoint, '/', '|')
     WHERE breakpoint like '%/%'`,
-    {transaction}
+    {transaction},
   );
 
   // collapse duplicates that only differed on non-essential information
@@ -226,7 +226,7 @@ const cleanStructuralVariantData = async (queryInterface, Sq, transaction) => {
   console.log(`set values of ${SV_TABLE}.omic_support base on svVariant`);
   await queryInterface.sequelize.query(
     `UPDATE ${SV_TABLE} set omic_support = TRUE  WHERE "svVariant" = 'fusionOmicSupport'`,
-    {transaction}
+    {transaction},
   );
   console.log(`drop the ${SV_TABLE}.svVariant column`);
   await queryInterface.removeColumn(SV_TABLE, 'svVariant', {transaction});

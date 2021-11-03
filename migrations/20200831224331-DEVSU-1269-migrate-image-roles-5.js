@@ -13,7 +13,7 @@ module.exports = {
           SET key = LOWER(key)
           WHERE deleted_at IS NULL
             AND key like 'mutation_summary.%'`,
-        {transaction}
+        {transaction},
       );
       // convert old naming schemes
       const replacements = [
@@ -51,7 +51,7 @@ module.exports = {
               AND (
                 key ILIKE '${pattern}'
               );`,
-          {transaction, replacements: {oldText, newText}}
+          {transaction, replacements: {oldText, newText}},
         );
       }
 
@@ -71,7 +71,7 @@ module.exports = {
                   ORDER BY img.report_id, img.key, img.updated_at, img.id DESC
               ) foo WHERE foo.id = curr.id
             )`,
-        {transaction}
+        {transaction},
       );
       console.log(`soft-deleted ${softDeleted.length} duplicate images`);
 
@@ -106,7 +106,7 @@ module.exports = {
           AND comp.report_id = image.report_id
         )
         `,
-        {transaction}
+        {transaction},
       );
 
       // insert missing report comparator roles for non-average comparators
@@ -139,7 +139,7 @@ module.exports = {
               ORDER BY img.report_id, tv.image_comp, img.updated_at DESC
             ) foo
           `,
-            {transaction, replacements: {roleName}}
+            {transaction, replacements: {roleName}},
           );
           console.log(`created ${newComparators.length} new image comparator entries`);
         } catch (err) {
@@ -156,7 +156,7 @@ module.exports = {
       // throw error if any images were not able to be mapped
       const missingMappings = await queryInterface.sequelize.query(
         `SELECT * FROM ${tempView} WHERE comp_role IS NULL or image_comp IS NULL`,
-        {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+        {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
       );
       if (missingMappings.length) {
         console.log(missingMappings);
@@ -171,7 +171,7 @@ module.exports = {
             AND other.comp_role_type = curr.comp_role_type
             AND other.image_type = curr.image_type
         ) GROUP BY curr.report_id, curr.comp_role_type, curr.image_type`,
-        {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+        {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
       );
       if (duplicateMappings.length) {
         console.log(duplicateMappings);
@@ -184,7 +184,7 @@ module.exports = {
         `UPDATE ${IMAGE_TABLE} img SET key = REPLACE(img.key, tempview.image_comp, tempview.comp_role_type)
         FROM ${tempView} tempview
         WHERE img.id = tempview.image_id and img.deleted_at IS NULL`,
-        {transaction}
+        {transaction},
       );
       // check that no image keys were missed
       const failedRenames = await queryInterface.sequelize.query(
@@ -200,7 +200,7 @@ module.exports = {
             OR img.key ILIKE '%.quaternary'
           )
         `,
-        {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+        {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
       );
 
       if (failedRenames.length) {
@@ -210,14 +210,14 @@ module.exports = {
 
       await queryInterface.sequelize.query(
         `DROP VIEW ${tempView}`,
-        {transaction}
+        {transaction},
       );
 
       // add image key unique constraint so that the user cannot use the same
       // image key twice in a report
       try {
         await addUniqueActiveFieldIndex(
-          queryInterface, Sequelize, transaction, IMAGE_TABLE, ['report_id', 'key']
+          queryInterface, Sequelize, transaction, IMAGE_TABLE, ['report_id', 'key'],
         );
       } catch (err) {
         console.error(err);
