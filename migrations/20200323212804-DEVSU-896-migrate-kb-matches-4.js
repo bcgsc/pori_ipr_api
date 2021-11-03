@@ -3,7 +3,7 @@
  * individual variant tables and links these records back to the
  * kb-matches table
  */
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 const {equalOrBothNull} = require('../migrationTools');
 
 const KB_TABLE = 'reports_kb_matches';

@@ -1,7 +1,7 @@
 /**
  * Replace the gene column with use of the gene FK
  */
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 
 const GENE_TABLE = 'reports_genes';
 const SV_TABLE = 'reports_structural_variation_sv';

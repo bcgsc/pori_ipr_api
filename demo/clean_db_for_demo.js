@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 const nconf = require('../app/config');
 const logger = require('../app/log');
 // Load logging library

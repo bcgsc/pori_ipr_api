@@ -1,4 +1,4 @@
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 
 const SV_TABLE = 'reports_structural_variation_sv';
 const EXPRESSION_TABLE = 'reports_expression_outlier';
