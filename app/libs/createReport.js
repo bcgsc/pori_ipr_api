@@ -41,7 +41,7 @@ const createReportSection = async (reportId, modelName, sectionContent, options 
     await db.models[modelName].bulkCreate(
       records.map((newEntry) => {
         return {...newEntry, reportId};
-      }), options
+      }), options,
     );
   } catch (error) {
     throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
@@ -88,7 +88,7 @@ const createReportGenes = async (report, content, options = {}) => {
     const genes = await db.models.genes.bulkCreate(
       Object.values(geneDefns).map((newEntry) => {
         return {...newEntry, reportId: report.id};
-      }), options
+      }), options,
     );
 
     for (const gene of genes) {
@@ -139,7 +139,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
             gene1Id: genesRecordsByName[gene1],
             gene2Id: genesRecordsByName[gene2],
           };
-        }), options
+        }), options,
       );
     } else {
       // add the gene FK association
@@ -150,7 +150,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
             reportId,
             geneId: genesRecordsByName[gene],
           };
-        }), options
+        }), options,
       );
     }
   } catch (error) {
@@ -176,14 +176,14 @@ const createReportVariantSections = async (report, content, transaction) => {
   const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
     const mapping = await createReportVariantsSection(
-      report.id, geneDefns, variantModel, content[variantModel] || [], {transaction}
+      report.id, geneDefns, variantModel, content[variantModel] || [], {transaction},
     );
     variantMapping[variantType] = mapping;
   });
 
   // create the probe results (linked to gene but not to kbMatches)
   variantPromises.push(createReportVariantsSection(
-    report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction}
+    report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction},
   ));
 
   await Promise.all(variantPromises);

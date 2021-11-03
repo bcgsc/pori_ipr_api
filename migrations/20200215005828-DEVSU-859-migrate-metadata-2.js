@@ -15,13 +15,13 @@ module.exports = {
           JOIN pog_projects pp on (pogs.id = pp.pog_id)
           WHERE pp."deletedAt" IS NULL
           ORDER BY gsm.id,  pp.project_id, pp."updatedAt", pp."createdAt"
-        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
       );
       console.log(`inserting ${associations.length} associations`);
       await queryInterface.bulkInsert(
         MAPPING_TABLE,
         associations,
-        {transaction}
+        {transaction},
       );
 
       // copy the projects by name from the 'project' string field on the pogs table
@@ -35,7 +35,7 @@ module.exports = {
         ) gsm_projects WHERE NOT EXISTS (
           SELECT * FROM projects p where p.name = gsm_projects.name
         ) order by name, gsm_projects.id, created_at
-        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
       );
       const missingProjects = {};
       for (const {name, created_at} of missingProjectLinks) {
@@ -49,7 +49,7 @@ module.exports = {
       const newProjects = await queryInterface.bulkInsert(
         'projects',
         Object.values(missingProjects),
-        {transaction, returning: true}
+        {transaction, returning: true},
       );
 
       const missingLinks = missingProjectLinks.map((rec) => {

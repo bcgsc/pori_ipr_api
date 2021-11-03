@@ -1,4 +1,4 @@
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 
 const SV_TABLE = 'reports_structural_variation_sv';
 const EXPRESSION_TABLE = 'reports_expression_outlier';
@@ -65,7 +65,7 @@ module.exports = {
         {
           transaction,
           type: queryInterface.sequelize.QueryTypes.SELECT,
-        }
+        },
       );
       if (records.length) {
         console.log(`copying ${records.length} records from ${SV_TABLE} to ${EXPRESSION_TABLE}`);
@@ -74,7 +74,7 @@ module.exports = {
           records.map((r) => {
             return {...r, ident: uuidv4()};
           }),
-          {transaction}
+          {transaction},
         );
       }
 

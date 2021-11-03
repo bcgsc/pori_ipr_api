@@ -51,14 +51,14 @@ module.exports = {
           OR "ptxPerc" IS NOT NULL
           OR "ptxPogPerc" IS NOT NULL
           OR "ptxTotSampObs" IS NOT NULL`,
-        {transaction}
+        {transaction},
       );
       // delete the columns from the original table
       for (const col of DROP_COLUMNS) {
         await queryInterface.removeColumn(
           OLD_TABLE,
           col,
-          {transaction}
+          {transaction},
         );
       }
     });

@@ -134,7 +134,7 @@ router.route('/')
               },
               transaction,
               hooks: false,
-            }
+            },
           );
         }));
       });
