@@ -46,7 +46,7 @@ const validateAgainstSchema = (schema, data, useDefaults = true) => {
       }).join(', ');
 
       errors.push(
-        `${error.dataPath ? `${error.dataPath} ${error.message}` : error.message} [${errorParams}]`
+        `${error.dataPath ? `${error.dataPath} ${error.message}` : error.message} [${errorParams}]`,
       );
     });
 

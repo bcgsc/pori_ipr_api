@@ -180,7 +180,7 @@ describe('/reports/{REPORTID}/presentation/discussion', () => {
       expect(
         await db.models.presentationDiscussion.findOne({
           where: {ident: deleteDiscussion.ident},
-        })
+        }),
       ).toBe(null);
     });
   });
@@ -314,7 +314,7 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
       expect(
         await db.models.presentationSlides.findOne({
           where: {ident: deleteSlide.ident},
-        })
+        }),
       ).toBe(null);
     });
   });

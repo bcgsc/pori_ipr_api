@@ -20,13 +20,13 @@ module.exports = {
       console.log('Fill in missing variantType values. Initialize to NULL');
       await queryInterface.sequelize.query(
         `UPDATE ${KB_TABLE} SET variant_type = NULL`,
-        {transaction}
+        {transaction},
       );
       console.log('Mark expression variants');
       await queryInterface.sequelize.query(
         `UPDATE ${KB_TABLE} SET variant_type = 'exp', variant = lower(variant)
         WHERE lower(variant) LIKE '% express%'`,
-        {transaction}
+        {transaction},
       );
       console.log('Mark copy variants');
       await queryInterface.sequelize.query(
@@ -37,28 +37,28 @@ module.exports = {
           OR lower(variant) = 'homozygous loss'
           OR lower(variant) = 'homozygous deletion'
         `,
-        {transaction}
+        {transaction},
       );
       console.log('Mark structural variants');
       await queryInterface.sequelize.query(
         `UPDATE ${KB_TABLE} SET variant_type = 'sv'
         WHERE variant LIKE '%e%:e%'
         `,
-        {transaction}
+        {transaction},
       );
       console.log('Mark remaining variants as small mutations');
       await queryInterface.sequelize.query(
         `UPDATE ${KB_TABLE} SET variant_type = 'mut'
         WHERE variant_type IS NULL
         `,
-        {transaction}
+        {transaction},
       );
 
       console.log('standardize kb-matches structural variant gene names');
       await queryInterface.sequelize.query(
         `UPDATE ${KB_TABLE} SET gene = split_part(variant, ' (', 1)
         WHERE variant_type = 'sv' AND variant like '%::%'`,
-        {transaction}
+        {transaction},
       );
       console.log('standardize kb-matches structural variant variant names');
       await queryInterface.sequelize.query(
@@ -69,12 +69,12 @@ module.exports = {
           'g'
         ))
         WHERE variant_type = 'sv'`,
-        {transaction}
+        {transaction},
       );
       console.log('trim gene whitespace');
       await queryInterface.sequelize.query(
         `UPDATE ${KB_TABLE} SET gene = TRIM(gene)`,
-        {transaction}
+        {transaction},
       );
 
       console.log('standardize kb-matches expression variant categories');
@@ -84,7 +84,7 @@ module.exports = {
           transaction,
           type: queryInterface.sequelize.QueryTypes.SELECT,
           replacements: {variantType: 'exp'},
-        }
+        },
       );
 
       for (const {variant: cat} of categories) {
@@ -101,7 +101,7 @@ module.exports = {
           {
             transaction,
             replacements: {cat, variantType: 'exp', newCat},
-          }
+          },
         );
       }
 
@@ -112,7 +112,7 @@ module.exports = {
           transaction,
           type: queryInterface.sequelize.QueryTypes.SELECT,
           replacements: {variantType: 'cnv'},
-        }
+        },
       );
 
       for (const {variant: cat} of copyCategories) {
@@ -135,7 +135,7 @@ module.exports = {
           {
             transaction,
             replacements: {cat, variantType: 'cnv', newCat},
-          }
+          },
         );
       }
 
@@ -145,7 +145,7 @@ module.exports = {
         WHERE zygosity in ('na', 'ns', '')`,
         {
           transaction,
-        }
+        },
       );
       await transaction.commit();
     } catch (e) {

@@ -22,7 +22,7 @@ module.exports = {
         ) reranked
         WHERE reranked.id = options.id
         `,
-        {transaction}
+        {transaction},
       );
       await addUniqueActiveFieldIndex(
         queryInterface,

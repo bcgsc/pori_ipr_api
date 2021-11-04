@@ -97,7 +97,7 @@ router.route('/:template([A-z0-9-]{36})')
           height: DEFAULT_LOGO_HEIGHT,
           width: DEFAULT_LOGO_WIDTH,
           type: 'Logo',
-        }, {transaction})
+        }, {transaction}),
       );
     }
 
@@ -112,7 +112,7 @@ router.route('/:template([A-z0-9-]{36})')
           height: DEFAULT_HEADER_HEIGHT,
           width: DEFAULT_HEADER_WIDTH,
           type: 'Header',
-        }, {transaction})
+        }, {transaction}),
       );
     }
 
@@ -214,7 +214,7 @@ router.route('/')
           height: DEFAULT_LOGO_HEIGHT,
           width: DEFAULT_LOGO_WIDTH,
           type: 'Logo',
-        }, {transaction})
+        }, {transaction}),
       );
     }
 
@@ -229,7 +229,7 @@ router.route('/')
           height: DEFAULT_HEADER_HEIGHT,
           width: DEFAULT_HEADER_WIDTH,
           type: 'Header',
-        }, {transaction})
+        }, {transaction}),
       );
     }
 

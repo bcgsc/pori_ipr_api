@@ -1,6 +1,6 @@
 const getPort = require('get-port');
 const supertest = require('supertest');
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 const HTTP_STATUS = require('http-status-codes');
 
 const db = require('../../../app/models');

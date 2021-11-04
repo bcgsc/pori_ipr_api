@@ -1,4 +1,4 @@
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 // all tables that have a pog_id
 // excluding pog_analysis_report which is removed later
 // because the pog_id is used in a latter query
@@ -57,7 +57,7 @@ module.exports = {
         await Promise.all(
           tablesWithPogId.map((table) => {
             return queryInterface.removeColumn(table, 'pog_id', {transaction});
-          })
+          }),
         );
 
         // remove subscription table because it isn't used

@@ -31,14 +31,14 @@ module.exports = {
         await Promise.all(
           tablesToDelete.map((table) => {
             return queryInterface.dropTable(table, {transaction});
-          })
+          }),
         );
 
         // remove unique ident from tables
         await Promise.all(
           objectsToRemoveUniqueIdent.map((entry) => {
             return queryInterface.removeConstraint(entry.table, entry.constraint, {transaction});
-          })
+          }),
         );
 
         // change all tables to have snake case for timestampz columns createdAt, updated_at, etc..
@@ -49,7 +49,7 @@ module.exports = {
               queryInterface.renameColumn(table, 'updatedAt', 'updated_at', {transaction}),
               queryInterface.renameColumn(table, 'deletedAt', 'deleted_at', {transaction}),
             ]);
-          })
+          }),
         );
 
         // add delete column and update camel case columns to snake case
@@ -82,7 +82,7 @@ module.exports = {
               },
               transaction,
             });
-          })
+          }),
         );
       });
     } catch (error) {
