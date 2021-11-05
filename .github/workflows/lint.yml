@@ -12,4 +12,4 @@ jobs:
           node-version: '16'
       - run: npm ci
       - name: Run ESLint
-        run: npx eslint . --ext .js
+        run: npx eslint . --quiet
