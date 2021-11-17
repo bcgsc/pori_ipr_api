@@ -134,7 +134,7 @@ const DEFAULT_OPTIONS = {
       instance.updatedBy = options.userId;
 
       return instance.constructor.create({
-        ...content, deletedAt: new Date().getTime(),
+        ...content, deletedAt: new Date(),
       }, {
         silent: true,
         transaction: options.transaction,
