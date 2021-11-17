@@ -5976,6 +5976,166 @@
           }
         }
       }
+    },
+    "/templates/{template}/appendix": {
+      "get": {
+        "summary": "Get Template Appendix",
+        "description": "Retrieve a templates appendix",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Template Appendix"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of a templates appendix",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateAppendix"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or appendix not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Template Appendix",
+        "description": "Upload a new template appendix",
+        "parameters": [
+        ],
+        "requestBody": {
+          "description": "Template appendix data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/templateAppendixCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Template Appendix"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the created template appendix",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateAppendix"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "An appendix already exists for this template"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Template Appendix",
+        "description": "Update the details of a templates appendix",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "requestBody": {
+          "description": "Template appendix data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/templateAppendixUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Template Appendix"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated template appendix",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateAppendix"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or appendix not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Template Appendix",
+        "description": "Removes the specified templates appendix",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Template Appendix"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or appendix not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
