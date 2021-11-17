@@ -22,7 +22,7 @@ module.exports = {
       await queryInterface.sequelize.query(
         `UPDATE ${TABLE} SET ${kbUrlColumn} = 'https://ipr.bcgsc.ca/knowledgebase/references'
         WHERE ${kbUrlColumn} IS NULL`,
-        {transaction}
+        {transaction},
       );
 
       await queryInterface.addColumn('reports_genes', 'known_fusion_partner', {

@@ -8,7 +8,7 @@ const schema = schemaManager.generate(
   db.models.germlineSmallMutation, new JsonSchema7Strategy(), {
     exclude: BASE_EXCLUDE,
     associations: false,
-  }
+  },
 );
 
 module.exports = schema;

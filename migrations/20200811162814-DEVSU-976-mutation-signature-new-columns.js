@@ -39,7 +39,7 @@ module.exports = {
             "deletedAt" timestamp with time zone
           )) spec JOIN ${TABLE} sig USING (report_id, signature)
         WHERE spec.deleted_at IS NULL`,
-        {transaction}
+        {transaction},
       );
       console.log('soft-delete selected signatures');
       // make the selected signatures entries as deleted
@@ -48,7 +48,7 @@ module.exports = {
         SET deleted_at = ss.updated_at
         FROM ${tempView} ss
         WHERE ss.signature = sig.signature AND ss.report_id = sig.report_id`,
-        {transaction}
+        {transaction},
       );
 
       console.log('create the new signatures records');
@@ -84,11 +84,11 @@ module.exports = {
           selected,
           report_id
         FROM ${tempView}`,
-        {transaction}
+        {transaction},
       );
       // drop the view and source column
       await queryInterface.sequelize.query(
-        `ALTER TABLE ${SOURCE_TABLE} DROP COLUMN "mutationSignature" CASCADE`, {transaction}
+        `ALTER TABLE ${SOURCE_TABLE} DROP COLUMN "mutationSignature" CASCADE`, {transaction},
       );
       // rename table to simplify
       await queryInterface.renameTable(TABLE, 'reports_mutation_signature', {transaction});

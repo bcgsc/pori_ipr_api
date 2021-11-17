@@ -6,7 +6,7 @@ module.exports = {
         UPDATE templates
         SET sections = sections || '["pharmacogenomic"]'::jsonb
         WHERE name = 'genomic';
-      `
+      `,
     );
   },
 
