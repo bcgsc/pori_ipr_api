@@ -4,17 +4,19 @@ const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 
-const db = require('../models');
-const logger = require('../log');
-const {uploadImage} = require('../libs/image');
+const db = require('../../models');
+const logger = require('../../log');
+const {uploadImage} = require('../../libs/image');
 
-const schemaGenerator = require('../schemas/schemaGenerator');
-const validateAgainstSchema = require('../libs/validateAgainstSchema');
-const {BASE_EXCLUDE} = require('../schemas/exclude');
+const templateMiddleware = require('../../middleware/template');
+
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 const {
   DEFAULT_HEADER_HEIGHT, DEFAULT_HEADER_WIDTH, DEFAULT_LOGO_HEIGHT, DEFAULT_LOGO_WIDTH,
-} = require('../constants');
+} = require('../../constants');
 
 // Generate schema's
 const createSchema = schemaGenerator(db.models.template, {
@@ -24,32 +26,8 @@ const updateSchema = schemaGenerator(db.models.template, {
   baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'], nothingRequired: true,
 });
 
-
-// Middleware for templates
-router.param('template', async (req, res, next, ident) => {
-  let result;
-  try {
-    result = await db.models.template.findOne({
-      where: {ident},
-      include: [
-        {as: 'logoImage', model: db.models.image.scope('public')},
-        {as: 'headerImage', model: db.models.image.scope('public')},
-      ],
-    });
-  } catch (error) {
-    logger.error(`Error while finding template ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while finding template'}});
-  }
-
-  if (!result) {
-    logger.error(`Unable to find template with ident: ${ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find template with ident: ${ident}`}});
-  }
-
-  // Add template to request
-  req.template = result;
-  return next();
-});
+// Register template middleware
+router.param('template', templateMiddleware);
 
 // Handle requests for template by ident
 router.route('/:template([A-z0-9-]{36})')

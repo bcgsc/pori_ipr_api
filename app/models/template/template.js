@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('./base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const template = sequelize.define('template', {
