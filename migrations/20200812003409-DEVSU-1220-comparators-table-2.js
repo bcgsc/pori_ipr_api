@@ -31,7 +31,7 @@ const migrateComparator = async (
     {
       transaction,
       replacements,
-    }
+    },
   );
 };
 
@@ -68,7 +68,7 @@ module.exports = {
             FROM ${table}
             WHERE deleted_at IS NULL
             ORDER BY report_id, "${column}", created_at, updated_at`,
-            {transaction, replacements: {role}}
+            {transaction, replacements: {role}},
           );
         }
 
@@ -90,7 +90,7 @@ module.exports = {
           FROM ${BURDEN_TABLE}
           WHERE deleted_at IS NULL
           GROUP BY report_id`,
-          {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+          {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
         );
 
         // create view of non-duplicates
@@ -188,7 +188,7 @@ module.exports = {
               average: 'average',
               role: 'mutation burden (primary)',
             },
-            'AND comparator != :average'
+            'AND comparator != :average',
           );
           console.log(`created ${newRows} rows`);
           await queryInterface.sequelize.query(
@@ -223,7 +223,7 @@ module.exports = {
             queryInterface,
             transaction,
             {reportIds, role: `mutation burden (${role})`, comparator},
-            'AND comparator = :comparator'
+            'AND comparator = :comparator',
           );
           if (newRows !== reportIds.length) {
             throw new Error(`Did not create (${newRows}) the expected number of new rows (${reportIds.length})`);
@@ -256,7 +256,7 @@ module.exports = {
           WHERE deleted_at IS NULL
             AND "tcgaQCCol" IS NOT NULL
           ORDER BY report_id, "tcgaQCCol", updated_at, created_at DESC`,
-          {transaction}
+          {transaction},
         );
 
         // drop the comparator columns from the variant tables
@@ -278,7 +278,7 @@ module.exports = {
             AND ann.report_id = rep.id
             AND ann.deleted_at IS NULL
           `,
-          {transaction}
+          {transaction},
         );
         // drop the tumour analysis table
         await queryInterface.dropTable(ANALYSIS_TABLE, {transaction});

@@ -29,7 +29,7 @@ const testAutocompleteWithKeyword = async (request, type, keyword) => {
           '@class': expect.anything(),
         }),
       ]),
-    })
+    }),
   );
   return body.result;
 };
@@ -50,7 +50,7 @@ const testAutocompleteWithoutKeyword = async (request, type) => {
           '@class': expect.anything(),
         }),
       ]),
-    })
+    }),
   );
   return body.result;
 };

@@ -7,14 +7,14 @@ module.exports = {
         `
           ALTER TABLE ${TABLE} ALTER COLUMN state
             DROP DEFAULT
-        `, {transaction}
+        `, {transaction},
       );
 
       await queryInterface.sequelize.query(
         `
           UPDATE ${TABLE} SET state = 'reviewed'
             WHERE state = 'presented'
-        `, {transaction}
+        `, {transaction},
       );
 
       await queryInterface.changeColumn(TABLE, 'state', {
@@ -26,7 +26,7 @@ module.exports = {
         `
           ALTER TABLE ${TABLE} ALTER COLUMN state
             SET DEFAULT 'ready'::enum_reports_state
-        `, {transaction}
+        `, {transaction},
       );
     });
   },

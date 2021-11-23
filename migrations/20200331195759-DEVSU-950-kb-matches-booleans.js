@@ -11,19 +11,19 @@ module.exports = {
         `UPDATE ${TABLE} SET ${approvedTherapyColumn} = 'true'
       WHERE ${approvedTherapyColumn} = 'thisCancer'
         OR ${approvedTherapyColumn} = 'otherCancer'`,
-        {transaction}
+        {transaction},
       );
 
       await queryInterface.sequelize.query(
         `UPDATE ${TABLE} SET ${approvedTherapyColumn} = 'false'
         WHERE ${approvedTherapyColumn} IS NULL`,
-        {transaction}
+        {transaction},
       );
 
       await queryInterface.sequelize.query(
         `UPDATE ${TABLE} SET ${matchedCancerColumn} = 'false'
         WHERE ${matchedCancerColumn} IS NULL`,
-        {transaction}
+        {transaction},
       );
 
       await queryInterface.changeColumn(TABLE, matchedCancerColumn, {
