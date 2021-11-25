@@ -19,7 +19,7 @@ const sequelize = new Sq(
     pool: {
       max: dbSettings.maxConn,
     },
-  }
+  },
 );
 
 // Import Application Models
@@ -447,7 +447,7 @@ msi.belongsTo(analysisReports, {
 const image = require('./image')(sequelize, Sq);
 
 // Template
-const template = require('./template')(sequelize, Sq);
+const template = require('./template/template')(sequelize, Sq);
 
 template.belongsTo(image, {
   as: 'logoImage', foreignKey: 'logoId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
@@ -461,6 +461,17 @@ analysisReports.belongsTo(template, {
 });
 template.hasMany(analysisReports, {
   as: 'reports', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
+});
+
+// Template Appendix
+const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
+
+template.hasOne(templateAppendix, {
+  as: 'appendix', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+templateAppendix.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Germline Small Mutations

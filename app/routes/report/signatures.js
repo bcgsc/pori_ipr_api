@@ -71,7 +71,7 @@ router.route('/sign/:role(author|reviewer)')
     // add author or reviewer
     const data = {};
     data[`${role}Id`] = req.user.id;
-    data[`${role}SignedAt`] = new Date().toISOString();
+    data[`${role}SignedAt`] = new Date();
 
     // check if report has signatures
     if (!req.signatures) {

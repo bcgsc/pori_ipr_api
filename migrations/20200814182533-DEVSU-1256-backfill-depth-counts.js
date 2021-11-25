@@ -9,7 +9,7 @@ module.exports = {
           WHERE ${sampleType}_alt_count IS NOT NULL
             AND ${sampleType}_ref_count IS NOT NULL
             AND ${sampleType}_depth IS NULL`,
-          {transaction}
+          {transaction},
         );
       }));
     });

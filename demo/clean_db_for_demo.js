@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 const nconf = require('../app/config');
 const logger = require('../app/log');
 // Load logging library
@@ -21,7 +21,7 @@ const sequelize = new Sq(
     port: dbSettings.port,
     schema: dbSettings.schema,
     logging: null,
-  }
+  },
 );
 
 const TRUNCATE_TABLES = [
@@ -37,11 +37,11 @@ const checkReportsCount = async (queryInterface, transaction, minReports = 3) =>
     {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
-    }
+    },
   );
   if (reportCount < minReports) {
     throw new Error(
-      `failed to keep the min number (${minReports}) of target reports: ${reportCount}`
+      `failed to keep the min number (${minReports}) of target reports: ${reportCount}`,
     );
   }
 };
@@ -57,7 +57,7 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
       replacements: {
         name: groupName,
       },
-    }
+    },
   );
 
   const [isMember] = await queryInterface.sequelize.query(
@@ -69,7 +69,7 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
         userId: demoUser.id,
         groupId: group.id,
       },
-    }
+    },
   );
 
   if (!isMember) {
@@ -88,7 +88,7 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
           userId: demoUser.id,
           groupId: group.id,
         },
-      }
+      },
     );
   }
 };
@@ -103,7 +103,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
       replacements: {
         name: projectName,
       },
-    }
+    },
   );
 
   if (!project) {
@@ -121,7 +121,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
         replacements: {
           projectName, uuid: uuidv4(),
         },
-      }
+      },
     );
   }
 
@@ -134,7 +134,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
         userId: demoUser.id,
         projectId: project.id,
       },
-    }
+    },
   );
 
   if (!isMember) {
@@ -153,7 +153,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
           userId: demoUser.id,
           projectId: project.id,
         },
-      }
+      },
     );
   }
 };
@@ -164,7 +164,7 @@ const cleanUsers = async (queryInterface, transaction) => {
   await queryInterface.sequelize.query(
     `DELETE FROM user_groups
       WHERE deleted_at IS NOT NULL OR NOT (name in (:groups))`,
-    {transaction, replacements: {groups: ['admin', 'manager', 'reviewer']}}
+    {transaction, replacements: {groups: ['admin', 'manager', 'reviewer']}},
   );
 
   console.log('create the demo user if not exists');
@@ -180,7 +180,7 @@ const cleanUsers = async (queryInterface, transaction) => {
         type: 'bcgsc',
         email: 'iprdemo@bcgsc.ca',
       },
-    }
+    },
   );
   if (!demoUser) {
     [[demoUser]] = await queryInterface.sequelize.query(
@@ -203,7 +203,7 @@ const cleanUsers = async (queryInterface, transaction) => {
           email: 'iprdemo@bcgsc.ca',
           uuid: uuidv4(),
         },
-      }
+      },
     );
     console.log('created', demoUser);
   }
@@ -218,7 +218,7 @@ const cleanUsers = async (queryInterface, transaction) => {
       replacements: {
         id: demoUser.id,
       },
-    }
+    },
   );
   if (!userMetadata) {
     await queryInterface.sequelize.query(
@@ -235,14 +235,14 @@ const cleanUsers = async (queryInterface, transaction) => {
           uuid: uuidv4(),
           id: demoUser.id,
         },
-      }
+      },
     );
   }
 
   console.log('make iprdemo user the group owner of all groups');
   await queryInterface.sequelize.query(
     'UPDATE user_groups SET owner_id = :owner',
-    {transaction, replacements: {owner: demoUser.id}}
+    {transaction, replacements: {owner: demoUser.id}},
   );
 
   await addDemoUserToGroup(queryInterface, transaction, demoUser, 'admin');
@@ -252,7 +252,7 @@ const cleanUsers = async (queryInterface, transaction) => {
   console.log('drop all other users');
   await queryInterface.sequelize.query(
     'DELETE FROM users WHERE username != :username',
-    {transaction, replacements: {username: 'iprdemo'}}
+    {transaction, replacements: {username: 'iprdemo'}},
   );
 };
 
@@ -274,7 +274,7 @@ const cleanDb = async () => {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
         replacements: {name: 'PORI'},
-      }
+      },
     )).map((r) => {
       return r.id;
     });
@@ -287,7 +287,7 @@ const cleanDb = async () => {
         replacements: {
           reportsToKeep,
         },
-      }
+      },
     );
 
     const reportTables = await queryInterface.sequelize.query(
@@ -296,7 +296,7 @@ const cleanDb = async () => {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
         replacements: {reportTablePattern: 'reports\\_%'},
-      }
+      },
     );
     reportTables.push('report_projects'); // does not follow pattern
 
@@ -309,7 +309,7 @@ const cleanDb = async () => {
           replacements: {
             reportsToKeep,
           },
-        }
+        },
       );
     }
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
@@ -323,19 +323,19 @@ const cleanDb = async () => {
     await queryInterface.sequelize.query(
       `DELETE FROM projects
         WHERE deleted_at IS NOT NULL OR NOT (name in (:projects))`,
-      {transaction, replacements: {projects: ['PORI', 'TEST']}}
+      {transaction, replacements: {projects: ['PORI', 'TEST']}},
     );
 
     await queryInterface.sequelize.query(
       'UPDATE reports SET "createdBy_id" = NULL',
-      {transaction}
+      {transaction},
     );
     await queryInterface.sequelize.query(
       'DELETE FROM reports_kb_matches WHERE evidence_level ILIKE :name',
       {
         transaction,
         replacements: {name: '%oncokb%'},
-      }
+      },
     );
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
@@ -345,7 +345,7 @@ const cleanDb = async () => {
     // anonymize reports_pairwise_expression_correlation patient id data
     const correlations = await queryInterface.sequelize.query(
       'SELECT patient_id, library, ident from reports_pairwise_expression_correlation',
-      {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+      {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
     );
     // sort by ident to avoid chronological ordering
     correlations.sort((a, b) => {
@@ -367,7 +367,7 @@ const cleanDb = async () => {
             newPatientId: `PATIENT${i}`,
             newLibrary: `LIB00${i}`,
           },
-        }
+        },
       );
     }
 
@@ -381,7 +381,7 @@ const cleanDb = async () => {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
         replacements: {tcgaPattern: 'TCGA-%'},
-      }
+      },
     );
       // sort by ident to avoid chronological ordering
     nonTcgaPatients.sort((a, b) => {
@@ -399,7 +399,7 @@ const cleanDb = async () => {
             patientId: nonTcgaPatients[i].patient_id,
             newPatientId: `PATIENT${i}`,
           },
-        }
+        },
       );
     }
 
@@ -413,7 +413,7 @@ const cleanDb = async () => {
           biopsy_date = NULL`,
       {
         transaction,
-      }
+      },
     );
 
     // anonymize clinician and age in patient information table
@@ -423,7 +423,7 @@ const cleanDb = async () => {
       {
         transaction,
         replacements: {physician: 'REDACTED'},
-      }
+      },
     );
   });
 };

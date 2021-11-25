@@ -2,10 +2,10 @@ const Sq = require('sequelize');
 const {includesAll} = require('../libs/helperFunctions');
 const clearCache = require('./clearCache');
 
-const DEFAULT_UPDATE_EXCLUDE = ['updatedAt'];
+const DEFAULT_UPDATE_EXCLUDE = ['updatedAt', 'updatedBy'];
 
 const SIGNATURE_REMOVAL_EXCLUDE = {
-  report: ['state', 'presentationDate', 'updatedAt'],
+  report: ['state', 'presentationDate', 'updatedAt', 'updatedBy'],
 };
 
 
@@ -134,7 +134,7 @@ const DEFAULT_OPTIONS = {
       instance.updatedBy = options.userId;
 
       return instance.constructor.create({
-        ...content, deletedAt: new Date().getTime(),
+        ...content, deletedAt: new Date(),
       }, {
         silent: true,
         transaction: options.transaction,

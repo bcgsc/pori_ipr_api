@@ -2,6 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../../models');
 const logger = require('../../log');
 const cache = require('../../cache');
+const aclMiddleware = require('../acl');
 
 // Middleware for germline reports
 module.exports = async (req, res, next, ident) => {
@@ -9,6 +10,16 @@ module.exports = async (req, res, next, ident) => {
   const include = [
     {as: 'biofxAssigned', model: db.models.user.scope('public')},
     {as: 'projects', model: db.models.project.scope('public'), through: {attributes: []}},
+    {
+      as: 'users',
+      model: db.models.germlineReportUser,
+      attributes: {
+        exclude: ['id', 'germlineReportId', 'user_id', 'addedById', 'deletedAt', 'updatedBy'],
+      },
+      include: [
+        {model: db.models.user.scope('public'), as: 'user'},
+      ],
+    },
     {
       as: 'variants',
       model: db.models.germlineSmallMutationVariant,
@@ -62,5 +73,5 @@ module.exports = async (req, res, next, ident) => {
   }
 
   req.report = result;
-  return next();
+  return aclMiddleware(req, res, next);
 };
