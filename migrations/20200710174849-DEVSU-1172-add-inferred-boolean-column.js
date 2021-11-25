@@ -8,7 +8,7 @@ module.exports = {
       return queryInterface.sequelize.query(
         `
           UPDATE reports_kb_matches SET inferred = (kb_data ->> 'inferred')::boolean WHERE kb_data -> 'inferred' IS NOT NULL
-        `, {transaction}
+        `, {transaction},
       );
     });
   },

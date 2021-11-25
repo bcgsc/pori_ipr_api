@@ -5,13 +5,13 @@ module.exports = {
       const [original] = await queryInterface.sequelize.query(
         `
         SELECT id FROM projects WHERE name = 'PanGen'
-        `, {type: Sequelize.QueryTypes.SELECT, transaction}
+        `, {type: Sequelize.QueryTypes.SELECT, transaction},
       );
 
       const [duplicate] = await queryInterface.sequelize.query(
         `
         SELECT id FROM projects WHERE name = 'PANGEN' AND deleted_at IS NULL
-        `, {type: Sequelize.QueryTypes.SELECT, transaction}
+        `, {type: Sequelize.QueryTypes.SELECT, transaction},
       );
 
       // update project id's as long as it doesn't create a duplicate
@@ -22,7 +22,7 @@ module.exports = {
           NOT EXISTS (
             SELECT id FROM report_projects WHERE report_id = rp.report_id AND project_id = ${original.id}
           )
-        `, {transaction}
+        `, {transaction},
       );
 
       await queryInterface.sequelize.query(
@@ -32,7 +32,7 @@ module.exports = {
           NOT EXISTS (
             SELECT id FROM germline_reports_to_projects WHERE germline_report_id = grp.germline_report_id AND project_id = ${original.id}
           )
-        `, {transaction}
+        `, {transaction},
       );
 
       // Remove duplicate project

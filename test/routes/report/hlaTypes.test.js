@@ -211,7 +211,7 @@ describe('/reports/{REPORTID}/hla-types', () => {
       expect(
         await db.models.hlaTypes.findOne({
           where: {ident: deleteHlaType.ident},
-        })
+        }),
       ).toBe(null);
     });
   });

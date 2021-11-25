@@ -131,7 +131,7 @@ router.get('/batch/download', async (req, res) => {
   // Prepare export
   const workbook = new Excel.Workbook();
   // Get current date in format: YYYY-MM-DD
-  const date = new Date().toISOString().replace(/T(.*)/, '');
+  const date = new Date().toLocaleString('en-ca', {year: 'numeric', month: 'numeric', day: 'numeric'});
 
   workbook.subject = `Germline Small Mutation Reports Batch Export - ${date}`;
   workbook.creator = `Integrated Pipeline Reports - C/O ${req.user.firstName} ${req.user.lastName}`;
