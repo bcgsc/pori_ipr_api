@@ -73,7 +73,7 @@ module.exports = {
             name: 'deletedAt',
             field: 'deleted_at',
           },
-        }, {transaction}
+        }, {transaction},
       );
 
       console.log('add the split gene columns to the structural variants table');

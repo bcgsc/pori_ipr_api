@@ -35,7 +35,7 @@ const countDistinctRowFrequency = async (queryInterface, transaction, table, att
   const columns = wrapColumnNames(attributes);
   const [{freq}] = await queryInterface.sequelize.query(
     `SELECT count(*) as freq FROM (SELECT DISTINCT ${columns.join(', ')} FROM ${table}) temp`,
-    {transaction, type: queryInterface.sequelize.QueryTypes.SELECT}
+    {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
   );
   return freq;
 };

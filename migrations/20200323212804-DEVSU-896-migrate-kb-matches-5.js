@@ -16,7 +16,7 @@ module.exports = {
         KB_TABLE,
         'variant_id',
         {type: Sq.INTEGER, allowNull: false},
-        {transaction}
+        {transaction},
       );
       const columnsToDrop = [
         'gene',
@@ -36,7 +36,7 @@ module.exports = {
         await queryInterface.changeColumn(
           SV_TABLE,
           col,
-          {type: `INTEGER USING ${col}::INTEGER`, allowNull: true, defaultValue: null}
+          {type: `INTEGER USING ${col}::INTEGER`, allowNull: true, defaultValue: null},
         );
       }
       await transaction.commit();

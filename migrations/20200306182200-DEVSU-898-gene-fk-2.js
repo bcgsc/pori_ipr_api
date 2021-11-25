@@ -19,7 +19,7 @@ module.exports = {
           gene2 = TRIM(split_part(genes, '::', 2)),
           exon1 = split_part(exons, ':', 1),
           exon2 = split_part(exons, ':', 2)`,
-        {transaction}
+        {transaction},
       );
 
       console.log('remove the exons and genes columns');

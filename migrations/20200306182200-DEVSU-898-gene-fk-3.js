@@ -26,7 +26,7 @@ module.exports = {
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE',
           },
-          {transaction}
+          {transaction},
         );
       }
 
@@ -38,7 +38,7 @@ module.exports = {
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE',
         },
-        {transaction}
+        {transaction},
       );
       await queryInterface.addColumn(
         SV_TABLE,
@@ -48,7 +48,7 @@ module.exports = {
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE',
         },
-        {transaction}
+        {transaction},
       );
 
 

@@ -61,7 +61,7 @@ module.exports = {
           REPORT_TABLE_NAME,
           col,
           {type: Sq.TEXT},
-          {transaction}
+          {transaction},
         );
       }
 
@@ -78,7 +78,7 @@ module.exports = {
           FROM pog_analysis pa
           JOIN "POGs" pogs on (pogs.id = pa.pog_id)
           WHERE pa.id = gsm.pog_analysis_id
-        )`, {transaction}
+        )`, {transaction},
       );
 
       console.log('add the not null contraints to the new patient_id column');
@@ -88,7 +88,7 @@ module.exports = {
         {
           allowNull: false, type: Sq.TEXT,
         },
-        {transaction}
+        {transaction},
       );
 
       console.log('create the new project mapping table');

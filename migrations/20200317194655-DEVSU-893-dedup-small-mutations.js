@@ -1,5 +1,5 @@
 
-const uuidv4 = require('uuid/v4');
+const {v4: uuidv4} = require('uuid');
 
 const EXPRESSION_TABLE = 'reports_expression_outlier';
 const MUT_TABLE = 'reports_somatic_mutations_small_mutations';
@@ -45,7 +45,7 @@ module.exports = {
         {
           transaction,
           type: queryInterface.sequelize.QueryTypes.SELECT,
-        }
+        },
       );
       if (expRecords.length) {
         console.log(`copying ${expRecords.length} records from ${MUT_TABLE} to ${EXPRESSION_TABLE}`);
@@ -54,7 +54,7 @@ module.exports = {
           expRecords.map((r) => {
             return {...r, ident: uuidv4()};
           }),
-          {transaction}
+          {transaction},
         );
       }
 
@@ -83,7 +83,7 @@ module.exports = {
         {
           transaction,
           type: queryInterface.sequelize.QueryTypes.SELECT,
-        }
+        },
       );
       if (cnvRecords.length) {
         console.log(`copying ${cnvRecords.length} records from ${MUT_TABLE} to ${CNV_TABLE}`);
@@ -92,7 +92,7 @@ module.exports = {
           cnvRecords.map((r) => {
             return {...r, ident: uuidv4()};
           }),
-          {transaction}
+          {transaction},
         );
       }
       // remove expression columns

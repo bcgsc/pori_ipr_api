@@ -15,7 +15,7 @@ module.exports = {
             AND probet.report_id = genet.report_id
           )
         )`,
-        {type: queryInterface.sequelize.QueryTypes.SELECT, transaction}
+        {type: queryInterface.sequelize.QueryTypes.SELECT, transaction},
       );
 
       console.log(`Inserting ${recordsToMove.length} records into pog_analysis_reports_summary_probe_target`);
@@ -25,7 +25,7 @@ module.exports = {
         recordsToMove.map(({id, ...row}) => {
           return row;
         }), // remove the id, let the table re-generate PK
-        {transaction}
+        {transaction},
       );
 
       // drop pog_analysis_reports_dga_targeted_genes
@@ -37,7 +37,7 @@ module.exports = {
       await queryInterface.renameTable(
         'pog_analysis_reports_summary_probe_target',
         'pog_analysis_reports_probe_results',
-        {transaction}
+        {transaction},
       );
 
       // remove the pog_id column
@@ -45,7 +45,7 @@ module.exports = {
       await queryInterface.removeColumn(
         'pog_analysis_reports_probe_results',
         'pog_id',
-        {transaction}
+        {transaction},
       );
 
       await transaction.commit();
