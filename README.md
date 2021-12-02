@@ -84,6 +84,8 @@ Developer documentation is generated using the JSDoc library. To generate a loca
 
 ## Migrating Database Changes
 
+> :warning: **WARNING:** Releases which include database migrations should also include an update of the demo db dump. See [instructions](./demo/README.md) on how to create and commit the new dump.
+
 * Create a migration: `npx sequelize migration:create --name name_of_migratrion`
 * Write up and down functions in your migration file
 * According to your changes in migration file, change your Sequelize models manually
