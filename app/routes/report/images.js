@@ -69,9 +69,15 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'expDensity\\.\\S+',
+    pattern: 'expDensity.histogram.\\S+',
     width: 450,
     height: 450,
+    format: 'PNG',
+  },
+  {
+    pattern: 'expDensity.violin.\\S+',
+    width: 825,
+    height: 1965,
     format: 'PNG',
   },
   {
