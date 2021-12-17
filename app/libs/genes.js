@@ -39,8 +39,8 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
     }),
     db.models.imageData.scope('public').findAll({
       where: {
-        key: {[Op.iLike]: `%expDensity.${name}%`},
         reportId,
+        key: {[Op.iLike]: `expDensity.%.${name}%`},
       },
     }),
     db.models.structuralVariants.scope('public').findAll({
