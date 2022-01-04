@@ -1,5 +1,7 @@
 # Creating the Demo Database Dump
 
+> :warning: **BEFORE YOU START!** The demo dump is created from a cleaned/stripped version of the production database. Only reports under the PORI project are kept. If any changes have been made to these reports since the last dump then they must be manually reviewed by the developer creating the dump beforehand to double check nothing has been uploaded, edited or added that should not be included in public data (ex. identifiable or proprietary information).
+
 First create a dump of the production database (see migrationTools create).
 
 ```bash
