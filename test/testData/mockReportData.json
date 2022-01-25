@@ -165,7 +165,7 @@
     ],
     "kbMatches": [
         {
-            "category": "pharmacogenomic",
+            "category": "cancer predisposition",
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
