@@ -26,11 +26,12 @@ const UPDATE_DATA = {
 
 const germlineVariantProperties = [
   'ident', 'createdAt', 'updatedAt', 'hidden', 'flagged', 'clinvar', 'cglCategory', 'gmaf',
-  'transcript', 'gene', 'variant', 'impact', 'chromosome', 'position', 'dbSnp', 'reference',
-  'alteration', 'score', 'zygosityGermline', 'preferredTranscript', 'hgvsCdna', 'hgvsProtein',
-  'zygosityTumour', 'genomicVariantReads', 'rnaVariantReads', 'geneSomaticAbberation', 'notes',
-  'type', 'patientHistory', 'familyHistory', 'tcgaCompNormPercentile', 'tcgaCompPercentile',
-  'gtexCompPercentile', 'fcBodymap', 'geneExpressionRpkm', 'additionalInfo',
+  'transcript', 'gene', 'variant', 'impact', 'chromosome', 'position', 'dbSnpIds', 'clinvarIds',
+  'cosmicIds', 'reference', 'alteration', 'score', 'zygosityGermline', 'preferredTranscript',
+  'hgvsCdna', 'hgvsProtein', 'zygosityTumour', 'genomicVariantReads', 'rnaVariantReads',
+  'geneSomaticAbberation', 'notes', 'type', 'patientHistory', 'familyHistory',
+  'tcgaCompNormPercentile', 'tcgaCompPercentile', 'gtexCompPercentile', 'fcBodymap',
+  'geneExpressionRpkm', 'additionalInfo',
 ];
 
 const checkGermlineVariant = (variantObject) => {

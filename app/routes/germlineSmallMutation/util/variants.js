@@ -83,8 +83,16 @@ const createHeaders = () => {
       key: 'position',
     },
     {
-      header: 'dbSNP',
-      key: 'dbSnp',
+      header: 'DB SNP IDs',
+      key: 'dbSnpIds',
+    },
+    {
+      header: 'Clinvar IDs',
+      key: 'clinvarIds',
+    },
+    {
+      header: 'Cosmic IDs',
+      key: 'cosmicIds',
     },
     {
       header: 'Ref',

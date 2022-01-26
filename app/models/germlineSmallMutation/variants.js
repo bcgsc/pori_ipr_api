@@ -60,9 +60,21 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
       allowNull: true,
     },
-    dbSnp: {
-      name: 'dbSnp',
-      field: 'db_snp',
+    dbSnpIds: {
+      name: 'dbSnpIds',
+      field: 'db_snp_ids',
+      type: Sq.TEXT,
+      allowNull: true,
+    },
+    clinvarIds: {
+      name: 'clinvarIds',
+      field: 'clinvar_ids',
+      type: Sq.TEXT,
+      allowNull: true,
+    },
+    cosmicIds: {
+      name: 'cosmicIds',
+      field: 'cosmic_ids',
       type: Sq.TEXT,
       allowNull: true,
     },
