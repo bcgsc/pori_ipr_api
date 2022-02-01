@@ -137,7 +137,7 @@ describe('/reports/{REPORTID}/image', () => {
     });
 
     test('/expression-density-graphs - 200 Success', async () => {
-      const key = 'expDensity.CES2';
+      const key = 'expDensity.histogram.CES2';
       const testImage = await db.models.imageData.create({...fakeImageData, key});
 
       const res = await request

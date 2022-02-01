@@ -165,7 +165,7 @@
     ],
     "kbMatches": [
         {
-            "category": "pharmacogenomic",
+            "category": "cancer predisposition",
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
@@ -438,12 +438,16 @@
             "path": "test/testData/images/expression_legend.png"
         },
         {
-            "key": "expDensity.MYC_ENSG00000136997",
-            "path": "test/testData/images/expDensity.MYC.png"
+            "key": "expDensity.histogram.MYC_ENSG00000136997",
+            "path": "test/testData/images/expDensity.histogram.MYC.png"
         },
         {
-            "key": "expDensity.CES2",
-            "path": "test/testData/images/expDensity.CES2.png"
+            "key": "expDensity.histogram.CES2",
+            "path": "test/testData/images/expDensity.histogram.CES2.png"
+        },
+        {
+            "key": "expDensity.violin.tcga.CDK6",
+            "path": "test/testData/images/expDensity.violin.tcga.CDK6.png"
         },
         {
             "key": "mutationBurden.barplot_sv.secondary",
