@@ -13,8 +13,7 @@ const BASE_URL = '/api/graphkb';
 
 const testAutocompleteWithKeyword = async (request, type, keyword) => {
   const {body} = await request
-    .post(`${BASE_URL}/${type}`)
-    .send({keyword})
+    .get(`${BASE_URL}/${type}?search=${keyword}`)
     .auth(username, password)
     .type('json')
     .expect(HTTP_STATUS.OK);
@@ -36,7 +35,7 @@ const testAutocompleteWithKeyword = async (request, type, keyword) => {
 
 const testAutocompleteWithoutKeyword = async (request, type) => {
   const {body} = await request
-    .post(`${BASE_URL}/${type}`)
+    .get(`${BASE_URL}/${type}`)
     .auth(username, password)
     .type('json')
     .expect(HTTP_STATUS.OK);

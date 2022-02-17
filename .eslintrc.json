@@ -10,6 +10,9 @@
         "plugin:jest/recommended",
         "plugin:jest-formatting/recommended"
     ],
+    "parserOptions": {
+        "ecmaVersion": 2020
+    },
     "rules": {
         "indent": [
             "error",
