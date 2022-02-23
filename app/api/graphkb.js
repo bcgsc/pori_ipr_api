@@ -96,5 +96,4 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
 module.exports = {
   graphkbAutocomplete,
   graphkbEvidenceLevels,
-  graphkbReviewStatus,
 };
