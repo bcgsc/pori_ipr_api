@@ -66,6 +66,9 @@ module.exports = (sequelize, Sq) => {
       field: 'kb_category',
       type: Sq.TEXT,
     },
+    germline: {
+      type: Sq.BOOLEAN,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_protein_variants',
