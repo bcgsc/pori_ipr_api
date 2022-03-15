@@ -54,20 +54,5 @@ jest.mock('../app/api/graphkb', () => {
         }],
       };
     },
-    graphkbReviewStatus: async (graphkbToken, graphkbEntries) => {
-      if (!graphkbToken) {
-        throw new Error('Invalid token');
-      }
-
-      if (!graphkbEntries) {
-        return [];
-      }
-
-      return [{
-        '@rid': '#108:32',
-        '@class': 'Statement',
-        reviewStatus: 'not required',
-      }];
-    },
   };
 });

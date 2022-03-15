@@ -59,48 +59,6 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   });
 };
 
-/**
- * Get review status of entries from GraphKB
- *
- * @param {string} graphkbToken the Authorization token for the connection to GraphKB
- * @param {array} graphkbEntries array of graphkb results from IPR database
- *
- * @returns {object} response body from graphkb
- */
-const graphkbReviewStatus = async (graphkbToken, graphkbEntries) => {
-  const {uri} = CONFIG.get('graphkb');
-
-  const filters = {
-    '@rid': graphkbEntries
-      .reduce((filtered, {kbStatementId}) => {
-        if (kbStatementId.match(/^#\d+:\d+$/)) {
-          filtered.push(kbStatementId);
-        }
-        return filtered;
-      }, []),
-    operator: 'IN',
-  };
-  const query = {
-    target: 'Statement',
-    filters,
-    returnProperties: ['@class', '@rid', 'reviewStatus'],
-    orderBy: ['@rid'],
-  };
-
-  const {result} = await request({
-    url: `${uri}/query`,
-    method: 'POST',
-    body: JSON.stringify(query),
-    json: true,
-    headers: {
-      Authorization: graphkbToken,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  return result;
-};
-
 /* Get IPR evidence level descriptions from GraphKB
  *
  * @param {string} graphkbToken the Authorization token for the connection to GraphKB
@@ -138,5 +96,4 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
 module.exports = {
   graphkbAutocomplete,
   graphkbEvidenceLevels,
-  graphkbReviewStatus,
 };
