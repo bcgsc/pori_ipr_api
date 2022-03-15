@@ -169,20 +169,28 @@ module.exports = async (instance, method) => {
     case 'signatures':
       return removeKeys(`/reports/${report.ident}/signatures`);
     case 'smallMutations':
-      return removeKeys(`/reports/${report.ident}/small-mutations`);
+      return Promise.all([
+        batchDeleteKeysByPattern(`/reports/${report.ident}/kb-matches*`),
+        removeKeys(`/reports/${report.ident}/small-mutations`),
+      ]);
     case 'copyVariants':
     case 'expressionVariants':
     case 'structuralVariants':
+    case 'proteinVariants':
     case 'kbMatches':
-      return removeKeys([
-        `/reports/${report.ident}/copy-variants`,
-        `/reports/${report.ident}/expression-variants`,
-        `/reports/${report.ident}/small-mutations`,
-        `/reports/${report.ident}/structural-variants`,
+      return Promise.all([
+        batchDeleteKeysByPattern(`/reports/${report.ident}/kb-matches*`),
+        removeKeys([
+          `/reports/${report.ident}/copy-variants`,
+          `/reports/${report.ident}/expression-variants`,
+          `/reports/${report.ident}/small-mutations`,
+          `/reports/${report.ident}/structural-variants`,
+        ]),
       ]);
     case 'genes':
       return Promise.all([
         batchDeleteKeysByPattern(`/reports/${report.ident}/genes*`),
+        batchDeleteKeysByPattern(`/reports/${report.ident}/kb-matches*`),
         removeKeys([
           `/reports/${report.ident}/copy-variants`,
           `/reports/${report.ident}/expression-variants`,
