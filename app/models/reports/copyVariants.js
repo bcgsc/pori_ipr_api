@@ -64,6 +64,9 @@ module.exports = (sequelize, Sq) => {
     cna: {
       type: Sq.NUMERIC,
     },
+    germline: {
+      type: Sq.BOOLEAN,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_copy_variants',
