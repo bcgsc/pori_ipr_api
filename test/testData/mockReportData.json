@@ -181,7 +181,8 @@
             "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
             "inferred": false,
             "externalSource": "CIViC",
-            "externalStatementId": "1234"
+            "externalStatementId": "1234",
+            "reviewStatus": "pending"
         }
     ],
     "genes": [
@@ -245,7 +246,8 @@
             "start": 16017349,
             "end": 16108192,
             "size": 0.09,
-            "kbCategory": "Test Category"
+            "kbCategory": "Test Category",
+            "germline": false
         }
     ],
     "mavis": [
@@ -272,7 +274,8 @@
             "ntermGene": "FN1(UPLOADPAT01)",
             "ctermTranscript": "UPLOADPAT01",
             "ntermTranscript": "UPLOADPAT01",
-            "highQuality": true
+            "highQuality": true,
+            "germline": false
         }
     ],
     "proteinVariants": [
@@ -285,7 +288,8 @@
             "comparator": "PTX_POG_TARGET_RHD_percentile",
             "totalSampleObserved": 10,
             "secondaryPercentile": 2,
-            "secondaryComparator": "something else"
+            "secondaryComparator": "something else",
+            "germline": true
         }
     ],
     "expressionVariants": [
@@ -307,7 +311,8 @@
             "primarySitePercentile": 75,
             "rnaReads": null,
             "rpkm": 1889.11,
-            "tpm": 12.3
+            "tpm": 12.3,
+            "germline": true
         }
     ],
     "probeTestInformation": [
