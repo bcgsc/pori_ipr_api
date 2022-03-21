@@ -54,6 +54,20 @@ module.exports = (sequelize, Sq) => {
       allowNull: false,
       defaultValue: -1,
     },
+    cancerGenes: {
+      name: 'cancerGenes',
+      field: 'cancer_genes',
+      type: Sq.INTEGER,
+      allowNull: false,
+      defaultValue: -1,
+    },
+    cancerVars: {
+      name: 'cancerVars',
+      field: 'cancer_vars',
+      type: Sq.INTEGER,
+      allowNull: false,
+      defaultValue: -1,
+    },
     pharmacogenomicGenes: {
       name: 'pharmacogenomicGenes',
       field: 'pharmacogenomic_genes',
