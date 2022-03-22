@@ -327,7 +327,9 @@
             "germlineGenes": 98,
             "germlineVars": 500,
             "pharmacogenomicGenes": 1,
-            "pharmacogenomicVars": 5
+            "pharmacogenomicVars": 5,
+            "cancerGenes": 1234,
+            "cancerVars": 5678
         }
     ],
     "analystComments": {
