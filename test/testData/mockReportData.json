@@ -97,7 +97,8 @@
     },
     "genomicAlterationsIdentified": [
         {
-            "geneVariant": "ZNF217 (amplification)"
+            "geneVariant": "ZNF217 (amplification)",
+            "germline": true
         }
     ],
     "pathwayAnalysis": {
