@@ -15,7 +15,7 @@ const db = require('../models');
  */
 const processImage = async (image, width, height, format = 'png') => {
   const imageData = await sharp(image)
-    .resize(width, height, {fit: 'inside'})
+    .resize(width, height, {fit: 'inside', withoutEnlargement: true})
     .toFormat(format.toLowerCase())
     .toBuffer();
 
