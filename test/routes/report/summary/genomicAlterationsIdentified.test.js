@@ -12,14 +12,16 @@ const {username, password} = CONFIG.get('testing');
 
 const ALTERATION_DATA = {
   geneVariant: 'TEST GENE VARIANT',
+  germline: true,
 };
 
 const ALTERATION_UPDATE_DATA = {
   geneVariant: 'UPDATED GENE VARIANT',
+  germline: false,
 };
 
 const alterationProperties = [
-  'ident', 'createdAt', 'geneVariant',
+  'ident', 'createdAt', 'geneVariant', 'germline',
 ];
 
 const checkAlteration = (alterationObject) => {
