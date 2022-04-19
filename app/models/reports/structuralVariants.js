@@ -99,6 +99,9 @@ module.exports = (sequelize, Sq) => {
       type: Sq.BOOLEAN,
       defaultValue: null,
     },
+    germline: {
+      type: Sq.BOOLEAN,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_structural_variants',

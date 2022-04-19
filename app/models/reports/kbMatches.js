@@ -116,6 +116,11 @@ module.exports = (sequelize, Sq) => {
       field: 'external_statement_id',
       type: Sq.TEXT,
     },
+    reviewStatus: {
+      name: 'reviewStatus',
+      field: 'review_status',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matches',

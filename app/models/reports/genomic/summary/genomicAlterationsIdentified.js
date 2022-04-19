@@ -16,6 +16,9 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
       allowNull: false,
     },
+    germline: {
+      type: Sq.BOOLEAN,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_genomic_alterations_identified',

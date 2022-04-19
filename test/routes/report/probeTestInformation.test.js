@@ -18,6 +18,8 @@ const PROBE_TEST_DATA = {
   fusionProbe: 'TEST FUSION PROBE',
   fusionGenes: 'TEST GENES',
   fusionVars: 'TEST FUSION VARS',
+  cancerGenes: 1234,
+  cancerVars: 1234,
 };
 
 const PROBE_TEST_UPDATE_DATA = {
@@ -28,12 +30,14 @@ const PROBE_TEST_UPDATE_DATA = {
   fusionProbe: 'UPDATED FUSION PROBE',
   fusionGenes: 'UPDATED GENES',
   fusionVars: 'UPDATED FUSION VARS',
+  cancerGenes: 5678,
+  cancerVars: 5678,
 };
 
 const probeTestProperties = [
   'ident', 'createdAt', 'kbVersion', 'snpProbe', 'snpGenes', 'snpVars',
   'fusionProbe', 'fusionGenes', 'fusionVars', 'germlineGenes', 'germlineVars',
-  'pharmacogenomicGenes', 'pharmacogenomicVars',
+  'pharmacogenomicGenes', 'pharmacogenomicVars', 'cancerGenes', 'cancerVars',
 ];
 
 const checkProbeTest = (probeTestObject) => {
