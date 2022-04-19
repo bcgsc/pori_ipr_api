@@ -26,7 +26,7 @@ module.exports = {
     'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quaternary)',
     'circosSv\\.(genome|transcriptome)',
     'expDensity\\.(histogram|violin\\.(tcga|gtex|cser|hartwig|pediatric))\\.\\S+',
-    'expression\\.(chart|legend|spearman\\.(tcga|gtex|cser|hartwig|target))',
+    'expression\\.(chart|legend|spearman\\.(tcga|gtex|cser|hartwig|target|pediatric))',
     'microbial\\.circos\\.(genome|transcriptome)',
     'cibersort\\.(cd8_positive|combined)_t-cell_scatter',
     'mixcr\\.circos_trb_vj_gene_usage',

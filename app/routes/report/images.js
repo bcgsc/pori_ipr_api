@@ -135,7 +135,7 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'expression.spearman\\.(tcga|gtex|cser|hartwig)',
+    pattern: 'expression.spearman\\.(tcga|gtex|cser|hartwig|pediatric)',
     width: 1100,
     height: 1360,
     format: 'PNG',
