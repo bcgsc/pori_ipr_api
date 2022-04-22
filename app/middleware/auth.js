@@ -112,7 +112,7 @@ module.exports = async (req, res, next) => {
     }
 
     // Add result to cache
-    cache.set(key, JSON.stringify(respUser), 'EX', 7200);
+    cache.set(key, JSON.stringify(respUser), 'EX', 14400);
   }
 
   respUser.dataValues.expiry = expiry;
