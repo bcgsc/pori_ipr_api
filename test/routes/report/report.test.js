@@ -25,7 +25,7 @@ const checkReport = (report) => {
     'sampleInfo', 'seqQC', 'reportVersion',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
-    'kbUrl',
+    'kbUrl', 'pediatricIds',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
