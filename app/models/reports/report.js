@@ -129,6 +129,11 @@ module.exports = (sequelize, Sq) => {
       type: Sq.DATE,
       defaultValue: null,
     },
+    pediatricIds: {
+      name: 'pediatricIds',
+      field: 'pediatric_ids',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
