@@ -43,7 +43,7 @@ router.use('/', async (req, res, next) => {
     });
 
     if (req.signatures) {
-      cache.set(key, JSON.stringify(req.signatures), 'EX', 5400);
+      cache.set(key, JSON.stringify(req.signatures), 'EX', 14400);
     }
 
     return next();
