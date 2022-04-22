@@ -85,7 +85,7 @@ router.route('/discussion')
       });
 
       if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 5400);
+        cache.set(key, JSON.stringify(results), 'EX', 14400);
       }
 
       return res.json(results);
@@ -220,7 +220,7 @@ router.route('/slide')
       });
 
       if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 5400);
+        cache.set(key, JSON.stringify(results), 'EX', 14400);
       }
 
       return res.json(results);

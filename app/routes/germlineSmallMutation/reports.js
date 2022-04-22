@@ -150,7 +150,7 @@ router.route('/')
       const results = {total: gsmReports.count, reports: gsmReports.rows};
 
       if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 9000);
+        cache.set(key, JSON.stringify(results), 'EX', 14400);
       }
 
       return res.json(results);

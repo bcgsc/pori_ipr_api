@@ -97,7 +97,7 @@ router.route('/')
       });
 
       if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 5400);
+        cache.set(key, JSON.stringify(results), 'EX', 14400);
       }
 
       return res.status(HTTP_STATUS.OK).json(results);
