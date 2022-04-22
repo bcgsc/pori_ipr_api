@@ -49,7 +49,6 @@ router.get('/batch/download', async (req, res) => {
         {
           model: db.models.germlineSmallMutationVariant,
           as: 'variants',
-          required: true,
           order: [['gene', 'asc']],
         },
         {
