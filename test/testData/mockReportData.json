@@ -221,7 +221,8 @@
             "hgvsGenomic": "2:g.43451740_43451742delCTG",
             "germline": false,
             "tumourRefCopies": 60,
-            "tumourAltCopies": 20
+            "tumourAltCopies": 20,
+            "library": "TEST LIBRARY"
         }
     ],
     "mutationSignature": [
@@ -249,7 +250,8 @@
             "end": 16108192,
             "size": 0.09,
             "kbCategory": "Test Category",
-            "germline": false
+            "germline": false,
+            "library": "TEST LIBRARY"
         }
     ],
     "mavis": [
@@ -277,7 +279,8 @@
             "ctermTranscript": "UPLOADPAT01",
             "ntermTranscript": "UPLOADPAT01",
             "highQuality": true,
-            "germline": false
+            "germline": false,
+            "library": "TEST LIBRARY"
         }
     ],
     "proteinVariants": [
@@ -291,7 +294,8 @@
             "totalSampleObserved": 10,
             "secondaryPercentile": 2,
             "secondaryComparator": "something else",
-            "germline": true
+            "germline": true,
+            "library": "TEST LIBRARY"
         }
     ],
     "expressionVariants": [
@@ -314,7 +318,8 @@
             "rnaReads": null,
             "rpkm": 1889.11,
             "tpm": 12.3,
-            "germline": true
+            "germline": true,
+            "library": "TEST LIBRARY"
         }
     ],
     "probeTestInformation": [
