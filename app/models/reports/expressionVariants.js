@@ -143,6 +143,9 @@ module.exports = (sequelize, Sq) => {
     germline: {
       type: Sq.BOOLEAN,
     },
+    library: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_expression_variants',

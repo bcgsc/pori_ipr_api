@@ -28,13 +28,14 @@ const UPDATE_DATA = {
   log2Cna: '12',
   cna: '10',
   germline: true,
+  library: 'Updated library',
 };
 
 const copyVariantProperties = [
   'ident', 'createdAt', 'updatedAt', 'copyChange',
   'lohState', 'cnvState', 'chromosomeBand', 'start',
   'end', 'size', 'kbCategory', 'log2Cna', 'cna', 'gene',
-  'germline',
+  'germline', 'library',
 ];
 
 const checkCopyVariant = (variantObject) => {
