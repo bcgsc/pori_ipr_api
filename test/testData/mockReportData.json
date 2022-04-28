@@ -542,6 +542,14 @@
         {
             "key": "expression.spearman.target",
             "path": "test/testData/images/spearman_target.png"
+        },
+        {
+            "key": "expression.spearman.brca.molecular",
+            "path": "test/testData/images/spearman_brca_molecular.png"
+        },
+        {
+            "key": "expression.spearman.brca.receptor",
+            "path": "test/testData/images/spearman_brca_receptor.png"
         }
     ]
 }

@@ -146,6 +146,12 @@ const IMAGES_CONFIG = [
     height: 480,
     format: 'PNG',
   },
+  {
+    pattern: 'expression.spearman.brca\\.(molecular|receptor)',
+    width: 1100,
+    height: 450,
+    format: 'PNG',
+  },
 ];
 
 
