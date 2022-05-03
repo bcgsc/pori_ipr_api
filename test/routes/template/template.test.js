@@ -157,6 +157,7 @@ describe('/templates', () => {
         .attach('header', 'test/testData/images/golden.jpg')
         .field('name', 'Test Upload Template')
         .field('organization', 'Test Upload Org')
+        .field('description', 'Test Upload Description')
         .field('sections', 'therapeutic-targets')
         .field('sections', 'structural-variants')
         .auth(username, password)
@@ -228,6 +229,7 @@ describe('/templates', () => {
         .attach('header', 'test/testData/images/golden.jpg')
         .field('name', 'New Name')
         .field('organization', 'New Orgs')
+        .field('description', 'New Description')
         .field('sections', 'therapeutic-targets')
         .field('sections', 'genes')
         .auth(username, password)
@@ -238,6 +240,7 @@ describe('/templates', () => {
         name: 'New Name',
         organization: 'New Orgs',
         sections: ['therapeutic-targets', 'genes'],
+        description: 'New Description',
         logoImage: expect.any(Object),
         headerImage: expect.any(Object),
       }));
