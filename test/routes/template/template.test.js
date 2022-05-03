@@ -20,6 +20,7 @@ let request;
 const CREATE_DATA = {
   name: 'Test Create Template',
   organization: 'Test Create Org',
+  description: 'This is a template used for running tests',
   sections: [
     'microbial',
     'msi',
@@ -30,6 +31,7 @@ const CREATE_DATA = {
 const UPLOAD_DATA = {
   name: 'Test Upload Template',
   organization: 'Test Upload Org',
+  description: 'Test Upload Description',
   sections: [
     'therapeutic-targets',
     'structural-variants',
@@ -39,6 +41,7 @@ const UPLOAD_DATA = {
 const UPDATE_DATA = {
   name: 'Test Update Template',
   organization: 'Test Update Org',
+  description: 'Test Update Description',
   sections: [
     'microbial',
     'structural-variants',
@@ -48,6 +51,7 @@ const UPDATE_DATA = {
 const DELETE_DATA = {
   name: 'Test Delete Template',
   organization: 'Test Delete Org',
+  description: 'Test Delete Description',
   sections: [
     'therapeutic-targets',
     'structural-variants',
@@ -56,7 +60,7 @@ const DELETE_DATA = {
 
 const templateProperties = [
   'ident', 'createdAt', 'updatedAt', 'name', 'organization',
-  'sections', 'logoImage', 'headerImage',
+  'sections', 'logoImage', 'headerImage', 'description',
 ];
 
 const checkTemplate = (reportObject) => {
