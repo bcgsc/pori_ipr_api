@@ -64,7 +64,7 @@ module.exports = async (req, res, next, ident) => {
     }
 
     // Add result to cache
-    cache.set(key, JSON.stringify(result), 'EX', 7200);
+    cache.set(key, JSON.stringify(result), 'EX', 14400);
   }
 
   // Add report to request
