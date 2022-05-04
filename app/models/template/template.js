@@ -49,6 +49,9 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
+    description: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'templates',
