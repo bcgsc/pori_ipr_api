@@ -134,6 +134,9 @@ module.exports = (sequelize, Sq) => {
       field: 'tumour_ref_copies',
       type: Sq.INTEGER,
     },
+    library: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_small_mutations',
