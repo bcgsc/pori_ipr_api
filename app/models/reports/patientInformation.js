@@ -1,4 +1,4 @@
-const { DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS } = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const patientInformation = sequelize.define('patientInformation', {
