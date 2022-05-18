@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
+const { DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS } = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const patientInformation = sequelize.define('patientInformation', {
@@ -38,6 +38,10 @@ module.exports = (sequelize, Sq) => {
     },
     constitutionalProtocol: {
       type: Sq.STRING,
+    },
+    internalPancancerCohort: {
+      type: Sq.TEXT,
+      field: 'internal_pancancer_cohort',
     },
     reportId: {
       name: 'reportId',
