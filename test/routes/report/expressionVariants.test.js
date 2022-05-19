@@ -44,6 +44,11 @@ describe('/expression-variants', () => {
     expect(variant).toHaveProperty('ident');
     expect(variant).toHaveProperty('reportId');
     expect(variant).toHaveProperty('gene');
+    expect(variant).toHaveProperty('internalPancancerPercentile');
+    expect(variant).toHaveProperty('internalPancancerkIQR');
+    expect(variant).toHaveProperty('internalPancancerQC');
+    expect(variant).toHaveProperty('internalPancancerFoldChange');
+    expect(variant).toHaveProperty('internalPancancerZScore');
     expect(typeof variant.gene).toBe('object');
 
     expect(variant.id).not.toBe(null);
@@ -90,6 +95,12 @@ describe('/expression-variants', () => {
           expect(result).toHaveProperty('kbMatches');
           expect(Array.isArray(result.kbMatches)).toBe(true);
 
+          expect(variant).toHaveProperty('internalPancancerPercentile');
+          expect(variant).toHaveProperty('internalPancancerkIQR');
+          expect(variant).toHaveProperty('internalPancancerQC');
+          expect(variant).toHaveProperty('internalPancancerFoldChange');
+          expect(variant).toHaveProperty('internalPancancerZScore');
+
           expect(result).not.toHaveProperty('id');
           expect(result).not.toHaveProperty('reportId');
           expect(result).not.toHaveProperty('geneId');
@@ -105,6 +116,12 @@ describe('/expression-variants', () => {
           .expect(HTTP_STATUS.OK);
         expect(result).toHaveProperty('ident', variant.ident);
         expect(result).toHaveProperty('gene', variant.gene.dataValues);
+        expect(result).toHaveProperty('internalPancancerPercentile');
+        expect(result).toHaveProperty('internalPancancerkIQR');
+        expect(result).toHaveProperty('internalPancancerQC');
+        expect(result).toHaveProperty('internalPancancerFoldChange');
+        expect(result).toHaveProperty('internalPancancerZScore');
+
         expect(typeof result.gene).toBe('object');
 
         expect(result).not.toHaveProperty('kbMatches');

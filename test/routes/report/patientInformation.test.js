@@ -22,6 +22,7 @@ const PATIENT_INFORMATION_DATA = {
   tumourProtocol: 'TEST PROTOCOL',
   constitutionalSample: 'TEST SAMPLE',
   constitutionalProtocol: 'TEST CONS. PROTOCOL',
+  internalPancancerCohort: 'TEST PANCANCER COHORT',
 };
 
 const PATIENT_INFORMATION_UPDATE_DATA = {
@@ -36,12 +37,14 @@ const PATIENT_INFORMATION_UPDATE_DATA = {
   tumourProtocol: 'UPDATED PROTOCOL',
   constitutionalSample: 'UPDATED SAMPLE',
   constitutionalProtocol: 'UPDATED CONS. PROTOCOL',
+  internalPancancerCohort: 'UPDATED PANCANCER COHORT',
 };
 
 const patientInformationProperties = [
   'ident', 'createdAt', 'physician', 'gender', 'age', 'caseType',
   'diagnosis', 'reportDate', 'biopsySite', 'tumourSample',
   'tumourProtocol', 'constitutionalSample', 'constitutionalProtocol',
+  'internalPancancerCohort',
 ];
 
 const checkPatientInformation = (patientInformationObject) => {
