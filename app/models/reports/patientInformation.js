@@ -39,6 +39,10 @@ module.exports = (sequelize, Sq) => {
     constitutionalProtocol: {
       type: Sq.STRING,
     },
+    internalPancancerCohort: {
+      type: Sq.TEXT,
+      field: 'internal_pancancer_cohort',
+    },
     reportId: {
       name: 'reportId',
       field: 'report_id',

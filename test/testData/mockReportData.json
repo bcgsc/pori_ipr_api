@@ -87,7 +87,8 @@
         "tumourSample": "Metastatic",
         "tumourProtocol": "WGS; RNA-seq",
         "constitutionalSample": "Peripheral Blood",
-        "constitutionalProtocol": "WGS"
+        "constitutionalProtocol": "WGS",
+        "internalPancancerCohort": "POG-RBD"
     },
     "variantCounts": {
         "smallMutations": 2,
@@ -305,6 +306,11 @@
             "biopsySiteFoldChange": 16,
             "biopsySitekIQR": 16.82,
             "biopsySitePercentile": 100,
+            "internalPancancerFoldChange": 16,
+            "internalPancancerkIQR": 16.82,
+            "internalPancancerZScore": 0.5,
+            "internalPancancerQC": 10.7,
+            "internalPancancerPercentile": 100,
             "diseasePercentile": 88,
             "diseasekIQR": 4.21,
             "diseaseQC": 43,
