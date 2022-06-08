@@ -7,7 +7,7 @@ ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci --production
+RUN npm ci --production --omit=dev
 
 # Bundle app source
 COPY . .
