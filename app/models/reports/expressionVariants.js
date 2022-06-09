@@ -135,6 +135,36 @@ module.exports = (sequelize, Sq) => {
       type: Sq.FLOAT,
       defaultValue: null,
     },
+    internalPancancerPercentile: {
+      name: 'internalPancancerPercentile',
+      field: 'internal_pancancer_percentile',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    internalPancancerkIQR: {
+      name: 'internalPancancerkIQR',
+      field: 'internal_pancancer_kiqr',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    internalPancancerQC: {
+      name: 'internalPancancerQC',
+      field: 'internal_pancancer_qc',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    internalPancancerFoldChange: {
+      name: 'internalPancancerFoldChange',
+      field: 'internal_pancancer_fold_change',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
+    internalPancancerZScore: {
+      name: 'internalPancancerZScore',
+      field: 'internal_pancancer_zscore',
+      type: Sq.FLOAT,
+      defaultValue: null,
+    },
     kbCategory: {
       name: 'kbCategory',
       field: 'kb_category',
