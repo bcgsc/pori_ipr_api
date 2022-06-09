@@ -1,4 +1,4 @@
-FROM node:16-bullseye
+FROM node:16.13.0-bullseye
 
 # Update and remove list of packages
 # Install and use Jemalloc
@@ -7,7 +7,7 @@ ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --production
 
 # Bundle app source
 COPY . .
