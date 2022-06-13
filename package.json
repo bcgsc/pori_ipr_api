@@ -13,6 +13,7 @@
   },
   "author": "IPR <ipr@bcgsc.ca>",
   "license": "GPL-3.0",
+  "type": "module",
   "dependencies": {
     "@alt3/sequelize-to-json-schemas": "^0.3.56",
     "ajv": "^8.11.0",
