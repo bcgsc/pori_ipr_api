@@ -46,4 +46,9 @@ module.exports = {
     '<rootDir>/test/keycloak.mock.js',
     '<rootDir>/test/graphkb.mock.js',
   ],
+  preset: 'ts-jest',
+  transform: {
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    "^.+\\.(js|jsx)$": "babel-jest",
+  },
 };
