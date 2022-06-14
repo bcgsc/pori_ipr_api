@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14, 16, 16.3, 18]
+        node: [16.3]
     name: node-${{ matrix.node }}
     services:
       postgres:
