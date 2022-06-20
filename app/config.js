@@ -6,11 +6,15 @@ const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
+let KC_KEY_FILE_PATH = 'keys/devkey.pem';
 
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
+  KC_KEY_FILE_PATH = 'keys/prodkey.pem';
 } else if (ENV === 'staging') {
   DEFAULT_DB_NAME = 'ipr-sync-staging';
+} else if (ENV === 'test') {
+  KC_KEY_FILE_PATH = 'test/keys/authkey.pem';
 }
 
 let DEFAULT_LOG_LEVEL = 'debug';
@@ -34,9 +38,7 @@ const DEFAULTS = {
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
     role: 'IPR',
-    keyfile: ENV === 'production'
-      ? 'keys/prodkey.pem'
-      : 'keys/devkey.pem',
+    keyfile: KC_KEY_FILE_PATH,
   },
   graphkb: {
     uri: ENV === 'production'
