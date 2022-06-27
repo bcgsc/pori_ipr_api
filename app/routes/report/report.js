@@ -39,7 +39,6 @@ const updateSchema = schemaGenerator(db.models.report, {
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
 
-
 // Register report middleware
 router.param('report', reportMiddleware);
 
@@ -99,7 +98,6 @@ router.route('/:report')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report'}});
     }
   });
-
 
 // Act on all reports
 router.route('/')

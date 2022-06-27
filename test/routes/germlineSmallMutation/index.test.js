@@ -107,7 +107,6 @@ describe('/germline-small-mutation-reports', () => {
 
     projects.push(realProject);
 
-
     // Create a bunch of reports
     const report2 = await db.models.germlineSmallMutation.create({
       ...CREATE_DATA,
@@ -129,7 +128,6 @@ describe('/germline-small-mutation-reports', () => {
       type: 'biofx',
     });
 
-
     const report3 = await db.models.germlineSmallMutation.create({
       ...CREATE_DATA,
       biofxAssignedId: testUser.id,
@@ -150,7 +148,6 @@ describe('/germline-small-mutation-reports', () => {
       type: 'projects',
     });
 
-
     const report4 = await db.models.germlineSmallMutation.create({
       ...CREATE_DATA,
       biofxAssignedId: testUser.id,
@@ -170,7 +167,6 @@ describe('/germline-small-mutation-reports', () => {
       germlineReportId: report4.id,
       type: 'diff',
     });
-
 
     const report5 = await db.models.germlineSmallMutation.create({
       ...CREATE_DATA,

@@ -4,7 +4,6 @@
 const SV_TABLE = 'reports_structural_variants';
 const KB_TABLE = 'reports_kb_matches';
 
-
 module.exports = {
   up: async (queryInterface, Sq) => {
     const transaction = await queryInterface.sequelize.transaction();

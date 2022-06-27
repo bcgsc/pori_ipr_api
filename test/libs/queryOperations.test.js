@@ -1,12 +1,10 @@
 const {parseReportSortQuery} = require('../../app/libs/queryOperations');
 
-
 describe('Parsing report sort query tests', () => {
   test('PatientId, biopsyName, and diagnosis', () => {
     const sortQuery = 'patientId:asc,biopsyName:desc,diagnosis:asc';
 
     const results = parseReportSortQuery(sortQuery);
-
 
     expect(Array.isArray(results)).toBe(true);
     expect(results.length).toBe(3);
@@ -23,7 +21,6 @@ describe('Parsing report sort query tests', () => {
     const sortQuery = 'physician:asc,state:asc,caseType:desc';
 
     const results = parseReportSortQuery(sortQuery);
-
 
     expect(Array.isArray(results)).toBe(true);
     expect(results.length).toBe(3);

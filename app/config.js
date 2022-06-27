@@ -1,7 +1,6 @@
 const nconf = require('nconf');
 const {merge} = require('lodash');
 
-
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
@@ -113,7 +112,6 @@ const processEnvVariables = (env = process.env, opt = {}) => {
   return processed;
 };
 
-
 const argv = {};
 Object.entries(DEFAULTS.database, ([key, value]) => {
   argv[`database.${key}`] = {alias: `database:${key}`, default: value, parseValues: true};
@@ -121,7 +119,6 @@ Object.entries(DEFAULTS.database, ([key, value]) => {
 Object.entries(DEFAULTS.keycloak, ([key, value]) => {
   argv[`keycloak.${key}`] = {alias: `keycloak:${key}`, default: value, parseValues: true};
 });
-
 
 const CONFIG = nconf
   .argv({

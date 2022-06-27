@@ -1,4 +1,3 @@
-
 /**
  * Add a partial unique constraint to a table during a migration
  *
@@ -24,7 +23,6 @@ const addUniqueActiveFieldIndex = async (queryInterface, Sequelize, transaction,
   });
 };
 
-
 const wrapColumnNames = (names) => {
   return names.map((c) => {
     return `"${c}"`;
@@ -39,7 +37,6 @@ const countDistinctRowFrequency = async (queryInterface, transaction, table, att
   );
   return freq;
 };
-
 
 const removeActiveDuplicates = async (queryInterface, transaction, table, distinctColumns) => {
   const columns = wrapColumnNames(distinctColumns).join(', ');
@@ -61,7 +58,6 @@ const removeActiveDuplicates = async (queryInterface, transaction, table, distin
 const equalOrBothNull = (col1, col2) => {
   return `${col1} = ${col2} OR (${col1} IS NULL AND ${col2} IS NULL)`;
 };
-
 
 module.exports = {
   addUniqueActiveFieldIndex, countDistinctRowFrequency, removeActiveDuplicates, equalOrBothNull,

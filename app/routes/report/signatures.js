@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
-
 const db = require('../../models');
 const logger = require('../../log');
 const cache = require('../../cache');

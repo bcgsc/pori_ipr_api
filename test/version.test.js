@@ -24,7 +24,7 @@ beforeAll(async () => {
 // Tests API version endpoint
 describe('Tests API version endpoint', () => {
   // Test API version
-  test('Test API version', async () => {
+  test('API version', async () => {
     // get API version
     const res = await request
       .get('/api/version')

@@ -19,7 +19,6 @@ const createSchema = schemaGenerator(db.models.germlineReportUser, {
   required: ['user'],
 });
 
-
 // Middleware for germline-user binding
 router.param('germlineReportUser', async (req, res, next, ident) => {
   let result;

@@ -29,7 +29,6 @@ const tables = [
   'pog_recent_reports',
 ];
 
-
 module.exports = {
   up: async (queryInterface) => {
     return Promise.all(tables.map((table) => {
