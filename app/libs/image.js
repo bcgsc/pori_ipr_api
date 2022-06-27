@@ -60,7 +60,7 @@ const uploadImage = async (image, options = {}) => {
  * @param {object} transaction - Transaction to run delete under
  * @returns {Promise<object>} - Returns the newly updated image data
  */
-const deleteImage = async (ident, force = false, transaction) => {
+const deleteImage = async (ident, transaction, force = false) => {
   const image = await db.models.image.findOne({where: {ident}});
 
   if (!image) {

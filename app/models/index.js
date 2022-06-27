@@ -76,8 +76,8 @@ user.belongsToMany(analysisReports, {
   as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 
-const userGroup = require('./user/userGroup.js')(sequelize, Sq);
-const userGroupMember = require('./user/userGroupMember.js')(sequelize, Sq);
+const userGroup = require('./user/userGroup')(sequelize, Sq);
+const userGroupMember = require('./user/userGroupMember')(sequelize, Sq);
 
 user.belongsToMany(userGroup, {
   as: 'groups', through: {model: userGroupMember, unique: false}, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE',
