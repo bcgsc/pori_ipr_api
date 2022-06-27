@@ -216,9 +216,7 @@ module.exports = {
       // add image key unique constraint so that the user cannot use the same
       // image key twice in a report
       try {
-        await addUniqueActiveFieldIndex(
-          queryInterface, Sequelize, transaction, IMAGE_TABLE, ['report_id', 'key'],
-        );
+        await addUniqueActiveFieldIndex(queryInterface, Sequelize, transaction, IMAGE_TABLE, ['report_id', 'key']);
       } catch (err) {
         console.error(err);
         throw err;

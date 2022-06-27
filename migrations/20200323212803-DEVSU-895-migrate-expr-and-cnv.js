@@ -18,7 +18,8 @@ module.exports = {
 
         // copy non-duplicate expression info. from the cnv table
         // into the expression outlier table
-        await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(
+          `
           INSERT INTO ${EXPRESSION_VARIANTS_TABLE} (ident, rpkm, "foldChange", "tcgaPerc", gene_id, report_id, created_at, updated_at, deleted_at) 
             SELECT DISTINCT ON (gene_id) uuid_generate_v4(), "expressionRpkm", "foldChange", "tcgaPerc", gene_id, report_id, created_at, updated_at, deleted_at 
             FROM ${COPY_VARIANTS_TABLE} AS cnv 
@@ -27,7 +28,8 @@ module.exports = {
               WHERE exp.gene_id = cnv.gene_id
             ) 
             AND NOT (cnv."expressionRpkm" IS NULL AND cnv."foldChange" IS NULL AND cnv."tcgaPerc" IS NULL)`,
-        {transaction});
+          {transaction},
+        );
 
         // replace all na's with null
         await queryInterface.bulkUpdate(EXPRESSION_VARIANTS_TABLE, {copyChange: null}, {copyChange: 'na'}, {transaction});
@@ -39,7 +41,8 @@ module.exports = {
 
         // copy non-duplicate copy number info. from the outlier
         // table into the cnv table
-        await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(
+          `
           INSERT INTO ${COPY_VARIANTS_TABLE} (ident, "ploidyCorrCpChange", "lohState", "cnvState", gene_id, report_id, created_at, updated_at, deleted_at) 
             SELECT DISTINCT ON (gene_id) uuid_generate_v4(), "copyChange", "lohState", "cnvState", gene_id, report_id, created_at, updated_at, deleted_at
             FROM ${EXPRESSION_VARIANTS_TABLE} AS exp 
@@ -48,7 +51,8 @@ module.exports = {
               WHERE exp.gene_id = cnv.gene_id
             ) 
             AND NOT (exp."copyChange" IS NULL AND exp."lohState" IS NULL AND exp."cnvState" IS NULL)`,
-        {transaction});
+          {transaction},
+        );
 
         return Promise.all([
           // remove copy variants table columns

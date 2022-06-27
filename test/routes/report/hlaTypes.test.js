@@ -47,7 +47,6 @@ const checkHlaType = (correlation) => {
   expect(correlation).not.toHaveProperty('deletedAt');
 };
 
-
 describe('/reports/{REPORTID}/hla-types', () => {
   let report;
   let hlaType;
@@ -221,7 +220,6 @@ describe('/reports/{REPORTID}/hla-types', () => {
     await db.models.report.destroy({where: {id: report.id}, force: true});
   }, LONGER_TIMEOUT);
 });
-
 
 afterAll(async () => {
   await server.close();

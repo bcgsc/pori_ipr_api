@@ -3,7 +3,8 @@ module.exports = {
     try {
       await queryInterface.sequelize.transaction(async (transaction) => {
         // Create report_project table
-        await queryInterface.createTable('report_projects',
+        await queryInterface.createTable(
+          'report_projects',
           {
             id: {
               type: Sequelize.INTEGER,
@@ -44,7 +45,9 @@ module.exports = {
               name: 'deletedAt',
               field: 'deleted_at',
             },
-          }, {transaction});
+          },
+          {transaction},
+        );
       });
     } catch (error) {
       throw error;

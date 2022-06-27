@@ -7,16 +7,14 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       console.log('copy the project relationships from the analysis to the report table');
-      const associations = await queryInterface.sequelize.query(
-        `SELECT DISTINCT ON (gsm.id,  pp.project_id) gsm.id as germline_report_id, pp.project_id, pp."createdAt" as created_at, pp."updatedAt" as updated_at
+      const associations = await queryInterface.sequelize.query(`SELECT DISTINCT ON (gsm.id,  pp.project_id) gsm.id as germline_report_id, pp.project_id, pp."createdAt" as created_at, pp."updatedAt" as updated_at
           FROM ${REPORT_TABLE_NAME} gsm
           JOIN pog_analysis pa on (pa.id = gsm.pog_analysis_id)
           JOIN "POGs" pogs on (pogs.id = pa.pog_id)
           JOIN pog_projects pp on (pogs.id = pp.pog_id)
           WHERE pp."deletedAt" IS NULL
           ORDER BY gsm.id,  pp.project_id, pp."updatedAt", pp."createdAt"
-        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
-      );
+        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT});
       console.log(`inserting ${associations.length} associations`);
       await queryInterface.bulkInsert(
         MAPPING_TABLE,
@@ -25,8 +23,7 @@ module.exports = {
       );
 
       // copy the projects by name from the 'project' string field on the pogs table
-      const missingProjectLinks = await queryInterface.sequelize.query(
-        `SELECT DISTINCT ON (name, gsm_projects.id) gsm_projects.id, name, created_at from (
+      const missingProjectLinks = await queryInterface.sequelize.query(`SELECT DISTINCT ON (name, gsm_projects.id) gsm_projects.id, name, created_at from (
             SELECT gsm.id, pogs.project as name, pogs.created_at
             FROM ${REPORT_TABLE_NAME} gsm
             JOIN pog_analysis pa on (pa.id = gsm.pog_analysis_id)
@@ -35,8 +32,7 @@ module.exports = {
         ) gsm_projects WHERE NOT EXISTS (
           SELECT * FROM projects p where p.name = gsm_projects.name
         ) order by name, gsm_projects.id, created_at
-        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
-      );
+        `, {transaction, type: queryInterface.sequelize.QueryTypes.SELECT});
       const missingProjects = {};
       for (const {name, created_at} of missingProjectLinks) {
         const oldest = new Date(Math.min(created_at, missingProjects[name]

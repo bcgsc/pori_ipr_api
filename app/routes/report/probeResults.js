@@ -11,7 +11,6 @@ const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {REPORT_UPDATE_BASE_URI} = require('../../constants');
 
-
 // Generate schemas
 const updateSchema = schemaGenerator(db.models.probeResults, {
   baseUri: REPORT_UPDATE_BASE_URI,
@@ -116,7 +115,6 @@ router.route('/:target([A-z0-9-]{36})')
       });
     }
   });
-
 
 router.route('/')
   .get(async (req, res) => {

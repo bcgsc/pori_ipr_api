@@ -1,4 +1,3 @@
-
 module.exports = {
   up: (queryInterface) => {
     return queryInterface.sequelize.query(

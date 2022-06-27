@@ -99,7 +99,6 @@ router.route('/:geneName')
     }
   });
 
-
 router.route('/')
   .get(async (req, res) => {
     // Get all targeted genes for this report

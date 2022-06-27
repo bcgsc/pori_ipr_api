@@ -27,7 +27,6 @@ module.exports = async (instance, method) => {
   const modelName = instance.constructor.name;
   const {models} = instance.sequelize;
 
-
   if (FLUSH_ALL_MODELS.includes(modelName)) {
     if (method === 'POST') {
       return true;

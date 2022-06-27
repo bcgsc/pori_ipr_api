@@ -38,11 +38,9 @@ const createReportSection = async (reportId, modelName, sectionContent, options 
     : [sectionContent];
 
   try {
-    await db.models[modelName].bulkCreate(
-      records.map((newEntry) => {
-        return {...newEntry, reportId};
-      }), options,
-    );
+    await db.models[modelName].bulkCreate(records.map((newEntry) => {
+      return {...newEntry, reportId};
+    }), options);
   } catch (error) {
     throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
   }
@@ -85,11 +83,9 @@ const createReportGenes = async (report, content, options = {}) => {
   logger.debug(`creating gene definitions for the report ${report.ident}`);
 
   try {
-    const genes = await db.models.genes.bulkCreate(
-      Object.values(geneDefns).map((newEntry) => {
-        return {...newEntry, reportId: report.id};
-      }), options,
-    );
+    const genes = await db.models.genes.bulkCreate(Object.values(geneDefns).map((newEntry) => {
+      return {...newEntry, reportId: report.id};
+    }), options);
 
     for (const gene of genes) {
       geneDefns[gene.name] = gene.id;
@@ -100,7 +96,6 @@ const createReportGenes = async (report, content, options = {}) => {
     throw new Error(`Unable to create report genes ${error.message || error}`);
   }
 };
-
 
 /**
  * Create varaint sections of a report
@@ -129,34 +124,29 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   try {
     if (modelName === 'structuralVariants') {
       // add the gene FK associations
-      records = await db.models[modelName].bulkCreate(
-        sectionContent.map(({
-          key, gene1, gene2, ...newEntry
-        }) => {
-          return {
-            ...newEntry,
-            reportId,
-            gene1Id: genesRecordsByName[gene1],
-            gene2Id: genesRecordsByName[gene2],
-          };
-        }), options,
-      );
+      records = await db.models[modelName].bulkCreate(sectionContent.map(({
+        key, gene1, gene2, ...newEntry
+      }) => {
+        return {
+          ...newEntry,
+          reportId,
+          gene1Id: genesRecordsByName[gene1],
+          gene2Id: genesRecordsByName[gene2],
+        };
+      }), options);
     } else {
       // add the gene FK association
-      records = await db.models[modelName].bulkCreate(
-        sectionContent.map(({key, gene, ...newEntry}) => {
-          return {
-            ...newEntry,
-            reportId,
-            geneId: genesRecordsByName[gene],
-          };
-        }), options,
-      );
+      records = await db.models[modelName].bulkCreate(sectionContent.map(({key, gene, ...newEntry}) => {
+        return {
+          ...newEntry,
+          reportId,
+          geneId: genesRecordsByName[gene],
+        };
+      }), options);
     }
   } catch (error) {
     throw new Error(`Unable to create variant section (${modelName}) ${error.message || error}`);
   }
-
 
   const mapping = {};
   for (let i = 0; i < sectionContent.length; i++) {
@@ -175,16 +165,12 @@ const createReportVariantSections = async (report, content, transaction) => {
   const variantMapping = {};
   const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
-    const mapping = await createReportVariantsSection(
-      report.id, geneDefns, variantModel, content[variantModel] || [], {transaction},
-    );
+    const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
     variantMapping[variantType] = mapping;
   });
 
   // create the probe results (linked to gene but not to kbMatches)
-  variantPromises.push(createReportVariantsSection(
-    report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction},
-  ));
+  variantPromises.push(createReportVariantsSection(report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction}));
 
   await Promise.all(variantPromises);
 

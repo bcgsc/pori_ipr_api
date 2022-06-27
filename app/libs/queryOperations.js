@@ -1,6 +1,5 @@
 const db = require('../models');
 
-
 /**
  * Map the field you want to sort and direction of the sort to a "sort property"
  *
@@ -32,7 +31,6 @@ const _getSortProperty = (field, direction) => {
     alternateIdentifier: ['alternateIdentifier', direction],
   }[field];
 };
-
 
 /**
  * Parses a report query string (args) that takes the form:

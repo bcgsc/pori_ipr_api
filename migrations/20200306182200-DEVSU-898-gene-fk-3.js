@@ -20,7 +20,8 @@ module.exports = {
         console.log(`Adding column ${table}.gene_id (FK)`);
         await queryInterface.addColumn(
           table,
-          'gene_id', {
+          'gene_id',
+          {
             type: Sq.INTEGER,
             references: {model: GENE_TABLE, key: 'id'},
             onUpdate: 'CASCADE',
@@ -32,7 +33,8 @@ module.exports = {
 
       await queryInterface.addColumn(
         SV_TABLE,
-        'gene1_id', {
+        'gene1_id',
+        {
           type: Sq.INTEGER,
           references: {model: GENE_TABLE, key: 'id'},
           onUpdate: 'CASCADE',
@@ -42,7 +44,8 @@ module.exports = {
       );
       await queryInterface.addColumn(
         SV_TABLE,
-        'gene2_id', {
+        'gene2_id',
+        {
           type: Sq.INTEGER,
           references: {model: GENE_TABLE, key: 'id'},
           onUpdate: 'CASCADE',
@@ -50,7 +53,6 @@ module.exports = {
         },
         {transaction},
       );
-
 
       await transaction.commit();
     } catch (err) {

@@ -71,7 +71,6 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
     );
   }
 
-
   console.log(`set ${KB_TABLE}.variant_id for rows with variantType ${variantType}`);
   const rows = await queryInterface.sequelize.query(
     `SELECT *
@@ -95,7 +94,6 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
     })}) from ${table}`);
   }
 
-
   await queryInterface.sequelize.query(
     `UPDATE ${KB_TABLE} main SET variant_id = foo.variant_id
     FROM (
@@ -114,7 +112,6 @@ const transferMissingVariants = async (queryInterface, transaction, variantType,
   // now check if any were unset
   await checkMissingMatches(queryInterface, transaction, variantType);
 };
-
 
 const transferKbExpressionData = async (queryInterface, Sq, transaction) => {
   const variantType = 'exp';
@@ -159,11 +156,9 @@ const transferKbExpressionData = async (queryInterface, Sq, transaction) => {
   await transferMissingVariants(queryInterface, transaction, variantType, 'expression_class');
 };
 
-
 const transferKbCopyData = async (queryInterface, Sq, transaction) => {
   await transferMissingVariants(queryInterface, transaction, 'cnv', 'cnvState');
 };
-
 
 const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
   // find all the small mutations without equivalents already in the variant table
@@ -204,7 +199,6 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
       replacements: {variantType},
     },
   );
-
 
   console.log(`create missing ${variantType} variant in ${MUT_TABLE} from ${KB_TABLE}`);
 
@@ -250,7 +244,6 @@ const transferKbSmallMutationData = async (queryInterface, Sq, transaction) => {
   // now check if any were unset
   await checkMissingMatches(queryInterface, transaction, variantType);
 };
-
 
 const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) => {
   const variantType = 'sv';
@@ -400,7 +393,6 @@ const transferKbStructuralVariantData = async (queryInterface, Sq, transaction) 
   await checkMissingMatches(queryInterface, transaction, variantType);
 };
 
-
 const transferKbGeneData = async (queryInterface, Sq, transaction) => {
   console.log('copy missing genes');
   const missingGenes = await queryInterface.sequelize.query(
@@ -457,7 +449,6 @@ const transferKbGeneData = async (queryInterface, Sq, transaction) => {
     );
   }
 };
-
 
 module.exports = {
   up: async (queryInterface, Sq) => {

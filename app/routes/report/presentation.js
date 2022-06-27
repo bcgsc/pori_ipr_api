@@ -28,7 +28,6 @@ const slideUpdateSchema = schemaGenerator(db.models.presentationSlides, {
   baseUri: REPORT_UPDATE_BASE_URI, exclude, nothingRequired: true,
 });
 
-
 /*
  * Discussion
  *
@@ -60,7 +59,6 @@ router.param('discussion', async (req, res, next, ident) => {
   req.discussion = result;
   return next();
 });
-
 
 // Handle requests for report discussions
 router.route('/discussion')
@@ -164,7 +162,6 @@ router.route('/discussion/:discussion')
     }
   });
 
-
 /*
  * Slides
  *
@@ -196,7 +193,6 @@ router.param('slide', async (req, res, next, ident) => {
   req.slide = result;
   return next();
 });
-
 
 // Handle requests for slides
 router.route('/slide')

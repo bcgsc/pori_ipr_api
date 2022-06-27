@@ -12,7 +12,6 @@ const CNV_TABLE = 'reports_copy_variants';
 const MUT_TABLE = 'reports_small_mutations';
 const SV_TABLE = 'reports_structural_variants';
 
-
 const cleanExpressionData = async (queryInterface, Sq, transaction) => {
   console.log(`remove duplicates from the ${EXP_TABLE} table`);
   const genesBefore = await countDistinctRowFrequency(queryInterface, transaction, EXP_TABLE, ['gene_id']);
@@ -59,7 +58,6 @@ const cleanCopyNumberData = async (queryInterface, Sq, transaction) => {
     throw new Error(`Removed more entries than expected. There are less genes (${genesAfter}) than there were previously (${genesBefore})`);
   }
 };
-
 
 const cleanSmallMutationData = async (queryInterface, Sq, transaction) => {
   console.log(`remove duplicates from the ${MUT_TABLE} table`);
@@ -231,7 +229,6 @@ const cleanStructuralVariantData = async (queryInterface, Sq, transaction) => {
   console.log(`drop the ${SV_TABLE}.svVariant column`);
   await queryInterface.removeColumn(SV_TABLE, 'svVariant', {transaction});
 };
-
 
 module.exports = {
   up: async (queryInterface, Sq) => {

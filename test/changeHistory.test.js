@@ -43,7 +43,7 @@ describe('Tests for update changes', () => {
   });
 
   // Test update changes
-  test('Test update changes', async () => {
+  test('update changes', async () => {
     // update project name for given ident
     await request
       .put(`/api/project/${project.ident}`)

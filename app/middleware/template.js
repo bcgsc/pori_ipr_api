@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
 
-
 module.exports = async (req, res, next, ident) => {
   let result;
   try {

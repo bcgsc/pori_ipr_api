@@ -8,7 +8,6 @@ const SIGNATURE_REMOVAL_EXCLUDE = {
   report: ['state', 'presentationDate', 'updatedAt', 'updatedBy'],
 };
 
-
 /**
  * Remove report signatures
  *

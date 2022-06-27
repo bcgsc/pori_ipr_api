@@ -14,7 +14,6 @@ const updateSchema = schemaGenerator(db.models.probeTestInformation, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
 
-
 // Middleware for Probe Test Information
 router.use('/', async (req, res, next) => {
   let result;

@@ -154,7 +154,6 @@ const IMAGES_CONFIG = [
   },
 ];
 
-
 /**
  * Resize, reformat and upload a report image to the reports_image_data table
  *
@@ -187,7 +186,6 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
     logger.warn(`No format/size configuration for ${key}. Using default values`);
     config = {format: DEFAULT_FORMAT, height: DEFAULT_HEIGHT, width: DEFAULT_WIDTH};
   }
-
 
   try {
     const imageData = await processImage(image, config.width, config.height, config.format);

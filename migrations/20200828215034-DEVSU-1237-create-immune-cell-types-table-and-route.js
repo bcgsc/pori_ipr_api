@@ -3,7 +3,6 @@ const {DEFAULT_COLUMNS} = require('../app/models/base');
 
 const TABLE = 'reports_immune_cell_types';
 
-
 module.exports = {
   up: (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {

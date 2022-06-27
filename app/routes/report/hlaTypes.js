@@ -15,7 +15,6 @@ const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constant
 const createSchema = schemaGenerator(db.models.hlaTypes, {baseUri: REPORT_CREATE_BASE_URI});
 const updateSchema = schemaGenerator(db.models.hlaTypes, {baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true});
 
-
 router.param('hlaType', async (req, res, next, ident) => {
   let result;
   try {
@@ -135,6 +134,5 @@ router.route('/')
       });
     }
   });
-
 
 module.exports = router;

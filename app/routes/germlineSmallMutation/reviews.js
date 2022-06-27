@@ -30,7 +30,6 @@ const updateSchema = schemaGenerator(db.models.germlineSmallMutationReview, {
   nothingRequired: true,
 });
 
-
 // Middleware for germline reviews
 router.param('review', async (req, res, next, ident) => {
   let result;
@@ -58,7 +57,6 @@ router.param('review', async (req, res, next, ident) => {
   req.review = result;
   return next();
 });
-
 
 // Handles requests for a single germline review
 router.route('/:review')
@@ -104,7 +102,6 @@ router.route('/:review')
       });
     }
   });
-
 
 // Handles requests for all germline reviews for a report
 router.route('/')
@@ -189,6 +186,5 @@ router.route('/')
       });
     }
   });
-
 
 module.exports = router;
