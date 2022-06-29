@@ -51,7 +51,6 @@ const SPECIAL_CASES = [
   },
 ];
 
-
 module.exports = async (req, res, next) => {
   // Check if user is an admin
   if (isAdmin(req.user)) {

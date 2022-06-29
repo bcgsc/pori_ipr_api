@@ -67,7 +67,7 @@ describe('Tests for deleting a report and all of its components', () => {
   });
 
   // Test paranoid report delete that cascade's
-  test('Test paranoid report delete', async () => {
+  test('paranoid report delete', async () => {
     // delete the report
     await request
       .delete(`/api/reports/${report.ident}`)
@@ -75,14 +75,12 @@ describe('Tests for deleting a report and all of its components', () => {
       .type('json')
       .expect(204);
 
-
     // verify report is deleted
     await request
       .get(`/api/reports/${report.ident}`)
       .auth(username, password)
       .type('json')
       .expect(404);
-
 
     // verify report components are also soft deleted
     Object.values(associations).forEach(async (association) => {

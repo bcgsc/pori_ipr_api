@@ -17,7 +17,6 @@ const updateSchema = schemaGenerator(db.models.mutationSignature, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
 
-
 router.param('mutationSignature', async (req, res, next, ident) => {
   let result;
   try {
@@ -96,6 +95,5 @@ router.route('/:mutationSignature([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutationSignature'}});
     }
   });
-
 
 module.exports = router;

@@ -53,5 +53,4 @@ const generateVariantUploadSchemas = (isJsonSchema) => {
   return variantSchemas;
 };
 
-
 module.exports = generateVariantUploadSchemas;

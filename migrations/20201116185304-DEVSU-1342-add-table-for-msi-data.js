@@ -3,7 +3,6 @@ const {DEFAULT_COLUMNS} = require('../app/models/base');
 
 const TABLE = 'reports_msi';
 
-
 module.exports = {
   up: (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {

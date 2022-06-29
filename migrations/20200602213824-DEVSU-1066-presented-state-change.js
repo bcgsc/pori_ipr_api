@@ -3,31 +3,25 @@ const TABLE = 'reports';
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.sequelize.query(
-        `
+      await queryInterface.sequelize.query(`
           ALTER TABLE ${TABLE} ALTER COLUMN state
             DROP DEFAULT
-        `, {transaction},
-      );
+        `, {transaction});
 
-      await queryInterface.sequelize.query(
-        `
+      await queryInterface.sequelize.query(`
           UPDATE ${TABLE} SET state = 'reviewed'
             WHERE state = 'presented'
-        `, {transaction},
-      );
+        `, {transaction});
 
       await queryInterface.changeColumn(TABLE, 'state', {
         type: Sequelize.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction'),
         allowNull: false,
       }, {transaction});
 
-      return queryInterface.sequelize.query(
-        `
+      return queryInterface.sequelize.query(`
           ALTER TABLE ${TABLE} ALTER COLUMN state
             SET DEFAULT 'ready'::enum_reports_state
-        `, {transaction},
-      );
+        `, {transaction});
     });
   },
 

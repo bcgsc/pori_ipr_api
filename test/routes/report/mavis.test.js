@@ -48,7 +48,6 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-
 describe('/reports/{report}/mavis', () => {
   let report;
 

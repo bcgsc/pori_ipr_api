@@ -3,7 +3,6 @@ const SV_TABLE = 'reports_structural_variation_sv';
 
 const {addUniqueActiveFieldIndex} = require('../migrationTools');
 
-
 module.exports = {
   up: async (queryInterface, Sq) => {
     const transaction = await queryInterface.sequelize.transaction();

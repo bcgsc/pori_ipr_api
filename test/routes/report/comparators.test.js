@@ -77,7 +77,6 @@ describe('/reports/{REPORTID}/comparators', () => {
   }, LONGER_TIMEOUT);
 });
 
-
 afterAll(async () => {
   await server.close();
 });

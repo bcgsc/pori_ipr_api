@@ -46,7 +46,6 @@ const checkReportsCount = async (queryInterface, transaction, minReports = 3) =>
   }
 };
 
-
 const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupName) => {
   //  group id
   const [group] = await queryInterface.sequelize.query(
@@ -92,7 +91,6 @@ const addDemoUserToGroup = async (queryInterface, transaction, demoUser, groupNa
     );
   }
 };
-
 
 const addDemoUserToProject = async (queryInterface, transaction, demoUser, projectName) => {
   let [project] = await queryInterface.sequelize.query(
@@ -157,7 +155,6 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
     );
   }
 };
-
 
 const cleanUsers = async (queryInterface, transaction) => {
   console.log('DROP all non-admin non-manager groups');
@@ -256,7 +253,6 @@ const cleanUsers = async (queryInterface, transaction) => {
   );
 };
 
-
 const cleanDb = async () => {
   const queryInterface = sequelize.getQueryInterface();
 
@@ -317,7 +313,6 @@ const cleanDb = async () => {
       console.log(`truncating ${tableName}`);
       await queryInterface.sequelize.query(`TRUNCATE TABLE ${tableName} CASCADE`, {transaction});
     }
-
 
     console.log('DROP ALL non-PORI projects');
     await queryInterface.sequelize.query(

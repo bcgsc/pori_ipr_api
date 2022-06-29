@@ -62,7 +62,6 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-
 describe('/reports/{report}/probe-test-information', () => {
   let report;
 

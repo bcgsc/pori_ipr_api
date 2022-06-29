@@ -30,7 +30,6 @@ const tables = [
   'report_projects',
 ];
 
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();

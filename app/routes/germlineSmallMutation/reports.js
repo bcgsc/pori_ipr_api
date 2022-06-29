@@ -21,7 +21,6 @@ const router = express.Router({mergeParams: true});
 const DEFAULT_PAGE_LIMIT = 25;
 const DEFAULT_PAGE_OFFSET = 0;
 
-
 // Set additional update properties
 const reportProperties = {
   assignToMe: {
@@ -38,7 +37,6 @@ const updateSchema = schemaGenerator(db.models.germlineSmallMutation, {
 
 // Middleware for germline report
 router.param('gsm_report', gsmMiddleware);
-
 
 // Handles requests for a single germline report
 router.route('/:gsm_report')
@@ -80,7 +78,6 @@ router.route('/:gsm_report')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while removing requested germline report'}});
     }
   });
-
 
 // Handles requests for all germline reports
 router.route('/')
@@ -130,7 +127,6 @@ router.route('/')
         },
       );
     }
-
 
     // Check if filtering by review
     if (reviewType || inProjectsGroup) {
@@ -227,11 +223,9 @@ router.route('/')
     try {
       // create the variants for this report
       const processedVariants = Variants.processVariants(report, variants);
-      await db.models.germlineSmallMutationVariant.bulkCreate(
-        processedVariants.map((variant) => {
-          return {...variant, germlineReportId: report.id};
-        }), {transaction},
-      );
+      await db.models.germlineSmallMutationVariant.bulkCreate(processedVariants.map((variant) => {
+        return {...variant, germlineReportId: report.id};
+      }), {transaction});
     } catch (error) {
       await transaction.rollback();
       const message = `Error while creating germline variants for report ${error}`;
@@ -255,6 +249,5 @@ router.route('/')
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
     }
   });
-
 
 module.exports = router;
