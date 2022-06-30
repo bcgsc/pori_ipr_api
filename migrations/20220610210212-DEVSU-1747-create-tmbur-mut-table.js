@@ -19,6 +19,7 @@ module.exports = {
             model: 'reports',
             key: 'id',
           },
+          allowNull: false,
         },
         tumour: {
           type: Sq.STRING,
