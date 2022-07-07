@@ -62,7 +62,7 @@ app.js --database.hostname someTestServerName
 
 Unit and Integration tests are run and written using Jest + Supertest with code coverage reports generated using Clover. Tests are configured to run using the `test` environment variable - this currently cannot be overridden.
 
-To run unit tests, cd into the project root directory and run the command `npm test`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run
+To run unit tests, cd into the project root directory and run the command `npm run test_local`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run
 
 ```bash
 npm run test -- --database.password someDbPassword --testing.password someApiPassword
