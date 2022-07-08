@@ -51,7 +51,7 @@ jobs:
           TEMPLATE_NAME: templateipr
           DB_DUMP_LOCATION: ./demo/ipr_demodb.postgres.dump
           PGHOST: localhost
-      - run: npm ci
+      - run: npm ci --verbose
       - run: |
           npx sequelize-cli db:migrate --url postgres://${SERVICE_USER}@localhost:5432/${DATABASE_NAME}
         env:
