@@ -165,7 +165,6 @@ module.exports = (sequelize, Sq) => {
     },
   });
 
-
   // set instance methods
   tmburMutationBurden.prototype.view = function (scope) {
     if (scope === 'public') {
