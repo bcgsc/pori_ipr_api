@@ -36,8 +36,8 @@ router.param('tmburMutationBurden', async (req, res, next, mutIdent) => {
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find tmbur mutation burden for ${req.report.ident}`}});
   }
 
-  // Add mutation burden to request
-  req.mutationBurden = result;
+  // Add tmbur mutation burden to request
+  req.tmburMutationBurden = result;
   return next();
 });
 

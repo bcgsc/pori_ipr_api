@@ -3,12 +3,11 @@ const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
 const TMBUR_MUTATION_BURDEN = 'reports_tmbur_mutation_burden';
 const {DEFAULT_COLUMNS} = require('../app/models/base');
 
-
 module.exports = {
   up: (queryInterface, Sq) => {
     // Create table
     return queryInterface.sequelize.transaction(async (transaction) => {
-      // Remove all deleted user entries and create new user_metadata table
+      // Remove all deleted tmbur entries and create new tmbur_mutation_burden table
       await queryInterface.createTable(TMBUR_MUTATION_BURDEN, {
         ...DEFAULT_COLUMNS,
         reportId: {
@@ -19,6 +18,8 @@ module.exports = {
             model: 'reports',
             key: 'id',
           },
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE',
           allowNull: false,
         },
         tumour: {
@@ -32,7 +33,7 @@ module.exports = {
         nonNBasesIn1To22AndXAndY: {
           name: 'nonNBasesIn1To22AndXAndY',
           field: 'non_n_bases_in_1_to_22_and_x_and_y',
-          type: Sq.BIGINT,
+          type: Sq.TEXT,
           defaultValue: null,
           jsonSchema: {
             description: 'Non N bases in chromosomes 1 to 22 and X and Y',
@@ -77,7 +78,7 @@ module.exports = {
         cdsBasesIn1To22AndXAndY: {
           name: 'cdsBasesIn1To22AndXAndY',
           field: 'cds_bases_in_1_to_22_and_x_and_y',
-          type: Sq.BIGINT,
+          type: Sq.TEXT,
           defaultValue: null,
           jsonSchema: {
             description: 'CDS bases in chromosomes 1 to 22 and X and Y',

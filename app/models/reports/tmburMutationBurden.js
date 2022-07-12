@@ -23,7 +23,7 @@ module.exports = (sequelize, Sq) => {
     nonNBasesIn1To22AndXAndY: {
       name: 'nonNBasesIn1To22AndXAndY',
       field: 'non_n_bases_in_1_to_22_and_x_and_y',
-      type: Sq.BIGINT,
+      type: Sq.TEXT,
       defaultValue: null,
       jsonSchema: {
         description: 'Non N bases in chromosomes 1 to 22 and X and Y',
@@ -68,7 +68,7 @@ module.exports = (sequelize, Sq) => {
     cdsBasesIn1To22AndXAndY: {
       name: 'cdsBasesIn1To22AndXAndY',
       field: 'cds_bases_in_1_to_22_and_x_and_y',
-      type: Sq.BIGINT,
+      type: Sq.TEXT,
       defaultValue: null,
       jsonSchema: {
         description: 'CDS bases in chromosomes 1 to 22 and X and Y',
