@@ -43,7 +43,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-// Tests for /mutationBurden endpoint
+// Tests for /tmburMutationBurden endpoint
 describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
   const randomUuid = uuidv4();
 
@@ -61,6 +61,7 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
 
     tmburMutationBurden = await db.models.tmburMutationBurden.create({
       reportId: report.id,
+      ...mockReportData.tmburMutationBurden[0],
     });
   }, LONGER_TIMEOUT);
 
@@ -101,7 +102,6 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
     test('/ - 201 successful create', async () => {
       const createData = {
         ...mockReportData.tmburMutationBurden[0],
-        role: 'secondary',
       };
       const res = await request
         .post(`/api/reports/${report.ident}/tmbur-mutation-burden`)
@@ -120,8 +120,7 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
         .auth(username, password)
         .type('json')
         .send({
-          ...mockReportData.mutationBurden[0],
-          role: 'secondary',
+          ...mockReportData.tmburMutationBurden[0],
           reportId: report.id,
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
