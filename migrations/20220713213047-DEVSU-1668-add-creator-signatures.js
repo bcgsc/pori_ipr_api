@@ -1,6 +1,5 @@
 const SIGNATURES_TABLE = 'reports_signatures';
 
-
 module.exports = {
   up: async (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {

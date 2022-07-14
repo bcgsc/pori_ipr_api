@@ -71,7 +71,7 @@ describe('/reports/{REPORTID}/signatures', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      const {body: {reviewerSignature, authorSignature, creatorSignature}} = res;
+      const {body: {reviewerSignature, authorSignature}} = res;
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
         createdAt: expect.any(String),
