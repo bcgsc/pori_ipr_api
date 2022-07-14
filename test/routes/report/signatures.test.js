@@ -100,6 +100,8 @@ describe('/reports/{REPORTID}/signatures', () => {
       await signature.update({
         reviewerId: user.id,
         reviewerSignedAt: new Date(),
+        creatorId: user.id,
+        creatorSignedAt: new Date(),
       });
 
       const res = await request
@@ -109,6 +111,7 @@ describe('/reports/{REPORTID}/signatures', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
+
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
         createdAt: expect.any(String),

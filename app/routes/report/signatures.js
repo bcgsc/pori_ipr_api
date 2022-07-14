@@ -138,9 +138,6 @@ router.route('/earliest-signoff')
           authorId: {
             [Op.ne]: null,
           },
-          creatorId: {
-            [Op.ne]: null,
-          },
         },
         paranoid: false,
         limit: 1,
@@ -152,7 +149,6 @@ router.route('/earliest-signoff')
         error: {message: 'Error while searching for earliest signature'},
       });
     }
-
     if (!result) {
       logger.error(`Report ${req.report.ident} has not been signed off on yet`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({
