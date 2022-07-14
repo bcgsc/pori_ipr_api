@@ -421,6 +421,16 @@ mutationBurden.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Tmbur Mutation Burden
+const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
+
+analysisReports.hasMany(tmburMutationBurden, {
+  as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+tmburMutationBurden.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Comparators
 const comparators = require('./reports/comparators')(sequelize, Sq);
 

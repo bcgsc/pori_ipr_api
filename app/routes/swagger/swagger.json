@@ -986,6 +986,177 @@
         }
       }
     },
+    "/reports/{report}/tmbur-mutation-burden": {
+      "get": {
+        "summary": "Get Tmbur Mutation Burden",
+        "description": "Retrieve tmburr mutation burden details for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Tmbur Mutation Burden"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all tmbur mutation burdens for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Tmbur Mutation Burden",
+        "description": "Add a new tmbur mutation burden to this report",
+        "tags": [
+          "Tmbur Mutation Burden"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tmburMutationBurdenCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the newly created tmbur mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/tmbur-mutation-burden/{tmbur}": {
+      "get": {
+        "summary": "Get Tmbur Mutation Burden By Ident",
+        "description": "Retrieve a specific tmbur mutation burden from the report by ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/tmbur"
+          }
+        ],
+        "tags": [
+          "Tmbur Mutation Burden"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified tmbur mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or tmbur mutation burden not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Tmbur Mutation Burden",
+        "description": "Update the details of a specific tmbur mutation burden",
+        "tags": [
+          "Tmbur Mutation Burden"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/tmbur"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tmburMutationBurdenUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated tmbur mutation burden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or tmbur mutation burden not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/summary/variant-counts": {
       "get": {
         "summary": "Get Variant Count",
@@ -1210,8 +1381,7 @@
           "description": "New values to update specified genomic alterations identified",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/genomicAlterationsIdentifiedUpdate"
               }
@@ -1399,8 +1569,7 @@
         "tags": [
           "Reports"
         ],
-        "parameters": [
-        ],
+        "parameters": [],
         "security": [
           {
             "basicAuth": []
@@ -1606,8 +1775,7 @@
           "description": "Values for binding a user to a report",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/reportUserCreate"
               }
@@ -1926,8 +2094,7 @@
           "description": "Values for creating a new therapeutic target",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/therapeuticTargetCreate"
               }
@@ -2070,8 +2237,7 @@
           "description": "New values to update specified therapeutic target",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/therapeuticTargetUpdate"
               }
@@ -2429,8 +2595,7 @@
       "post": {
         "summary": "Add Germline Report",
         "description": "Upload a germline report and all of the report sections",
-        "parameters": [
-        ],
+        "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2516,8 +2681,7 @@
           "description": "New values to update current germline report",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/germlineSmallMutationUpdate"
               }
@@ -2674,8 +2838,7 @@
           "description": "New values to update current germline review",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/germlineSmallMutationReviewUpdate"
               }
@@ -2835,8 +2998,7 @@
           "description": "New values to update current germline variant",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/germlineSmallMutationVariantUpdate"
               }
@@ -2956,8 +3118,7 @@
           "description": "Values for binding a user to a germline report",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/germlineReportUserCreate"
               }
@@ -3310,8 +3471,7 @@
           "description": "New values to update current copy variant",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/copyVariantsUpdate"
               }
@@ -3471,8 +3631,7 @@
           "description": "New values to update current expression variant",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/expressionVariantsUpdate"
               }
@@ -4320,8 +4479,7 @@
           "description": "The mutation signature to be updated",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/mutationSignatureUpdate"
               }
@@ -4407,8 +4565,7 @@
           "description": "The discussion to be created",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/presentationDiscussionCreate"
               }
@@ -4531,8 +4688,7 @@
           "description": "The discussion to be updated",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/presentationDiscussionUpdate"
               }
@@ -4824,8 +4980,7 @@
           "description": "New values to update probe result",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/probeResultsUpdate"
               }
@@ -5176,8 +5331,7 @@
           "description": "New values to update current small mutation",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/smallMutationsUpdate"
               }
@@ -5337,8 +5491,7 @@
           "description": "New values to update current structural variant",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/structuralVariantsUpdate"
               }
@@ -5480,8 +5633,7 @@
           "description": "Analyst Comment object to be created",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/analystCommentsUpdate"
               }
@@ -5698,8 +5850,7 @@
           "description": "New values to update specified MSI entry",
           "required": true,
           "content": {
-            "application/json":
-            {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/msiUpdate"
               }
@@ -5822,8 +5973,7 @@
       "post": {
         "summary": "Create Template",
         "description": "Upload a new template",
-        "parameters": [
-        ],
+        "parameters": [],
         "requestBody": {
           "description": "Template data and images",
           "required": true,
@@ -6016,8 +6166,7 @@
       "post": {
         "summary": "Create Template Appendix",
         "description": "Upload a new template appendix",
-        "parameters": [
-        ],
+        "parameters": [],
         "requestBody": {
           "description": "Template appendix data",
           "required": true,
@@ -6273,6 +6422,16 @@
           "format": "UUIDv4"
         }
       },
+      "tmbur": {
+        "name": "tmbur",
+        "in": "path",
+        "required": true,
+        "description": "tmbur mutation burden ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
       "gene": {
         "name": "gene",
         "in": "path",
@@ -6488,15 +6647,23 @@
             },
             "Tumour Count": {
               "oneOf": [
-                {"type": "string"},
-                {"type": "integer"}
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
               ],
               "example": 179
             },
             "Normal Count": {
               "oneOf": [
-                {"type": "string"},
-                {"type": "integer"}
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
               ],
               "example": 0
             }

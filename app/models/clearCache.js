@@ -161,6 +161,8 @@ module.exports = async (instance, method) => {
       return batchDeleteKeysByPattern(`/reports/${report.ident}/mutation-signatures*`);
     case 'mutationBurden':
       return removeKeys(`/reports/${report.ident}/mutation-burden`);
+    case 'tmburMutationBurden':
+      return removeKeys(`/reports/${report.ident}/tmbur-mutation-burden`);
     case 'immuneCellTypes':
       return removeKeys(`/reports/${report.ident}/immune-cell-types`);
     case 'msi':
