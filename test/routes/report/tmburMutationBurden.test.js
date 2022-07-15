@@ -1,6 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
 
-const {v4: uuidv4} = require('uuid');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../app/models');
@@ -45,10 +44,7 @@ beforeAll(async () => {
 
 // Tests for /tmburMutationBurden endpoint
 describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
-  const randomUuid = uuidv4();
-
   let report;
-  let tmburMutationBurden;
 
   beforeEach(async () => {
     // Get genomic template
@@ -61,76 +57,26 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
 
     tmburMutationBurden = await db.models.tmburMutationBurden.create({
       reportId: report.id,
-      ...mockReportData.tmburMutationBurden[0],
+      ...mockReportData.tmburMutationBurden,
     });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
-    test('Getting a list of tmbur mutation burden records is OK', async () => {
+    test('Getting tmbur mutation burden records is OK', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}/tmbur-mutation-burden`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      res.body.forEach((burden) => {
-        return checkTmburMutationBurden(burden);
-      });
-    });
-
-    test('fetches known ident ok', async () => {
-      const res = await request
-        .get(`/api/reports/${report.ident}/tmbur-mutation-burden/${tmburMutationBurden.ident}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
       checkTmburMutationBurden(res.body);
-    });
-
-    test('error on non-existant ident', async () => {
-      await request
-        .get(`/api/reports/${report.ident}/tmbur-mutation-burden/${randomUuid}`)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
-    });
-  });
-
-  describe('POST', () => {
-    test('/ - 201 successful create', async () => {
-      const createData = {
-        ...mockReportData.tmburMutationBurden[0],
-      };
-      const res = await request
-        .post(`/api/reports/${report.ident}/tmbur-mutation-burden`)
-        .auth(username, password)
-        .type('json')
-        .send(createData)
-        .expect(HTTP_STATUS.CREATED);
-
-      checkTmburMutationBurden(res.body);
-      expect(res.body).toEqual(expect.objectContaining(createData));
-    });
-
-    test('/ - 400 bad create request (report id included)', async () => {
-      await request
-        .post(`/api/reports/${report.ident}/tmbur-mutation-burden`)
-        .auth(username, password)
-        .type('json')
-        .send({
-          ...mockReportData.tmburMutationBurden[0],
-          reportId: report.id,
-        })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
+    })
   });
 
   describe('PUT', () => {
     test('valid update is OK', async () => {
       const res = await request
-        .put(`/api/reports/${report.ident}/tmbur-mutation-burden/${tmburMutationBurden.ident}`)
+        .put(`/api/reports/${report.ident}/tmbur-mutation-burden`)
         .auth(username, password)
         .type('json')
         .send({
@@ -144,7 +90,7 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
 
     test('error on unexpected value', async () => {
       await request
-        .put(`/api/reports/${report.ident}/tmbur-mutation-burden/${tmburMutationBurden.ident}`)
+        .put(`/api/reports/${report.ident}/tmbur-mutation-burden`)
         .auth(username, password)
         .type('json')
         .send({
