@@ -55,7 +55,7 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
       patientId: mockReportData.patientId,
     });
 
-    tmburMutationBurden = await db.models.tmburMutationBurden.create({
+    await db.models.tmburMutationBurden.create({
       reportId: report.id,
       ...mockReportData.tmburMutationBurden,
     });
@@ -70,7 +70,7 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
         .expect(HTTP_STATUS.OK);
 
       checkTmburMutationBurden(res.body);
-    })
+    });
   });
 
   describe('PUT', () => {
