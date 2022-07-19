@@ -399,6 +399,9 @@ reportSignatures.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 reportSignatures.belongsTo(user, {
+  as: 'creatorSignature', foreignKey: 'creatorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+});
+reportSignatures.belongsTo(user, {
   as: 'authorSignature', foreignKey: 'authorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 reportSignatures.belongsTo(user, {
