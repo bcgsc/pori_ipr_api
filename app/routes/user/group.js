@@ -12,7 +12,6 @@ const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
-
 const groupProperties = {
   owner: {type: 'string', format: 'uuid'},
 };
@@ -31,7 +30,6 @@ const groupUpdateSchema = schemaGenerator(db.models.userGroup, {
   properties: groupProperties,
   nothingRequired: true,
 });
-
 
 // Register group middleware
 router.param('group', groupMiddleware);

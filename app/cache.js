@@ -8,5 +8,4 @@ const cache = new Redis({
   port,
 });
 
-
 module.exports = cache;

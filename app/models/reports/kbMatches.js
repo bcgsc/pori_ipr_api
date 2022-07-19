@@ -1,7 +1,6 @@
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
-
 module.exports = (sequelize, Sq) => {
   const KbMatches = sequelize.define('kbMatches', {
     ...DEFAULT_COLUMNS,
@@ -16,8 +15,14 @@ module.exports = (sequelize, Sq) => {
     },
     category: {
       type: Sq.ENUM(
-        'therapeutic', 'prognostic', 'diagnostic', 'biological', 'unknown',
-        'novel', 'pharmacogenomic', 'cancer predisposition',
+        'therapeutic',
+        'prognostic',
+        'diagnostic',
+        'biological',
+        'unknown',
+        'novel',
+        'pharmacogenomic',
+        'cancer predisposition',
       ),
       allowNull: false,
     },

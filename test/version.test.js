@@ -24,7 +24,7 @@ beforeAll(async () => {
 // Tests API version endpoint
 describe('Tests API version endpoint', () => {
   // Test API version
-  test('Test API version', async () => {
+  test('API version', async () => {
     // get API version
     const res = await request
       .get('/api/version')
@@ -32,7 +32,7 @@ describe('Tests API version endpoint', () => {
       .type('json')
       .expect(200);
 
-    const expectedVersion = `v${process.env.npm_package_version || 1.0}`;
+    const expectedVersion = `v${process.env.npm_package_version || '1.0'}`;
 
     expect(typeof (res)).toBe('object');
     expect(res.body.apiVersion).toEqual(expectedVersion);

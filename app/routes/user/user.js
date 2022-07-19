@@ -11,7 +11,6 @@ const {createSchema, updateSchema} = require('../../schemas/user');
 
 const router = express.Router({mergeParams: true});
 
-
 // Middleware for getting/updating a user by ident
 router.param('userByIdent', async (req, res, next, ident) => {
   let result;

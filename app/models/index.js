@@ -76,8 +76,8 @@ user.belongsToMany(analysisReports, {
   as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 
-const userGroup = require('./user/userGroup.js')(sequelize, Sq);
-const userGroupMember = require('./user/userGroupMember.js')(sequelize, Sq);
+const userGroup = require('./user/userGroup')(sequelize, Sq);
+const userGroupMember = require('./user/userGroupMember')(sequelize, Sq);
 
 user.belongsToMany(userGroup, {
   as: 'groups', through: {model: userGroupMember, unique: false}, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE',
@@ -122,7 +122,6 @@ summary.pathwayAnalysis = require('./reports/genomic/summary/pathwayAnalysis')(s
 summary.probeResults = require('./reports/probeResults')(sequelize, Sq);
 summary.therapeuticTargets = require('./reports/genomic/summary/therapeuticTargets')(sequelize, Sq);
 summary.microbial = require('./reports/genomic/summary/microbial')(sequelize, Sq);
-
 
 analysisReports.belongsTo(user, {
   as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true,
@@ -171,7 +170,6 @@ summary.microbial.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-
 const smallMutations = require('./reports/smallMutations')(sequelize, Sq);
 const mutationSignature = require('./reports/mutationSignature')(sequelize, Sq);
 const hlaTypes = require('./reports/hlaTypes')(sequelize, Sq);
@@ -219,7 +217,6 @@ analysisReports.hasMany(copyVariants, {
   as: 'copyVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-
 // MAVIS Summary
 const mavis = require('./reports/genomic/mavis/mavis')(sequelize, Sq);
 
@@ -240,7 +237,6 @@ analysisReports.hasMany(structuralVariants, {
   as: 'structuralVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-
 // expression variants
 const expressionVariants = require('./reports/expressionVariants')(sequelize, Sq);
 
@@ -260,7 +256,6 @@ proteinVariants.belongsTo(analysisReports, {
 analysisReports.hasMany(proteinVariants, {
   as: 'proteinVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-
 
 // This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
@@ -404,6 +399,9 @@ reportSignatures.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 reportSignatures.belongsTo(user, {
+  as: 'creatorSignature', foreignKey: 'creatorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+});
+reportSignatures.belongsTo(user, {
   as: 'authorSignature', foreignKey: 'authorId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
 });
 reportSignatures.belongsTo(user, {
@@ -420,6 +418,16 @@ analysisReports.hasMany(mutationBurden, {
   as: 'mutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 mutationBurden.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// Tmbur Mutation Burden
+const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
+
+analysisReports.hasOne(tmburMutationBurden, {
+  as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+tmburMutationBurden.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 

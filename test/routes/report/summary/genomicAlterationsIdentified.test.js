@@ -52,7 +52,6 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-
 describe('/reports/{report}/summary/genomic-alterations-identified', () => {
   let report;
 

@@ -54,5 +54,4 @@ const validateAgainstSchema = (schema, data, useDefaults = true) => {
   }
 };
 
-
 module.exports = validateAgainstSchema;

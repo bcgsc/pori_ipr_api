@@ -5,11 +5,9 @@ module.exports = {
       await queryInterface.addColumn('reports_kb_matches', 'inferred', Sequelize.BOOLEAN, {transaction});
 
       // 2) Copy data from old column to new column
-      return queryInterface.sequelize.query(
-        `
+      return queryInterface.sequelize.query(`
           UPDATE reports_kb_matches SET inferred = (kb_data ->> 'inferred')::boolean WHERE kb_data -> 'inferred' IS NOT NULL
-        `, {transaction},
-      );
+        `, {transaction});
     });
   },
 

@@ -14,9 +14,9 @@ let server;
 let request;
 
 const signatureProperties = ['ident', 'createdAt', 'updatedAt', 'username', 'type', 'firstName', 'lastName', 'email'];
-// Properties of res.body.reviewerSignature and res.body.authorSignature
+// Properties of res.body.reviewerSignature, res.body.creatorSignature and res.body.authorSignature
 const checkSignatureProperties = (signature) => {
-  // Function for checking reviewer and author signatures
+  // Function for checking reviewer, creator and author signatures
   signatureProperties.forEach((property) => {
     expect(signature).toHaveProperty(property);
   });
@@ -78,17 +78,20 @@ describe('/reports/{REPORTID}/signatures', () => {
         updatedAt: expect.any(String),
         reviewerSignature: expect.any(Object),
         authorSignature: expect.any(Object),
+        creatorSignature: expect.any(Object),
       }));
       expect(res.body).toHaveProperty('reviewerSignedAt');
       expect(res.body).toHaveProperty('authorSignedAt');
+      expect(res.body).toHaveProperty('creatorSignedAt');
       expect(reviewerSignature).toBe(null);
       checkSignatureProperties(authorSignature);
 
-      // check that an author was added and a reviewer wasn't
+      // check that an author was added and a reviewer and creator weren't
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
         authorSignedAt: expect.any(String),
         reviewerSignedAt: null,
+        creatorSignedAt: null,
       }));
     });
 
@@ -97,6 +100,8 @@ describe('/reports/{REPORTID}/signatures', () => {
       await signature.update({
         reviewerId: user.id,
         reviewerSignedAt: new Date(),
+        creatorId: user.id,
+        creatorSignedAt: new Date(),
       });
 
       const res = await request
@@ -106,14 +111,17 @@ describe('/reports/{REPORTID}/signatures', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
+
       expect(res.body).toEqual(expect.objectContaining({
         ident: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         reviewerSignedAt: expect.any(String),
         authorSignedAt: expect.any(String),
+        creatorSignedAt: expect.any(String),
         reviewerSignature: expect.any(Object),
         authorSignature: expect.any(Object),
+        creatorSignature: expect.any(Object),
         signedOffOn: expect.any(String),
       }));
       expect(res.body).toEqual(expect.not.objectContaining({
@@ -164,6 +172,19 @@ describe('/reports/{REPORTID}/signatures', () => {
         }));
       });
 
+      test('PUT /sign/creator - 200 Success', async () => {
+        const res = await request
+          .put(`/api/reports/${report.ident}/signatures/sign/creator`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(expect.objectContaining({
+          ident: expect.any(String),
+          creatorSignedAt: expect.any(String),
+        }));
+      });
+
       test('PUT /sign/INVALID - 404 Not Found', async () => {
         await request
           .put(`/api/reports/${report.ident}/signatures/sign/NOT_EXISTENT_ROLE`)
@@ -198,6 +219,19 @@ describe('/reports/{REPORTID}/signatures', () => {
         expect(res.body).toEqual(expect.objectContaining({
           ident: expect.any(String),
           reviewerSignedAt: null,
+        }));
+      });
+
+      test('PUT /revoke/creator - 200 Success', async () => {
+        const res = await request
+          .put(`/api/reports/${report.ident}/signatures/revoke/creator`)
+          .auth(username, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(res.body).toEqual(expect.objectContaining({
+          ident: expect.any(String),
+          creatorSignedAt: null,
         }));
       });
 

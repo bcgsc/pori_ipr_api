@@ -22,7 +22,6 @@ const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
   nothingRequired: true,
 });
 
-
 // Middleware for germline variants
 router.param('variant', async (req, res, next, ident) => {
   let result;
@@ -47,7 +46,6 @@ router.param('variant', async (req, res, next, ident) => {
   req.variant = result;
   return next();
 });
-
 
 // Handles requests for a single germline variant
 router.route('/:variant')
@@ -87,7 +85,6 @@ router.route('/:variant')
       });
     }
   });
-
 
 // Handles requests for all germline variants for a report
 router.route('/')
@@ -146,6 +143,5 @@ router.route('/')
       });
     }
   });
-
 
 module.exports = router;

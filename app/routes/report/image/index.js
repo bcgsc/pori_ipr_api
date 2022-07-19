@@ -32,7 +32,6 @@ router.param('image', async (req, res, next, imgIdent) => {
   return next();
 });
 
-
 // Routes for operating on specific images
 // !!Should not add update routes for report images (PUT, PATCH, etc.)
 // because updates will create duplicate image entries!!

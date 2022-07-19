@@ -4,11 +4,9 @@ const {BASE_EXCLUDE} = require('../exclude');
 
 const schemaManager = new JsonSchemaManager({secureSchemaUri: false});
 
-const schema = schemaManager.generate(
-  db.models.germlineSmallMutation, new JsonSchema7Strategy(), {
-    exclude: BASE_EXCLUDE,
-    associations: false,
-  },
-);
+const schema = schemaManager.generate(db.models.germlineSmallMutation, new JsonSchema7Strategy(), {
+  exclude: BASE_EXCLUDE,
+  associations: false,
+});
 
 module.exports = schema;

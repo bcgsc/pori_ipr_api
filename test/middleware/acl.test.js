@@ -13,7 +13,6 @@ const mockResponse = () => {
   return res;
 };
 
-
 describe('Testing ACL methods', () => {
   let testUser;
   let req = {};

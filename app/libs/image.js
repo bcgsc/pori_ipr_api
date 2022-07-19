@@ -1,7 +1,6 @@
 const sharp = require('sharp');
 const db = require('../models');
 
-
 /**
  * Resize, reformat and return base64 representation of image.
  *
@@ -21,7 +20,6 @@ const processImage = async (image, width, height, format = 'png') => {
 
   return imageData.toString('base64');
 };
-
 
 /**
  * Resize, reformat and upload image to images table
@@ -62,7 +60,7 @@ const uploadImage = async (image, options = {}) => {
  * @param {object} transaction - Transaction to run delete under
  * @returns {Promise<object>} - Returns the newly updated image data
  */
-const deleteImage = async (ident, force = false, transaction) => {
+const deleteImage = async (ident, transaction, force = false) => {
   const image = await db.models.image.findOne({where: {ident}});
 
   if (!image) {
@@ -71,7 +69,6 @@ const deleteImage = async (ident, force = false, transaction) => {
 
   return image.destroy({where: {ident}, force, transaction});
 };
-
 
 module.exports = {
   processImage,

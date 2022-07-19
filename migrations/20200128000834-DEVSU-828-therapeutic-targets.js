@@ -51,7 +51,6 @@ const transformTherapeuticTargetData = (records) => {
   return newRecords;
 };
 
-
 const NEW_COLUMNS = [
   {
     field: 'gene',
@@ -105,7 +104,6 @@ const NEW_COLUMNS = [
   },
 ];
 
-
 module.exports = {
   up: async (queryInterface) => {
     const transaction = await queryInterface.sequelize.transaction();
@@ -123,7 +121,6 @@ module.exports = {
       // drop all the current data
       console.log('Drop all rows from pog_analysis_reports_therapeutic_targets');
       await queryInterface.bulkDelete('pog_analysis_reports_therapeutic_targets', null, {transaction});
-
 
       // drop the old columns (that are not kept)
       const removedColumns = ['target', 'targetContext', 'resistance', 'biomarker', 'pog_id'];

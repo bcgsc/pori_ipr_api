@@ -5,10 +5,7 @@ const ANALYSIS_TABLE = 'reports_summary_tumour_analysis';
 
 const {addUniqueActiveFieldIndex} = require('../migrationTools');
 
-
-const migrateComparator = async (
-  queryInterface, transaction, replacements, clause = '',
-) => {
+const migrateComparator = async (queryInterface, transaction, replacements, clause = '') => {
   return queryInterface.sequelize.query(
     `INSERT INTO ${NEW_TABLE}(
       ident,

@@ -1,51 +1,54 @@
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
-  const imageData = sequelize.define('imageData', {
-    ...DEFAULT_COLUMNS,
-    reportId: {
-      name: 'reportId',
-      field: 'report_id',
-      type: Sq.INTEGER,
-      references: {
-        model: 'reports',
-        key: 'id',
+  const imageData = sequelize.define(
+    'imageData',
+    {
+      ...DEFAULT_COLUMNS,
+      reportId: {
+        name: 'reportId',
+        field: 'report_id',
+        type: Sq.INTEGER,
+        references: {
+          model: 'reports',
+          key: 'id',
+        },
+      },
+      format: {
+        type: Sq.ENUM('PNG', 'JPG'),
+        defaultValue: 'PNG',
+      },
+      filename: {
+        type: Sq.TEXT,
+        allowNull: false,
+      },
+      key: {
+        type: Sq.TEXT,
+        allowNull: false,
+      },
+      data: {
+        type: Sq.TEXT,
+        allowNull: false,
+      },
+      title: {
+        type: Sq.TEXT,
+      },
+      caption: {
+        type: Sq.TEXT,
       },
     },
-    format: {
-      type: Sq.ENUM('PNG', 'JPG'),
-      defaultValue: 'PNG',
-    },
-    filename: {
-      type: Sq.TEXT,
-      allowNull: false,
-    },
-    key: {
-      type: Sq.TEXT,
-      allowNull: false,
-    },
-    data: {
-      type: Sq.TEXT,
-      allowNull: false,
-    },
-    title: {
-      type: Sq.TEXT,
-    },
-    caption: {
-      type: Sq.TEXT,
-    },
-  },
-  {
-    ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_image_data',
-    scopes: {
-      public: {
-        attributes: {
-          exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+    {
+      ...DEFAULT_REPORT_OPTIONS,
+      tableName: 'reports_image_data',
+      scopes: {
+        public: {
+          attributes: {
+            exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+          },
         },
       },
     },
-  });
+  );
 
   // set instance methods
   imageData.prototype.view = function (scope) {

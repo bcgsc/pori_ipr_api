@@ -4,7 +4,6 @@
 const KB_TABLE = 'reports_kb_matches';
 const MUT_TABLE = 'reports_small_mutations';
 
-
 module.exports = {
   up: async (queryInterface, Sq) => {
     const transaction = await queryInterface.sequelize.transaction();

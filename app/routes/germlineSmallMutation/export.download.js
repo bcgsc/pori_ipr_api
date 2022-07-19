@@ -10,7 +10,6 @@ const {includesAll} = require('../../libs/helperFunctions');
 
 const router = express.Router({mergeParams: true});
 
-
 // Parse Mutation Landscape JSON array. Show modifier if there is one. Show associations if set. If sig has no associations, show number.
 const parseMutationSignature = (arr) => {
   return arr.map((ls) => {

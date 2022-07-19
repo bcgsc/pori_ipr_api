@@ -10,7 +10,7 @@ const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
 const fileUpload = require('express-fileupload'); // File upload support
 
-const conf = require('../app/config');
+const conf = require('./config');
 const sequelize = require('./models');
 const Routing = require('./routes');
 const logger = require('./log'); // Load logging library
@@ -68,7 +68,6 @@ const fetchRoutes = (initialRouter) => {
   return _fetchRoutes(initialRouter);
 };
 
-
 const listen = async (port = null) => {
   const app = express(); // define app using express
   logger.info(`starting http server on port ${port || conf.get('web:port')}`);
@@ -106,7 +105,6 @@ const listen = async (port = null) => {
       ].join(' ');
     }));
   }
-
 
   // DEPENDENCIES CHECK ------------------------------------------------------
   // ensure the db connection is ready

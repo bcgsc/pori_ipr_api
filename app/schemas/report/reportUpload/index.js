@@ -5,7 +5,6 @@ const kbMatchesSchema = require('./kbMatches');
 const schemaGenerator = require('../../schemaGenerator');
 const {VALID_IMAGE_KEY_PATTERN, UPLOAD_BASE_URI} = require('../../../constants');
 
-
 /**
  * Generate schema for uploading a report
  *
@@ -41,7 +40,6 @@ const generateReportUploadSchema = (isJsonSchema) => {
     },
   };
 
-
   const schema = schemaGenerator(db.models.report, {
     isJsonSchema,
     baseUri: UPLOAD_BASE_URI,
@@ -51,7 +49,6 @@ const generateReportUploadSchema = (isJsonSchema) => {
     properties,
     required: ['project', 'template'],
   });
-
 
   // get report associations
   const {
@@ -80,6 +77,5 @@ const generateReportUploadSchema = (isJsonSchema) => {
 
   return schema;
 };
-
 
 module.exports = generateReportUploadSchema;
