@@ -5,7 +5,6 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -20,29 +19,32 @@ const updateSchema = schemaGenerator(db.models.tmburMutationBurden, {
 });
 
 // Middleware for tmbur mutation burden
-router.param('tmburMutationBurden', async (req, res, next, mutIdent) => {
+router.use('/', async (req, res, next) => {
   let result;
   try {
     result = await db.models.tmburMutationBurden.findOne({
-      where: {ident: mutIdent, reportId: req.report.id},
+      where: {reportId: req.report.id},
     });
   } catch (error) {
-    logger.error(`Unable to lookup tmbur mutation burden error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup the tmbur mutation burden'}});
+    logger.error(`Unable to query Tmbur Mutation Burden for report ${req.report.ident} error: ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: `Unable to lookup Tmbur Mutation Burden for report ${req.report.ident}`},
+    });
   }
 
   if (!result) {
-    logger.error(`Unable to find tmbur mutation burden for ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find tmbur mutation burden for ${req.report.ident}`}});
+    logger.error(`Unable to find Tmbur Mutation Burden for report ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Unable to find Tmbur Mutation Burden for report ${req.report.ident}`},
+    });
   }
-
   // Add tmbur mutation burden to request
   req.tmburMutationBurden = result;
   return next();
 });
 
 // Handle requests for tmbur mutation burden by ident
-router.route('/:tmburMutationBurden([A-z0-9-]{36})')
+router.route('/')
   .get((req, res) => {
     return res.json(req.tmburMutationBurden.view('public'));
   })
@@ -62,40 +64,6 @@ router.route('/:tmburMutationBurden([A-z0-9-]{36})')
     } catch (error) {
       logger.error(`Unable to update tmbur mutation burden ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update tmbur mutation burden'}});
-    }
-  });
-
-// Handle requests for tmbur mutation summaries
-router.route('/')
-  .get(async (req, res) => {
-    const key = `/reports/${req.report.ident}/tmbur-mutation-burden`;
-
-    try {
-      const cacheResults = await cache.get(key);
-
-      if (cacheResults) {
-        res.type('json');
-        return res.send(cacheResults);
-      }
-    } catch (error) {
-      logger.error(`Error while checking cache for tmbur mutation burden data ${error}`);
-    }
-
-    try {
-      const results = await db.models.tmburMutationBurden.scope('public').findAll({
-        where: {reportId: req.report.id},
-      });
-
-      if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 14400);
-      }
-
-      return res.json(results);
-    } catch (error) {
-      logger.error(`Unable to lookup tmbur mutation burden for report ${req.report.ident} error: ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: `Unable to lookup the tmbur mutation burden for ${req.report.ident}`},
-      });
     }
   })
   .post(async (req, res) => {

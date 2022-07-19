@@ -424,7 +424,7 @@ mutationBurden.belongsTo(analysisReports, {
 // Tmbur Mutation Burden
 const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
 
-analysisReports.hasMany(tmburMutationBurden, {
+analysisReports.hasOne(tmburMutationBurden, {
   as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 tmburMutationBurden.belongsTo(analysisReports, {
