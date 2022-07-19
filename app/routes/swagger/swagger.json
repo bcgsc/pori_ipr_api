@@ -6513,7 +6513,8 @@
           "type": "string",
           "enum": [
             "author",
-            "reviewer"
+            "reviewer",
+            "creator"
           ]
         }
       },
