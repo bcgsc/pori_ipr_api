@@ -30,6 +30,8 @@ module.exports = (sequelize, Sq) => {
         'expression (primary site QC)',
         'expression (biopsy site)',
         'expression (biopsy site QC)',
+        'expression (internal pancancer cohort)',
+        'expression (internal pancancer cohort QC)',
         'mutation burden (primary)',
         'mutation burden (secondary)',
         'mutation burden (tertiary)',

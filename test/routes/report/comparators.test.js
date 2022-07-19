@@ -55,6 +55,11 @@ describe('/reports/{REPORTID}/comparators', () => {
       name: 'COADREAD',
       analysisRole: 'expression (disease)',
     });
+    await db.models.comparators.create({
+      reportId: report.id,
+      name: 'pog_internal_cohort',
+      analysisRole: 'expression (internal pancancer cohort)',
+    });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
