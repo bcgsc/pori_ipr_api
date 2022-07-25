@@ -2,7 +2,6 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
-
 const db = require('../../models');
 const logger = require('../../log');
 const cache = require('../../cache');
@@ -12,6 +11,7 @@ const router = express.Router({mergeParams: true});
 const include = [
   {model: db.models.user, as: 'reviewerSignature', attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
   {model: db.models.user, as: 'authorSignature', attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
+  {model: db.models.user, as: 'creatorSignature', attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
 ];
 
 // Middleware for report signatures
@@ -63,12 +63,12 @@ router.route('/')
     return res.json(null);
   });
 
-router.route('/sign/:role(author|reviewer)')
+router.route('/sign/:role(author|reviewer|creator)')
   .put(async (req, res) => {
     // Get the role
     const {params: {role}} = req;
 
-    // add author or reviewer
+    // add author, creator or reviewer
     const data = {};
     data[`${role}Id`] = req.user.id;
     data[`${role}SignedAt`] = new Date();
@@ -98,7 +98,7 @@ router.route('/sign/:role(author|reviewer)')
     }
   });
 
-router.route('/revoke/:role(author|reviewer)')
+router.route('/revoke/:role(author|reviewer|creator)')
   .put(async (req, res) => {
     // Get the role
     const {params: {role}} = req;
@@ -109,7 +109,7 @@ router.route('/revoke/:role(author|reviewer)')
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'No signatures found for this report'}});
     }
 
-    // remove author or reviewer
+    // remove author, creator or reviewer
     const data = {};
     data[`${role}Id`] = null;
     data[`${role}SignedAt`] = null;
@@ -149,7 +149,6 @@ router.route('/earliest-signoff')
         error: {message: 'Error while searching for earliest signature'},
       });
     }
-
     if (!result) {
       logger.error(`Report ${req.report.ident} has not been signed off on yet`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({

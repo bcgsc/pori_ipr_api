@@ -1,4 +1,4 @@
-const CONFIG = require('../../../app/config');
+const CONFIG = require('../../config');
 
 const servers = {
   development: {

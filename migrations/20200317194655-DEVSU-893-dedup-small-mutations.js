@@ -1,4 +1,3 @@
-
 const {v4: uuidv4} = require('uuid');
 
 const EXPRESSION_TABLE = 'reports_expression_outlier';

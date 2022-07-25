@@ -16,7 +16,6 @@ const updateSchema = schemaGenerator(db.models.pathwayAnalysis, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
 
-
 // Middleware for pathway analysis
 router.use('/', async (req, res, next) => {
   try {
@@ -64,7 +63,6 @@ router.route('/')
       // Add svg data to request
       req.body.pathway = req.files.pathway.data.toString();
     }
-
 
     try {
       // validate against the model

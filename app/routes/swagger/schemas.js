@@ -5,7 +5,6 @@ const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../../constants'
 const reportUpload = require('../../schemas/report/reportUpload')(false);
 const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/upload')(false);
 
-
 const schemas = {};
 
 const ID_FIELDS = [
@@ -47,7 +46,6 @@ const PATHWAY_IMAGE = {
     description: 'pathway image as svg to upload',
   },
 };
-
 
 /**
  * Check if model has specific excludes or
@@ -204,7 +202,6 @@ Object.assign(schemas.germlineReportUserCreate.properties, {
   },
 });
 
-
 // *PUT request body*
 
 // add template name to report update
@@ -238,6 +235,5 @@ Object.assign(schemas.pathwayAnalysisUpdate.properties, PATHWAY_IMAGE);
 schemas.probeResultsUpdate.properties.gene = {
   type: 'string', format: 'uuid',
 };
-
 
 module.exports = schemas;

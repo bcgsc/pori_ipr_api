@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14, 16]
+        node: [14, 16, 18]
     name: node-${{ matrix.node }}
     services:
       postgres:
@@ -51,13 +51,15 @@ jobs:
           TEMPLATE_NAME: templateipr
           DB_DUMP_LOCATION: ./demo/ipr_demodb.postgres.dump
           PGHOST: localhost
-      - run: npm ci
+      - run: npm ci --verbose
       - run: |
           npx sequelize-cli db:migrate --url postgres://${SERVICE_USER}@localhost:5432/${DATABASE_NAME}
         env:
           SERVICE_USER: ipr_service
           DATABASE_NAME: ipr_demo
           PGPASSWORD: demo
+          IPR_GRAPHKB_PASSWORD: demo
+          IPR_DATABASE_PASSWORD: demo
       - run: npm run test
         env:
           IPR_DATABASE_HOSTNAME: localhost

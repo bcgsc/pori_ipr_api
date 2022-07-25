@@ -45,7 +45,6 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-
 describe('/reports/{report}/appendices', () => {
   let template;
 

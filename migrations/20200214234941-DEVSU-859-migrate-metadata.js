@@ -49,7 +49,6 @@ const NEW_TABLE_COLUMNS = {
   },
 };
 
-
 module.exports = {
   up: async (queryInterface) => {
     const transaction = await queryInterface.sequelize.transaction();
@@ -66,8 +65,7 @@ module.exports = {
       }
 
       console.log('copy the patientId, biopsyName, and normalLibrary from the analysis');
-      await queryInterface.sequelize.query(
-        `UPDATE ${REPORT_TABLE_NAME} as gsm SET (
+      await queryInterface.sequelize.query(`UPDATE ${REPORT_TABLE_NAME} as gsm SET (
           patient_id,
           biopsy_name,
           normal_library
@@ -78,8 +76,7 @@ module.exports = {
           FROM pog_analysis pa
           JOIN "POGs" pogs on (pogs.id = pa.pog_id)
           WHERE pa.id = gsm.pog_analysis_id
-        )`, {transaction},
-      );
+        )`, {transaction});
 
       console.log('add the not null contraints to the new patient_id column');
       await queryInterface.changeColumn(

@@ -13,7 +13,6 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
-
 const checkReportUser = (reportUserObject) => {
   expect(reportUserObject).toEqual(expect.objectContaining({
     ident: expect.any(String),

@@ -21,7 +21,6 @@ const updateSchema = schemaGenerator(db.models.project, {
   nothingRequired: true,
 });
 
-
 router.param('project', projectMiddleware);
 
 // Project routes

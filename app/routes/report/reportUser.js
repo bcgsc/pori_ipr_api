@@ -19,7 +19,6 @@ const createSchema = schemaGenerator(db.models.reportUser, {
   required: ['user'],
 });
 
-
 // Middleware for report-user binding
 router.param('reportUser', async (req, res, next, ident) => {
   let result;

@@ -87,7 +87,8 @@
         "tumourSample": "Metastatic",
         "tumourProtocol": "WGS; RNA-seq",
         "constitutionalSample": "Peripheral Blood",
-        "constitutionalProtocol": "WGS"
+        "constitutionalProtocol": "WGS",
+        "internalPancancerCohort": "POG-RBD"
     },
     "variantCounts": {
         "smallMutations": 2,
@@ -146,6 +147,10 @@
             "analysisRole": "expression (primary site)",
             "name": "average",
             "size": 1024
+        },
+        {
+            "analysisRole": "expression (internal pancancer cohort)",
+            "name": "adult_pog_rbd_152_v10_tpm"
         }
     ],
     "mutationBurden": [
@@ -165,6 +170,25 @@
             "totalMutationsPerMb": 56.24
         }
     ],
+    "tmburMutationBurden": {
+        "tumour": "T1",
+        "normal": "N1",
+        "nonNBasesIn1To22AndXAndY": "2667837836",
+        "totalGenomeSnvs": 5362,
+        "totalGenomeIndels": 655,
+        "genomeSnvTmb": 2.01,
+        "genomeIndelTmb": 0.25,
+        "cdsBasesIn1To22AndXAndY": "31990128",
+        "cdsSnvs": 63,
+        "cdsIndels": 3,
+        "cdsSnvTmb": 1.97,
+        "cdsIndelTmb": 0.09,
+        "proteinSnvs": 54,
+        "proteinIndels": 3,
+        "proteinSnvTmb": 1.69,
+        "proteinIndelTmb": 0.09,
+        "msiScore": 0.0
+    },
     "kbMatches": [
         {
             "category": "cancer predisposition",
@@ -305,6 +329,11 @@
             "biopsySiteFoldChange": 16,
             "biopsySitekIQR": 16.82,
             "biopsySitePercentile": 100,
+            "internalPancancerFoldChange": 16,
+            "internalPancancerkIQR": 16.82,
+            "internalPancancerZScore": 0.5,
+            "internalPancancerQC": 10.7,
+            "internalPancancerPercentile": 100,
             "diseasePercentile": 88,
             "diseasekIQR": 4.21,
             "diseaseQC": 43,

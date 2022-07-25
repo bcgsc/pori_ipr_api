@@ -87,9 +87,7 @@ module.exports = {
         {transaction},
       );
       // drop the view and source column
-      await queryInterface.sequelize.query(
-        `ALTER TABLE ${SOURCE_TABLE} DROP COLUMN "mutationSignature" CASCADE`, {transaction},
-      );
+      await queryInterface.sequelize.query(`ALTER TABLE ${SOURCE_TABLE} DROP COLUMN "mutationSignature" CASCADE`, {transaction});
       // rename table to simplify
       await queryInterface.renameTable(TABLE, 'reports_mutation_signature', {transaction});
     });
