@@ -474,7 +474,7 @@ template.hasMany(analysisReports, {
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
 
-template.hasOne(templateAppendix, {
+template.hasMany(templateAppendix, {
   as: 'appendix', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 

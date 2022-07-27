@@ -14,6 +14,17 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
+    projectId: {
+      name: 'projectId',
+      field: 'project_id',
+      type: Sq.INTEGER,
+      unique: false,
+      allowNull: true,
+      references: {
+        model: 'projects',
+        key: 'id',
+      },
+    },
     text: {
       type: Sq.TEXT,
     },
