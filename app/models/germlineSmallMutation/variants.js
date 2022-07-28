@@ -194,6 +194,12 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
       allowNull: true,
     },
+    previouslyReported: {
+      name: 'previously_reported',
+      field: 'previously_reported',
+      type: Sq.TEXT,
+      allowNull: true,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'germline_small_mutations_variant',
