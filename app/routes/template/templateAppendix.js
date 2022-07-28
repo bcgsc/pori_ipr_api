@@ -23,10 +23,14 @@ const updateSchema = schemaGenerator(db.models.templateAppendix, {
 // Add middleware to get template appendix
 router.use('/', async (req, res, next) => {
   try {
-    req.project = await db.models.project.findOne({
-      where:
-        {ident: req.body.projectId || null},
-    });
+    if (req.body.projectId) {
+      req.project = await db.models.project.findOne({
+        where:
+          {ident: req.body.projectId},
+      });
+    } else {
+      req.project = null;
+    }
 
     let projectId;
     if (req.project) {
