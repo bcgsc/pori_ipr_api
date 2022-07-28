@@ -1,16 +1,16 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const { Op } = require('sequelize');
+const {Op} = require('sequelize');
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const { sanitizeHtml } = require('../../libs/helperFunctions');
+const {sanitizeHtml} = require('../../libs/helperFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const { BASE_EXCLUDE } = require('../../schemas/exclude');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema's
 const createSchema = schemaGenerator(db.models.templateAppendix, {
@@ -40,9 +40,9 @@ router.use('/', async (req, res, next) => {
       where:
       {
         [Op.and]: [
-          { templateId: req.template.id },
-          { projectId },
-        ]
+          {templateId: req.template.id},
+          {projectId},
+        ],
       },
       include:
       [{model: db.models.project.scope('public'), as: 'project'}],
@@ -50,7 +50,7 @@ router.use('/', async (req, res, next) => {
   } catch (error) {
     logger.error(`Unable to get template appendix ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      error: { message: 'Unable to get template appendix' },
+      error: {message: 'Unable to get template appendix'},
     });
   }
 
@@ -63,7 +63,7 @@ router.use('/', async (req, res, next) => {
   if (!req.project && req.body.projectId) {
     logger.error(`Invalid project ID for template appendix: ${req.body.projectId}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({
-      error: { message: `Invalid project ID for template appendix: ${req.body.projectId}` },
+      error: {message: `Invalid project ID for template appendix: ${req.body.projectId}`},
     });
   }
 
@@ -71,7 +71,7 @@ router.use('/', async (req, res, next) => {
   if (req.templateAppendix && req.method === 'POST') {
     logger.error(`Template appendix already exists for ${req.template.name}`);
     return res.status(HTTP_STATUS.CONFLICT).json({
-      error: { message: `Template appendix already exists for ${req.template.name}` },
+      error: {message: `Template appendix already exists for ${req.template.name}`},
     });
   }
 
@@ -79,7 +79,7 @@ router.use('/', async (req, res, next) => {
   if (!req.templateAppendix && req.method !== 'POST') {
     logger.error(`Template appendix does not exist for ${req.template.name}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({
-      error: { message: `Template appendix does not exist for ${req.template.name}` },
+      error: {message: `Template appendix does not exist for ${req.template.name}`},
     });
   }
 
@@ -98,7 +98,7 @@ router.route('/')
     } catch (error) {
       const message = `Error while validating template appendix create request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: { message } });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     // Sanitize text
@@ -116,7 +116,7 @@ router.route('/')
     } catch (error) {
       logger.error(`Unable to create template appendix ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: { message: 'Unable to create template appendix' },
+        error: {message: 'Unable to create template appendix'},
       });
     }
   })
@@ -127,7 +127,7 @@ router.route('/')
     } catch (error) {
       const message = `Error while validating template appendix update request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: { message } });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     // Sanitize text
@@ -137,12 +137,12 @@ router.route('/')
 
     // Update db entry
     try {
-      await req.templateAppendix.update(req.body, { userId: req.user.id });
+      await req.templateAppendix.update(req.body, {userId: req.user.id});
       return res.json(req.templateAppendix.view('public'));
     } catch (error) {
       logger.error(`Unable to update template appendix ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: { message: 'Unable to update template appendix' },
+        error: {message: 'Unable to update template appendix'},
       });
     }
   })
@@ -154,7 +154,7 @@ router.route('/')
     } catch (error) {
       logger.error(`Error while removing template appendix ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: { message: 'Error while removing template appendix' },
+        error: {message: 'Error while removing template appendix'},
       });
     }
   });
