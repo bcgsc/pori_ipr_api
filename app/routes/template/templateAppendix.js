@@ -25,7 +25,7 @@ router.use('/', async (req, res, next) => {
   try {
     req.project = await db.models.project.findOne({
       where:
-        { ident: req.body.projectId || null },
+        {ident: req.body.projectId || null},
     });
 
     let projectId;
@@ -44,6 +44,8 @@ router.use('/', async (req, res, next) => {
           { projectId },
         ]
       },
+      include:
+      [{model: db.models.project.scope('public'), as: 'project'}],
     });
   } catch (error) {
     logger.error(`Unable to get template appendix ${error}`);

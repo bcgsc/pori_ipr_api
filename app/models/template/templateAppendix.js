@@ -41,7 +41,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   templateAppendix.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, templateId, deletedAt, updatedBy, ...publicView} = this.dataValues;
+      const {id, projectId, templateId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;
