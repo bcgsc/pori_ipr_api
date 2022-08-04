@@ -14,6 +14,17 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
+    projectId: {
+      name: 'projectId',
+      field: 'project_id',
+      type: Sq.INTEGER,
+      unique: false,
+      allowNull: true,
+      references: {
+        model: 'projects',
+        key: 'id',
+      },
+    },
     text: {
       type: Sq.TEXT,
     },
@@ -30,7 +41,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   templateAppendix.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, templateId, deletedAt, updatedBy, ...publicView} = this.dataValues;
+      const {id, projectId, templateId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

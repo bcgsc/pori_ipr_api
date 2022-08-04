@@ -474,12 +474,20 @@ template.hasMany(analysisReports, {
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
 
-template.hasOne(templateAppendix, {
+template.hasMany(templateAppendix, {
   as: 'appendix', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 templateAppendix.belongsTo(template, {
   as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+project.hasMany(templateAppendix, {
+  as: 'appendix', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+templateAppendix.belongsTo(project, {
+  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Germline Small Mutations
