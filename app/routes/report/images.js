@@ -135,9 +135,33 @@ const IMAGES_CONFIG = [
     format: 'PNG',
   },
   {
-    pattern: 'expression.spearman\\.(tcga|gtex|cser|hartwig|pediatric)',
+    pattern: 'expression.spearman.tcga',
     width: 1100,
-    height: 1360,
+    height: 3000,
+    format: 'PNG',
+  },
+  {
+    pattern: 'expression.spearman.gtex',
+    width: 1100,
+    height: 4050,
+    format: 'PNG',
+  },
+  {
+    pattern: 'expression.spearman.cser',
+    width: 1100,
+    height: 1125,
+    format: 'PNG',
+  },
+  {
+    pattern: 'expression.spearman.hartwig',
+    width: 1100,
+    height: 1500,
+    format: 'PNG',
+  },
+  {
+    pattern: 'expression.spearman.pediatric',
+    width: 1100,
+    height: 2775,
     format: 'PNG',
   },
   {

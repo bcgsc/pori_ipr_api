@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 
@@ -22,13 +23,51 @@ const updateSchema = schemaGenerator(db.models.templateAppendix, {
 // Add middleware to get template appendix
 router.use('/', async (req, res, next) => {
   try {
+    if (req.body.projectId) {
+      req.project = await db.models.project.findOne({
+        where:
+          {ident: req.body.projectId},
+      });
+    } else {
+      req.project = null;
+    }
+
+    let projectId;
+    if (req.project) {
+      req.body.projectId = req.project.id;
+      projectId = req.project.id;
+    } else {
+      projectId = null;
+    }
+
     req.templateAppendix = await db.models.templateAppendix.findOne({
-      where: {templateId: req.template.id},
+      where:
+      {
+        [Op.and]: [
+          {templateId: req.template.id},
+          {projectId},
+        ],
+      },
+      include:
+      [{model: db.models.project.scope('public'), as: 'project'}],
     });
   } catch (error) {
     logger.error(`Unable to get template appendix ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       error: {message: 'Unable to get template appendix'},
+    });
+  }
+
+  // Convert Project ID to ident in GET endpoint
+  if (req.project && req.templateAppendix && req.method === 'GET') {
+    req.templateAppendix.projectId = req.project.ident;
+  }
+
+  // Throw an error if Project ident is provided but not existent
+  if (!req.project && req.body.projectId) {
+    logger.error(`Invalid project ID for template appendix: ${req.body.projectId}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Invalid project ID for template appendix: ${req.body.projectId}`},
     });
   }
 
