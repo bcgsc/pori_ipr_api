@@ -186,16 +186,6 @@ describe('/reports/{REPORTID}', () => {
       expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
-    test('/ - 200 Success', async () => {
-      const res = await request
-        .get('/api/reports')
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      checkReports(res.body.reports);
-    }, LONGER_TIMEOUT);
-
     // Test GET with limit
     test('/ - limit - 200 Success', async () => {
       const res = await request
