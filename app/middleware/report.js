@@ -3,6 +3,7 @@ const db = require('../models');
 const logger = require('../log');
 const cache = require('../cache');
 const aclMiddleware = require('./acl');
+const {hasAccessToNonProdReports} = require('../libs/helperFunctions');
 
 // Lookup report middleware
 module.exports = async (req, res, next, ident) => {
@@ -61,6 +62,11 @@ module.exports = async (req, res, next, ident) => {
     if (!result) {
       logger.error(`Unable to find the requested report ${ident}`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
+    }
+
+    if (!hasAccessToNonProdReports(req.user) && result.state === 'nonproduction') {
+      logger.error(`User does not have non-production access to ${ident}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
     }
 
     // Add result to cache
