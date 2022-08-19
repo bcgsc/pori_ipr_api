@@ -1,6 +1,6 @@
 const {
   getUser,
-} = require('../../libs/helperFunctions');
+} = require('../../libs/getUser');
 
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
