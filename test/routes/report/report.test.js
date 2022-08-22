@@ -137,24 +137,24 @@ describe('/reports/{REPORTID}', () => {
 
   describe('GET', () => {
     // Test regular GET
-    // test('/ - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    test('/ - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
-    // }, LONGER_TIMEOUT);
+      checkReports(res.body.reports);
+    }, LONGER_TIMEOUT);
 
-    // // Test GET with paginated
-    // test('/ - paginated - 400 Bad Request', async () => {
-    //   await request
-    //     .get('/api/reports?paginated=NOT_BOOLEAN')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.BAD_REQUEST);
-    // });
+    // Test GET with paginated
+    test('/ - paginated - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?paginated=NOT_BOOLEAN')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
     test('/ - 200 GET non-production reports with "non-production access" group', async () => {
       const res = await request
@@ -186,159 +186,159 @@ describe('/reports/{REPORTID}', () => {
       expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
-    // // Test GET with limit
-    // test('/ - limit - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports?paginated=true&limit=4')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with limit
+    test('/ - limit - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?paginated=true&limit=4')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
-    //   expect(res.body.reports.length).toBeLessThanOrEqual(4);
-    // }, LONGER_TIMEOUT);
+      checkReports(res.body.reports);
+      expect(res.body.reports.length).toBeLessThanOrEqual(4);
+    }, LONGER_TIMEOUT);
 
-    // test('/ - limit - 400 Bad Request', async () => {
-    //   await request
-    //     .get('/api/reports?paginated=true&limit=NOT_INTEGER')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.BAD_REQUEST);
-    // });
+    test('/ - limit - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?paginated=true&limit=NOT_INTEGER')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
-    // // Test GET with offset
-    // test('/ - offset - 200 Success', async () => {
-    //   const res = await request
-    //     .get(`/api/reports?paginated=true&offset=${totalReports - 3}`)
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with offset
+    test('/ - offset - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?paginated=true&offset=${totalReports - 3}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
-    //   expect(res.body.reports.length).toBe(3);
-    // }, LONGER_TIMEOUT);
+      checkReports(res.body.reports);
+      expect(res.body.reports.length).toBe(3);
+    }, LONGER_TIMEOUT);
 
-    // test('/ - offset - 400 Bad Request', async () => {
-    //   await request
-    //     .get('/api/reports?paginated=true&offset=NOT_INTEGER')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.BAD_REQUEST);
-    // });
+    test('/ - offset - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?paginated=true&offset=NOT_INTEGER')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
-    // // Test GET with sort
-    // test('/ - sort - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports?sort=patientId:desc')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with sort
+    test('/ - sort - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?sort=patientId:desc')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
-    //   expect(res.body.reports[0].patientId).toEqual(res.body.reports[1].patientId);
-    // }, LONGER_TIMEOUT);
+      checkReports(res.body.reports);
+      expect(res.body.reports[0].patientId).toEqual(res.body.reports[1].patientId);
+    }, LONGER_TIMEOUT);
 
-    // test('/ - sort - 400 Bad Request', async () => {
-    //   await request
-    //     .get('/api/reports?sort=INVALID_FIELD:desc')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.BAD_REQUEST);
-    // });
+    test('/ - sort - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?sort=INVALID_FIELD:desc')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
-    // // Test GET with project
-    // test('/ - project - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports?project=TEST')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with project
+    test('/ - project - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?project=TEST')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
+      checkReports(res.body.reports);
 
-    //   expect(res.body.reports).toEqual(expect.arrayContaining([
-    //     expect.objectContaining({projects: expect.arrayContaining([
-    //       expect.objectContaining({name: expect.stringContaining('TEST')}),
-    //     ])}),
-    //   ]));
-    // });
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({projects: expect.arrayContaining([
+          expect.objectContaining({name: expect.stringContaining('TEST')}),
+        ])}),
+      ]));
+    });
 
-    // test('/ - project - 403 Forbidden', async () => {
-    //   await request
-    //     .get('/api/reports?project=SUPER-SECURE')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.FORBIDDEN);
-    // });
+    test('/ - project - 403 Forbidden', async () => {
+      await request
+        .get('/api/reports?project=SUPER-SECURE')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
 
-    // // Test GET with states
-    // test('/ - states - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports?states=ready')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with states
+    test('/ - states - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?states=ready')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
+      checkReports(res.body.reports);
 
-    //   expect(res.body.reports).toEqual(expect.arrayContaining([
-    //     expect.objectContaining({state: expect.stringContaining('ready')}),
-    //   ]));
-    // }, LONGER_TIMEOUT);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({state: expect.stringContaining('ready')}),
+      ]));
+    }, LONGER_TIMEOUT);
 
-    // test('/ - states - 400 Bad Request', async () => {
-    //   await request
-    //     .get('/api/reports?states=INVALID_STATE')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.BAD_REQUEST);
-    // });
+    test('/ - states - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?states=INVALID_STATE')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
-    // // Test GET with role
-    // test('/ - role - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports?role=clinician')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with role
+    test('/ - role - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?role=clinician')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
+      checkReports(res.body.reports);
 
-    //   expect(res.body.reports).toEqual([]);
-    // }, LONGER_TIMEOUT);
+      expect(res.body.reports).toEqual([]);
+    }, LONGER_TIMEOUT);
 
-    // test('/ - role - 400 Bad Request', async () => {
-    //   await request
-    //     .get('/api/reports?role=INVALID_ROLE')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.BAD_REQUEST);
-    // });
+    test('/ - role - 400 Bad Request', async () => {
+      await request
+        .get('/api/reports?role=INVALID_ROLE')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
 
-    // // Test GET with search text
-    // test('/ - search text - 200 Success', async () => {
-    //   const res = await request
-    //     .get('/api/reports?searchText=UPLOADPAT01')
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    // Test GET with search text
+    test('/ - search text - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?searchText=UPLOADPAT01')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReports(res.body.reports);
+      checkReports(res.body.reports);
 
-    //   expect(res.body.reports).toEqual(expect.arrayContaining([
-    //     expect.objectContaining({patientId: expect.stringContaining('UPLOADPAT01')}),
-    //   ]));
-    // }, LONGER_TIMEOUT);
+      expect(res.body.reports).toEqual(expect.arrayContaining([
+        expect.objectContaining({patientId: expect.stringContaining('UPLOADPAT01')}),
+      ]));
+    }, LONGER_TIMEOUT);
 
-    // test('fetches known ident ok', async () => {
-    //   const res = await request
-    //     .get(`/api/reports/${report.ident}`)
-    //     .auth(username, password)
-    //     .type('json')
-    //     .expect(HTTP_STATUS.OK);
+    test('fetches known ident ok', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-    //   checkReport(res.body);
-    // });
+      checkReport(res.body);
+    });
 
     test('fetches non-production ident with group OK', async () => {
       const res = await request
@@ -366,114 +366,114 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
-  //   test('No queries is OK', async () => {
-  //     // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
-  //     const res = await request
-  //       .get('/api/reports')
-  //       .auth(username, password)
-  //       .type('json')
-  //       .expect(HTTP_STATUS.OK);
+    test('No queries is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
+        .get('/api/reports')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-  //     // Check if the number of reports returned by api is the same as db
-  //     expect(res.body.total).toEqual(totalReports);
-  //   });
+      // Check if the number of reports returned by api is the same as db
+      expect(res.body.total).toEqual(totalReports);
+    });
 
-  //   test('State querying is OK', async () => {
-  //     // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
-  //     const res = await request
-  //       .get('/api/reports')
-  //       .query({states: 'reviewed,archived'})
-  //       .auth(username, password)
-  //       .type('json')
-  //       .expect(HTTP_STATUS.OK);
+    test('State querying is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
+        .get('/api/reports')
+        .query({states: 'reviewed,archived'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-  //     res.body.reports.forEach((reportObject) => {
-  //       expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
-  //     });
-  //   });
+      res.body.reports.forEach((reportObject) => {
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+      });
+    });
 
-  //   test('Multiple queries is OK', async () => {
-  //     // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
-  //     const res = await request
-  //       .get('/api/reports')
-  //       .query({
-  //         states: 'reviewed,archived',
-  //         role: 'bioinformatician',
-  //       })
-  //       .auth(username, password)
-  //       .type('json')
-  //       .expect(HTTP_STATUS.OK);
+    test('Multiple queries is OK', async () => {
+      // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const res = await request
+        .get('/api/reports')
+        .query({
+          states: 'reviewed,archived',
+          role: 'bioinformatician',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-  //     res.body.reports.forEach((reportObject) => {
-  //       expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
-  //       expect(reportObject.users.some((user) => {
-  //         return user.role === 'bioinformatician';
-  //       })).toBeTruthy();
-  //     });
-  //   });
+      res.body.reports.forEach((reportObject) => {
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.users.some((user) => {
+          return user.role === 'bioinformatician';
+        })).toBeTruthy();
+      });
+    });
 
-  //   test('error on non-existant ident', async () => {
-  //     await request
-  //       .get(`/api/reports/${randomUuid}`)
-  //       .auth(username, password)
-  //       .type('json')
-  //       .expect(HTTP_STATUS.NOT_FOUND);
-  //   });
-  // });
+    test('error on non-existant ident', async () => {
+      await request
+        .get(`/api/reports/${randomUuid}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
+  });
 
-  // describe('PUT', () => {
-  //   test('tumour content update OK', async () => {
-  //     const res = await request
-  //       .put(`/api/reports/${report.ident}`)
-  //       .auth(username, password)
-  //       .type('json')
-  //       .send({
-  //         tumourContent: 23.2,
-  //       })
-  //       .expect(HTTP_STATUS.OK);
+  describe('PUT', () => {
+    test('tumour content update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 23.2,
+        })
+        .expect(HTTP_STATUS.OK);
 
-  //     checkReport(res.body);
-  //     expect(res.body).toHaveProperty('tumourContent', 23.2);
-  //   });
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('tumourContent', 23.2);
+    });
 
-  //   test('ploidy update OK', async () => {
-  //     const res = await request
-  //       .put(`/api/reports/${report.ident}`)
-  //       .auth(username, password)
-  //       .type('json')
-  //       .send({
-  //         ploidy: 'triploid',
-  //       })
-  //       .expect(HTTP_STATUS.OK);
+    test('ploidy update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          ploidy: 'triploid',
+        })
+        .expect(HTTP_STATUS.OK);
 
-  //     checkReport(res.body);
-  //     expect(res.body).toHaveProperty('ploidy', 'triploid');
-  //   });
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('ploidy', 'triploid');
+    });
 
-  //   test('subtyping update OK', async () => {
-  //     const res = await request
-  //       .put(`/api/reports/${report.ident}`)
-  //       .auth(username, password)
-  //       .type('json')
-  //       .send({
-  //         subtyping: 'ER positive',
-  //       })
-  //       .expect(HTTP_STATUS.OK);
+    test('subtyping update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          subtyping: 'ER positive',
+        })
+        .expect(HTTP_STATUS.OK);
 
-  //     checkReport(res.body);
-  //     expect(res.body).toHaveProperty('subtyping', 'ER positive');
-  //   });
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('subtyping', 'ER positive');
+    });
 
-  //   test('error on unexpected value', async () => {
-  //     await request
-  //       .put(`/api/reports/${report.ident}`)
-  //       .auth(username, password)
-  //       .type('json')
-  //       .send({
-  //         badValue: 'SYTHR',
-  //       })
-  //       .expect(HTTP_STATUS.BAD_REQUEST);
-  //   });
+    test('error on unexpected value', async () => {
+      await request
+        .put(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          badValue: 'SYTHR',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
   });
 
   // delete report
