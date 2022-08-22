@@ -29,7 +29,9 @@ const include = [
   },
 ];
 
-const getUser = async (req, res, token) => {
+const getUser = async (req, res) => {
+  let token = req.header('Authorization') || '';
+
   // Check for basic authorization header
   if (token.includes('Basic')) {
     let credentials;

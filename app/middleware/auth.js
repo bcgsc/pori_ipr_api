@@ -5,8 +5,7 @@ const {
 // Require Active Session Middleware
 module.exports = async (req, res, next) => {
   // Get Authorization Header
-  const token = req.header('Authorization') || '';
-  const respUser = getUser(req, res, token);
+  const respUser = await getUser(req, res);
   req.user = respUser;
   return next();
 };
