@@ -119,7 +119,7 @@ describe('/reports/{REPORTID}', () => {
         .get('/api/reports')
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
       checkReports(res.body.reports);
     }, LONGER_TIMEOUT);
