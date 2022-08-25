@@ -14,6 +14,8 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
+jest.mock('../../../app/middleware/auth.js');
+
 const LONGER_TIMEOUT = 50000;
 
 let server;
@@ -43,6 +45,12 @@ const checkReports = (reports) => {
   });
 };
 
+const hasNonProdReport = (reports) => {
+  return reports.some((report) => {
+    return report.state === 'nonproduction';
+  });
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -53,17 +61,22 @@ beforeAll(async () => {
 describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
+  const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
+  const AUTHORIZED_GROUP = 'Non-Production Access';
+
+  let project;
   let report;
   let reportReady;
   let reportReviewed;
   let reportArchived;
+  let reportNonProduction;
   let totalReports;
 
   beforeEach(async () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and associate projects
-    const project = await db.models.project.findOne({
+    project = await db.models.project.findOne({
       where: {
         name: 'TEST',
       },
@@ -86,6 +99,16 @@ describe('/reports/{REPORTID}', () => {
     });
     await db.models.reportProject.create({
       reportId: reportReady.id,
+      project_id: project.id,
+    });
+
+    reportNonProduction = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+      state: 'nonproduction',
+    });
+    await db.models.reportProject.create({
+      reportId: reportNonProduction.id,
       project_id: project.id,
     });
 
@@ -132,6 +155,36 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
+
+    test('/ - 200 GET non-production reports with "non-production access" group', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(hasNonProdReport(res.body.reports)).toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
+    }, LONGER_TIMEOUT);
 
     // Test GET with limit
     test('/ - limit - 200 Success', async () => {
@@ -287,6 +340,32 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
+    test('fetches non-production ident with group OK', async () => {
+      const res = await request
+        .get(`/api/reports/${reportNonProduction.ident}`)
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+    });
+
+    test('error on non-production ident with wrong group', async () => {
+      await request
+        .get(`/api/reports/${reportNonProduction.ident}`)
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     test('No queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
@@ -403,6 +482,7 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
+    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 

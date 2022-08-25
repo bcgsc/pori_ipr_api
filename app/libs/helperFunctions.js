@@ -73,6 +73,21 @@ const isAdmin = (user) => {
 };
 
 /**
+ * Checks if user has access to non-prod repots
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has access to non-prod eports
+ */
+const hasAccessToNonProdReports = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager'
+    || group.name.toLowerCase() === 'non-production access'
+    || group.name.toLowerCase() === 'demo';
+  });
+};
+
+/**
  * Checks if a user belongs to atleast one
  * of the access groups
  *
@@ -132,6 +147,7 @@ module.exports = {
   getUserProjects,
   isAdmin,
   hasAccess,
+  hasAccessToNonProdReports,
   hasMasterAccess,
   projectAccess,
   isIntersectionBy,
