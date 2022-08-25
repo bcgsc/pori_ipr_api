@@ -10,6 +10,7 @@ const cache = require('../../cache');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {generateKey} = require('../../libs/cacheFunctions');
+const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -239,6 +240,13 @@ router.route('/')
         }] : []),
       ],
     };
+
+    if (!hasAccessToNonProdReports(req.user)) {
+      opts.where = {
+        ...opts.where,
+        [Op.not]: {state: 'nonproduction'},
+      };
+    }
 
     try {
       const reports = await db.models.report.scope('public').findAndCountAll(opts);
