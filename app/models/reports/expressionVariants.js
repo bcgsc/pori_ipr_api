@@ -189,7 +189,7 @@ module.exports = (sequelize, Sq) => {
       minimal: {
         attributes: [
           'expressionState', 'rpkm', 'diseasePercentile', 'primarySiteFoldChange',
-          'tpm', 'primarySitekIQR',
+          'tpm', 'primarySitekIQR', 'diseasekIQR',
         ],
       },
     },
