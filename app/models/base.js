@@ -158,8 +158,6 @@ const DEFAULT_REPORT_OPTIONS = {
         clearCache(instance, 'PUT'),
         (!changed || includesAll(updateExclude, changed)) ? Promise.resolve(true)
           : instance.sequelize.models.signatures.update({
-            creatorId: null,
-            creatorSignedAt: null,
             authorId: null,
             authorSignedAt: null,
             reviewerId: null,

@@ -255,3 +255,104 @@ describe('/reports/{REPORTID}/signatures', () => {
 afterAll(async () => {
   await server.close();
 });
+
+describe('/reports/{REPORTID}/summary/analyst-comments with signatures', () => {
+  let report;
+  let user;
+  let analystComments;
+
+  beforeAll(async () => {
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
+    // create a report to be used in tests
+    report = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'PATIENT1234',
+    });
+
+    user = await db.models.user.findOne({
+      where: {username},
+    });
+
+    analystComments = await db.models.analystComments.create({
+      comments: 'test_comment',
+      reportId: report.id,
+    });
+
+    // Create initial comment to be tested
+    await request
+      .put(`/api/reports/${report.ident}/summary/analyst-comments`)
+      .auth(username, password)
+      .type('json')
+      .send({comments: 'This is the first comment'})
+      .expect(200);
+  });
+
+  describe('PUT', () => {
+    // Tests for PUT endpoints
+    let signature;
+
+    beforeEach(async () => {
+      signature = await db.models.signatures.create({
+        reportId: report.id,
+        authorId: user.id,
+        authorSignedAt: new Date(),
+        creatorId: user.id,
+        creatorSignedAt: new Date(),
+        reviewerId: user.id,
+        reviewerSignedAt: new Date(),
+      });
+    });
+
+    test('PUT / comment - 200 Success Creator Signature is not Removed', async () => {
+      const initialSignature = await request
+        .get(`/api/reports/${report.ident}/signatures`)
+        .auth(username, password)
+        .type('json')
+        .expect(200);
+
+      expect(initialSignature.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        authorSignedAt: expect.any(String),
+        creatorSignedAt: expect.any(String),
+        reviewerSignedAt: expect.any(String),
+      }));
+
+      const res = await request
+        .put(`/api/reports/${report.ident}/summary/analyst-comments`)
+        .auth(username, password)
+        .type('json')
+        .send({comments: 'This is another comment'})
+        .expect(200);
+
+      expect(res.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        comments: 'This is another comment',
+      }));
+
+      const postEditSignature = await request
+        .get(`/api/reports/${report.ident}/signatures`)
+        .auth(username, password)
+        .type('json')
+        .expect(200);
+
+      expect(postEditSignature.body).toEqual(expect.objectContaining({
+        ident: expect.any(String),
+        authorSignedAt: null,
+        reviewerSignedAt: null,
+        creatorSignedAt: expect.any(String),
+      }));
+    });
+
+    afterEach(async () => {
+      return signature.destroy({force: true});
+    });
+  });
+
+  afterAll(async () => {
+    // Delete newly created report and all of it's components
+    // indirectly by force deleting the report
+    db.models.report.destroy({where: {ident: report.ident}, force: true});
+    return db.models.analystComments.destroy({where: {ident: analystComments.ident}, force: true});
+  });
+});
