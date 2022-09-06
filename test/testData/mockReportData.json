@@ -125,10 +125,16 @@
             "evidenceLevel": "OncoKB 1"
         }
     ],
-    "microbial": {
-        "species": "None",
-        "integrationSite": "None"
-    },
+    "microbial": [
+        {
+            "species": "species1",
+            "integrationSite": "None"
+        },
+        {
+            "species": "species2",
+            "integrationSite": "None"
+        }
+    ],
     "comparators": [
         {
             "analysisRole": "mutation burden (primary)",
