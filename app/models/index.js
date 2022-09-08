@@ -144,7 +144,7 @@ analysisReports.hasMany(summary.probeResults, {
 analysisReports.hasMany(summary.therapeuticTargets, {
   as: 'therapeuticTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-analysisReports.hasOne(summary.microbial, {
+analysisReports.hasMany(summary.microbial, {
   as: 'microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
