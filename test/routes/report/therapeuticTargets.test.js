@@ -22,6 +22,7 @@ const FAKE_TARGET = {
   context: 'resistance',
   therapy: 'EGFR inhibitors',
   evidenceLevel: 'OncoKB 1',
+  iprEvidenceLevel: 'IPR-A',
 };
 
 let server;

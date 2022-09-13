@@ -65,6 +65,12 @@ module.exports = (sequelize, Sq) => {
       field: 'evidence_level',
       type: Sq.TEXT,
     },
+    iprEvidenceLevel: {
+      name: 'iprEvidenceLevel',
+      field: 'ipr_evidence_level',
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
     matchedCancer: {
       name: 'matchedCancer',
       field: 'matched_cancer',

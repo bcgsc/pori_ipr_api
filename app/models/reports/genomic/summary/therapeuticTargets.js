@@ -68,6 +68,12 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
       defaultValue: null,
     },
+    iprEvidenceLevel: {
+      name: 'iprEvidenceLevel',
+      field: 'ipr_evidence_level',
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
     evidenceLevelGraphkbId: {
       name: 'evidenceLevelGraphkbId',
       type: Sq.TEXT,
