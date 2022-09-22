@@ -23,6 +23,8 @@ const REMOVE_REPORT_SIGNATURES = (instance, options = {}) => {
 
   // remove signatures
   return instance.sequelize.models.signatures.update({
+    creatorId: null,
+    creatorSignedAt: null,
     authorId: null,
     authorSignedAt: null,
     reviewerId: null,
@@ -147,42 +149,19 @@ const DEFAULT_REPORT_OPTIONS = {
   hooks: {
     ...DEFAULT_OPTIONS.hooks,
 
-    afterUpdate: async (instance, options = {}) => {
-      const modelName = instance.constructor.name;
-      // check if the data has changed or if the fields updated
-      // are excluded from removing the report signatures
-      const changed = instance.changed();
-      const updateExclude = SIGNATURE_REMOVAL_EXCLUDE[modelName] || DEFAULT_UPDATE_EXCLUDE;
-
+    afterUpdate: async (instance) => {
       return Promise.all([
         clearCache(instance, 'PUT'),
-        (!changed || includesAll(updateExclude, changed)) ? Promise.resolve(true)
-          : instance.sequelize.models.signatures.update({
-            authorId: null,
-            authorSignedAt: null,
-            reviewerId: null,
-            reviewerSignedAt: null,
-          }, {
-            where: {
-              reportId: (modelName === 'report') ? instance.id : instance.reportId,
-            },
-            individualHooks: true,
-            paranoid: true,
-            transaction: options.transaction,
-            userId: options.userId,
-          }),
       ]);
     },
-    afterCreate: async (instance, options = {}) => {
+    afterCreate: async (instance) => {
       return Promise.all([
         clearCache(instance, 'POST'),
-        REMOVE_REPORT_SIGNATURES(instance, options),
       ]);
     },
-    afterDestroy: async (instance, options = {}) => {
+    afterDestroy: async (instance) => {
       return Promise.all([
         clearCache(instance, 'DELETE'),
-        REMOVE_REPORT_SIGNATURES(instance, options),
       ]);
     },
   },
