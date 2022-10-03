@@ -61,10 +61,15 @@ module.exports = async (req, res, next) => {
   const [route] = req.originalUrl.split('?');
 
   if (req.report) {
-    // check if user is bound to report
-    const boundUser = req.report.users.some((reportUser) => {
-      return reportUser.user.ident === req.user.ident;
-    });
+    // check if user is bound to report depending on report type
+    let boundUser;
+    if (req.report.biofxAssigned) {
+      boundUser = req.report.biofxAssigned.ident === req.user.ident;
+    } else {
+      boundUser = req.report.users.some((reportUser) => {
+        return reportUser.user.ident === req.user.ident;
+      });
+    }
 
     // If the user doesn't have access to the project this report
     // belongs to or the user is trying to make an update
