@@ -68,7 +68,7 @@ module.exports = async (req, res, next) => {
     } else {
       boundUser = req.report.users.some((reportUser) => {
         return reportUser.user.ident === req.user.ident;
-      }) || req.report.createdBy.ident === req.user.ident;
+      }) || req.report.createdBy?.ident === req.user.ident;
     }
 
     // If the user doesn't have access to the project this report
