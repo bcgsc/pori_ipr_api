@@ -145,7 +145,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       iprEvidenceLevel: 'IPR-A',
     };
 
-    rapidDataIprC = {
+    rapidDataTherapeuticIprC = {
       reportId: rapidReport.id,
       variantId: rapidVariant.id,
       category: 'therapeutic',
@@ -153,7 +153,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       iprEvidenceLevel: 'IPR-C',
     };
 
-    rapidDataIprNull = {
+    rapidDataUnknownIprC = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-C',
+    };
+
+    rapidDataUnknownNull = {
       reportId: rapidReport.id,
       variantId: rapidVariant.id,
       category: 'unknown',
@@ -161,20 +169,34 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       iprEvidenceLevel: null,
     };
 
+    rapidDataTherapeuticNull = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: null,
+    };
+
+
     kbMatch = await db.models.kbMatches.create(createData);
     kbMatchRapidDataIprA = await db.models.kbMatches.create(rapidDataIprA);
     kbMatchRapidDataIprB = await db.models.kbMatches.create(rapidDataIprB);
     kbMatchRapidDataIprANotTherapeutic = await db.models.kbMatches.create(
       rapidDataIprANotTherapeutic,
     );
-    kbMatchRapidDataIprC = await db.models.kbMatches.create(rapidDataIprC);
-    kbMatchRapidDataIprNull = await db.models.kbMatches.create(rapidDataIprNull);
+    kbMatchRapidDataTherapeuticIprC = await db.models.kbMatches.create(rapidDataTherapeuticIprC);
+    kbMatchRapidDataUnknownIprC = await db.models.kbMatches.create(rapidDataUnknownIprC);
+
+    kbMatchRapidDataIprTherapeuticNull = await db.models.kbMatches.create(rapidDataTherapeuticNull);
+    kbMatchRapidDataIprUnknownNull = await db.models.kbMatches.create(rapidDataUnknownNull);
 
     therapeuticAssociationMatches = [kbMatchRapidDataIprA, kbMatchRapidDataIprB];
     cancerRelevanceMatches = [
       kbMatchRapidDataIprANotTherapeutic,
-      kbMatchRapidDataIprC,
-      kbMatchRapidDataIprNull,
+      kbMatchRapidDataTherapeuticIprC,
+      kbMatchRapidDataUnknownIprC,
+      kbMatchRapidDataIprTherapeuticNull,
+      kbMatchRapidDataIprUnknownNull,
     ];
   }, LONGER_TIMEOUT);
 
