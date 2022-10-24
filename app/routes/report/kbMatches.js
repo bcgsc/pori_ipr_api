@@ -82,11 +82,13 @@ router.route('/')
       };
 
       const cancerRelevanceFilter = {
-        [Op.and]: [
-          {iprEvidenceLevel: {[Op.is]: literal('distinct from \'IPR-A\'')}},
-          {iprEvidenceLevel: {[Op.is]: literal('distinct from \'IPR-B\'')}},
-          {[Op.not]: {category: 'therapeutic'}},
-        ],
+        [Op.not]: {
+          [Op.or]: [
+            {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-A\'')}},
+            {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-B\'')}},
+          ],
+          category: 'therapeutic',
+        },
       };
 
       const results = await db.models.kbMatches.scope('public').findAll({
