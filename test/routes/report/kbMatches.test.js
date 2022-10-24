@@ -70,14 +70,18 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidDataIprA;
   let rapidDataIprB;
   let rapidDataIprANotTherapeutic;
-  let rapidDataIprC;
-  let rapidDataIprNull;
+  let rapidDataTherapeuticIprC;
+  let rapidDataUnknownIprC;
+  let rapidDataUnknownNull;
+  let rapidDataTherapeuticNull;
 
   let kbMatchRapidDataIprA;
   let kbMatchRapidDataIprB;
   let kbMatchRapidDataIprANotTherapeutic;
-  let kbMatchRapidDataIprC;
-  let kbMatchRapidDataIprNull;
+  let kbMatchRapidDataTherapeuticIprC;
+  let kbMatchRapidDataUnknownIprC;
+  let kbMatchRapidDataIprTherapeuticNull;
+  let kbMatchRapidDataIprUnknownNull;
 
   let therapeuticAssociationMatches;
   let cancerRelevanceMatches;
@@ -106,7 +110,14 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
     };
 
-    const rapidTemplate = await db.models.template.findOne({where: {name: 'rapid'}});
+    let rapidTemplate = await db.models.template.findOne({where: {name: 'rapid'}});
+
+    if (!rapidTemplate) {
+      rapidTemplate = await db.models.template.create({
+        name: 'rapid',
+        sections: [],
+      });
+    }
 
     rapidReport = await db.models.report.create({
       templateId: rapidTemplate.id,
@@ -176,7 +187,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
       iprEvidenceLevel: null,
     };
-
 
     kbMatch = await db.models.kbMatches.create(createData);
     kbMatchRapidDataIprA = await db.models.kbMatches.create(rapidDataIprA);
