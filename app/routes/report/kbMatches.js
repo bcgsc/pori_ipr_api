@@ -81,6 +81,8 @@ router.route('/')
         category: 'therapeutic',
       };
 
+      // PSQL natively ignores null on equal checks.
+      // Literal is used in order to accomodate NULL rows.
       const cancerRelevanceFilter = {
         [Op.not]: {
           [Op.or]: [
