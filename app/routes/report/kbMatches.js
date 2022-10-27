@@ -79,6 +79,7 @@ router.route('/')
       const therapeuticAssociationFilter = {
         [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
         category: 'therapeutic',
+        matchedCancer: true,
       };
 
       // PSQL natively ignores null on equal checks.
@@ -90,6 +91,7 @@ router.route('/')
             {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-B\'')}},
           ],
           category: 'therapeutic',
+          matchedCancer: true,
         },
       };
 

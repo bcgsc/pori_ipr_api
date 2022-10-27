@@ -74,6 +74,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidDataUnknownIprC;
   let rapidDataUnknownNull;
   let rapidDataTherapeuticNull;
+  let rapidDataIprAMatchedCancerFalse;
 
   let kbMatchRapidDataIprA;
   let kbMatchRapidDataIprB;
@@ -82,6 +83,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let kbMatchRapidDataUnknownIprC;
   let kbMatchRapidDataIprTherapeuticNull;
   let kbMatchRapidDataIprUnknownNull;
+  let kbMatchRapidDataIprAMatchedCancerFalse;
 
   let therapeuticAssociationMatches;
   let cancerRelevanceMatches;
@@ -138,6 +140,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
+      matchedCancer: true,
     };
 
     rapidDataIprB = {
@@ -146,6 +149,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-B',
+      matchedCancer: true,
     };
 
     rapidDataIprANotTherapeutic = {
@@ -188,6 +192,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       iprEvidenceLevel: null,
     };
 
+    rapidDataIprAMatchedCancerFalse = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+      matchedCancer: false,
+    };
+
     kbMatch = await db.models.kbMatches.create(createData);
     kbMatchRapidDataIprA = await db.models.kbMatches.create(rapidDataIprA);
     kbMatchRapidDataIprB = await db.models.kbMatches.create(rapidDataIprB);
@@ -200,13 +213,20 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     kbMatchRapidDataIprTherapeuticNull = await db.models.kbMatches.create(rapidDataTherapeuticNull);
     kbMatchRapidDataIprUnknownNull = await db.models.kbMatches.create(rapidDataUnknownNull);
 
-    therapeuticAssociationMatches = [kbMatchRapidDataIprA, kbMatchRapidDataIprB];
+    kbMatchRapidDataIprAMatchedCancerFalse = await
+    db.models.kbMatches.create(rapidDataIprAMatchedCancerFalse);
+
+    therapeuticAssociationMatches = [
+      kbMatchRapidDataIprA,
+      kbMatchRapidDataIprB,
+    ];
     cancerRelevanceMatches = [
       kbMatchRapidDataIprANotTherapeutic,
       kbMatchRapidDataTherapeuticIprC,
       kbMatchRapidDataUnknownIprC,
       kbMatchRapidDataIprTherapeuticNull,
       kbMatchRapidDataIprUnknownNull,
+      kbMatchRapidDataIprAMatchedCancerFalse,
     ];
   }, LONGER_TIMEOUT);
 
