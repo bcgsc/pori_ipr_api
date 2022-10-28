@@ -32,6 +32,23 @@ const checkKbMatch = (kbMatchObject) => {
   expect(kbMatchObject.variant).toHaveProperty('ident');
 };
 
+const checkRapidReportMatches = (kbMatches, expectedMatches, unexpectedMatches) => {
+  let found = true;
+
+  expectedMatches.forEach((expectedMatch) => {
+    if (!(kbMatches.find((kbMatch) => {return kbMatch.ident === expectedMatch.ident;}))) {
+      found = false;
+    }
+  });
+
+  unexpectedMatches.forEach((unexpectedMatch) => {
+    if (kbMatches.find((kbMatch) => {return kbMatch.ident === unexpectedMatch.ident;})) {
+      found = false;
+    }
+  });
+  expect(found).toBe(true);
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -46,6 +63,30 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let variant;
   let kbMatch;
   let createData;
+
+  let rapidReport;
+  let rapidGene;
+  let rapidVariant;
+  let rapidDataIprA;
+  let rapidDataIprB;
+  let rapidDataIprANotTherapeutic;
+  let rapidDataTherapeuticIprC;
+  let rapidDataUnknownIprC;
+  let rapidDataUnknownNull;
+  let rapidDataTherapeuticNull;
+  let rapidDataIprAMatchedCancerFalse;
+
+  let kbMatchRapidDataIprA;
+  let kbMatchRapidDataIprB;
+  let kbMatchRapidDataIprANotTherapeutic;
+  let kbMatchRapidDataTherapeuticIprC;
+  let kbMatchRapidDataUnknownIprC;
+  let kbMatchRapidDataIprTherapeuticNull;
+  let kbMatchRapidDataIprUnknownNull;
+  let kbMatchRapidDataIprAMatchedCancerFalse;
+
+  let therapeuticAssociationMatches;
+  let cancerRelevanceMatches;
 
   beforeAll(async () => {
     // Get genomic template
@@ -71,7 +112,122 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
     };
 
+    let rapidTemplate = await db.models.template.findOne({where: {name: 'rapid'}});
+
+    if (!rapidTemplate) {
+      rapidTemplate = await db.models.template.create({
+        name: 'rapid',
+        sections: [],
+      });
+    }
+
+    rapidReport = await db.models.report.create({
+      templateId: rapidTemplate.id,
+      patientId: mockReportData.patientId,
+    });
+    rapidGene = await db.models.genes.create({
+      reportId: rapidReport.id,
+      name: mockReportData.genes[0].name,
+    });
+    rapidVariant = await db.models.copyVariants.create({
+      reportId: rapidReport.id,
+      geneId: rapidGene.id,
+    });
+
+    rapidDataIprA = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+      matchedCancer: true,
+    };
+
+    rapidDataIprB = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-B',
+      matchedCancer: true,
+    };
+
+    rapidDataIprANotTherapeutic = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+    };
+
+    rapidDataTherapeuticIprC = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-C',
+    };
+
+    rapidDataUnknownIprC = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-C',
+    };
+
+    rapidDataUnknownNull = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: null,
+    };
+
+    rapidDataTherapeuticNull = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: null,
+    };
+
+    rapidDataIprAMatchedCancerFalse = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+      matchedCancer: false,
+    };
+
     kbMatch = await db.models.kbMatches.create(createData);
+    kbMatchRapidDataIprA = await db.models.kbMatches.create(rapidDataIprA);
+    kbMatchRapidDataIprB = await db.models.kbMatches.create(rapidDataIprB);
+    kbMatchRapidDataIprANotTherapeutic = await db.models.kbMatches.create(
+      rapidDataIprANotTherapeutic,
+    );
+    kbMatchRapidDataTherapeuticIprC = await db.models.kbMatches.create(rapidDataTherapeuticIprC);
+    kbMatchRapidDataUnknownIprC = await db.models.kbMatches.create(rapidDataUnknownIprC);
+
+    kbMatchRapidDataIprTherapeuticNull = await db.models.kbMatches.create(rapidDataTherapeuticNull);
+    kbMatchRapidDataIprUnknownNull = await db.models.kbMatches.create(rapidDataUnknownNull);
+
+    kbMatchRapidDataIprAMatchedCancerFalse = await
+    db.models.kbMatches.create(rapidDataIprAMatchedCancerFalse);
+
+    therapeuticAssociationMatches = [
+      kbMatchRapidDataIprA,
+      kbMatchRapidDataIprB,
+    ];
+    cancerRelevanceMatches = [
+      kbMatchRapidDataIprANotTherapeutic,
+      kbMatchRapidDataTherapeuticIprC,
+      kbMatchRapidDataUnknownIprC,
+      kbMatchRapidDataIprTherapeuticNull,
+      kbMatchRapidDataIprUnknownNull,
+      kbMatchRapidDataIprAMatchedCancerFalse,
+    ];
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -94,6 +250,36 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         .expect(HTTP_STATUS.OK);
 
       checkKbMatch(res.body);
+    });
+  });
+
+  describe('GET - Rapid report', () => {
+    test('Getting Therapeutic Association - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReport.ident}/kb-matches`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkKbMatch(res.body[0]);
+
+      checkRapidReportMatches(res.body, therapeuticAssociationMatches, cancerRelevanceMatches);
+    });
+
+    test('Getting Cancer Relevance - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReport.ident}/kb-matches`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkKbMatch(res.body[0]);
+
+      checkRapidReportMatches(res.body, cancerRelevanceMatches, therapeuticAssociationMatches);
     });
   });
 
