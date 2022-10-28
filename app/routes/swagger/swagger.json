@@ -4241,6 +4241,37 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "matchedCancer",
+            "in": "query",
+            "required": false,
+            "description": "Filter by matchedCancer field",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "approvedTherapy",
+            "in": "query",
+            "required": false,
+            "description": "Filter by approvedTherapy field",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "rapidTable",
+            "in": "query",
+            "required": false,
+            "description": "Filter according to chosen rapidTable",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "therapeuticAssociation",
+                "cancerRelevance"
+              ]
+            }
           }
         ],
         "tags": [
