@@ -105,6 +105,16 @@ module.exports = (sequelize, Sq) => {
     library: {
       type: Sq.TEXT,
     },
+    tumourAltCount: {
+      name: 'tumourAltCount',
+      field: 'tumour_alt_count',
+      type: Sq.INTEGER,
+    },
+    tumourDepth: {
+      name: 'tumourDepth',
+      field: 'tumour_depth',
+      type: Sq.INTEGER,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_structural_variants',
