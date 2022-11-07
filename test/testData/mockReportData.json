@@ -310,7 +310,9 @@
             "ntermTranscript": "UPLOADPAT01",
             "highQuality": true,
             "germline": false,
-            "library": "TEST LIBRARY"
+            "library": "TEST LIBRARY",
+            "tumourAltCount": 4,
+            "tumourDepth": 590
         }
     ],
     "proteinVariants": [
