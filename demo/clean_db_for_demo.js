@@ -166,17 +166,17 @@ const cleanUsers = async (queryInterface, transaction) => {
 
   console.log('DROP all reports_signatures');
   await queryInterface.sequelize.query(
-    `TRUNCATE reports_signatures`,
+    'TRUNCATE reports_signatures',
     {transaction},
   );
 
-  console.log('set templates_appendix users to null')
+  console.log('set templates_appendix users to null');
   await queryInterface.sequelize.query(
     'UPDATE templates_appendix SET "updated_by" = NULL',
     {transaction},
   );
 
-  console.log('set templates users to null')
+  console.log('set templates users to null');
   await queryInterface.sequelize.query(
     'UPDATE templates SET "updated_by" = NULL',
     {transaction},
@@ -293,7 +293,7 @@ const cleanDb = async () => {
       return r.id;
     });
     console.log('reports to keep', reportsToKeep.length);
-    console.log('reports to keep', reportsToKeep)
+    console.log('reports to keep', reportsToKeep);
 
     await queryInterface.sequelize.query(
       'DELETE FROM reports WHERE NOT (id IN (:reportsToKeep))',
@@ -356,7 +356,7 @@ const cleanDb = async () => {
     await cleanUsers(queryInterface, transaction);
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
-    console.log('anonymize reports_pairwise_expression_correlation patient id data')
+    console.log('anonymize reports_pairwise_expression_correlation patient id data');
     const correlations = await queryInterface.sequelize.query(
       'SELECT patient_id, library, ident from reports_pairwise_expression_correlation',
       {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
@@ -385,7 +385,7 @@ const cleanDb = async () => {
       );
     }
 
-    console.log('anonymize reports patient id data')
+    console.log('anonymize reports patient id data');
     const nonTcgaPatients = await queryInterface.sequelize.query(
       `SELECT DISTINCT ON (patient_id) patient_id, ident
         FROM reports
@@ -417,7 +417,7 @@ const cleanDb = async () => {
       );
     }
 
-    console.log('remove JSON fields containing sample/patient names/ids')
+    console.log('remove JSON fields containing sample/patient names/ids');
     await queryInterface.sequelize.query(
       `UPDATE reports
         SET config = '',
@@ -430,7 +430,7 @@ const cleanDb = async () => {
       },
     );
 
-    console.log('anonymize clinician and age in patient information table')
+    console.log('anonymize clinician and age in patient information table');
     await queryInterface.sequelize.query(
       `UPDATE reports_patient_information
         SET age = NULL, physician = :physician, "reportDate" = NULL`,
