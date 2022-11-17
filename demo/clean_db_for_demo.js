@@ -235,7 +235,9 @@ const cleanUsers = async (queryInterface, transaction) => {
       },
     },
   );
-  if (!userMetadata) {
+  console.log(demoUser.id);
+  console.log(userMetadata);
+  if (userMetadata) {
     await queryInterface.sequelize.query(
       `INSERT INTO user_metadata (
         ident, user_id,
@@ -439,6 +441,33 @@ const cleanDb = async () => {
         replacements: {physician: 'REDACTED'},
       },
     );
+
+    const reportImagesNameList = (await queryInterface.sequelize.query(
+      `SELECT ri.id, filename, report_id, patient_id from reports_image_data ri
+      join reports r on report_id = r.id`,
+      {
+        transaction,
+        type: queryInterface.sequelize.QueryTypes.SELECT,
+      },
+    ));
+
+    for (const reportImage of reportImagesNameList) {
+      console.log(`anonymizing ${reportImage.filename}`);
+      const newFilename = reportImage.filename.replace(/POG(\d+)_P0(\d+)_P0(\d+)/, reportImage.patient_id);
+      console.log(newFilename);
+      await queryInterface.sequelize.query(
+        `UPDATE reports_image_data
+        SET filename = :newStr
+        WHERE id = :image_id`,
+        {
+          transaction,
+          replacements: {
+            newStr: newFilename,
+            image_id: reportImage.id,
+          },
+        },
+      );
+    }
   });
 };
 cleanDb()
