@@ -164,6 +164,24 @@ const cleanUsers = async (queryInterface, transaction) => {
     {transaction, replacements: {groups: ['admin', 'manager', 'reviewer']}},
   );
 
+  console.log('DROP all reports_signatures');
+  await queryInterface.sequelize.query(
+    'TRUNCATE reports_signatures',
+    {transaction},
+  );
+
+  console.log('set templates_appendix users to null');
+  await queryInterface.sequelize.query(
+    'UPDATE templates_appendix SET "updated_by" = NULL',
+    {transaction},
+  );
+
+  console.log('set templates users to null');
+  await queryInterface.sequelize.query(
+    'UPDATE templates SET "updated_by" = NULL',
+    {transaction},
+  );
+
   console.log('create the demo user if not exists');
   let [demoUser] = await queryInterface.sequelize.query(
     'SELECT * FROM users where username = :username AND deleted_at IS NULL',
@@ -217,13 +235,15 @@ const cleanUsers = async (queryInterface, transaction) => {
       },
     },
   );
-  if (!userMetadata) {
+  console.log(demoUser.id);
+  console.log(userMetadata);
+  if (userMetadata) {
     await queryInterface.sequelize.query(
       `INSERT INTO user_metadata (
         ident, user_id,
         created_at, updated_at
       ) values (
-        :uuid, ':id', 
+        :uuid, :id,
         NOW(), NOW()
       )`,
       {
@@ -275,6 +295,7 @@ const cleanDb = async () => {
       return r.id;
     });
     console.log('reports to keep', reportsToKeep.length);
+    console.log('reports to keep', reportsToKeep);
 
     await queryInterface.sequelize.query(
       'DELETE FROM reports WHERE NOT (id IN (:reportsToKeep))',
@@ -337,7 +358,7 @@ const cleanDb = async () => {
     await cleanUsers(queryInterface, transaction);
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
-    // anonymize reports_pairwise_expression_correlation patient id data
+    console.log('anonymize reports_pairwise_expression_correlation patient id data');
     const correlations = await queryInterface.sequelize.query(
       'SELECT patient_id, library, ident from reports_pairwise_expression_correlation',
       {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
@@ -351,8 +372,8 @@ const cleanDb = async () => {
       const corr = correlations[i];
       await queryInterface.sequelize.query(
         `UPDATE reports_pairwise_expression_correlation
-          SET patientId = :newPatientId, library = :newLibrary
-          WHERE patientId = :patientId
+          SET patient_id = :newPatientId, library = :newLibrary
+          WHERE patient_id = :patientId
             AND library = :library`,
         {
           transaction,
@@ -366,7 +387,7 @@ const cleanDb = async () => {
       );
     }
 
-    // anonymize reports patient id data
+    console.log('anonymize reports patient id data');
     const nonTcgaPatients = await queryInterface.sequelize.query(
       `SELECT DISTINCT ON (patient_id) patient_id, ident
         FROM reports
@@ -398,7 +419,7 @@ const cleanDb = async () => {
       );
     }
 
-    // remove JSON fields with sample/POG names
+    console.log('remove JSON fields containing sample/patient names/ids');
     await queryInterface.sequelize.query(
       `UPDATE reports
         SET config = '',
@@ -411,7 +432,7 @@ const cleanDb = async () => {
       },
     );
 
-    // anonymize clinician and age in patient information table
+    console.log('anonymize clinician and age in patient information table');
     await queryInterface.sequelize.query(
       `UPDATE reports_patient_information
         SET age = NULL, physician = :physician, "reportDate" = NULL`,
@@ -420,6 +441,33 @@ const cleanDb = async () => {
         replacements: {physician: 'REDACTED'},
       },
     );
+
+    const reportImagesNameList = (await queryInterface.sequelize.query(
+      `SELECT ri.id, filename, report_id, patient_id from reports_image_data ri
+      join reports r on report_id = r.id`,
+      {
+        transaction,
+        type: queryInterface.sequelize.QueryTypes.SELECT,
+      },
+    ));
+
+    for (const reportImage of reportImagesNameList) {
+      console.log(`anonymizing ${reportImage.filename}`);
+      const newFilename = reportImage.filename.replace(/POG(\d+)_P0(\d+)_P0(\d+)/, reportImage.patient_id);
+      console.log(newFilename);
+      await queryInterface.sequelize.query(
+        `UPDATE reports_image_data
+        SET filename = :newStr
+        WHERE id = :image_id`,
+        {
+          transaction,
+          replacements: {
+            newStr: newFilename,
+            image_id: reportImage.id,
+          },
+        },
+      );
+    }
   });
 };
 cleanDb()
