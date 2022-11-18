@@ -80,6 +80,7 @@ router.route('/')
         [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
         category: 'therapeutic',
         matchedCancer: true,
+        [Op.not]: [{variantType: 'exp'}],
       };
 
       // PSQL natively ignores null on equal checks.
@@ -93,6 +94,7 @@ router.route('/')
           category: 'therapeutic',
           matchedCancer: true,
         },
+        [Op.not]: [{variantType: 'exp'}],
       };
 
       const results = await db.models.kbMatches.scope('public').findAll({
