@@ -32,8 +32,14 @@ const checkKbMatch = (kbMatchObject) => {
   expect(kbMatchObject.variant).toHaveProperty('ident');
 };
 
-const checkRapidReportMatches = (kbMatches, expectedMatches, unexpectedMatches) => {
+const checkRapidReportMatches = (
+  kbMatches,
+  expectedMatches,
+  unexpectedMatches,
+  excludedMatches,
+) => {
   let found = true;
+  unexpectedMatches = [...unexpectedMatches, ...excludedMatches];
 
   expectedMatches.forEach((expectedMatch) => {
     if (!(kbMatches.find((kbMatch) => {return kbMatch.ident === expectedMatch.ident;}))) {
@@ -75,6 +81,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidDataUnknownNull;
   let rapidDataTherapeuticNull;
   let rapidDataIprAMatchedCancerFalse;
+  let rapidDataExp;
 
   let kbMatchRapidDataIprA;
   let kbMatchRapidDataIprB;
@@ -84,9 +91,11 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let kbMatchRapidDataIprTherapeuticNull;
   let kbMatchRapidDataIprUnknownNull;
   let kbMatchRapidDataIprAMatchedCancerFalse;
+  let kbMatchRapidDataExp;
 
   let therapeuticAssociationMatches;
   let cancerRelevanceMatches;
+  let excludedMatches;
 
   beforeAll(async () => {
     // Get genomic template
@@ -201,6 +210,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       matchedCancer: false,
     };
 
+    rapidDataExp = {
+      reportId: rapidReport.id,
+      variantId: rapidVariant.id,
+      category: 'therapeutic',
+      variantType: 'exp',
+      iprEvidenceLevel: 'IPR-A',
+      matchedCancer: true,
+    };
+
     kbMatch = await db.models.kbMatches.create(createData);
     kbMatchRapidDataIprA = await db.models.kbMatches.create(rapidDataIprA);
     kbMatchRapidDataIprB = await db.models.kbMatches.create(rapidDataIprB);
@@ -216,6 +234,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     kbMatchRapidDataIprAMatchedCancerFalse = await
     db.models.kbMatches.create(rapidDataIprAMatchedCancerFalse);
 
+    kbMatchRapidDataExp = await
+    db.models.kbMatches.create(rapidDataExp);
+
     therapeuticAssociationMatches = [
       kbMatchRapidDataIprA,
       kbMatchRapidDataIprB,
@@ -227,6 +248,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       kbMatchRapidDataIprTherapeuticNull,
       kbMatchRapidDataIprUnknownNull,
       kbMatchRapidDataIprAMatchedCancerFalse,
+    ];
+    excludedMatches = [
+      kbMatchRapidDataExp,
     ];
   }, LONGER_TIMEOUT);
 
@@ -265,7 +289,12 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       expect(Array.isArray(res.body)).toBe(true);
       checkKbMatch(res.body[0]);
 
-      checkRapidReportMatches(res.body, therapeuticAssociationMatches, cancerRelevanceMatches);
+      checkRapidReportMatches(
+        res.body,
+        therapeuticAssociationMatches,
+        cancerRelevanceMatches,
+        excludedMatches,
+      );
     });
 
     test('Getting Cancer Relevance - OK', async () => {
@@ -279,7 +308,12 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       expect(Array.isArray(res.body)).toBe(true);
       checkKbMatch(res.body[0]);
 
-      checkRapidReportMatches(res.body, cancerRelevanceMatches, therapeuticAssociationMatches);
+      checkRapidReportMatches(
+        res.body,
+        cancerRelevanceMatches,
+        therapeuticAssociationMatches,
+        excludedMatches,
+      );
     });
   });
 
