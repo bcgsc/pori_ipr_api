@@ -42,5 +42,10 @@
         }
     ],
     "source": "/some/file/path",
-    "version": "vX.X.X"
+    "version": "vX.X.X",
+    "cglReviewResult": "pathogenic",
+    "returnedToClinician": "yes",
+    "referralHcp": "no",
+    "knownToHcp": "no",
+    "reasonNoHcpReferral": "This is the reason for no hcp referral"
 }

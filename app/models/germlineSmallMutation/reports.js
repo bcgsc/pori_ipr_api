@@ -47,6 +47,31 @@ module.exports = (sequelize, Sq) => {
       type: Sq.BOOLEAN,
       defaultValue: false,
     },
+    cglReviewResult: {
+      name: 'cglReviewResult',
+      field: 'cgl_review_result',
+      type: Sq.ENUM(['pathogenic', 'likely pathogenic', 'VUS', 'likely benign', 'benign']),
+    },
+    returnedToClinician: {
+      name: 'returnedToClinician',
+      field: 'returned_to_clinician',
+      type: Sq.ENUM(['yes', 'no']),
+    },
+    referralHcp: {
+      name: 'referralHcp',
+      field: 'referral_hcp',
+      type: Sq.ENUM(['yes', 'no']),
+    },
+    knownToHcp: {
+      name: 'knownToHcp',
+      field: 'known_to_hcp',
+      type: Sq.ENUM(['yes', 'no']),
+    },
+    reasonNoHcpReferral: {
+      name: 'reasonNoHcpReferral',
+      field: 'reason_no_hcp_referral',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'germline_small_mutations',
