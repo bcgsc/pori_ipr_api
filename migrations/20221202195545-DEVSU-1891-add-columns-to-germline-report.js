@@ -1,4 +1,4 @@
-const GSM_TABLE = 'germline_small_mutations';
+const GSM_TABLE = 'germline_small_mutations_variant';
 
 module.exports = {
   up: async (queryInterface, Sq) => {
