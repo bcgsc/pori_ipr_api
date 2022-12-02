@@ -38,7 +38,12 @@
             "type": "Primary of Unknown Origin",
             "variant": "missense_variant",
             "zygosityGermline": "HETEROZYGOUS",
-            "zygosityTumour": "biop1: 0.00/1.00 (NOT_FOUND)"
+            "zygosityTumour": "biop1: 0.00/1.00 (NOT_FOUND)",
+            "cglReviewResult": "pathogenic",
+            "returnedToClinician": "yes",
+            "referralHcp": "no",
+            "knownToHcp": "no",
+            "reasonNoHcpReferral": "This is the reason for no hcp referral"
         }
     ],
     "source": "/some/file/path",
