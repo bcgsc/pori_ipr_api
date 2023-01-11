@@ -97,16 +97,52 @@ router.route('/')
         variantType: {[Op.is]: literal('distinct from \'exp\'')},
       };
 
+      if (rapidTable) {
+        const therapeuticAssociationResults = await db.models.kbMatches.scope('public').findAll({
+          where: {
+            reportId: req.report.id,
+            ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
+            ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
+            ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
+            ...therapeuticAssociationFilter,
+          },
+          order: [['variantType', 'ASC'], ['variantId', 'ASC']],
+        });
+
+        if (rapidTable === 'therapeuticAssociation') {
+          return res.json(therapeuticAssociationResults);
+        }
+
+        if (rapidTable === 'cancerRelevance') {
+          const cancerRelevanceResultsFiltered = [];
+          const cancerRelevanceResults = await db.models.kbMatches.scope('public').findAll({
+            where: {
+              reportId: req.report.id,
+              ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
+              ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
+              ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
+              ...cancerRelevanceFilter,
+            },
+            order: [['variantType', 'ASC'], ['variantId', 'ASC']],
+          });
+
+          for (const cancerRelevance of cancerRelevanceResults) {
+            if (!(therapeuticAssociationResults.find(
+              (e) => {return e.variant.ident === cancerRelevance.variant.ident;},
+            ))) {
+              cancerRelevanceResultsFiltered.push(cancerRelevance);
+            }
+          }
+          return res.json(cancerRelevanceResultsFiltered);
+        }
+      }
+
       const results = await db.models.kbMatches.scope('public').findAll({
         where: {
           reportId: req.report.id,
           ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
           ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
           ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
-          ...((rapidTable === 'therapeuticAssociation')
-            ? therapeuticAssociationFilter : {}),
-          ...((rapidTable === 'cancerRelevance')
-            ? cancerRelevanceFilter : {}),
         },
         order: [['variantType', 'ASC'], ['variantId', 'ASC']],
       });

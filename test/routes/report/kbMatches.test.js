@@ -71,10 +71,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let createData;
 
   let rapidReport;
-  let rapidGene;
-  let rapidVariant;
+  let rapidGeneTA;
+  let rapidGeneCR;
+
+  let rapidVariantTA;
+  let rapidVariantCR;
+
   let rapidDataIprA;
   let rapidDataIprB;
+  let rapidDataAlreadyReported;
   let rapidDataIprANotTherapeutic;
   let rapidDataTherapeuticIprC;
   let rapidDataUnknownIprC;
@@ -86,6 +91,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let kbMatchRapidDataIprA;
   let kbMatchRapidDataIprB;
   let kbMatchRapidDataIprANotTherapeutic;
+  let kbMatchRapidDataAlreadyReported;
   let kbMatchRapidDataTherapeuticIprC;
   let kbMatchRapidDataUnknownIprC;
   let kbMatchRapidDataIprTherapeuticNull;
@@ -109,7 +115,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       reportId: report.id,
       name: mockReportData.genes[0].name,
     });
-    variant = await db.models.copyVariants.create({
+    variant = await db.models.smallMutations.create({
       reportId: report.id,
       geneId: gene.id,
     });
@@ -134,18 +140,29 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       templateId: rapidTemplate.id,
       patientId: mockReportData.patientId,
     });
-    rapidGene = await db.models.genes.create({
+    rapidGeneTA = await db.models.genes.create({
       reportId: rapidReport.id,
-      name: mockReportData.genes[0].name,
+      name: 'TA',
     });
-    rapidVariant = await db.models.copyVariants.create({
+    rapidGeneCR = await db.models.genes.create({
       reportId: rapidReport.id,
-      geneId: rapidGene.id,
+      name: 'CR',
+    });
+
+    rapidVariantTA = await db.models.copyVariants.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneTA.id,
+      hgvsProtein: 'TA',
+    });
+    rapidVariantCR = await db.models.copyVariants.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneCR.id,
+      hgvsProtein: 'CR',
     });
 
     rapidDataIprA = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantTA.id,
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
@@ -154,16 +171,24 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataIprB = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantTA.id,
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-B',
       matchedCancer: true,
     };
 
+    rapidDataAlreadyReported = {
+      reportId: rapidReport.id,
+      variantId: rapidVariantTA.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+    };
+
     rapidDataIprANotTherapeutic = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
@@ -171,7 +196,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataTherapeuticIprC = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-C',
@@ -179,7 +204,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataUnknownIprC = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-C',
@@ -187,7 +212,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataUnknownNull = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: null,
@@ -195,7 +220,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataTherapeuticNull = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: null,
@@ -203,7 +228,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataIprAMatchedCancerFalse = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
@@ -212,7 +237,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidDataExp = {
       reportId: rapidReport.id,
-      variantId: rapidVariant.id,
+      variantId: rapidVariantCR.id,
       category: 'therapeutic',
       variantType: 'exp',
       iprEvidenceLevel: 'IPR-A',
@@ -224,6 +249,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     kbMatchRapidDataIprB = await db.models.kbMatches.create(rapidDataIprB);
     kbMatchRapidDataIprANotTherapeutic = await db.models.kbMatches.create(
       rapidDataIprANotTherapeutic,
+    );
+    kbMatchRapidDataAlreadyReported = await db.models.kbMatches.create(
+      rapidDataAlreadyReported,
     );
     kbMatchRapidDataTherapeuticIprC = await db.models.kbMatches.create(rapidDataTherapeuticIprC);
     kbMatchRapidDataUnknownIprC = await db.models.kbMatches.create(rapidDataUnknownIprC);
@@ -251,6 +279,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     ];
     excludedMatches = [
       kbMatchRapidDataExp,
+      kbMatchRapidDataAlreadyReported,
     ];
   }, LONGER_TIMEOUT);
 
