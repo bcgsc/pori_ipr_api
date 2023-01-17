@@ -351,10 +351,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
+      // TODO: Checks won't work due to missing test data, re-enable once we have data
       // expect(Array.isArray(res.body)).toBe(true);
       // checkKbMatch(res.body[0]);
-
-      console.log(res.body);
 
       checkRapidReportMatches(
         res.body,
