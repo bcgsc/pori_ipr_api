@@ -97,13 +97,15 @@ router.route('/')
         variantType: {[Op.is]: literal('distinct from \'exp\'')},
       };
 
+      const unknownSignificanceFilter = {
+        variantType: 'mut',
+      };
+
       if (rapidTable) {
         const therapeuticAssociationResults = await db.models.kbMatches.scope('public').findAll({
           where: {
             reportId: req.report.id,
             ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
-            ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
-            ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
             ...therapeuticAssociationFilter,
           },
           order: [['variantType', 'ASC'], ['variantId', 'ASC']],
@@ -113,27 +115,48 @@ router.route('/')
           return res.json(therapeuticAssociationResults);
         }
 
-        if (rapidTable === 'cancerRelevance') {
-          const cancerRelevanceResultsFiltered = [];
-          const cancerRelevanceResults = await db.models.kbMatches.scope('public').findAll({
-            where: {
-              reportId: req.report.id,
-              ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
-              ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
-              ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
-              ...cancerRelevanceFilter,
-            },
-            order: [['variantType', 'ASC'], ['variantId', 'ASC']],
-          });
+        const cancerRelevanceResultsFiltered = [];
+        const cancerRelevanceResults = await db.models.kbMatches.scope('public').findAll({
+          where: {
+            reportId: req.report.id,
+            ...cancerRelevanceFilter,
+          },
+          order: [['variantType', 'ASC'], ['variantId', 'ASC']],
+        });
 
-          for (const cancerRelevance of cancerRelevanceResults) {
-            if (!(therapeuticAssociationResults.find(
-              (e) => {return e.variant.ident === cancerRelevance.variant.ident;},
-            ))) {
-              cancerRelevanceResultsFiltered.push(cancerRelevance);
-            }
+        for (const row of cancerRelevanceResults) {
+          if (!(therapeuticAssociationResults.find(
+            (e) => {return e.variant.ident === row.variant.ident;},
+          ))) {
+            cancerRelevanceResultsFiltered.push(row);
           }
+        }
+
+        if (rapidTable === 'cancerRelevance') {
           return res.json(cancerRelevanceResultsFiltered);
+        }
+
+        const unknownSignificanceResultsFiltered = [];
+        const unknownSignificanceResults = await db.models.kbMatches.scope('public').findAll({
+          where: {
+            reportId: req.report.id,
+            ...unknownSignificanceFilter,
+          },
+          order: [['variantType', 'ASC'], ['variantId', 'ASC']],
+        });
+
+        for (const row of unknownSignificanceResults) {
+          if (!(therapeuticAssociationResults.find(
+            (e) => {return e.variant.ident === row.variant.ident;},
+          )) && !(cancerRelevanceResultsFiltered.find(
+            (e) => {return e.variant.ident === row.variant.ident;},
+          ))) {
+            unknownSignificanceResultsFiltered.push(row);
+          }
+        }
+
+        if (rapidTable === 'unknownSignificance') {
+          return res.json(unknownSignificanceResultsFiltered);
         }
       }
 

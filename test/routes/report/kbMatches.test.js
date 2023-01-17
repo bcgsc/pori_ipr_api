@@ -36,10 +36,8 @@ const checkRapidReportMatches = (
   kbMatches,
   expectedMatches,
   unexpectedMatches,
-  excludedMatches,
 ) => {
   let found = true;
-  unexpectedMatches = [...unexpectedMatches, ...excludedMatches];
 
   expectedMatches.forEach((expectedMatch) => {
     if (!(kbMatches.find((kbMatch) => {return kbMatch.ident === expectedMatch.ident;}))) {
@@ -101,6 +99,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   let therapeuticAssociationMatches;
   let cancerRelevanceMatches;
+  let unknownSignificanceMatches;
   let excludedMatches;
 
   beforeAll(async () => {
@@ -277,6 +276,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       kbMatchRapidDataIprUnknownNull,
       kbMatchRapidDataIprAMatchedCancerFalse,
     ];
+    unknownSignificanceMatches = [];
     excludedMatches = [
       kbMatchRapidDataExp,
       kbMatchRapidDataAlreadyReported,
@@ -321,8 +321,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       checkRapidReportMatches(
         res.body,
         therapeuticAssociationMatches,
-        cancerRelevanceMatches,
-        excludedMatches,
+        [...cancerRelevanceMatches, ...excludedMatches, ...unknownSignificanceMatches],
       );
     });
 
@@ -340,8 +339,27 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       checkRapidReportMatches(
         res.body,
         cancerRelevanceMatches,
-        therapeuticAssociationMatches,
-        excludedMatches,
+        [...therapeuticAssociationMatches, ...excludedMatches, ...unknownSignificanceMatches],
+      );
+    });
+
+    test('Getting Unknown Significance - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReport.ident}/kb-matches`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      // expect(Array.isArray(res.body)).toBe(true);
+      // checkKbMatch(res.body[0]);
+
+      console.log(res.body);
+
+      checkRapidReportMatches(
+        res.body,
+        unknownSignificanceMatches,
+        [...cancerRelevanceMatches, ...therapeuticAssociationMatches, ...excludedMatches],
       );
     });
   });
