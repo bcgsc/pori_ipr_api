@@ -18,7 +18,7 @@ const createSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
 });
 const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
   baseUri: GERMLINE_UPDATE_BASE_URI,
-  // include: ['hidden', 'patientHistory', 'familyHistory'],
+  include: ['hidden', 'patientHistory', 'familyHistory'],
   nothingRequired: true,
 });
 
@@ -55,7 +55,6 @@ router.route('/:variant')
   .put(async (req, res) => {
     try {
       // validate against the model
-      console.log(updateSchema);
       validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       const message = `There was an error validating the germline variant update request ${error}`;
