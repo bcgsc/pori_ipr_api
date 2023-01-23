@@ -26,6 +26,7 @@ const patientInformation = require('./patientInformation');
 const images = require('./image');
 const msi = require('./msi');
 const reportUser = require('./reportUser');
+const variants = require('./variants');
 
 const router = express.Router({mergeParams: true});
 
@@ -56,5 +57,6 @@ router.use('/genes', gene);
 router.use('/patient-information', patientInformation);
 router.use('/msi', msi);
 router.use('/user', reportUser);
+router.use('/variants', variants);
 
 module.exports = router;
