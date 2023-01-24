@@ -20,8 +20,7 @@ const getVariants = async (tableName, variantType, reportId) => {
     },
     include: [
       {
-        model: db.models.kbMatches,
-        attributes: ['ident', 'category'],
+        model: db.models.kbMatches.scope('variants'),
       },
     ],
   });
@@ -67,8 +66,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     },
     include: [
       {
-        model: db.models.kbMatches,
-        attributes: ['ident', 'category'],
+        model: db.models.kbMatches.scope('variants'),
         where: {...therapeuticAssociationFilter},
       },
     ],
@@ -89,8 +87,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     },
     include: [
       {
-        model: db.models.kbMatches,
-        attributes: ['ident', 'category'],
+        model: db.models.kbMatches.scope('variants'),
         where: {...cancerRelevanceFilter},
       },
     ],
@@ -122,8 +119,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       },
       include: [
         {
-          model: db.models.kbMatches,
-          attributes: ['ident', 'category'],
+          model: db.models.kbMatches.scope('variants'),
         },
         {
           model: db.models.genes.scope('minimal'),

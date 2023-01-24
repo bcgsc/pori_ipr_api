@@ -148,6 +148,9 @@ module.exports = (sequelize, Sq) => {
           return {model: sequelize.models[modelName].scope('extended'), as: modelName};
         }),
       },
+      variants: {
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+      },
     },
     hooks: {
       ...DEFAULT_REPORT_OPTIONS.hooks,
