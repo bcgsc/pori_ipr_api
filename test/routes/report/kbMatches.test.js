@@ -32,27 +32,6 @@ const checkKbMatch = (kbMatchObject) => {
   expect(kbMatchObject.variant).toHaveProperty('ident');
 };
 
-const checkRapidReportMatches = (
-  kbMatches,
-  expectedMatches,
-  unexpectedMatches,
-) => {
-  let found = true;
-
-  expectedMatches.forEach((expectedMatch) => {
-    if (!(kbMatches.find((kbMatch) => {return kbMatch.ident === expectedMatch.ident;}))) {
-      found = false;
-    }
-  });
-
-  unexpectedMatches.forEach((unexpectedMatch) => {
-    if (kbMatches.find((kbMatch) => {return kbMatch.ident === unexpectedMatch.ident;})) {
-      found = false;
-    }
-  });
-  expect(found).toBe(true);
-};
-
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
