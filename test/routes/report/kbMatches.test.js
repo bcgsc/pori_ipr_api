@@ -22,7 +22,7 @@ const kbMatchProperties = [
   'ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease',
   'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
   'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant', 'inferred',
-  'reviewStatus', 'externalSource', 'externalStatementId', 'reviewStatus', 'iprEvidenceLevel',
+  'reviewStatus', 'externalSource', 'externalStatementId', 'reviewStatus',
 ];
 
 const checkKbMatch = (kbMatchObject) => {
@@ -59,7 +59,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       reportId: report.id,
       name: mockReportData.genes[0].name,
     });
-    variant = await db.models.smallMutations.create({
+    variant = await db.models.copyVariants.create({
       reportId: report.id,
       geneId: gene.id,
     });
@@ -70,6 +70,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'cnv',
     };
+
+    kbMatch = await db.models.kbMatches.create(createData);
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
