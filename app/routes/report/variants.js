@@ -151,8 +151,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 // Routing for Alteration
 router.route('/')
   .get(async (req, res) => {
-    // Get all small mutations for this report
-    // TODO: Add comment on why cache was removed
+    // Get all variants for this report
+    // Cache was removed from this endpoint due to requiring multiple tables,
+    // increasing the chance of retrieving outdated data
     const {query: {rapidTable}} = req;
 
     try {
@@ -173,9 +174,9 @@ router.route('/')
 
       return res.json(results);
     } catch (error) {
-      logger.error(`Unable to retrieve small mutations ${error}`);
+      logger.error(`Unable to retrieve variants ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Unable to retrieve small mutations'},
+        error: {message: 'Unable to retrieve variants'},
       });
     }
   });
