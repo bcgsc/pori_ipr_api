@@ -9,6 +9,7 @@ const logger = require('../../log');
 
 const {KB_PIVOT_MAPPING} = require('../../constants');
 
+const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy'];
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
@@ -20,7 +21,8 @@ const getVariants = async (tableName, variantType, reportId) => {
     },
     include: [
       {
-        model: db.models.kbMatches.scope('variants'),
+        model: db.models.kbMatches,
+        attributes: {exclude: KBMATCHEXCLUDE},
       },
     ],
   });
@@ -66,7 +68,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     },
     include: [
       {
-        model: db.models.kbMatches.scope('variants'),
+        model: db.models.kbMatches,
+        attributes: {exclude: KBMATCHEXCLUDE},
         where: {...therapeuticAssociationFilter},
       },
     ],
@@ -87,8 +90,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     },
     include: [
       {
-        model: db.models.kbMatches.scope('variants'),
+        model: db.models.kbMatches,
         where: {...cancerRelevanceFilter},
+        attributes: {exclude: KBMATCHEXCLUDE},
       },
     ],
   });
@@ -119,7 +123,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       },
       include: [
         {
-          model: db.models.kbMatches.scope('variants'),
+          model: db.models.kbMatches,
+          attributes: {exclude: KBMATCHEXCLUDE},
         },
         {
           model: db.models.genes.scope('minimal'),
