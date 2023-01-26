@@ -1,6 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const {Op, literal} = require('sequelize');
+const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
 
@@ -59,7 +59,7 @@ router.route('/:kbMatch([A-z0-9-]{36})')
 
 router.route('/')
   .get(async (req, res) => {
-    const {query: {matchedCancer, approvedTherapy, category, rapidTable}} = req;
+    const {query: {matchedCancer, approvedTherapy, category}} = req;
 
     // Check cache
     const key = generateKey(`/reports/${req.report.ident}/kb-matches`, req.query);
@@ -76,90 +76,6 @@ router.route('/')
     }
 
     try {
-      const therapeuticAssociationFilter = {
-        [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
-        category: 'therapeutic',
-        matchedCancer: true,
-        variantType: {[Op.is]: literal('distinct from \'exp\'')},
-      };
-
-      // PSQL natively ignores null on equal checks.
-      // Literal is used in order to accomodate NULL rows.
-      const cancerRelevanceFilter = {
-        [Op.not]: {
-          [Op.or]: [
-            {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-A\'')}},
-            {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-B\'')}},
-          ],
-          category: 'therapeutic',
-          matchedCancer: true,
-        },
-        variantType: {[Op.is]: literal('distinct from \'exp\'')},
-      };
-
-      const unknownSignificanceFilter = {
-        variantType: 'mut',
-      };
-
-      if (rapidTable) {
-        const therapeuticAssociationResults = await db.models.kbMatches.scope('public').findAll({
-          where: {
-            reportId: req.report.id,
-            ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
-            ...therapeuticAssociationFilter,
-          },
-          order: [['variantType', 'ASC'], ['variantId', 'ASC']],
-        });
-
-        if (rapidTable === 'therapeuticAssociation') {
-          return res.json(therapeuticAssociationResults);
-        }
-
-        const cancerRelevanceResultsFiltered = [];
-        const cancerRelevanceResults = await db.models.kbMatches.scope('public').findAll({
-          where: {
-            reportId: req.report.id,
-            ...cancerRelevanceFilter,
-          },
-          order: [['variantType', 'ASC'], ['variantId', 'ASC']],
-        });
-
-        for (const row of cancerRelevanceResults) {
-          if (!(therapeuticAssociationResults.find(
-            (e) => {return e.variant.ident === row.variant.ident;},
-          ))) {
-            cancerRelevanceResultsFiltered.push(row);
-          }
-        }
-
-        if (rapidTable === 'cancerRelevance') {
-          return res.json(cancerRelevanceResultsFiltered);
-        }
-
-        const unknownSignificanceResultsFiltered = [];
-        const unknownSignificanceResults = await db.models.kbMatches.scope('public').findAll({
-          where: {
-            reportId: req.report.id,
-            ...unknownSignificanceFilter,
-          },
-          order: [['variantType', 'ASC'], ['variantId', 'ASC']],
-        });
-
-        for (const row of unknownSignificanceResults) {
-          if (!(therapeuticAssociationResults.find(
-            (e) => {return e.variant.ident === row.variant.ident;},
-          )) && !(cancerRelevanceResultsFiltered.find(
-            (e) => {return e.variant.ident === row.variant.ident;},
-          ))) {
-            unknownSignificanceResultsFiltered.push(row);
-          }
-        }
-
-        if (rapidTable === 'unknownSignificance') {
-          return res.json(unknownSignificanceResultsFiltered);
-        }
-      }
-
       const results = await db.models.kbMatches.scope('public').findAll({
         where: {
           reportId: req.report.id,
