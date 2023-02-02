@@ -26,7 +26,7 @@ const smallMutationProperties = ['transcript', 'proteinChange', 'chromosome', 's
   'hgvsProtein', 'hgvsCds', 'hgvsGenomic', 'ncbiBuild', 'germline',
   'tumourAltCopies', 'tumourRefCopies', 'library', 'comments', 'gene'];
 
-const checksmallMutation = (variantObject) => {
+const checkSmallMutation = (variantObject) => {
   smallMutationProperties.forEach((element) => {
     expect(variantObject).toHaveProperty(element);
   });
@@ -38,9 +38,9 @@ const checksmallMutation = (variantObject) => {
   }));
 };
 
-const checksmallMutations = (variants) => {
+const checkSmallMutations = (variants) => {
   variants.forEach((variant) => {
-    checksmallMutation(variant);
+    checkSmallMutation(variant);
   });
 };
 
@@ -55,7 +55,7 @@ describe('/reports/{report}/small-mutations', () => {
   let variant;
 
   beforeAll(async () => {
-    // Create report, gene and copy variant
+    // Create report, gene and small mutation
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report
@@ -92,7 +92,7 @@ describe('/reports/{report}/small-mutations', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
 
-      checksmallMutations(res.body);
+      checkSmallMutations(res.body);
       expect(res.body.length).toBeGreaterThan(0);
 
       const [record] = res.body;
@@ -108,7 +108,7 @@ describe('/reports/{report}/small-mutations', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checksmallMutation(res.body);
+      checkSmallMutation(res.body);
     });
   });
 
@@ -141,7 +141,7 @@ describe('/reports/{report}/small-mutations', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checksmallMutation(res.body);
+      checkSmallMutation(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
     });
   });

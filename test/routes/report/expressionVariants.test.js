@@ -59,7 +59,7 @@ describe('/reports/{report}/expression-variants', () => {
   let variant;
 
   beforeAll(async () => {
-    // Create report, gene and copy variant
+    // Create report, gene and expression variant
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report

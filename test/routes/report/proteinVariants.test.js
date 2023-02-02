@@ -35,7 +35,7 @@ const proteinVariantProperties = [
   'gene',
 ];
 
-const checkproteinVariant = (variantObject) => {
+const checkProteinVariant = (variantObject) => {
   proteinVariantProperties.forEach((element) => {
     expect(variantObject).toHaveProperty(element);
   });
@@ -47,9 +47,9 @@ const checkproteinVariant = (variantObject) => {
   }));
 };
 
-const checkproteinVariants = (variants) => {
+const checkProteinVariants = (variants) => {
   variants.forEach((variant) => {
-    checkproteinVariant(variant);
+    checkProteinVariant(variant);
   });
 };
 
@@ -64,7 +64,7 @@ describe('/reports/{report}/protein-variants', () => {
   let variant;
 
   beforeAll(async () => {
-    // Create report, gene and copy variant
+    // Create report, gene and protein variant
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report
@@ -101,7 +101,7 @@ describe('/reports/{report}/protein-variants', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
 
-      checkproteinVariants(res.body);
+      checkProteinVariants(res.body);
       expect(res.body.length).toBeGreaterThan(0);
 
       const [record] = res.body;
@@ -117,7 +117,7 @@ describe('/reports/{report}/protein-variants', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkproteinVariant(res.body);
+      checkProteinVariant(res.body);
     });
   });
 
@@ -150,7 +150,7 @@ describe('/reports/{report}/protein-variants', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkproteinVariant(res.body);
+      checkProteinVariant(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
     });
   });

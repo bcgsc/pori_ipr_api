@@ -26,7 +26,7 @@ const structuralVariantProperties = ['exon1', 'exon2', 'breakpoint', 'eventType'
   'highQuality', 'germline', 'library', 'tumourAltCount',
   'tumourDepth', 'comments', 'gene1', 'gene2'];
 
-const checkstructuralVariant = (variantObject) => {
+const checkStructuralVariant = (variantObject) => {
   structuralVariantProperties.forEach((element) => {
     expect(variantObject).toHaveProperty(element);
   });
@@ -39,9 +39,9 @@ const checkstructuralVariant = (variantObject) => {
   }));
 };
 
-const checkstructuralVariants = (variants) => {
+const checkStructuralVariants = (variants) => {
   variants.forEach((variant) => {
-    checkstructuralVariant(variant);
+    checkStructuralVariant(variant);
   });
 };
 
@@ -56,7 +56,7 @@ describe('/reports/{report}/structural-variants', () => {
   let variant;
 
   beforeAll(async () => {
-    // Create report, gene and copy variant
+    // Create report, genes and protein variants
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report
@@ -98,7 +98,7 @@ describe('/reports/{report}/structural-variants', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
 
-      checkstructuralVariants(res.body);
+      checkStructuralVariants(res.body);
       expect(res.body.length).toBeGreaterThan(0);
 
       const [record] = res.body;
@@ -114,7 +114,7 @@ describe('/reports/{report}/structural-variants', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkstructuralVariant(res.body);
+      checkStructuralVariant(res.body);
     });
   });
 
@@ -152,7 +152,7 @@ describe('/reports/{report}/structural-variants', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkstructuralVariant(res.body);
+      checkStructuralVariant(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
     });
   });
