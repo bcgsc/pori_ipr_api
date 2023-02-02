@@ -20,28 +20,36 @@ const UPDATE_DATA = {
   comments: 'New comments',
 };
 
-const structuralVariantProperties = ['exon1', 'exon2', 'breakpoint', 'eventType', 'detectedIn',
-  'conventionalName', 'svg', 'svgTitle', 'name', 'frame', 'ctermGene',
-  'ntermGene', 'ctermTranscript', 'ntermTranscript', 'omicSupport',
-  'highQuality', 'germline', 'library', 'tumourAltCount',
-  'tumourDepth', 'comments', 'gene1', 'gene2'];
+const proteinVariantProperties = [
+  'percentile',
+  'kiqr',
+  'qc',
+  'comparator',
+  'totalSampleObserved',
+  'secondaryPercentile',
+  'secondaryComparator',
+  'kbCategory',
+  'germline',
+  'library',
+  'comments',
+  'gene',
+];
 
-const checkstructuralVariant = (variantObject) => {
-  structuralVariantProperties.forEach((element) => {
+const checkproteinVariant = (variantObject) => {
+  proteinVariantProperties.forEach((element) => {
     expect(variantObject).toHaveProperty(element);
   });
   expect(variantObject).toEqual(expect.not.objectContaining({
     id: expect.any(Number),
     reportId: expect.any(Number),
     deletedAt: expect.any(String),
-    gene1Id: expect.any(Number),
-    gene2Id: expect.any(Number),
+    geneId: expect.any(Number),
   }));
 };
 
-const checkstructuralVariants = (variants) => {
+const checkproteinVariants = (variants) => {
   variants.forEach((variant) => {
-    checkstructuralVariant(variant);
+    checkproteinVariant(variant);
   });
 };
 
@@ -51,7 +59,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/reports/{report}/structural-variants', () => {
+describe('/reports/{report}/protein-variants', () => {
   let report;
   let variant;
 
@@ -65,25 +73,20 @@ describe('/reports/{report}/structural-variants', () => {
       patientId: 'TESTPATIENT1234',
     });
 
-    const gene1 = await db.models.genes.create({
+    const gene = await db.models.genes.create({
       reportId: report.id,
-      name: 'Fake Gene 1',
-    });
-    const gene2 = await db.models.genes.create({
-      reportId: report.id,
-      name: 'Fake Gene 2',
+      name: 'Fake Gene',
     });
 
-    variant = await db.models.structuralVariants.create({
+    variant = await db.models.proteinVariants.create({
       reportId: report.id,
-      gene1Id: gene1.id,
-      gene2Id: gene2.id,
+      geneId: gene.id,
     });
 
     await db.models.kbMatches.create({
       reportId: report.id,
       category: 'therapeutic',
-      variantType: 'sv',
+      variantType: 'protein',
       variantId: variant.id,
     });
   });
@@ -91,14 +94,14 @@ describe('/reports/{report}/structural-variants', () => {
   describe('GET', () => {
     test('/ - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports/${report.ident}/structural-variants`)
+        .get(`/api/reports/${report.ident}/protein-variants`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
 
-      checkstructuralVariants(res.body);
+      checkproteinVariants(res.body);
       expect(res.body.length).toBeGreaterThan(0);
 
       const [record] = res.body;
@@ -107,58 +110,53 @@ describe('/reports/{report}/structural-variants', () => {
       expect(Array.isArray(record.kbMatches)).toBe(true);
     }, LONGER_TIMEOUT);
 
-    test('/{structuralVariant} - 200 Success', async () => {
+    test('/{proteinVariant} - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports/${report.ident}/structural-variants/${variant.ident}`)
+        .get(`/api/reports/${report.ident}/protein-variants/${variant.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkstructuralVariant(res.body);
+      checkproteinVariant(res.body);
     });
   });
 
   describe('PUT', () => {
-    let structuralVariantUpdate;
+    let proteinVariantUpdate;
 
     beforeEach(async () => {
-      const gene1 = await db.models.genes.create({
+      const gene = await await db.models.genes.create({
         reportId: report.id,
-        name: 'Fake Gene 3',
-      });
-      const gene2 = await db.models.genes.create({
-        reportId: report.id,
-        name: 'Fake Gene 4',
+        name: 'Fake Update Gene',
       });
 
-      structuralVariantUpdate = await db.models.structuralVariants.create({
+      proteinVariantUpdate = await db.models.proteinVariants.create({
         reportId: report.id,
-        gene1Id: gene1.id,
-        gene2Id: gene2.id,
+        geneId: gene.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.structuralVariants.destroy({
-        where: {ident: structuralVariantUpdate.ident}, force: true,
+      await db.models.proteinVariants.destroy({
+        where: {ident: proteinVariantUpdate.ident}, force: true,
       });
     });
 
-    test('/{structuralVariant} - 200 Success', async () => {
+    test('/{proteinVariant} - 200 Success', async () => {
       const res = await request
-        .put(`/api/reports/${report.ident}/structural-variants/${structuralVariantUpdate.ident}`)
+        .put(`/api/reports/${report.ident}/protein-variants/${proteinVariantUpdate.ident}`)
         .send(UPDATE_DATA)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkstructuralVariant(res.body);
+      checkproteinVariant(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
     });
   });
 
   describe('DELETE', () => {
-    let structuralVariantDelete;
+    let proteinVariantDelete;
 
     beforeEach(async () => {
       const gene = await await db.models.genes.create({
@@ -166,27 +164,27 @@ describe('/reports/{report}/structural-variants', () => {
         name: 'Fake Delete Gene',
       });
 
-      structuralVariantDelete = await db.models.structuralVariants.create({
+      proteinVariantDelete = await db.models.proteinVariants.create({
         reportId: report.id,
         geneId: gene.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.structuralVariants.destroy({
-        where: {ident: structuralVariantDelete.ident}, force: true,
+      await db.models.proteinVariants.destroy({
+        where: {ident: proteinVariantDelete.ident}, force: true,
       });
     });
 
-    test('/{structuralVariant} - 204 No content', async () => {
+    test('/{proteinVariant} - 204 No content', async () => {
       await request
-        .delete(`/api/reports/${report.ident}/structural-variants/${structuralVariantDelete.ident}`)
+        .delete(`/api/reports/${report.ident}/protein-variants/${proteinVariantDelete.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Check that entry was soft deleted
-      const result = db.models.structuralVariants.findOne({where: {ident: structuralVariantDelete.ident}, paranoid: false});
+      const result = db.models.proteinVariants.findOne({where: {ident: proteinVariantDelete.ident}, paranoid: false});
       expect(result.deletedAt).not.toBeNull();
     });
   });
