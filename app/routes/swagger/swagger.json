@@ -3537,6 +3537,166 @@
         }
       }
     },
+    "/reports/{report}/protein-variants": {
+      "get": {
+        "summary": "Get Protein Variants",
+        "description": "Retrieve all protein variants for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Protein Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of protein variants for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/proteinVariantsAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/protein-variants/{protein}": {
+      "get": {
+        "summary": "Get protein Variant",
+        "description": "Retrieve a specific protein variant from a report by ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/protein"
+          }
+        ],
+        "tags": [
+          "Protein Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified protein variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/proteinVariantsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or protein variant not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Protein Variant",
+        "description": "Update the details of a protein variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/protein"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update current protein variant",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/proteinVariantsUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Protein Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated protein variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/proteinVariantsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or protein variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Protein Variant",
+        "description": "Removes the specified protein variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/protein"
+          }
+        ],
+        "tags": [
+          "Protein Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or protein variant not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/expression-variants": {
       "get": {
         "summary": "Get Expression Variants",
@@ -6398,6 +6558,16 @@
         "in": "path",
         "required": true,
         "description": "Copy number variant ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "protein": {
+        "name": "Protein Variant",
+        "in": "path",
+        "required": true,
+        "description": "Protein variant ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
