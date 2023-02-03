@@ -116,7 +116,7 @@ describe('/reports/{report}/small-mutations', () => {
     let smallMutationUpdate;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Update Gene',
       });
@@ -150,7 +150,7 @@ describe('/reports/{report}/small-mutations', () => {
     let smallMutationDelete;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Delete Gene',
       });

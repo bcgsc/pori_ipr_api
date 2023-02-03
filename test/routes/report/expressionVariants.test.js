@@ -121,7 +121,7 @@ describe('/reports/{report}/expression-variants', () => {
     let expressionVariantUpdate;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Update Gene',
       });
@@ -156,7 +156,7 @@ describe('/reports/{report}/expression-variants', () => {
     let expressionVariantDelete;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Delete Gene',
       });

@@ -161,7 +161,7 @@ describe('/reports/{report}/structural-variants', () => {
     let structuralVariantDelete;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Delete Gene',
       });
