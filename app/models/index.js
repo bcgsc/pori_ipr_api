@@ -294,6 +294,8 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
         include: [],
       },
     ];
+  } else if (name === 'msi') {
+    continue;
   } else {
     // Link variants to the gene model
     variantModel.belongsTo(genes, {

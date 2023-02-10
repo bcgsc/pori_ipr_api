@@ -6,6 +6,7 @@ module.exports = {
     mut: 'smallMutations',
     exp: 'expressionVariants',
     protein: 'proteinVariants',
+    msi: 'msi',
   },
   KB_PIVOT_COLUMN: 'variantType',
   GENE_LINKED_VARIANT_MODELS: [
@@ -15,6 +16,7 @@ module.exports = {
     'structuralVariants',
     'probeResults',
     'proteinVariants',
+    'msi',
   ],
   VALID_IMAGE_KEY_PATTERN: `^${[
     'mutSignature\\.(corPcors|barplot)\\.(dbs|indels|sbs)',
