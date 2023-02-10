@@ -16,7 +16,6 @@ module.exports = {
     'structuralVariants',
     'probeResults',
     'proteinVariants',
-    'msi',
   ],
   VALID_IMAGE_KEY_PATTERN: `^${[
     'mutSignature\\.(corPcors|barplot)\\.(dbs|indels|sbs)',

@@ -139,7 +139,6 @@ module.exports = (sequelize, Sq) => {
       public: {
         attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
         include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-          console.log(sequelize.models[modelName]);
           return {model: sequelize.models[modelName].scope('public'), as: modelName};
         }),
       },

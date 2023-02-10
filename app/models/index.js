@@ -207,6 +207,16 @@ analysisReports.hasMany(immuneCellTypes, {
   as: 'immuneCellTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+// MSI
+const msi = require('./reports/msi')(sequelize, Sq);
+
+analysisReports.hasMany(msi, {
+  as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+msi.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Copy Number Analysis
 const copyVariants = require('./reports/copyVariants')(sequelize, Sq);
 
@@ -294,8 +304,6 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
         include: [],
       },
     ];
-  } else if (name === 'msi') {
-    continue;
   } else {
     // Link variants to the gene model
     variantModel.belongsTo(genes, {
@@ -440,16 +448,6 @@ analysisReports.hasMany(comparators, {
   as: 'comparators', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 comparators.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-
-// MSI
-const msi = require('./reports/msi')(sequelize, Sq);
-
-analysisReports.hasMany(msi, {
-  as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
