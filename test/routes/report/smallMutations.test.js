@@ -7,6 +7,8 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
+const LONGER_TIMEOUT = 50000;
+
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
@@ -14,103 +16,173 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
+const UPDATE_DATA = {
+  comments: 'New comments',
+};
+
+const smallMutationProperties = ['transcript', 'proteinChange', 'chromosome', 'startPosition',
+  'endPosition', 'refSeq', 'altSeq', 'zygosity', 'tumourAltCount', 'tumourRefCount', 'tumourDepth',
+  'rnaAltCount', 'rnaRefCount', 'rnaDepth', 'normalAltCount', 'normalRefCount', 'normalDepth',
+  'hgvsProtein', 'hgvsCds', 'hgvsGenomic', 'ncbiBuild', 'germline',
+  'tumourAltCopies', 'tumourRefCopies', 'library', 'comments', 'gene'];
+
+const checkSmallMutation = (variantObject) => {
+  smallMutationProperties.forEach((element) => {
+    expect(variantObject).toHaveProperty(element);
+  });
+  expect(variantObject).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    reportId: expect.any(Number),
+    deletedAt: expect.any(String),
+    geneId: expect.any(Number),
+  }));
+};
+
+const checkSmallMutations = (variants) => {
+  variants.forEach((variant) => {
+    checkSmallMutation(variant);
+  });
+};
+
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
   request = supertest(server);
 });
 
-describe('/small-mutations', () => {
+describe('/reports/{report}/small-mutations', () => {
   let report;
   let variant;
 
   beforeAll(async () => {
-    // find a variant (any variant)
-    variant = await db.models.smallMutations.findOne({
-      attributes: ['id', 'ident', 'reportId'],
-      include: [
-        {model: db.models.genes.scope('minimal'), as: 'gene'},
-      ],
-      where: {deletedAt: null},
+    // Create report, gene and small mutation
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
+    // Create Report
+    report = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'TESTPATIENT1234',
     });
 
-    expect(variant).toHaveProperty('id');
-    expect(variant).toHaveProperty('ident');
-    expect(variant).toHaveProperty('reportId');
-    expect(variant).toHaveProperty('gene');
-    expect(typeof variant.gene).toBe('object');
-
-    expect(variant.id).not.toBe(null);
-    expect(variant.ident).not.toBe(null);
-    expect(variant.reportId).not.toBe(null);
-
-    // find report from variant
-    // *Note: There shouldn't be an issue with finding
-    // a deleted report because even on soft-delete
-    // the variant should be soft-deleted too*
-    report = await db.models.report.findOne({
-      attributes: ['ident', 'id'],
-      where: {id: variant.reportId, deletedAt: null},
+    const gene = await db.models.genes.create({
+      reportId: report.id,
+      name: 'Fake Gene',
     });
 
-    expect(report).toHaveProperty('id');
-    expect(report).toHaveProperty('ident');
-    expect(report.id).not.toBe(null);
-    expect(report.ident).not.toBe(null);
+    variant = await db.models.smallMutations.create({
+      reportId: report.id,
+      geneId: gene.id,
+    });
+
+    await db.models.kbMatches.create({
+      reportId: report.id,
+      category: 'therapeutic',
+      variantType: 'mut',
+      variantId: variant.id,
+    });
   });
 
-  describe('tests dependent on existing small mutations', () => {
-    describe('GET', () => {
-      test('all small mutations for a report', async () => {
-        let {body: results} = await request
-          .get(`/api/reports/${report.ident}/small-mutations`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
-        expect(Array.isArray(results)).toBe(true);
+  describe('GET', () => {
+    test('/ - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/small-mutations`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-        // make sure results is 5 entries or less
-        results = results.slice(0, 5);
+      expect(Array.isArray(res.body)).toBe(true);
 
-        // verify all returned variants
-        for (const result of results) {
-          expect(result).toHaveProperty('ident');
-          expect(result).toHaveProperty('gene');
-          expect(typeof result.gene).toBe('object');
+      checkSmallMutations(res.body);
+      expect(res.body.length).toBeGreaterThan(0);
 
-          expect(result.gene).toHaveProperty('expressionVariants');
-          expect(result.gene).toHaveProperty('copyVariants');
+      const [record] = res.body;
 
-          expect(result).toHaveProperty('kbMatches');
-          expect(Array.isArray(result.kbMatches)).toBe(true);
+      expect(record).toHaveProperty('kbMatches');
+      expect(Array.isArray(record.kbMatches)).toBe(true);
+    }, LONGER_TIMEOUT);
 
-          expect(result).not.toHaveProperty('id');
-          expect(result).not.toHaveProperty('reportId');
-          expect(result).not.toHaveProperty('geneId');
-          expect(result).not.toHaveProperty('deletedAt');
-        }
+    test('/{smallMutation} - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/small-mutations/${variant.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkSmallMutation(res.body);
+    });
+  });
+
+  describe('PUT', () => {
+    let smallMutationUpdate;
+
+    beforeEach(async () => {
+      const gene = await db.models.genes.create({
+        reportId: report.id,
+        name: 'Fake Update Gene',
       });
 
-      test('a single small mutation by ident', async () => {
-        const {body: result} = await request
-          .get(`/api/reports/${report.ident}/small-mutations/${variant.ident}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
-        expect(result).toHaveProperty('ident', variant.ident);
-        expect(result).toHaveProperty('gene', variant.gene.dataValues);
-        expect(typeof result.gene).toBe('object');
-
-        expect(result).not.toHaveProperty('kbMatches');
-        expect(result.gene).not.toHaveProperty('copyVariants');
-        expect(result.gene).not.toHaveProperty('expressionVariants');
-
-        expect(result).not.toHaveProperty('id');
-        expect(result).not.toHaveProperty('reportId');
-        expect(result).not.toHaveProperty('geneId');
-        expect(result).not.toHaveProperty('deletedAt');
+      smallMutationUpdate = await db.models.smallMutations.create({
+        reportId: report.id,
+        geneId: gene.id,
       });
     });
+
+    afterEach(async () => {
+      await db.models.smallMutations.destroy({
+        where: {ident: smallMutationUpdate.ident}, force: true,
+      });
+    });
+
+    test('/{smallMutation} - 200 Success', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}/small-mutations/${smallMutationUpdate.ident}`)
+        .send(UPDATE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkSmallMutation(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
+    });
+  });
+
+  describe('DELETE', () => {
+    let smallMutationDelete;
+
+    beforeEach(async () => {
+      const gene = await db.models.genes.create({
+        reportId: report.id,
+        name: 'Fake Delete Gene',
+      });
+
+      smallMutationDelete = await db.models.smallMutations.create({
+        reportId: report.id,
+        geneId: gene.id,
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.smallMutations.destroy({
+        where: {ident: smallMutationDelete.ident}, force: true,
+      });
+    });
+
+    test('/{smallMutation} - 204 No content', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/small-mutations/${smallMutationDelete.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Check that entry was soft deleted
+      const result = db.models.smallMutations.findOne({where: {ident: smallMutationDelete.ident}, paranoid: false});
+      expect(result.deletedAt).not.toBeNull();
+    });
+  });
+
+  afterAll(async () => {
+    // Destroy report and all it's components
+    await db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 
