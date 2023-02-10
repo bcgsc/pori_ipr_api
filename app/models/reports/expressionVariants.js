@@ -176,6 +176,9 @@ module.exports = (sequelize, Sq) => {
     library: {
       type: Sq.TEXT,
     },
+    comments: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_expression_variants',

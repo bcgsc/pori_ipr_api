@@ -30,6 +30,11 @@ module.exports = (sequelize, Sq) => {
           exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
         },
       },
+      extended: {
+        attributes: {
+          exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+        },
+      },
     },
   });
 

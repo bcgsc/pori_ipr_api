@@ -22,6 +22,11 @@ const CREATE_DATA = {
 const UPDATE_DATA = {
   patientHistory: 'Updated patient history',
   familyHistory: 'updated family history',
+  cglReviewResult: 'pathogenic',
+  returnedToClinician: 'yes',
+  referralHcp: 'yes',
+  knownToHcp: 'yes',
+  reasonNoHcpReferral: 'reason for hcp referral',
 };
 
 const germlineVariantProperties = [
@@ -31,7 +36,8 @@ const germlineVariantProperties = [
   'hgvsCdna', 'hgvsProtein', 'zygosityTumour', 'genomicVariantReads', 'rnaVariantReads',
   'geneSomaticAbberation', 'notes', 'type', 'patientHistory', 'familyHistory',
   'tcgaCompNormPercentile', 'tcgaCompPercentile', 'gtexCompPercentile', 'fcBodymap',
-  'geneExpressionRpkm', 'additionalInfo',
+  'geneExpressionRpkm', 'additionalInfo', 'hidden', 'patientHistory', 'familyHistory',
+  'cglReviewResult', 'returnedToClinician', 'referralHcp', 'knownToHcp', 'reasonNoHcpReferral',
 ];
 
 const checkGermlineVariant = (variantObject) => {

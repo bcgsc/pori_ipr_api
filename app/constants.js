@@ -6,6 +6,7 @@ module.exports = {
     mut: 'smallMutations',
     exp: 'expressionVariants',
     protein: 'proteinVariants',
+    msi: 'msi',
   },
   KB_PIVOT_COLUMN: 'variantType',
   GENE_LINKED_VARIANT_MODELS: [
