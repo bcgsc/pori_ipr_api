@@ -6,6 +6,7 @@ const copyVariants = require('./copyVariants');
 const kbMatches = require('./kbMatches');
 const probeResults = require('./probeResults');
 const expressionVariants = require('./expressionVariants');
+const proteinVariants = require('./proteinVariants');
 const mavis = require('./mavis');
 const presentation = require('./presentation');
 const structuralVariants = require('./structuralVariants');
@@ -58,5 +59,6 @@ router.use('/patient-information', patientInformation);
 router.use('/msi', msi);
 router.use('/user', reportUser);
 router.use('/variants', variants);
+router.use('/protein-variants', proteinVariants);
 
 module.exports = router;
