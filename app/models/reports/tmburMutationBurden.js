@@ -163,6 +163,11 @@ module.exports = (sequelize, Sq) => {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
       },
     },
+    extended: {
+      attributes: {
+        exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+      },
+    },
   });
 
   // set instance methods
