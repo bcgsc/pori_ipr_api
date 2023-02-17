@@ -134,6 +134,12 @@ module.exports = (sequelize, Sq) => {
       field: 'pediatric_ids',
       type: Sq.TEXT,
     },
+    oncotree_tumour_type: {
+      name: 'oncotreeTumourType',
+      field: 'oncotree_tumour_type',
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',

@@ -76,6 +76,7 @@
     "kbUrl": "https://ipr.bcgsc.ca/testurl",
     "kbDiseaseMatch": "Colorectal Cancer",
     "analysisStartedAt": "2020-01-01T20:20:00+00:00",
+    "oncotreeTumourType": "tumour type",
     "patientInformation": {
         "physician": "Dr. Test Upload",
         "gender": "Male",
