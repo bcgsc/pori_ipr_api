@@ -134,7 +134,7 @@ module.exports = (sequelize, Sq) => {
       field: 'pediatric_ids',
       type: Sq.TEXT,
     },
-    oncotree_tumour_type: {
+    oncotreeTumourType: {
       name: 'oncotreeTumourType',
       field: 'oncotree_tumour_type',
       type: Sq.TEXT,
