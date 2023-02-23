@@ -8,6 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 2
       matrix:
         node: [14, 16, 18]
     name: node-${{ matrix.node }}
