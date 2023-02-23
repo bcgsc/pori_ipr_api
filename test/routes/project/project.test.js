@@ -13,7 +13,7 @@ const {username, password} = CONFIG.get('testing');
 const LONGER_TIMEOUT = 50000;
 
 const projectProperties = [
-  'ident', 'createdAt', 'updatedAt', 'name', 'reports', 'users',
+  'ident', 'createdAt', 'updatedAt', 'name', 'users',
 ];
 
 const checkProject = (projectObject) => {
@@ -46,10 +46,33 @@ beforeAll(async () => {
 // Tests for user related endpoints
 describe('/project', () => {
   let project;
+  let report01;
+  let report02;
 
   beforeAll(async () => {
     // Create project
     project = await db.models.project.create({name: 'test-project'});
+
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
+
+    report01 = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'REPORT-PROJECT-TEST01',
+      alternateIdentifier: 'reportProjectTest01',
+    });
+
+    report02 = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'REPORT-PROJECT-TEST02',
+      alternateIdentifier: 'reportProjectTest02',
+    });
+
+    // Bind reports to project
+    return Promise.all([
+      db.models.reportProject.create({project_id: project.id, reportId: report01.id}),
+      db.models.reportProject.create({project_id: project.id, reportId: report02.id}),
+    ]);
   });
 
   afterAll(async () => {
@@ -65,6 +88,7 @@ describe('/project', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.some((e) => {return e.reportCount === '2';})).toBe(true);
       checkProjects(res.body);
     }, LONGER_TIMEOUT);
 
