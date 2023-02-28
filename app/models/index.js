@@ -217,6 +217,16 @@ msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Tmbur Mutation Burden
+const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
+
+analysisReports.hasOne(tmburMutationBurden, {
+  as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+tmburMutationBurden.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Copy Number Analysis
 const copyVariants = require('./reports/copyVariants')(sequelize, Sq);
 
@@ -428,16 +438,6 @@ analysisReports.hasMany(mutationBurden, {
   as: 'mutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 mutationBurden.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-
-// Tmbur Mutation Burden
-const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
-
-analysisReports.hasOne(tmburMutationBurden, {
-  as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-tmburMutationBurden.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
