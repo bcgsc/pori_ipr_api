@@ -144,6 +144,7 @@ describe('/project', () => {
     beforeEach(async () => {
       putTestProject = await db.models.project.create({
         name: 'put-test-project01',
+        description: 'put-test-description01',
       });
     });
 
@@ -154,13 +155,19 @@ describe('/project', () => {
     test('/{project} - 200 Success', async () => {
       const res = await request
         .put(`/api/project/${putTestProject.ident}`)
-        .send({name: 'put-test-updated-project01'})
+        .send(
+          {
+            name: 'put-test-updated-project01',
+            description: 'put-test-updated-description01',
+          },
+        )
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       checkProject(res.body);
       expect(res.body.name).toBe('put-test-updated-project01');
+      expect(res.body.description).toBe('put-test-updated-description01');
     });
 
     test('/{project} - 400 Bad Request - Name too short', async () => {
