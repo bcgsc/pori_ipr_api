@@ -112,7 +112,6 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   const keyCheck = new Set();
   let records;
   // check the 'key' is unique
-  console.log(sectionContent);
   for (const {key} of sectionContent) {
     if (key) {
       if (keyCheck.has(key)) {
