@@ -112,6 +112,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   const keyCheck = new Set();
   let records;
   // check the 'key' is unique
+  console.log(sectionContent);
   for (const {key} of sectionContent) {
     if (key) {
       if (keyCheck.has(key)) {
@@ -167,7 +168,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
 
     // Add check for kbMatches with non-array variant types
-    if (!Array.isArray(content[variantModel])) {
+    if (!Array.isArray(content[variantModel]) && typeof content[variantModel] === 'object') {
       content[variantModel] = [content[variantModel]];
     }
 
