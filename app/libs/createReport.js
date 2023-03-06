@@ -167,7 +167,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
 
     // Add check for kbMatches with non-array variant types
-    if (!Array.isArray(content[variantModel])) {
+    if (!Array.isArray(content[variantModel]) && typeof content[variantModel] === 'object') {
       content[variantModel] = [content[variantModel]];
     }
 
