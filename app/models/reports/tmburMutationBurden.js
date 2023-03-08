@@ -155,6 +155,9 @@ module.exports = (sequelize, Sq) => {
         description: 'MSI Score',
       },
     },
+    comments: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_tmbur_mutation_burden',
