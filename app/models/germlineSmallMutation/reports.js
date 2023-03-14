@@ -47,6 +47,10 @@ module.exports = (sequelize, Sq) => {
       type: Sq.BOOLEAN,
       defaultValue: false,
     },
+    state: {
+      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction', null),
+      defaultValue: 'uploaded',
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'germline_small_mutations',
