@@ -112,13 +112,13 @@ describe('/germline-small-mutation-reports', () => {
 
     // Create projects
     fakeProject = await db.models.project.create({
-      name: 'Fake project1',
+      name: 'Fake project',
     });
 
     projects.push(fakeProject);
 
     realProject = await db.models.project.create({
-      name: 'Real project1',
+      name: 'Real project',
     });
 
     projects.push(realProject);
