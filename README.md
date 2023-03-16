@@ -78,9 +78,9 @@ npm run test
 
 ### Common problems
 #### Cache:
-While developing or running tests you might notice that changes that are done to the code are not being reflected in the API response. Or that tests are returning not expected results. It might be worth checking if it's a cache issue.
+While developing or running tests you might notice that changes that are done to the code are not being reflected in the API response. Or, you might notice that tests are returning not expected results. It might be worth checking if it's a cache issue.
 
-In that case, while you can comment out the cache code when testing manually. For unit tests, you can modify the query in order to avoid triggering the cache see [example](./test/routes/germlineSmallMutation/index.test.js?plain=1#L383).
+In that case, you can comment out the cache code when testing manually. For unit tests, you can modify the query in order to avoid triggering the cache see [example](./test/routes/germlineSmallMutation/index.test.js?plain=1#L383).
 
 ## Generating JSDocs
 
