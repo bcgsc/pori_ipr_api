@@ -76,6 +76,12 @@ export IPR_TESTING_PASSWORD=someApiPassword
 npm run test
 ```
 
+### Common problems
+#### Cache:
+While developing or running tests you might notice that changes that are done to the code are not being reflected in the API response. Or, you might notice that tests are returning not expected results. It might be worth checking if it's a cache issue.
+
+In that case, you can comment out the cache code when testing manually. For unit tests, you can modify the query in order to avoid triggering the cache see [example](./test/routes/germlineSmallMutation/index.test.js?plain=1#L383).
+
 ## Generating JSDocs
 
 Developer documentation is generated using the JSDoc library. To generate a local copy of the documentation, cd into the root of the project directory and run the command `npm run jsdoc`. This should automatically create documentation within folder named 'jsdoc' that can be viewed in a web browser.
