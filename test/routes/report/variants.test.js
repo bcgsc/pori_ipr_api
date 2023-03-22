@@ -100,6 +100,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidVariantUStumourSuppressor;
   let rapidVariantUSAllTrue;
   let rapidVariantUSAllFalse;
+  let rapidVariantMsi;
+  let rapidVariantTmb;
 
   let rapidDataIprA;
   let rapidDataIprB;
@@ -205,6 +207,16 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     rapidVariantUSAllFalse = await db.models.smallMutations.create({
       reportId: rapidReport.id,
       geneId: rapidGeneUSAllFalse.id,
+    });
+
+    rapidVariantMsi = await db.models.msi.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneUSAllTrue.id,
+      score: 100.00,
+    });
+    rapidVariantTmb = await db.models.tmburMutationBurden.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneUSAllTrue.id,
     });
 
     rapidDataIprA = {
@@ -338,6 +350,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       rapidVariantUSOncogene,
       rapidVariantUStumourSuppressor,
       rapidVariantUSAllTrue,
+      rapidVariantMsi,
+      rapidVariantTmb,
     ];
     excludedVariants = [rapidVariantUSAllFalse];
   }, LONGER_TIMEOUT);
