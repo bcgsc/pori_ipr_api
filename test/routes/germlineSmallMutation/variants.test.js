@@ -27,6 +27,7 @@ const UPDATE_DATA = {
   referralHcp: 'yes',
   knownToHcp: 'yes',
   reasonNoHcpReferral: 'reason for hcp referral',
+  hgvsCdna: 'new hgvsCdna',
 };
 
 const germlineVariantProperties = [
