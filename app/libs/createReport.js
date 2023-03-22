@@ -165,6 +165,12 @@ const createReportVariantSections = async (report, content, transaction) => {
   const variantMapping = {};
   const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
+
+    // Add check for kbMatches with non-array variant types
+    if (!Array.isArray(content[variantModel]) && typeof content[variantModel] === 'object') {
+      content[variantModel] = [content[variantModel]];
+    }
+
     const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
     variantMapping[variantType] = mapping;
   });

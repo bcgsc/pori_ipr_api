@@ -25,7 +25,8 @@ const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
     'returnedToClinician',
     'referralHcp',
     'knownToHcp',
-    'reasonNoHcpReferral'],
+    'reasonNoHcpReferral',
+    'hgvsCdna'],
   nothingRequired: true,
 });
 
