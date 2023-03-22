@@ -33,7 +33,11 @@ const therapeuticAssociationFilter = {
   [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
   category: 'therapeutic',
   matchedCancer: true,
-  variantType: {[Op.is]: literal('distinct from \'exp\'')},
+  variantType: {[Op.or]: [
+    {[Op.is]: literal('distinct from \'exp\'')},
+    {[Op.is]: literal('distinct from \'msi\'')},
+    {[Op.is]: literal('distinct from \'tmb\'')},
+  ]},
 };
 
 // PSQL natively ignores null on equal checks.
@@ -48,10 +52,15 @@ const cancerRelevanceFilter = {
     category: 'therapeutic',
     matchedCancer: true,
   },
-  variantType: {[Op.is]: literal('distinct from \'exp\'')},
+  variantType: {[Op.or]: [
+    {[Op.is]: literal('distinct from \'exp\'')},
+    {[Op.is]: literal('distinct from \'msi\'')},
+    {[Op.is]: literal('distinct from \'tmb\'')},
+  ]},
 };
 
-const unknownSignificanceIncludes = ['mut'];
+const unknownSignificanceIncludes = ['mut', 'tmb', 'msi'];
+const signatureVariant = ['tmb', 'msi'];
 
 const unknownSignificanceGeneFilter = {
   [Op.or]: [{oncogene: true}, {tumourSuppressor: true}],
@@ -113,26 +122,45 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   let unknownSignificanceResults = [];
 
   if (unknownSignificanceIncludes.includes(variantType)) {
-    unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
-      order: [['id', 'ASC']],
-      attributes: {
-        include: [[literal(`'${variantType}'`), 'variantType']],
-      },
-      where: {
-        reportId,
-      },
-      include: [
-        {
-          model: db.models.kbMatches,
-          attributes: {exclude: KBMATCHEXCLUDE},
+    if (signatureVariant.includes(variantType)) {
+      // Variants with signature type are not related to genes
+      unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
+        order: [['id', 'ASC']],
+        attributes: {
+          include: [[literal(`'${variantType}'`), 'variantType']],
         },
-        {
-          model: db.models.genes.scope('minimal'),
-          as: 'gene',
-          where: unknownSignificanceGeneFilter,
+        where: {
+          reportId,
         },
-      ],
-    });
+        include: [
+          {
+            model: db.models.kbMatches,
+            attributes: {exclude: KBMATCHEXCLUDE},
+          },
+        ],
+      });
+    } else {
+      unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
+        order: [['id', 'ASC']],
+        attributes: {
+          include: [[literal(`'${variantType}'`), 'variantType']],
+        },
+        where: {
+          reportId,
+        },
+        include: [
+          {
+            model: db.models.kbMatches,
+            attributes: {exclude: KBMATCHEXCLUDE},
+          },
+          {
+            model: db.models.genes.scope('minimal'),
+            as: 'gene',
+            where: unknownSignificanceGeneFilter,
+          },
+        ],
+      });
+    }
   }
 
   for (const row of unknownSignificanceResults) {
