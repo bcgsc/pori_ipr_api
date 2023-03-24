@@ -132,7 +132,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         },
         where: {
           reportId,
-          ...((isMsi) ? {score: {[Op.gte]: 30}} : {}),
+          ...((isMsi) ? {score: {[Op.gte]: 20}} : {}),
         },
         include: [
           {
