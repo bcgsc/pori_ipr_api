@@ -357,7 +357,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
-    test('Getting Therapeutic Association - OK', async () => {
+    test('Getting Therapeutic Association -OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReport.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
