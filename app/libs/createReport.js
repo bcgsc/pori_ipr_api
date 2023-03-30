@@ -295,8 +295,12 @@ const createReport = async (data) => {
     );
   }
 
-  if (allProjects.includes(null)) {
-    throw new Error('Error while trying to find one or more projects');
+  if (allProjects.filter(
+    (e) => {
+      return e.project === null;
+    },
+  ).length > 0) {
+    throw new Error('Error while trying to find one or more projects, name not found');
   }
   // Set template id
   data.templateId = template.id;
