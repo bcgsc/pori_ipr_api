@@ -228,7 +228,7 @@ router.route('/')
             name: projects,
           },
           attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
-          through: {attributes: []},
+          through: {attributes: ['additionalProject']},
         },
         ...((role) ? [{
           model: db.models.reportUser,
