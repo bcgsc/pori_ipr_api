@@ -65,12 +65,14 @@ describe('/reports/{REPORTID}', () => {
   const AUTHORIZED_GROUP = 'Non-Production Access';
 
   let project;
+  let project2;
   let report;
   let reportReady;
   let reportReviewed;
   let reportArchived;
   let reportNonProduction;
   let totalReports;
+  let reportDualProj;
 
   beforeEach(async () => {
     // Get genomic template
@@ -79,6 +81,11 @@ describe('/reports/{REPORTID}', () => {
     project = await db.models.project.findOne({
       where: {
         name: 'TEST',
+      },
+    });
+    [project2] = await db.models.project.findOrCreate({
+      where: {
+        name: 'TEST2',
       },
     });
 
@@ -130,6 +137,21 @@ describe('/reports/{REPORTID}', () => {
     await db.models.reportProject.create({
       reportId: reportArchived.id,
       project_id: project.id,
+    });
+
+    reportDualProj = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+    });
+    await db.models.reportProject.create({
+      reportId: reportDualProj.id,
+      project_id: project.id,
+      additionalProject: false,
+    });
+    await db.models.reportProject.create({
+      reportId: reportDualProj.id,
+      project_id: project2.id,
+      additionalProject: true,
     });
 
     totalReports = await db.models.report.count();
@@ -184,6 +206,25 @@ describe('/reports/{REPORTID}', () => {
 
       checkReports(res.body.reports);
       expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 GET report if have additional report permission', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: project2.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(res.body.reports.filter(
+        (e) => {
+          return e.ident === reportDualProj.ident;
+        },
+      ).length > 0).toBeTruthy();
     }, LONGER_TIMEOUT);
 
     // Test GET with limit
@@ -333,6 +374,20 @@ describe('/reports/{REPORTID}', () => {
     test('fetches known ident ok', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+    });
+
+    test('fetches additional project permission ok', async () => {
+      const res = await request
+        .get(`/api/reports/${reportDualProj.ident}`)
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: project2.name, ident: project2.ident}],
+        })
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
