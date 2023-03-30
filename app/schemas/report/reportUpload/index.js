@@ -18,6 +18,13 @@ const generateReportUploadSchema = (isJsonSchema) => {
       type: 'string',
       description: 'Project name',
     },
+    additionalProjects: {
+      type: 'array',
+      description: 'Array of additional reports names',
+      items: {
+        type: 'string',
+      },
+    },
     template: {
       type: 'string',
       description: 'Template name',
