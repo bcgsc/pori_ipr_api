@@ -101,6 +101,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidVariantUSAllTrue;
   let rapidVariantUSAllFalse;
   let rapidVariantMsi;
+  let rapidVariantMss;
   let rapidVariantTmb;
 
   let rapidDataIprA;
@@ -213,6 +214,11 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       reportId: rapidReport.id,
       geneId: rapidGeneUSAllTrue.id,
       score: 100.00,
+    });
+    rapidVariantMss = await db.models.msi.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneUSAllTrue.id,
+      score: 15.00,
     });
     rapidVariantTmb = await db.models.tmburMutationBurden.create({
       reportId: rapidReport.id,
@@ -353,7 +359,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       rapidVariantMsi,
       rapidVariantTmb,
     ];
-    excludedVariants = [rapidVariantUSAllFalse];
+    excludedVariants = [rapidVariantUSAllFalse, rapidVariantMss];
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {

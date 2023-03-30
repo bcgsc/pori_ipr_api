@@ -15,8 +15,8 @@ module.exports = async (req, res, next, ident) => {
     {
       model: db.models.project,
       as: 'projects',
-      attributes: ['ident', 'name'],
-      through: {attributes: []},
+      attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
+      through: {attributes: ['additionalProject']},
     },
     {
       model: db.models.reportUser,

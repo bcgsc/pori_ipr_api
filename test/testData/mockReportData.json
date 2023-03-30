@@ -462,6 +462,9 @@
         }
     ],
     "project": "TEST",
+    "additionalProjects": [
+        "TEST2"
+    ],
     "images": [
         {
             "key": "mutSignature.barplot.sbs",
