@@ -124,6 +124,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   if (unknownSignificanceIncludes.includes(variantType)) {
     if (signatureVariant.includes(variantType)) {
       // Variants with signature type are not related to genes
+      const isMsi = variantType === 'msi';
       unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
         order: [['id', 'ASC']],
         attributes: {
@@ -131,6 +132,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         },
         where: {
           reportId,
+          ...((isMsi) ? {score: {[Op.gte]: 20}} : {}),
         },
         include: [
           {

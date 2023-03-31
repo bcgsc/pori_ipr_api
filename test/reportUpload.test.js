@@ -30,6 +30,19 @@ describe('Tests for uploading a report and all of its components', () => {
   let reportIdent;
 
   beforeAll(async () => {
+    // Assure projects exists before creating report
+    await db.models.project.findOrCreate({
+      where: {
+        name: 'TEST',
+      },
+    });
+
+    await db.models.project.findOrCreate({
+      where: {
+        name: 'TEST2',
+      },
+    });
+
     // create report
     let res = await request
       .post('/api/reports')
