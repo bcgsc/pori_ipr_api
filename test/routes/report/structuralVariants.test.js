@@ -5,13 +5,13 @@ const getPort = require('get-port');
 const db = require('../../../app/models');
 // get test user info
 const CONFIG = require('../../../app/config');
-const {listen} = require('../../../app');
+const { listen } = require('../../../app');
 
 const LONGER_TIMEOUT = 50000;
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const { username, password } = CONFIG.get('testing');
 
 let server;
 let request;
@@ -24,7 +24,7 @@ const structuralVariantProperties = ['exon1', 'exon2', 'breakpoint', 'eventType'
   'conventionalName', 'svg', 'svgTitle', 'name', 'frame', 'ctermGene',
   'ntermGene', 'ctermTranscript', 'ntermTranscript', 'omicSupport',
   'highQuality', 'germline', 'library', 'tumourAltCount',
-  'tumourDepth', 'comments', 'gene1', 'gene2'];
+  'tumourDepth', 'rnaAltCount', 'rnaDepth', 'comments', 'gene1', 'gene2'];
 
 const checkStructuralVariant = (variantObject) => {
   structuralVariantProperties.forEach((element) => {
@@ -46,7 +46,7 @@ const checkStructuralVariants = (variants) => {
 };
 
 beforeAll(async () => {
-  const port = await getPort({port: CONFIG.get('web:port')});
+  const port = await getPort({ port: CONFIG.get('web:port') });
   server = await listen(port);
   request = supertest(server);
 });
@@ -58,7 +58,7 @@ describe('/reports/{report}/structural-variants', () => {
   beforeAll(async () => {
     // Create report, genes and protein variants
     // Get genomic template
-    const template = await db.models.template.findOne({where: {name: 'genomic'}});
+    const template = await db.models.template.findOne({ where: { name: 'genomic' } });
     // Create Report
     report = await db.models.report.create({
       templateId: template.id,
@@ -140,7 +140,7 @@ describe('/reports/{report}/structural-variants', () => {
 
     afterEach(async () => {
       await db.models.structuralVariants.destroy({
-        where: {ident: structuralVariantUpdate.ident}, force: true,
+        where: { ident: structuralVariantUpdate.ident }, force: true,
       });
     });
 
@@ -174,7 +174,7 @@ describe('/reports/{report}/structural-variants', () => {
 
     afterEach(async () => {
       await db.models.structuralVariants.destroy({
-        where: {ident: structuralVariantDelete.ident}, force: true,
+        where: { ident: structuralVariantDelete.ident }, force: true,
       });
     });
 
@@ -186,14 +186,14 @@ describe('/reports/{report}/structural-variants', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Check that entry was soft deleted
-      const result = db.models.structuralVariants.findOne({where: {ident: structuralVariantDelete.ident}, paranoid: false});
+      const result = db.models.structuralVariants.findOne({ where: { ident: structuralVariantDelete.ident }, paranoid: false });
       expect(result.deletedAt).not.toBeNull();
     });
   });
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({ where: { ident: report.ident }, force: true });
   });
 });
 
