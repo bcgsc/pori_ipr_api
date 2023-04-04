@@ -5,7 +5,7 @@ module.exports = {
         return queryInterface.sequelize.transaction(async (transaction) => {
             await queryInterface.addColumn(
                 STRUCTURAL_VARIANTS,
-                'rnaAltCount',
+                'rna_alt_count',
                 {
                     type: Sq.INTEGER,
                 },
@@ -13,7 +13,7 @@ module.exports = {
             );
             await queryInterface.addColumn(
                 STRUCTURAL_VARIANTS,
-                'rnaDepth',
+                'rna_depth',
                 {
                     type: Sq.INTEGER,
                 },
