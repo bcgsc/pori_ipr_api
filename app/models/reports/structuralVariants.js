@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
+const { DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS } = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const structuralVariants = sequelize.define('structuralVariants', {
@@ -56,7 +56,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
       jsonSchema: {
         description: 'SVG image of this fusion variant',
-        schema: {format: 'svg', type: 'string'},
+        schema: { format: 'svg', type: 'string' },
       },
     },
     svgTitle: {
@@ -115,35 +115,45 @@ module.exports = (sequelize, Sq) => {
       field: 'tumour_depth',
       type: Sq.INTEGER,
     },
+    rnaAltCount: {
+      name: 'rnaAltCount',
+      field: 'rna_alt_count',
+      type: Sq.INTEGER,
+    },
+    rnaDepth: {
+      name: 'rnaDepth',
+      field: 'rna_depth',
+      type: Sq.INTEGER,
+    },
     comments: {
       type: Sq.TEXT,
     },
   }, {
-    ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_structural_variants',
-    scopes: {
-      public: {
-        attributes: {exclude: ['id', 'reportId', 'gene1Id', 'gene2Id', 'deletedAt', 'updatedBy']},
-        include: [
-          {
-            model: sequelize.models.genes.scope('minimal'),
-            foreignKey: 'gene1Id',
-            as: 'gene1',
-          },
-          {
-            model: sequelize.models.genes.scope('minimal'),
-            foreignKey: 'gene2Id',
-            as: 'gene2',
-          },
-        ],
+      ...DEFAULT_REPORT_OPTIONS,
+      tableName: 'reports_structural_variants',
+      scopes: {
+        public: {
+          attributes: { exclude: ['id', 'reportId', 'gene1Id', 'gene2Id', 'deletedAt', 'updatedBy'] },
+          include: [
+            {
+              model: sequelize.models.genes.scope('minimal'),
+              foreignKey: 'gene1Id',
+              as: 'gene1',
+            },
+            {
+              model: sequelize.models.genes.scope('minimal'),
+              foreignKey: 'gene2Id',
+              as: 'gene2',
+            },
+          ],
+        },
       },
-    },
-  });
+    });
 
   // set instance methods
   structuralVariants.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, reportId, gene1Id, gene2Id, deletedAt, updatedBy, ...publicView} = this.dataValues;
+      const { id, reportId, gene1Id, gene2Id, deletedAt, updatedBy, ...publicView } = this.dataValues;
       return publicView;
     }
     return this;
