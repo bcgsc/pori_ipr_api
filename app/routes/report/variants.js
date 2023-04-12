@@ -54,12 +54,11 @@ const cancerRelevanceFilter = {
   },
   variantType: {[Op.and]: [
     {[Op.is]: literal('distinct from \'exp\'')},
-    {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
 };
 
-const unknownSignificanceIncludes = ['mut', 'tmb', 'msi'];
+const unknownSignificanceIncludes = ['mut', 'tmb'];
 const signatureVariant = ['tmb', 'msi'];
 
 const unknownSignificanceGeneFilter = {
@@ -96,6 +95,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     },
     where: {
       reportId,
+      ...((variantType === 'msi') ? {score: {[Op.gte]: 20}} : {}),
     },
     include: [
       {
@@ -124,7 +124,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   if (unknownSignificanceIncludes.includes(variantType)) {
     if (signatureVariant.includes(variantType)) {
       // Variants with signature type are not related to genes
-      const isMsi = variantType === 'msi';
       unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
         order: [['id', 'ASC']],
         attributes: {
@@ -132,7 +131,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         },
         where: {
           reportId,
-          ...((isMsi) ? {score: {[Op.gte]: 20}} : {}),
         },
         include: [
           {
