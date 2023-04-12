@@ -33,7 +33,7 @@ const therapeuticAssociationFilter = {
   [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
   category: 'therapeutic',
   matchedCancer: true,
-  variantType: {[Op.or]: [
+  variantType: {[Op.and]: [
     {[Op.is]: literal('distinct from \'exp\'')},
     {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
@@ -52,7 +52,7 @@ const cancerRelevanceFilter = {
     category: 'therapeutic',
     matchedCancer: true,
   },
-  variantType: {[Op.or]: [
+  variantType: {[Op.and]: [
     {[Op.is]: literal('distinct from \'exp\'')},
     {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
