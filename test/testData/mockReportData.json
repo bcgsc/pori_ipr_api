@@ -354,7 +354,9 @@
             "germline": false,
             "library": "TEST LIBRARY",
             "tumourAltCount": 4,
-            "tumourDepth": 590
+            "tumourDepth": 590,
+            "rnaAltCount": 5,
+            "rnaDepth": 591
         }
     ],
     "proteinVariants": [
