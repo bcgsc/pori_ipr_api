@@ -24,7 +24,7 @@ const structuralVariantProperties = ['exon1', 'exon2', 'breakpoint', 'eventType'
   'conventionalName', 'svg', 'svgTitle', 'name', 'frame', 'ctermGene',
   'ntermGene', 'ctermTranscript', 'ntermTranscript', 'omicSupport',
   'highQuality', 'germline', 'library', 'tumourAltCount',
-  'tumourDepth', 'comments', 'gene1', 'gene2'];
+  'tumourDepth', 'rnaAltCount', 'rnaDepth', 'comments', 'gene1', 'gene2'];
 
 const checkStructuralVariant = (variantObject) => {
   structuralVariantProperties.forEach((element) => {

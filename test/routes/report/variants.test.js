@@ -107,6 +107,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidDataIprA;
   let rapidDataIprB;
   let rapidDataAlreadyReported;
+  let rapidDataIprANotTherapeuticMsi;
   let rapidDataIprANotTherapeutic;
   let rapidDataTherapeuticIprC;
   let rapidDataUnknownIprC;
@@ -118,6 +119,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let kbMatchRapidDataIprA;
   let kbMatchRapidDataIprB;
   let kbMatchRapidDataIprANotTherapeutic;
+  let kbMatchRapidDataIprANotTherapeuticMsi;
   let kbMatchRapidDataAlreadyReported;
   let kbMatchRapidDataTherapeuticIprC;
   let kbMatchRapidDataUnknownIprC;
@@ -212,12 +214,10 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     rapidVariantMsi = await db.models.msi.create({
       reportId: rapidReport.id,
-      geneId: rapidGeneUSAllTrue.id,
       score: 100.00,
     });
     rapidVariantMss = await db.models.msi.create({
       reportId: rapidReport.id,
-      geneId: rapidGeneUSAllTrue.id,
       score: 15.00,
     });
     rapidVariantTmb = await db.models.tmburMutationBurden.create({
@@ -256,6 +256,14 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantId: rapidVariantCR.id,
       category: 'unknown',
       variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+    };
+
+    rapidDataIprANotTherapeuticMsi = {
+      reportId: rapidReport.id,
+      variantId: rapidVariantMsi.id,
+      category: 'unknown',
+      variantType: 'msi',
       iprEvidenceLevel: 'IPR-A',
     };
 
@@ -314,6 +322,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     kbMatchRapidDataIprANotTherapeutic = await db.models.kbMatches.create(
       rapidDataIprANotTherapeutic,
     );
+    kbMatchRapidDataIprANotTherapeuticMsi = await db.models.kbMatches.create(
+      rapidDataIprANotTherapeuticMsi,
+    );
     kbMatchRapidDataAlreadyReported = await db.models.kbMatches.create(
       rapidDataAlreadyReported,
     );
@@ -340,6 +351,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       kbMatchRapidDataIprTherapeuticNull,
       kbMatchRapidDataIprUnknownNull,
       kbMatchRapidDataIprAMatchedCancerFalse,
+      kbMatchRapidDataIprANotTherapeuticMsi,
     ];
     excludedMatches = [
       kbMatchRapidDataExp,
@@ -351,12 +363,12 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     ];
     cancerRelevanceVariants = [
       rapidVariantCR,
+      rapidVariantMsi,
     ];
     unknownSignificanceVariants = [
       rapidVariantUSOncogene,
       rapidVariantUStumourSuppressor,
       rapidVariantUSAllTrue,
-      rapidVariantMsi,
       rapidVariantTmb,
     ];
     excludedVariants = [rapidVariantUSAllFalse, rapidVariantMss];
