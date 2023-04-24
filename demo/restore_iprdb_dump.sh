@@ -40,12 +40,12 @@ then
     SECTION = ''
 fi
 
-if [ "$TRIGGERS_OPTION" = "no-triggers" ];
+if [ "$TRIGGERS_OPTION" = "no_triggers" ];
 then
     SECTION = '--section=pre-data --section=data'
 fi
 
-if [ "$TRIGGERS_OPTION" = "triggers-only" ];
+if [ "$TRIGGERS_OPTION" = "only_triggers" ];
 then
     SECTION = '--section=post-data'
 fi

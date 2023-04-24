@@ -38,7 +38,7 @@ IF YOU HAVE SUPERUSER:
 1) run the restore script,
 2) alter the tables to disable triggers,
 3) run the clean script,
-4) renable the triggers.
+4) re-enable the triggers.
 
 ```bash
 POSTGRES_USER=$USER DB_DUMP_LOCATION=new_demo.dump SERVICE_PASSWORD=root READONLY_PASSWORD=root bash demo/restore_iprdb_dump.sh
