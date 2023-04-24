@@ -3,7 +3,7 @@ const GERMLINE_VARIANTS = 'germline_small_mutations_variant';
 module.exports = {
   up: async (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.changeColumns(
+      await queryInterface.changeColumn(
         GERMLINE_VARIANTS,
         'previously_reported',
         {
