@@ -22,11 +22,8 @@ pg_dump -Fc -U $USER -h localhost -d ipr_demo > demo/ipr_demodb.postgres.dump
 ```
 
 
-Whichever way you decide to do this, note that:
-
-- You can ignore the password parameters for now since they will not be kept anyway.
-
-- If the database was dumped from an older version, you may need to migrate the schema to ensure it is up to date first
+Whichever way you decide to do this, note that if the database was dumped from an older version,
+you may need to migrate the schema to ensure it is up to date first
 
 ```bash
 npx sequelize-cli db:migrate --url postgres://${USER}@localhost:5432/ipr_demo
@@ -40,6 +37,9 @@ IF YOU HAVE SUPERUSER:
 3) run the clean script,
 4) re-enable the triggers.
 
+
+You can ignore the password parameters for now since they will not be kept anyway.
+
 ```bash
 POSTGRES_USER=$USER DB_DUMP_LOCATION=new_demo.dump SERVICE_PASSWORD=root READONLY_PASSWORD=root bash demo/restore_iprdb_dump.sh
 ```
@@ -49,7 +49,7 @@ ALTER TABLE reports_genes DISABLE TRIGGER ALL;
 ALTER TABLE germline_small_mutations DISABLE TRIGGER ALL;
 ```
 ```bash
-node demo/clean_db_for_demo.js --database.name ipr_demo2 --database.hostname localhost --database.password '' --graphkb.password ''
+node demo/clean_db_for_demo.js --database.name ipr_demo --database.hostname localhost --database.password '' --graphkb.password ''
 ```
 ```sql
 ALTER TABLE reports ENABLE TRIGGER ALL;
@@ -60,16 +60,24 @@ ALTER TABLE germline_small_mutations ENABLE TRIGGER ALL;
 
 IF YOU DON'T HAVE SUPERUSER:
 
+export values for:
+
+POSTGRES_USER
+POSTGRES_PASSWORD
+SERVICE_PASSWORD
+DATABASE_HOSTNAME=eg iprdevdb.bcgsc.ca
+DB_DUMP_LOCATION=the filesystem location of the pg_dump output file
+DATABASE_NAME=the name you want to use for the demo db
+
 1) run the restore script with the option to avoid loading triggers
-2) run the clean script,
+2) ssh to the db's host, or set it in the command. Then run the clean script command
 3) run the restore script again with the option to load triggers.
 
 ```bash
-POSTGRES_USER=$USER DB_DUMP_LOCATION=new_demo.dump SERVICE_PASSWORD=root READONLY_PASSWORD=root TRIGGERS_OPTION=no_triggers bash demo/restore_iprdb_dump.sh
-```
-```bash
-node demo/clean_db_for_demo.js --database.name ipr_demo2 --database.hostname localhost --database.password '' --graphkb.password ''
-```
-```bash
-POSTGRES_USER=$USER DB_DUMP_LOCATION=new_demo.dump SERVICE_PASSWORD=root READONLY_PASSWORD=root TRIGGERS_OPTION=only_triggers bash demo/restore_iprdb_dump.sh
+
+DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="no_triggers" bash demo/restore_iprdb_dump.sh
+
+node demo/clean_db_for_demo.js --database.name $DATABASE_NAME --database.hostname $DATABASE_HOSTNAME
+
+DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="only_triggers" bash demo/restore_iprdb_dump.sh
 ```
