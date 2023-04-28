@@ -38,8 +38,9 @@ const therapeuticAssociationFilter = {
     {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
-  // Regex filter for finding columns with 2 or more spaces (excludes generic "geneX mutation")
-  kbVariant: {[Op.regexp]: '^(.*\\s.*){2,}$'},
+  // Regex filter for finding columns with 2 or more spaces that end with
+  // mutation or mutations
+  kbVariant: {[Op.regexp]: '^(.*\\s.*){2,}mutation.*$'},
 };
 
 // PSQL natively ignores null on equal checks.
@@ -58,8 +59,9 @@ const cancerRelevanceFilter = {
     {[Op.is]: literal('distinct from \'exp\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
-  // Regex filter for finding columns with 2 or more spaces (excludes generic "geneX mutation")
-  kbVariant: {[Op.regexp]: '^(.*\\s.*){2,}$'},
+  // Regex filter for finding columns with 2 or more spaces that end with
+  // mutation or mutations
+  kbVariant: {[Op.regexp]: '^(.*\\s.*){2,}mutation.*$'},
 };
 
 const unknownSignificanceIncludes = ['mut', 'tmb'];

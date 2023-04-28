@@ -265,7 +265,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-B',
       matchedCancer: true,
-      kbVariant: 'geneX specific mutation',
+      kbVariant: 'geneX specific mutations',
     };
 
     rapidDataAlreadyReported = {
