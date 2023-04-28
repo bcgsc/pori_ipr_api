@@ -301,7 +301,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-C',
-      kbVariant: 'table2 mutation',
+      kbVariant: 'table2 specific mutation',
     };
 
     rapidDataUnknownIprC = {
