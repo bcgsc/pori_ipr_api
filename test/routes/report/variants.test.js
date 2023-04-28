@@ -254,7 +254,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
-      kbVariant: 'geneX specific mutation',
+      kbVariant: 'this should be in table 1',
       matchedCancer: true,
     };
 
@@ -265,7 +265,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-B',
       matchedCancer: true,
-      kbVariant: 'geneX specific mutations',
+      kbVariant: 'thisshouldbeintable1',
     };
 
     rapidDataAlreadyReported = {
@@ -283,7 +283,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
-      kbVariant: 'geneX specific mutation',
+      kbVariant: 'this.should.be:table2',
     };
 
     rapidDataIprANotTherapeuticMsi = {
@@ -292,7 +292,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'msi',
       iprEvidenceLevel: 'IPR-A',
-      kbVariant: 'geneX specific mutation',
+      kbVariant: 'also should be table 2',
     };
 
     rapidDataTherapeuticIprC = {
@@ -301,7 +301,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-C',
-      kbVariant: 'geneX specific mutation',
+      kbVariant: 'table2 mutation',
     };
 
     rapidDataUnknownIprC = {
