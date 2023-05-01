@@ -65,6 +65,7 @@ export values for:
 POSTGRES_USER
 POSTGRES_PASSWORD
 SERVICE_PASSWORD
+IPR_GRAPHKB_PASSWORD
 DATABASE_HOSTNAME=eg iprdevdb.bcgsc.ca
 DB_DUMP_LOCATION=the filesystem location of the pg_dump output file
 DATABASE_NAME=the name you want to use for the demo db
