@@ -10,6 +10,8 @@ const logger = require('../../log');
 const {KB_PIVOT_MAPPING} = require('../../constants');
 
 const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy'];
+const MUTATION_REGEX = '^([^\\s]+)(\\s)mutation[s]?$';
+
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
@@ -38,6 +40,9 @@ const therapeuticAssociationFilter = {
     {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
+  // Regex filter for finding columns with 2 or more spaces that end with
+  // mutation or mutations
+  [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
 };
 
 // PSQL natively ignores null on equal checks.
@@ -56,6 +61,9 @@ const cancerRelevanceFilter = {
     {[Op.is]: literal('distinct from \'exp\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
+  // Regex filter for finding columns with 2 or more spaces that end with
+  // mutation or mutations
+  [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
 };
 
 const unknownSignificanceIncludes = ['mut', 'tmb'];
