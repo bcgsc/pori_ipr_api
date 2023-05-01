@@ -1,5 +1,5 @@
 const Sq = require('sequelize');
-const { v4: uuidv4 } = require('uuid');
+const {v4: uuidv4} = require('uuid');
 const nconf = require('../app/config');
 const logger = require('../app/log');
 // Load logging library
@@ -32,7 +32,7 @@ const TRUNCATE_TABLES = [
 ];
 
 const checkReportsCount = async (queryInterface, transaction, minReports = 3) => {
-  const [{ count: reportCount }] = await queryInterface.sequelize.query(
+  const [{count: reportCount}] = await queryInterface.sequelize.query(
     'SELECT count(*) FROM REPORTS',
     {
       transaction,
@@ -161,25 +161,25 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
   await queryInterface.sequelize.query(
     `DELETE FROM user_groups
       WHERE deleted_at IS NOT NULL OR NOT (name in (:groups))`,
-    { transaction, replacements: { groups: ['admin', 'manager', 'reviewer'] } },
+    {transaction, replacements: {groups: ['admin', 'manager', 'reviewer']}},
   );
 
   console.log('DROP all reports_signatures');
   await queryInterface.sequelize.query(
     'TRUNCATE reports_signatures',
-    { transaction },
+    {transaction},
   );
 
   console.log('set templates_appendix users to null');
   await queryInterface.sequelize.query(
     'UPDATE templates_appendix SET "updated_by" = NULL',
-    { transaction },
+    {transaction},
   );
 
   console.log('set templates users to null');
   await queryInterface.sequelize.query(
     'UPDATE templates SET "updated_by" = NULL',
-    { transaction },
+    {transaction},
   );
 
   console.log('create the demo user if not exists');
@@ -259,7 +259,7 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
   console.log('make iprdemo user the group owner of all groups');
   await queryInterface.sequelize.query(
     'UPDATE user_groups SET owner_id = :owner',
-    { transaction, replacements: { owner: demoUser.id } },
+    {transaction, replacements: {owner: demoUser.id}},
   );
 
   await addDemoUserToGroup(queryInterface, transaction, demoUser, 'admin');
@@ -275,7 +275,7 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
       UPDATE reports_mutation_signature set updated_by = :demouser WHERE updated_by is not null
       and (report_id IN(:reportsToKeep));
       DELETE FROM users WHERE username != :username;`,
-    { transaction, replacements: { username: 'iprdemo', demouser: demoUser.id, reportsToKeep: reportsToKeep } },
+    {transaction, replacements: {username: 'iprdemo', demouser: demoUser.id, reportsToKeep}},
   );
 
   console.log('DROP all user_projects where user has been deleted');
@@ -283,7 +283,7 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
     `DELETE FROM user_projects WHERE user_id not in (select id from users);
     DELETE FROM user_metadata WHERE user_id not in (select id from users);
     DELETE FROM user_group_members WHERE user_id not in (select id from users);`,
-    { transaction },
+    {transaction},
   );
 };
 
@@ -303,14 +303,13 @@ const cleanDb = async () => {
       {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
-        replacements: { name: 'PORI' },
+        replacements: {name: 'PORI'},
       },
     )).map((r) => {
       return r.id;
     });
     console.log('reports to keep', reportsToKeep.length);
     console.log('reports to keep', reportsToKeep);
-
 
     await queryInterface.sequelize.query(
       'DELETE FROM reports WHERE NOT (id IN (:reportsToKeep))',
@@ -327,7 +326,7 @@ const cleanDb = async () => {
       {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
-        replacements: { reportTablePattern: 'reports\\_%' },
+        replacements: {reportTablePattern: 'reports\\_%'},
       },
     );
     reportTables.push('report_projects'); // does not follow pattern
@@ -347,25 +346,25 @@ const cleanDb = async () => {
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
     for (const tableName of TRUNCATE_TABLES) {
       console.log(`truncating ${tableName}`);
-      await queryInterface.sequelize.query(`TRUNCATE TABLE ${tableName} CASCADE`, { transaction });
+      await queryInterface.sequelize.query(`TRUNCATE TABLE ${tableName} CASCADE`, {transaction});
     }
 
     console.log('DROP ALL non-PORI projects');
     await queryInterface.sequelize.query(
       `DELETE FROM projects
         WHERE deleted_at IS NOT NULL OR NOT (name in (:projects))`,
-      { transaction, replacements: { projects: ['PORI', 'TEST'] } },
+      {transaction, replacements: {projects: ['PORI', 'TEST']}},
     );
 
     await queryInterface.sequelize.query(
       'UPDATE reports SET "createdBy_id" = NULL',
-      { transaction },
+      {transaction},
     );
     await queryInterface.sequelize.query(
       'DELETE FROM reports_kb_matches WHERE evidence_level ILIKE :name',
       {
         transaction,
-        replacements: { name: '%oncokb%' },
+        replacements: {name: '%oncokb%'},
       },
     );
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
@@ -376,7 +375,7 @@ const cleanDb = async () => {
     console.log('anonymize reports_pairwise_expression_correlation patient id data');
     const correlations = await queryInterface.sequelize.query(
       'SELECT patient_id, library, ident from reports_pairwise_expression_correlation',
-      { transaction, type: queryInterface.sequelize.QueryTypes.SELECT },
+      {transaction, type: queryInterface.sequelize.QueryTypes.SELECT},
     );
     // sort by ident to avoid chronological ordering
     correlations.sort((a, b) => {
@@ -411,7 +410,7 @@ const cleanDb = async () => {
       {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
-        replacements: { tcgaPattern: 'TCGA-%' },
+        replacements: {tcgaPattern: 'TCGA-%'},
       },
     );
     // sort by ident to avoid chronological ordering
@@ -453,7 +452,7 @@ const cleanDb = async () => {
         SET age = NULL, physician = :physician, "reportDate" = NULL`,
       {
         transaction,
-        replacements: { physician: 'REDACTED' },
+        replacements: {physician: 'REDACTED'},
       },
     );
 
