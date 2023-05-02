@@ -8,22 +8,18 @@ FIRST: create a dump of the production database (see migrationTools create).
 pg_dump -Fc -U <USER> -h <HOSTNAME> -d <DATABASE_NAME> > new_demo.dump
 ```
 
-THE MIDDLE STEP: restore the dump as a new database and run the node script to clean any non-public data
-from the dump. There are two ways to do this. One way requires superuser and one way doesn't.
-If you are running a local postgres server for which you have root access, you have superuser,
-and the easiest way to do this is using the restore script.
+THE MIDDLE STEP: restore the dump as a new database and run the node script to clean any non-public data from the dump.
+There are two ways to do this. One way requires superuser and one way doesn't. If you are running a local postgres server for which you have root access, you have superuser, and the easiest way to do this is using the restore script.
 Instructions for both ways to do this are below.
 
-FINALLY: create a dump of the newly cleaned database. This should be MUCH smaller than the
-original and is the one that will be included in the git repository.
+FINALLY: create a dump of the newly cleaned database. This should be MUCH smaller than the original and is the one that will be included in the git repository.
 
 ```bash
 pg_dump -Fc -U $USER -h localhost -d ipr_demo > demo/ipr_demodb.postgres.dump
 ```
 
+Whichever way you decide to do this, note that if the database was dumped from an older version, you may need to migrate the schema to ensure it is up to date first.
 
-Whichever way you decide to do this, note that if the database was dumped from an older version,
-you may need to migrate the schema to ensure it is up to date first
 
 ```bash
 npx sequelize-cli db:migrate --url postgres://${USER}@localhost:5432/ipr_demo
