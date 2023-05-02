@@ -2,19 +2,19 @@
 
 > :warning: **BEFORE YOU START!** The demo dump is created from a cleaned/stripped version of the production database. Only reports under the PORI project are kept. If any changes have been made to these reports since the last dump then they must be manually reviewed by the developer creating the dump beforehand to double check nothing has been uploaded, edited or added that should not be included in public data (ex. identifiable or proprietary information).
 
-First create a dump of the production database (see migrationTools create).
+FIRST: create a dump of the production database (see migrationTools create).
 
 ```bash
 pg_dump -Fc -U <USER> -h <HOSTNAME> -d <DATABASE_NAME> > new_demo.dump
 ```
 
-Next, restore the dump as a new database and run the node script to clean any non-public data
-from the dump. There are two ways to do this, one of which requires superuser and one of which
-doesn't.
+THE MIDDLE STEP: restore the dump as a new database and run the node script to clean any non-public data
+from the dump. There are two ways to do this. One way requires superuser and one way doesn't.
 If you are running a local postgres server for which you have root access, you have superuser,
 and the easiest way to do this is using the restore script.
+Instructions for both ways to do this are below.
 
-Finally you can create a dump of the newly cleaned database. This should be MUCH smaller than the
+FINALLY: create a dump of the newly cleaned database. This should be MUCH smaller than the
 original and is the one that will be included in the git repository.
 
 ```bash
@@ -29,7 +29,7 @@ you may need to migrate the schema to ensure it is up to date first
 npx sequelize-cli db:migrate --url postgres://${USER}@localhost:5432/ipr_demo
 ```
 
-The middle step:
+THE MIDDLE STEP:
 
 IF YOU HAVE SUPERUSER:
 1) run the restore script,
@@ -37,6 +37,7 @@ IF YOU HAVE SUPERUSER:
 3) run the clean script,
 4) re-enable the triggers.
 
+If you don't have superuser you won't be able to disable and re-enable the triggers.
 
 You can ignore the password parameters for now since they will not be kept anyway.
 
@@ -82,3 +83,6 @@ node demo/clean_db_for_demo.js --database.name $DATABASE_NAME --database.hostnam
 
 DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="only_triggers" bash demo/restore_iprdb_dump.sh
 ```
+
+Expect error messages as the script tries to create a user that already exists.
+This should not affect the restore/clean of the db.
