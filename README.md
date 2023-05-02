@@ -1,6 +1,6 @@
 # Integrated Pipeline Reports (IPR) API
 
-![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-14%20%7C%2016-blue) [![postgres versions](https://img.shields.io/badge/postgres-9.6%20-blue)](https://www.orientdb.org/) [![DOI](https://zenodo.org/badge/322391719.svg)](https://zenodo.org/badge/latestdoi/322391719)
+![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-14%20%7C%2016-blue) [![postgres versions](https://img.shields.io/badge/postgres-11%20-blue)](https://www.orientdb.org/) [![DOI](https://zenodo.org/badge/322391719.svg)](https://zenodo.org/badge/latestdoi/322391719)
 
 
 IPR is part of the [platform for oncogenomic reporting and interpretation](https://github.com/bcgsc/pori).
