@@ -156,7 +156,7 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
   }
 };
 
-const cleanUsers = async (queryInterface, transaction) => {
+const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
   console.log('DROP all non-admin non-manager groups');
   await queryInterface.sequelize.query(
     `DELETE FROM user_groups
@@ -237,7 +237,7 @@ const cleanUsers = async (queryInterface, transaction) => {
   );
   console.log(demoUser.id);
   console.log(userMetadata);
-  if (userMetadata) {
+  if (!userMetadata) {
     await queryInterface.sequelize.query(
       `INSERT INTO user_metadata (
         ident, user_id,
@@ -268,8 +268,22 @@ const cleanUsers = async (queryInterface, transaction) => {
   await addDemoUserToProject(queryInterface, transaction, demoUser, 'TEST');
   console.log('drop all other users');
   await queryInterface.sequelize.query(
-    'DELETE FROM users WHERE username != :username',
-    {transaction, replacements: {username: 'iprdemo'}},
+    `UPDATE reports_therapeutic_targets set updated_by = :demouser WHERE updated_by is not null
+      and (report_id IN(:reportsToKeep));
+      UPDATE reports_summary_analyst_comments set updated_by = :demouser WHERE updated_by is not null
+      and (report_id IN(:reportsToKeep));
+      UPDATE reports_mutation_signature set updated_by = :demouser WHERE updated_by is not null
+      and (report_id IN(:reportsToKeep));
+      DELETE FROM users WHERE username != :username;`,
+    {transaction, replacements: {username: 'iprdemo', demouser: demoUser.id, reportsToKeep}},
+  );
+
+  console.log('DROP all user_projects where user has been deleted');
+  await queryInterface.sequelize.query(
+    `DELETE FROM user_projects WHERE user_id not in (select id from users);
+    DELETE FROM user_metadata WHERE user_id not in (select id from users);
+    DELETE FROM user_group_members WHERE user_id not in (select id from users);`,
+    {transaction},
   );
 };
 
@@ -355,7 +369,7 @@ const cleanDb = async () => {
     );
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
-    await cleanUsers(queryInterface, transaction);
+    await cleanUsers(queryInterface, transaction, reportsToKeep);
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
     console.log('anonymize reports_pairwise_expression_correlation patient id data');
@@ -399,7 +413,7 @@ const cleanDb = async () => {
         replacements: {tcgaPattern: 'TCGA-%'},
       },
     );
-      // sort by ident to avoid chronological ordering
+    // sort by ident to avoid chronological ordering
     nonTcgaPatients.sort((a, b) => {
       return a.ident.localeCompare(b.ident);
     });
