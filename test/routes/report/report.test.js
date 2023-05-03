@@ -502,11 +502,11 @@ describe('/reports/{REPORTID}', () => {
             m1m2Score: 98.5,
           })
           .expect(HTTP_STATUS.OK);
-  
+
         checkReport(res.body);
         expect(res.body).toHaveProperty('m1m2Score', 98.5);
       });
-  
+    });
 
     test('ploidy update OK', async () => {
       const res = await request
