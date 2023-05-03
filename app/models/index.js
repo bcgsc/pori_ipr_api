@@ -19,11 +19,6 @@ const sequelize = new Sq(
     pool: {
       max: dbSettings.maxConn,
     },
-    dialectOptions: {
-      options: {
-        requestTimeout: 10000,
-      },
-    },
   },
 );
 
