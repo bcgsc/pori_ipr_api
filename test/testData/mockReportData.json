@@ -66,6 +66,7 @@
     "expression_matrix": "v9",
     "patientId": "UPLOADPAT01",
     "tumourContent": 75,
+    "m1m2Score": 22.75,
     "ploidy": "diploid",
     "ageOfConsent": 20,
     "alternateIdentifier": "UPLOADPATIENT01",
