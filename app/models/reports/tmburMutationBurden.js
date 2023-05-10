@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
+const { DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS } = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const tmburMutationBurden = sequelize.define('tmburMutationBurden', {
@@ -155,23 +155,28 @@ module.exports = (sequelize, Sq) => {
         description: 'MSI Score',
       },
     },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
     comments: {
       type: Sq.TEXT,
     },
   }, {
-    ...DEFAULT_REPORT_OPTIONS,
-    tableName: 'reports_tmbur_mutation_burden',
-    scopes: {
-      public: {
-        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
-      },
-      extended: {
-        attributes: {
-          exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+      ...DEFAULT_REPORT_OPTIONS,
+      tableName: 'reports_tmbur_mutation_burden',
+      scopes: {
+        public: {
+          attributes: { exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'] },
+        },
+        extended: {
+          attributes: {
+            exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+          },
         },
       },
-    },
-  });
+    });
 
   // set instance methods
   tmburMutationBurden.prototype.view = function (scope) {
