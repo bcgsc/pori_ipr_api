@@ -22,7 +22,8 @@ const tmburMutationBurdenProperties = ['ident', 'updatedAt', 'createdAt',
   'tumour', 'normal', 'nonNBasesIn1To22AndXAndY',
   'totalGenomeSnvs', 'totalGenomeIndels', 'genomeSnvTmb', 'genomeIndelTmb',
   'cdsBasesIn1To22AndXAndY', 'cdsSnvs', 'cdsIndels', 'cdsSnvTmb', 'cdsIndelTmb',
-  'proteinSnvs', 'proteinIndels', 'proteinSnvTmb', 'proteinIndelTmb', 'msiScore'];
+  'proteinSnvs', 'proteinIndels', 'proteinSnvTmb', 'proteinIndelTmb', 'msiScore',
+  'kbCategory'];
 
 const checkTmburMutationBurden = (tmburMutationObject) => {
   tmburMutationBurdenProperties.forEach((element) => {
