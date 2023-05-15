@@ -35,6 +35,22 @@ then
     READONLY_PASSWORD=$SERVICE_PASSWORD
 fi
 
+if [ "$TRIGGERS_OPTION" = "" ];
+then
+    SECTION=""
+fi
+
+if [ "$TRIGGERS_OPTION" = "no_triggers" ];
+then
+    SECTION="--section=pre-data --section=data"
+fi
+
+if [ "$TRIGGERS_OPTION" = "only_triggers" ];
+then
+    SECTION="--section=post-data"
+fi
+
+
 
 echo "*** CREATING DATABASE ***"
 
@@ -50,7 +66,7 @@ psql -U $POSTGRES_USER -d "$TEMPLATE_NAME" -c "CREATE EXTENSION IF NOT EXISTS \"
 
 # import dump
 PGPASSWORD=$SERVICE_PASSWORD createdb -U $SERVICE_USER -T $TEMPLATE_NAME $DATABASE_NAME
-PGPASSWORD=$SERVICE_PASSWORD pg_restore -U $SERVICE_USER -n public --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$DATABASE_NAME";
+PGPASSWORD=$SERVICE_PASSWORD pg_restore -U $SERVICE_USER -n public $SECTION --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$DATABASE_NAME"
 
 # create the RO user for demos
 psql -U $POSTGRES_USER -c "GRANT CONNECT ON DATABASE $DATABASE_NAME TO $READONLY_USER;"
