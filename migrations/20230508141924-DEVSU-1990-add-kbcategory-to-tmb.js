@@ -7,8 +7,6 @@ module.exports = {
         TABLE,
         'kb_category',
         {
-          name: 'kbCategory',
-          field: 'kb_category',
           type: Sq.TEXT,
         },
         {transaction},
