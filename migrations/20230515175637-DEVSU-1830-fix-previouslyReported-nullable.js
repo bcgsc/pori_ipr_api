@@ -1,12 +1,22 @@
 const GERMLINE_VARIANTS = 'germline_small_mutations_variant';
 
 module.exports = {
-  up: async (queryInterface) => {
+  up: async (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.changeColumn(
+      await queryInterface.removeColumn(
+        GERMLINE_VARIANTS,
+        'previously_reported',
+        {transaction},
+      );
+      await queryInterface.sequelize.query(
+        'DROP TYPE enum_germline_small_mutations_variant_previously_reported;',
+        {transaction},
+      );
+      await queryInterface.addColumn(
         GERMLINE_VARIANTS,
         'previously_reported',
         {
+          type: Sq.ENUM(['yes', 'no']),
           allowNull: true,
           defaultValue: null,
         },
