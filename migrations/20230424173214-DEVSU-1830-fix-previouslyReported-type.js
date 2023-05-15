@@ -12,7 +12,8 @@ module.exports = {
         'previously_reported',
         {
           type: Sq.ENUM(['yes', 'no']),
-          defaultValue: 'no',
+          allowNull: true,
+          defaultValue: null,
         },
         {transaction},
       );
