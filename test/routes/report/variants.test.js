@@ -112,6 +112,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidDataIprB;
   let rapidDataAlreadyReported;
   let rapidDataIprANotTherapeuticMsi;
+  let rapidDataIprANotTherapeuticTmb;
   let rapidDataIprANotTherapeutic;
   let rapidDataTherapeuticIprC;
   let rapidDataTherapeuticIprCGeneric;
@@ -126,6 +127,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let kbMatchRapidDataIprB;
   let kbMatchRapidDataIprANotTherapeutic;
   let kbMatchRapidDataIprANotTherapeuticMsi;
+  let kbMatchRapidDataIprANotTherapeuticTmb;
   let kbMatchRapidDataAlreadyReported;
   let kbMatchRapidDataTherapeuticIprC;
   let kbMatchRapidDataTherapeuticIprCGeneric;
@@ -245,7 +247,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
     rapidVariantTmb = await db.models.tmburMutationBurden.create({
       reportId: rapidReport.id,
-      geneId: rapidGeneUSAllTrue.id,
     });
 
     rapidDataIprA = {
@@ -293,6 +294,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'msi',
       iprEvidenceLevel: 'IPR-A',
       kbVariant: 'also should be table 2',
+    };
+
+    rapidDataIprANotTherapeuticTmb = {
+      reportId: rapidReport.id,
+      variantId: rapidVariantTmb.id,
+      category: 'unknown',
+      variantType: 'tmb',
+      iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataTherapeuticIprC = {
@@ -378,6 +388,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     kbMatchRapidDataIprANotTherapeuticMsi = await db.models.kbMatches.create(
       rapidDataIprANotTherapeuticMsi,
     );
+    kbMatchRapidDataIprANotTherapeuticTmb = await db.models.kbMatches.create(
+      rapidDataIprANotTherapeuticTmb,
+    );
     kbMatchRapidDataAlreadyReported = await db.models.kbMatches.create(
       rapidDataAlreadyReported,
     );
@@ -410,6 +423,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       kbMatchRapidDataIprUnknownNull,
       kbMatchRapidDataIprAMatchedCancerFalse,
       kbMatchRapidDataIprANotTherapeuticMsi,
+      kbMatchRapidDataIprANotTherapeuticTmb,
     ];
     unknownSignificanceMatches = [
       kbMatchRapidDataIprAGeneric,
@@ -426,12 +440,12 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     cancerRelevanceVariants = [
       rapidVariantCR,
       rapidVariantMsi,
+      rapidVariantTmb,
     ];
     unknownSignificanceVariants = [
       rapidVariantUSOncogene,
       rapidVariantUStumourSuppressor,
       rapidVariantUSAllTrue,
-      rapidVariantTmb,
       rapidVariantTAGeneric,
       rapidVariantCRGeneric,
     ];
