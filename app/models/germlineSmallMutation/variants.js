@@ -197,7 +197,8 @@ module.exports = (sequelize, Sq) => {
     previouslyReported: {
       name: 'previously_reported',
       field: 'previously_reported',
-      type: Sq.ENUM(['yes', 'no']),
+      type: Sq.ENUM,
+      values: ['yes', 'no', null],
       allowNull: true,
       defaultValue: null,
 
