@@ -155,6 +155,11 @@ module.exports = (sequelize, Sq) => {
         description: 'MSI Score',
       },
     },
+    kbCategory: {
+      name: 'kbCategory',
+      field: 'kb_category',
+      type: Sq.TEXT,
+    },
     comments: {
       type: Sq.TEXT,
     },
