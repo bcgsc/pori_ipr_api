@@ -196,6 +196,7 @@
         "proteinIndels": 3,
         "proteinSnvTmb": 1.69,
         "proteinIndelTmb": 0.09,
+        "kbCategory": "test kb category",
         "msiScore": 0.0
     },
     "kbMatches": [
