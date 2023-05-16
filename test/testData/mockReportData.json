@@ -66,6 +66,7 @@
     "expression_matrix": "v9",
     "patientId": "UPLOADPAT01",
     "tumourContent": 75,
+    "m1m2Score": 22.75,
     "ploidy": "diploid",
     "ageOfConsent": 20,
     "alternateIdentifier": "UPLOADPATIENT01",
@@ -76,6 +77,7 @@
     "kbUrl": "https://ipr.bcgsc.ca/testurl",
     "kbDiseaseMatch": "Colorectal Cancer",
     "analysisStartedAt": "2020-01-01T20:20:00+00:00",
+    "oncotreeTumourType": "tumour type",
     "patientInformation": {
         "physician": "Dr. Test Upload",
         "gender": "Male",
@@ -177,6 +179,7 @@
         }
     ],
     "tmburMutationBurden": {
+        "key": "tmb",
         "tumour": "T1",
         "normal": "N1",
         "nonNBasesIn1To22AndXAndY": "2667837836",
@@ -200,6 +203,46 @@
             "category": "cancer predisposition",
             "variantType": "exp",
             "variant": "hash12345678",
+            "kbVariant": "protein increased expression",
+            "disease": "colorectal cancer",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
+            "status": "na",
+            "reference": "12345678#",
+            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "inferred": false,
+            "externalSource": "CIViC",
+            "externalStatementId": "1234",
+            "reviewStatus": "pending"
+        },
+        {
+            "category": "cancer predisposition",
+            "variantType": "msi",
+            "variant": "msi",
+            "kbVariant": "protein increased expression",
+            "disease": "colorectal cancer",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
+            "status": "na",
+            "reference": "12345678#",
+            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "inferred": false,
+            "externalSource": "CIViC",
+            "externalStatementId": "1234",
+            "reviewStatus": "pending"
+        },
+        {
+            "category": "cancer predisposition",
+            "variantType": "tmb",
+            "variant": "tmb",
             "kbVariant": "protein increased expression",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
@@ -312,7 +355,9 @@
             "germline": false,
             "library": "TEST LIBRARY",
             "tumourAltCount": 4,
-            "tumourDepth": 590
+            "tumourDepth": 590,
+            "rnaAltCount": 5,
+            "rnaDepth": 591
         }
     ],
     "proteinVariants": [
@@ -415,10 +460,14 @@
     "msi": [
         {
             "score": 19.5,
-            "kbCategory": "moderate"
+            "kbCategory": "moderate",
+            "key": "msi"
         }
     ],
     "project": "TEST",
+    "additionalProjects": [
+        "TEST2"
+    ],
     "images": [
         {
             "key": "mutSignature.barplot.sbs",

@@ -21,11 +21,19 @@ module.exports = (sequelize, Sq) => {
       field: 'kb_category',
       type: Sq.TEXT,
     },
+    comments: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_msi',
     scopes: {
       public: {
+        attributes: {
+          exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+        },
+      },
+      extended: {
         attributes: {
           exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
         },

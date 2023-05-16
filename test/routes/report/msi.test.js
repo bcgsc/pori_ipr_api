@@ -15,14 +15,16 @@ let request;
 const CREATE_DATA = {
   score: 23.5,
   kbCategory: 'moderate',
+  comments: 'Initial Comment',
 };
 const UPDATE_DATA = {
   score: 89.5,
   kbCategory: 'updated category',
+  comments: 'Updated Comment',
 };
 
 const msiProperties = [
-  'ident', 'createdAt', 'updatedAt', 'score', 'kbCategory',
+  'ident', 'createdAt', 'updatedAt', 'score', 'kbCategory', 'comments',
 ];
 
 const checkMsi = (msiObject) => {

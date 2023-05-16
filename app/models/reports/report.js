@@ -117,6 +117,11 @@ module.exports = (sequelize, Sq) => {
       field: 'tumour_content',
       type: Sq.FLOAT,
     },
+    m1m2Score: {
+      name: 'm1m2Score',
+      field: 'm1m2_score',
+      type: Sq.FLOAT,
+    },
     ploidy: {
       type: Sq.TEXT,
     },
@@ -133,6 +138,12 @@ module.exports = (sequelize, Sq) => {
       name: 'pediatricIds',
       field: 'pediatric_ids',
       type: Sq.TEXT,
+    },
+    oncotreeTumourType: {
+      name: 'oncotreeTumourType',
+      field: 'oncotree_tumour_type',
+      type: Sq.TEXT,
+      defaultValue: null,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,

@@ -81,11 +81,12 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
         .type('json')
         .send({
           cdsSnvs: 64,
+          comments: 'new comment',
         })
         .expect(HTTP_STATUS.OK);
 
       checkTmburMutationBurden(res.body);
-      expect(res.body).toHaveProperty('cdsSnvs', 64);
+      expect(res.body).toEqual(expect.objectContaining({cdsSnvs: 64, comments: 'new comment'}));
     });
 
     test('error on unexpected value', async () => {

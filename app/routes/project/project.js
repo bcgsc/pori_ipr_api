@@ -2,11 +2,12 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
+const Sequelize = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
 
 const projectMiddleware = require('../../middleware/project');
-const {getUserProjects, hasMasterAccess} = require('../../libs/helperFunctions');
+const {hasMasterAccess} = require('../../libs/helperFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -68,7 +69,7 @@ router.route('/')
   .get(async (req, res) => {
     let projectAccess;
     try {
-      projectAccess = await getUserProjects(db.models.project, req.user);
+      projectAccess = await db.models.project.scope('public').findAll();
     } catch (error) {
       logger.error(`Error while getting user's access to projects ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -78,27 +79,29 @@ router.route('/')
 
     const opts = {
       order: [['createdAt', 'desc']],
-      ...(!hasMasterAccess(req.user) ? {} : {
-        include: [
-          {
-            as: 'reports',
-            model: db.models.report,
-            attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'],
-            through: {attributes: []},
-          },
-          {
-            as: 'users',
-            model: db.models.user,
-            attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']},
-            through: {attributes: []},
-          },
-        ],
-      }),
+      attributes: {
+        include: [[Sequelize.fn('COUNT', Sequelize.col('reports.id')), 'reportCount']],
+      },
+      include: [
+        {
+          as: 'reports',
+          model: db.models.report,
+          attributes: [],
+          through: {attributes: []},
+        },
+        {
+          as: 'users',
+          model: db.models.user,
+          attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']},
+          through: {attributes: []},
+        },
+      ],
       where: {
         ident: projectAccess.map((project) => {
           return project.ident;
         }),
       },
+      group: ['project.id', 'users.id'],
     };
 
     try {

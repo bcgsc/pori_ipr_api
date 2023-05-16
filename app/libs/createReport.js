@@ -165,6 +165,12 @@ const createReportVariantSections = async (report, content, transaction) => {
   const variantMapping = {};
   const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
     const variantModel = KB_PIVOT_MAPPING[variantType];
+
+    // Add check for kbMatches with non-array variant types
+    if (!Array.isArray(content[variantModel]) && typeof content[variantModel] === 'object') {
+      content[variantModel] = [content[variantModel]];
+    }
+
     const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
     variantMapping[variantType] = mapping;
   });
@@ -239,37 +245,63 @@ const createReportSections = async (report, content, transaction) => {
  */
 const createReport = async (data) => {
   let template;
-  let project;
 
   try {
-    [template, project] = await Promise.all([
-      db.models.template.findOne({
-        where: {
-          name: {
-            [Op.iLike]: data.template,
-          },
+    template = await db.models.template.findOne({
+      where: {
+        name: {
+          [Op.iLike]: data.template,
         },
-      }),
-      db.models.project.findOne({
-        where: {
-          name: {
-            [Op.iLike]: data.project.trim(),
-          },
-        },
-      }),
-    ]);
+      },
+    });
   } catch (error) {
-    throw new Error(`Error while trying to find template ${data.template} and/or project ${data.project} with error ${error.message || error}`);
+    throw new Error(`Error while trying to find template ${data.template} with error ${error.message || error}`);
   }
 
   if (!template) {
     throw new Error(`Template ${data.template} doesn't currently exist`);
   }
 
-  if (!project) {
-    throw new Error(`Project ${data.project} doesn't currently exist`);
+  const allProjects = [];
+  if (!data.additionalProjects) {
+    data.additionalProjects = [];
   }
 
+  allProjects.push(
+    {
+      project: await db.models.project.findOne({
+        where: {
+          name: {
+            [Op.iLike]: data.project.trim(),
+          },
+        },
+      }),
+      additionalProject: false,
+    },
+  );
+
+  for (const projectName of data.additionalProjects) {
+    allProjects.push(
+      {
+        project: await db.models.project.findOne({
+          where: {
+            name: {
+              [Op.iLike]: projectName.trim(),
+            },
+          },
+        }),
+        additionalProject: true,
+      },
+    );
+  }
+
+  if (allProjects.filter(
+    (e) => {
+      return e.project === null;
+    },
+  ).length > 0) {
+    throw new Error('Error while trying to find one or more projects, name not found');
+  }
   // Set template id
   data.templateId = template.id;
 
@@ -286,14 +318,20 @@ const createReport = async (data) => {
   }
 
   // find or create report-project association
-  try {
-    const reportProjectData = {reportId: report.id, project_id: project.id};
-    await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData, transaction});
-  } catch (error) {
-    await transaction.rollback();
-    throw new Error(`Unable to find or create report-project association ${error.message || error}`);
-  }
+  for (const projectEntry of allProjects) {
+    try {
+      const reportProjectData = {
+        reportId: report.id,
+        project_id: projectEntry.project.id,
+        additionalProject: projectEntry.additionalProject,
+      };
 
+      await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData, transaction});
+    } catch (error) {
+      await transaction.rollback();
+      throw new Error(`Unable to find or create report-project association ${error.message || error}`);
+    }
+  }
   // Create report sections
   try {
     await createReportSections(report, data, transaction);

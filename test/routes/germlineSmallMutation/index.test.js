@@ -11,11 +11,16 @@ const {username, password} = CONFIG.get('testing');
 
 const BASE_URI = '/api/germline-small-mutation-reports';
 
+jest.mock('../../../app/middleware/auth.js');
+
 let server;
 let request;
 let testUser;
 
 const mockData = require('../../testData/mockGermlineReportData.json');
+
+const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
+const AUTHORIZED_GROUP = 'Non-Production Access';
 
 const CREATE_DATA = {
   normalLibrary: 'test library',
@@ -63,6 +68,12 @@ const checkGermlineReports = (reports) => {
   });
 };
 
+const hasNonProdReport = (reports) => {
+  return reports.some((report) => {
+    return report.state === 'nonproduction';
+  });
+};
+
 // Template of a GET all reports query for tests
 const checkGermlineReportList = expect.objectContaining({
   total: expect.any(Number),
@@ -83,6 +94,11 @@ beforeAll(async () => {
 
 describe('/germline-small-mutation-reports', () => {
   let report;
+  let nonProdReport;
+
+  let realProject;
+  let fakeProject;
+
   const reports = [];
   const projects = [];
 
@@ -95,13 +111,13 @@ describe('/germline-small-mutation-reports', () => {
     reports.push(report);
 
     // Create projects
-    const fakeProject = await db.models.project.create({
+    fakeProject = await db.models.project.create({
       name: 'Fake project',
     });
 
     projects.push(fakeProject);
 
-    const realProject = await db.models.project.create({
+    realProject = await db.models.project.create({
       name: 'Real project',
     });
 
@@ -185,6 +201,27 @@ describe('/germline-small-mutation-reports', () => {
     await db.models.germlineSmallMutationReview.create({
       reviewerId: testUser.id,
       germlineReportId: report5.id,
+      type: 'biofx',
+    });
+
+    nonProdReport = await db.models.germlineSmallMutation.create({
+      ...CREATE_DATA,
+      biofxAssignedId: testUser.id,
+      patientId: 'Admin001',
+      biopsyName: 'sample002',
+      state: 'nonproduction',
+    });
+
+    reports.push(nonProdReport);
+
+    await db.models.germlineReportsToProjects.create({
+      germlineReportId: nonProdReport.id,
+      projectId: realProject.id,
+    });
+
+    await db.models.germlineSmallMutationReview.create({
+      reviewerId: testUser.id,
+      germlineReportId: nonProdReport.id,
       type: 'biofx',
     });
   });
@@ -317,6 +354,42 @@ describe('/germline-small-mutation-reports', () => {
       ]));
     });
 
+    test('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: realProject.name, ident: realProject.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReports(res.body.reports);
+      expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
+    });
+
+    test('/ - 200 GET non-production reports with authorized group', async () => {
+      // CacheKey variable added in order to not trigger the cache.
+      // Cache is being triggered by mocking the permissions,
+      // Making it hard for the api to differenciate queries
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [
+            {name: realProject.name, ident: realProject.ident},
+          ],
+          cacheKey: '00',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReports(res.body.reports);
+      expect(hasNonProdReport(res.body.reports)).toBeTruthy();
+    });
+
     test('/{gsm_report} - 200 Success', async () => {
       const res = await request
         .get(`${BASE_URI}/${report.ident}`)
@@ -326,6 +399,32 @@ describe('/germline-small-mutation-reports', () => {
 
       checkGermlineReport(res.body);
       expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
+    });
+
+    test('/{gsm_report} - error on non-production ident with wrong group', async () => {
+      await request
+        .get(`${BASE_URI}/${nonProdReport.ident}`)
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: realProject.name, ident: realProject.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('/{gsm_report} - allow query with correct group', async () => {
+      const res = await request
+        .get(`${BASE_URI}/${nonProdReport.ident}`)
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: realProject.name, ident: realProject.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkGermlineReport(res.body);
     });
   });
 

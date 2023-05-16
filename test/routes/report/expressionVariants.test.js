@@ -7,6 +7,8 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
+const LONGER_TIMEOUT = 50000;
+
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
@@ -14,126 +16,179 @@ const {username, password} = CONFIG.get('testing');
 let server;
 let request;
 
+const UPDATE_DATA = {
+  comments: 'New comments',
+};
+
+const expressionVariantProperties = ['ident', 'gene', 'location', 'rnaReads', 'rpkm', 'tpm',
+  'expressionState', 'diseasePercentile', 'diseasekIQR',
+  'diseaseQC', 'diseaseFoldChange', 'diseaseZScore', 'primarySitePercentile',
+  'primarySitekIQR', 'primarySiteQC', 'primarySiteFoldChange', 'primarySiteZScore',
+  'biopsySitePercentile', 'biopsySitekIQR',
+  'biopsySiteQC', 'biopsySiteFoldChange', 'biopsySiteZScore',
+  'internalPancancerPercentile', 'internalPancancerkIQR', 'internalPancancerQC',
+  'internalPancancerFoldChange', 'internalPancancerZScore', 'kbCategory', 'germline',
+  'library', 'comments', 'gene'];
+
+const checkExpressionVariant = (variantObject) => {
+  expressionVariantProperties.forEach((element) => {
+    expect(variantObject).toHaveProperty(element);
+  });
+  expect(variantObject).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    reportId: expect.any(Number),
+    deletedAt: expect.any(String),
+    geneId: expect.any(Number),
+  }));
+};
+
+const checkExpressionVariants = (variants) => {
+  variants.forEach((variant) => {
+    checkExpressionVariant(variant);
+  });
+};
+
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
   request = supertest(server);
 });
 
-describe('/expression-variants', () => {
+describe('/reports/{report}/expression-variants', () => {
   let report;
   let variant;
 
   beforeAll(async () => {
-    // find a variant (any variant)
-    variant = await db.models.expressionVariants.findOne({
-      attributes: ['id', 'ident', 'reportId'],
-      include: [
-        {model: db.models.genes.scope('minimal'), as: 'gene'},
-        {
-          model: db.models.report,
-          as: 'report',
-          attributes: ['ident', 'id'],
-          required: true,
-        },
-      ],
-      where: {deletedAt: null},
+    // Create report, gene and expression variant
+    // Get genomic template
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
+    // Create Report
+    report = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'TESTPATIENT1234',
     });
 
-    expect(variant).toHaveProperty('id');
-    expect(variant).toHaveProperty('ident');
-    expect(variant).toHaveProperty('reportId');
-    expect(variant).toHaveProperty('gene');
-    expect(variant).toHaveProperty('internalPancancerPercentile');
-    expect(variant).toHaveProperty('internalPancancerkIQR');
-    expect(variant).toHaveProperty('internalPancancerQC');
-    expect(variant).toHaveProperty('internalPancancerFoldChange');
-    expect(variant).toHaveProperty('internalPancancerZScore');
-    expect(typeof variant.gene).toBe('object');
-
-    expect(variant.id).not.toBe(null);
-    expect(variant.ident).not.toBe(null);
-    expect(variant.reportId).not.toBe(null);
-
-    // find report from variant
-    // *Note: There shouldn't be an issue with finding
-    // a deleted report because even on soft-delete
-    // the variant should be soft-deleted too*
-    report = await db.models.report.findOne({
-      attributes: ['ident', 'id'],
-      where: {id: variant.reportId, deletedAt: null},
+    const gene = await db.models.genes.create({
+      reportId: report.id,
+      name: 'Fake Gene',
     });
 
-    expect(report).toHaveProperty('id');
-    expect(report).toHaveProperty('ident');
-    expect(report.id).not.toBe(null);
-    expect(report.ident).not.toBe(null);
+    variant = await db.models.expressionVariants.create({
+      reportId: report.id,
+      geneId: gene.id,
+      expressionState: 'State',
+    });
+
+    await db.models.kbMatches.create({
+      reportId: report.id,
+      category: 'therapeutic',
+      variantType: 'exp',
+      variantId: variant.id,
+    });
   });
 
-  describe('tests dependent on existing expression variants', () => {
-    describe('GET', () => {
-      test('all expression variants for a report', async () => {
-        let {body: results} = await request
-          .get(`/api/reports/${report.ident}/expression-variants`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
-        expect(Array.isArray(results)).toBe(true);
+  describe('GET', () => {
+    test('/ - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/expression-variants`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-        // make sure results is 5 entries or less
-        results = results.slice(0, 5);
+      expect(Array.isArray(res.body)).toBe(true);
 
-        // verify all returned variants
-        for (const result of results) {
-          expect(result).toHaveProperty('ident');
-          expect(result).toHaveProperty('gene');
-          expect(typeof result.gene).toBe('object');
+      checkExpressionVariants(res.body);
+      expect(res.body.length).toBeGreaterThan(0);
 
-          expect(result.gene).toHaveProperty('copyVariants');
-          expect(result.gene).not.toHaveProperty('expressionVariants');
+      const [record] = res.body;
 
-          expect(result).toHaveProperty('kbMatches');
-          expect(Array.isArray(result.kbMatches)).toBe(true);
+      expect(record).toHaveProperty('kbMatches');
+      expect(Array.isArray(record.kbMatches)).toBe(true);
+    }, LONGER_TIMEOUT);
 
-          expect(variant).toHaveProperty('internalPancancerPercentile');
-          expect(variant).toHaveProperty('internalPancancerkIQR');
-          expect(variant).toHaveProperty('internalPancancerQC');
-          expect(variant).toHaveProperty('internalPancancerFoldChange');
-          expect(variant).toHaveProperty('internalPancancerZScore');
+    test('/{expressionVariant} - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/expression-variants/${variant.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-          expect(result).not.toHaveProperty('id');
-          expect(result).not.toHaveProperty('reportId');
-          expect(result).not.toHaveProperty('geneId');
-          expect(result).not.toHaveProperty('deletedAt');
-        }
+      checkExpressionVariant(res.body);
+    });
+  });
+
+  describe('PUT', () => {
+    let expressionVariantUpdate;
+
+    beforeEach(async () => {
+      const gene = await db.models.genes.create({
+        reportId: report.id,
+        name: 'Fake Update Gene',
       });
 
-      test('a single expression variant by ident', async () => {
-        const {body: result} = await request
-          .get(`/api/reports/${report.ident}/expression-variants/${variant.ident}`)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.OK);
-        expect(result).toHaveProperty('ident', variant.ident);
-        expect(result).toHaveProperty('gene', variant.gene.dataValues);
-        expect(result).toHaveProperty('internalPancancerPercentile');
-        expect(result).toHaveProperty('internalPancancerkIQR');
-        expect(result).toHaveProperty('internalPancancerQC');
-        expect(result).toHaveProperty('internalPancancerFoldChange');
-        expect(result).toHaveProperty('internalPancancerZScore');
-
-        expect(typeof result.gene).toBe('object');
-
-        expect(result).not.toHaveProperty('kbMatches');
-        expect(result.gene).not.toHaveProperty('copyVariants');
-        expect(result.gene).not.toHaveProperty('expressionVariants');
-
-        expect(result).not.toHaveProperty('id');
-        expect(result).not.toHaveProperty('reportId');
-        expect(result).not.toHaveProperty('geneId');
-        expect(result).not.toHaveProperty('deletedAt');
+      expressionVariantUpdate = await db.models.expressionVariants.create({
+        reportId: report.id,
+        geneId: gene.id,
+        expressionState: 'State',
       });
     });
+
+    afterEach(async () => {
+      await db.models.expressionVariants.destroy({
+        where: {ident: expressionVariantUpdate.ident}, force: true,
+      });
+    });
+
+    test('/{expressionVariant} - 200 Success', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}/expression-variants/${expressionVariantUpdate.ident}`)
+        .send(UPDATE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkExpressionVariant(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
+    });
+  });
+
+  describe('DELETE', () => {
+    let expressionVariantDelete;
+
+    beforeEach(async () => {
+      const gene = await db.models.genes.create({
+        reportId: report.id,
+        name: 'Fake Delete Gene',
+      });
+
+      expressionVariantDelete = await db.models.expressionVariants.create({
+        reportId: report.id,
+        geneId: gene.id,
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.expressionVariants.destroy({
+        where: {ident: expressionVariantDelete.ident}, force: true,
+      });
+    });
+
+    test('/{expressionVariant} - 204 No content', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/expression-variants/${expressionVariantDelete.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Check that entry was soft deleted
+      const result = db.models.expressionVariants.findOne({where: {ident: expressionVariantDelete.ident}, paranoid: false});
+      expect(result.deletedAt).not.toBeNull();
+    });
+  });
+
+  afterAll(async () => {
+    // Destroy report and all it's components
+    await db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 

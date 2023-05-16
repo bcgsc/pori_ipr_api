@@ -2,6 +2,7 @@ name: Lint
 
 on:
   - push
+  - workflow_dispatch
 
 jobs:
   eslint:

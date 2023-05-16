@@ -18,7 +18,15 @@ const createSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
 });
 const updateSchema = schemaGenerator(db.models.germlineSmallMutationVariant, {
   baseUri: GERMLINE_UPDATE_BASE_URI,
-  include: ['hidden', 'patientHistory', 'familyHistory'],
+  include: ['hidden',
+    'patientHistory',
+    'familyHistory',
+    'cglReviewResult',
+    'returnedToClinician',
+    'referralHcp',
+    'knownToHcp',
+    'reasonNoHcpReferral',
+    'hgvsCdna'],
   nothingRequired: true,
 });
 

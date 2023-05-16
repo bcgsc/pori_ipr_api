@@ -207,6 +207,26 @@ analysisReports.hasMany(immuneCellTypes, {
   as: 'immuneCellTypes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+// MSI
+const msi = require('./reports/msi')(sequelize, Sq);
+
+analysisReports.hasMany(msi, {
+  as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+msi.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// Tmbur Mutation Burden
+const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
+
+analysisReports.hasOne(tmburMutationBurden, {
+  as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+tmburMutationBurden.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Copy Number Analysis
 const copyVariants = require('./reports/copyVariants')(sequelize, Sq);
 
@@ -421,16 +441,6 @@ mutationBurden.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-// Tmbur Mutation Burden
-const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
-
-analysisReports.hasOne(tmburMutationBurden, {
-  as: 'tmburMutationBurden', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
-tmburMutationBurden.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-
 // Comparators
 const comparators = require('./reports/comparators')(sequelize, Sq);
 
@@ -438,16 +448,6 @@ analysisReports.hasMany(comparators, {
   as: 'comparators', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 comparators.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-
-// MSI
-const msi = require('./reports/msi')(sequelize, Sq);
-
-analysisReports.hasMany(msi, {
-  as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 

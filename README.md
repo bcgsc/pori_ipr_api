@@ -1,6 +1,6 @@
 # Integrated Pipeline Reports (IPR) API
 
-![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-14%20%7C%2016-blue) [![postgres versions](https://img.shields.io/badge/postgres-9.6%20-blue)](https://www.orientdb.org/) [![DOI](https://zenodo.org/badge/322391719.svg)](https://zenodo.org/badge/latestdoi/322391719)
+![centos build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/IPR-API) ![build](https://github.com/bcgsc/pori_ipr_api/workflows/build/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bcgsc/pori_ipr_api/branch/master/graph/badge.svg?token=9043E24BZR)](https://codecov.io/gh/bcgsc/pori_ipr_api) ![node versions](https://img.shields.io/badge/node-14%20%7C%2016-blue) [![postgres versions](https://img.shields.io/badge/postgres-11%20-blue)](https://www.orientdb.org/) [![DOI](https://zenodo.org/badge/322391719.svg)](https://zenodo.org/badge/latestdoi/322391719)
 
 
 IPR is part of the [platform for oncogenomic reporting and interpretation](https://github.com/bcgsc/pori).
@@ -75,6 +75,12 @@ export IPR_DATABASE_PASSWORD=someDbPassword
 export IPR_TESTING_PASSWORD=someApiPassword
 npm run test
 ```
+
+### Common problems
+#### Cache:
+While developing or running tests you might notice that changes that are done to the code are not being reflected in the API response. Or, you might notice that tests are returning not expected results. It might be worth checking if it's a cache issue.
+
+In that case, you can comment out the cache code when testing manually. For unit tests, you can modify the query in order to avoid triggering the cache see [example](./test/routes/germlineSmallMutation/index.test.js?plain=1#L383).
 
 ## Generating JSDocs
 

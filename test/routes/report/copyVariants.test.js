@@ -29,13 +29,14 @@ const UPDATE_DATA = {
   cna: '10',
   germline: true,
   library: 'Updated library',
+  comments: 'New comments',
 };
 
 const copyVariantProperties = [
   'ident', 'createdAt', 'updatedAt', 'copyChange',
   'lohState', 'cnvState', 'chromosomeBand', 'start',
   'end', 'size', 'kbCategory', 'log2Cna', 'cna', 'gene',
-  'germline', 'library',
+  'germline', 'library', 'comments',
 ];
 
 const checkCopyVariant = (variantObject) => {
@@ -129,7 +130,7 @@ describe('/reports/{report}/copy-variants', () => {
     let copyVariantUpdate;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Update Gene',
       });
@@ -163,7 +164,7 @@ describe('/reports/{report}/copy-variants', () => {
     let copyVariantDelete;
 
     beforeEach(async () => {
-      const gene = await await db.models.genes.create({
+      const gene = await db.models.genes.create({
         reportId: report.id,
         name: 'Fake Delete Gene',
       });

@@ -10,6 +10,10 @@ module.exports = (sequelize, Sq) => {
         schema: {type: 'string', minLength: 2},
       },
     },
+    description: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'projects',

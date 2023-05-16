@@ -1,9 +1,10 @@
 const HTTP_STATUS = require('http-status-codes');
-const {Op} = require('sequelize');
+const {Op, literal} = require('sequelize');
 const express = require('express');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
 const {GERMLINE_UPDATE_BASE_URI} = require('../../constants');
 const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 
@@ -118,6 +119,13 @@ router.route('/')
       offset: parseInt(offset, 10) || DEFAULT_PAGE_OFFSET,
       limit: parseInt(limit, 10) || DEFAULT_PAGE_LIMIT,
     };
+
+    if (!hasAccessToNonProdReports(req.user)) {
+      opts.where = {
+        ...opts.where,
+        state: {[Op.is]: literal('distinct from \'nonproduction\'')},
+      };
+    }
 
     // See if filtering reports bassed on project
     if (project) {

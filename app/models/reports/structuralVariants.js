@@ -115,6 +115,19 @@ module.exports = (sequelize, Sq) => {
       field: 'tumour_depth',
       type: Sq.INTEGER,
     },
+    rnaAltCount: {
+      name: 'rnaAltCount',
+      field: 'rna_alt_count',
+      type: Sq.INTEGER,
+    },
+    rnaDepth: {
+      name: 'rnaDepth',
+      field: 'rna_depth',
+      type: Sq.INTEGER,
+    },
+    comments: {
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_structural_variants',

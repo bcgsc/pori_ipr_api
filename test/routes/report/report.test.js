@@ -24,7 +24,7 @@ let request;
 const checkReport = (report) => {
   [
     'tumourContent', 'ploidy', 'subtyping', 'ident', 'patientId',
-    'sampleInfo', 'seqQC', 'reportVersion',
+    'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
     'kbUrl', 'pediatricIds',
@@ -65,12 +65,14 @@ describe('/reports/{REPORTID}', () => {
   const AUTHORIZED_GROUP = 'Non-Production Access';
 
   let project;
+  let project2;
   let report;
   let reportReady;
   let reportReviewed;
   let reportArchived;
   let reportNonProduction;
   let totalReports;
+  let reportDualProj;
 
   beforeEach(async () => {
     // Get genomic template
@@ -81,11 +83,17 @@ describe('/reports/{REPORTID}', () => {
         name: 'TEST',
       },
     });
+    [project2] = await db.models.project.findOrCreate({
+      where: {
+        name: 'TEST2',
+      },
+    });
 
     report = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
       tumourContent: 100,
+      m1m2Score: 22.5,
     });
     await db.models.reportProject.create({
       reportId: report.id,
@@ -130,6 +138,21 @@ describe('/reports/{REPORTID}', () => {
     await db.models.reportProject.create({
       reportId: reportArchived.id,
       project_id: project.id,
+    });
+
+    reportDualProj = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+    });
+    await db.models.reportProject.create({
+      reportId: reportDualProj.id,
+      project_id: project.id,
+      additionalProject: false,
+    });
+    await db.models.reportProject.create({
+      reportId: reportDualProj.id,
+      project_id: project2.id,
+      additionalProject: true,
     });
 
     totalReports = await db.models.report.count();
@@ -184,6 +207,25 @@ describe('/reports/{REPORTID}', () => {
 
       checkReports(res.body.reports);
       expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 GET report if have additional report permission', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: project2.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(res.body.reports.filter(
+        (e) => {
+          return e.ident === reportDualProj.ident;
+        },
+      ).length > 0).toBeTruthy();
     }, LONGER_TIMEOUT);
 
     // Test GET with limit
@@ -340,6 +382,20 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
+    test('fetches additional project permission ok', async () => {
+      const res = await request
+        .get(`/api/reports/${reportDualProj.ident}`)
+        .query({
+          groups: [{name: AUTHORIZED_GROUP}],
+          projects: [{name: project2.name, ident: project2.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+    });
+
     test('fetches non-production ident with group OK', async () => {
       const res = await request
         .get(`/api/reports/${reportNonProduction.ident}`)
@@ -434,6 +490,22 @@ describe('/reports/{REPORTID}', () => {
 
       checkReport(res.body);
       expect(res.body).toHaveProperty('tumourContent', 23.2);
+    });
+
+    describe('PUT', () => {
+      test('M1M2 Score update OK', async () => {
+        const res = await request
+          .put(`/api/reports/${report.ident}`)
+          .auth(username, password)
+          .type('json')
+          .send({
+            m1m2Score: 98.5,
+          })
+          .expect(HTTP_STATUS.OK);
+
+        checkReport(res.body);
+        expect(res.body).toHaveProperty('m1m2Score', 98.5);
+      });
     });
 
     test('ploidy update OK', async () => {

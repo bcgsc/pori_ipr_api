@@ -25,6 +25,13 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
+      additionalProject: {
+        type: Sq.BOOLEAN,
+        unique: false,
+        defaultValue: false,
+        allowNull: false,
+        field: 'additional_project',
+      },
     },
     {
       ...DEFAULT_MAPPING_OPTIONS,
