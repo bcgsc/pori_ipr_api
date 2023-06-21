@@ -6,10 +6,8 @@ const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
-const {generateKey} = require('../../libs/cacheFunctions');
 const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
