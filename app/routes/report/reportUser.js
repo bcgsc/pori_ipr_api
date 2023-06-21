@@ -8,6 +8,7 @@ const router = express.Router({mergeParams: true});
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const sendEmail = require('../../libs/email');
 const {REPORT_CREATE_BASE_URI} = require('../../constants');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
@@ -128,6 +129,14 @@ router.route('/')
         role,
         addedBy_id: req.user.id,
       });
+
+      // Try sending email
+      try {
+        sendEmail();
+        logger.info('Email sent successfully');
+      } catch (error) {
+        logger.error(`Email not sent successfully: ${error}`);
+      }
 
       await req.report.reload();
       return res.status(HTTP_STATUS.CREATED).json(req.report.view('public'));

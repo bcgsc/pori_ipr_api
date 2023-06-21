@@ -45,6 +45,10 @@ router.param('report', reportMiddleware);
 
 router.route('/:report')
   .get((req, res) => {
+    const sendEmail = require('../../libs/email');
+
+    sendEmail();
+
     return res.json(req.report.view('public'));
   })
   .put(async (req, res) => {
@@ -177,7 +181,7 @@ router.route('/')
         ...((states) ? {state: states} : {}),
         ...((searchText) ? {
           [Op.or]: [
-            {'$patientInformation.diagnosis$': {[Op.iLike]: `%${searchText}%`}},
+            {'$patientInformation.dia\gnosis$': {[Op.iLike]: `%${searchText}%`}},
             {'$patientInformation.biopsySite$': {[Op.iLike]: `%${searchText}%`}},
             {'$patientInformation.physician$': {[Op.iLike]: `%${searchText}%`}},
             {'$patientInformation.caseType$': {[Op.iLike]: `%${searchText}%`}},
