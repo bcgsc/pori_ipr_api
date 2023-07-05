@@ -10,7 +10,7 @@ const logger = require('../../log');
 const {KB_PIVOT_MAPPING} = require('../../constants');
 
 const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy'];
-const MUTATION_REGEX = '^([^\\s]+)(\\s)mutation[s]?$';
+const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
 
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({

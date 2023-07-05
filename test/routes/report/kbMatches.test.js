@@ -46,6 +46,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let variant;
   let kbMatch;
   let createData;
+  let createDataFilteringTest;
 
   beforeAll(async () => {
     // Get genomic template
@@ -69,9 +70,19 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantId: variant.id,
       category: 'unknown',
       variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+    };
+
+    createDataFilteringTest = {
+      reportId: report.id,
+      variantId: variant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-B',
     };
 
     kbMatch = await db.models.kbMatches.create(createData);
+    await db.models.kbMatches.create(createDataFilteringTest);
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -84,6 +95,19 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       checkKbMatch(res.body[0]);
+    });
+
+    test('Filtering kb-matches is ok', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/kb-matches`)
+        .query({iprEvidenceLevel: 'IPR-A,IPR-C'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkKbMatch(res.body[0]);
+      res.body.every((match) => {return expect(match.iprEvidenceLevel).toEqual('IPR-A');});
     });
 
     test('Getting a specific kb-match is ok', async () => {
