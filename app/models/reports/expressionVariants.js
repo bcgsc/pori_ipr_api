@@ -179,6 +179,11 @@ module.exports = (sequelize, Sq) => {
     comments: {
       type: Sq.TEXT,
     },
+    displayName: {
+      name: 'displayName',
+      field: 'display_name',
+      type: Sq.TEXT,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_expression_variants',
