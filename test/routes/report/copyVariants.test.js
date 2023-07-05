@@ -30,13 +30,14 @@ const UPDATE_DATA = {
   germline: true,
   library: 'Updated library',
   comments: 'New comments',
+  displayName: 'New display name',
 };
 
 const copyVariantProperties = [
   'ident', 'createdAt', 'updatedAt', 'copyChange',
   'lohState', 'cnvState', 'chromosomeBand', 'start',
   'end', 'size', 'kbCategory', 'log2Cna', 'cna', 'gene',
-  'germline', 'library', 'comments',
+  'germline', 'library', 'comments', 'displayName',
 ];
 
 const checkCopyVariant = (variantObject) => {

@@ -18,13 +18,14 @@ let request;
 
 const UPDATE_DATA = {
   comments: 'New comments',
+  displayName: 'New display name',
 };
 
 const structuralVariantProperties = ['exon1', 'exon2', 'breakpoint', 'eventType', 'detectedIn',
   'conventionalName', 'svg', 'svgTitle', 'name', 'frame', 'ctermGene',
   'ntermGene', 'ctermTranscript', 'ntermTranscript', 'omicSupport',
   'highQuality', 'germline', 'library', 'tumourAltCount',
-  'tumourDepth', 'rnaAltCount', 'rnaDepth', 'comments', 'gene1', 'gene2'];
+  'tumourDepth', 'rnaAltCount', 'rnaDepth', 'comments', 'displayName', 'gene1', 'gene2'];
 
 const checkStructuralVariant = (variantObject) => {
   structuralVariantProperties.forEach((element) => {
