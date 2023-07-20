@@ -2,24 +2,30 @@ const {DEFAULT_MAPPING_COLUMNS, DEFAULT_MAPPING_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   return sequelize.define(
-    'userProject',
+    'projectUserNotification',
     {
       ...DEFAULT_MAPPING_COLUMNS,
-      user_id: {
+      userId: {
         type: Sq.INTEGER,
+        name: 'userId',
+        field: 'user_id',
         unique: false,
         references: {
           model: 'users',
           key: 'id',
         },
       },
-      event_type: {
+      eventType: {
+        name: 'eventType',
+        field: 'event_type',
         type: Sq.STRING,
         unique: false,
         allowNull: false,
       },
-      project_id: {
+      projectId: {
         type: Sq.INTEGER,
+        name: 'projectId',
+        field: 'project_id',
         unique: false,
         allowNull: false,
         references: {
@@ -27,8 +33,10 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
-      template_id: {
+      templateId: {
         type: Sq.INTEGER,
+        name: 'templateId',
+        field: 'template_id',
         unique: false,
         references: {
           model: 'templates',
