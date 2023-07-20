@@ -27,6 +27,14 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
+      template_id: {
+        type: Sq.INTEGER,
+        unique: false,
+        references: {
+          model: 'templates',
+          key: 'id',
+        },
+      },
     },
     {
       ...DEFAULT_MAPPING_OPTIONS,
