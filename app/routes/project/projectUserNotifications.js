@@ -73,10 +73,6 @@ router.route('/')
         projectId: req.project.id, userId: user.id, eventType: req.body.event_type, templateId: template.id
       });
 
-      logger.info(user.username);
-      logger.info(req.project.name);
-      logger.info(template.name);
-      logger.info(req.body.event_type);
       const output = {
         user: user.username,
         project: req.project.name,
@@ -95,48 +91,36 @@ router.route('/')
     }
   })
   .delete(async (req, res) => {
-    let user;
+    let projectUserNotification;
     try {
-      user = await db.models.user.findOne({
-        where: { ident: req.body.user },
-        attributes: ['id', 'ident'],
+      projectUserNotification = await db.models.projectUserNotification.findOne({
+        where: { id: req.body.projectUserNotification },
+        attributes: ['id'],
       });
     } catch (error) {
-      logger.error(`Error while trying to find user ${error}`);
+      logger.error(`Error while trying to find project user notification ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: { message: 'Error while trying to find user' },
+        error: { message: 'Error while trying to find project user notification' },
       });
     }
 
-    if (!user) {
-      logger.error(`Unable to find user ${req.body.user}`);
+    if (!projectUserNotification) {
+      logger.error(`Unable to find project user notification ${req.body.user}`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: { message: 'Unable to find the provided user' },
+        error: { message: 'Unable to find the provided project user notification' },
       });
     }
 
     try {
-      // Find user binding
-      const binding = await db.models.userProject.findOne({
-        where: { project_id: req.project.id, user_id: user.id },
-      });
-
-      if (!binding) {
-        logger.error('User is not bound to project');
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({
-          error: { message: 'User is not bound to project' },
-        });
-      }
-
-      // Remove user binding
-      await binding.destroy();
+      await projectUserNotifiation.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
-      logger.error(`Error while removing user from project ${error}`);
+      logger.error(`Error while deleting project user notification ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: { message: 'Error while removing user from project' },
+        error: {message: 'Error while deleting project user notification'},
       });
     }
+
   });
 
 module.exports = router;
