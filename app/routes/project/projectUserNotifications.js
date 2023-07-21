@@ -8,8 +8,7 @@ const router = express.Router({ mergeParams: true });
 
 router.route('/')
   .get((req, res) => {
-    logger.info('test');
-    return res.json(req.project.userNotification);
+    return res.json(req.project.projectUserNotifications);
   })
   .post(async (req, res) => {
     let user;
@@ -74,6 +73,7 @@ router.route('/')
       });
 
       const output = {
+        id: result.id,
         user: user.username,
         project: req.project.name,
         template: template.name,
