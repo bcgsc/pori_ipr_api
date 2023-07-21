@@ -1,10 +1,10 @@
-const {DEFAULT_MAPPING_COLUMNS, DEFAULT_MAPPING_OPTIONS} = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   return sequelize.define(
     'projectUserNotification',
     {
-      ...DEFAULT_MAPPING_COLUMNS,
+      ...DEFAULT_COLUMNS,
       userId: {
         type: Sq.INTEGER,
         name: 'userId',
@@ -45,7 +45,7 @@ module.exports = (sequelize, Sq) => {
       },
     },
     {
-      ...DEFAULT_MAPPING_OPTIONS,
+      ...DEFAULT_OPTIONS,
       tableName: 'project_user_notifications',
     },
   );
