@@ -2,7 +2,7 @@ const { addUniqueActiveFieldIndex } = require('../migrationTools/index');
 
 const USERNOTIFICATIONS = 'project_user_notifications';
 const USERGROUPNOTIFICATIONS = 'project_user_group_notifications';
-const { DEFAULT_MAPPING_COLUMNS } = require('../app/models/base');
+const { DEFAULT_COLUMNS } = require('../app/models/base');
 
 module.exports = {
     up: (queryInterface, Sq) => {
@@ -10,7 +10,7 @@ module.exports = {
         return queryInterface.sequelize.transaction(async (transaction) => {
             // Remove all deleted tmbur entries and create new tmbur_mutation_burden table
             await queryInterface.createTable(USERNOTIFICATIONS, {
-                ...DEFAULT_MAPPING_COLUMNS,
+                ...DEFAULT_COLUMNS,
                 projectId: {
                     name: 'projectId',
                     field: 'project_id',
@@ -56,7 +56,7 @@ module.exports = {
             }, { transaction });
 
             await queryInterface.createTable(USERGROUPNOTIFICATIONS, {
-                ...DEFAULT_MAPPING_COLUMNS,
+                ...DEFAULT_COLUMNS,
                 projectId: {
                     name: 'projectId',
                     field: 'project_id',
