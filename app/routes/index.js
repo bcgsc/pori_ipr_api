@@ -25,7 +25,7 @@ const germlineReportsExport = require('./germlineSmallMutation/export.download')
 const graphkbRouter = require('./graphkb');
 const reportSections = require('./report');
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({mergeParams: true});
 
 class Routing extends RouterInterface {
   /**

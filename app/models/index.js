@@ -473,6 +473,7 @@ template.hasMany(analysisReports, {
 
 // Project User Notification (Template optional)
 const projectUserNotification = require('./project/projectUserNotification')(sequelize, Sq);
+
 user.hasMany(projectUserNotification, {
   as: 'projectUserNotifications', foreignKey: 'userId', onDelete: 'CASCADE', constraints: true,
 });
@@ -494,6 +495,7 @@ projectUserNotification.belongsTo(project, {
 
 // Project User Group Notification (Template optional)
 const projectUserGroupNotification = require('./project/projectUserGroupNotification')(sequelize, Sq);
+
 userGroup.hasMany(projectUserGroupNotification, {
   as: 'projectUserGroupNotifications', foreignKey: 'userGroupId', onDelete: 'CASCADE', constraints: true,
 });
@@ -512,7 +514,6 @@ projectUserGroupNotification.belongsTo(user, {
 projectUserGroupNotification.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-
 
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);

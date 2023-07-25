@@ -41,7 +41,7 @@ module.exports = (sequelize, Sq) => {
         references: {
           model: 'templates',
           key: 'id',
-        }
+        },
       },
     },
     {
