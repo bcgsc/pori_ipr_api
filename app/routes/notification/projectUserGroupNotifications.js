@@ -8,31 +8,31 @@ const router = express.Router({mergeParams: true});
 
 router.route('/')
   .get(async (req, res) => {
-    user_group_ident = req.body.user_group;
-    project_ident = req.body.project;
+    const userGroupIdent = req.body.user_group;
+    const projectIdent = req.body.project;
 
-    if (!user_group_ident && !project_ident) {
+    if (!userGroupIdent && !projectIdent) {
       logger.error('One of userGroup or project must be specified');
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Must specify user or project'}});
     }
 
     let userGroup;
-    if (user_group_ident) {
+    if (userGroupIdent) {
       userGroup = await db.models.userGroup.findOne({
         where: {ident: req.body.user_group},
       });
-      if (user_group_ident && !userGroup) {
+      if (userGroupIdent && !userGroup) {
         logger.error(`Unable to find userGroup ${req.body.user_group}`);
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user'}});
       }
     }
 
     let project;
-    if (project_ident) {
+    if (projectIdent) {
       project = await db.models.project.findOne({
         where: {ident: req.body.project},
       });
-      if (project_ident && !project) {
+      if (projectIdent && !project) {
         logger.error(`Unable to find project ${req.body.project}`);
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find project'}});
       }
@@ -89,6 +89,7 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user group'}});
     }
 
+    let template;
     if (req.body.template) {
       try {
         template = await db.models.template.findOne({
@@ -107,14 +108,29 @@ router.route('/')
     }
 
     try {
+      if (template) {
+        const result = await db.models.projectUserGroupNotification.create({
+          projectId: project.id, userGroupId: userGroup.id, eventType: req.body.event_type, templateId: template.id,
+        });
+        const output = {
+          ident: result.ident,
+          userGroup: userGroup.name,
+          project: project.name,
+          template: template.name,
+          eventType: req.body.event_type,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
+        };
+
+        return res.status(HTTP_STATUS.CREATED).json(output);
+      }
       const result = await db.models.projectUserGroupNotification.create({
-        projectId: project.id, userGroupId: userGroup.id, eventType: req.body.event_type, templateId: template.id,
+        projectId: project.id, userGroupId: userGroup.id, eventType: req.body.event_type,
       });
       const output = {
         ident: result.ident,
         userGroup: userGroup.name,
         project: project.name,
-        template: template.name,
         eventType: req.body.event_type,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,

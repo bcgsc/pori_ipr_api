@@ -8,31 +8,31 @@ const router = express.Router({mergeParams: true});
 
 router.route('/')
   .get(async (req, res) => {
-    user_ident = req.body.user;
-    project_ident = req.body.project;
+    const userIdent = req.body.user;
+    const projectIdent = req.body.project;
 
-    if (!user_ident && !project_ident) {
+    if (!userIdent && !projectIdent) {
       logger.error('One of user or project must be specified');
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Must specify user or project'}});
     }
 
     let user;
-    if (user_ident) {
+    if (userIdent) {
       user = await db.models.user.findOne({
         where: {ident: req.body.user},
       });
-      if (user_ident && !user) {
+      if (userIdent && !user) {
         logger.error(`Unable to find user ${req.body.user}`);
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user'}});
       }
     }
 
     let project;
-    if (project_ident) {
+    if (projectIdent) {
       project = await db.models.project.findOne({
         where: {ident: req.body.project},
       });
-      if (project_ident && !project) {
+      if (projectIdent && !project) {
         logger.error(`Unable to find user ${req.body.project}`);
         return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find project'}});
       }
@@ -92,6 +92,7 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user'}});
     }
 
+    let template;
     if (req.body.template) {
       try {
         template = await db.models.template.findOne({
@@ -130,20 +131,34 @@ router.route('/')
     }
 
     try {
+      if (template) {
+        const result = await db.models.projectUserNotification.create({
+          projectId: project.id, userId: user.id, eventType: req.body.event_type, templateId: template.id,
+        });
+
+        const output = {
+          ident: result.ident,
+          user: user.username,
+          project: project.name,
+          template: template.name,
+          eventType: req.body.event_type,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
+        };
+        return res.status(HTTP_STATUS.CREATED).json(output);
+      }
       const result = await db.models.projectUserNotification.create({
-        projectId: project.id, userId: user.id, eventType: req.body.event_type, templateId: template.id,
+        projectId: project.id, userId: user.id, eventType: req.body.event_type,
       });
 
       const output = {
         ident: result.ident,
         user: user.username,
         project: project.name,
-        template: template.name,
         eventType: req.body.event_type,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,
       };
-
       return res.status(HTTP_STATUS.CREATED).json(output);
     } catch (error) {
       logger.error(`Error while setting user notification for project ${error}`);
