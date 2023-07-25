@@ -8,12 +8,76 @@ const router = express.Router({ mergeParams: true });
 
 router.route('/')
   .get(async (req, res) => {
-    results = await db.models.projectUserNotification.findAll({
-      where: { project_id: req.project.id }
-    });
+    user_ident = req.body.user
+    project_ident = req.body.project
+
+    if (!user_ident && !project_ident) {
+      logger.error(`One of user or project must be specified`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Must specify user or project' } });
+    }
+
+    let user;
+    if (user_ident) {
+      user = await db.models.user.findOne({
+        where: { ident: req.body.user },
+      })
+      if (user_ident && !user) {
+        logger.error(`Unable to find user ${req.body.user}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find user' } });
+      }
+    }
+
+    let project;
+    if (project_ident) {
+      project = await db.models.project.findOne({
+        where: { ident: req.body.project },
+      })
+      if (project_ident && !project) {
+        logger.error(`Unable to find user ${req.body.project}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find project' } });
+      }
+    }
+
+    let results;
+    if (project && user) {
+      results = await db.models.projectUserNotification.findAll({
+        where: { project_id: project.id, user_id: user.id }
+      });
+    }
+    if (project && !user) {
+      results = await db.models.projectUserNotification.findAll({
+        where: { project_id: project.id }
+      });
+    }
+    if (!project && user) {
+      results = await db.models.projectUserNotification.findAll({
+        where: { user_id: user.id }
+      });
+    }
+
+
     return res.json(results);
+
   })
   .post(async (req, res) => {
+    let project;
+    try {
+      project = await db.models.project.findOne({
+        where: { ident: req.body.project },
+      });
+    } catch (error) {
+      logger.error(`Error while trying to find project ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: { message: 'Error while trying to find project' },
+      });
+    }
+
+    if (!project) {
+      logger.error(`Unable to find project ${req.body.project}`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find project' } });
+    }
+
+
     let user;
     try {
       user = await db.models.user.findOne({
@@ -52,7 +116,7 @@ router.route('/')
     let projectBinding;
     try {
       projectBinding = await db.models.userProject.findOne({
-        where: { user_id: user.id, project_id: req.project.id },
+        where: { user_id: user.id, project_id: project.id },
       });
     } catch (error) {
       logger.error(`Error while trying to find user-project binding ${error}`);
@@ -62,7 +126,7 @@ router.route('/')
     }
 
     if (!projectBinding) {
-      logger.error(`User ${user.ident} is not bound to project ${req.project.name} and can not receive notifications for it`);
+      logger.error(`User ${user.ident} is not bound to project ${project.name} and can not receive notifications for it`);
       return res.status(HTTP_STATUS.CONFLICT).json({
         error: { message: 'User is not bound to project and can not receive updates for it' },
       });
@@ -70,13 +134,13 @@ router.route('/')
 
     try {
       const result = await db.models.projectUserNotification.create({
-        projectId: req.project.id, userId: user.id, eventType: req.body.event_type, templateId: template.id
+        projectId: project.id, userId: user.id, eventType: req.body.event_type, templateId: template.id
       });
 
       const output = {
         ident: result.ident,
         user: user.username,
-        project: req.project.name,
+        project: project.name,
         template: template.name,
         eventType: req.body.event_type,
         createdAt: result.createdAt,
@@ -118,7 +182,7 @@ router.route('/')
     } catch (error) {
       logger.error(`Error while deleting project user notification ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Error while deleting project user notification'},
+        error: { message: 'Error while deleting project user notification' },
       });
     }
 
