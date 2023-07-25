@@ -9,7 +9,7 @@ const projectReports = require('./projectReports');
 const search = require('./search');
 const targets = require('./therapeuticTargets');
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({mergeParams: true});
 
 router.param('project', projectMiddleware);
 
