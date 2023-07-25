@@ -6,6 +6,8 @@ module.exports = (sequelize, Sq) => {
     {
       ...DEFAULT_COLUMNS,
       user_group_id: {
+        name: 'userGroup',
+        field: 'user_group',
         type: Sq.INTEGER,
         unique: false,
         references: {
@@ -14,11 +16,15 @@ module.exports = (sequelize, Sq) => {
         },
       },
       event_type: {
+        name: 'eventType',
+        field: 'event_type',
         type: Sq.STRING,
         unique: false,
         allowNull: false,
       },
       project_id: {
+        name: 'projectId',
+        field: 'project_id',
         type: Sq.INTEGER,
         unique: false,
         allowNull: false,
@@ -28,6 +34,8 @@ module.exports = (sequelize, Sq) => {
         },
       },
       template_id: {
+        name: 'templateId',
+        field: 'template_id',
         type: Sq.INTEGER,
         unique: false,
         references: {
