@@ -98,7 +98,6 @@ router.route('/')
         where: { ident: req.body.ident },
         attributes: ['id', 'ident'],
       });
-      logger.info(JSON.stringify(projectUserNotification));
     } catch (error) {
       logger.error(`Error while trying to find project user notification ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -114,7 +113,6 @@ router.route('/')
     }
 
     try {
-
       await projectUserNotification.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {

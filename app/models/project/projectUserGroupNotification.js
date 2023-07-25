@@ -7,8 +7,8 @@ module.exports = (sequelize, Sq) => {
       ...DEFAULT_COLUMNS,
       userGroupId: {
         type: Sq.INTEGER,
-        name: 'userGroup',
-        field: 'user_group',
+        name: 'userGroupId',
+        field: 'user_group_id',
         unique: false,
         references: {
           model: 'user_groups',

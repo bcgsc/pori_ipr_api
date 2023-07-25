@@ -17,7 +17,7 @@ router.route('/')
     let userGroup;
     try {
       userGroup = await db.models.userGroup.findOne({
-        where: { ident: req.body.userGroup },
+        where: { ident: req.body.user_group },
       });
     } catch (error) {
       logger.error(`Error while trying to find user group ${error}`);
@@ -50,7 +50,7 @@ router.route('/')
     }
 
     try {
-      const result = await db.models.projectUserNotification.create({
+      const result = await db.models.projectUserGroupNotification.create({
         projectId: req.project.id, userGroupId: userGroup.id, eventType: req.body.event_type, templateId: template.id
       });
 
@@ -86,7 +86,7 @@ router.route('/')
       });
     }
 
-    if (!projectUserNotification) {
+    if (!projectUserGroupNotification) {
       logger.error(`Unable to find project user group notification ${req.body.userGroup}`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: { message: 'Unable to find the provided project user group notification' },
