@@ -45,11 +45,6 @@ module.exports = async (req, res, next, ident) => {
           attributes: ['ident', 'patientId', 'alternateIdentifier', 'createdAt', 'updatedAt'],
           through: {attributes: []},
         },
-        {
-          as: 'projectUserNotifications',
-          model: db.models.projectUserNotification,
-          attributes: {exclude: ['deletedAt', 'updatedBy']},
-        },
       ],
     });
   } catch (error) {

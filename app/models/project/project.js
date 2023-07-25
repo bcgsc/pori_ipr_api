@@ -45,7 +45,7 @@ module.exports = (sequelize, Sq) => {
       return publicView;
     }
     if (scope === 'nonMaster') {
-      const {id, deletedAt, updatedBy, users, reports, projectUserNotifications, ...publicView} = this.dataValues;
+      const {id, deletedAt, updatedBy, users, reports, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

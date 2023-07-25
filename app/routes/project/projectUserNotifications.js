@@ -7,15 +7,17 @@ const logger = require('../../log');
 const router = express.Router({ mergeParams: true });
 
 router.route('/')
-  .get((req, res) => {
-    return res.json(req.project.projectUserNotifications);
+  .get(async (req, res) => {
+    results = await db.models.projectUserNotification.findAll({
+      where: { project_id: req.project.id }
+    });
+    return res.json(results);
   })
   .post(async (req, res) => {
     let user;
     try {
       user = await db.models.user.findOne({
         where: { ident: req.body.user },
-        attributes: { exclude: ['deletedAt', 'password', 'updatedBy'] },
       });
     } catch (error) {
       logger.error(`Error while trying to find user ${error}`);
@@ -29,7 +31,6 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find user' } });
     }
 
-    let template;
     if (req.body.template) {
       try {
         template = await db.models.template.findOne({
@@ -73,7 +74,7 @@ router.route('/')
       });
 
       const output = {
-        id: result.id,
+        ident: result.ident,
         user: user.username,
         project: req.project.name,
         template: template.name,
@@ -94,9 +95,10 @@ router.route('/')
     let projectUserNotification;
     try {
       projectUserNotification = await db.models.projectUserNotification.findOne({
-        where: { id: req.body.projectUserNotification },
-        attributes: ['id'],
+        where: { ident: '30d93e64-e4bd-4ebd-9073-17427c968672'}, // req.body.ident },
+        attributes: ['id', 'ident'],
       });
+      logger.info(JSON.stringify(projectUserNotification));
     } catch (error) {
       logger.error(`Error while trying to find project user notification ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -112,7 +114,8 @@ router.route('/')
     }
 
     try {
-      await projectUserNotifiation.destroy();
+
+      await projectUserNotification.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while deleting project user notification ${error}`);
