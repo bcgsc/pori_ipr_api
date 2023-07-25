@@ -5,27 +5,27 @@ module.exports = (sequelize, Sq) => {
     'projectUserGroupNotification',
     {
       ...DEFAULT_COLUMNS,
-      user_group_id: {
+      userGroupId: {
+        type: Sq.INTEGER,
         name: 'userGroup',
         field: 'user_group',
-        type: Sq.INTEGER,
         unique: false,
         references: {
           model: 'user_groups',
           key: 'id',
         },
       },
-      event_type: {
+      eventType: {
         name: 'eventType',
         field: 'event_type',
         type: Sq.STRING,
         unique: false,
         allowNull: false,
       },
-      project_id: {
+      projectId: {
+        type: Sq.INTEGER,
         name: 'projectId',
         field: 'project_id',
-        type: Sq.INTEGER,
         unique: false,
         allowNull: false,
         references: {
@@ -33,10 +33,10 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
-      template_id: {
+      templateId: {
+        type: Sq.INTEGER,
         name: 'templateId',
         field: 'template_id',
-        type: Sq.INTEGER,
         unique: false,
         references: {
           model: 'templates',
