@@ -6,6 +6,7 @@ const project = require('./project');
 const projectUsers = require('./projectUsers');
 const projectReports = require('./projectReports');
 const projectUserNotifications = require('./projectUserNotifications')
+const projectUserGroupNotifications = require('./projectUserGroupNotifications')
 const search = require('./search');
 const targets = require('./therapeuticTargets');
 
@@ -17,6 +18,7 @@ router.use('/', project);
 router.use('/:project/user', projectUsers);
 router.use('/:project/reports', projectReports);
 router.use('/:project/usernotifications', projectUserNotifications);
+router.use('/:project/usergroupnotifications', projectUserGroupNotifications);
 router.use('/:project/therapeutic-targets', targets);
 router.use('/search', search);
 
