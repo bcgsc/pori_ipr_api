@@ -95,7 +95,7 @@ router.route('/')
     let projectUserNotification;
     try {
       projectUserNotification = await db.models.projectUserNotification.findOne({
-        where: { ident: '30d93e64-e4bd-4ebd-9073-17427c968672'}, // req.body.ident },
+        where: { ident: req.body.ident },
         attributes: ['id', 'ident'],
       });
       logger.info(JSON.stringify(projectUserNotification));
