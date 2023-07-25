@@ -2,7 +2,7 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   return sequelize.define(
-    'userProject',
+    'projectUserGroupNotification',
     {
       ...DEFAULT_COLUMNS,
       user_group_id: {
