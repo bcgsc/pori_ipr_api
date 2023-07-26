@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const HTTP_STATUS = require('http-status-codes');
 
 const db = require('../../../app/models');
-// get test user info
+
 const CONFIG = require('../../../app/config');
 const { listen } = require('../../../app');
 
@@ -42,9 +42,9 @@ beforeAll(async () => {
 describe('/notification/project-user-notifications', () => {
     let testUser;
     let project;
+    let project2;
     let template;
     let user01;
-    let user02;
 
     beforeAll(async () => {
         // get test user
@@ -76,14 +76,6 @@ describe('/notification/project-user-notifications', () => {
             firstName: 'userProjectUser01',
             lastName: 'userProjectUser01',
             email: 'userProjectUser01@email.com',
-        });
-
-        user02 = await db.models.user.create({
-            ident: uuidv4(),
-            username: uuidv4(),
-            firstName: 'userProjectUser02',
-            lastName: 'userProjectUser02',
-            email: 'userProjectUser02@email.com',
         });
 
         // Bind users to project
@@ -122,11 +114,14 @@ describe('/notification/project-user-notifications', () => {
             user01.destroy({ force: true }),
             project2.destroy({ force: true }),
             template.destroy({ force: true }),
+            pun1.destroy({ force: true }),
+            pun2.destroy({ force: true }),
+            pun3.destroy({ force: true }),
         ]);
     });
 
     describe('GET', () => {
-        test('/ - 200 Success', async () => {
+        test('/ - project ident - 200 Success', async () => {
             const res = await request
                 .get('/api/notification/project-user-notifications')
                 .auth(username, password)
@@ -138,10 +133,8 @@ describe('/notification/project-user-notifications', () => {
             expect(res.body.length).toBe(2);
             checkPuns(res.body);
         });
-    });
 
-    describe('GET', () => {
-        test('/ - 200 Success', async () => {
+        test('/ - user ident - 200 Success', async () => {
             const res = await request
                 .get('/api/notification/project-user-notifications')
                 .auth(username, password)
@@ -153,10 +146,8 @@ describe('/notification/project-user-notifications', () => {
             expect(res.body.length).toBe(1);
             checkPuns(res.body);
         });
-    });
 
-    describe('GET', () => {
-        test('/ - 200 Success', async () => {
+        test('/ - project and user ident - 200 Success', async () => {
             const res = await request
                 .get('/api/notification/project-user-notifications')
                 .auth(username, password)
@@ -205,6 +196,7 @@ describe('/notification/project-user-notifications', () => {
     });
 
     describe('DELETE', () => {
+        ;
         test('/ - 204 Success', async () => {
             // create pun
             const pun = await db.models.projectUserNotification.create({
@@ -214,15 +206,14 @@ describe('/notification/project-user-notifications', () => {
                 templateId: template.id,
                 eventType: 'test event to delete'
             });
-
             await request
-                .delete('api/notification/project-user-notifications')
+                .delete('/api/notification/project-user-notifications')
                 .auth(username, password)
                 .type('json')
-                .send({ ident: pun.ident })
+                .send({ ident: String(pun.ident) })
                 .expect(HTTP_STATUS.NO_CONTENT);
 
-            // Verify user-project binding is soft-deleted
+            // Verify pun is soft-deleted
             const deletedPun = await db.models.projectUserNotification.findOne({
                 where: { id: pun.id },
                 paranoid: false,
@@ -232,16 +223,15 @@ describe('/notification/project-user-notifications', () => {
 
             await deletedPun.destroy({ force: true });
         });
-
-        test('/ - 404 Not Found - Cannot find provided notification', async () => {
-            await request
-                .delete('api/notification/project-user-notifications')
-                .auth(username, password)
-                .type('json')
-                .send({ ident: uuidv4() })
-                .expect(HTTP_STATUS.NOT_FOUND);
-        });
     });
+    test('/ - 404 Not Found - Cannot find provided notification', async () => {
+        await request
+            .delete('/api/notification/project-user-notifications')
+            .auth(username, password)
+            .type('json')
+            .send({ ident: String(uuidv4()) })
+            .expect(HTTP_STATUS.NOT_FOUND);
+    })
 });
 
 afterAll(async () => {
