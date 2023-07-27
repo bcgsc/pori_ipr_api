@@ -45,6 +45,12 @@ describe('/notification/project-user-notifications', () => {
     let project2;
     let template;
     let user01;
+    let pun1;
+    let pun2;
+    let pun3;
+    let binding1;
+    let binding2;
+    let binding3;
 
     beforeAll(async () => {
         // get test user
@@ -70,13 +76,13 @@ describe('/notification/project-user-notifications', () => {
         template = await db.models.template.create(templateData);
 
         // Create users
-        unique_username = uuidv4();
+        const uniqueUsername = uuidv4();
         user01 = await db.models.user.create({
             ident: uuidv4(),
-            username: unique_username,
-            firstName: `user1_${unique_username}`,
-            lastName: `user1_${unique_username}`,
-            email: `user1_${unique_username}@email.com`,
+            username: uniqueUsername,
+            firstName: `user1_${uniqueUsername}`,
+            lastName: `user1_${uniqueUsername}`,
+            email: `user1_${uniqueUsername}@email.com`,
         });
 
         // Bind users to project
@@ -89,24 +95,24 @@ describe('/notification/project-user-notifications', () => {
             projectId: project.id,
             userId: testUser.id,
             templateId: template.id,
-            eventType: 'test event 1'
-        })
+            eventType: 'test event 1',
+        });
 
         pun2 = await db.models.projectUserNotification.create({
             ident: uuidv4(),
             projectId: project.id,
             userId: user01.id,
             templateId: template.id,
-            eventType: 'test event 2'
-        })
+            eventType: 'test event 2',
+        });
 
         pun3 = await db.models.projectUserNotification.create({
             ident: uuidv4(),
             projectId: project2.id,
             userId: testUser.id,
             templateId: template.id,
-            eventType: 'test event 3'
-        })
+            eventType: 'test event 3',
+        });
     });
 
     afterAll(async () => {
@@ -118,6 +124,9 @@ describe('/notification/project-user-notifications', () => {
             pun1.destroy({ force: true }),
             pun2.destroy({ force: true }),
             pun3.destroy({ force: true }),
+            binding1.destroy({ force: true }),
+            binding2.destroy({ force: true }),
+            binding3.destroy({ force: true }),
         ]);
     });
 
@@ -162,7 +171,6 @@ describe('/notification/project-user-notifications', () => {
         });
     });
 
-
     describe('POST', () => {
         test('/ - 200 Success', async () => {
             await request
@@ -206,7 +214,7 @@ describe('/notification/project-user-notifications', () => {
                 projectId: project3.id,
                 userId: user01.id,
                 templateId: template.id,
-                eventType: 'test event to delete'
+                eventType: 'test event to delete',
             });
             await request
                 .delete('/api/notification/project-user-notifications')
@@ -225,6 +233,7 @@ describe('/notification/project-user-notifications', () => {
             await project3.destroy({ force: true });
             await deletedPun.destroy({ force: true });
         });
+
         test('/ - 404 Not Found - Cannot find provided notification', async () => {
             await request
                 .delete('/api/notification/project-user-notifications')
@@ -232,7 +241,7 @@ describe('/notification/project-user-notifications', () => {
                 .type('json')
                 .send({ ident: String(uuidv4()) })
                 .expect(HTTP_STATUS.NOT_FOUND);
-        })
+        });
     });
 });
 
