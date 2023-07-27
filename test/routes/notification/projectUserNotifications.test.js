@@ -53,12 +53,12 @@ describe('/notification/project-user-notifications', () => {
         });
 
         // Create projects
-        project = await db.models.project.create({ name: 'pun-project-test01' });
-        project2 = await db.models.project.create({ name: 'pun-project-test02' });
+        project = await db.models.project.create({ name: `pun-project-1-${uuidv4()}` });
+        project2 = await db.models.project.create({ name: `pun-project-2-${uuidv4()}` });
 
         // Create template
         const templateData = {
-            name: 'PUN test template',
+            name: uuidv4(),
             organization: 'Test Create Org',
             description: 'This is a template used for running tests',
             sections: [
@@ -70,12 +70,13 @@ describe('/notification/project-user-notifications', () => {
         template = await db.models.template.create(templateData);
 
         // Create users
+        unique_username = uuidv4();
         user01 = await db.models.user.create({
             ident: uuidv4(),
-            username: uuidv4(),
-            firstName: 'userProjectUser01',
-            lastName: 'userProjectUser01',
-            email: 'userProjectUser01@email.com',
+            username: unique_username,
+            firstName: `user1_${unique_username}`,
+            lastName: `user1_${unique_username}`,
+            email: `user1_${unique_username}@email.com`,
         });
 
         // Bind users to project
@@ -196,13 +197,14 @@ describe('/notification/project-user-notifications', () => {
     });
 
     describe('DELETE', () => {
-        ;
         test('/ - 204 Success', async () => {
             // create pun
+
+            const project3 = await db.models.project.create({ name: uuidv4() });
             const pun = await db.models.projectUserNotification.create({
                 ident: uuidv4(),
-                projectId: project.id,
-                userId: testUser.id,
+                projectId: project3.id,
+                userId: user01.id,
                 templateId: template.id,
                 eventType: 'test event to delete'
             });
@@ -220,18 +222,18 @@ describe('/notification/project-user-notifications', () => {
             });
 
             expect(deletedPun.deletedAt).not.toBeNull();
-
+            await project3.destroy({ force: true });
             await deletedPun.destroy({ force: true });
         });
+        test('/ - 404 Not Found - Cannot find provided notification', async () => {
+            await request
+                .delete('/api/notification/project-user-notifications')
+                .auth(username, password)
+                .type('json')
+                .send({ ident: String(uuidv4()) })
+                .expect(HTTP_STATUS.NOT_FOUND);
+        })
     });
-    test('/ - 404 Not Found - Cannot find provided notification', async () => {
-        await request
-            .delete('/api/notification/project-user-notifications')
-            .auth(username, password)
-            .type('json')
-            .send({ ident: String(uuidv4()) })
-            .expect(HTTP_STATUS.NOT_FOUND);
-    })
 });
 
 afterAll(async () => {
