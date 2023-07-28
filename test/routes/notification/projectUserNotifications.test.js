@@ -169,6 +169,24 @@ describe('/notification/project-user-notifications', () => {
       expect(res.body.length).toBe(2);
       checkPuns(res.body);
     });
+
+    test('/ - user ident - 404 user not found', async () => {
+      await request
+        .get('/api/notification/project-user-notifications')
+        .auth(username, password)
+        .type('json')
+        .send({user: uuidv4()})
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
+
+    test('/ - project ident - 404 project not found', async () => {
+      await request
+        .get('/api/notification/project-user-notifications')
+        .auth(username, password)
+        .type('json')
+        .send({project: uuidv4()})
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
   });
 
   describe('POST', () => {
@@ -200,6 +218,24 @@ describe('/notification/project-user-notifications', () => {
         .auth(username, password)
         .type('json')
         .send({user: uuidv4(), project: project.ident, event_type: 'test event 2', template: template.ident})
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
+
+    test('/ - 404 Not Found - Cannot find provided project', async () => {
+      await request
+        .post('/api/notification/project-user-notifications')
+        .auth(username, password)
+        .type('json')
+        .send({user: testUser.ident, project: uuidv4(), event_type: 'test event 2', template: template.ident})
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
+
+    test('/ - 404 Not Found - Cannot find provided template', async () => {
+      await request
+        .post('/api/notification/project-user-notifications')
+        .auth(username, password)
+        .type('json')
+        .send({user: testUser.ident, project: project.ident, event_type: 'test event 2', template: uuidv4()})
         .expect(HTTP_STATUS.NOT_FOUND);
     });
   });

@@ -163,6 +163,24 @@ describe('/notification/project-user-group-notifications', () => {
       expect(res.body.length).toBe(1);
       checkPuns(res.body);
     });
+
+    test('/ - user group ident - 404 user group not found', async () => {
+      await request
+        .get('/api/notification/project-user-group-notifications')
+        .auth(username, password)
+        .type('json')
+        .send({user_groud: uuidv4()})
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
+
+    test('/ - project ident - 404 project not found', async () => {
+      await request
+        .get('/api/notification/project-user-group-notifications')
+        .auth(username, password)
+        .type('json')
+        .send({project: uuidv4()})
+        .expect(HTTP_STATUS.NOT_FOUND);
+    });
   });
 
   describe('POST', () => {
