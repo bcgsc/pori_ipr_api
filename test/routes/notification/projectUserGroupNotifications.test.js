@@ -274,5 +274,6 @@ describe('/notification/project-user-group-notifications', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

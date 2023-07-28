@@ -210,5 +210,6 @@ describe('/reports/{REPORTID}/msi', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

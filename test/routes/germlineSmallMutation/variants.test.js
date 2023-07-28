@@ -236,5 +236,6 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

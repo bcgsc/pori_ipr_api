@@ -559,5 +559,6 @@ describe('/reports/{REPORTID}', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
