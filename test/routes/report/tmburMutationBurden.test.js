@@ -143,5 +143,6 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

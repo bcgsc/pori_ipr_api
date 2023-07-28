@@ -215,5 +215,6 @@ describe('/reports/{REPORTID}/summary/microbial', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

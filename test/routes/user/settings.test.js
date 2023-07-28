@@ -73,5 +73,6 @@ describe('/user/settings', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
