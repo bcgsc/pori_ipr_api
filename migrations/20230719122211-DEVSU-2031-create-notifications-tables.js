@@ -1,5 +1,4 @@
 const USERNOTIFICATIONS = 'project_user_notifications';
-const USERGROUPNOTIFICATIONS = 'project_user_group_notifications';
 const {DEFAULT_COLUMNS} = require('../app/models/base');
 
 module.exports = {
@@ -32,41 +31,7 @@ module.exports = {
           onUpdate: 'CASCADE',
           allowNull: false,
         },
-        templateId: {
-          name: 'templateId',
-          field: 'template_id',
-          type: Sq.INTEGER,
-          references: {
-            model: 'templates',
-            key: 'id',
-          },
-          onDelete: 'CASCADE',
-          onUpdate: 'CASCADE',
-          allowNull: false,
-        },
-        eventType: {
-          name: 'eventType',
-          field: 'event_type',
-          type: Sq.STRING,
-          allowNull: false,
-        },
-      }, {transaction});
-
-      await queryInterface.createTable(USERGROUPNOTIFICATIONS, {
-        ...DEFAULT_COLUMNS,
-        projectId: {
-          name: 'projectId',
-          field: 'project_id',
-          type: Sq.INTEGER,
-          references: {
-            model: 'projects',
-            key: 'id',
-          },
-          onDelete: 'CASCADE',
-          onUpdate: 'CASCADE',
-          allowNull: false,
-        },
-        userId: {
+        userGroupId: {
           name: 'userGroupId',
           field: 'user_group_id',
           type: Sq.INTEGER,
@@ -97,8 +62,6 @@ module.exports = {
           allowNull: false,
         },
       }, {transaction});
-
-      // TODO; indexes?
     });
   },
 

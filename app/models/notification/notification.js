@@ -2,7 +2,7 @@ const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   return sequelize.define(
-    'projectUserNotification',
+    'notification',
     {
       ...DEFAULT_COLUMNS,
       userId: {
@@ -33,6 +33,16 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
+      userGroupId: {
+        type: Sq.INTEGER,
+        name: 'userGroupId',
+        field: 'user_group_id',
+        unique: false,
+        references: {
+          model: 'user_groups',
+          key: 'id',
+        },
+      },
       templateId: {
         type: Sq.INTEGER,
         name: 'templateId',
@@ -46,7 +56,7 @@ module.exports = (sequelize, Sq) => {
     },
     {
       ...DEFAULT_OPTIONS,
-      tableName: 'project_user_notifications',
+      tableName: 'notifications',
     },
   );
 };
