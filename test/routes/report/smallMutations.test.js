@@ -188,5 +188,6 @@ describe('/reports/{report}/small-mutations', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

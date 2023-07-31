@@ -471,6 +471,50 @@ template.hasMany(analysisReports, {
   as: 'reports', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
 });
 
+// Project User Notification (Template optional)
+const projectUserNotification = require('./project/projectUserNotification')(sequelize, Sq);
+
+user.hasMany(projectUserNotification, {
+  as: 'projectUserNotifications', foreignKey: 'userId', onDelete: 'CASCADE', constraints: true,
+});
+project.hasMany(projectUserNotification, {
+  as: 'projectUserNotifications', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+});
+template.hasMany(projectUserNotification, {
+  as: 'projectUserNotifications', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
+});
+projectUserNotification.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+projectUserNotification.belongsTo(user, {
+  as: 'user', foreignKey: 'userId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+projectUserNotification.belongsTo(project, {
+  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// Project User Group Notification (Template optional)
+const projectUserGroupNotification = require('./project/projectUserGroupNotification')(sequelize, Sq);
+
+userGroup.hasMany(projectUserGroupNotification, {
+  as: 'projectUserGroupNotifications', foreignKey: 'userGroupId', onDelete: 'CASCADE', constraints: true,
+});
+project.hasMany(projectUserGroupNotification, {
+  as: 'projectUserGroupNotifications', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+});
+template.hasMany(projectUserGroupNotification, {
+  as: 'projectUserGroupNotifications', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
+});
+projectUserGroupNotification.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+projectUserGroupNotification.belongsTo(user, {
+  as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+projectUserGroupNotification.belongsTo(project, {
+  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
 

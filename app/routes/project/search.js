@@ -13,7 +13,6 @@ const router = express.Router({mergeParams: true});
 router.route('/')
   .get(async (req, res) => {
     const {query} = req.query;
-
     // Check user permission and filter by project
     let projectAccess;
     try {

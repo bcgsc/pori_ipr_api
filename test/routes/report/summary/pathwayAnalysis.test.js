@@ -231,5 +231,6 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

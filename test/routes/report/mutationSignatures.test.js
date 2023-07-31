@@ -164,5 +164,6 @@ describe('/reports/{REPORTID}/mutation-signatures', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

@@ -194,5 +194,6 @@ describe('/reports/{report}/expression-variants', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

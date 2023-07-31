@@ -83,5 +83,6 @@ describe('/reports/{REPORTID}/comparators', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

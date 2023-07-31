@@ -291,5 +291,6 @@ describe('/reports/{REPORTID}/image', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
