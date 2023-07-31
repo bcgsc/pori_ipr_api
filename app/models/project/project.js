@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const { DEFAULT_COLUMNS, DEFAULT_OPTIONS } = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const project = sequelize.define('project', {
@@ -7,7 +7,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: false,
       jsonSchema: {
-        schema: {type: 'string', minLength: 2},
+        schema: { type: 'string', minLength: 2 },
       },
     },
     description: {
@@ -15,37 +15,40 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
     },
   }, {
-    ...DEFAULT_OPTIONS,
-    tableName: 'projects',
-    indexes: [
-      ...DEFAULT_OPTIONS.indexes || [],
-      {
-        unique: true,
-        fields: ['name'],
-        where: {
-          deleted_at: {
-            [Sq.Op.eq]: null,
+      ...DEFAULT_OPTIONS,
+      tableName: 'projects',
+      indexes: [
+        ...DEFAULT_OPTIONS.indexes || [],
+        {
+          unique: true,
+          fields: ['name'],
+          where: {
+            deleted_at: {
+              [Sq.Op.eq]: null,
+            },
           },
         },
-      },
-    ],
-    scopes: {
-      public: {
-        attributes: {
-          exclude: ['id', 'deletedAt', 'updatedBy'],
+      ],
+      scopes: {
+        public: {
+          attributes: {
+            exclude: ['id', 'deletedAt', 'updatedBy'],
+          },
+        },
+        minimal: {
+          attributes: ['ident', 'name'],
         },
       },
-    },
-  });
+    });
 
   // set instance methods
   project.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, deletedAt, updatedBy, ...publicView} = this.dataValues;
+      const { id, deletedAt, updatedBy, ...publicView } = this.dataValues;
       return publicView;
     }
     if (scope === 'nonMaster') {
-      const {id, deletedAt, updatedBy, users, reports, ...publicView} = this.dataValues;
+      const { id, deletedAt, updatedBy, users, reports, ...publicView } = this.dataValues;
       return publicView;
     }
     return this;

@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const { DEFAULT_COLUMNS, DEFAULT_OPTIONS } = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const user = sequelize.define('user', {
@@ -7,13 +7,13 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: false,
       jsonSchema: {
-        schema: {type: 'string', minLength: 2},
+        schema: { type: 'string', minLength: 2 },
       },
     },
     password: {
       type: Sq.STRING,
       jsonSchema: {
-        schema: {type: 'string', minLength: 8},
+        schema: { type: 'string', minLength: 8 },
       },
     },
     type: {
@@ -24,14 +24,14 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: false,
       jsonSchema: {
-        schema: {type: 'string', minLength: 2},
+        schema: { type: 'string', minLength: 2 },
       },
     },
     lastName: {
       type: Sq.STRING,
       allowNull: false,
       jsonSchema: {
-        schema: {type: 'string', minLength: 2},
+        schema: { type: 'string', minLength: 2 },
       },
     },
     email: {
@@ -41,31 +41,34 @@ module.exports = (sequelize, Sq) => {
         isEmail: true,
       },
       jsonSchema: {
-        schema: {type: 'string', format: 'email'},
+        schema: { type: 'string', format: 'email' },
       },
     },
   }, {
-    ...DEFAULT_OPTIONS,
-    indexes: [
-      ...DEFAULT_OPTIONS.indexes || [],
-      {
-        unique: true,
-        fields: ['username'],
-        where: {
-          deleted_at: {
-            [Sq.Op.eq]: null,
+      ...DEFAULT_OPTIONS,
+      indexes: [
+        ...DEFAULT_OPTIONS.indexes || [],
+        {
+          unique: true,
+          fields: ['username'],
+          where: {
+            deleted_at: {
+              [Sq.Op.eq]: null,
+            },
           },
         },
-      },
-    ],
-    scopes: {
-      public: {
-        attributes: {
-          exclude: ['id', 'deletedAt', 'password', 'updatedBy'],
+      ],
+      scopes: {
+        public: {
+          attributes: {
+            exclude: ['id', 'deletedAt', 'password', 'updatedBy'],
+          },
+        },
+        minimal: {
+          attributes: ['ident', 'username'],
         },
       },
-    },
-  });
+    });
 
   // set instance methods
   user.prototype.view = function (scope) {

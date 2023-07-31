@@ -1,4 +1,4 @@
-const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const { DEFAULT_COLUMNS, DEFAULT_OPTIONS } = require('../base');
 
 module.exports = (sequelize, Sq) => {
   return sequelize.define(
@@ -59,4 +59,13 @@ module.exports = (sequelize, Sq) => {
       tableName: 'notifications',
     },
   );
+
+  // set instance methods
+  notification.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const { id, deletedAt, updatedBy, ...publicView } = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
 };
