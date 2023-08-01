@@ -65,9 +65,14 @@ describe('/notification/notifications', () => {
     let pun1;
     let pun2;
     let pun3;
+    let pun4;
+    let pun5;
+    let pun6;
     let binding1;
     let binding2;
     let binding3;
+    let userGroup1;
+    let userGroup2;
 
     beforeAll(async () => {
         // get test user
@@ -107,6 +112,18 @@ describe('/notification/notifications', () => {
         binding2 = await db.models.userProject.create({ project_id: project.id, user_id: user01.id });
         binding3 = await db.models.userProject.create({ project_id: project2.id, user_id: user01.id });
 
+        // Create userGroups
+        userGroup1 = await db.models.userGroup.create({
+            ident: uuidv4(),
+            name: uuidv4(),
+            owner_id: testUser.id,
+        });
+        userGroup2 = await db.models.userGroup.create({
+            ident: uuidv4(),
+            name: uuidv4(),
+            owner_id: testUser.id,
+        });
+
         pun1 = await db.models.notification.create({
             ident: uuidv4(),
             projectId: project.id,
@@ -130,6 +147,30 @@ describe('/notification/notifications', () => {
             templateId: template.id,
             eventType: 'test event 3',
         });
+
+        pun4 = await db.models.notification.create({
+            ident: uuidv4(),
+            projectId: project.id,
+            userGroupId: userGroup1.id,
+            templateId: template.id,
+            eventType: 'test event 1',
+        });
+
+        pun5 = await db.models.notification.create({
+            ident: uuidv4(),
+            projectId: project.id,
+            userGroupId: userGroup2.id,
+            templateId: template.id,
+            eventType: 'test event 2',
+        });
+
+        pun6 = await db.models.notification.create({
+            ident: uuidv4(),
+            projectId: project2.id,
+            userGroupId: userGroup1.id,
+            templateId: template.id,
+            eventType: 'test event 3',
+        });
     });
 
     afterAll(async () => {
@@ -144,11 +185,16 @@ describe('/notification/notifications', () => {
             binding1.destroy({ force: true }),
             binding2.destroy({ force: true }),
             binding3.destroy({ force: true }),
+            userGroup1.destroy({ force: true }),
+            userGroup2.destroy({ force: true }),
+            pun4.destroy({ force: true }),
+            pun5.destroy({ force: true }),
+            pun6.destroy({ force: true }),
         ]);
     });
 
     describe('GET', () => {
-        test('/ - project ident test22 - 200 Success', async () => {
+        test('/ - project ident - 200 Success', async () => {
             const res = await request
                 .get('/api/notification/notifications')
                 .auth(username, password)
@@ -157,10 +203,24 @@ describe('/notification/notifications', () => {
                 .expect(HTTP_STATUS.OK);
 
             expect(Array.isArray(res.body)).toBe(true);
+            expect(res.body.length).toBe(4);
+            checkPuns(res.body);
+            res.body.forEach((element) => {
+                expect(element.project.ident).toEqual(project.ident);
+            })
+        });
+
+        test('/ - user group ident - 200 Success', async () => {
+            const res = await request
+                .get('/api/notification/notifications')
+                .auth(username, password)
+                .type('json')
+                .send({ user_group: userGroup1.ident })
+                .expect(HTTP_STATUS.OK);
+
+            expect(Array.isArray(res.body)).toBe(true);
             expect(res.body.length).toBe(2);
             checkPuns(res.body);
-            expect(res.body[0].project.ident).toEqual(project.ident);
-            expect(res.body[1].project.ident).toEqual(project.ident);
         });
 
         test('/ - user ident - 200 Success', async () => {
@@ -190,6 +250,19 @@ describe('/notification/notifications', () => {
             checkPuns(res.body);
         });
 
+        test('/ - project and user group ident - 200 Success', async () => {
+            const res = await request
+                .get('/api/notification/notifications')
+                .auth(username, password)
+                .type('json')
+                .send({ user_group: userGroup1.ident, project: project.ident })
+                .expect(HTTP_STATUS.OK);
+
+            expect(Array.isArray(res.body)).toBe(true);
+            expect(res.body.length).toBe(1);
+            checkPuns(res.body);
+        });
+
         test('/ - user ident - 404 user not found', async () => {
             await request
                 .get('/api/notification/notifications')
@@ -207,10 +280,19 @@ describe('/notification/notifications', () => {
                 .send({ project: uuidv4() })
                 .expect(HTTP_STATUS.NOT_FOUND);
         });
+        test('/ - user group ident - 404 user group not found', async () => {
+            await request
+                .get('/api/notification/notifications')
+                .auth(username, password)
+                .type('json')
+                .send({ user_group: uuidv4() })
+                .expect(HTTP_STATUS.NOT_FOUND);
+
+        });
     });
 
     describe('POST', () => {
-        test('/ - 200 Success test33', async () => {
+        test('/ - 200 Success user', async () => {
             await request
                 .post('/api/notification/notifications')
                 .auth(username, password)
@@ -226,6 +308,27 @@ describe('/notification/notifications', () => {
             expect(result).not.toBeNull();
 
             // Remove the just created test notif
+            await db.models.notification.destroy({
+                where: { id: result.id },
+                force: true,
+            });
+        });
+        test('/ - 200 Success user group', async () => {
+            await request
+                .post('/api/notification/notifications')
+                .auth(username, password)
+                .type('json')
+                .send({ user_group: userGroup1.ident, project: project.ident, event_type: 'test event 5', template: template.ident })
+                .expect(HTTP_STATUS.CREATED);
+
+            // Check the binding was created
+            const result = await db.models.notification.findOne({
+                where: { project_id: project.id, user_group_id: userGroup1.id, event_type: 'test event 5' },
+            });
+
+            expect(result).not.toBeNull();
+
+            // Remove the just created test user-project binding
             await db.models.notification.destroy({
                 where: { id: result.id },
                 force: true,
@@ -256,6 +359,16 @@ describe('/notification/notifications', () => {
                 .auth(username, password)
                 .type('json')
                 .send({ user: testUser.ident, project: project.ident, event_type: 'test event 2', template: uuidv4() })
+                .expect(HTTP_STATUS.NOT_FOUND);
+        });
+
+
+        test('/ - bad user group ident - 404 Not Found - Cannot find provided user group', async () => {
+            await request
+                .post('/api/notification/notifications')
+                .auth(username, password)
+                .type('json')
+                .send({ user_group: uuidv4(), project: project.ident, event_type: 'test event 7', template: template.ident })
                 .expect(HTTP_STATUS.NOT_FOUND);
         });
     });
