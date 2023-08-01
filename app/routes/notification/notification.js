@@ -3,7 +3,7 @@ const express = require('express');
 
 const db = require('../../models');
 const logger = require('../../log');
-const { getUserProjects } = require('../../libs/helperFunctions');
+
 const router = express.Router({ mergeParams: true });
 
 router.route('/')
@@ -66,7 +66,6 @@ router.route('/')
             }
         }
 
-
         let template;
         if (templateIdent) {
             try {
@@ -86,7 +85,7 @@ router.route('/')
         }
 
         try {
-            let whereClause = {};
+            const whereClause = {};
 
             if (user) {
                 whereClause.user_id = user.id;
@@ -101,7 +100,7 @@ router.route('/')
                 whereClause.project_id = project.id;
             }
             const results = await db.models.notification.scope('public').findAll({
-                where: whereClause
+                where: whereClause,
             });
 
             return res.json(results);
@@ -111,29 +110,28 @@ router.route('/')
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
                 error: { message: 'Problem getting notification' },
             });
-
         }
     })
     .post(async (req, res) => {
         if (req.body.user && req.body.user_group) {
             return res.status(HTTP_STATUS.CONFLICT).json({
-                error: { message: 'Only one of user and user group should be specified' }
-            })
+                error: { message: 'Only one of user and user group should be specified' },
+            });
         }
         if (!req.body.user && !req.body.user_group) {
             return res.status(HTTP_STATUS.CONFLICT).json({
-                error: { message: 'Exactly one of user and user group should be specified' }
-            })
+                error: { message: 'Exactly one of user and user group should be specified' },
+            });
         }
         if (!req.body.project) {
             return res.status(HTTP_STATUS.CONFLICT).json({
-                error: { message: 'Project must be specified' }
-            })
+                error: { message: 'Project must be specified' },
+            });
         }
         if (!req.body.template) {
             return res.status(HTTP_STATUS.CONFLICT).json({
-                error: { message: 'Template must be specified' }
-            })
+                error: { message: 'Template must be specified' },
+            });
         }
 
         let project;
@@ -151,7 +149,6 @@ router.route('/')
             logger.error(`Unable to find project ${req.body.project}`);
             return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find project' } });
         }
-
 
         let user;
         let userGroup;
@@ -205,7 +202,6 @@ router.route('/')
             }
         }
 
-
         let template;
         if (req.body.template) {
             try {
@@ -235,7 +231,6 @@ router.route('/')
             });
 
             return res.status(HTTP_STATUS.CREATED).json(result);
-
         } catch (error) {
             logger.error(`Error while creating notification ${error}`);
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({

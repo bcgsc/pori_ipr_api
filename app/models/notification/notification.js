@@ -1,7 +1,7 @@
-const { DEFAULT_COLUMNS, DEFAULT_OPTIONS } = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
-  return sequelize.define(
+  const notification = sequelize.define(
     'notification',
     {
       ...DEFAULT_COLUMNS,
@@ -65,11 +65,11 @@ module.exports = (sequelize, Sq) => {
             exclude: ['id', 'deletedAt', 'updatedBy', 'userId', 'projectId', 'userGroupId', 'templateId'],
           },
           include: [
-            { model: sequelize.models.user.scope('minimal'), as: 'user' },
-            { model: sequelize.models.userGroup.scope('minimal'), as: 'userGroup' },
-            { model: sequelize.models.template.scope('minimal'), as: 'template' },
-            { model: sequelize.models.project.scope('minimal'), as: 'project' },
-          ]
+            {model: sequelize.models.user.scope('minimal'), as: 'user'},
+            {model: sequelize.models.userGroup.scope('minimal'), as: 'userGroup'},
+            {model: sequelize.models.template.scope('minimal'), as: 'template'},
+            {model: sequelize.models.project.scope('minimal'), as: 'project'},
+          ],
         },
       },
     },
@@ -78,9 +78,11 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   notification.prototype.view = function (scope) {
     if (scope === 'public') {
-      const { id, deletedAt, updatedBy, userId, projectId, userGroupId, templateId, ...publicView } = this.dataValues;
+      const {id, deletedAt, updatedBy, userId, projectId, userGroupId, templateId, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;
   };
+
+  return notification;
 };

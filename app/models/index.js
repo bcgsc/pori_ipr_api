@@ -1,7 +1,7 @@
 const Sq = require('sequelize');
 const nconf = require('../config');
 const logger = require('../log'); // Load logging library
-const { GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING, KB_PIVOT_COLUMN } = require('../constants');
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING, KB_PIVOT_COLUMN} = require('../constants');
 
 // Load database
 const dbSettings = nconf.get('database');
@@ -39,10 +39,10 @@ const userProject = require('./project/userProject')(sequelize, Sq);
 const reportProject = require('./project/reportProject')(sequelize, Sq);
 
 project.belongsToMany(user, {
-  as: 'users', through: { model: userProject, unique: false }, foreignKey: 'project_id', otherKey: 'user_id', onDelete: 'CASCADE',
+  as: 'users', through: {model: userProject, unique: false}, foreignKey: 'project_id', otherKey: 'user_id', onDelete: 'CASCADE',
 });
 user.belongsToMany(project, {
-  as: 'projects', through: { model: userProject, unique: false }, foreignKey: 'user_id', otherKey: 'project_id', onDelete: 'CASCADE',
+  as: 'projects', through: {model: userProject, unique: false}, foreignKey: 'user_id', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
 // Pog Analysis Reports
@@ -50,10 +50,10 @@ const analysisReports = require('./reports/report')(sequelize, Sq);
 const reportUsers = require('./reportUser')(sequelize, Sq);
 
 project.belongsToMany(analysisReports, {
-  as: 'reports', through: { model: reportProject, unique: false }, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportProject, unique: false}, foreignKey: 'project_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 analysisReports.belongsToMany(project, {
-  as: 'projects', through: { model: reportProject, unique: false }, foreignKey: 'reportId', otherKey: 'project_id', onDelete: 'CASCADE',
+  as: 'projects', through: {model: reportProject, unique: false}, foreignKey: 'reportId', otherKey: 'project_id', onDelete: 'CASCADE',
 });
 
 analysisReports.hasMany(reportUsers, {
@@ -73,17 +73,17 @@ reportUsers.belongsTo(user, {
 });
 
 user.belongsToMany(analysisReports, {
-  as: 'reports', through: { model: reportUsers, unique: false }, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
 });
 
 const userGroup = require('./user/userGroup')(sequelize, Sq);
 const userGroupMember = require('./user/userGroupMember')(sequelize, Sq);
 
 user.belongsToMany(userGroup, {
-  as: 'groups', through: { model: userGroupMember, unique: false }, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE',
+  as: 'groups', through: {model: userGroupMember, unique: false}, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE',
 });
 userGroup.belongsToMany(user, {
-  as: 'users', through: { model: userGroupMember, unique: false }, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE',
+  as: 'users', through: {model: userGroupMember, unique: false}, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE',
 });
 userGroup.belongsTo(user, {
   as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL',
@@ -101,7 +101,7 @@ analysisReports.hasMany(genes, {
 
 const imageData = require('./reports/imageData')(sequelize, Sq);
 
-imageData.belongsTo(analysisReports, { as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE' });
+imageData.belongsTo(analysisReports, {as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE'});
 
 // Patient Information
 const patientInformation = require('./reports/patientInformation')(sequelize, Sq);
@@ -281,7 +281,7 @@ analysisReports.hasMany(proteinVariants, {
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
   const extendedScope = {
-    attributes: { exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'] },
+    attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
     include: [],
   };
 
