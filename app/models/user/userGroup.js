@@ -1,4 +1,4 @@
-const { DEFAULT_COLUMNS, DEFAULT_OPTIONS } = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const userGroup = sequelize.define('userGroup', {
@@ -16,29 +16,29 @@ module.exports = (sequelize, Sq) => {
       },
     },
   }, {
-      ...DEFAULT_OPTIONS,
-      tableName: 'user_groups',
-      scopes: {
-        public: {
-          order: [['name', 'ASC']],
-          attributes: {
-            exclude: ['id', 'owner_id', 'deletedAt', 'updatedBy'],
-          },
-          include: [
-            { as: 'users', model: sequelize.models.user, attributes: { exclude: ['id', 'deletedAt', 'password', 'updatedBy'] }, through: { attributes: [] } },
-            { as: 'owner', model: sequelize.models.user.scope('public') },
-          ],
+    ...DEFAULT_OPTIONS,
+    tableName: 'user_groups',
+    scopes: {
+      public: {
+        order: [['name', 'ASC']],
+        attributes: {
+          exclude: ['id', 'owner_id', 'deletedAt', 'updatedBy'],
         },
-        minimal: {
-          attributes: ['ident', 'name'],
-        },
+        include: [
+          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}, through: {attributes: []}},
+          {as: 'owner', model: sequelize.models.user.scope('public')},
+        ],
       },
-    });
+      minimal: {
+        attributes: ['ident', 'name'],
+      },
+    },
+  });
 
   // set instance methods
   userGroup.prototype.view = function (scope) {
     if (scope === 'public') {
-      const { id, owner_id, deletedAt, updatedBy, ...publicView } = this.dataValues;
+      const {id, owner_id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

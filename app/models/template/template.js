@@ -1,4 +1,4 @@
-const { DEFAULT_COLUMNS, DEFAULT_OPTIONS } = require('../base');
+const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const template = sequelize.define('template', {
@@ -53,28 +53,28 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
     },
   }, {
-      ...DEFAULT_OPTIONS,
-      tableName: 'templates',
-      scopes: {
-        public: {
-          attributes: {
-            exclude: ['id', 'deletedAt', 'logoId', 'headerId', 'updatedBy'],
-          },
-          include: [
-            { as: 'logoImage', model: sequelize.models.image.scope('public') },
-            { as: 'headerImage', model: sequelize.models.image.scope('public') },
-          ],
+    ...DEFAULT_OPTIONS,
+    tableName: 'templates',
+    scopes: {
+      public: {
+        attributes: {
+          exclude: ['id', 'deletedAt', 'logoId', 'headerId', 'updatedBy'],
         },
-        minimal: {
-          attributes: ['ident', 'name'],
-        },
+        include: [
+          {as: 'logoImage', model: sequelize.models.image.scope('public')},
+          {as: 'headerImage', model: sequelize.models.image.scope('public')},
+        ],
       },
-    });
+      minimal: {
+        attributes: ['ident', 'name'],
+      },
+    },
+  });
 
   // set instance methods
   template.prototype.view = function (scope) {
     if (scope === 'public') {
-      const { id, deletedAt, logoId, headerId, updatedBy, ...publicView } = this.dataValues;
+      const {id, deletedAt, logoId, headerId, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;

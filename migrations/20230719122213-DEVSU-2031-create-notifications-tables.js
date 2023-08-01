@@ -1,5 +1,5 @@
 const USERNOTIFICATIONS = 'notifications';
-const { DEFAULT_COLUMNS } = require('../app/models/base');
+const {DEFAULT_COLUMNS} = require('../app/models/base');
 
 module.exports = {
   up: (queryInterface, Sq) => {
@@ -61,7 +61,7 @@ module.exports = {
           type: Sq.STRING,
           allowNull: false,
         },
-      }, { transaction });
+      }, {transaction});
     });
   },
 
