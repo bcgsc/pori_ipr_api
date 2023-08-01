@@ -1,5 +1,5 @@
-const USERNOTIFICATIONS = 'project_user_notifications';
-const {DEFAULT_COLUMNS} = require('../app/models/base');
+const USERNOTIFICATIONS = 'notifications';
+const { DEFAULT_COLUMNS } = require('../app/models/base');
 
 module.exports = {
   up: (queryInterface, Sq) => {
@@ -29,7 +29,7 @@ module.exports = {
           },
           onDelete: 'CASCADE',
           onUpdate: 'CASCADE',
-          allowNull: false,
+          allowNull: true,
         },
         userGroupId: {
           name: 'userGroupId',
@@ -41,7 +41,7 @@ module.exports = {
           },
           onDelete: 'CASCADE',
           onUpdate: 'CASCADE',
-          allowNull: false,
+          allowNull: true,
         },
         templateId: {
           name: 'templateId',
@@ -61,7 +61,7 @@ module.exports = {
           type: Sq.STRING,
           allowNull: false,
         },
-      }, {transaction});
+      }, { transaction });
     });
   },
 

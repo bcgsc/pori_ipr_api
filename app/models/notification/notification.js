@@ -10,6 +10,7 @@ module.exports = (sequelize, Sq) => {
         name: 'userId',
         field: 'user_id',
         unique: false,
+        allowNull: true,
         references: {
           model: 'users',
           key: 'id',
@@ -38,6 +39,7 @@ module.exports = (sequelize, Sq) => {
         name: 'userGroupId',
         field: 'user_group_id',
         unique: false,
+        allowNull: true,
         references: {
           model: 'user_groups',
           key: 'id',
@@ -57,13 +59,26 @@ module.exports = (sequelize, Sq) => {
     {
       ...DEFAULT_OPTIONS,
       tableName: 'notifications',
+      scopes: {
+        public: {
+          attributes: {
+            exclude: ['id', 'deletedAt', 'updatedBy', 'userId', 'projectId', 'userGroupId', 'templateId'],
+          },
+          include: [
+            { model: sequelize.models.user.scope('minimal'), as: 'user' },
+            { model: sequelize.models.userGroup.scope('minimal'), as: 'userGroup' },
+            { model: sequelize.models.template.scope('minimal'), as: 'template' },
+            { model: sequelize.models.project.scope('minimal'), as: 'project' },
+          ]
+        },
+      },
     },
   );
 
   // set instance methods
   notification.prototype.view = function (scope) {
     if (scope === 'public') {
-      const { id, deletedAt, updatedBy, ...publicView } = this.dataValues;
+      const { id, deletedAt, updatedBy, userId, projectId, userGroupId, templateId, ...publicView } = this.dataValues;
       return publicView;
     }
     return this;

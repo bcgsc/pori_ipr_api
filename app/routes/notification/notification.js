@@ -12,7 +12,6 @@ router.route('/')
         const projectIdent = req.body.project;
         const userGroupIdent = req.body.user_group;
         const templateIdent = req.body.template;
-
         let user;
         if (userIdent) {
             try {
@@ -86,16 +85,34 @@ router.route('/')
             }
         }
 
-        const results = await db.models.notification.scope('public').findAll({
-            where: {
-                template_id: template.id,
-                user_group_id: userGroup.id,
-                user_id: user.id,
-                project_id: project.id,
-            },
-            order: [['projectId', 'ASC'], ['templateId', 'ASC'], ['userGroupId', 'ASC'], ['userId', 'ASC']],
-        });
-        return res.json(results);
+        try {
+            let whereClause = {};
+
+            if (user) {
+                whereClause.user_id = user.id;
+            }
+            if (userGroup) {
+                whereClause.user_group_id = userGroup.id;
+            }
+            if (template) {
+                whereClause.template_id = template.id;
+            }
+            if (project) {
+                whereClause.project_id = project.id;
+            }
+            const results = await db.models.notification.scope('public').findAll({
+                where: whereClause
+            });
+
+            return res.json(results);
+        } catch (error) {
+            console.log(`${error}`);
+            logger.error(`${error}`);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: { message: 'Problem getting notification' },
+            });
+
+        }
     })
     .post(async (req, res) => {
         if (req.body.user && req.body.user_group) {
@@ -134,6 +151,7 @@ router.route('/')
             logger.error(`Unable to find project ${req.body.project}`);
             return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find project' } });
         }
+
 
         let user;
         let userGroup;
@@ -187,6 +205,7 @@ router.route('/')
             }
         }
 
+
         let template;
         if (req.body.template) {
             try {
@@ -205,24 +224,17 @@ router.route('/')
             return res.status(HTTP_STATUS.NOT_FOUND).json({ error: { message: 'Unable to find template' } });
         }
 
-
-
         try {
-            const result = await db.models.notification.create({
+            const newnotif = await db.models.notification.create({
                 projectId: project.id, userId: user ? user.id : null, userGroupId: userGroup ? userGroup.id : null, eventType: req.body.event_type, templateId: template.id,
             });
 
-            const output = {
-                ident: result.ident,
-                user: user ? user.username : null,
-                userGroup: userGroup ? userGroup.name : null,
-                project: project.name,
-                template: template.name,
-                eventType: req.body.event_type,
-                createdAt: result.createdAt,
-                updatedAt: result.updatedAt,
-            };
-            return res.status(HTTP_STATUS.CREATED).json(output);
+            // Load new notif with associations
+            const result = await db.models.notification.scope('public').findOne({
+                where: { id: newnotif.id },
+            });
+
+            return res.status(HTTP_STATUS.CREATED).json(result);
 
         } catch (error) {
             logger.error(`Error while creating notification ${error}`);
