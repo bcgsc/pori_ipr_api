@@ -28,7 +28,9 @@ router.use(async (req, res, next) => {
         if (!obj || !obj.id) {
           logger.error(`Unable to find ${key} ${req.body[key]}`);
           // Throw an error object that includes a status code
-          throw {message: `Unable to find ${key}`, statusCode: HTTP_STATUS.NOT_FOUND};
+          const error = new Error(`Unable to find ${key}`);
+          error.statusCode = HTTP_STATUS.NOT_FOUND;
+          throw error;
         }
         req.body[`${key}_id`] = obj.id;
       });
