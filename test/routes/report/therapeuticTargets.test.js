@@ -273,5 +273,6 @@ describe('/therapeutic-targets', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

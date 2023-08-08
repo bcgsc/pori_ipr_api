@@ -73,5 +73,6 @@ describe('Tests for update changes', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

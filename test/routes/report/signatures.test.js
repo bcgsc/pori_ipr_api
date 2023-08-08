@@ -253,6 +253,7 @@ describe('/reports/{REPORTID}/signatures', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
 

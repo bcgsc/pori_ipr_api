@@ -109,5 +109,6 @@ describe('/reports/{REPORTID}/summary/analyst-comments', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

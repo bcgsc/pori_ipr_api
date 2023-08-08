@@ -201,5 +201,6 @@ describe('/project/:project/user', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

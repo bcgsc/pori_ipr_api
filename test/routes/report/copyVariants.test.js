@@ -202,5 +202,6 @@ describe('/reports/{report}/copy-variants', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
