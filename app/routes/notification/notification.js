@@ -61,11 +61,7 @@ router.route('/')
     const projectIdents = userProjects.map((project) => {return project.ident;});
 
     if (req.body.project_id) {
-      if (isAdmin(req.user)) {
-        projectAccess = true;
-      }
-
-      if (projectIdents.includes(req.body.project)) {
+      if (isAdmin(req.user) or projectIdents.includes(req.body.project)) {
         projectAccess = true;
       }
 
