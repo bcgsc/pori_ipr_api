@@ -197,8 +197,11 @@ module.exports = (sequelize, Sq) => {
     previouslyReported: {
       name: 'previously_reported',
       field: 'previously_reported',
-      type: Sq.TEXT,
+      type: Sq.ENUM,
+      values: ['yes', 'no', null],
       allowNull: true,
+      defaultValue: null,
+
     },
     cglReviewResult: {
       name: 'cglReviewResult',

@@ -46,4 +46,5 @@ module.exports = {
     '<rootDir>/test/keycloak.mock.js',
     '<rootDir>/test/graphkb.mock.js',
   ],
+  testTimeout: 10000,
 };

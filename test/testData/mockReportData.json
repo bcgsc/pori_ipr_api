@@ -1,5 +1,6 @@
 {
     "template": "genomic",
+    "captiv8Score": 20,
     "sampleInfo": [
         {
             "Sample": "Tumour",
