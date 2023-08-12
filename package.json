@@ -8,7 +8,7 @@
     "start": "node --max-old-space-size=5500 bin/server.js",
     "start:prod": "NODE_ENV=production node --max-old-space-size=5500 bin/server.js",
     "start:dev": "NODE_ENV=development node --max-old-space-size=5500 bin/server.js",
-    "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=5500 jest --config config/jest/jest.config.js --forceExit",
+    "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=5500 jest --config config/jest/jest.config.js --log-heap-usage --forceExit",
     "test_local": "NODE_ENV=test jest --runInBand --testTimeout=50000 -c --forceExit config/jest/jest.config.js test/",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
   },
