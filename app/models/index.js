@@ -471,6 +471,34 @@ template.hasMany(analysisReports, {
   as: 'reports', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
 });
 
+// Notification (Template optional)
+const notification = require('./notification/notification')(sequelize, Sq);
+
+user.hasMany(notification, {
+  as: 'notifications', foreignKey: 'userId', onDelete: 'CASCADE', constraints: true,
+});
+userGroup.hasMany(notification, {
+  as: 'notifications', foreignKey: 'userGroupId', onDelete: 'CASCADE', constraints: true,
+});
+project.hasMany(notification, {
+  as: 'notifications', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+});
+template.hasMany(notification, {
+  as: 'notifications', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
+});
+notification.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+notification.belongsTo(user, {
+  as: 'user', foreignKey: 'userId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+notification.belongsTo(project, {
+  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+notification.belongsTo(userGroup, {
+  as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
 

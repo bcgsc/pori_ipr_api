@@ -237,5 +237,6 @@ describe('/reports/{report}/genes', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

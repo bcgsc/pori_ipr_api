@@ -476,5 +476,6 @@ describe('/templates/{template}/appendix with project_id', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

@@ -27,7 +27,7 @@ const checkReport = (report) => {
     'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
-    'kbUrl', 'pediatricIds',
+    'kbUrl', 'pediatricIds', 'captiv8Score',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
@@ -559,5 +559,6 @@ describe('/reports/{REPORTID}', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

@@ -173,5 +173,6 @@ describe('/reports/{report}/probe-test-information', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

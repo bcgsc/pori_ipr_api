@@ -165,5 +165,6 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

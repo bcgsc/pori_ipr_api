@@ -326,5 +326,6 @@ describe('/reports/{REPORTID}/presentation/slide', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

@@ -86,5 +86,6 @@ describe('/reports/{REPORTID}/pairwise-expression-correlation', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

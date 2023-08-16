@@ -29,6 +29,9 @@ module.exports = (sequelize, Sq) => {
           {as: 'owner', model: sequelize.models.user.scope('public')},
         ],
       },
+      minimal: {
+        attributes: ['ident', 'name'],
+      },
     },
   });
 

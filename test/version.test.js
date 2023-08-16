@@ -40,5 +40,6 @@ describe('Tests API version endpoint', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

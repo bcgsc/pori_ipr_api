@@ -18,6 +18,7 @@ let request;
 
 const UPDATE_DATA = {
   comments: 'New comments',
+  displayName: 'New display name',
 };
 
 const expressionVariantProperties = ['ident', 'gene', 'location', 'rnaReads', 'rpkm', 'tpm',
@@ -28,7 +29,7 @@ const expressionVariantProperties = ['ident', 'gene', 'location', 'rnaReads', 'r
   'biopsySiteQC', 'biopsySiteFoldChange', 'biopsySiteZScore',
   'internalPancancerPercentile', 'internalPancancerkIQR', 'internalPancancerQC',
   'internalPancancerFoldChange', 'internalPancancerZScore', 'kbCategory', 'germline',
-  'library', 'comments', 'gene'];
+  'library', 'comments', 'displayName', 'gene'];
 
 const checkExpressionVariant = (variantObject) => {
   expressionVariantProperties.forEach((element) => {
@@ -193,5 +194,6 @@ describe('/reports/{report}/expression-variants', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

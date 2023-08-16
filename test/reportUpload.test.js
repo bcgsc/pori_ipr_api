@@ -137,5 +137,6 @@ describe('Test for uploading a report with empty image data', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
