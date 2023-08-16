@@ -16,6 +16,11 @@ module.exports = (sequelize, Sq) => {
       field: 'age_of_consent',
       type: Sq.INTEGER,
     },
+    captiv8Score: {
+      name: 'captiv8Score',
+      field: 'captiv8_score',
+      type: Sq.INTEGER,
+    },
     alternateIdentifier: {
       name: 'alternateIdentifier',
       field: 'alternate_identifier',
@@ -115,6 +120,11 @@ module.exports = (sequelize, Sq) => {
     tumourContent: {
       name: 'tumourContent',
       field: 'tumour_content',
+      type: Sq.FLOAT,
+    },
+    m1m2Score: {
+      name: 'm1m2Score',
+      field: 'm1m2_score',
       type: Sq.FLOAT,
     },
     ploidy: {

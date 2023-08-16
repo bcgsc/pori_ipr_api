@@ -222,5 +222,6 @@ describe('/reports/{REPORTID}/hla-types', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

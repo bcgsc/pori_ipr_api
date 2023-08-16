@@ -123,5 +123,6 @@ describe('Tests for deleting a report and all of its components', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

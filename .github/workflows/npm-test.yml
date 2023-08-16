@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [14, 16, 18, 20]
     name: node-${{ matrix.node }}
     services:
       postgres:
         # Docker Hub image
-        image: postgres:9.6-alpine # Should match Dockerfile.db
+        image: postgres:11-alpine # Should match Dockerfile.db
         env:
           POSTGRES_PASSWORD: postgres
         ports:

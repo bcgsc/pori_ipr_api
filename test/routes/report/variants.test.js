@@ -89,6 +89,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   let rapidGeneTA;
   let rapidGeneCR;
+  let rapidGeneGeneric;
   let rapidGeneUSOncogene;
   let rapidGeneUStumourSuppressor;
   let rapidGeneUSAllTrue;
@@ -96,6 +97,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   let rapidVariantTA;
   let rapidVariantCR;
+  let rapidVariantTAGeneric;
+  let rapidVariantCRGeneric;
   let rapidVariantUSOncogene;
   let rapidVariantUStumourSuppressor;
   let rapidVariantUSAllTrue;
@@ -105,11 +108,14 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidVariantTmb;
 
   let rapidDataIprA;
+  let rapidDataIprAGeneric;
   let rapidDataIprB;
   let rapidDataAlreadyReported;
   let rapidDataIprANotTherapeuticMsi;
+  let rapidDataIprANotTherapeuticTmb;
   let rapidDataIprANotTherapeutic;
   let rapidDataTherapeuticIprC;
+  let rapidDataTherapeuticIprCGeneric;
   let rapidDataUnknownIprC;
   let rapidDataUnknownNull;
   let rapidDataTherapeuticNull;
@@ -117,11 +123,14 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let rapidDataExp;
 
   let kbMatchRapidDataIprA;
+  let kbMatchRapidDataIprAGeneric;
   let kbMatchRapidDataIprB;
   let kbMatchRapidDataIprANotTherapeutic;
   let kbMatchRapidDataIprANotTherapeuticMsi;
+  let kbMatchRapidDataIprANotTherapeuticTmb;
   let kbMatchRapidDataAlreadyReported;
   let kbMatchRapidDataTherapeuticIprC;
+  let kbMatchRapidDataTherapeuticIprCGeneric;
   let kbMatchRapidDataUnknownIprC;
   let kbMatchRapidDataIprTherapeuticNull;
   let kbMatchRapidDataIprUnknownNull;
@@ -130,6 +139,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   let therapeuticAssociationMatches;
   let cancerRelevanceMatches;
+  let unknownSignificanceMatches;
   let excludedMatches;
 
   let therapeuticAssociationVariants;
@@ -159,6 +169,12 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     rapidGeneCR = await db.models.genes.create({
       reportId: rapidReport.id,
       name: 'CR',
+    });
+    rapidGeneGeneric = await db.models.genes.create({
+      reportId: rapidReport.id,
+      name: 'Generic',
+      oncogene: true,
+      tumourSuppressor: true,
     });
 
     rapidGeneUSOncogene = await db.models.genes.create({
@@ -195,6 +211,15 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       geneId: rapidGeneCR.id,
     });
 
+    rapidVariantTAGeneric = await db.models.smallMutations.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneGeneric.id,
+    });
+    rapidVariantCRGeneric = await db.models.smallMutations.create({
+      reportId: rapidReport.id,
+      geneId: rapidGeneGeneric.id,
+    });
+
     rapidVariantUSOncogene = await db.models.smallMutations.create({
       reportId: rapidReport.id,
       geneId: rapidGeneUSOncogene.id,
@@ -222,7 +247,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
     rapidVariantTmb = await db.models.tmburMutationBurden.create({
       reportId: rapidReport.id,
-      geneId: rapidGeneUSAllTrue.id,
     });
 
     rapidDataIprA = {
@@ -231,6 +255,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'this should be in table 1',
       matchedCancer: true,
     };
 
@@ -241,6 +266,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-B',
       matchedCancer: true,
+      kbVariant: 'thisshouldbeintable1',
     };
 
     rapidDataAlreadyReported = {
@@ -249,6 +275,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataIprANotTherapeutic = {
@@ -257,6 +284,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'this.should.be:table2',
     };
 
     rapidDataIprANotTherapeuticMsi = {
@@ -265,6 +293,16 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'msi',
       iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'also should be table 2',
+    };
+
+    rapidDataIprANotTherapeuticTmb = {
+      reportId: rapidReport.id,
+      variantId: rapidVariantTmb.id,
+      category: 'unknown',
+      variantType: 'tmb',
+      iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataTherapeuticIprC = {
@@ -273,6 +311,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-C',
+      kbVariant: 'table2 specific mutation',
     };
 
     rapidDataUnknownIprC = {
@@ -281,6 +320,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-C',
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataUnknownNull = {
@@ -289,6 +329,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'unknown',
       variantType: 'cnv',
       iprEvidenceLevel: null,
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataTherapeuticNull = {
@@ -297,6 +338,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'cnv',
       iprEvidenceLevel: null,
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataIprAMatchedCancerFalse = {
@@ -306,6 +348,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'cnv',
       iprEvidenceLevel: 'IPR-A',
       matchedCancer: false,
+      kbVariant: 'geneX specific mutation',
     };
 
     rapidDataExp = {
@@ -315,6 +358,26 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       variantType: 'exp',
       iprEvidenceLevel: 'IPR-A',
       matchedCancer: true,
+      kbVariant: 'geneX specific mutation',
+    };
+
+    rapidDataIprAGeneric = {
+      reportId: rapidReport.id,
+      variantId: rapidVariantTAGeneric.id,
+      category: 'therapeutic',
+      variantType: 'mut',
+      iprEvidenceLevel: 'IPR-A',
+      kbVariant: 'geneX missense',
+      matchedCancer: true,
+    };
+
+    rapidDataTherapeuticIprCGeneric = {
+      reportId: rapidReport.id,
+      variantId: rapidVariantCRGeneric.id,
+      category: 'therapeutic',
+      variantType: 'mut',
+      iprEvidenceLevel: 'IPR-C',
+      kbVariant: 'geneX mutation',
     };
 
     kbMatchRapidDataIprA = await db.models.kbMatches.create(rapidDataIprA);
@@ -324,6 +387,9 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     );
     kbMatchRapidDataIprANotTherapeuticMsi = await db.models.kbMatches.create(
       rapidDataIprANotTherapeuticMsi,
+    );
+    kbMatchRapidDataIprANotTherapeuticTmb = await db.models.kbMatches.create(
+      rapidDataIprANotTherapeuticTmb,
     );
     kbMatchRapidDataAlreadyReported = await db.models.kbMatches.create(
       rapidDataAlreadyReported,
@@ -340,6 +406,11 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     kbMatchRapidDataExp = await
     db.models.kbMatches.create(rapidDataExp);
 
+    kbMatchRapidDataIprAGeneric = await db.models.kbMatches.create(rapidDataIprAGeneric);
+    kbMatchRapidDataTherapeuticIprCGeneric = await db.models.kbMatches.create(
+      rapidDataTherapeuticIprCGeneric,
+    );
+
     therapeuticAssociationMatches = [
       kbMatchRapidDataIprA,
       kbMatchRapidDataIprB,
@@ -352,6 +423,11 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       kbMatchRapidDataIprUnknownNull,
       kbMatchRapidDataIprAMatchedCancerFalse,
       kbMatchRapidDataIprANotTherapeuticMsi,
+      kbMatchRapidDataIprANotTherapeuticTmb,
+    ];
+    unknownSignificanceMatches = [
+      kbMatchRapidDataIprAGeneric,
+      kbMatchRapidDataTherapeuticIprCGeneric,
     ];
     excludedMatches = [
       kbMatchRapidDataExp,
@@ -364,12 +440,14 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     cancerRelevanceVariants = [
       rapidVariantCR,
       rapidVariantMsi,
+      rapidVariantTmb,
     ];
     unknownSignificanceVariants = [
       rapidVariantUSOncogene,
       rapidVariantUStumourSuppressor,
       rapidVariantUSAllTrue,
-      rapidVariantTmb,
+      rapidVariantTAGeneric,
+      rapidVariantCRGeneric,
     ];
     excludedVariants = [rapidVariantUSAllFalse, rapidVariantMss];
   }, LONGER_TIMEOUT);
@@ -417,7 +495,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       checkRapidReportMatches(
         res.body,
         cancerRelevanceMatches,
-        [...therapeuticAssociationMatches, ...excludedMatches],
+        [...therapeuticAssociationMatches, ...excludedMatches, ...unknownSignificanceVariants],
       );
     });
 
@@ -437,6 +515,12 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         unknownSignificanceVariants,
         [...therapeuticAssociationVariants, ...excludedVariants, ...cancerRelevanceVariants],
       );
+
+      checkRapidReportMatches(
+        res.body,
+        unknownSignificanceMatches,
+        [...therapeuticAssociationMatches, ...excludedMatches, cancerRelevanceMatches],
+      );
     });
   });
 
@@ -447,5 +531,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

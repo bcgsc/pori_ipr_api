@@ -59,7 +59,7 @@ router.route('/:kbMatch([A-z0-9-]{36})')
 
 router.route('/')
   .get(async (req, res) => {
-    const {query: {matchedCancer, approvedTherapy, category}} = req;
+    const {query: {matchedCancer, approvedTherapy, category, iprEvidenceLevel}} = req;
 
     // Check cache
     const key = generateKey(`/reports/${req.report.ident}/kb-matches`, req.query);
@@ -79,6 +79,7 @@ router.route('/')
       const results = await db.models.kbMatches.scope('public').findAll({
         where: {
           reportId: req.report.id,
+          ...((iprEvidenceLevel) ? {iprEvidenceLevel: {[Op.in]: iprEvidenceLevel.split(',')}} : {}),
           ...((category) ? {category: {[Op.in]: category.split(',')}} : {}),
           ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
           ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),

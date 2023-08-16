@@ -35,6 +35,9 @@ module.exports = (sequelize, Sq) => {
           exclude: ['id', 'deletedAt', 'updatedBy'],
         },
       },
+      minimal: {
+        attributes: ['ident', 'name'],
+      },
     },
   });
 

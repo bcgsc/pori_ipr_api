@@ -24,10 +24,10 @@ let request;
 const checkReport = (report) => {
   [
     'tumourContent', 'ploidy', 'subtyping', 'ident', 'patientId',
-    'sampleInfo', 'seqQC', 'reportVersion',
+    'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
-    'kbUrl', 'pediatricIds',
+    'kbUrl', 'pediatricIds', 'captiv8Score',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
@@ -93,6 +93,7 @@ describe('/reports/{REPORTID}', () => {
       templateId: template.id,
       patientId: mockReportData.patientId,
       tumourContent: 100,
+      m1m2Score: 22.5,
     });
     await db.models.reportProject.create({
       reportId: report.id,
@@ -491,6 +492,22 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
+    describe('PUT', () => {
+      test('M1M2 Score update OK', async () => {
+        const res = await request
+          .put(`/api/reports/${report.ident}`)
+          .auth(username, password)
+          .type('json')
+          .send({
+            m1m2Score: 98.5,
+          })
+          .expect(HTTP_STATUS.OK);
+
+        checkReport(res.body);
+        expect(res.body).toHaveProperty('m1m2Score', 98.5);
+      });
+    });
+
     test('ploidy update OK', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}`)
@@ -542,5 +559,6 @@ describe('/reports/{REPORTID}', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

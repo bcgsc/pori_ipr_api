@@ -6,10 +6,8 @@ const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
-const {generateKey} = require('../../libs/cacheFunctions');
 const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
@@ -162,19 +160,6 @@ router.route('/')
       }
     }
 
-    // Generate cache key
-    const key = (req.query.role) ? null : generateKey('/reports', req.query, {projectAccess: projects});
-
-    try {
-      const cacheResults = await cache.get(key);
-      if (cacheResults) {
-        res.type('json');
-        return res.send(cacheResults);
-      }
-    } catch (error) {
-      logger.error(`Error while checking cache for reports ${error}`);
-    }
-
     // Generate options for report query
     const opts = {
       where: {
@@ -255,10 +240,6 @@ router.route('/')
     try {
       const reports = await db.models.report.scope('public').findAndCountAll(opts);
       const results = {total: reports.count, reports: reports.rows};
-
-      if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 14400);
-      }
 
       return res.json(results);
     } catch (error) {

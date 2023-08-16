@@ -1,5 +1,6 @@
 {
     "template": "genomic",
+    "captiv8Score": 20,
     "sampleInfo": [
         {
             "Sample": "Tumour",
@@ -66,6 +67,7 @@
     "expression_matrix": "v9",
     "patientId": "UPLOADPAT01",
     "tumourContent": 75,
+    "m1m2Score": 22.75,
     "ploidy": "diploid",
     "ageOfConsent": 20,
     "alternateIdentifier": "UPLOADPATIENT01",
@@ -195,6 +197,7 @@
         "proteinIndels": 3,
         "proteinSnvTmb": 1.69,
         "proteinIndelTmb": 0.09,
+        "kbCategory": "test kb category",
         "msiScore": 0.0
     },
     "kbMatches": [

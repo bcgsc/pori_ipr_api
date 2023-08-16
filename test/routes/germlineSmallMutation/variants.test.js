@@ -28,6 +28,7 @@ const UPDATE_DATA = {
   knownToHcp: 'yes',
   reasonNoHcpReferral: 'reason for hcp referral',
   hgvsCdna: 'new hgvsCdna',
+  previouslyReported: 'yes',
 };
 
 const germlineVariantProperties = [
@@ -236,5 +237,6 @@ describe('/germline-small-mutation-reports/:gsm_report/variants', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
