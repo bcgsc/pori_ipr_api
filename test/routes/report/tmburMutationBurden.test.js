@@ -23,7 +23,7 @@ const tmburMutationBurdenProperties = ['ident', 'updatedAt', 'createdAt',
   'totalGenomeSnvs', 'totalGenomeIndels', 'genomeSnvTmb', 'genomeIndelTmb',
   'cdsBasesIn1To22AndXAndY', 'cdsSnvs', 'cdsIndels', 'cdsSnvTmb', 'cdsIndelTmb',
   'proteinSnvs', 'proteinIndels', 'proteinSnvTmb', 'proteinIndelTmb', 'msiScore',
-  'kbCategory'];
+  'kbCategory', 'comments', 'displayName'];
 
 const checkTmburMutationBurden = (tmburMutationObject) => {
   tmburMutationBurdenProperties.forEach((element) => {
@@ -83,11 +83,18 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
         .send({
           cdsSnvs: 64,
           comments: 'new comment',
+          displayName: 'New display name',
         })
         .expect(HTTP_STATUS.OK);
 
       checkTmburMutationBurden(res.body);
-      expect(res.body).toEqual(expect.objectContaining({cdsSnvs: 64, comments: 'new comment'}));
+      expect(res.body).toEqual(expect.objectContaining(
+        {
+          cdsSnvs: 64,
+          comments: 'new comment',
+          displayName: 'New display name',
+        },
+      ));
     });
 
     test('error on unexpected value', async () => {
@@ -136,5 +143,6 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

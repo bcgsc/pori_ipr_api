@@ -274,5 +274,6 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

@@ -593,5 +593,6 @@ describe('/germline-small-mutation-reports', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

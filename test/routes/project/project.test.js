@@ -222,5 +222,6 @@ describe('/project', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

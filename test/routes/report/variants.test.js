@@ -531,5 +531,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

@@ -18,6 +18,7 @@ let request;
 
 const UPDATE_DATA = {
   comments: 'New comments',
+  displayName: 'New display name',
 };
 
 const proteinVariantProperties = [
@@ -33,6 +34,7 @@ const proteinVariantProperties = [
   'library',
   'comments',
   'gene',
+  'displayName',
 ];
 
 const checkProteinVariant = (variantObject) => {
@@ -196,5 +198,6 @@ describe('/reports/{report}/protein-variants', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
