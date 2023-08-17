@@ -16,6 +16,11 @@ module.exports = (sequelize, Sq) => {
       field: 'age_of_consent',
       type: Sq.INTEGER,
     },
+    captiv8Score: {
+      name: 'captiv8Score',
+      field: 'captiv8_score',
+      type: Sq.INTEGER,
+    },
     alternateIdentifier: {
       name: 'alternateIdentifier',
       field: 'alternate_identifier',

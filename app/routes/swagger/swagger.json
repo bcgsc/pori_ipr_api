@@ -4421,16 +4421,21 @@
             }
           },
           {
-            "name": "rapidTable",
+            "name": "category",
             "in": "query",
             "required": false,
-            "description": "Filter according to chosen rapidTable",
+            "description": "Filter by category field. Comma separated field",
             "schema": {
-              "type": "string",
-              "enum": [
-                "therapeuticAssociation",
-                "cancerRelevance"
-              ]
+              "type": "string"
+            }
+          },
+          {
+            "name": "iprEvidenceLevel",
+            "in": "query",
+            "required": false,
+            "description": "Filter by iprEvidenceLevel field. Comma separated field",
+            "schema": {
+              "type": "string"
             }
           }
         ],

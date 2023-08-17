@@ -14,6 +14,7 @@ const reportsRoute = require('./report/report');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
+const notificationRoute = require('./notification');
 const templateRoute = require('./template');
 
 // Get module route files
@@ -80,6 +81,9 @@ class Routing extends RouterInterface {
 
     // Get Project Routes
     this.router.use('/project', projectRoute);
+
+    // Get Notification Routes
+    this.router.use('/notification', notificationRoute);
 
     // Get template routes
     this.router.use('/templates', templateRoute);

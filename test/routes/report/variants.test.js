@@ -367,7 +367,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       category: 'therapeutic',
       variantType: 'mut',
       iprEvidenceLevel: 'IPR-A',
-      kbVariant: 'geneX mutation',
+      kbVariant: 'geneX missense',
       matchedCancer: true,
     };
 
@@ -531,5 +531,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

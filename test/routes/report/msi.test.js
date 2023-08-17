@@ -16,15 +16,17 @@ const CREATE_DATA = {
   score: 23.5,
   kbCategory: 'moderate',
   comments: 'Initial Comment',
+  displayName: 'display name',
 };
 const UPDATE_DATA = {
   score: 89.5,
   kbCategory: 'updated category',
   comments: 'Updated Comment',
+  displayName: 'New display name',
 };
 
 const msiProperties = [
-  'ident', 'createdAt', 'updatedAt', 'score', 'kbCategory', 'comments',
+  'ident', 'createdAt', 'updatedAt', 'score', 'kbCategory', 'comments', 'displayName',
 ];
 
 const checkMsi = (msiObject) => {
@@ -210,5 +212,6 @@ describe('/reports/{REPORTID}/msi', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

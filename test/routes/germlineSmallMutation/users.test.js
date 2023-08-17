@@ -244,5 +244,6 @@ describe('/germline-small-mutation-reports/{gsm_report}/users', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

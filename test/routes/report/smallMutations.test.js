@@ -18,13 +18,14 @@ let request;
 
 const UPDATE_DATA = {
   comments: 'New comments',
+  displayName: 'New display name',
 };
 
 const smallMutationProperties = ['transcript', 'proteinChange', 'chromosome', 'startPosition',
   'endPosition', 'refSeq', 'altSeq', 'zygosity', 'tumourAltCount', 'tumourRefCount', 'tumourDepth',
   'rnaAltCount', 'rnaRefCount', 'rnaDepth', 'normalAltCount', 'normalRefCount', 'normalDepth',
   'hgvsProtein', 'hgvsCds', 'hgvsGenomic', 'ncbiBuild', 'germline',
-  'tumourAltCopies', 'tumourRefCopies', 'library', 'comments', 'gene'];
+  'tumourAltCopies', 'tumourRefCopies', 'library', 'comments', 'displayName', 'gene'];
 
 const checkSmallMutation = (variantObject) => {
   smallMutationProperties.forEach((element) => {
@@ -187,5 +188,6 @@ describe('/reports/{report}/small-mutations', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });

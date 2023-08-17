@@ -156,5 +156,6 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
 });
 
 afterAll(async () => {
+  global.gc && global.gc();
   await server.close();
 });
