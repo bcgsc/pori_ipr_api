@@ -9,6 +9,9 @@ module.exports = {
     msi: 'msi',
     tmb: 'tmburMutationBurden',
   },
+  NOTIFICATION_EVENT: {
+    USER_BOUND: 'userBound',
+  },
   KB_PIVOT_COLUMN: 'variantType',
   GENE_LINKED_VARIANT_MODELS: [
     'expressionVariants',

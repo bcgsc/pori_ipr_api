@@ -1,9 +1,10 @@
 const nodemailer = require('nodemailer');
 const CONFIG = require('../config');
+const db = require('../models');
 
 const {email, password} = CONFIG.get('email');
 
-const sendEmail = () => {
+const sendEmail = (subject, text, toEmail) => {
   const transporter = nodemailer.createTransport({
     host: 'webmail.bcgsc.ca',
     auth: {
@@ -16,10 +17,10 @@ const sendEmail = () => {
   });
 
   const mailOptions = {
-    from: 'rpletz@bcgsc.ca',
-    to: 'rpletz@bcgsc.ca',
-    subject: 'Sending Email using Node.js',
-    text: 'That was easy!',
+    from: `${email}@bcgsc.ca`,
+    to: toEmail,
+    subject,
+    text,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -31,4 +32,59 @@ const sendEmail = () => {
   });
 };
 
-module.exports = sendEmail;
+const getEmailList = async (triggers) => {
+  const notifs = await db.models.notification.scope('extended').findAll({
+    where: triggers,
+  });
+
+  const emailList = [];
+  for (const notif of notifs) {
+    if (notif.user) {
+      if (!emailList.includes(notif.user.email)) {
+        emailList.push(notif.user.email);
+      }
+    } else if (notif.userGroup) {
+      for (const groupUser of notif.userGroup.users) {
+        if (!emailList.includes(groupUser.email)) {
+          emailList.push(groupUser.email);
+        }
+      }
+    }
+  }
+
+  return emailList;
+};
+
+const notifyUsers = async (subject, text, triggers) => {
+  const emailList = await getEmailList(triggers);
+
+  const transporter = nodemailer.createTransport({
+    host: 'webmail.bcgsc.ca',
+    auth: {
+      user: email,
+      pass: password,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  emailList.forEach((toEmail) => {
+    const mailOptions = {
+      from: `${email}@bcgsc.ca`,
+      to: toEmail,
+      subject,
+      text,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Email sent: ${info.response}`);
+      }
+    });
+  });
+};
+
+module.exports = {sendEmail, getEmailList, notifyUsers};
