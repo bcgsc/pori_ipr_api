@@ -15,16 +15,18 @@ const PROBE_RESULT_DATA = {
   variant: 'TEST VARIANT',
   sample: 'TEST SAMPLE',
   comments: 'TEST COMMENTS',
+  displayName: 'TEST DISPLAY NAME',
 };
 
 const PROBE_RESULT_UPDATE_DATA = {
   variant: 'UPDATED VARIANT',
   sample: 'UPDATED SAMPLE',
   comments: 'UPDATED COMMENTS',
+  displayName: 'NEW DISPLAY NAME',
 };
 
 const probeResultProperties = [
-  'ident', 'createdAt', 'variant', 'sample', 'comments', 'gene',
+  'ident', 'createdAt', 'variant', 'sample', 'comments', 'gene', 'displayName',
 ];
 
 const checkProbeResult = (probeResultObject) => {
@@ -37,6 +39,7 @@ const checkProbeResult = (probeResultObject) => {
     geneId: expect.any(Number),
     updatedBy: expect.any(Number),
     deletedAt: expect.any(String),
+    displayName: expect.any(String),
   }));
 };
 
