@@ -40,12 +40,12 @@ const getEmailList = async (triggers) => {
   const emailList = [];
   for (const notif of notifs) {
     if (notif.user) {
-      if (!emailList.includes(notif.user.email)) {
+      if (!emailList.includes(notif.user.email) && notif.user.email.endsWith('@bcgsc.ca')) {
         emailList.push(notif.user.email);
       }
     } else if (notif.userGroup) {
       for (const groupUser of notif.userGroup.users) {
-        if (!emailList.includes(groupUser.email)) {
+        if (!emailList.includes(groupUser.email) && groupUser.email.endsWith('@bcgsc.ca')) {
           emailList.push(groupUser.email);
         }
       }

@@ -11,6 +11,7 @@ module.exports = {
   },
   NOTIFICATION_EVENT: {
     USER_BOUND: 'userBound',
+    REPORT_CREATED: 'reportCreated',
   },
   KB_PIVOT_COLUMN: 'variantType',
   GENE_LINKED_VARIANT_MODELS: [

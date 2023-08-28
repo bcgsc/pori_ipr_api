@@ -2,6 +2,7 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 const {Op} = require('sequelize');
 
+const email = require('../../libs/email');
 const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
@@ -16,7 +17,7 @@ const router = express.Router({mergeParams: true});
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {REPORT_UPDATE_BASE_URI, NOTIFICATION_EVENT} = require('../../constants');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 const reportGetSchema = require('../../schemas/report/retrieve/reportGetQueryParamSchema');
@@ -255,9 +256,18 @@ router.route('/')
 
     try {
       req.body.createdBy_id = req.user.id;
-      const reportIdent = await createReport(req.body);
+      const report = await createReport(req.body);
 
-      return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: reportIdent});
+      await email.notifyUsers(
+        `New report by ${req.user.firstName} ${req.user.firstName}`,
+        `New report ${report.ident} created by ${req.user.firstName} ${req.user.firstName}`,
+        {
+          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
+          templateId: report.templateId,
+        },
+      );
+
+      return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
     } catch (error) {
       logger.error(error.message || error);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});

@@ -336,7 +336,7 @@ const createReport = async (data) => {
   try {
     await createReportSections(report, data, transaction);
     await transaction.commit();
-    return report.ident;
+    return report;
   } catch (error) {
     await transaction.rollback();
     throw error;
