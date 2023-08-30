@@ -95,6 +95,11 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
+    // TODO: Delete admin check once notification is properly implemented/tested
+    if (!isAdmin(req.user)) {
+      return res.status(HTTP_STATUS.FORBIDDEN)
+    };
+
     if (req.body.user_id && req.body.user_group_id) {
       return res.status(HTTP_STATUS.CONFLICT).json({
         error: {message: 'Only one of user and user group should be specified'},
