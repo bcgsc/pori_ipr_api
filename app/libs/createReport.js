@@ -317,6 +317,8 @@ const createReport = async (data) => {
     throw new Error(`Unable to create report ${error.message || error}`);
   }
 
+  report.projects = [];
+
   // find or create report-project association
   for (const projectEntry of allProjects) {
     try {
@@ -326,7 +328,8 @@ const createReport = async (data) => {
         additionalProject: projectEntry.additionalProject,
       };
 
-      await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData, transaction});
+      const project = await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData, transaction});
+      report.projects.push(project[0]);
     } catch (error) {
       await transaction.rollback();
       throw new Error(`Unable to find or create report-project association ${error.message || error}`);

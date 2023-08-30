@@ -257,13 +257,22 @@ router.route('/')
     try {
       req.body.createdBy_id = req.user.id;
       const report = await createReport(req.body);
+      const projectIdArray = [];
+      report.projects.forEach((project) => {
+        projectIdArray.push(project.project_id);
+      });
 
       await email.notifyUsers(
-        `New report by ${req.user.firstName} ${req.user.firstName}`,
-        `New report ${report.ident} created by ${req.user.firstName} ${req.user.firstName}`,
+        `New report by ${req.user.firstName} ${req.user.lastName}`,
+        `New report:
+        Created by: ${req.user.firstName} ${req.user.lastName}
+        Project: ${req.body.project}
+        Template: ${req.body.template}
+        Patient: ${req.body.patientId}`,
         {
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
+          projectId: projectIdArray,
         },
       );
 
