@@ -7,7 +7,7 @@ module.exports = {
         TABLE,
         'cancer_gene',
         {
-          type: Sq.INTEGER,
+          type: Sq.BOOLEAN,
         },
         {transaction},
       );
