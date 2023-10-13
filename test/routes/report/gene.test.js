@@ -19,6 +19,7 @@ const GENE_DATA = {
   knownFusionPartner: true,
   therapeuticAssociated: true,
   knownSmallMutation: true,
+  cancerGene: true,
 };
 
 const GENE_UPDATE_DATA = {
@@ -30,12 +31,13 @@ const GENE_UPDATE_DATA = {
   knownFusionPartner: false,
   therapeuticAssociated: false,
   knownSmallMutation: false,
+  cancerGene: false,
 };
 
 const geneProperties = [
   'ident', 'createdAt', 'name', 'tumourSuppressor', 'oncogene',
   'cancerRelated', 'drugTargetable', 'knownFusionPartner',
-  'therapeuticAssociated', 'knownSmallMutation',
+  'therapeuticAssociated', 'knownSmallMutation', 'cancerGene',
 ];
 
 const checkGene = (geneObject) => {
