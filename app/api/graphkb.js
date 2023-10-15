@@ -93,7 +93,47 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
   });
 };
 
+/* Get IPR evidence level descriptions from GraphKB
+ *
+ * @param {string} graphkbToken the Authorization token for the connection to GraphKB
+ *
+ * @returns {object} response body from graphkb
+ */
+const graphkbStatement = async (graphkbToken, statementId) => {
+  const {uri} = CONFIG.get('graphkb');
+
+  const query = {
+    filters: [
+      {'@rid': `${statementId}`},
+    ],
+    limit: 1,
+    target: 'Statement',
+    returnProperties: [
+      'conditions.@rid',
+      'conditions.@class',
+      'conditions.displayName',
+      'conditions.reference1.displayName',
+      'conditions.type.displayName',
+      'conditions.reference2.displayName',
+      'relevance.@rid',
+      'relevance.displayName',
+    ],
+  };
+
+  return request({
+    url: `${uri}/query`,
+    method: 'POST',
+    body: JSON.stringify(query),
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 module.exports = {
   graphkbAutocomplete,
   graphkbEvidenceLevels,
+  graphkbStatement,
 };
