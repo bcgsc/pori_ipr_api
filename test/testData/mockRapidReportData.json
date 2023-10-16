@@ -24,14 +24,6 @@
         {
             "category": "unknown",
             "variantType": "cnv",
-            "variant": "TA",
-            "iprEvidenceLevel": "IPR-A",
-            "kbVariant": "geneX specific mutation 1",
-            "evidenceLevel": "table null"
-        },
-        {
-            "category": "unknown",
-            "variantType": "cnv",
             "variant": "CR",
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this.should.be:table2",
@@ -96,15 +88,6 @@
         },
         {
             "category": "therapeutic",
-            "variantType": "exp",
-            "variant": "alltrueexp",
-            "iprEvidenceLevel": "IPR-A",
-            "kbVariant": "geneX specific mutation 7",
-            "matchedCancer": true,
-            "evidenceLevel": "table null"
-        },
-        {
-            "category": "therapeutic",
             "variantType": "mut",
             "variant": "tageneric",
             "iprEvidenceLevel": "IPR-A",
@@ -119,6 +102,23 @@
             "iprEvidenceLevel": "IPR-C",
             "kbVariant": "geneX mutation",
             "evidenceLevel": "table 3"
+        },
+        {
+            "category": "unknown",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX specific mutation 1",
+            "evidenceLevel": "table null"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "exp",
+            "variant": "alltrueexp",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX specific mutation 7",
+            "matchedCancer": true,
+            "evidenceLevel": "table null"
         }
     ],
     "genes": [
