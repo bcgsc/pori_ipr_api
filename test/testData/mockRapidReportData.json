@@ -10,6 +10,17 @@
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this should be in table 1",
             "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 1"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "this should be in table 1",
+            "matchedCancer": true,
+            "relevance": "resistance",
             "evidenceLevel": "table 1"
         },
         {
@@ -19,7 +30,37 @@
             "iprEvidenceLevel": "IPR-B",
             "kbVariant": "thisshouldbeintable1",
             "matchedCancer": true,
+            "relevance": "sensitivity",
             "evidenceLevel": "table 1"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "thisshouldbeintable2",
+            "matchedCancer": true,
+            "relevance": "resistance",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 2",
+            "matchedCancer": true,
+            "relevance": "no sensitivity",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 2",
+            "matchedCancer": true,
+            "evidenceLevel": "table 2"
         },
         {
             "category": "unknown",

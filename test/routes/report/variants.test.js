@@ -42,7 +42,7 @@ const checkRapidReportMatches = (
   }
 
   kbMatches.forEach((match) => {
-    if (!match.evidenceLevel === expectedTable) {
+    if (!(match.evidenceLevel === expectedTable)) {
       found = false;
     }
   });
@@ -57,7 +57,7 @@ const checkVariantsFilter = (
   let found = true;
 
   variants.forEach((variant) => {
-    if (!variant.displayName === expectedTable) {
+    if (!(variant.displayName === expectedTable)) {
       found = false;
     }
   });
