@@ -93,9 +93,10 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
   });
 };
 
-/* Get IPR evidence level descriptions from GraphKB
+/* Get Statement info from GraphKB
  *
  * @param {string} graphkbToken the Authorization token for the connection to GraphKB
+ * @param {string} statementId the statement RID to query GraphKB with
  *
  * @returns {object} response body from graphkb
  */
