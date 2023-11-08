@@ -44,6 +44,12 @@ module.exports = (sequelize, Sq) => {
         schema: {type: 'string', format: 'email'},
       },
     },
+    lastLoginAt: {
+      name: 'lastLoginAt',
+      field: 'last_login_at',
+      type: Sq.DATE,
+      defaultValue: null,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     indexes: [
