@@ -61,7 +61,7 @@ jobs:
           PGPASSWORD: demo
           IPR_GRAPHKB_PASSWORD: demo
           IPR_DATABASE_PASSWORD: demo
-      - run: npm run test
+      - run: npm run test --verbose
         env:
           IPR_DATABASE_HOSTNAME: localhost
           IPR_DATABASE_NAME: ipr_demo
