@@ -1,0 +1,260 @@
+{
+    "template": "rapid",
+    "patientId": "UPLOADPAT01",
+    "project": "TEST",
+    "kbMatches": [
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 1",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 1"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "this should be in table 1",
+            "matchedCancer": true,
+            "relevance": "resistance",
+            "evidenceLevel": "table 1"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "thisshouldbeintable1",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 1"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "thisshouldbeintable2",
+            "matchedCancer": true,
+            "relevance": "resistance",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 2",
+            "matchedCancer": true,
+            "relevance": "no sensitivity",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 2",
+            "matchedCancer": true,
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "unknown",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this.should.be:table2",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "unknown",
+            "variantType": "msi",
+            "variant": "msi",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "also should be table 2",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "unknown",
+            "variantType": "tmb",
+            "variant": "tmb",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX specific mutation 2",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": "IPR-C",
+            "kbVariant": "table2 specific mutation",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "unknown",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": "IPR-C",
+            "kbVariant": "geneX specific mutation 3",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "unknown",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": null,
+            "kbVariant": "geneX specific mutation 4",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": null,
+            "kbVariant": "geneX specific mutation 5",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX specific mutation 6",
+            "matchedCancer": false,
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "mut",
+            "variant": "tageneric",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX missense",
+            "matchedCancer": true,
+            "evidenceLevel": "table 3"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "mut",
+            "variant": "crgeneric",
+            "iprEvidenceLevel": "IPR-C",
+            "kbVariant": "geneX mutation",
+            "evidenceLevel": "table 3"
+        },
+        {
+            "category": "unknown",
+            "variantType": "cnv",
+            "variant": "TA",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX specific mutation 1",
+            "evidenceLevel": "table null"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "exp",
+            "variant": "alltrueexp",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "geneX specific mutation 7",
+            "matchedCancer": true,
+            "evidenceLevel": "table null"
+        }
+    ],
+    "genes": [
+        {
+            "name": "oncogene",
+            "oncogene": true,
+            "tumourSuppressor": false
+        },
+        {
+            "name": "tumoursupressor",
+            "oncogene": false,
+            "tumourSuppressor": true
+        },
+        {
+            "name": "alltrue",
+            "oncogene": true,
+            "tumourSuppressor": true
+        },
+        {
+            "name": "allfalse",
+            "oncogene": false,
+            "tumourSuppressor": false
+        },
+        {
+            "name": "table1CV"
+        },
+        {
+            "name": "table2CV"
+        }
+    ],
+    "smallMutations": [
+        {
+            "gene": "alltrue",
+            "key": "tageneric",
+            "displayName": "table 3"
+        },
+        {
+            "gene": "alltrue",
+            "key": "crgeneric",
+            "displayName": "table 3"
+        },
+        {
+            "gene": "oncogene",
+            "key": "usoncogene",
+            "displayName": "table 3"
+        },
+        {
+            "gene": "tumoursupressor",
+            "key": "ustumoursupressor",
+            "displayName": "table 3"
+        },
+        {
+            "gene": "alltrue",
+            "key": "usalltrue",
+            "displayName": "table 3"
+        },
+        {
+            "gene": "allfalse",
+            "key": "usallfalse",
+            "displayName": "table null"
+        }
+    ],
+    "copyVariants": [
+        {
+            "gene": "table1CV",
+            "key": "TA",
+            "displayName": "table 1"
+        },
+        {
+            "gene": "table2CV",
+            "key": "CR",
+            "displayName": "table 2"
+        }
+    ],
+    "expressionVariants": [
+        {
+            "gene": "allfalse",
+            "key": "alltrueexp",
+            "displayName": "table null"
+        }
+    ],
+    "tmburMutationBurden": {
+        "key": "tmb",
+        "displayName": "table 2"
+    },
+    "msi": [
+        {
+            "score": 100,
+            "key": "msi",
+            "displayName": "table 2"
+        },
+        {
+            "score": 15,
+            "key": "mss",
+            "displayName": "table null"
+        }
+    ]
+}
