@@ -55,7 +55,7 @@ module.exports = async (req, res, next) => {
   // Update last time the user logged in, limit to once a day
   const currentDate = new Date().toDateString();
   const userLastLogin = req.user.lastLoginAt
-    ? req.user.lastLoginAt.toDateString()
+    ? new Date(req.user.lastLoginAt).toDateString()
     : '';
 
   if (userLastLogin !== currentDate) {
