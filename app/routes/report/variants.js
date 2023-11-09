@@ -40,6 +40,15 @@ const therapeuticAssociationFilter = {
     {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
+  [Op.or]: [
+    {
+      relevance: 'resistance',
+      iprEvidenceLevel: 'IPR-A',
+    },
+    {
+      relevance: 'sensitivity',
+    },
+  ],
   // Regex filter for finding columns with 2 or more spaces that end with
   // mutation or mutations
   [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
