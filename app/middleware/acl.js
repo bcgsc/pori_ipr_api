@@ -60,6 +60,7 @@ module.exports = async (req, res, next) => {
 
   if (userLastLogin !== currentDate) {
     await req.user.update({lastLoginAt: new Date()});
+    await req.user.reload();
   }
 
   // Check if user is an admin
