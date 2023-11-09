@@ -97,7 +97,7 @@ describe('/user', () => {
     });
 
     // Test that lastLoginAt is updated with a new request
-    test.only('/me - test if requests upload last_login_at 200 Success', async () => {
+    test('/me - test if requests upload last_login_at 200 Success', async () => {
       const res = await request
         .get('/api/user/me')
         .auth(username, password)
