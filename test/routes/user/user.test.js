@@ -109,10 +109,7 @@ describe('/user', () => {
 
       checkUser(res.body);
       expect(
-        loginDate.getFullYear() === currentDate.getFullYear()
-        && loginDate.getMonth() === currentDate.getMonth()
-        && loginDate.getDay() === currentDate.getDay()
-        && loginDate.getHours() === currentDate.getHours(),
+        loginDate.toDateString() === currentDate.toDateString(),
       ).toBe(true);
     });
 
