@@ -40,15 +40,17 @@ const therapeuticAssociationFilter = {
     {[Op.is]: literal('distinct from \'msi\'')},
     {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
-  [Op.or]: [
-    {
-      relevance: 'resistance',
-      iprEvidenceLevel: 'IPR-A',
-    },
-    {
-      relevance: 'sensitivity',
-    },
-  ],
+  [Op.and]: {
+    [Op.or]: [
+      {
+        relevance: 'resistance',
+        iprEvidenceLevel: 'IPR-A',
+      },
+      {
+        relevance: 'sensitivity',
+      },
+    ],
+  },
   // Regex filter for finding columns with 2 or more spaces that end with
   // mutation or mutations
   [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
@@ -58,14 +60,6 @@ const therapeuticAssociationFilter = {
 // Literal is used in order to accomodate NULL rows.
 const cancerRelevanceFilter = {
   id: {[Op.ne]: null},
-  [Op.not]: {
-    [Op.or]: [
-      {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-A\'')}},
-      {iprEvidenceLevel: {[Op.is]: literal('not distinct from \'IPR-B\'')}},
-    ],
-    category: 'therapeutic',
-    matchedCancer: true,
-  },
   variantType: {[Op.and]: [
     {[Op.is]: literal('distinct from \'exp\'')},
   ]},
