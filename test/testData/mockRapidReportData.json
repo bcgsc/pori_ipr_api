@@ -17,7 +17,7 @@
             "category": "therapeutic",
             "variantType": "cnv",
             "variant": "TA",
-            "iprEvidenceLevel": "IPR-B",
+            "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this should be in table 1",
             "matchedCancer": true,
             "relevance": "resistance",
@@ -41,6 +41,16 @@
             "kbVariant": "thisshouldbeintable2",
             "matchedCancer": true,
             "relevance": "resistance",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "geneX specific mutation 7",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
             "evidenceLevel": "table 2"
         },
         {
