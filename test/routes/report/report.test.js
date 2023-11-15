@@ -74,7 +74,7 @@ describe('/reports/{REPORTID}', () => {
   let totalReports;
   let reportDualProj;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and associate projects
@@ -257,7 +257,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(res.body.reports.length).toBe(2);
+      expect(res.body.reports.length).toBe(3);
     }, LONGER_TIMEOUT);
 
     test('/ - offset - 400 Bad Request', async () => {
@@ -549,7 +549,7 @@ describe('/reports/{REPORTID}', () => {
   });
 
   // delete report
-  afterEach(async () => {
+  afterAll(async () => {
     await db.models.report.destroy({where: {id: report.id}, force: true});
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
