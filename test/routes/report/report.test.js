@@ -257,7 +257,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(res.body.reports.length).toBe(3);
+      expect(res.body.reports.length).toBe(2);
     }, LONGER_TIMEOUT);
 
     test('/ - offset - 400 Bad Request', async () => {
