@@ -1,7 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
-const cache = require('../cache');
 const aclMiddleware = require('./acl');
 const {hasAccessToNonProdReports} = require('../libs/helperFunctions');
 
@@ -29,48 +28,28 @@ module.exports = async (req, res, next, ident) => {
     },
   ];
 
-  // Check cache for report
-  const key = `/reports/${ident}`;
   let result;
 
   try {
-    result = await cache.get(key);
-  } catch (error) {
-    logger.error(`Error during report cache get ${error}`);
-  }
-
-  if (result) {
-    // Build Sequelize model from cached string without calling db
-    result = db.models.report.build(JSON.parse(result), {
-      raw: true,
-      isNewRecord: false,
+    result = await db.models.report.findOne({
+      where: {ident},
+      attributes: {exclude: ['config']},
       include,
     });
-  } else {
-    try {
-      result = await db.models.report.findOne({
-        where: {ident},
-        attributes: {exclude: ['config']},
-        include,
-      });
-    } catch (error) {
-      logger.error(`Error while trying to get report: ${ident} ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get report'}});
-    }
+  } catch (error) {
+    logger.error(`Error while trying to get report: ${ident} ${error}`);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get report'}});
+  }
 
-    // Nothing found?
-    if (!result) {
-      logger.error(`Unable to find the requested report ${ident}`);
-      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
-    }
+  // Nothing found?
+  if (!result) {
+    logger.error(`Unable to find the requested report ${ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
+  }
 
-    if (!hasAccessToNonProdReports(req.user) && result.state === 'nonproduction') {
-      logger.error(`User does not have non-production access to ${ident}`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
-    }
-
-    // Add result to cache
-    cache.set(key, JSON.stringify(result), 'EX', 14400);
+  if (!hasAccessToNonProdReports(req.user) && result.state === 'nonproduction') {
+    logger.error(`User does not have non-production access to ${ident}`);
+    return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
   }
 
   // Add report to request
