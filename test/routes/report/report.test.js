@@ -555,6 +555,7 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
+    await db.models.report.destroy({where: {id: reportDualProj.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 
