@@ -29,15 +29,7 @@ module.exports = async (req, res, next, ident) => {
     },
   ];
 
-  // Check cache for report
-  const key = `/reports/${ident}`;
   let result;
-
-  try {
-    result = await cache.get(key);
-  } catch (error) {
-    logger.error(`Error during report cache get ${error}`);
-  }
 
   if (result) {
     // Build Sequelize model from cached string without calling db
@@ -68,9 +60,6 @@ module.exports = async (req, res, next, ident) => {
       logger.error(`User does not have non-production access to ${ident}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
     }
-
-    // Add result to cache
-    cache.set(key, JSON.stringify(result), 'EX', 14400);
   }
 
   // Add report to request
