@@ -150,6 +150,8 @@ const CONFIG = nconf
   })
   .defaults(merge(DEFAULTS, processEnvVariables(process.env)));
 
+console.log(CONFIG.get('database:hostname'));
+
 if (ENV === 'test') {
   CONFIG.required(['database:password', 'graphkb:password', 'testing:password']);
 } else {
