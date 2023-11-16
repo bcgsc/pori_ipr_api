@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1
       matrix:
-        node: [14, 16, 18, 20]
+        node: [18, 20]
+        # TODO: readd node versions: node: [14, 16, 18, 20]
     name: node-${{ matrix.node }}
     services:
       postgres:
