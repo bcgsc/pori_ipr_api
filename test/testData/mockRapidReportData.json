@@ -17,7 +17,7 @@
             "category": "therapeutic",
             "variantType": "cnv",
             "variant": "TA",
-            "iprEvidenceLevel": "IPR-B",
+            "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this should be in table 1",
             "matchedCancer": true,
             "relevance": "resistance",
@@ -41,6 +41,16 @@
             "kbVariant": "thisshouldbeintable2",
             "matchedCancer": true,
             "relevance": "resistance",
+            "evidenceLevel": "table 2"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "CR",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "geneX specific mutation 7",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
             "evidenceLevel": "table 2"
         },
         {
@@ -71,20 +81,24 @@
             "evidenceLevel": "table 2"
         },
         {
-            "category": "unknown",
+            "category": "therapeutic",
             "variantType": "msi",
             "variant": "msi",
             "iprEvidenceLevel": "IPR-A",
-            "kbVariant": "also should be table 2",
-            "evidenceLevel": "table 2"
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "kbVariant": "also should be table 1",
+            "evidenceLevel": "table 1"
         },
         {
-            "category": "unknown",
+            "category": "therapeutic",
             "variantType": "tmb",
             "variant": "tmb",
             "iprEvidenceLevel": "IPR-A",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
             "kbVariant": "geneX specific mutation 2",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 1"
         },
         {
             "category": "therapeutic",
@@ -243,13 +257,13 @@
     ],
     "tmburMutationBurden": {
         "key": "tmb",
-        "displayName": "table 2"
+        "displayName": "table 1"
     },
     "msi": [
         {
             "score": 100,
             "key": "msi",
-            "displayName": "table 2"
+            "displayName": "table 1"
         },
         {
             "score": 15,
