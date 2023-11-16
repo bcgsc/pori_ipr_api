@@ -37,8 +37,6 @@ const therapeuticAssociationFilter = {
   matchedCancer: true,
   variantType: {[Op.and]: [
     {[Op.is]: literal('distinct from \'exp\'')},
-    {[Op.is]: literal('distinct from \'msi\'')},
-    {[Op.is]: literal('distinct from \'tmb\'')},
   ]},
   [Op.and]: {
     [Op.or]: [
