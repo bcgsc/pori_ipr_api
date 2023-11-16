@@ -85,6 +85,8 @@
             "variantType": "msi",
             "variant": "msi",
             "iprEvidenceLevel": "IPR-A",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
             "kbVariant": "also should be table 1",
             "evidenceLevel": "table 1"
         },
@@ -93,6 +95,8 @@
             "variantType": "tmb",
             "variant": "tmb",
             "iprEvidenceLevel": "IPR-A",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
             "kbVariant": "geneX specific mutation 2",
             "evidenceLevel": "table 1"
         },
