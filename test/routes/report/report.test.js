@@ -75,7 +75,7 @@ describe('/reports/{REPORTID}', () => {
   let totalReports;
   let reportDualProj;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and associate projects
@@ -606,11 +606,12 @@ describe('/reports/{REPORTID}', () => {
   });
 
   // delete report
-  afterEach(async () => {
+  afterAll(async () => {
     await db.models.report.destroy({where: {id: report.id}, force: true});
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
+    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
   }, LONGER_TIMEOUT);
 });
