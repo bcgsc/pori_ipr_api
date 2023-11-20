@@ -88,6 +88,21 @@ const hasAccessToNonProdReports = (user) => {
 };
 
 /**
+ * Checks if user has access to unreviewed repots
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has access to unreviewed eports
+ */
+const hasAccessToUnreviewedReports = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager'
+    || group.name.toLowerCase() === 'unreviewed access'
+    || group.name.toLowerCase() === 'demo';
+  });
+};
+
+/**
  * Checks if a user belongs to atleast one
  * of the access groups
  *
@@ -148,6 +163,7 @@ module.exports = {
   isAdmin,
   hasAccess,
   hasAccessToNonProdReports,
+  hasAccessToUnreviewedReports,
   hasMasterAccess,
   projectAccess,
   isIntersectionBy,
