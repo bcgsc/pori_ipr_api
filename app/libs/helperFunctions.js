@@ -76,7 +76,7 @@ const isAdmin = (user) => {
  * Checks if user has access to non-prod repots
  *
  * @param {object} user - Sequelize user model
- * @returns {boolean} - Returns a boolean indicating if the user has access to non-prod eports
+ * @returns {boolean} - Returns a boolean indicating if the user has access to non-prod reports
  */
 const hasAccessToNonProdReports = (user) => {
   return user.groups.some((group) => {
@@ -91,7 +91,7 @@ const hasAccessToNonProdReports = (user) => {
  * Checks if user has access to unreviewed repots
  *
  * @param {object} user - Sequelize user model
- * @returns {boolean} - Returns a boolean indicating if the user has access to unreviewed eports
+ * @returns {boolean} - Returns a boolean indicating if the user has access to unreviewed reports
  */
 const hasAccessToUnreviewedReports = (user) => {
   return user.groups.some((group) => {
