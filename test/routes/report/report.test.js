@@ -45,9 +45,9 @@ const checkReports = (reports) => {
   });
 };
 
-const checkState = (reports, state) => {
+const checkState = (reports, stateCheck) => {
   return reports.some((report) => {
-    return report.state === state;
+    return report.state === stateCheck;
   });
 };
 
@@ -184,7 +184,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get('/api/reports')
         .query({
-          groups: [{name: NON_PROD_ACCESS}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project.name}],
         })
         .auth(username, password)
@@ -192,7 +192,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(checkState(res.body.reports, 'non-production')).toBeTruthy();
+      expect(checkState(res.body.reports, 'nonproduction')).toBeTruthy();
     }, LONGER_TIMEOUT);
 
     test('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
@@ -207,14 +207,14 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(checkState(res.body.reports, 'non-production')).not.toBeTruthy();
+      expect(checkState(res.body.reports, 'nonproduction')).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
     test('/ - 200 GET report if have additional report permission', async () => {
       const res = await request
         .get('/api/reports')
         .query({
-          groups: [{name: NON_PROD_ACCESS}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project2.name}],
         })
         .auth(username, password)
@@ -417,7 +417,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get(`/api/reports/${reportDualProj.ident}`)
         .query({
-          groups: [{name: NON_PROD_ACCESS}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project2.name, ident: project2.ident}],
         })
         .auth(username, password)
@@ -431,7 +431,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get(`/api/reports/${reportNonProduction.ident}`)
         .query({
-          groups: [{name: NON_PROD_ACCESS}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project.name, ident: project.ident}],
         })
         .auth(username, password)
@@ -611,7 +611,6 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
   }, LONGER_TIMEOUT);
 });
