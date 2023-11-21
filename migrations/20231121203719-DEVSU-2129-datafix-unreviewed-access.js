@@ -1,7 +1,7 @@
 const db = require('../app/models');
 
 module.exports = {
-  up: async (queryInterface, Sq) => {
+  up: async (queryInterface) => {
     const user = await db.models.user.findOne({
       where: {username: 'ipr-bamboo-admin'},
       attributes: ['id', 'ident'],
