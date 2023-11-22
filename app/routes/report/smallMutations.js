@@ -5,7 +5,6 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
 
 // Middleware for small mutations
 router.param('mutation', async (req, res, next, mutIdent) => {
@@ -71,18 +70,6 @@ router.route('/:mutation([A-z0-9-]{36})')
 router.route('/')
   .get(async (req, res) => {
     // Get all small mutations for this report
-    const key = `/reports/${req.report.ident}/small-mutations`;
-
-    try {
-      const cacheResults = await cache.get(key);
-
-      if (cacheResults) {
-        res.type('json');
-        return res.send(cacheResults);
-      }
-    } catch (error) {
-      logger.error(`Error while checking cache for small mutations ${error}`);
-    }
 
     try {
       const results = await db.models.smallMutations.scope('extended').findAll({
@@ -97,10 +84,6 @@ router.route('/')
           },
         ],
       });
-
-      if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 14400);
-      }
 
       return res.json(results);
     } catch (error) {
