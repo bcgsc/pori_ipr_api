@@ -1,19 +1,44 @@
-const db = require('../app/models');
-
 module.exports = {
   up: async (queryInterface) => {
-    return queryInterface.sequelize.transaction(async (transaction) => {
-      const user = await db.models.user.findOne({
-        where: {username: 'ipr-bamboo-admin'},
-        attributes: ['id', 'ident'],
-      });
-
-      const unreviewedAcessGroup = await db.models.userGroup.findOrCreate({
-        where: {
-          name: 'Unreviewed Access',
-          owner_id: user.id,
+    return queryInterface.sequelize.transaction(async () => {
+      let unreviewedAcessGroup = await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        'select distinct * from user_groups u\
+          where name = \'Unreviewed Access\' and deleted_at is null',
+        {
+          type: queryInterface.sequelize.QueryTypes.SELECT,
         },
-      }, {transaction});
+      );
+
+      if (unreviewedAcessGroup.length === 0) {
+        let user = await queryInterface.sequelize.query(
+          // eslint-disable-next-line no-multi-str
+          'select distinct u.id from users u\
+            where username = \'ipr-bamboo-admin\' and deleted_at is null',
+          {
+            type: queryInterface.sequelize.QueryTypes.SELECT,
+          },
+        );
+
+        user = user[0];
+
+        await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+          `INSERT INTO user_groups (name, owner_id, created_at, updated_at)\
+          VALUES('Unreviewed Access', '${user.id}', '${new Date().toLocaleString()}', '${new Date().toLocaleString()}');`,
+        );
+
+        unreviewedAcessGroup = await queryInterface.sequelize.query(
+          // eslint-disable-next-line no-multi-str
+          'select distinct * from user_groups u\
+            where name = \'Unreviewed Access\' and deleted_at is null',
+          {
+            type: queryInterface.sequelize.QueryTypes.SELECT,
+          },
+        );
+      }
+
+      unreviewedAcessGroup = unreviewedAcessGroup[0];
 
       const userUpdateList = await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
@@ -26,21 +51,26 @@ module.exports = {
         },
       );
 
-      const bulkInsertList = [];
+      let bulkInsertList = [];
 
       for (const element of userUpdateList) {
-        bulkInsertList.push({
-          user_id: element.id,
-          group_id: unreviewedAcessGroup[0].id,
-        });
+        bulkInsertList.push(
+          `(${element.id},\
+            ${unreviewedAcessGroup.id},\
+            '${new Date().toLocaleString()}',\
+            '${new Date().toLocaleString()}')`,
+        );
       }
 
-      const insertReturn = await db.models.userGroupMember.bulkCreate(
-        bulkInsertList,
-        {transaction},
+      bulkInsertList = bulkInsertList.join(', ');
+
+      const insertReturn = await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `INSERT INTO user_group_members (user_id, group_id, created_at, updated_at)\
+          VALUES ${bulkInsertList};`,
       );
 
-      console.log(`${insertReturn.length} users updated`);
+      console.log(`${insertReturn[1]} users updated`);
     });
   },
 
