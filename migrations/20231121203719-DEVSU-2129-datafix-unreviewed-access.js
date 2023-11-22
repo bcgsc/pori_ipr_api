@@ -53,6 +53,9 @@ module.exports = {
 
       let bulkInsertList = [];
 
+      console.log(userUpdateList);
+      console.log(unreviewedAcessGroup);
+
       for (const element of userUpdateList) {
         bulkInsertList.push(
           `(${element.id},\
