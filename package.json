@@ -26,6 +26,7 @@
     "express-query-boolean": "^2.0.0",
     "form-urlencoded": "~4.0.0",
     "http-status-codes": "^2.2.0",
+    "image-size": "^1.0.2",
     "ioredis": "^5.1.0",
     "is-svg": "^4.3.2",
     "jsonwebtoken": "~8.5.1",

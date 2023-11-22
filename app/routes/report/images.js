@@ -1,6 +1,7 @@
 const logger = require('../../log');
 const db = require('../../models');
 const {processImage} = require('../../libs/image');
+const sizeOf = require('image-size');
 
 const DEFAULT_WIDTH = 500;
 const DEFAULT_HEIGHT = 500;
@@ -212,7 +213,9 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
   }
 
   try {
-    const imageData = await processImage(image, config.width, config.height, config.format);
+    const dimensions = sizeOf(image);
+    console.log(dimensions)
+    const imageData = await processImage(image, dimensions.width, dimensions.height, config.format);
 
     return db.models.imageData.create({
       reportId,
