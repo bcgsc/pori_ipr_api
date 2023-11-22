@@ -70,7 +70,7 @@ const unknownSignificanceIncludes = ['mut'];
 const signatureVariant = ['tmb', 'msi'];
 
 const unknownSignificanceGeneFilter = {
-  [Op.or]: [{oncogene: true}, {tumourSuppressor: true}],
+  [Op.or]: [{oncogene: true}, {tumourSuppressor: true}, {cancerGene: true}],
 };
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
