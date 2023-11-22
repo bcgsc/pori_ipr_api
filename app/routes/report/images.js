@@ -214,7 +214,6 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
 
   try {
     const dimensions = sizeOf(image);
-    console.log(dimensions);
     const imageData = await processImage(image, dimensions.width, dimensions.height, config.format);
 
     return db.models.imageData.create({
