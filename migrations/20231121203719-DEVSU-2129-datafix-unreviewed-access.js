@@ -13,16 +13,16 @@ module.exports = {
       if (unreviewedAcessGroup.length === 0) {
         let user = await queryInterface.sequelize.query(
           // eslint-disable-next-line no-multi-str
-          'select distinct * from users u\
-            where deleted_at is null',
+          'select distinct u.id from users u\
+            where (username = \'ipr-bamboo-admin\' or username = \'ipr-demo\')\
+            and deleted_at is null',
           {
             type: queryInterface.sequelize.QueryTypes.SELECT,
           },
         );
 
-        console.log(user);
-        // user = user[0];
-        throw new Error();
+        user = user[0];
+
         await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
           `INSERT INTO user_groups (name, owner_id, created_at, updated_at)\
