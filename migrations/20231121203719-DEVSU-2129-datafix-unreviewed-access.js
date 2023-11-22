@@ -21,6 +21,7 @@ module.exports = {
           },
         );
 
+        console.log(user);
         user = user[0];
 
         await queryInterface.sequelize.query(
@@ -53,9 +54,7 @@ module.exports = {
       );
 
       let bulkInsertList = [];
-
-      console.log(userUpdateList);
-
+      
       for (const element of userUpdateList) {
         bulkInsertList.push(
           `(${element.id},\
