@@ -52,26 +52,30 @@ module.exports = {
         },
       );
 
-      let bulkInsertList = [];
-      
-      for (const element of userUpdateList) {
-        bulkInsertList.push(
-          `(${element.id},\
-            ${unreviewedAcessGroup.id},\
-            '${new Date().toLocaleString()}',\
-            '${new Date().toLocaleString()}')`,
+      if (userUpdateList.length > 0) {
+        let bulkInsertList = [];
+
+        for (const element of userUpdateList) {
+          bulkInsertList.push(
+            `(${element.id},\
+              ${unreviewedAcessGroup.id},\
+              '${new Date().toLocaleString()}',\
+              '${new Date().toLocaleString()}')`,
+          );
+        }
+
+        bulkInsertList = bulkInsertList.join(', ');
+
+        const insertReturn = await queryInterface.sequelize.query(
+          // eslint-disable-next-line no-multi-str
+          `INSERT INTO user_group_members (user_id, group_id, created_at, updated_at)\
+            VALUES ${bulkInsertList};`,
         );
+
+        console.log(`${insertReturn[1]} users updated`);
+      } else {
+        console.log('No users to be updated');
       }
-
-      bulkInsertList = bulkInsertList.join(', ');
-
-      const insertReturn = await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `INSERT INTO user_group_members (user_id, group_id, created_at, updated_at)\
-          VALUES ${bulkInsertList};`,
-      );
-
-      console.log(`${insertReturn[1]} users updated`);
     });
   },
 
