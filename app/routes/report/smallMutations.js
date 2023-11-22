@@ -5,7 +5,6 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
 
 // Middleware for small mutations
 router.param('mutation', async (req, res, next, mutIdent) => {
