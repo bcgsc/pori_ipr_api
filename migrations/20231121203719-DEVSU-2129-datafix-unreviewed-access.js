@@ -14,14 +14,15 @@ module.exports = {
         let user = await queryInterface.sequelize.query(
           // eslint-disable-next-line no-multi-str
           'select distinct u.id from users u\
-            where username = \'ipr-bamboo-admin\' and deleted_at is null',
+            where deleted_at is null',
           {
             type: queryInterface.sequelize.QueryTypes.SELECT,
           },
         );
 
-        user = user[0];
-
+        console.log(user);
+        // user = user[0];
+        throw new Error();
         await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
           `INSERT INTO user_groups (name, owner_id, created_at, updated_at)\
@@ -52,9 +53,6 @@ module.exports = {
       );
 
       let bulkInsertList = [];
-
-      console.log(userUpdateList);
-      console.log(unreviewedAcessGroup);
 
       for (const element of userUpdateList) {
         bulkInsertList.push(
