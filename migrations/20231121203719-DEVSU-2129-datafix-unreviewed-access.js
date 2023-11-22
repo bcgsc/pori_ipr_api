@@ -14,14 +14,13 @@ module.exports = {
         let user = await queryInterface.sequelize.query(
           // eslint-disable-next-line no-multi-str
           'select distinct u.id from users u\
-            where (username = \'ipr-bamboo-admin\' or username = \'ipr-demo\')\
+            where (username = \'ipr-bamboo-admin\' or username = \'iprdemo\')\
             and deleted_at is null',
           {
             type: queryInterface.sequelize.QueryTypes.SELECT,
           },
         );
 
-        console.log(user);
         user = user[0];
 
         await queryInterface.sequelize.query(
