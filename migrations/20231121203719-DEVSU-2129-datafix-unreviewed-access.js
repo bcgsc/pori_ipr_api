@@ -13,7 +13,7 @@ module.exports = {
       if (unreviewedAcessGroup.length === 0) {
         let user = await queryInterface.sequelize.query(
           // eslint-disable-next-line no-multi-str
-          'select distinct u.id from users u\
+          'select distinct * from users u\
             where deleted_at is null',
           {
             type: queryInterface.sequelize.QueryTypes.SELECT,
