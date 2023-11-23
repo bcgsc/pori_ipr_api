@@ -4,7 +4,7 @@ const Queue = require('bull');
 const emailQueue = new Queue('emails');
 
 const email = 'rpletz';
-const password = 'Tree$Bi6M4k';
+const password = 'password';
 
 const transporter = nodemailer.createTransport({
   host: 'webmail.bcgsc.ca',
