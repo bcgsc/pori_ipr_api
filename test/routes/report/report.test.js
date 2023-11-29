@@ -45,9 +45,9 @@ const checkReports = (reports) => {
   });
 };
 
-const hasNonProdReport = (reports) => {
+const checkState = (reports, stateCheck) => {
   return reports.some((report) => {
-    return report.state === 'nonproduction';
+    return report.state === stateCheck;
   });
 };
 
@@ -62,7 +62,8 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
-  const AUTHORIZED_GROUP = 'Non-Production Access';
+  const NON_PROD_ACCESS = 'Non-Production Access';
+  const UNREVIEWED_ACCESS = 'Unreviewed Access';
 
   let project;
   let project2;
@@ -183,7 +184,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get('/api/reports')
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project.name}],
         })
         .auth(username, password)
@@ -191,7 +192,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(hasNonProdReport(res.body.reports)).toBeTruthy();
+      expect(checkState(res.body.reports, 'nonproduction')).toBeTruthy();
     }, LONGER_TIMEOUT);
 
     test('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
@@ -206,14 +207,14 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
+      expect(checkState(res.body.reports, 'nonproduction')).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
     test('/ - 200 GET report if have additional report permission', async () => {
       const res = await request
         .get('/api/reports')
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project2.name}],
         })
         .auth(username, password)
@@ -226,6 +227,36 @@ describe('/reports/{REPORTID}', () => {
           return e.ident === reportDualProj.ident;
         },
       ).length > 0).toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 GET unreviewed reports with "unreviewed access" group', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: UNREVIEWED_ACCESS}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(checkState(res.body.reports, 'ready')).toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 NOT GET unreviewed reports with non-authorized group', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(checkState(res.body.reports, 'ready')).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
     // Test GET with limit
@@ -386,7 +417,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get(`/api/reports/${reportDualProj.ident}`)
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project2.name, ident: project2.ident}],
         })
         .auth(username, password)
@@ -400,7 +431,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get(`/api/reports/${reportNonProduction.ident}`)
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project.name, ident: project.ident}],
         })
         .auth(username, password)
@@ -413,6 +444,32 @@ describe('/reports/{REPORTID}', () => {
     test('error on non-production ident with wrong group', async () => {
       await request
         .get(`/api/reports/${reportNonProduction.ident}`)
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('fetches unreviewed ident with group OK', async () => {
+      const res = await request
+        .get(`/api/reports/${reportReady.ident}`)
+        .query({
+          groups: [{name: UNREVIEWED_ACCESS}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+    });
+
+    test('error on unreviewed ident with wrong group', async () => {
+      await request
+        .get(`/api/reports/${reportReady.ident}`)
         .query({
           groups: [{name: NON_AUTHORIZED_GROUP}],
           projects: [{name: project.name, ident: project.ident}],
@@ -554,7 +611,6 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
   }, LONGER_TIMEOUT);
 });
