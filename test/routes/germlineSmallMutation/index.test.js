@@ -20,7 +20,8 @@ let testUser;
 const mockData = require('../../testData/mockGermlineReportData.json');
 
 const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
-const AUTHORIZED_GROUP = 'Non-Production Access';
+const NON_PROD_ACCESS = 'Non-Production Access';
+const UNREVIEWED_ACCESS = 'Unreviewed Access';
 
 const CREATE_DATA = {
   normalLibrary: 'test library',
@@ -376,7 +377,7 @@ describe('/germline-small-mutation-reports', () => {
       const res = await request
         .get(BASE_URI)
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [
             {name: realProject.name, ident: realProject.ident},
           ],
@@ -417,7 +418,7 @@ describe('/germline-small-mutation-reports', () => {
       const res = await request
         .get(`${BASE_URI}/${nonProdReport.ident}`)
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: realProject.name, ident: realProject.ident}],
         })
         .auth(username, password)

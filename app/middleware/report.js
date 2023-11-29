@@ -2,7 +2,8 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
 const aclMiddleware = require('./acl');
-const {hasAccessToNonProdReports} = require('../libs/helperFunctions');
+const {hasAccessToNonProdReports,
+  hasAccessToUnreviewedReports} = require('../libs/helperFunctions');
 
 // Lookup report middleware
 module.exports = async (req, res, next, ident) => {
@@ -45,6 +46,11 @@ module.exports = async (req, res, next, ident) => {
   if (!result) {
     logger.error(`Unable to find the requested report ${ident}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
+  }
+
+  if (!hasAccessToUnreviewedReports(req.user) && (result.state !== 'reviewed' && result.state !== 'archived')) {
+    logger.error(`User does not have unreviewed access to ${ident}`);
+    return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Unreviewed reports'}});
   }
 
   if (!hasAccessToNonProdReports(req.user) && result.state === 'nonproduction') {
