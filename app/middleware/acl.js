@@ -52,6 +52,16 @@ const SPECIAL_CASES = [
 ];
 
 module.exports = async (req, res, next) => {
+  // Update last time the user logged in, limit to once a day
+  const currentDate = new Date().toDateString();
+  const userLastLogin = req.user.lastLoginAt
+    ? new Date(req.user.lastLoginAt).toDateString()
+    : '';
+
+  if (userLastLogin !== currentDate) {
+    await req.user.update({lastLoginAt: new Date()});
+  }
+
   // Check if user is an admin
   if (isAdmin(req.user)) {
     return next();

@@ -54,5 +54,58 @@ jest.mock('../app/api/graphkb', () => {
         }],
       };
     },
+
+    graphkbStatement: async (graphkbToken, statementId) => {
+      if (!graphkbToken) {
+        throw new Error('Invalid token');
+      }
+      if (!statementId) {
+        throw new Error('No statementId given');
+      }
+
+      return {
+        metadata: {
+          records: 1,
+        },
+        result: [
+          {
+            conditions: [
+              {
+                '@class': 'PositionalVariant',
+                '@rid': '#159:5455',
+                displayName: 'BRAF:p.V600E',
+                reference1: {
+                  displayName: 'BRAF',
+                },
+                reference2: null,
+                type: {
+                  displayName: 'missense mutation',
+                },
+              },
+              {
+                '@class': 'Therapy',
+                '@rid': '#123:40604',
+                displayName: 'panitumumab [DB01269]',
+                reference1: null,
+                reference2: null,
+                type: null,
+              },
+              {
+                '@class': 'Disease',
+                '@rid': '#135:19439',
+                displayName: 'colorectal adenocarcinoma [COADREAD]',
+                reference1: null,
+                reference2: null,
+                type: null,
+              },
+            ],
+            relevance: {
+              '@rid': '#146:46',
+              displayName: 'resistance',
+            },
+          },
+        ],
+      };
+    },
   };
 });
