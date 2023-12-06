@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [18, 20]
+        node: [16, 18, 20]
         # TODO: readd node versions: node: [14, 16, 18, 20]
     name: node-${{ matrix.node }}
     services:
@@ -40,8 +40,8 @@ jobs:
           # Maps port 6379 on service container to the host
           - 6379:6379
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
       - run: bash ./demo/restore_iprdb_dump.sh
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     name: docker build
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: build the API docker container
         run: |
           docker build --file Dockerfile --tag pori/ipr-api .
