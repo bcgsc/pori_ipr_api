@@ -72,8 +72,8 @@ const listen = async (port = null) => {
   const app = express(); // define app using express
   port = process.env.PORT || conf.get('web:port');
 
-  if(process.env.NODE_ENV == 'test') {
-      port = 0
+  if (process.env.NODE_ENV === 'test') {
+    port = 0;
   }
   logger.info(`starting http server on port ${port}`);
   const server = http.createServer(app).listen(port);
