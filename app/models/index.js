@@ -17,10 +17,10 @@ const sequelize = new Sq(
     schema: dbSettings.schema,
     logging: null,
     pool: {
-      max: 65,
+      max: 80,
       min: 0,
-      acquire: 30000,
-      idle: 10000
+      acquire: 60000,
+      idle: 5000
     },
   },
 );
