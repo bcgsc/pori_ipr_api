@@ -70,8 +70,13 @@ const fetchRoutes = (initialRouter) => {
 
 const listen = async (port = null) => {
   const app = express(); // define app using express
-  logger.info(`starting http server on port ${port || conf.get('web:port')}`);
-  const server = http.createServer(app).listen(port || conf.get('web:port'));
+  port = process.env.PORT || conf.get('web:port');
+
+  if(process.env.NODE_ENV == 'test') {
+      port = 0
+  }
+  logger.info(`starting http server on port ${port}`);
+  const server = http.createServer(app).listen(port);
   // TODO: https://www.bcgsc.ca/jira/browse/DEVSU-985 reduce when images are a separate upload
   app.use(express.json({limit: '100mb'}));
   app.use(boolParser());
