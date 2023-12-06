@@ -14,30 +14,30 @@ const GENE_DATA = {
   name: 'TEST NAME',
   tumourSuppressor: true,
   oncogene: true,
-  cancerRelated: true,
+  kbStatementRelated: true,
   drugTargetable: true,
   knownFusionPartner: true,
   therapeuticAssociated: true,
   knownSmallMutation: true,
-  cancerGene: true,
+  cancerGeneListMatch: true,
 };
 
 const GENE_UPDATE_DATA = {
   name: 'UPDATED NAME',
   tumourSuppressor: false,
   oncogene: false,
-  cancerRelated: false,
+  kbStatementRelated: false,
   drugTargetable: false,
   knownFusionPartner: false,
   therapeuticAssociated: false,
   knownSmallMutation: false,
-  cancerGene: false,
+  cancerGeneListMatch: false,
 };
 
 const geneProperties = [
   'ident', 'createdAt', 'name', 'tumourSuppressor', 'oncogene',
-  'cancerRelated', 'drugTargetable', 'knownFusionPartner',
-  'therapeuticAssociated', 'knownSmallMutation', 'cancerGene',
+  'kbStatementRelated', 'drugTargetable', 'knownFusionPartner',
+  'therapeuticAssociated', 'knownSmallMutation', 'cancerGeneListMatch',
 ];
 
 const checkGene = (geneObject) => {
@@ -205,7 +205,7 @@ describe('/reports/{report}/genes', () => {
         .put(`/api/reports/${report.ident}/genes/${putGene.name}`)
         .send({
           ...GENE_UPDATE_DATA,
-          cancerRelated: 'NOT_A_BOOLEAN',
+          kbStatementRelated: 'NOT_A_BOOLEAN',
         })
         .auth(username, password)
         .type('json')
