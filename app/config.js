@@ -59,7 +59,7 @@ const DEFAULTS = {
       : 'iprdevdb.bcgsc.ca',
     port: 5432,
     name: DEFAULT_DB_NAME,
-    maxConn: 30,
+    maxConn: 60,
   },
   redis: {
     host: ENV === 'production'
