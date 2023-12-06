@@ -60,6 +60,12 @@ const DEFAULTS = {
     port: 5432,
     name: DEFAULT_DB_NAME,
     maxConn: 60,
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    },
   },
   redis: {
     host: ENV === 'production'
