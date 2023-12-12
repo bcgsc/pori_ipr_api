@@ -549,7 +549,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
-    test.only('completed report update OK', async () => {
+    test('completed report update OK', async () => {
       const res = await request
         .put(`/api/reports/${reportCompleted.ident}`)
         .auth(username, password)
@@ -563,7 +563,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
-    test.only('completed report update FORBIDDEN', async () => {
+    test('completed report update FORBIDDEN', async () => {
       await request
         .put(`/api/reports/${reportCompleted.ident}`)
         .query({
