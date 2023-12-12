@@ -100,6 +100,7 @@ module.exports = async (req, res, next) => {
       && req.report.state === 'completed'
       && !(hasAccess(req.user, MASTER_REPORT_ACCESS))
     ) {
+      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
       return res.status(FORBIDDEN).json({
         error: {message: 'Report is marked as completed and update has been restricted'},
       });
