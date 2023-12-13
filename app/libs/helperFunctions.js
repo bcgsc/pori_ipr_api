@@ -82,8 +82,7 @@ const hasAccessToNonProdReports = (user) => {
   return user.groups.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'non-production access'
-    || group.name.toLowerCase() === 'demo';
+    || group.name.toLowerCase() === 'non-production access';
   });
 };
 
@@ -97,8 +96,7 @@ const hasAccessToUnreviewedReports = (user) => {
   return user.groups.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'unreviewed access'
-    || group.name.toLowerCase() === 'demo';
+    || group.name.toLowerCase() === 'unreviewed access';
   });
 };
 
