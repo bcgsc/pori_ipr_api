@@ -48,7 +48,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: false,
     },
     state: {
-      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction', null),
+      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'completed', 'reviewed', 'nonproduction', null),
       defaultValue: 'uploaded',
     },
   }, {

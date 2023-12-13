@@ -70,7 +70,7 @@ describe('/reports/{REPORTID}', () => {
   let report;
   let reportReady;
   let reportReviewed;
-  let reportArchived;
+  let reportCompleted;
   let reportNonProduction;
   let totalReports;
   let reportDualProj;
@@ -131,13 +131,13 @@ describe('/reports/{REPORTID}', () => {
       project_id: project.id,
     });
 
-    reportArchived = await db.models.report.create({
+    reportCompleted = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
-      state: 'archived',
+      state: 'completed',
     });
     await db.models.reportProject.create({
-      reportId: reportArchived.id,
+      reportId: reportCompleted.id,
       project_id: project.id,
     });
 
@@ -495,13 +495,13 @@ describe('/reports/{REPORTID}', () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
         .get('/api/reports')
-        .query({states: 'reviewed,archived'})
+        .query({states: 'reviewed,completed'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       res.body.reports.forEach((reportObject) => {
-        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'completed').toBeTruthy();
       });
     });
 
@@ -510,7 +510,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get('/api/reports')
         .query({
-          states: 'reviewed,archived',
+          states: 'reviewed,completed',
           role: 'bioinformatician',
         })
         .auth(username, password)
@@ -518,7 +518,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       res.body.reports.forEach((reportObject) => {
-        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'completed').toBeTruthy();
         expect(reportObject.users.some((user) => {
           return user.role === 'bioinformatician';
         })).toBeTruthy();
@@ -549,20 +549,47 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
-    describe('PUT', () => {
-      test('M1M2 Score update OK', async () => {
-        const res = await request
-          .put(`/api/reports/${report.ident}`)
-          .auth(username, password)
-          .type('json')
-          .send({
-            m1m2Score: 98.5,
-          })
-          .expect(HTTP_STATUS.OK);
+    test('completed report update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${reportCompleted.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 23.2,
+        })
+        .expect(HTTP_STATUS.OK);
 
-        checkReport(res.body);
-        expect(res.body).toHaveProperty('m1m2Score', 98.5);
-      });
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('tumourContent', 23.2);
+    });
+
+    test('completed report update FORBIDDEN', async () => {
+      await request
+        .put(`/api/reports/${reportCompleted.ident}`)
+        .query({
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 25.5,
+        })
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('M1M2 Score update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          m1m2Score: 98.5,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('m1m2Score', 98.5);
     });
 
     test('ploidy update OK', async () => {
@@ -610,7 +637,7 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: report.id}, force: true});
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
-    await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
+    await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
   }, LONGER_TIMEOUT);
 });

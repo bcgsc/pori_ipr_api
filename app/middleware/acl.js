@@ -93,6 +93,18 @@ module.exports = async (req, res, next) => {
         error: {message: 'You do not have the correct permissions to access this'},
       });
     }
+
+    // If user is trying to make an update and the report is completed
+    // and they dont have update permissions, throw an error
+    if (UPDATE_METHODS.includes(req.method)
+      && req.report.state === 'completed'
+      && !(hasAccess(req.user, MASTER_REPORT_ACCESS))
+    ) {
+      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
+      return res.status(FORBIDDEN).json({
+        error: {message: 'Report is marked as completed and update has been restricted'},
+      });
+    }
   } else {
     // See if route exists in special cases
     const spCase = SPECIAL_CASES.find((value) => {

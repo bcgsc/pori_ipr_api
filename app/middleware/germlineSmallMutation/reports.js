@@ -75,7 +75,7 @@ module.exports = async (req, res, next, ident) => {
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
     }
 
-    if (!hasAccessToUnreviewedReports(req.user) && (result.state !== 'reviewed' && result.state !== 'archived')) {
+    if (!hasAccessToUnreviewedReports(req.user) && (result.state !== 'reviewed' && result.state !== 'completed')) {
       logger.error(`User does not have unreviewed access to ${ident}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Unreviewed reports'}});
     }
