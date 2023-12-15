@@ -27,8 +27,12 @@ module.exports = {
 
         await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
-          `INSERT INTO user_groups (name, owner_id, created_at, updated_at)\
-          VALUES('Unreviewed Access', '${user.id}', '${new Date().toLocaleString()}', '${new Date().toLocaleString()}');`,
+          `INSERT INTO user_groups (name, owner_id, created_at, updated_at, ident)\
+        VALUES('Unreviewed Access',\
+        '${user.id}',\
+        '${new Date().toLocaleString()}',\
+        '${new Date().toLocaleString()}',\
+        ${uuidv4()});`,
         );
 
         unreviewedAcessGroup = await queryInterface.sequelize.query(
@@ -62,8 +66,7 @@ module.exports = {
             `(${element.id},\
               ${unreviewedAcessGroup.id},\
               '${new Date().toLocaleString()}',\
-              '${new Date().toLocaleString()}'),\
-              '${uuidv4()}'`,
+              '${new Date().toLocaleString()}')`,
           );
         }
 
