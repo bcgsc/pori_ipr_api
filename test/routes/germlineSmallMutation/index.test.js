@@ -22,6 +22,7 @@ const mockData = require('../../testData/mockGermlineReportData.json');
 const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
 const NON_PROD_ACCESS = 'Non-Production Access';
 const UNREVIEWED_ACCESS = 'Unreviewed Access';
+const GERMLINE_ACCESS = 'Germline Access';
 
 const CREATE_DATA = {
   normalLibrary: 'test library',
@@ -239,6 +240,19 @@ describe('/germline-small-mutation-reports', () => {
       checkGermlineReports(res.body.reports);
     });
 
+    test('/ - 403 Forbidden', async () => {
+      await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
+          projects: [{name: realProject.name, ident: realProject.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+    });
+
     test('/ - patient query - 200 success', async () => {
       const res = await request
         .get(BASE_URI)
@@ -359,7 +373,7 @@ describe('/germline-small-mutation-reports', () => {
       const res = await request
         .get(BASE_URI)
         .query({
-          groups: [{name: NON_AUTHORIZED_GROUP}],
+          groups: [{name: NON_AUTHORIZED_GROUP}, {name: GERMLINE_ACCESS}],
           projects: [{name: realProject.name, ident: realProject.ident}],
         })
         .auth(username, password)
@@ -377,7 +391,7 @@ describe('/germline-small-mutation-reports', () => {
       const res = await request
         .get(BASE_URI)
         .query({
-          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}, {name: GERMLINE_ACCESS}],
           projects: [
             {name: realProject.name, ident: realProject.ident},
           ],
@@ -406,7 +420,7 @@ describe('/germline-small-mutation-reports', () => {
       await request
         .get(`${BASE_URI}/${nonProdReport.ident}`)
         .query({
-          groups: [{name: NON_AUTHORIZED_GROUP}],
+          groups: [{name: NON_AUTHORIZED_GROUP}, {name: GERMLINE_ACCESS}],
           projects: [{name: realProject.name, ident: realProject.ident}],
         })
         .auth(username, password)
@@ -418,7 +432,7 @@ describe('/germline-small-mutation-reports', () => {
       const res = await request
         .get(`${BASE_URI}/${nonProdReport.ident}`)
         .query({
-          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}, {name: GERMLINE_ACCESS}],
           projects: [{name: realProject.name, ident: realProject.ident}],
         })
         .auth(username, password)
@@ -426,6 +440,18 @@ describe('/germline-small-mutation-reports', () => {
         .expect(HTTP_STATUS.OK);
 
       checkGermlineReport(res.body);
+    });
+
+    test('/{gsm_report} - not allow query with no germline access', async () => {
+      await request
+        .get(`${BASE_URI}/${nonProdReport.ident}`)
+        .query({
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
+          projects: [{name: realProject.name, ident: realProject.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
   });
 
