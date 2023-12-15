@@ -32,7 +32,7 @@ module.exports = {
           '${user.id}',\
           '${new Date().toLocaleString()}',\
           '${new Date().toLocaleString()}',\
-          ${uuidv4()});`,
+          '${uuidv4()}');`,
         );
 
         unreviewedAccessGroup = await queryInterface.sequelize.query(
