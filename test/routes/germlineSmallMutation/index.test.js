@@ -251,7 +251,6 @@ describe('/germline-small-mutation-reports', () => {
         .type('json')
         .expect(HTTP_STATUS.FORBIDDEN);
     });
-    });
 
     test('/ - patient query - 200 success', async () => {
       const res = await request
