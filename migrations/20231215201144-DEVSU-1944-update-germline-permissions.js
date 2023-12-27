@@ -52,7 +52,7 @@ module.exports = {
         'select distinct u.id from users u\
           join user_group_members ugm on (u.id = ugm.user_id)\
           join user_groups ug on (ugm.group_id = ug.id)\
-          where not ug.name = \'Clinician\' and not ug.name = \'Collaborator\'',
+          where ug.name = \'Bioinformatician\' or ug.name = \'Report Manager\'',
         {
           type: queryInterface.sequelize.QueryTypes.SELECT,
         },
