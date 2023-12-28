@@ -101,6 +101,20 @@ const hasAccessToUnreviewedReports = (user) => {
 };
 
 /**
+ * Checks if user has access to germline repots
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has access to germline reports
+ */
+const hasAccessToGermlineReports = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager'
+    || group.name.toLowerCase() === 'germline access';
+  });
+};
+
+/**
  * Checks if a user belongs to atleast one
  * of the access groups
  *
@@ -162,6 +176,7 @@ module.exports = {
   hasAccess,
   hasAccessToNonProdReports,
   hasAccessToUnreviewedReports,
+  hasAccessToGermlineReports,
   hasMasterAccess,
   projectAccess,
   isIntersectionBy,

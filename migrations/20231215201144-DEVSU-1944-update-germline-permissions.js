@@ -3,16 +3,16 @@ const {v4: uuidv4} = require('uuid');
 module.exports = {
   up: async (queryInterface) => {
     return queryInterface.sequelize.transaction(async () => {
-      let unreviewedAccessGroup = await queryInterface.sequelize.query(
+      let germlineAccessGroup = await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
         'select distinct * from user_groups u\
-          where name = \'Unreviewed Access\' and deleted_at is null',
+          where name = \'Germline Access\' and deleted_at is null',
         {
           type: queryInterface.sequelize.QueryTypes.SELECT,
         },
       );
 
-      if (unreviewedAccessGroup.length === 0) {
+      if (germlineAccessGroup.length === 0) {
         let user = await queryInterface.sequelize.query(
           // eslint-disable-next-line no-multi-str
           'select distinct u.id from users u\
@@ -28,24 +28,24 @@ module.exports = {
         await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
           `INSERT INTO user_groups (name, owner_id, created_at, updated_at, ident)\
-          VALUES('Unreviewed Access',\
+          VALUES('Germline Access',\
           '${user.id}',\
           '${new Date().toLocaleString()}',\
           '${new Date().toLocaleString()}',\
           '${uuidv4()}');`,
         );
 
-        unreviewedAccessGroup = await queryInterface.sequelize.query(
+        germlineAccessGroup = await queryInterface.sequelize.query(
           // eslint-disable-next-line no-multi-str
           'select distinct * from user_groups u\
-            where name = \'Unreviewed Access\' and deleted_at is null',
+            where name = \'Germline Access\' and deleted_at is null',
           {
             type: queryInterface.sequelize.QueryTypes.SELECT,
           },
         );
       }
 
-      unreviewedAccessGroup = unreviewedAccessGroup[0];
+      germlineAccessGroup = germlineAccessGroup[0];
 
       const userUpdateList = await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
@@ -64,7 +64,7 @@ module.exports = {
         for (const element of userUpdateList) {
           bulkInsertList.push(
             `(${element.id},\
-              ${unreviewedAccessGroup.id},\
+              ${germlineAccessGroup.id},\
               '${new Date().toLocaleString()}',\
               '${new Date().toLocaleString()}')`,
           );

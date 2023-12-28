@@ -1,7 +1,7 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
 const {
-  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess,
+  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
 const logger = require('../log');
@@ -69,6 +69,13 @@ module.exports = async (req, res, next) => {
 
   // Get route
   const [route] = req.originalUrl.split('?');
+
+  if (!hasAccessToGermlineReports(req.user) && route.includes('/germline-small-mutation-reports')) {
+    logger.error('User does not have germline access');
+    return res.status(
+      FORBIDDEN,
+    ).json({error: {message: 'User does not have access to Germline reports'}});
+  }
 
   if (req.report) {
     // check if user is bound to report depending on report type
