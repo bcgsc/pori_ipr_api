@@ -76,14 +76,41 @@ const isAdmin = (user) => {
  * Checks if user has access to non-prod repots
  *
  * @param {object} user - Sequelize user model
- * @returns {boolean} - Returns a boolean indicating if the user has access to non-prod eports
+ * @returns {boolean} - Returns a boolean indicating if the user has access to non-prod reports
  */
 const hasAccessToNonProdReports = (user) => {
   return user.groups.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'non-production access'
-    || group.name.toLowerCase() === 'demo';
+    || group.name.toLowerCase() === 'non-production access';
+  });
+};
+
+/**
+ * Checks if user has access to unreviewed repots
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has access to unreviewed reports
+ */
+const hasAccessToUnreviewedReports = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager'
+    || group.name.toLowerCase() === 'unreviewed access';
+  });
+};
+
+/**
+ * Checks if user has access to germline repots
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has access to germline reports
+ */
+const hasAccessToGermlineReports = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager'
+    || group.name.toLowerCase() === 'germline access';
   });
 };
 
@@ -148,6 +175,8 @@ module.exports = {
   isAdmin,
   hasAccess,
   hasAccessToNonProdReports,
+  hasAccessToUnreviewedReports,
+  hasAccessToGermlineReports,
   hasMasterAccess,
   projectAccess,
   isIntersectionBy,

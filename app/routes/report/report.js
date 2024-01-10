@@ -8,7 +8,8 @@ const db = require('../../models');
 const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
-const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
+const {hasAccessToNonProdReports,
+  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -230,6 +231,12 @@ router.route('/')
       opts.where = {
         ...opts.where,
         [Op.not]: {state: 'nonproduction'},
+      };
+    }
+    if (!hasAccessToUnreviewedReports(req.user)) {
+      opts.where = {
+        ...opts.where,
+        state: ['reviewed', 'completed'],
       };
     }
 
