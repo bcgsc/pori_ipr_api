@@ -62,6 +62,10 @@ module.exports = async (req, res, next) => {
     await req.user.update({lastLoginAt: new Date()});
   }
 
+  if (req.query.clinician_view && isAdmin(req.user)) {
+    req.user.groups = [{name: 'Clinician'}];
+  }
+
   // Check if user is an admin
   if (isAdmin(req.user)) {
     return next();
