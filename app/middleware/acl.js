@@ -63,7 +63,7 @@ module.exports = async (req, res, next) => {
   }
 
   try {
-    if (req.query.clinician_view && isAdmin(req.user)) {
+    if (req.query.clinician_view && hasMasterAccess(req.user)) {
       req.user.groups = [{name: 'Clinician'}];
     }
   } catch {
