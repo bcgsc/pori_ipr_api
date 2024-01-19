@@ -1,6 +1,7 @@
 {
     "template": "genomic",
     "captiv8Score": 20,
+    "appendix": "this is an example of an appendix",
     "sampleInfo": [
         {
             "Sample": "Tumour",

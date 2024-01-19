@@ -88,6 +88,9 @@ module.exports = (sequelize, Sq) => {
     config: {
       type: Sq.TEXT,
     },
+    appendix: {
+      type: Sq.TEXT,
+    },
     reportVersion: {
       type: Sq.STRING,
       defaultValue: null,
