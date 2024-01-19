@@ -62,6 +62,14 @@ module.exports = async (req, res, next) => {
     await req.user.update({lastLoginAt: new Date()});
   }
 
+  try {
+    if (req.query.clinician_view && hasMasterAccess(req.user)) {
+      req.user.groups = [{name: 'Clinician'}];
+    }
+  } catch {
+    logger.error('Clinician View error: Using users normal group');
+  }
+
   // Check if user is an admin
   if (isAdmin(req.user)) {
     return next();
