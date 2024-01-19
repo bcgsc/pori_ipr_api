@@ -547,19 +547,21 @@ describe('/reports/{REPORTID}', () => {
 
       checkReport(res.body);
       expect(res.body).toHaveProperty('state', 'ready');
+    });
 
-      test('state NOT updated to ready when NOT reviewed OK', async () => {
-        const res = await request
-          .put(`/api/reports/${reportCompleted.ident}`)
-          .auth(username, password)
-          .type('json')
-          .send({
-            tumourContent: 42.2,
-          })
-          .expect(HTTP_STATUS.OK);
-  
-        checkReport(res.body);
-        expect(res.body).toHaveProperty('state', 'completed');
+    test('state NOT updated to ready when NOT reviewed OK', async () => {
+      const res = await request
+        .put(`/api/reports/${reportCompleted.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 42.2,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('state', 'completed');
+    });
 
     test('tumour content update OK', async () => {
       const res = await request
