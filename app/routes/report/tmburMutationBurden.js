@@ -56,7 +56,7 @@ router.route('/')
         error: {message: `Unable to find Tmbur Mutation Burden for report ${req.report.ident}`},
       });
     }
-  
+
     // Validate request against schema
     try {
       validateAgainstSchema(updateSchema, req.body, false);

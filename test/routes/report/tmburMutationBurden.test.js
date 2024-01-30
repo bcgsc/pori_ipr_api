@@ -46,6 +46,7 @@ beforeAll(async () => {
 // Tests for /tmburMutationBurden endpoint
 describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
   let report;
+  let emptyReport;
 
   beforeEach(async () => {
     // Get genomic template
@@ -61,11 +62,11 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
       ...mockReportData.tmburMutationBurden,
     });
 
-      // Create empty report
-      emptyReport = await db.models.report.create({
-        templateId: template.id,
-        patientId: mockReportData.patientId,
-      });
+    // Create empty report
+    emptyReport = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+    });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -143,7 +144,6 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
       checkTmburMutationBurden(res.body);
       expect(res.body).toEqual(expect.objectContaining(createData));
     });
-
 
     test('/ - 400 bad create request (report id included)', async () => {
       await request
