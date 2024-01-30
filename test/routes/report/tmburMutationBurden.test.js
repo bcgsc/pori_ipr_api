@@ -60,6 +60,12 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
       reportId: report.id,
       ...mockReportData.tmburMutationBurden,
     });
+
+      // Create empty report
+      emptyReport = await db.models.report.create({
+        templateId: template.id,
+        patientId: mockReportData.patientId,
+      });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -122,6 +128,22 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
       checkTmburMutationBurden(res.body);
       expect(res.body).toEqual(expect.objectContaining(createData));
     });
+
+    test('/ - 201 successful create on empty report', async () => {
+      const createData = {
+        ...mockReportData.tmburMutationBurden[0],
+      };
+      const res = await request
+        .post(`/api/reports/${emptyReport.ident}/tmbur-mutation-burden`)
+        .auth(username, password)
+        .type('json')
+        .send(createData)
+        .expect(HTTP_STATUS.CREATED);
+
+      checkTmburMutationBurden(res.body);
+      expect(res.body).toEqual(expect.objectContaining(createData));
+    });
+
 
     test('/ - 400 bad create request (report id included)', async () => {
       await request
