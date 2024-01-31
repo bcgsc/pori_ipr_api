@@ -46,6 +46,7 @@ beforeAll(async () => {
 // Tests for /tmburMutationBurden endpoint
 describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
   let report;
+  let emptyReport;
 
   beforeEach(async () => {
     // Get genomic template
@@ -59,6 +60,12 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
     await db.models.tmburMutationBurden.create({
       reportId: report.id,
       ...mockReportData.tmburMutationBurden,
+    });
+
+    // Create empty report
+    emptyReport = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
     });
   }, LONGER_TIMEOUT);
 
@@ -114,6 +121,21 @@ describe('/reports/{REPORTID}/tmbur-mutation-burden', () => {
       };
       const res = await request
         .post(`/api/reports/${report.ident}/tmbur-mutation-burden`)
+        .auth(username, password)
+        .type('json')
+        .send(createData)
+        .expect(HTTP_STATUS.CREATED);
+
+      checkTmburMutationBurden(res.body);
+      expect(res.body).toEqual(expect.objectContaining(createData));
+    });
+
+    test('/ - 201 successful create on empty report', async () => {
+      const createData = {
+        ...mockReportData.tmburMutationBurden[0],
+      };
+      const res = await request
+        .post(`/api/reports/${emptyReport.ident}/tmbur-mutation-burden`)
         .auth(username, password)
         .type('json')
         .send(createData)
