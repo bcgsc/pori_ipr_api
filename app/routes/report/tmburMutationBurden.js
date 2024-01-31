@@ -32,6 +32,12 @@ router.use('/', async (req, res, next) => {
     });
   }
 
+  if (!result && req.method !== 'POST') {
+    logger.error(`Unable to find Tmbur Mutation Burden for report ${req.report.ident}`);
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Unable to find Tmbur Mutation Burden for report ${req.report.ident}`},
+    });
+  }
   // Add tmbur mutation burden to request
   req.tmburMutationBurden = result;
   return next();
@@ -40,23 +46,9 @@ router.use('/', async (req, res, next) => {
 // Handle requests for tmbur mutation burden by ident
 router.route('/')
   .get((req, res) => {
-    if (!req.tmburMutationBurden) {
-      logger.error(`Unable to find Tmbur Mutation Burden for report ${req.report.ident}`);
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: {message: `Unable to find Tmbur Mutation Burden for report ${req.report.ident}`},
-      });
-    }
-
     return res.json(req.tmburMutationBurden.view('public'));
   })
   .put(async (req, res) => {
-    if (!req.tmburMutationBurden) {
-      logger.error(`Unable to find Tmbur Mutation Burden for report ${req.report.ident}`);
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: {message: `Unable to find Tmbur Mutation Burden for report ${req.report.ident}`},
-      });
-    }
-
     // Validate request against schema
     try {
       validateAgainstSchema(updateSchema, req.body, false);
