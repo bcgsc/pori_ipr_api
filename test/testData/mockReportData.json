@@ -1,6 +1,7 @@
 {
     "template": "genomic",
     "captiv8Score": 20,
+    "appendix": "this is an example of an appendix",
     "sampleInfo": [
         {
             "Sample": "Tumour",
@@ -267,7 +268,9 @@
             "name": "ZFP36L2",
             "oncogene": true,
             "therapeuticAssociated": true,
-            "knownSmallMutation": true
+            "knownSmallMutation": true,
+            "cancerGeneListMatch": true,
+            "kbStatementRelated": true
         }
     ],
     "smallMutations": [

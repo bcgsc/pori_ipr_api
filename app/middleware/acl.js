@@ -1,7 +1,7 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
 const {
-  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess,
+  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
 const logger = require('../log');
@@ -62,6 +62,14 @@ module.exports = async (req, res, next) => {
     await req.user.update({lastLoginAt: new Date()});
   }
 
+  try {
+    if (req.query.clinician_view && hasMasterAccess(req.user)) {
+      req.user.groups = [{name: 'Clinician'}];
+    }
+  } catch {
+    logger.error('Clinician View error: Using users normal group');
+  }
+
   // Check if user is an admin
   if (isAdmin(req.user)) {
     return next();
@@ -69,6 +77,13 @@ module.exports = async (req, res, next) => {
 
   // Get route
   const [route] = req.originalUrl.split('?');
+
+  if (!hasAccessToGermlineReports(req.user) && route.includes('/germline-small-mutation-reports')) {
+    logger.error('User does not have germline access');
+    return res.status(
+      FORBIDDEN,
+    ).json({error: {message: 'User does not have access to Germline reports'}});
+  }
 
   if (req.report) {
     // check if user is bound to report depending on report type
@@ -91,6 +106,18 @@ module.exports = async (req, res, next) => {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},
+      });
+    }
+
+    // If user is trying to make an update and the report is completed
+    // and they dont have update permissions, throw an error
+    if (UPDATE_METHODS.includes(req.method)
+      && req.report.state === 'completed'
+      && !(hasAccess(req.user, MASTER_REPORT_ACCESS))
+    ) {
+      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
+      return res.status(FORBIDDEN).json({
+        error: {message: 'Report is marked as completed and update has been restricted'},
       });
     }
   } else {

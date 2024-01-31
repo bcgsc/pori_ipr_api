@@ -1986,6 +1986,43 @@
         }
       }
     },
+    "/project/{project}/reports": {
+      "get": {
+        "summary": "Get Genomic Reports associated with a project",
+        "description": "Retrieve all genomic reports that you have acess to",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of all reports in a specified project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/projectReports"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Insufficient access to get reports"
+          }
+        }
+      }
+    },
     "/project/{project}/therapeutic-targets": {
       "get": {
         "summary": "Get All Therapeutic Targets For a Project",
@@ -6836,6 +6873,29 @@
             }
           }
         ]
+      },
+      "projectReports": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "ident": {
+              "type": "string"
+            },
+            "patientId": {
+              "type": "string"
+            },
+            "alternateIdentifier": {
+              "type": "string"
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            }
+          }
+        }
       },
       "expressionMatrix": {
         "type": "array",

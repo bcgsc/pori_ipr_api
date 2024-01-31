@@ -6,9 +6,6 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
-
-const {generateKey} = require('../../libs/cacheFunctions');
 const {KB_PIVOT_MAPPING} = require('../../constants');
 
 // Middleware for kbMatches
@@ -61,20 +58,6 @@ router.route('/')
   .get(async (req, res) => {
     const {query: {matchedCancer, approvedTherapy, category, iprEvidenceLevel}} = req;
 
-    // Check cache
-    const key = generateKey(`/reports/${req.report.ident}/kb-matches`, req.query);
-
-    try {
-      const cacheResults = await cache.get(key);
-
-      if (cacheResults) {
-        res.type('json');
-        return res.send(cacheResults);
-      }
-    } catch (error) {
-      logger.error(`Error while checking cache for kb matches ${error}`);
-    }
-
     try {
       const results = await db.models.kbMatches.scope('public').findAll({
         where: {
@@ -86,10 +69,6 @@ router.route('/')
         },
         order: [['variantType', 'ASC'], ['variantId', 'ASC']],
       });
-
-      if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 14400);
-      }
 
       return res.json(results);
     } catch (error) {

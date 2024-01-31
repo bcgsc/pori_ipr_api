@@ -236,7 +236,7 @@ router.route('/')
     if (!hasAccessToUnreviewedReports(req.user)) {
       opts.where = {
         ...opts.where,
-        state: ['reviewed', 'archived'],
+        state: ['reviewed', 'completed'],
       };
     }
 
