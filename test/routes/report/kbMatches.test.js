@@ -21,7 +21,7 @@ let request;
 const kbMatchProperties = [
   'ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease',
   'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
-  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant', 'inferred',
+  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant',
   'reviewStatus', 'externalSource', 'externalStatementId', 'reviewStatus',
 ];
 
