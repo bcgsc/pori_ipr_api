@@ -989,7 +989,7 @@
     "/reports/{report}/tmbur-mutation-burden": {
       "get": {
         "summary": "Get Tmbur Mutation Burden",
-        "description": "Retrieve tmburr mutation burden details for a given report",
+        "description": "Retrieve tmbur mutation burden details for a given report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -1005,14 +1005,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of all tmbur mutation burdens for the given report",
+            "description": "Returns the tmbur mutation burden for the given report",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
-                  }
+                  "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
                 }
               }
             }
@@ -1068,46 +1065,6 @@
             "description": "Report Not found"
           }
         }
-      }
-    },
-    "/reports/{report}/tmbur-mutation-burden/{tmbur}": {
-      "get": {
-        "summary": "Get Tmbur Mutation Burden By Ident",
-        "description": "Retrieve a specific tmbur mutation burden from the report by ident",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "$ref": "#/components/parameters/tmbur"
-          }
-        ],
-        "tags": [
-          "Tmbur Mutation Burden"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns the details of the specified tmbur mutation burden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/tmburMutationBurdenAssociations"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report or tmbur mutation burden not found"
-          }
-        }
       },
       "put": {
         "summary": "Update Tmbur Mutation Burden",
@@ -1118,9 +1075,6 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
-          },
-          {
-            "$ref": "#/components/parameters/tmbur"
           }
         ],
         "security": [
