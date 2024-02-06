@@ -178,6 +178,36 @@
             "totalSnvCount": 120,
             "totalIndelCount": 80,
             "totalMutationsPerMb": 56.24
+        },
+        {
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": "primary",
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationsPerMb": 56.24
+        },
+        {
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": null,
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationsPerMb": 56.24
         }
     ],
     "tmburMutationBurden": {
