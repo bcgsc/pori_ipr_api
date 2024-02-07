@@ -128,6 +128,20 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
     });
   });
 
+  describe('POST', () => {
+    test('Create new immune cell type - 200 Success', async () => {
+      const res = await request
+        .post(`/api/reports/${report.ident}/immune-cell-types`)
+        .send(IMMUNE_CELL_TYPES_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkImmuneCellTypesProperties(res.body);
+      expect(res.body).toEqual(expect.objectContaining(IMMUNE_CELL_TYPES_DATA));
+    });
+  });
+
   describe('DELETE', () => {
     let cellTypeDelete;
 
