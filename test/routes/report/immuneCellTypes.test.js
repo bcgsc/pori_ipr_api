@@ -135,7 +135,7 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
         .send(IMMUNE_CELL_TYPES_DATA)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.OK);
+        .expect(HTTP_STATUS.CREATED);
 
       checkImmuneCellTypesProperties(res.body);
       expect(res.body).toEqual(expect.objectContaining(IMMUNE_CELL_TYPES_DATA));
