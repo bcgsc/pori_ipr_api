@@ -6106,6 +6106,214 @@
         }
       }
     },
+    "/reports/{report}/immune-cell-types": {
+      "get": {
+        "summary": "Get Immune Cell Types Data",
+        "description": "Retrieve Immune Cell Types data for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Immune Cell Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all Immune Cell Types data for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/immuneCellTypesAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Immune Cell Types Entry",
+        "description": "Add a new Immune Cell Types entry to this report",
+        "tags": [
+          "Immune Cell Types"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Values for creating a new Immune Cell Types entry",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/immuneCellTypesCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the newly created Immune Cell Types entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/immuneCellTypesAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/immune-cell-types/{immuneCellTypes}": {
+      "get": {
+        "summary": "Get Immune Cell Types Entry",
+        "description": "Retrieve a specific Immune Cell Types Entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/immuneCellTypes"
+          }
+        ],
+        "tags": [
+          "Immune Cell Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified Immune Cell Types entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/immuneCellTypesAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or Immune Cell Types not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Immune Cell Types Entry",
+        "description": "Update the details of a Immune Cell Types entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/immuneCellTypes"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update specified Immune Cell Types entry",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/immuneCellTypesUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Immune Cell Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated Immune Cell Types entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/immuneCellTypesAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or Immune Cell Types not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Immune Cell Types Entry",
+        "description": "Removes the specified Immune Cell Types entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/immuneCellTypes"
+          }
+        ],
+        "tags": [
+          "Immune Cell Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or Immune Cell Types not found"
+          }
+        }
+      }
+    },
     "/templates": {
       "get": {
         "summary": "Get Templates",
@@ -6720,6 +6928,16 @@
         "in": "path",
         "required": true,
         "description": "MSI ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "immuneCellTypes": {
+        "name": "immuneCellTypes",
+        "in": "path",
+        "required": true,
+        "description": "Immune Cell Types ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
