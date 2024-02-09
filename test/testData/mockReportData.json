@@ -178,6 +178,36 @@
             "totalSnvCount": 120,
             "totalIndelCount": 80,
             "totalMutationsPerMb": 56.24
+        },
+        {
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": "primary",
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationsPerMb": 56.24
+        },
+        {
+            "codingSnvCount": 4,
+            "truncatingSnvCount": 0,
+            "codingIndelsCount": 0,
+            "frameshiftIndelsCount": 0,
+            "qualitySvCount": 92,
+            "qualitySvExpressedCount": 40,
+            "codingSnvPercentile": 4,
+            "codingIndelPercentile": 10,
+            "qualitySvPercentile": 60,
+            "role": null,
+            "totalSnvCount": 120,
+            "totalIndelCount": 80,
+            "totalMutationsPerMb": 56.24
         }
     ],
     "tmburMutationBurden": {
@@ -217,7 +247,6 @@
             "matchedCancer": false,
             "pmidRef": "yes",
             "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
-            "inferred": false,
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"
@@ -237,7 +266,6 @@
             "matchedCancer": false,
             "pmidRef": "yes",
             "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
-            "inferred": false,
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"
@@ -257,7 +285,6 @@
             "matchedCancer": false,
             "pmidRef": "yes",
             "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
-            "inferred": false,
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"

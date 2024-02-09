@@ -32,7 +32,7 @@ router.use('/', async (req, res, next) => {
     });
   }
 
-  if (!result) {
+  if (!result && req.method !== 'POST') {
     logger.error(`Unable to find Tmbur Mutation Burden for report ${req.report.ident}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({
       error: {message: `Unable to find Tmbur Mutation Burden for report ${req.report.ident}`},
