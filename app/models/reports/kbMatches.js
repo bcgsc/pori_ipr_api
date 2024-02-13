@@ -56,10 +56,6 @@ module.exports = (sequelize, Sq) => {
     sample: {
       type: Sq.TEXT,
     },
-    inferred: {
-      type: Sq.BOOLEAN,
-      defaultValue: false,
-    },
     evidenceLevel: {
       name: 'evidenceLevel',
       field: 'evidence_level',
