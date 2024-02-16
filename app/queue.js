@@ -69,7 +69,6 @@ const setUpWorker = (jobProcessor) => {
 
 const defaultProcessor = async (job) => {
   // Process the job data
-  await new Promise((resolve) => {return setTimeout(resolve, 5000);});
   logger.info('retrieved job from queue: ', job.data);
 };
 
