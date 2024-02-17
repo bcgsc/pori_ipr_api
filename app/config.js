@@ -74,7 +74,7 @@ const DEFAULTS = {
   },
   redis_queue: {
     // TODO: enable on staging and prod when ready
-    enableQueue: !(ENV === 'staging' || ENV === 'production'),
+    enableQueue: !(ENV === 'staging' || ENV === 'production' || ENV === 'test'),
     host: 'iprdevredis.bcgsc.ca',
     port: 6381,
   },
