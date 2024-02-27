@@ -1,1 +1,2 @@
-jest.mock('../../../app/queue.js'); //Apply mocking to all tests
+//Apply mocking to all tests
+jest.mock('../../../app/queue.js');
