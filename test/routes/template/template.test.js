@@ -7,6 +7,8 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
+jest.mock('../../../app/middleware/auth.js');
+
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
