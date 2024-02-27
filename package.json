@@ -13,7 +13,9 @@
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
   },
   "jest": {
-    "setupFiles": "./config/jest/jestSetup.js"
+    "setupFilesAfterEnv": [
+      "./config/jest/jestSetup.js"
+    ]
   },
   "author": "IPR <ipr@bcgsc.ca>",
   "license": "GPL-3.0",
