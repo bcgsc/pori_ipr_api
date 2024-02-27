@@ -1,8 +1,6 @@
 // main jest configuration file
 const path = require('path');
 
-jest.mock('../../../app/queue.js');
-
 const BASE_DIR = path.resolve(__dirname, '../..');
 
 module.exports = {
