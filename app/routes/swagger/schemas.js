@@ -127,7 +127,7 @@ for (const model of Object.keys(models)) {
 
   // Check if model has a polymorphic variants relationship
   if (MODELS_WITH_VARIANTS.includes(model)) {
-    schemas[`${model}Associations`].properties.varaint = VARIANT_ASSOCIATIONS;
+    schemas[`${model}Associations`].properties.variant = VARIANT_ASSOCIATIONS;
   }
 }
 
