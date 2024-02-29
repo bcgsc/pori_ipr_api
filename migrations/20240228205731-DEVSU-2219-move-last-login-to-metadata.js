@@ -12,6 +12,10 @@ module.exports = {
         },
         {transaction},
       );
+      await queryInterface.sequelize.query(
+          'UPDATE user_metadata SET last_login_at = users.last_login_at FROM users WHERE user_metadata.user_id = users.id;',
+          {transaction}
+      );
       await queryInterface.removeColumn(
         REMOVE_TABLE,
         'last_login_at',
