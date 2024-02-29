@@ -26,7 +26,7 @@ router.use('/', async (req, res, next) => {
       where: {reportId: req.report.id},
     });
   } catch (error) {
-    logger.error(`Unable to query Tmbur Mutation Burden for report ${req.report.ident} error: ${error}`);
+    logger.error(`Unable to query Tmbur Mutation Burden ${req.report.ident} error: ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       error: {message: `Unable to lookup Tmbur Mutation Burden for report ${req.report.ident}`},
     });
@@ -63,7 +63,9 @@ router.route('/')
       return res.json(req.tmburMutationBurden.view('public'));
     } catch (error) {
       logger.error(`Unable to update tmbur mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update tmbur mutation burden'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update tmbur mutation burden'},
+      });
     }
   })
   .post(async (req, res) => {
@@ -85,7 +87,9 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create tmbur mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create tmbur mutation burden'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create tmbur mutation burden'},
+      });
     }
   });
 
