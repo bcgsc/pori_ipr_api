@@ -26,7 +26,7 @@ router.use('/', async (req, res, next) => {
       where: {reportId: req.report.id},
     });
   } catch (error) {
-    logger.error(`Unable to query Tmbur Mutation Burden ${req.report.ident} error: ${error}`);
+    logger.error(`Unable to query Tmbur Mutation Burden for report ${req.report.ident} error: ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       error: {message: `Unable to lookup Tmbur Mutation Burden for report ${req.report.ident}`},
     });

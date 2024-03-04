@@ -13,4 +13,3 @@ mocha.json
 jsdoc
 .vscode/
 .env.sh
-env.sh
