@@ -221,6 +221,7 @@
         "genomeIndelTmb": 0.25,
         "adjustedTmb": 2.1,
         "adjustedTmbComment": "Reviewed",
+        "tmbHidden": false,
         "cdsBasesIn1To22AndXAndY": "31990128",
         "cdsSnvs": 63,
         "cdsIndels": 3,

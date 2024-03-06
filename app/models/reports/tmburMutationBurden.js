@@ -83,6 +83,16 @@ module.exports = (sequelize, Sq) => {
         description: 'Adjusted TMB Comment',
       },
     },
+    tmbHidden: {
+      name: 'tmbHidden',
+      field: 'tmb_hidden',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+      jsonSchema: {
+        description: 'TMB Hidden',
+      },
+    },
     cdsBasesIn1To22AndXAndY: {
       name: 'cdsBasesIn1To22AndXAndY',
       field: 'cds_bases_in_1_to_22_and_x_and_y',
