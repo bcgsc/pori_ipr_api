@@ -158,6 +158,41 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
     });
   });
 
+  describe('DELETE', () => {
+    let mutationBurdenDelete;
+
+    beforeEach(async () => {
+      mutationBurdenDelete = await db.models.mutationBurden.create({
+        ...mockReportData.mutationBurden[0],
+        role: 'secondary',
+        reportId: report.id,
+      });
+    }, LONGER_TIMEOUT);
+
+    afterEach(async () => {
+      if (mutationBurdenDelete) {
+        await db.models.mutationBurden.destroy({
+          where: {ident: mutationBurdenDelete.ident},
+          force: true,
+        });
+      }
+    });
+
+    test('/{mutationBurden} - 204 Successful mutationBurden delete', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/mutation-burden/${mutationBurdenDelete.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify it was deleted from db
+      const results = await db.models.mutationBurden.findAll({
+        where: {ident: mutationBurdenDelete.ident},
+      });
+      expect(results.length).toBe(0);
+    });
+  });
+
   // delete report
   afterEach(async () => {
     await db.models.report.destroy({where: {id: report.id}, force: true});
