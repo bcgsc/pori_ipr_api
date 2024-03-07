@@ -984,6 +984,37 @@
             "description": "Report or mutation burden not found"
           }
         }
+      },
+      "delete": {
+        "summary": "Delete Mutation Burden by Ident",
+        "description": "Removes the specified mutation burden",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/burden"
+          }
+        ],
+        "tags": [
+          "Mutation Burden"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or mutation burden not found"
+          }
+        }
       }
     },
     "/reports/{report}/tmbur-mutation-burden": {

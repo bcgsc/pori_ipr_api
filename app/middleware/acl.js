@@ -4,6 +4,7 @@ const {
   isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
+const db = require('../models');
 const logger = require('../log');
 
 const SPECIAL_CASES = [
@@ -54,12 +55,13 @@ const SPECIAL_CASES = [
 module.exports = async (req, res, next) => {
   // Update last time the user logged in, limit to once a day
   const currentDate = new Date().toDateString();
-  const userLastLogin = req.user.lastLoginAt
-    ? new Date(req.user.lastLoginAt).toDateString()
+  let userMetadata = await db.models.userMetadata.findOrCreate({where: {userId: req.user.id}});
+  userMetadata = userMetadata[0];
+  const userLastLogin = userMetadata.lastLoginAt
+    ? new Date(userMetadata.lastLoginAt).toDateString()
     : '';
-
   if (userLastLogin !== currentDate) {
-    await req.user.update({lastLoginAt: new Date()});
+    await userMetadata.update({lastLoginAt: new Date()});
   }
 
   try {

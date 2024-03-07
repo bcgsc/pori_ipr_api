@@ -34,6 +34,13 @@ router.param('userByIdent', async (req, res, next, ident) => {
           },
           through: {attributes: []},
         },
+        {
+          model: db.models.userMetadata,
+          as: 'metadata',
+          attributes: {
+            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'userId'],
+          },
+        },
       ],
     });
   } catch (error) {
