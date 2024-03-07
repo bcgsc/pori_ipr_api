@@ -28,12 +28,16 @@ router.param('mutationBurden', async (req, res, next, mutIdent) => {
     });
   } catch (error) {
     logger.error(`Unable to lookup mutation burden error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup the mutation burden'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Unable to lookup the mutation burden'},
+    });
   }
 
   if (!result) {
     logger.error(`Unable to find mutation burden for ${req.report.ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find mutation burden for ${req.report.ident}`}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: `Unable to find mutation burden for ${req.report.ident}`},
+    });
   }
 
   // Add mutation burden to request
@@ -61,7 +65,21 @@ router.route('/:mutationBurden([A-z0-9-]{36})')
       return res.json(req.mutationBurden.view('public'));
     } catch (error) {
       logger.error(`Unable to update mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update mutation burden'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update mutation burden'},
+      });
+    }
+  })
+  .delete(async (req, res) => {
+    // Soft delete mutation burden
+    try {
+      await req.mutationBurden.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Unable to remove mutation burden ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to remove mutation burden'},
+      });
     }
   });
 
@@ -117,7 +135,9 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create mutation burden'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create mutation burden'},
+      });
     }
   });
 

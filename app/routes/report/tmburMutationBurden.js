@@ -63,7 +63,9 @@ router.route('/')
       return res.json(req.tmburMutationBurden.view('public'));
     } catch (error) {
       logger.error(`Unable to update tmbur mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update tmbur mutation burden'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update tmbur mutation burden'},
+      });
     }
   })
   .post(async (req, res) => {
@@ -85,7 +87,9 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create tmbur mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create tmbur mutation burden'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create tmbur mutation burden'},
+      });
     }
   });
 

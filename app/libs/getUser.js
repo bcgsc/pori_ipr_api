@@ -27,6 +27,13 @@ const include = [
     },
     through: {attributes: []},
   },
+  {
+    model: db.models.userMetadata,
+    as: 'metadata',
+    attributes: {
+      exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'userId'],
+    },
+  },
 ];
 
 const getUser = async (req, res) => {

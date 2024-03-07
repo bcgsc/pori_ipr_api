@@ -23,6 +23,12 @@ module.exports = (sequelize, Sq) => {
         },
       },
     },
+    lastLoginAt: {
+      name: 'lastLoginAt',
+      field: 'last_login_at',
+      type: Sq.DATE,
+      defaultValue: null,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'user_metadata',

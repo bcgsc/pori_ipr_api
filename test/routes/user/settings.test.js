@@ -65,7 +65,7 @@ describe('/user/settings', () => {
 
       // Expect that a new record wasn't created
       const results = await db.models.userMetadata.findAll({
-        where: {userId: testUser.id}, paranoid: false,
+        where: {userId: testUser.id},
       });
       expect(results.length).toBe(1);
     });
