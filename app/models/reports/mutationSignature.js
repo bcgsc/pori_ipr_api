@@ -45,6 +45,7 @@ module.exports = (sequelize, Sq) => {
     selected: {
       type: Sq.BOOLEAN,
       defaultValue: false,
+      allowNull: false,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
