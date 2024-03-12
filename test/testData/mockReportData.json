@@ -78,6 +78,8 @@
     "presentationDate": null,
     "kbUrl": "https://ipr.bcgsc.ca/testurl",
     "kbDiseaseMatch": "Colorectal Cancer",
+    "legacyReportFilepath": "/sample/filepath",
+    "legacyPresentationFilepath": "/sample/filepath",
     "analysisStartedAt": "2020-01-01T20:20:00+00:00",
     "oncotreeTumourType": "tumour type",
     "patientInformation": {
