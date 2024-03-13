@@ -29,7 +29,7 @@ const expressionVariantProperties = ['ident', 'gene', 'location', 'rnaReads', 'r
   'biopsySiteQC', 'biopsySiteFoldChange', 'biopsySiteZScore',
   'internalPancancerPercentile', 'internalPancancerkIQR', 'internalPancancerQC',
   'internalPancancerFoldChange', 'internalPancancerZScore', 'kbCategory', 'germline',
-  'library', 'comments', 'displayName', 'gene'];
+  'library', 'comments', 'displayName', 'gene', 'selected'];
 
 const checkExpressionVariant = (variantObject) => {
   expressionVariantProperties.forEach((element) => {
