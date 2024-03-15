@@ -29,6 +29,24 @@ module.exports = (sequelize, Sq) => {
     percentile: {
       type: Sq.FLOAT,
     },
+    pedsScore: {
+      name: 'pedsScore',
+      field: 'peds_score',
+      type: Sq.FLOAT,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'Pediatric CD8+ T-cell Score',
+      },
+    },
+    pedsScoreComment: {
+      name: 'pedsScoreComment',
+      field: 'peds_score_comment',
+      type: Sq.TEXT,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'Pediatric CD8+ T-cell Score Comment',
+      },
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_immune_cell_types',
