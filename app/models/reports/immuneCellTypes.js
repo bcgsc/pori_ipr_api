@@ -38,6 +38,15 @@ module.exports = (sequelize, Sq) => {
         description: 'Pediatric CD8+ T-cell Score',
       },
     },
+    pedsPercentile: {
+      name: 'pedsPercentile',
+      field: 'peds_percentile',
+      type: Sq.FLOAT,
+      defaultValue: null,
+      jsonSchema: {
+        description: 'Pediatric CD8+ T-cell Percentile',
+      },
+    },
     pedsScoreComment: {
       name: 'pedsScoreComment',
       field: 'peds_score_comment',
