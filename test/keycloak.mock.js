@@ -7,6 +7,7 @@ jest.mock('../app/api/keycloak', () => {
 
   return {
     getToken: async (username) => {
+      console.log('mock working');
       const {clientId} = nconf.get('keycloak');
       return {
         access_token: jwt.sign(
