@@ -493,7 +493,8 @@
             "cellType": "combined T cell",
             "kbCategory": "moderate",
             "score": 76,
-            "percentile": 50
+            "percentile": 50,
+            "percentileHidden": false
         }
     ],
     "msi": [

@@ -29,6 +29,13 @@ module.exports = (sequelize, Sq) => {
     percentile: {
       type: Sq.FLOAT,
     },
+    percentileHidden: {
+      name: 'percentileHidden',
+      field: 'percentile_hidden',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_immune_cell_types',

@@ -29,6 +29,7 @@ const UPDATE_DATA = {
 
 const immuneCellTypesProperties = [
   'ident', 'createdAt', 'updatedAt', 'cellType', 'kbCategory', 'score', 'percentile',
+  'percentileHidden',
 ];
 
 const checkImmuneCellTypesProperties = (cellType) => {
