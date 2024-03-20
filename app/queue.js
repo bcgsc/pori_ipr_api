@@ -30,6 +30,7 @@ const DEFAULT_REMOVE_CONFIG = {
 };
 
 const addJobToQueue = async (data) => {
+  console.log('NOT WORKING');
   if (myqueue) {
     logger.info('adding job to queue: ', data);
     return myqueue.add('job', data, DEFAULT_REMOVE_CONFIG);
