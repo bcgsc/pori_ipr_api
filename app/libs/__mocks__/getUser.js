@@ -27,10 +27,10 @@ const include = [
 ];
 
 const getUser = async (req) => {
-  let token = req.header('Authorization') || '';
+  const token = req.header('Authorization') || '';
 
-  credentials = Buffer.from(token.split(' ')[1], 'base64').toString('utf-8').split(':');
-  respUser = await db.models.user.findOne({
+  const credentials = Buffer.from(token.split(' ')[1], 'base64').toString('utf-8').split(':');
+  const respUser = await db.models.user.findOne({
     where: {username: credentials[0]},
     attributes: {exclude: ['password']},
     include,
