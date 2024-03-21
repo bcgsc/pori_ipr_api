@@ -55,6 +55,12 @@ module.exports = (sequelize, Sq) => {
       jsonSchema: {
         description: 'Pediatric CD8+ T-cell Score Comment',
       },
+    percentileHidden: {
+      name: 'percentileHidden',
+      field: 'percentile_hidden',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,

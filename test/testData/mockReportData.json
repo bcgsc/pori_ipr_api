@@ -496,7 +496,8 @@
             "percentile": 50,
             "pedsScore": null,
             "pedsPercentile": null,
-            "pedsScoreComment": null
+            "pedsScoreComment": null,
+            "percentileHidden": false
         }
     ],
     "msi": [
