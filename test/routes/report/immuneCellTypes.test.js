@@ -29,7 +29,7 @@ const UPDATE_DATA = {
 
 const immuneCellTypesProperties = [
   'ident', 'createdAt', 'updatedAt', 'cellType', 'kbCategory', 'score', 'percentile',
-  'percentileHidden',
+  'pedsScore', 'pedsPercentile', 'pedsScoreComment', 'percentileHidden',
 ];
 
 const checkImmuneCellTypesProperties = (cellType) => {
@@ -65,7 +65,9 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
     });
 
     // Create initial immune cell type
-    cellType = await db.models.immuneCellTypes.create({...IMMUNE_CELL_TYPES_DATA, reportId: report.id});
+    cellType = await db.models.immuneCellTypes.create({
+      ...IMMUNE_CELL_TYPES_DATA, reportId: report.id,
+    });
   });
 
   describe('GET', () => {
@@ -100,7 +102,9 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
     let cellTypeUpdate;
 
     beforeEach(async () => {
-      cellTypeUpdate = await db.models.immuneCellTypes.create({...IMMUNE_CELL_TYPES_DATA, reportId: report.id});
+      cellTypeUpdate = await db.models.immuneCellTypes.create({
+        ...IMMUNE_CELL_TYPES_DATA, reportId: report.id,
+      });
     });
 
     afterEach(async () => {
@@ -147,7 +151,9 @@ describe('/reports/{REPORTID}/immune-cell-types', () => {
     let cellTypeDelete;
 
     beforeEach(async () => {
-      cellTypeDelete = await db.models.immuneCellTypes.create({...IMMUNE_CELL_TYPES_DATA, reportId: report.id});
+      cellTypeDelete = await db.models.immuneCellTypes.create({
+        ...IMMUNE_CELL_TYPES_DATA, reportId: report.id,
+      });
     });
 
     afterEach(async () => {
