@@ -98,11 +98,11 @@ const createReportGenes = async (report, content, options = {}) => {
 };
 
 /**
- * Create varaint sections of a report
+ * Create variant sections of a report
  *
  * @param {integer} reportId - The id of the report these variants belong to
  * @param {object} genesRecordsByName - An object mapping gene names to their data
- * @param {string} modelName - The model name of the varaint section
+ * @param {string} modelName - The model name of the variant section
  * @param {Array<object>} sectionContent - An array of variant objects to create
  * @param {object} options - The options for creating the variants
  * @property {object} options.transaction - A transaction to run the creates under
