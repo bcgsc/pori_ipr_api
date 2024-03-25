@@ -27,7 +27,7 @@ const checkReport = (report) => {
     'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
-    'kbUrl', 'pediatricIds', 'captiv8Score',
+    'kbUrl', 'pediatricIds', 'captiv8Score', 'appendix',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
@@ -45,9 +45,9 @@ const checkReports = (reports) => {
   });
 };
 
-const hasNonProdReport = (reports) => {
+const checkState = (reports, stateCheck) => {
   return reports.some((report) => {
-    return report.state === 'nonproduction';
+    return report.state === stateCheck;
   });
 };
 
@@ -62,19 +62,20 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
-  const AUTHORIZED_GROUP = 'Non-Production Access';
+  const NON_PROD_ACCESS = 'Non-Production Access';
+  const UNREVIEWED_ACCESS = 'Unreviewed Access';
 
   let project;
   let project2;
   let report;
   let reportReady;
   let reportReviewed;
-  let reportArchived;
+  let reportCompleted;
   let reportNonProduction;
   let totalReports;
   let reportDualProj;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and associate projects
@@ -130,13 +131,13 @@ describe('/reports/{REPORTID}', () => {
       project_id: project.id,
     });
 
-    reportArchived = await db.models.report.create({
+    reportCompleted = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
-      state: 'archived',
+      state: 'completed',
     });
     await db.models.reportProject.create({
-      reportId: reportArchived.id,
+      reportId: reportCompleted.id,
       project_id: project.id,
     });
 
@@ -183,7 +184,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get('/api/reports')
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project.name}],
         })
         .auth(username, password)
@@ -191,7 +192,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(hasNonProdReport(res.body.reports)).toBeTruthy();
+      expect(checkState(res.body.reports, 'nonproduction')).toBeTruthy();
     }, LONGER_TIMEOUT);
 
     test('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
@@ -206,14 +207,14 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       checkReports(res.body.reports);
-      expect(hasNonProdReport(res.body.reports)).not.toBeTruthy();
+      expect(checkState(res.body.reports, 'nonproduction')).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
     test('/ - 200 GET report if have additional report permission', async () => {
       const res = await request
         .get('/api/reports')
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project2.name}],
         })
         .auth(username, password)
@@ -226,6 +227,36 @@ describe('/reports/{REPORTID}', () => {
           return e.ident === reportDualProj.ident;
         },
       ).length > 0).toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 GET unreviewed reports with "unreviewed access" group', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: UNREVIEWED_ACCESS}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(checkState(res.body.reports, 'ready')).toBeTruthy();
+    }, LONGER_TIMEOUT);
+
+    test('/ - 200 NOT GET unreviewed reports with non-authorized group', async () => {
+      const res = await request
+        .get('/api/reports')
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+      expect(checkState(res.body.reports, 'ready')).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
     // Test GET with limit
@@ -386,7 +417,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get(`/api/reports/${reportDualProj.ident}`)
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project2.name, ident: project2.ident}],
         })
         .auth(username, password)
@@ -400,7 +431,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get(`/api/reports/${reportNonProduction.ident}`)
         .query({
-          groups: [{name: AUTHORIZED_GROUP}],
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
           projects: [{name: project.name, ident: project.ident}],
         })
         .auth(username, password)
@@ -413,6 +444,32 @@ describe('/reports/{REPORTID}', () => {
     test('error on non-production ident with wrong group', async () => {
       await request
         .get(`/api/reports/${reportNonProduction.ident}`)
+        .query({
+          groups: [{name: NON_AUTHORIZED_GROUP}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('fetches unreviewed ident with group OK', async () => {
+      const res = await request
+        .get(`/api/reports/${reportReady.ident}`)
+        .query({
+          groups: [{name: UNREVIEWED_ACCESS}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+    });
+
+    test('error on unreviewed ident with wrong group', async () => {
+      await request
+        .get(`/api/reports/${reportReady.ident}`)
         .query({
           groups: [{name: NON_AUTHORIZED_GROUP}],
           projects: [{name: project.name, ident: project.ident}],
@@ -438,13 +495,13 @@ describe('/reports/{REPORTID}', () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
         .get('/api/reports')
-        .query({states: 'reviewed,archived'})
+        .query({states: 'reviewed,completed'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       res.body.reports.forEach((reportObject) => {
-        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'completed').toBeTruthy();
       });
     });
 
@@ -453,7 +510,7 @@ describe('/reports/{REPORTID}', () => {
       const res = await request
         .get('/api/reports')
         .query({
-          states: 'reviewed,archived',
+          states: 'reviewed,completed',
           role: 'bioinformatician',
         })
         .auth(username, password)
@@ -461,7 +518,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       res.body.reports.forEach((reportObject) => {
-        expect(reportObject.state === 'reviewed' || reportObject.state === 'archived').toBeTruthy();
+        expect(reportObject.state === 'reviewed' || reportObject.state === 'completed').toBeTruthy();
         expect(reportObject.users.some((user) => {
           return user.role === 'bioinformatician';
         })).toBeTruthy();
@@ -478,6 +535,34 @@ describe('/reports/{REPORTID}', () => {
   });
 
   describe('PUT', () => {
+    test('state updated to ready when reviewed OK', async () => {
+      const res = await request
+        .put(`/api/reports/${reportReviewed.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 42.2,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('state', 'ready');
+    });
+
+    test('state NOT updated to ready when NOT reviewed OK', async () => {
+      const res = await request
+        .put(`/api/reports/${reportCompleted.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 42.2,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('state', 'completed');
+    });
+
     test('tumour content update OK', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}`)
@@ -492,20 +577,47 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
-    describe('PUT', () => {
-      test('M1M2 Score update OK', async () => {
-        const res = await request
-          .put(`/api/reports/${report.ident}`)
-          .auth(username, password)
-          .type('json')
-          .send({
-            m1m2Score: 98.5,
-          })
-          .expect(HTTP_STATUS.OK);
+    test('completed report update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${reportCompleted.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 23.2,
+        })
+        .expect(HTTP_STATUS.OK);
 
-        checkReport(res.body);
-        expect(res.body).toHaveProperty('m1m2Score', 98.5);
-      });
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('tumourContent', 23.2);
+    });
+
+    test('completed report update FORBIDDEN', async () => {
+      await request
+        .put(`/api/reports/${reportCompleted.ident}`)
+        .query({
+          groups: [{name: NON_PROD_ACCESS}, {name: UNREVIEWED_ACCESS}],
+          projects: [{name: project.name}],
+        })
+        .auth(username, password)
+        .type('json')
+        .send({
+          tumourContent: 25.5,
+        })
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('M1M2 Score update OK', async () => {
+      const res = await request
+        .put(`/api/reports/${report.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          m1m2Score: 98.5,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      checkReport(res.body);
+      expect(res.body).toHaveProperty('m1m2Score', 98.5);
     });
 
     test('ploidy update OK', async () => {
@@ -549,11 +661,11 @@ describe('/reports/{REPORTID}', () => {
   });
 
   // delete report
-  afterEach(async () => {
+  afterAll(async () => {
     await db.models.report.destroy({where: {id: report.id}, force: true});
     await db.models.report.destroy({where: {id: reportReady.id}, force: true});
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
-    await db.models.report.destroy({where: {id: reportArchived.id}, force: true});
+    await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
   }, LONGER_TIMEOUT);
 });

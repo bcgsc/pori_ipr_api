@@ -1,4 +1,4 @@
-const HTTP_STATUS = require('http-status-codes');
+const {StatusCodes} = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
 // get test user info
@@ -16,7 +16,7 @@ const testAutocompleteWithKeyword = async (request, type, keyword) => {
     .get(`${BASE_URL}/${type}?search=${keyword}`)
     .auth(username, password)
     .type('json')
-    .expect(HTTP_STATUS.OK);
+    .expect(StatusCodes.OK);
 
   expect(body).toEqual(
     expect.objectContaining({
@@ -38,7 +38,7 @@ const testAutocompleteWithoutKeyword = async (request, type) => {
     .get(`${BASE_URL}/${type}`)
     .auth(username, password)
     .type('json')
-    .expect(HTTP_STATUS.OK);
+    .expect(StatusCodes.OK);
 
   expect(body).toEqual(
     expect.objectContaining({
@@ -129,9 +129,45 @@ describe('GET /graphkb/evidence-levels', () => {
       .get(`${BASE_URL}/evidence-levels`)
       .auth(username, password)
       .type('json')
-      .expect(HTTP_STATUS.OK);
+      .expect(StatusCodes.OK);
 
     expect(body.result.length).toBeGreaterThan(0);
     expect(body.result[0]).toHaveProperty('description');
+  });
+});
+
+describe('GET /graphkb/statements/:statementId', () => {
+  let server;
+  let request;
+
+  beforeAll(async () => {
+    const port = await getPort({port: CONFIG.get('web:port')});
+    server = await listen(port);
+    request = supertest(server);
+  });
+
+  afterAll(async () => {
+    await server.close();
+  });
+
+  test('returns one statement with the correct params', async () => {
+    const {body} = await request
+      .get(`${BASE_URL}/statements/156:13495`)
+      .auth(username, password)
+      .type('json')
+      .expect(StatusCodes.OK);
+
+    expect(body.result.length).toEqual(1);
+    expect(body.metadata.records).toEqual(1);
+    expect(body.result[0]).toHaveProperty('conditions');
+    expect(body.result[0].conditions[0]).toHaveProperty('@rid');
+    expect(body.result[0].conditions[0]).toHaveProperty('@class');
+    expect(body.result[0].conditions[0]).toHaveProperty('displayName');
+    expect(body.result[0].conditions[0]).toHaveProperty('reference1');
+    expect(body.result[0].conditions[0]).toHaveProperty('reference2');
+    expect(body.result[0].conditions[0]).toHaveProperty('type');
+    expect(body.result[0]).toHaveProperty('relevance');
+    expect(body.result[0].relevance).toHaveProperty('@rid');
+    expect(body.result[0].relevance).toHaveProperty('displayName');
   });
 });

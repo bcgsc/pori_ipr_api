@@ -88,6 +88,9 @@ module.exports = (sequelize, Sq) => {
     config: {
       type: Sq.TEXT,
     },
+    appendix: {
+      type: Sq.TEXT,
+    },
     reportVersion: {
       type: Sq.STRING,
       defaultValue: null,
@@ -97,7 +100,7 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
     },
     state: {
-      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'archived', 'reviewed', 'nonproduction'),
+      type: Sq.ENUM('ready', 'active', 'uploaded', 'signedoff', 'completed', 'reviewed', 'nonproduction'),
       defaultValue: 'ready',
       allowNull: false,
     },

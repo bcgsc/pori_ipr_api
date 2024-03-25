@@ -13,8 +13,8 @@ module.exports = (sequelize, Sq) => {
       },
     },
     role: {
-      type: Sq.ENUM(['primary', 'secondary', 'tertiary', 'quaternary']),
-      allowNull: false,
+      type: Sq.ENUM(['primary', 'secondary', 'tertiary', 'quaternary', null]),
+      defaultValue: null,
     },
     codingSnvCount: {
       name: 'codingSnvCount',
@@ -115,18 +115,6 @@ module.exports = (sequelize, Sq) => {
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_mutation_burden',
-    indexes: [
-      ...DEFAULT_REPORT_OPTIONS.indexes,
-      {
-        unique: true,
-        fields: ['report_id', 'role'],
-        where: {
-          deleted_at: {
-            [Sq.Op.eq]: null,
-          },
-        },
-      },
-    ],
     scopes: {
       public: {
         attributes: {

@@ -82,7 +82,7 @@ router.get('/batch/download', async (req, res) => {
               }),
             },
             state: {
-              [Op.in]: ['reviewed', 'active', 'archived'],
+              [Op.in]: ['reviewed', 'active', 'completed'],
             },
           },
           required: true,

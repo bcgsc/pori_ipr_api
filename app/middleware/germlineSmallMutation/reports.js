@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
-const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
+const {hasAccessToNonProdReports,
+  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
 const db = require('../../models');
 const logger = require('../../log');
 const cache = require('../../cache');
@@ -72,6 +73,11 @@ module.exports = async (req, res, next, ident) => {
     if (!hasAccessToNonProdReports(req.user) && result.state === 'nonproduction') {
       logger.error(`User does not have non-production access to ${ident}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
+    }
+
+    if (!hasAccessToUnreviewedReports(req.user) && (result.state !== 'reviewed' && result.state !== 'completed')) {
+      logger.error(`User does not have unreviewed access to ${ident}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Unreviewed reports'}});
     }
 
     // Add result to cache

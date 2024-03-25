@@ -171,6 +171,20 @@ const DEFAULT_REPORT_OPTIONS = {
             transaction: options.transaction,
             userId: options.userId,
           }),
+        // If report is state "reviewed" change to "ready"
+        (!changed || includesAll(updateExclude, changed)) ? Promise.resolve(true)
+          : instance.sequelize.models.report.update({
+            state: 'ready',
+          }, {
+            where: {
+              id: (modelName === 'report') ? instance.id : instance.reportId,
+              state: 'reviewed',
+            },
+            individualHooks: true,
+            paranoid: true,
+            transaction: options.transaction,
+            userId: options.userId,
+          }),
       ]);
     },
     afterCreate: async (instance, options = {}) => {

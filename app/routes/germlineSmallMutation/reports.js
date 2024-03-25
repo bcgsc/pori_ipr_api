@@ -4,7 +4,8 @@ const express = require('express');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {hasAccessToNonProdReports} = require('../../libs/helperFunctions');
+const {hasAccessToNonProdReports,
+  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
 const {GERMLINE_UPDATE_BASE_URI} = require('../../constants');
 const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 
@@ -124,6 +125,12 @@ router.route('/')
       opts.where = {
         ...opts.where,
         state: {[Op.is]: literal('distinct from \'nonproduction\'')},
+      };
+    }
+    if (!hasAccessToUnreviewedReports(req.user)) {
+      opts.where = {
+        ...opts.where,
+        state: ['reviewed', 'completed'],
       };
     }
 

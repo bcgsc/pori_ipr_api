@@ -63,7 +63,10 @@ const DEFAULTS = {
       : 'iprdevdb.bcgsc.ca',
     port: 5432,
     name: DEFAULT_DB_NAME,
-    maxConn: 30,
+    poolMax: 20,
+    poolMin: 0,
+    poolAcquire: 60000,
+    poolIdle: 5000,
   },
   redis: {
     host: ENV === 'production'
@@ -72,6 +75,12 @@ const DEFAULTS = {
     port: ENV === 'staging'
       ? 6380
       : 6379,
+  },
+  redis_queue: {
+    // TODO: enable on staging and prod when ready
+    enableQueue: !(ENV === 'staging' || ENV === 'production'),
+    host: 'iprdevredis.bcgsc.ca',
+    port: 6381,
   },
   paths: {
     data: {

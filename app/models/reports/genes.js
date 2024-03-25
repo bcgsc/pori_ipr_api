@@ -31,9 +31,14 @@ module.exports = (sequelize, Sq) => {
       type: Sq.BOOLEAN,
       defaultValue: false,
     },
-    cancerRelated: {
-      name: 'cancerRelated',
-      field: 'cancer_related',
+    cancerGeneListMatch: {
+      name: 'cancerGeneListMatch',
+      field: 'cancer_gene_list_match',
+      type: Sq.BOOLEAN,
+    },
+    kbStatementRelated: {
+      name: 'kbStatementRelated',
+      field: 'kb_statement_related',
       type: Sq.BOOLEAN,
       defaultValue: false,
     },

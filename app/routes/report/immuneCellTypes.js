@@ -9,9 +9,13 @@ const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {REPORT_UPDATE_BASE_URI, REPORT_CREATE_BASE_URI} = require('../../constants');
+const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema's
+const createSchema = schemaGenerator(db.models.immuneCellTypes, {
+  baseUri: REPORT_CREATE_BASE_URI, exclude: REPORT_EXCLUDE,
+});
 const updateSchema = schemaGenerator(db.models.immuneCellTypes, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
@@ -103,6 +107,30 @@ router.route('/')
       logger.error(`Unable to retrieve immune cell types ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to retrieve immune cell types'},
+      });
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      // validate against the model
+      validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the Immune Cell Type create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    try {
+      // Add new Immune Cell Type to report
+      const result = await db.models.immuneCellTypes.create({
+        ...req.body,
+        reportId: req.report.id,
+      });
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
+    } catch (error) {
+      logger.error(`Unable to create new Immune Cell Type ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create new Immune Cell Type'},
       });
     }
   });

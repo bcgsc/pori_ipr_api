@@ -10,7 +10,15 @@ module.exports = async (req, res, next) => {
 
   // Override authorization in order to mock permissions
   if (req.query.groups) {
-    req.user.groups = [req.query.groups];
+    if (typeof req.query.groups.name === 'object') {
+      req.user.groups = [];
+
+      for (const i of req.query.groups.name) {
+        req.user.groups.push({name: i});
+      }
+    } else {
+      req.user.groups = [req.query.groups];
+    }
   }
 
   if (req.query.projects) {

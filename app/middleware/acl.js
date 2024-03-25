@@ -1,9 +1,10 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
 const {
-  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess,
+  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
+const db = require('../models');
 const logger = require('../log');
 
 const SPECIAL_CASES = [
@@ -52,6 +53,25 @@ const SPECIAL_CASES = [
 ];
 
 module.exports = async (req, res, next) => {
+  // Update last time the user logged in, limit to once a day
+  const currentDate = new Date().toDateString();
+  let userMetadata = await db.models.userMetadata.findOrCreate({where: {userId: req.user.id}});
+  userMetadata = userMetadata[0];
+  const userLastLogin = userMetadata.lastLoginAt
+    ? new Date(userMetadata.lastLoginAt).toDateString()
+    : '';
+  if (userLastLogin !== currentDate) {
+    await userMetadata.update({lastLoginAt: new Date()});
+  }
+
+  try {
+    if (req.query.clinician_view && hasMasterAccess(req.user)) {
+      req.user.groups = [{name: 'Clinician'}];
+    }
+  } catch {
+    logger.error('Clinician View error: Using users normal group');
+  }
+
   // Check if user is an admin
   if (isAdmin(req.user)) {
     return next();
@@ -60,15 +80,26 @@ module.exports = async (req, res, next) => {
   // Get route
   const [route] = req.originalUrl.split('?');
 
+  if (!hasAccessToGermlineReports(req.user) && route.includes('/germline-small-mutation-reports')) {
+    logger.error('User does not have germline access');
+    return res.status(
+      FORBIDDEN,
+    ).json({error: {message: 'User does not have access to Germline reports'}});
+  }
+
   if (req.report) {
     // check if user is bound to report depending on report type
     let boundUser;
-    if (req.report.biofxAssigned) {
-      boundUser = req.report.biofxAssigned.ident === req.user.ident;
-    } else {
-      boundUser = req.report.users.some((reportUser) => {
-        return reportUser.user.ident === req.user.ident;
-      }) || req.report.createdBy?.ident === req.user.ident;
+    try {
+      if (req.report.biofxAssigned) {
+        boundUser = req.report.biofxAssigned.ident === req.user.ident;
+      } else {
+        boundUser = req.report.users.some((reportUser) => {
+          return reportUser.user.ident === req.user.ident;
+        }) || req.report.createdBy?.ident === req.user.ident;
+      }
+    } catch {
+      logger.error('Error while retrieving bound user');
     }
 
     // If the user doesn't have access to the project this report
@@ -81,6 +112,18 @@ module.exports = async (req, res, next) => {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},
+      });
+    }
+
+    // If user is trying to make an update and the report is completed
+    // and they dont have update permissions, throw an error
+    if (UPDATE_METHODS.includes(req.method)
+      && req.report.state === 'completed'
+      && !(hasAccess(req.user, MASTER_REPORT_ACCESS))
+    ) {
+      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
+      return res.status(FORBIDDEN).json({
+        error: {message: 'Report is marked as completed and update has been restricted'},
       });
     }
   } else {

@@ -96,6 +96,23 @@ describe('/user', () => {
       checkUser(res.body);
     });
 
+    // Test that lastLoginAt is updated with a new request
+    test('/{user} - test if requests upload last_login_at 200 Success', async () => {
+      const res = await request
+        .get(`/api/user/${testUser.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const loginDate = new Date(res.body.metadata.lastLoginAt);
+      const currentDate = new Date();
+
+      checkUser(res.body);
+      expect(
+        loginDate.toDateString() === currentDate.toDateString(),
+      ).toBe(true);
+    });
+
     // Test for GET /user/search 200 endpoint
     test('/search - 200 Success', async () => {
       // Create unique first name
