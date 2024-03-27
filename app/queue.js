@@ -90,7 +90,12 @@ const defaultProcessor = async (job) => {
     },
   });
 
-  await transporter.sendMail(job.data);
+  try {
+    await transporter.sendMail(job.data);
+  } catch (err) {
+    logger.error(JSON.stringify(job.data));
+    throw new Error(err);
+  }
 };
 
 setUpWorker(defaultProcessor);
