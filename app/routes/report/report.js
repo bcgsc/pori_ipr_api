@@ -270,7 +270,7 @@ router.route('/')
       });
 
       await email.notifyUsers(
-        `New report by ${req.user.firstName} ${req.user.lastName}`,
+        `Report Created: ${req.body.patientId} ${req.body.template}`,
         `New report:
         Ident: ${report.ident}
         Created by: ${req.user.firstName} ${req.user.lastName}
