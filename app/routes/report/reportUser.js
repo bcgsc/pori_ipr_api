@@ -134,7 +134,7 @@ router.route('/')
       try {
         await email.notifyUsers(
           `${bindUser.firstName} ${bindUser.lastName} has been bound to a report`,
-          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident}`,
+          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident} as ${role}`,
           {
             eventType: NOTIFICATION_EVENT.USER_BOUND,
             templateId: req.report.templateId,

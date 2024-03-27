@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
 const CONFIG = require('../config');
 const db = require('../models');
+const {addJobToQueue} = require('../queue');
+
 
 const {email, password} = CONFIG.get('email');
 
@@ -58,17 +60,6 @@ const getEmailList = async (triggers) => {
 const notifyUsers = async (subject, text, triggers) => {
   const emailList = await getEmailList(triggers);
 
-  const transporter = nodemailer.createTransport({
-    host: 'webmail.bcgsc.ca',
-    auth: {
-      user: email,
-      pass: password,
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-
   emailList.forEach((toEmail) => {
     const mailOptions = {
       from: `${email}@bcgsc.ca`,
@@ -77,13 +68,7 @@ const notifyUsers = async (subject, text, triggers) => {
       text,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(`Email sent: ${info.response}`);
-      }
-    });
+    addJobToQueue(mailOptions);
   });
 };
 

@@ -272,6 +272,7 @@ router.route('/')
       await email.notifyUsers(
         `New report by ${req.user.firstName} ${req.user.lastName}`,
         `New report:
+        Ident: ${report.ident}
         Created by: ${req.user.firstName} ${req.user.lastName}
         Project: ${req.body.project}
         Template: ${req.body.template}
