@@ -147,7 +147,6 @@ module.exports = async (req, res, next) => {
     }
 
     // Allow users to edit themselves for allowNotifications field
-    console.log(req.originalUrl.includes('/api/user'));
     if ((UPDATE_METHODS.includes(req.method) && !hasMasterAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
