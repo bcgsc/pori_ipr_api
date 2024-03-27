@@ -29,12 +29,16 @@ router.param('ict', async (req, res, next, ictIdent) => {
     });
   } catch (error) {
     logger.error(`Unable to get immune cell type ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to get immune cell type'}});
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: {message: 'Unable to get immune cell type'},
+    });
   }
 
   if (!result) {
     logger.error('Unable to locate immune cell type');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to locate immune cell type'}});
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: 'Unable to locate immune cell type'},
+    });
   }
 
   // Add immune cell type to request
@@ -53,7 +57,9 @@ router.route('/:ict([A-z0-9-]{36})')
       validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       logger.error(`Error while validating immune cell type update request ${error}`);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating immune cell type update request ${error}`}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        error: {message: `Error while validating immune cell type update request ${error}`},
+      });
     }
 
     // Update db entry
@@ -62,7 +68,9 @@ router.route('/:ict([A-z0-9-]{36})')
       return res.json(req.immuneCellType.view('public'));
     } catch (error) {
       logger.error(`Unable to update immune cell type ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update immune cell type'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to update immune cell type'},
+      });
     }
   })
   .delete(async (req, res) => {
@@ -72,7 +80,9 @@ router.route('/:ict([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove immune cell type ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to remove immune cell type'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to remove immune cell type'},
+      });
     }
   });
 
