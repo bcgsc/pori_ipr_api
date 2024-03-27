@@ -3,7 +3,6 @@ const CONFIG = require('../config');
 const db = require('../models');
 const {addJobToQueue} = require('../queue');
 
-
 const {email, password} = CONFIG.get('email');
 
 const sendEmail = (subject, text, toEmail) => {
