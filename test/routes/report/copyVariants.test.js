@@ -37,7 +37,7 @@ const copyVariantProperties = [
   'ident', 'createdAt', 'updatedAt', 'copyChange',
   'lohState', 'cnvState', 'chromosomeBand', 'start',
   'end', 'size', 'kbCategory', 'log2Cna', 'cna', 'gene',
-  'germline', 'library', 'comments', 'displayName',
+  'germline', 'library', 'comments', 'displayName', 'selected',
 ];
 
 const checkCopyVariant = (variantObject) => {

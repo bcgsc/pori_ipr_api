@@ -24,7 +24,7 @@ const UPDATE_DATA = {
 const smallMutationProperties = ['transcript', 'proteinChange', 'chromosome', 'startPosition',
   'endPosition', 'refSeq', 'altSeq', 'zygosity', 'tumourAltCount', 'tumourRefCount', 'tumourDepth',
   'rnaAltCount', 'rnaRefCount', 'rnaDepth', 'normalAltCount', 'normalRefCount', 'normalDepth',
-  'hgvsProtein', 'hgvsCds', 'hgvsGenomic', 'ncbiBuild', 'germline',
+  'hgvsProtein', 'hgvsCds', 'hgvsGenomic', 'ncbiBuild', 'germline', 'selected',
   'tumourAltCopies', 'tumourRefCopies', 'library', 'comments', 'displayName', 'gene'];
 
 const checkSmallMutation = (variantObject) => {

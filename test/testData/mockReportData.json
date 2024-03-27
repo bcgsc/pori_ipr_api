@@ -219,6 +219,9 @@
         "totalGenomeIndels": 655,
         "genomeSnvTmb": 2.01,
         "genomeIndelTmb": 0.25,
+        "adjustedTmb": 2.1,
+        "adjustedTmbComment": "Reviewed",
+        "tmbHidden": false,
         "cdsBasesIn1To22AndXAndY": "31990128",
         "cdsSnvs": 63,
         "cdsIndels": 3,
@@ -327,7 +330,8 @@
             "germline": false,
             "tumourRefCopies": 60,
             "tumourAltCopies": 20,
-            "library": "TEST LIBRARY"
+            "library": "TEST LIBRARY",
+            "selected": false
         }
     ],
     "mutationSignature": [
@@ -356,7 +360,8 @@
             "size": 0.09,
             "kbCategory": "Test Category",
             "germline": false,
-            "library": "TEST LIBRARY"
+            "library": "TEST LIBRARY",
+            "selected": false
         }
     ],
     "mavis": [
@@ -389,7 +394,8 @@
             "tumourAltCount": 4,
             "tumourDepth": 590,
             "rnaAltCount": 5,
-            "rnaDepth": 591
+            "rnaDepth": 591,
+            "selected": false
         }
     ],
     "proteinVariants": [
@@ -433,7 +439,8 @@
             "rpkm": 1889.11,
             "tpm": 12.3,
             "germline": true,
-            "library": "TEST LIBRARY"
+            "library": "TEST LIBRARY",
+            "selected": false
         }
     ],
     "probeTestInformation": [
@@ -486,7 +493,11 @@
             "cellType": "combined T cell",
             "kbCategory": "moderate",
             "score": 76,
-            "percentile": 50
+            "percentile": 50,
+            "pedsScore": null,
+            "pedsPercentile": null,
+            "pedsScoreComment": null,
+            "percentileHidden": false
         }
     ],
     "msi": [
