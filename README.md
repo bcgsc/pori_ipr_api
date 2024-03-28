@@ -279,8 +279,6 @@ pm2 start current/pm2.config.js --env production
 │    │
 │    ├── graphkb.mock.js                Mock graphkb reponses used for testing
 │    │
-│    ├── keycloak.mock.js               Mock keycloak reponses used for testing
-│    │
 │    └── testData                       # Test Data
 │                                       Files (images, json files, etc.) used by the test files for testing
 │

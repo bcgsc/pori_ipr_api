@@ -116,6 +116,7 @@ router.route('/:template([A-z0-9-]{36})')
       await req.template.update(req.body, {userId: req.user.id, transaction});
       await req.template.reload({transaction});
       await transaction.commit();
+
       return res.json(req.template.view('public'));
     } catch (error) {
       await transaction.rollback();
