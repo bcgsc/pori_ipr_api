@@ -122,14 +122,7 @@ router.route('/:template([A-z0-9-]{36})')
       await req.template.reload({transaction});
       await transaction.commit();
 
-      // TODO remove test code revert to regular code
-      const resJson = req.template.view('public');
-      if (job) {
-        resJson.jobId = job.id;
-      }
-      return res.json(resJson);
-
-      // return res.json(req.template.view('public'));
+      return res.json(req.template.view('public'));
     } catch (error) {
       await transaction.rollback();
       logger.error(`Unable to update template ${error}`);
