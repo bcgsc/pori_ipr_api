@@ -43,8 +43,8 @@ module.exports = {
     'json',
   ],
   setupFiles: [
-    '<rootDir>/test/keycloak.mock.js',
     '<rootDir>/test/graphkb.mock.js',
+    '<rootDir>/config/jest/jestSetup.js',
   ],
   testTimeout: 10000,
 };

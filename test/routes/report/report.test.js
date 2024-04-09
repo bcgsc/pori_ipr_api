@@ -27,7 +27,7 @@ const checkReport = (report) => {
     'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
-    'kbUrl', 'pediatricIds', 'captiv8Score', 'appendix',
+    'kbUrl', 'pediatricIds', 'captiv8Score', 'appendix', 'hrdetectScore',
     'legacyReportFilepath', 'legacyPresentationFilepath',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
