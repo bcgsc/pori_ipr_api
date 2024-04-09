@@ -26,9 +26,6 @@ const updateSchema = schemaGenerator(db.models.template, {
   baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'], nothingRequired: true,
 });
 
-// TODO remove all queue code when finished testing
-const {addJobToQueue} = require('../../queue');
-
 // Register template middleware
 router.param('template', templateMiddleware);
 
@@ -38,8 +35,6 @@ router.route('/:template([A-z0-9-]{36})')
     return res.json(req.template.view('public'));
   })
   .put(async (req, res) => {
-    // TODO remove test code
-    const job = await addJobToQueue(req.body);
     // Validate request against schema
     try {
       validateAgainstSchema(updateSchema, req.body, false);
