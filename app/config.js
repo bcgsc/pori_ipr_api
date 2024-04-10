@@ -72,6 +72,12 @@ const DEFAULTS = {
       ? 6380
       : 6379,
   },
+  redis_queue: {
+    // TODO: enable on staging and prod when ready
+    enableQueue: !(ENV === 'staging' || ENV === 'production'),
+    host: 'iprdevredis.bcgsc.ca',
+    port: 6381,
+  },
   paths: {
     data: {
       POGdata: '/projects/tumour_char/pog/reports/genomic',

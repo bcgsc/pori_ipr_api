@@ -24,7 +24,7 @@ const UPDATE_DATA = {
 const structuralVariantProperties = ['exon1', 'exon2', 'breakpoint', 'eventType', 'detectedIn',
   'conventionalName', 'svg', 'svgTitle', 'name', 'frame', 'ctermGene',
   'ntermGene', 'ctermTranscript', 'ntermTranscript', 'omicSupport',
-  'highQuality', 'germline', 'library', 'tumourAltCount',
+  'highQuality', 'germline', 'library', 'tumourAltCount', 'selected',
   'tumourDepth', 'rnaAltCount', 'rnaDepth', 'comments', 'displayName', 'gene1', 'gene2'];
 
 const checkStructuralVariant = (variantObject) => {
