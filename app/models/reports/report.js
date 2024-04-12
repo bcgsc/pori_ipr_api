@@ -21,6 +21,11 @@ module.exports = (sequelize, Sq) => {
       field: 'captiv8_score',
       type: Sq.INTEGER,
     },
+    hrdetectScore: {
+      name: 'hrdetectScore',
+      field: 'hrdetect_score',
+      type: Sq.FLOAT,
+    },
     alternateIdentifier: {
       name: 'alternateIdentifier',
       field: 'alternate_identifier',

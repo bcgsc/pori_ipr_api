@@ -78,6 +78,11 @@ module.exports = (sequelize, Sq) => {
       field: 'display_name',
       type: Sq.TEXT,
     },
+    selected: {
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_copy_variants',

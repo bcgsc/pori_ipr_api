@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "ipr-api",
-  "version": "7.21.0",
+  "version": "7.22.0",
   "description": "Integrated Pipeline Reports API",
   "main": "bin/server.js",
   "scripts": {
@@ -18,6 +18,7 @@
     "@alt3/sequelize-to-json-schemas": "^0.3.56",
     "ajv": "^6.10.2",
     "bcryptjs": "~2.4.3",
+    "bullmq": "^5.1.11",
     "compression": "^1.7.4",
     "cors": "~2.8.5",
     "exceljs": "^4.3.0",
