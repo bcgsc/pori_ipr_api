@@ -20,7 +20,7 @@ if (ENV === 'production') {
 }
 
 const DEFAULT_TEST_USER = 'ipr-bamboo-admin';
-const DEFAULT_EMAIL_ADDRESS = 'rpletz';
+const DEFAULT_EMAIL_ADDRESS = 'PORIReportUpdates';
 
 const DEFAULTS = {
   env: ENV,
@@ -147,6 +147,12 @@ const CONFIG = nconf
     },
     'email.password': {
       alias: 'email.password',
+    },
+    'email.domain': {
+      alias: 'email.domain',
+    },
+    'email.ehost': {
+      alias: 'email.ehost',
     },
     'log.level': {
       alias: 'log:level',

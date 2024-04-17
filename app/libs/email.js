@@ -3,11 +3,11 @@ const CONFIG = require('../config');
 const db = require('../models');
 const {addJobToQueue} = require('../queue');
 
-const {email, password} = CONFIG.get('email');
+const {email, password, domain, ehost} = CONFIG.get('email');
 
 const sendEmail = async (subject, text, toEmail) => {
   const transporter = nodemailer.createTransport({
-    host: 'webmail.bcgsc.ca',
+    host: ehost,
     auth: {
       user: email,
       pass: password,
@@ -18,7 +18,7 @@ const sendEmail = async (subject, text, toEmail) => {
   });
 
   const mailOptions = {
-    from: `${email}@bcgsc.ca`,
+    from: `${email}${domain}`,
     to: toEmail,
     subject,
     text,
@@ -36,14 +36,14 @@ const getEmailList = async (triggers) => {
   for (const notif of notifs) {
     if (notif.user) {
       if (!emailList.includes(notif.user.email)
-          && notif.user.email.endsWith('@bcgsc.ca')
+          && notif.user.email.endsWith(domain)
           && notif.user.allowNotifications) {
         emailList.push(notif.user.email);
       }
     } else if (notif.userGroup) {
       for (const groupUser of notif.userGroup.users) {
         if (!emailList.includes(groupUser.email)
-            && groupUser.email.endsWith('@bcgsc.ca')
+            && groupUser.email.endsWith(domain)
             && groupUser.allowNotifications) {
           emailList.push(groupUser.email);
         }
@@ -59,7 +59,7 @@ const notifyUsers = async (subject, text, triggers) => {
 
   emailList.forEach((toEmail) => {
     const mailOptions = {
-      from: `${email}@bcgsc.ca`,
+      from: `${email}${domain}`,
       to: toEmail,
       subject,
       text,

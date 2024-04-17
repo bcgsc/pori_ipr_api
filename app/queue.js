@@ -7,7 +7,7 @@ const logger = require('./log'); // Load logging library
 
 const CONFIG = require('./config');
 
-const {email, password} = CONFIG.get('email');
+const {email, password, ehost} = CONFIG.get('email');
 
 const queue = () => {
   if (enableQueue) {
@@ -80,7 +80,7 @@ const setUpWorker = (jobProcessor) => {
 const defaultProcessor = async (job) => {
   // Process the job data
   const transporter = nodemailer.createTransport({
-    host: 'webmail.bcgsc.ca',
+    host: ehost,
     auth: {
       user: email,
       pass: password,
