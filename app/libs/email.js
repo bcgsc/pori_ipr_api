@@ -5,7 +5,7 @@ const {addJobToQueue} = require('../queue');
 
 const {email, password} = CONFIG.get('email');
 
-const sendEmail = (subject, text, toEmail) => {
+const sendEmail = async (subject, text, toEmail) => {
   const transporter = nodemailer.createTransport({
     host: 'webmail.bcgsc.ca',
     auth: {
@@ -24,13 +24,7 @@ const sendEmail = (subject, text, toEmail) => {
     text,
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log(`Email sent: ${info.response}`);
-    }
-  });
+  return transporter.sendMail(mailOptions);
 };
 
 const getEmailList = async (triggers) => {

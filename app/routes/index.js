@@ -23,6 +23,7 @@ const germlineReports = require('./germlineSmallMutation/reports');
 const germlineReportSections = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const graphkbRouter = require('./graphkb');
+const emailRouter = require('./email');
 const reportSections = require('./report');
 
 const router = express.Router({mergeParams: true});
@@ -62,6 +63,7 @@ class Routing extends RouterInterface {
     // Add Single Routes
     // Setup other routes
     this.router.use('/graphkb', graphkbRouter);
+    this.router.use('/email', emailRouter);
     this.router.use('/version', APIVersion);
 
     this.router.use('/user', userRoute);
