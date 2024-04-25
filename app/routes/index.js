@@ -11,6 +11,7 @@ const APIVersion = require('./version');
 const userRoute = require('./user');
 
 const reportsRoute = require('./report/report');
+const reportsAsyncRoute = require('./report/reportAsync');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
@@ -68,6 +69,8 @@ class Routing extends RouterInterface {
 
     this.router.use('/reports', reportsRoute);
     this.router.use('/reports/:report', reportSections);
+
+    this.router.use('/reports-async', reportsAsyncRoute);
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
