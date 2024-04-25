@@ -169,13 +169,19 @@ router.route('/')
     }
 
     try {
-      const newnotif = await db.models.notification.create({
-        projectId: req.body.project_id, userId: req.body.user_id ? req.body.user_id : null, userGroupId: req.body.user_group_id ? req.body.user_group_id : null, eventType: req.body.event_type, templateId: req.body.template_id,
+      const newnotif = await db.models.notification.findOrCreate({
+        where: {
+          projectId: req.body.project_id,
+          userId: req.body.user_id ? req.body.user_id : null,
+          userGroupId: req.body.user_group_id ? req.body.user_group_id : null,
+          eventType: req.body.event_type,
+          templateId: req.body.template_id,
+        },
       });
 
       // Load new notif with associations
       const result = await db.models.notification.scope('public').findOne({
-        where: {id: newnotif.id},
+        where: {id: newnotif[0].id},
       });
 
       return res.status(HTTP_STATUS.CREATED).json(result);
