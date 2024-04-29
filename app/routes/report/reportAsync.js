@@ -1,6 +1,8 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
+const {addJobToReportQueue} = require('../../queue');
+
 const createReport = require('../../libs/createReport');
 const logger = require('../../log');
 
@@ -18,6 +20,7 @@ router.route('/')
   .post(async (req, res) => {
     // validate loaded report against schema
     console.log('test');
+    addJobToReportQueue({});
     // try {
     //   validateAgainstSchema(reportUploadSchema, req.body);
     // } catch (error) {

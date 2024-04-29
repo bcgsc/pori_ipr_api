@@ -25,7 +25,7 @@ const setUpEmailQueue = () => {
 
 const emailQueue = setUpEmailQueue();
 
-const DEFAULT_REMOVE_CONFIG = {
+const EMAIL_REMOVE_CONFIG = {
   removeOnComplete: {
     age: 3600,
   },
@@ -38,7 +38,7 @@ const DEFAULT_REMOVE_CONFIG = {
 const addJobToEmailQueue = async (data) => {
   if (emailQueue) {
     logger.info('adding email to queue: ', data);
-    return emailQueue.add('job', data, DEFAULT_REMOVE_CONFIG);
+    return emailQueue.add('job', data, EMAIL_REMOVE_CONFIG);
   }
   return null;
 };
@@ -100,4 +100,74 @@ const emailProcessor = async (job) => {
 
 setUpEmailWorker(emailProcessor);
 
-module.exports = {addJobToEmailQueue};
+const REPORT_REMOVE_CONFIG = {
+  removeOnComplete: {
+    age: 3600,
+  },
+  removeOnFail: {
+    age: 24 * 3600,
+  },
+};
+
+const setUpReportQueue = () => {
+  if (enableQueue) {
+    logger.info('report queue enabled');
+    return new Queue('reportQueue', {
+      connection: {
+        host,
+        port,
+      },
+    });
+  }
+  logger.info('report queue not enabled');
+  return null;
+};
+
+const reportQueue = setUpReportQueue();
+
+const addJobToReportQueue = async (data) => {
+  if (emailQueue) {
+    logger.info('adding report to queue: ', data);
+    return reportQueue.add('job', data, REPORT_REMOVE_CONFIG);
+  }
+  return null;
+};
+
+// Initialize a new worker
+const setUpReportWorker = (reportJobProcessor) => {
+  const worker = () => {
+    if (enableQueue) {
+      return new Worker(
+        'reportQueue',
+        reportJobProcessor,
+        {connection: {
+          host,
+          port,
+        },
+        autorun: true},
+      );
+    }
+    return null;
+  };
+
+  const workerInstance = worker();
+  if (workerInstance) {
+    workerInstance.on('completed', async (job) => {
+      await job.remove();
+      logger.info(`Report job with ID ${job.id} has been completed.`);
+    });
+
+    workerInstance.on('failed', (job, err) => {
+      logger.error(`Report job with ID ${job.id} has failed with error: ${err.message}`);
+    });
+  }
+};
+
+const reportProcessor = async (job) => {
+  // Process the job data
+  logger.info('retrieved job from queue: ', job.data);
+};
+
+setUpReportWorker(reportProcessor);
+
+module.exports = {addJobToEmailQueue, addJobToReportQueue};
