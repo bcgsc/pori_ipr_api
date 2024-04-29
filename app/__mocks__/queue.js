@@ -1,8 +1,8 @@
 const queue = [];
 
-const addJobToQueue = async (data) => {
+const addJobToEmailQueue = async (data) => {
   queue.push(data);
   return queue;
 };
 
-module.exports = {addJobToQueue};
+module.exports = {addJobToEmailQueue};

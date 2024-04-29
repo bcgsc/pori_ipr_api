@@ -9,21 +9,21 @@ const CONFIG = require('./config');
 
 const {email, password, ehost} = CONFIG.get('email');
 
-const queue = () => {
+const setUpEmailQueue = () => {
   if (enableQueue) {
-    logger.info('queue enabled');
-    return new Queue('myqueue', {
+    logger.info('email queue enabled');
+    return new Queue('emailQueue', {
       connection: {
         host,
         port,
       },
     });
   }
-  logger.info('queue not enabled');
+  logger.info('email queue not enabled');
   return null;
 };
 
-const myqueue = queue();
+const emailQueue = setUpEmailQueue();
 
 const DEFAULT_REMOVE_CONFIG = {
   removeOnComplete: {
@@ -35,21 +35,21 @@ const DEFAULT_REMOVE_CONFIG = {
   attempts: 10,
 };
 
-const addJobToQueue = async (data) => {
-  if (myqueue) {
-    logger.info('adding job to queue: ', data);
-    return myqueue.add('job', data, DEFAULT_REMOVE_CONFIG);
+const addJobToEmailQueue = async (data) => {
+  if (emailQueue) {
+    logger.info('adding email to queue: ', data);
+    return emailQueue.add('job', data, DEFAULT_REMOVE_CONFIG);
   }
   return null;
 };
 
 // Initialize a new worker
-const setUpWorker = (jobProcessor) => {
+const setUpEmailWorker = (emailJobProcessor) => {
   const worker = () => {
     if (enableQueue) {
       return new Worker(
-        'myqueue',
-        jobProcessor,
+        'emailQueue',
+        emailJobProcessor,
         {connection: {
           host,
           port,
@@ -68,16 +68,16 @@ const setUpWorker = (jobProcessor) => {
   if (workerInstance) {
     workerInstance.on('completed', async (job) => {
       await job.remove();
-      logger.info(`Job with ID ${job.id} has been completed.`);
+      logger.info(`Email job with ID ${job.id} has been completed.`);
     });
 
     workerInstance.on('failed', (job, err) => {
-      logger.error(`Job with ID ${job.id} has failed with error: ${err.message}`);
+      logger.error(`Email job with ID ${job.id} has failed with error: ${err.message}`);
     });
   }
 };
 
-const defaultProcessor = async (job) => {
+const emailProcessor = async (job) => {
   // Process the job data
   const transporter = nodemailer.createTransport({
     host: ehost,
@@ -98,6 +98,6 @@ const defaultProcessor = async (job) => {
   }
 };
 
-setUpWorker(defaultProcessor);
+setUpEmailWorker(emailProcessor);
 
-module.exports = {addJobToQueue};
+module.exports = {addJobToEmailQueue};
