@@ -1,6 +1,7 @@
 const {Queue, Worker} = require('bullmq');
 const nodemailer = require('nodemailer');
 const conf = require('./config');
+const createReport = require('./libs/createReport');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log'); // Load logging library
@@ -125,10 +126,24 @@ const setUpReportQueue = () => {
 
 const reportQueue = setUpReportQueue();
 
-const addJobToReportQueue = async (data) => {
-  if (emailQueue) {
-    logger.info('adding report to queue: ', data);
+const addJobToReportQueue = async (data, jobId) => {
+  if (reportQueue) {
+    logger.info('adding report to queue');
+    REPORT_REMOVE_CONFIG.jobId = jobId;
     return reportQueue.add('job', data, REPORT_REMOVE_CONFIG);
+  }
+  return null;
+};
+
+const retrieveJobFromReportQueue = async (jobId) => {
+  if (reportQueue) {
+    logger.info(`retrieving job ${jobId} from report queue`);
+    const jobState = await reportQueue.getJobState(jobId);
+    if (jobState === 'failed') {
+      const job = await reportQueue.getJob(jobId);
+      return {state: jobState, failedReason: job.failedReason};
+    }
+    return {state: jobState};
   }
   return null;
 };
@@ -165,9 +180,10 @@ const setUpReportWorker = (reportJobProcessor) => {
 
 const reportProcessor = async (job) => {
   // Process the job data
-  logger.info('retrieved job from queue: ', job.data);
+  logger.info(`processing report: ${job.id}`);
+  await createReport(job.data);
 };
 
 setUpReportWorker(reportProcessor);
 
-module.exports = {addJobToEmailQueue, addJobToReportQueue};
+module.exports = {addJobToEmailQueue, addJobToReportQueue, retrieveJobFromReportQueue};
