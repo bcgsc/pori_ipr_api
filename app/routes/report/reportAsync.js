@@ -35,7 +35,7 @@ router.route('/')
     req.body.ident = customIdent;
     const job = await addJobToReportQueue(req.body, customIdent);
 
-    return res.status(HTTP_STATUS.OK).json({message: 'Report is being processed', jobId: job.id});
+    return res.status(HTTP_STATUS.ACCEPTED).json({message: 'Report is being processed', ident: job.id});
   });
 
 router.route('/:reportAsync')

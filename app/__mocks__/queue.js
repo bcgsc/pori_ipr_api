@@ -1,3 +1,4 @@
+const createReport = require('../libs/createReport');
 const queue = [];
 
 const addJobToEmailQueue = async (data) => {
@@ -5,4 +6,9 @@ const addJobToEmailQueue = async (data) => {
   return queue;
 };
 
-module.exports = {addJobToEmailQueue};
+const addJobToReportQueue = async (data, customIdent) => {
+  await createReport(data)
+  return {id: customIdent}
+};
+
+module.exports = {addJobToEmailQueue, addJobToReportQueue};
