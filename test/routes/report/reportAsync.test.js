@@ -1,6 +1,5 @@
 const HTTP_STATUS = require('http-status-codes');
 
-const {v4: uuidv4} = require('uuid');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../app/models');
@@ -47,8 +46,6 @@ beforeAll(async () => {
 });
 
 describe('/reports/{REPORTID}', () => {
-  const randomUuid = uuidv4();
-
   let project;
   let report;
 
@@ -72,7 +69,6 @@ describe('/reports/{REPORTID}', () => {
       reportId: report.id,
       project_id: project.id,
     });
-
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -90,9 +86,9 @@ describe('/reports/{REPORTID}', () => {
 
   describe('POST', () => {
     // Test regular GET
-    test.only('create report ok', async () => {
-          // create report
-      let res = await request
+    test('create report ok', async () => {
+      // create report
+      const res = await request
         .post('/api/reports-async')
         .auth(username, password)
         .send(mockReportData)
@@ -101,12 +97,12 @@ describe('/reports/{REPORTID}', () => {
 
       expect(typeof res.body).toBe('object');
 
-      reportIdentQuery = res.body.ident;
+      const reportIdentQuery = res.body.ident;
 
       const result = await db.models.report.findOne({where: {ident: reportIdentQuery}, attributes: ['ident']});
-      reportIdentDB = result.ident;
+      const reportIdentDB = result.ident;
 
-      expect(reportIdentDB).toEqual(reportIdentQuery)
+      expect(reportIdentDB).toEqual(reportIdentQuery);
     });
   });
 
