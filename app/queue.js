@@ -1,8 +1,13 @@
 const {Queue, Worker} = require('bullmq');
+const nodemailer = require('nodemailer');
 const conf = require('./config');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log'); // Load logging library
+
+const CONFIG = require('./config');
+
+const {email, password, ehost} = CONFIG.get('email');
 
 const queue = () => {
   if (enableQueue) {
@@ -27,6 +32,7 @@ const DEFAULT_REMOVE_CONFIG = {
   removeOnFail: {
     age: 24 * 3600,
   },
+  attempts: 10,
 };
 
 const addJobToQueue = async (data) => {
@@ -48,7 +54,11 @@ const setUpWorker = (jobProcessor) => {
           host,
           port,
         },
-        autorun: true},
+        autorun: true,
+        limiter: {
+          max: 10,
+          duration: 60000,
+        }},
       );
     }
     return null;
@@ -69,7 +79,23 @@ const setUpWorker = (jobProcessor) => {
 
 const defaultProcessor = async (job) => {
   // Process the job data
-  logger.info('retrieved job from queue: ', job.data);
+  const transporter = nodemailer.createTransport({
+    host: ehost,
+    auth: {
+      user: email,
+      pass: password,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  try {
+    await transporter.sendMail(job.data);
+  } catch (err) {
+    logger.error(JSON.stringify(job.data));
+    throw new Error(err);
+  }
 };
 
 setUpWorker(defaultProcessor);

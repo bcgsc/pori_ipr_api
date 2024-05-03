@@ -13,7 +13,7 @@ const {username, password} = CONFIG.get('testing');
 
 const userProperties = [
   'ident', 'createdAt', 'updatedAt', 'username',
-  'type', 'firstName', 'lastName', 'email',
+  'type', 'firstName', 'lastName', 'email', 'allowNotifications',
 ];
 
 const checkUser = (userObject) => {
