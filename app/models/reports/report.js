@@ -158,6 +158,18 @@ module.exports = (sequelize, Sq) => {
       type: Sq.TEXT,
       defaultValue: null,
     },
+    legacyReportFilepath: {
+      name: 'legacyReportFilepath',
+      field: 'legacy_report_filepath',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
+    legacyPresentationFilepath: {
+      name: 'legacyPresentationFilepath',
+      field: 'legacy_presentation_filepath',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
