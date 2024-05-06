@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const CONFIG = require('../config');
 const db = require('../models');
-const {addJobToQueue} = require('../queue');
+const {addJobToEmailQueue} = require('../queue');
 
 const {email, password, domain, ehost} = CONFIG.get('email');
 
@@ -65,7 +65,7 @@ const notifyUsers = async (subject, text, triggers) => {
       text,
     };
 
-    addJobToQueue(mailOptions);
+    addJobToEmailQueue(mailOptions);
   });
 };
 
