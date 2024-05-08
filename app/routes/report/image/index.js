@@ -169,7 +169,7 @@ router.route('/keylist/:pattern')
       const filteredResults = [];
 
       const patternToCheck = new RegExp(req.params.pattern);
-      for (const [_, value] of Object.entries(results)) {
+      for (const [, value] of Object.entries(results)) {
         if (patternToCheck.test(value.dataValues.key)) {
           filteredResults.push(value);
         }
