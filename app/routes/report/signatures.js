@@ -73,6 +73,7 @@ router.route('/history')
       include,
       paranoid: false,
     });
+    // Shift first element to last due to the way sequelize handles updates
     const firstElement = signatureHistory.shift();
     signatureHistory.push(firstElement);
     return res.json(signatureHistory);
