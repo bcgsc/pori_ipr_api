@@ -63,6 +63,21 @@ router.route('/')
     return res.json(null);
   });
 
+router.route('/history')
+  .get(async (req, res) => {
+    const signatureHistory = await db.models.signatures.scope('history').findAll({
+      where: {reportId: req.report.id},
+      order: [
+        ['id', 'ASC'],
+      ],
+      include,
+      paranoid: false,
+    });
+    const firstElement = signatureHistory.shift();
+    signatureHistory.push(firstElement);
+    return res.json(signatureHistory);
+  });
+
 router.route('/sign/:role(author|reviewer|creator)')
   .put(async (req, res) => {
     // Get the role
