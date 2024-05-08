@@ -169,13 +169,12 @@ router.route('/keylist/:pattern')
       filteredResults = [];
 
       const patternToCheck = new RegExp(req.params.pattern);
-      for (let [_, value] of Object.entries(results)) {
-        if (patternToCheck.test(value['dataValues']['key'])) {
+      for (const [_, value] of Object.entries(results)) {
+        if (patternToCheck.test(value.dataValues.key)) {
           filteredResults.push(value);
         }
       }
       return res.json(filteredResults);
-
     } catch (error) {
       logger.error(`Error while getting report image keylist: ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -183,7 +182,6 @@ router.route('/keylist/:pattern')
       });
     }
   });
-
 
 router.route('/expression-density-graphs')
   .get(async (req, res) => {

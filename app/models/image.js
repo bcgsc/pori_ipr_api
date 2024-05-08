@@ -31,7 +31,7 @@ module.exports = (sequelize, Sq) => {
         attributes: {
           exclude: ['id', 'deletedAt', 'updatedBy'],
         },
-      }
+      },
     },
   });
 
