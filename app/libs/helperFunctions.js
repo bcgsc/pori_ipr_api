@@ -73,6 +73,18 @@ const isAdmin = (user) => {
 };
 
 /**
+ * Checks if user is an admin
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user is an admin
+ */
+const isManager = (user) => {
+  return user.groups.some((group) => {
+    return group.name.toLowerCase() === 'admin' || group.name.toLowerCase() === 'manager';
+  });
+};
+
+/**
  * Checks if user has access to non-prod repots
  *
  * @param {object} user - Sequelize user model
@@ -173,6 +185,7 @@ module.exports = {
   sanitizeHtml,
   getUserProjects,
   isAdmin,
+  isManager,
   hasAccess,
   hasAccessToNonProdReports,
   hasAccessToUnreviewedReports,
