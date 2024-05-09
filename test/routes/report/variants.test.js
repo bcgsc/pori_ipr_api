@@ -93,7 +93,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   describe('GET', () => {
     test('Getting Therapeutic Association - OK', async () => {
       const res = await request
-        .get(`/api/reports/${rapidReportIdent}/variants`)
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
         .auth(username, password)
         .type('json')
@@ -114,7 +114,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     test('Getting Cancer Relevance - OK', async () => {
       const res = await request
-        .get(`/api/reports/${rapidReportIdent}/variants`)
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'cancerRelevance'})
         .auth(username, password)
         .type('json')
@@ -135,7 +135,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
     test('Getting Unknown Significance - OK', async () => {
       const res = await request
-        .get(`/api/reports/${rapidReportIdent}/variants`)
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
         .auth(username, password)
         .type('json')
@@ -157,7 +157,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {ident: rapidReportIdent}, force: true});
+    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}, force: true});
   }, LONGER_TIMEOUT);
 });
 

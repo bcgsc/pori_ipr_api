@@ -11,6 +11,7 @@ const APIVersion = require('./version');
 const userRoute = require('./user');
 
 const reportsRoute = require('./report/report');
+const reportsAsyncRoute = require('./report/reportAsync');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
@@ -23,6 +24,7 @@ const germlineReports = require('./germlineSmallMutation/reports');
 const germlineReportSections = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const graphkbRouter = require('./graphkb');
+const emailRouter = require('./email');
 const reportSections = require('./report');
 
 const router = express.Router({mergeParams: true});
@@ -62,12 +64,15 @@ class Routing extends RouterInterface {
     // Add Single Routes
     // Setup other routes
     this.router.use('/graphkb', graphkbRouter);
+    this.router.use('/email', emailRouter);
     this.router.use('/version', APIVersion);
 
     this.router.use('/user', userRoute);
 
     this.router.use('/reports', reportsRoute);
     this.router.use('/reports/:report', reportSections);
+
+    this.router.use('/reports-async', reportsAsyncRoute);
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
