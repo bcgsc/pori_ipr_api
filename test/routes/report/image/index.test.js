@@ -100,6 +100,54 @@ describe('/reports/{REPORTID}/image', () => {
       await db.models.imageData.destroy({where: {ident: testImage.ident}, force: true});
     });
 
+    test('/keylist - 200 Success', async () => {
+      const fid1 = {...fakeImageData};
+      fid1.key = 'loh.31';
+      const testImage1 = await db.models.imageData.create({...fid1});
+      fid1.key = 'loh.41';
+      const testImage2 = await db.models.imageData.create({...fid1});
+      fid1.key = 'cnv.41';
+      const testImage3 = await db.models.imageData.create({...fid1});
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/keylist`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const keylist = (res.body).map((elem) => {return elem.key;});
+      const expectedKeys = ['loh.31', 'loh.41', 'cnv.41'];
+      expect(keylist.every((elem) => {return (expectedKeys).includes(elem);})).toBe(true);
+
+      await db.models.imageData.destroy({where: {ident: testImage1.ident}, force: true});
+      await db.models.imageData.destroy({where: {ident: testImage2.ident}, force: true});
+      await db.models.imageData.destroy({where: {ident: testImage3.ident}, force: true});
+    });
+
+    test('/keylist/:pattern - 200 Success', async () => {
+      const fid1 = {...fakeImageData};
+      fid1.key = 'hello.311';
+      const testImage1 = await db.models.imageData.create({...fid1});
+      fid1.key = 'hello.411';
+      const testImage2 = await db.models.imageData.create({...fid1});
+      fid1.key = 'world.411';
+      const testImage3 = await db.models.imageData.create({...fid1});
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/image/keylist/loh`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const keylist = (res.body).map((elem) => {return elem.key;});
+      const expectedKeys = ['hello.311', 'hello.411'];
+      expect(keylist.every((elem) => {return (expectedKeys).includes(elem);})).toBe(true);
+
+      await db.models.imageData.destroy({where: {ident: testImage1.ident}, force: true});
+      await db.models.imageData.destroy({where: {ident: testImage2.ident}, force: true});
+      await db.models.imageData.destroy({where: {ident: testImage3.ident}, force: true});
+    });
+
     test('/subtype-plots - 200 Success', async () => {
       const key = 'subtypePlot.primary';
       const testImage = await db.models.imageData.create({...fakeImageData, key});
