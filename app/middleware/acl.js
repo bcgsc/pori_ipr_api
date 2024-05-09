@@ -1,7 +1,7 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
 const {
-  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
+  isAdmin, isManager, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
 const db = require('../models');
@@ -10,11 +10,11 @@ const logger = require('../log');
 const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/user'),
-    GET: [{name: 'admin'}],
+    GET: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/user/:user'),
-    DELETE: [{name: 'admin'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/reports'),
@@ -80,7 +80,7 @@ module.exports = async (req, res, next) => {
   // Get route
   const [route] = req.originalUrl.split('?');
 
-  if (!hasAccessToGermlineReports(req.user) && route.includes('/germline-small-mutation-reports')) {
+  if (!hasAccessToGermlineReports(req.user) && !isManager(req.user) && route.includes('/germline-small-mutation-reports')) {
     logger.error('User does not have germline access');
     return res.status(
       FORBIDDEN,

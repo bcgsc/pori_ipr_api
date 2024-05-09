@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
-const {isAdmin} = require('../../libs/helperFunctions');
+const {isAdmin, isManager} = require('../../libs/helperFunctions');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema} = require('../../schemas/user');
@@ -65,7 +65,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
 // Routes for operating on a single user
 router.route('/:userByIdent([A-z0-9-]{36})')
   .get((req, res) => {
-    if (!isAdmin(req.user) && req.user.id !== req.userByIdent.id) {
+    if (!isAdmin(req.user) && !isManager(req.user) && req.user.id !== req.userByIdent.id) {
       logger.error(`User: ${req.user.username} is not allowed to view this user`);
       return res.status(HTTP_STATUS.FORBIDDEN).send({
         error: {message: 'You are not allowed to perform this action'},
@@ -74,9 +74,9 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     return res.json(req.userByIdent.view('public'));
   })
   .put(async (req, res) => {
-    const admin = isAdmin(req.user);
+    const manager = isManager(req.user);
 
-    if (!admin && req.user.id !== req.userByIdent.id) {
+    if (!manager && req.user.id !== req.userByIdent.id) {
       logger.error(`User: ${req.user.username} is not allowed to edit another user`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         error: {message: 'You are not allowed to perform this action'},
@@ -84,7 +84,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
 
     // Check that user isn't editing columns dfss
-    if (!admin) {
+    if (!manager) {
       if (req.body.username) {
         logger.error(`User: ${req.user.username} is not allowed to update their username`);
         return res.status(HTTP_STATUS.FORBIDDEN).json({
