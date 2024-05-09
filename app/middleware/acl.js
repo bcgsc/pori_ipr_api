@@ -26,21 +26,21 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/template'),
-    POST: [{name: 'admin'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/template/:template'),
-    PUT: [{name: 'admin'}],
-    DELETE: [{name: 'admin'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/project'),
-    POST: [{name: 'admin'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/project/:project'),
-    PUT: [{name: 'admin'}],
-    DELETE: [{name: 'admin'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/project/:project/user'),
