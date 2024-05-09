@@ -117,6 +117,7 @@ describe('/reports/{REPORTID}/image', () => {
 
       const keylist = (res.body).map((elem) => {return elem.key;});
       const expectedKeys = ['loh.31', 'loh.41', 'cnv.41'];
+      console.dir(keylist);
       expect(keylist.every((elem) => {return (expectedKeys).includes(elem);})).toBe(true);
 
       await db.models.imageData.destroy({where: {ident: testImage1.ident}, force: true});
@@ -134,7 +135,7 @@ describe('/reports/{REPORTID}/image', () => {
       const testImage3 = await db.models.imageData.create({...fid1});
 
       const res = await request
-        .get(`/api/reports/${report.ident}/image/keylist/loh`)
+        .get(`/api/reports/${report.ident}/image/keylist/hello`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
