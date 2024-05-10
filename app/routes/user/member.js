@@ -5,7 +5,7 @@ const db = require('../../models');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
-const {isAdmin, isManager} = require('../../libs/helperFunctions');
+const {isAdmin} = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');

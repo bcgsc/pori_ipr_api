@@ -11,13 +11,18 @@ const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/user/:user'),
+    GET: [{name: 'admin'}, {name: 'manager'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/user/group/:group/member'),
+    GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
@@ -30,6 +35,7 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/template'),
+    GET: [{name: 'admin'}, {name: 'manager'}],
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
@@ -39,16 +45,18 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/project'),
-    POST: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}],
   },
   {
     path: pathToRegexp('/api/project/:project'),
-    PUT: [{name: 'admin'}, {name: 'manager'}],
-    DELETE: [{name: 'admin'}, {name: 'manager'}],
+    PUT: [{name: 'admin'}],
+    DELETE: [{name: 'admin'}],
   },
   {
     path: pathToRegexp('/api/project/:project/user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/project/:project/reports'),

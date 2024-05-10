@@ -74,6 +74,8 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     return res.json(req.userByIdent.view('public'));
   })
   .put(async (req, res) => {
+    // TODO make sure edited user isn't admin while
+    // editing user is not admin
     const manager = isManager(req.user);
 
     if (!manager && req.user.id !== req.userByIdent.id) {
@@ -124,6 +126,8 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
+    // TODO add check that user being deleted is not admin
+    // while deleted user is not admin
     try {
       await req.userByIdent.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
