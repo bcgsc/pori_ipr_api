@@ -24,6 +24,8 @@ const updateSchema = schemaGenerator(db.models.project, {
 
 router.param('project', projectMiddleware);
 
+// TODO add manager/admin restrictions
+
 // Project routes
 router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
