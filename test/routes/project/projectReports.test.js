@@ -10,7 +10,6 @@ const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
-
 const reportProperties = [
   'ident', 'createdAt', 'updatedAt', 'patientId', 'alternateIdentifier',
 ];
@@ -50,6 +49,8 @@ describe('/project/:project/reports', () => {
   let report02;
 
   beforeAll(async () => {
+    console.dir(CONFIG.get('testing');
+
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
 

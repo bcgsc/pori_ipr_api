@@ -9,7 +9,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const {username, managerUsername, password} = CONFIG.get('testing');
 
 const checkUser = (userObject) => {
   expect(userObject).toEqual(expect.objectContaining({
@@ -138,6 +138,28 @@ describe('/user/group/{group}/member', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
+    test('/ - 403 Forbidden - Non-admin user may not give admin role', async () => {
+      const nonAdminUser = await db.models.user.create({
+        ident: uuidv4(),
+        username: uuidv4(),
+        firstName: 'nonAdminFirstName',
+        lastName: 'nonAdminLastName',
+        email: 'updateUser@email.com',
+      });
+
+      console.log(managerUsername);
+      const req = await request
+        .post('/api/user/group/admin/member')
+        .auth(managerUsername, password)
+        .type('json')
+        .send({user: nonAdminUser.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
+      console.log('req');
+      console.dir(req.body);
+
+      await db.models.user.destroy({where: {ident: nonAdminUser.ident}, force: true});
+    });
+
     test('/ - 404 Not Found - User does not exist', async () => {
       await request
         .post(`/api/user/group/${group.ident}/member`)
@@ -186,6 +208,15 @@ describe('/user/group/{group}/member', () => {
     });
 
     test('/ - 400 Bad Request', async () => {
+      await request
+        .delete(`/api/user/group/${group.ident}/member`)
+        .auth(username, password)
+        .type('json')
+        .send({user: 'INVALID_UUID'})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/ - 403 Forbidden - non-admin may not edit admin user', async () => {
       await request
         .delete(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
