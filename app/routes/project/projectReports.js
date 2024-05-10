@@ -32,6 +32,12 @@ router.route('/')
       });
     }
 
+    if (!isAdmin(req.user) && !(req.user.projects).map((proj) => {return proj.name;}).includes(req.project.name)) {
+      const msg = 'User does not have permission to add reports to this group';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+
     // Check for binding
     let binding;
     try {
@@ -91,6 +97,12 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: `Unable to find report ${req.body.report}`},
       });
+    }
+
+    if (!isAdmin(req.user) && !(req.user.projects).map((proj) => {return proj.name;}).includes(req.project.name)) {
+      const msg = 'User does not have permission to add this project from reports';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
 
     let binding;
