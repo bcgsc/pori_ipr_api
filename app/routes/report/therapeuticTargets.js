@@ -15,7 +15,7 @@ const createSchema = schemaGenerator(db.models.therapeuticTarget, {
   baseUri: REPORT_CREATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'],
 });
 const updateSchema = schemaGenerator(db.models.therapeuticTarget, {
-  baseUri: REPORT_UPDATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true,
+  baseUri: REPORT_UPDATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'], required: ['gene', 'gene_graphkb_id', 'signature', 'signature_graphkb_id'] true,
 });
 
 // Middleware for therapeutic targets
@@ -52,6 +52,24 @@ router.route('/:target([A-z0-9-]{36})')
     } catch (error) {
       logger.error(`Error while validating target update request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
+    }
+
+    if ((req.body.gene || req.body.gene_graphkb_id) && (req.body.signature || req.body.signature_graphkb_id)) {
+      const msg = 'Can not set both signature and gene values in therapeutics target table';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
+    }
+
+    let target;
+    try {
+      target = await db.models.target.findOne({
+        where: {ident: req.target.ident},
+      });
+    } catch (error) {
+      logger.error(`Error while trying to find target ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to find target'},
+      });
     }
 
     try {
