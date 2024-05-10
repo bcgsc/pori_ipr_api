@@ -4,6 +4,8 @@ const express = require('express');
 const db = require('../../models');
 const logger = require('../../log');
 
+const {isAdmin} = require('../../libs/helperFunctions');
+
 const router = express.Router({mergeParams: true});
 
 // Report-project binding routes
