@@ -15,7 +15,7 @@ module.exports = {
         {
           fields: ['primary_project_id'],
           type: 'foreign key',
-          NAME: 'reports_primary_project_id_fkey',
+          name: 'reports_primary_project_id_fkey',
           references: {
             table: 'projects',
             field: 'id',
