@@ -1,4 +1,4 @@
-const TABLE = 'reports_therapeutic_options';
+const TABLE = 'reports_therapeutic_targets';
 
 module.exports = {
   up: async (queryInterface, Sq) => {
