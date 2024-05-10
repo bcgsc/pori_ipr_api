@@ -5,7 +5,7 @@ const db = require('../../models');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
-
+const {isAdmin, isManager} = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
@@ -33,7 +33,7 @@ router.route('/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-
+    const reqUserIsAdmin = isAdmin(req.user);
     let user;
     try {
       // Lookup User
@@ -63,6 +63,22 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'User doesn\'t exist'}});
     }
 
+    const subjectUserIsAdmin = isAdmin(user);
+    const groupIsAdmin = req.group.name === 'admin';
+
+    // TODO: add tests for these checks
+    if (!reqUserIsAdmin && groupIsAdmin) {
+      const msg = 'Non-admin user can not add user to admin group';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+
+    if (!reqUserIsAdmin && subjectUserIsAdmin) {
+      const msg = 'Non-admin user can not edit user groups of admin users';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+
     try {
       // Add user to group
       await db.models.userGroupMember.create({group_id: req.group.id, user_id: user.id});
@@ -84,7 +100,7 @@ router.route('/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-
+    const reqUserIsAdmin = isAdmin(req.user);
     let user;
     try {
       // Lookup User
@@ -103,7 +119,21 @@ router.route('/')
       logger.error('User doesn\'t exist');
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'User doesn\'t exist'}});
     }
+    const subjectUserIsAdmin = isAdmin(user);
+    const groupIsAdmin = req.group.name === 'admin';
 
+    // TODO: add tests for these checks
+    if (!reqUserIsAdmin && groupIsAdmin) {
+      const msg = 'Non-admin user can not add user to admin group';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+
+    if (!reqUserIsAdmin && subjectUserIsAdmin) {
+      const msg = 'Non-admin user can not edit user groups of admin users';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
     try {
       // Find membership
       const membership = await db.models.userGroupMember.findOne({
