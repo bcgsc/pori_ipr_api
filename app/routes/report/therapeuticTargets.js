@@ -60,16 +60,13 @@ router.route('/:target([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
     }
 
-    const reqHasGene = (req.body.gene || req.body.gene_graphkb_id);
-    const reqHasSignature = (req.body.signature || req.body.signature_graphkb_id);
-
     try {
-      if (reqHasGene) {
+      if (req.body.gene || req.body.gene_graphkb_id) {
         req.body.signature = null;
-        req.body.signature_graphkb_id = null;
-      } else if (reqHasSignature) {
+        req.body.signatureGraphkbId = null;
+      } else if (req.body.signature || req.body.signature_graphkb_id) {
         req.body.gene = null;
-        req.body.gene_graphkb_id = null;
+        req.body.geneGraphkbId = null;
       }
       await req.target.update(req.body, {userId: req.user.id});
       return res.json(req.target.view('public'));
