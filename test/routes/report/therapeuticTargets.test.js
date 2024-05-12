@@ -19,6 +19,8 @@ const FAKE_TARGET = {
   variant: 'p.G12D',
   gene: 'KRASSS',
   geneGraphkbId: '#2:3',
+  signature: null,
+  signatureGraphkbId: null,
   context: 'resistance',
   therapy: 'EGFR inhibitors',
   evidenceLevel: 'OncoKB 1',
@@ -28,8 +30,23 @@ const FAKE_TARGET = {
 const FAKE_SIGNATURE_TARGET = {
   type: 'therapeutic',
   variant: 'p.G12D',
+  gene: null,
+  geneGraphkbId: null,
   signature: 'SBS',
   signatureGraphkbId: '#4:6',
+  context: 'resistance',
+  therapy: 'EGFR inhibitors',
+  evidenceLevel: 'OncoKB 1',
+  iprEvidenceLevel: 'IPR-A',
+};
+
+const FAKE_MIXED_BIOMARKER_TARGET = {
+  type: 'therapeutic',
+  variant: 'p.G12D',
+  signature: 'SBS',
+  signatureGraphkbId: '#4:6',
+  gene: 'KRASSS',
+  geneGraphkbId: '#2:3',
   context: 'resistance',
   therapy: 'EGFR inhibitors',
   evidenceLevel: 'OncoKB 1',
@@ -48,6 +65,7 @@ beforeAll(async () => {
 describe('/therapeutic-targets', () => {
   let report;
   let createdIdent;
+  let createdSignatureIdent;
 
   beforeAll(async () => {
     // Get genomic template
@@ -61,6 +79,7 @@ describe('/therapeutic-targets', () => {
 
   beforeEach(() => {
     createdIdent = null;
+    createdSignatureIdent = null;
   });
 
   afterEach(async () => {
@@ -71,10 +90,17 @@ describe('/therapeutic-targets', () => {
         force: true,
       });
     }
+    if (createdSignatureIdent) {
+      // clean up the new record if one was created
+      await db.models.therapeuticTarget.destroy({
+        where: {ident: createdSignatureIdent},
+        force: true,
+      });
+    }
   });
 
   describe('POST (create)', () => {
-    test('create new with valid input', async () => {
+    test('create new with valid gene input', async () => {
       const {body: record} = await request
         .post(`/api/reports/${report.ident}/therapeutic-targets`)
         .auth(username, password)
@@ -88,30 +114,69 @@ describe('/therapeutic-targets', () => {
       createdIdent = record.ident;
     });
 
+    test('create new with valid signature input', async () => {
+      const {body: record} = await request
+        .post(`/api/reports/${report.ident}/therapeutic-targets`)
+        .auth(username, password)
+        .type('json')
+        .send({...FAKE_SIGNATURE_TARGET})
+        .expect(HTTP_STATUS.CREATED);
+      // check that expected property not present in request body is added by create method
+      expect(record).toHaveProperty('variantGraphkbId', null);
+      expect(record).toHaveProperty('ident');
+
+      createdSignatureIdent = record.ident;
+    });
+
+    test('create fails with mixed biomarker input', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/therapeutic-targets`)
+        .auth(username, password)
+        .type('json')
+        .send({...FAKE_MIXED_BIOMARKER_TARGET})
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     test.todo('Bad request on missing required parameter (gene)');
   });
 
   describe('tests dependent on an existing therapeutic target', () => {
-    let original;
-    let url;
+    let originalGene;
+    let originalSignature;
+    let geneUrl;
+    let signatureUrl;
 
     beforeEach(async () => {
       // create a new therapeutic target
-      ({dataValues: original} = await db.models.therapeuticTarget.create({
+      ({dataValues: originalGene} = await db.models.therapeuticTarget.create({
         ...FAKE_TARGET,
         reportId: report.id,
       }));
-      url = `/api/reports/${report.ident}/therapeutic-targets/${original.ident}`;
+      ({dataValues: originalSignature} = await db.models.therapeuticTarget.create({
+        ...FAKE_SIGNATURE_TARGET,
+        reportId: report.id,
+      }));
+      geneUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalGene.ident}`;
+      expect(originalGene).toHaveProperty('ident');
+      expect(originalGene).toHaveProperty('id');
 
-      expect(original).toHaveProperty('ident');
-      expect(original).toHaveProperty('id');
+      signatureUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalSignature.ident}`;
+      expect(originalSignature).toHaveProperty('ident');
+      expect(originalSignature).toHaveProperty('id');
     });
 
     afterEach(async () => {
-      if (original) {
+      if (originalGene) {
         // clean up the new record if one was created
         await db.models.therapeuticTarget.destroy({
-          where: {ident: original.ident},
+          where: {ident: originalGene.ident},
+          force: true,
+        });
+      }
+      if (originalSignature) {
+        // clean up the new record if one was created
+        await db.models.therapeuticTarget.destroy({
+          where: {ident: originalSignature.ident},
           force: true,
         });
       }
@@ -127,29 +192,49 @@ describe('/therapeutic-targets', () => {
         expect(Array.isArray(result)).toBe(true);
         expect(result.map((r) => {
           return r.gene;
-        })).toContain(original.gene); // easier to debug failures
+        })).toContain(originalGene.gene); // easier to debug failures
         expect(result.map((r) => {
           return r.ident;
-        })).toContain(original.ident);
+        })).toContain(originalGene.ident);
       });
 
       test('a single target by ID', async () => {
         const {body: result} = await request
-          .get(url)
+          .get(geneUrl)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.OK);
-        expect(result).toHaveProperty('ident', original.ident);
-        expect(result).toHaveProperty('gene', original.gene);
+        expect(result).toHaveProperty('ident', originalGene.ident);
+        expect(result).toHaveProperty('gene', originalGene.gene);
         expect(result).not.toHaveProperty('deletedAt');
         expect(result).not.toHaveProperty('id');
       });
     });
 
     describe('PUT', () => {
-      test('update with valid input', async () => {
+      test('update gene with valid signature input', async () => {
         const {body: record} = await request
-          .put(url)
+          .put(geneUrl)
+          .auth(username, password)
+          .send({signature: 'SBS2'})
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(record).toHaveProperty('signature', 'SBS2');
+        expect(record).toHaveProperty('gene', null);
+        expect(record).toHaveProperty('geneGraphkbId', null);
+
+        // should now find a deleted record with this ident
+        const result = await db.models.therapeuticTarget.findOne({
+          paranoid: false,
+          where: {ident: originalGene.ident, deletedAt: {[Op.not]: null}},
+        });
+        expect(result).toHaveProperty('deletedAt');
+      });
+
+      test('update gene with valid gene input', async () => {
+        const {body: record} = await request
+          .put(geneUrl)
           .auth(username, password)
           .send({gene: 'BRAF'})
           .type('json')
@@ -160,14 +245,70 @@ describe('/therapeutic-targets', () => {
         // should now find a deleted record with this ident
         const result = await db.models.therapeuticTarget.findOne({
           paranoid: false,
-          where: {ident: original.ident, deletedAt: {[Op.not]: null}},
+          where: {ident: originalGene.ident, deletedAt: {[Op.not]: null}},
         });
         expect(result).toHaveProperty('deletedAt');
       });
 
+      test('update signature with valid gene input', async () => {
+        const {body: record} = await request
+          .put(signatureUrl)
+          .auth(username, password)
+          .send({gene: 'BRAF'})
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(record).toHaveProperty('gene', 'BRAF');
+        expect(record).toHaveProperty('signature', null);
+        expect(record).toHaveProperty('signatureGraphkbId', null);
+
+        // should now find a deleted record with this ident
+        const result = await db.models.therapeuticTarget.findOne({
+          paranoid: false,
+          where: {ident: originalSignature.ident, deletedAt: {[Op.not]: null}},
+        });
+        expect(result).toHaveProperty('deletedAt');
+      });
+
+      test('update signature with valid signature input', async () => {
+        const {body: record} = await request
+          .put(signatureUrl)
+          .auth(username, password)
+          .send({gsignature: 'SAS'})
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(record).toHaveProperty('signature', 'SAS');
+
+        // should now find a deleted record with this ident
+        const result = await db.models.therapeuticTarget.findOne({
+          paranoid: false,
+          where: {ident: originalSignature.ident, deletedAt: {[Op.not]: null}},
+        });
+        expect(result).toHaveProperty('deletedAt');
+      });
+
+      test('update signature fails with mixed biomarker input', async () => {
+        await request
+          .put(signatureUrl)
+          .auth(username, password)
+          .send({gene: 'BRAF', signature: 'SBS2'})
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
+      test('update gene fails with mixed biomarker input', async () => {
+        await request
+          .put(geneUrl)
+          .auth(username, password)
+          .send({gene: 'BRAF', signature: 'SBS2'})
+          .type('json')
+          .expect(HTTP_STATUS.BAD_REQUEST);
+      });
+
       test('Update should not accept reportId', async () => {
         await request
-          .put(url)
+          .put(geneUrl)
           .auth(username, password)
           .send({
             reportId: 1,
@@ -208,8 +349,8 @@ describe('/therapeutic-targets', () => {
             .put(`/api/reports/${report.ident}/therapeutic-targets`)
             .auth(username, password)
             .send([
-              {ident: original.ident, rank: newTarget.rank},
-              {ident: newTarget.ident, rank: original.rank},
+              {ident: originalGene.ident, rank: newTarget.rank},
+              {ident: newTarget.ident, rank: originalGene.rank},
             ])
             .type('json')
             .expect(HTTP_STATUS.OK);
@@ -220,7 +361,7 @@ describe('/therapeutic-targets', () => {
             .put(`/api/reports/${report.ident}/therapeutic-targets`)
             .auth(username, password)
             .send([
-              {ident: original.ident, rank: 2},
+              {ident: originalGene.ident, rank: 2},
               {ident: newTarget.ident, rank: 2},
             ])
             .type('json')
@@ -234,14 +375,14 @@ describe('/therapeutic-targets', () => {
     describe('DELETE', () => {
       test('deleting a target', async () => {
         await request
-          .delete(url)
+          .delete(geneUrl)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NO_CONTENT);
         // should now find a deleted record with this ident
         const result = await db.models.therapeuticTarget.findOne({
           paranoid: false,
-          where: {ident: original.ident},
+          where: {ident: originalGene.ident},
         });
         expect(result).toHaveProperty('deletedAt');
       });
@@ -255,7 +396,7 @@ describe('/therapeutic-targets', () => {
         });
 
         await request
-          .delete(url)
+          .delete(geneUrl)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NO_CONTENT);
@@ -277,11 +418,9 @@ describe('/therapeutic-targets', () => {
   });
 
   afterAll(async () => {
-    console.log('made it into after all');
     // Delete newly created report and all of it's components
     // indirectly by force deleting the report
     await db.models.report.destroy({where: {ident: report.ident}, force: true});
-    console.dir('huh');
   });
 });
 
