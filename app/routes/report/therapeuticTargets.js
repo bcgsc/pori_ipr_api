@@ -15,7 +15,7 @@ const createSchema = schemaGenerator(db.models.therapeuticTarget, {
   baseUri: REPORT_CREATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'],
 });
 const updateSchema = schemaGenerator(db.models.therapeuticTarget, {
-  baseUri: REPORT_UPDATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'], required: ['gene', 'gene_graphkb_id', 'signature', 'signature_graphkb_id'] true,
+  baseUri: REPORT_UPDATE_BASE_URI, exclude: [...REPORT_EXCLUDE, 'rank'], nothingRequired: true,
 });
 
 // Middleware for therapeutic targets
@@ -47,32 +47,34 @@ router.route('/:target([A-z0-9-]{36})')
   })
   .put(async (req, res) => {
     // Validate request against schema
+    console.log('in put at 50');
     try {
       validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
       logger.error(`Error while validating target update request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
     }
+    console.log('in put at 57');
 
     if ((req.body.gene || req.body.gene_graphkb_id) && (req.body.signature || req.body.signature_graphkb_id)) {
       const msg = 'Can not set both signature and gene values in therapeutics target table';
       logger.error(msg);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
     }
+    console.log('in put at 64');
 
-    let target;
-    try {
-      target = await db.models.target.findOne({
-        where: {ident: req.target.ident},
-      });
-    } catch (error) {
-      logger.error(`Error while trying to find target ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Error while trying to find target'},
-      });
-    }
+    console.log('target');
+    const reqHasGene = (req.body.gene || req.body.gene_graphkb_id);
+    const reqHasSignature = (req.body.signature || req.body.signature_graphkb_id);
 
     try {
+      if (reqHasGene) {
+        req.body.signature = null;
+        req.body.signature_graphkb_id = null;
+      } else if (reqHasSignature) {
+        req.body.gene = null;
+        req.body.gene_graphkb_id = null;
+      }
       await req.target.update(req.body, {userId: req.user.id});
       return res.json(req.target.view('public'));
     } catch (error) {
@@ -111,14 +113,20 @@ router.route('/')
   })
   .post(async (req, res) => {
     // Create new entry
+    console.log('in post at 124');
     const {report: {id: reportId}, body} = req;
-
     // Validate request against schema
     try {
       validateAgainstSchema(createSchema, body);
     } catch (error) {
       logger.error(`Error while validating target create request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target create request ${error}`}});
+    }
+
+    if ((req.body.gene || req.body.gene_graphkb_id) && (req.body.signature || req.body.signature_graphkb_id)) {
+      const msg = 'Can not set both signature and gene values in therapeutics target table';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
     }
 
     try {
@@ -132,8 +140,10 @@ router.route('/')
         rank,
         reportId,
       });
+      console.log('made it up to return without error at 152');
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
+      console.log('in error no wthough');
       logger.error(`Unable to create new therapeutic target entry ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to create new therapeutic target entry'}});
     }

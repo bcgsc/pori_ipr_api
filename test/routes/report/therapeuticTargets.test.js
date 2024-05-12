@@ -25,6 +25,17 @@ const FAKE_TARGET = {
   iprEvidenceLevel: 'IPR-A',
 };
 
+const FAKE_SIGNATURE_TARGET = {
+  type: 'therapeutic',
+  variant: 'p.G12D',
+  signature: 'SBS',
+  signatureGraphkbId: '#4:6',
+  context: 'resistance',
+  therapy: 'EGFR inhibitors',
+  evidenceLevel: 'OncoKB 1',
+  iprEvidenceLevel: 'IPR-A',
+};
+
 let server;
 let request;
 
@@ -266,9 +277,11 @@ describe('/therapeutic-targets', () => {
   });
 
   afterAll(async () => {
+    console.log('made it into after all');
     // Delete newly created report and all of it's components
     // indirectly by force deleting the report
-    return db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    console.dir('huh');
   });
 });
 
