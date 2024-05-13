@@ -67,8 +67,6 @@ const sanitizeHtml = (html) => {
  * @returns {boolean} - Returns a boolean indicating if the user is an admin
  */
 const isAdmin = (user) => {
-  console.log('in isAdmin');
-  console.dir(user.groups);
   return user.groups?.some((group) => {
     return group.name.toLowerCase() === 'admin';
   });
