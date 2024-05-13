@@ -34,7 +34,7 @@ const SPECIAL_CASES = [
     POST: ['*'],
   },
   {
-    path: pathToRegexp('/api/template'),
+    path: pathToRegexp('/api/templates'),
     GET: [{name: 'admin'}, {name: 'manager'}],
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
@@ -61,6 +61,8 @@ const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/project/:project/reports'),
     GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
 ];
 

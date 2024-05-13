@@ -9,7 +9,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 
 const userProperties = [
   'ident', 'createdAt', 'updatedAt', 'username',
@@ -47,8 +47,12 @@ beforeAll(async () => {
 describe('/project/:project/user', () => {
   let testUser;
   let project;
+  let nonManagerProject;
   let user01;
   let user02;
+  let user03;
+  let managerUser;
+  let managerProjectBinding;
 
   beforeAll(async () => {
     // get test user
@@ -58,7 +62,10 @@ describe('/project/:project/user', () => {
 
     // Create project
     project = await db.models.project.create({name: 'user-project-test01'});
-
+    nonManagerProject = await db.models.project.create({name: 'user-project-test02'});
+    managerUser = await db.models.user.findOne({
+      where: {username: managerUsername},
+    });
     // Create users
     user01 = await db.models.user.create({
       ident: uuidv4(),
@@ -76,6 +83,16 @@ describe('/project/:project/user', () => {
       email: 'userProjectUser02@email.com',
     });
 
+    user03 = await db.models.user.create({
+      ident: uuidv4(),
+      username: uuidv4(),
+      firstName: 'userProjectUser03',
+      lastName: 'userProjectUser03',
+      email: 'userProjectUser03@email.com',
+    });
+
+    managerProjectBinding = await db.models.userProject.create({project_id: project.id, user_id: managerUser.id});
+
     // Bind users to project
     return Promise.all([
       db.models.userProject.create({project_id: project.id, user_id: user01.id}),
@@ -86,8 +103,11 @@ describe('/project/:project/user', () => {
   afterAll(async () => {
     return Promise.all([
       project.destroy({force: true}),
+      nonManagerProject.destroy({force: true}),
       user01.destroy({force: true}),
       user02.destroy({force: true}),
+      user03.destroy({force: true}),
+      managerProjectBinding.destroy({force: true}),
     ]);
   });
 
@@ -100,12 +120,15 @@ describe('/project/:project/user', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBe(2);
+      expect(res.body.length).toBe(3);
       checkProjectUsers(res.body);
     });
   });
 
   describe('POST', () => {
+    // TODO add check that managers can add when they also have the project;
+    // TODO check that they can't when they don't;
+    // TODO check that bioinf can't
     test('/ - 200 Success', async () => {
       await request
         .post(`/api/project/${project.ident}/user`)
@@ -126,6 +149,46 @@ describe('/project/:project/user', () => {
         where: {project_id: project.id, user_id: testUser.id},
         force: true,
       });
+    });
+
+    test('/ - 200 Success - by manager', async () => {
+      await request
+        .post(`/api/project/${project.ident}/user`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({user: user03.ident})
+        .expect(HTTP_STATUS.CREATED);
+
+      // Check the binding was created
+      const result = await db.models.userProject.findOne({
+        where: {project_id: project.id, user_id: user03.id},
+      });
+
+      expect(result).not.toBeNull();
+
+      // Remove the just created test user-project binding
+      await db.models.userProject.destroy({
+        where: {project_id: project.id, user_id: user03.id},
+        force: true,
+      });
+    });
+
+    test('/ - 403 forbidden to manager who does not have project membership', async () => {
+      await request
+        .post(`/api/project/${nonManagerProject.ident}/user`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({user: testUser.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('/ - 403 forbidden to bioinformatician', async () => {
+      await request
+        .post(`/api/project/${project.ident}/user`)
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .send({user: testUser.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/ - 404 Not Found - Cannot find provided user', async () => {
@@ -156,6 +219,9 @@ describe('/project/:project/user', () => {
   });
 
   describe('DELETE', () => {
+    // TODO add check that managers can add when they also have the project;
+    // TODO check that they can't when they don't;
+    // TODO check that bioinf can't
     test('/ - 204 Success', async () => {
       // Create binding
       const binding = await db.models.userProject.create({
@@ -178,6 +244,54 @@ describe('/project/:project/user', () => {
       expect(deletedBinding.deletedAt).not.toBeNull();
 
       await deletedBinding.destroy({force: true});
+    });
+
+    test('/ - 204 Success by manager with same project membership', async () => {
+      // Create binding
+      const binding = await db.models.userProject.create({
+        project_id: project.id, user_id: testUser.id,
+      });
+      await request
+        .delete(`/api/project/${project.ident}/user`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({user: testUser.ident})
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify user-project binding is soft-deleted
+      const deletedBinding = await db.models.userProject.findOne({
+        where: {id: binding.id},
+        paranoid: false,
+      });
+
+      expect(deletedBinding.deletedAt).not.toBeNull();
+
+      await deletedBinding.destroy({force: true});
+    });
+
+    test('/ - 403 manager can not edit not-owned project', async () => {
+      // Create binding
+      const binding = await db.models.userProject.create({
+        project_id: nonManagerProject.id, user_id: testUser.id,
+      });
+      await request
+        .delete(`/api/project/${nonManagerProject.ident}/user`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({user: testUser.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
+
+      await binding.destroy({force: true});
+    });
+
+    test('/ - 403 bioinformatician can not edit', async () => {
+      // Create binding
+      await request
+        .delete(`/api/project/${project.ident}/user`)
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .send({user: testUser.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/ - 404 Not Found - Cannot find provided user', async () => {

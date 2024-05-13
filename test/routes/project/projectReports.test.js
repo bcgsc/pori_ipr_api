@@ -9,7 +9,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 const reportProperties = [
   'ident', 'createdAt', 'updatedAt', 'patientId', 'alternateIdentifier',
 ];
@@ -47,15 +47,22 @@ describe('/project/:project/reports', () => {
   let report;
   let report01;
   let report02;
+  let report03;
+  let managerUser;
+  let managerProjectBinding;
+  let nonManagerProject;
 
   beforeAll(async () => {
-    console.dir(CONFIG.get('testing');
-
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
 
     // Create project
     project = await db.models.project.create({name: 'report-project-test01'});
+    nonManagerProject = await db.models.project.create({name: 'report-project-test02'});
+    managerUser = await db.models.user.findOne({
+      where: {username: managerUsername},
+    });
+    managerProjectBinding = await db.models.userProject.create({project_id: project.id, user_id: managerUser.id});
 
     // Create reports
     report = await db.models.report.create({
@@ -76,6 +83,12 @@ describe('/project/:project/reports', () => {
       alternateIdentifier: 'reportProjectTest02',
     });
 
+    report03 = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'REPORT-PROJECT-TEST03',
+      alternateIdentifier: 'reportProjectTest03',
+    });
+
     // Bind reports to project
     return Promise.all([
       db.models.reportProject.create({project_id: project.id, reportId: report01.id}),
@@ -88,6 +101,9 @@ describe('/project/:project/reports', () => {
       project.destroy({force: true}),
       report01.destroy({force: true}),
       report02.destroy({force: true}),
+      report03.destroy({force: true}),
+      nonManagerProject.destroy({force: true}),
+      managerProjectBinding.destroy({force: true}),
     ]);
   });
 
@@ -126,6 +142,15 @@ describe('/project/:project/reports', () => {
         where: {project_id: project.id, reportId: report.id},
         force: true,
       });
+    });
+
+    test('/ - 403 forbidden to manager', async () => {
+      await request
+        .post(`/api/project/${project.ident}/reports`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({report: report03.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/ - 404 Not Found - Cannot find provided report', async () => {
@@ -176,6 +201,73 @@ describe('/project/:project/reports', () => {
       });
 
       expect(deletedBinding.deletedAt).not.toBeNull();
+
+      await deletedBinding.destroy({force: true});
+    });
+
+    test('/ - 204 Success by manager', async () => {
+      // Create binding
+      const binding = await db.models.reportProject.create({
+        project_id: project.id, reportId: report.id,
+      });
+
+      await request
+        .delete(`/api/project/${project.ident}/reports`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({report: report.ident})
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify report-project binding is soft-deleted
+      const deletedBinding = await db.models.reportProject.findOne({
+        where: {id: binding.id},
+        paranoid: false,
+      });
+
+      expect(deletedBinding.deletedAt).not.toBeNull();
+
+      await deletedBinding.destroy({force: true});
+    });
+
+    test('/ - 403 failure by manager without project membership', async () => {
+      // Create binding
+      const binding = await db.models.reportProject.create({
+        project_id: nonManagerProject.id, reportId: report03.id,
+      });
+      await request
+        .delete(`/api/project/${nonManagerProject.ident}/reports`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({report: report03.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
+
+      // Verify report-project binding is soft-deleted
+      const deletedBinding = await db.models.reportProject.findOne({
+        where: {id: binding.id},
+        paranoid: false,
+      });
+
+      await deletedBinding.destroy({force: true});
+    });
+
+    test('/ - 403 failure by bioinformatician', async () => {
+      // Create binding
+      const binding = await db.models.reportProject.create({
+        project_id: project.id, reportId: report.id,
+      });
+
+      await request
+        .delete(`/api/project/${project.ident}/reports`)
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .send({report: report.ident})
+        .expect(HTTP_STATUS.FORBIDDEN);
+
+      // Verify report-project binding is soft-deleted
+      const deletedBinding = await db.models.reportProject.findOne({
+        where: {id: binding.id},
+        paranoid: false,
+      });
 
       await deletedBinding.destroy({force: true});
     });
