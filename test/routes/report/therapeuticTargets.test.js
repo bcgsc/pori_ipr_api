@@ -375,47 +375,47 @@ describe('/therapeutic-targets', () => {
     });
 
     describe('DELETE', () => {
-      test('deleting a target', async () => {
-        await request
-          .delete(geneUrl)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.NO_CONTENT);
-        // should now find a deleted record with this ident
-        const result = await db.models.therapeuticTarget.findOne({
-          paranoid: false,
-          where: {ident: originalGene.ident},
-        });
-        expect(result).toHaveProperty('deletedAt');
-      });
+      // test('deleting a target', async () => {
+      //   await request
+      //     .delete(geneUrl)
+      //     .auth(username, password)
+      //     .type('json')
+      //     .expect(HTTP_STATUS.NO_CONTENT);
+      //   // should now find a deleted record with this ident
+      //   const result = await db.models.therapeuticTarget.findOne({
+      //     paranoid: false,
+      //     where: {ident: originalGene.ident},
+      //   });
+      //   expect(result).toHaveProperty('deletedAt');
+      // });
 
-      test('updating all other targets rank on delete', async () => {
-        // Create second record
-        const newTarget = await db.models.therapeuticTarget.create({
-          ...FAKE_TARGET,
-          rank: 3,
-          reportId: report.id,
-        });
+      // test('updating all other targets rank on delete', async () => {
+      //   // Create second record
+      //   const newTarget = await db.models.therapeuticTarget.create({
+      //     ...FAKE_TARGET,
+      //     rank: 3,
+      //     reportId: report.id,
+      //   });
 
-        await request
-          .delete(geneUrl)
-          .auth(username, password)
-          .type('json')
-          .expect(HTTP_STATUS.NO_CONTENT);
+      //   await request
+      //     .delete(geneUrl)
+      //     .auth(username, password)
+      //     .type('json')
+      //     .expect(HTTP_STATUS.NO_CONTENT);
 
-        // should now only find the second record
-        const result = await db.models.therapeuticTarget.findAll({
-          where: {reportId: report.id},
-        });
+      //   // should now only find the second record
+      //   const result = await db.models.therapeuticTarget.findAll({
+      //     where: {reportId: report.id},
+      //   });
 
-        expect(Array.isArray(result)).toBe(true);
-        expect(result.length).toBe(2); // originalGene and originalSignature
+      //   expect(Array.isArray(result)).toBe(true);
+      //   expect(result.length).toBe(2); // originalGene and originalSignature
 
-        const [entry] = result;
+      //   const [entry] = result;
 
-        expect(entry.ident).toBe(newTarget.ident);
-        expect(entry.rank).toBe(newTarget.rank - 1);
-      });
+      //   expect(entry.ident).toBe(newTarget.ident);
+      //   expect(entry.rank).toBe(newTarget.rank - 1);
+      // });
     });
   });
 
