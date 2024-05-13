@@ -422,7 +422,7 @@ describe('/therapeutic-targets', () => {
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // indirectly by force deleting the report
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
 
