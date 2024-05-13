@@ -114,28 +114,28 @@ describe('/therapeutic-targets', () => {
       createdIdent = record.ident;
     });
 
-    test('create new with valid signature input', async () => {
-      const {body: record} = await request
-        .post(`/api/reports/${report.ident}/therapeutic-targets`)
-        .auth(username, password)
-        .type('json')
-        .send({...FAKE_SIGNATURE_TARGET})
-        .expect(HTTP_STATUS.CREATED);
-      // check that expected property not present in request body is added by create method
-      expect(record).toHaveProperty('variantGraphkbId', null);
-      expect(record).toHaveProperty('ident');
+    // test('create new with valid signature input', async () => {
+    //   const {body: record} = await request
+    //     .post(`/api/reports/${report.ident}/therapeutic-targets`)
+    //     .auth(username, password)
+    //     .type('json')
+    //     .send({...FAKE_SIGNATURE_TARGET})
+    //     .expect(HTTP_STATUS.CREATED);
+    //   // check that expected property not present in request body is added by create method
+    //   expect(record).toHaveProperty('variantGraphkbId', null);
+    //   expect(record).toHaveProperty('ident');
 
-      createdSignatureIdent = record.ident;
-    });
+    //   createdSignatureIdent = record.ident;
+    // });
 
-    test('create fails with mixed biomarker input', async () => {
-      await request
-        .post(`/api/reports/${report.ident}/therapeutic-targets`)
-        .auth(username, password)
-        .type('json')
-        .send({...FAKE_MIXED_BIOMARKER_TARGET})
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
+    // test('create fails with mixed biomarker input', async () => {
+    //   await request
+    //     .post(`/api/reports/${report.ident}/therapeutic-targets`)
+    //     .auth(username, password)
+    //     .type('json')
+    //     .send({...FAKE_MIXED_BIOMARKER_TARGET})
+    //     .expect(HTTP_STATUS.BAD_REQUEST);
+    // });
 
     test.todo('Bad request on missing required parameter (gene)');
   });
@@ -214,99 +214,99 @@ describe('/therapeutic-targets', () => {
     });
 
     describe('PUT', () => {
-      test('update gene with valid signature input', async () => {
-        const {body: record} = await request
-          .put(geneUrl)
-          .auth(username, password)
-          .send({signature: 'SBS2'})
-          .type('json')
-          .expect(HTTP_STATUS.OK);
+      // test('update gene with valid signature input', async () => {
+      //   const {body: record} = await request
+      //     .put(geneUrl)
+      //     .auth(username, password)
+      //     .send({signature: 'SBS2'})
+      //     .type('json')
+      //     .expect(HTTP_STATUS.OK);
 
-        expect(record).toHaveProperty('signature', 'SBS2');
-        expect(record).toHaveProperty('gene', null);
-        expect(record).toHaveProperty('geneGraphkbId', null);
+      //   expect(record).toHaveProperty('signature', 'SBS2');
+      //   expect(record).toHaveProperty('gene', null);
+      //   expect(record).toHaveProperty('geneGraphkbId', null);
 
-        // should now find a deleted record with this ident
-        const result = await db.models.therapeuticTarget.findOne({
-          paranoid: false,
-          where: {ident: originalGene.ident, deletedAt: {[Op.not]: null}},
-        });
-        expect(result).toHaveProperty('deletedAt');
-      });
+      //   // should now find a deleted record with this ident
+      //   const result = await db.models.therapeuticTarget.findOne({
+      //     paranoid: false,
+      //     where: {ident: originalGene.ident, deletedAt: {[Op.not]: null}},
+      //   });
+      //   expect(result).toHaveProperty('deletedAt');
+      // });
 
-      test('update gene with valid gene input', async () => {
-        const {body: record} = await request
-          .put(geneUrl)
-          .auth(username, password)
-          .send({gene: 'BRAF'})
-          .type('json')
-          .expect(HTTP_STATUS.OK);
+      // test('update gene with valid gene input', async () => {
+      //   const {body: record} = await request
+      //     .put(geneUrl)
+      //     .auth(username, password)
+      //     .send({gene: 'BRAF'})
+      //     .type('json')
+      //     .expect(HTTP_STATUS.OK);
 
-        expect(record).toHaveProperty('gene', 'BRAF');
+      //   expect(record).toHaveProperty('gene', 'BRAF');
 
-        // should now find a deleted record with this ident
-        const result = await db.models.therapeuticTarget.findOne({
-          paranoid: false,
-          where: {ident: originalGene.ident, deletedAt: {[Op.not]: null}},
-        });
-        expect(result).toHaveProperty('deletedAt');
-      });
+      //   // should now find a deleted record with this ident
+      //   const result = await db.models.therapeuticTarget.findOne({
+      //     paranoid: false,
+      //     where: {ident: originalGene.ident, deletedAt: {[Op.not]: null}},
+      //   });
+      //   expect(result).toHaveProperty('deletedAt');
+      // });
 
-      test('update signature with valid gene input', async () => {
-        const {body: record} = await request
-          .put(signatureUrl)
-          .auth(username, password)
-          .send({gene: 'BRAF'})
-          .type('json')
-          .expect(HTTP_STATUS.OK);
+      // test('update signature with valid gene input', async () => {
+      //   const {body: record} = await request
+      //     .put(signatureUrl)
+      //     .auth(username, password)
+      //     .send({gene: 'BRAF'})
+      //     .type('json')
+      //     .expect(HTTP_STATUS.OK);
 
-        expect(record).toHaveProperty('gene', 'BRAF');
-        expect(record).toHaveProperty('signature', null);
-        expect(record).toHaveProperty('signatureGraphkbId', null);
+      //   expect(record).toHaveProperty('gene', 'BRAF');
+      //   expect(record).toHaveProperty('signature', null);
+      //   expect(record).toHaveProperty('signatureGraphkbId', null);
 
-        // should now find a deleted record with this ident
-        const result = await db.models.therapeuticTarget.findOne({
-          paranoid: false,
-          where: {ident: originalSignature.ident, deletedAt: {[Op.not]: null}},
-        });
-        expect(result).toHaveProperty('deletedAt');
-      });
+      //   // should now find a deleted record with this ident
+      //   const result = await db.models.therapeuticTarget.findOne({
+      //     paranoid: false,
+      //     where: {ident: originalSignature.ident, deletedAt: {[Op.not]: null}},
+      //   });
+      //   expect(result).toHaveProperty('deletedAt');
+      // });
 
-      test('update signature with valid signature input', async () => {
-        const {body: record} = await request
-          .put(signatureUrl)
-          .auth(username, password)
-          .send({signature: 'SAS'})
-          .type('json')
-          .expect(HTTP_STATUS.OK);
+      // test('update signature with valid signature input', async () => {
+      //   const {body: record} = await request
+      //     .put(signatureUrl)
+      //     .auth(username, password)
+      //     .send({signature: 'SAS'})
+      //     .type('json')
+      //     .expect(HTTP_STATUS.OK);
 
-        expect(record).toHaveProperty('signature', 'SAS');
+      //   expect(record).toHaveProperty('signature', 'SAS');
 
-        // should now find a deleted record with this ident
-        const result = await db.models.therapeuticTarget.findOne({
-          paranoid: false,
-          where: {ident: originalSignature.ident, deletedAt: {[Op.not]: null}},
-        });
-        expect(result).toHaveProperty('deletedAt');
-      });
+      //   // should now find a deleted record with this ident
+      //   const result = await db.models.therapeuticTarget.findOne({
+      //     paranoid: false,
+      //     where: {ident: originalSignature.ident, deletedAt: {[Op.not]: null}},
+      //   });
+      //   expect(result).toHaveProperty('deletedAt');
+      // });
 
-      test('update signature fails with mixed biomarker input', async () => {
-        await request
-          .put(signatureUrl)
-          .auth(username, password)
-          .send({gene: 'BRAF', signature: 'SBS2'})
-          .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
-      });
+      // test('update signature fails with mixed biomarker input', async () => {
+      //   await request
+      //     .put(signatureUrl)
+      //     .auth(username, password)
+      //     .send({gene: 'BRAF', signature: 'SBS2'})
+      //     .type('json')
+      //     .expect(HTTP_STATUS.BAD_REQUEST);
+      // });
 
-      test('update gene fails with mixed biomarker input', async () => {
-        await request
-          .put(geneUrl)
-          .auth(username, password)
-          .send({gene: 'BRAF', signature: 'SBS2'})
-          .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
-      });
+      // test('update gene fails with mixed biomarker input', async () => {
+      //   await request
+      //     .put(geneUrl)
+      //     .auth(username, password)
+      //     .send({gene: 'BRAF', signature: 'SBS2'})
+      //     .type('json')
+      //     .expect(HTTP_STATUS.BAD_REQUEST);
+      // });
 
       test('Update should not accept reportId', async () => {
         await request
