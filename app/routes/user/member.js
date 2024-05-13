@@ -119,7 +119,7 @@ router.route('/')
       logger.error('User doesn\'t exist');
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'User doesn\'t exist'}});
     }
-    const subjectUserIsAdmin = isAdmin(user);
+
     const groupIsAdmin = req.group.name === 'admin';
 
     // TODO: add tests for these checks
@@ -128,6 +128,13 @@ router.route('/')
       logger.error(msg);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
+
+    const adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
+    });
+    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+      where: {group_id: adminGroup.id, user_id: user.id},
+    });
 
     if (!reqUserIsAdmin && subjectUserIsAdmin) {
       const msg = 'Non-admin user can not edit user groups of admin users';

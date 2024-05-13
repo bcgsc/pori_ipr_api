@@ -67,7 +67,9 @@ const sanitizeHtml = (html) => {
  * @returns {boolean} - Returns a boolean indicating if the user is an admin
  */
 const isAdmin = (user) => {
-  return user.groups.some((group) => {
+  console.log('in isAdmin');
+  console.dir(user.groups);
+  return user.groups?.some((group) => {
     return group.name.toLowerCase() === 'admin';
   });
 };
@@ -79,7 +81,7 @@ const isAdmin = (user) => {
  * @returns {boolean} - Returns a boolean indicating if the user is an admin
  */
 const isManager = (user) => {
-  return user.groups.some((group) => {
+  return user.groups?.some((group) => {
     return group.name.toLowerCase() === 'admin' || group.name.toLowerCase() === 'manager';
   });
 };
@@ -91,7 +93,7 @@ const isManager = (user) => {
  * @returns {boolean} - Returns a boolean indicating if the user has access to non-prod reports
  */
 const hasAccessToNonProdReports = (user) => {
-  return user.groups.some((group) => {
+  return user.groups?.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager'
     || group.name.toLowerCase() === 'non-production access';
@@ -105,7 +107,7 @@ const hasAccessToNonProdReports = (user) => {
  * @returns {boolean} - Returns a boolean indicating if the user has access to unreviewed reports
  */
 const hasAccessToUnreviewedReports = (user) => {
-  return user.groups.some((group) => {
+  return user.groups?.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager'
     || group.name.toLowerCase() === 'unreviewed access';
@@ -119,7 +121,7 @@ const hasAccessToUnreviewedReports = (user) => {
  * @returns {boolean} - Returns a boolean indicating if the user has access to germline reports
  */
 const hasAccessToGermlineReports = (user) => {
-  return user.groups.some((group) => {
+  return user.groups?.some((group) => {
     return group.name.toLowerCase() === 'admin'
     || group.name.toLowerCase() === 'manager'
     || group.name.toLowerCase() === 'germline access';
@@ -135,7 +137,7 @@ const hasAccessToGermlineReports = (user) => {
  * @returns {boolean} - Returns true if user belongs to one of the access groups
  */
 const hasAccess = (user, accessGroups) => {
-  return user.groups.some((group) => {
+  return user.groups?.some((group) => {
     return accessGroups.includes(group.name.toLowerCase());
   });
 };
