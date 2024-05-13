@@ -90,13 +90,13 @@ describe('/therapeutic-targets', () => {
         force: true,
       });
     }
-    if (createdSignatureIdent) {
-      // clean up the new record if one was created
-      await db.models.therapeuticTarget.destroy({
-        where: {ident: createdSignatureIdent},
-        force: true,
-      });
-    }
+    // if (createdSignatureIdent) {
+    //   // clean up the new record if one was created
+    //   await db.models.therapeuticTarget.destroy({
+    //     where: {ident: createdSignatureIdent},
+    //     force: true,
+    //   });
+    // }
   });
 
   describe('POST (create)', () => {
@@ -168,13 +168,13 @@ describe('/therapeutic-targets', () => {
     });
 
     afterEach(async () => {
-      if (originalGene) {
-        // clean up the new record if one was created
-        await db.models.therapeuticTarget.destroy({
-          where: {ident: originalGene.ident},
-          force: true,
-        });
-      }
+      // if (originalGene) {
+      //   // clean up the new record if one was created
+      //   await db.models.therapeuticTarget.destroy({
+      //     where: {ident: originalGene.ident},
+      //     force: true,
+      //   });
+      // }
       if (originalSignature) {
         // clean up the new record if one was created
         await db.models.therapeuticTarget.destroy({
