@@ -62,4 +62,4 @@ module.exports = async () => {
   await db.models.userGroupMember.findOrCreate({
     where: {user_id: bioinformaticianUser.id, group_id: bioinformaticianGroup.id},
   });
-});
+};
