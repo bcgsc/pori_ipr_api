@@ -74,8 +74,19 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     return res.json(req.userByIdent.view('public'));
   })
   .put(async (req, res) => {
-    // TODO make sure edited user isn't admin while
-    // editing user is not admin
+    const adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
+    });
+    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+      where: {group_id: adminGroup.id, user_id: req.userByIdent.id},
+    });
+
+    if (!isAdmin(req.user) && subjectUserIsAdmin) {
+      const msg = 'User who is not admin may not edit admin user';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+
     const manager = isManager(req.user);
 
     if (!manager && req.user.id !== req.userByIdent.id) {
@@ -126,8 +137,19 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
-    // TODO add check that user being deleted is not admin
-    // while deleted user is not admin
+    const adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
+    });
+    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+      where: {group_id: adminGroup.id, user_id: req.userByIdent.id},
+    });
+
+    if (!isAdmin(req.user) && subjectUserIsAdmin) {
+      const msg = 'User who is not admin may not delete admin user';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+
     try {
       await req.userByIdent.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
