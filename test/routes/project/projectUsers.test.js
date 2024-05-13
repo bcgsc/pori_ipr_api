@@ -50,8 +50,8 @@ beforeAll(async () => {
     managerUser = await db.models.user.create({
       ident: uuidv4(),
       username: 'ipr-bamboo-manager',
-      firstname: 'ipr-bamboo-manager',
-      lastname: 'ipr-bamboo-manager',
+      firstName: 'ipr-bamboo-manager',
+      lastName: 'ipr-bamboo-manager',
       email: 'dat@bcgsc.ca',
     });
   }
