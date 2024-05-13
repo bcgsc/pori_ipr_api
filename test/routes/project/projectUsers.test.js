@@ -46,6 +46,14 @@ beforeAll(async () => {
   managerUser = await db.models.user.findOne({
     where: {username: managerUsername},
   });
+  if (!managerUser) {
+    managerUser = await db.models.user.create({
+      username: 'ipr-bamboo-manager',
+      email: 'dat@bcgsc.ca',
+      firstname: 'ipr-bamboo-manager',
+      lastname: 'ipr-bamboo-manager',
+    });
+  }
   managerGroup = await db.models.userGroup.findOne({
     where: {name: 'manager'},
   });
