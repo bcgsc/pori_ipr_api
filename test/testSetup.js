@@ -8,7 +8,7 @@ CONFIG.set('env', 'test');
 const {managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
 
 // Start API
-module.exports(async () => {
+module.exports = async () => {
   let managerUser;
   let managerGroup;
   let bioinformaticianUser;
