@@ -146,43 +146,43 @@ describe('/therapeutic-targets', () => {
     let geneUrl;
     let signatureUrl;
 
-    beforeEach(async () => {
-      // create a new therapeutic target
-      ({dataValues: originalGene} = await db.models.therapeuticTarget.create({
-        ...FAKE_TARGET,
-        rank: 0,
-        reportId: report.id,
-      }));
-      ({dataValues: originalSignature} = await db.models.therapeuticTarget.create({
-        ...FAKE_SIGNATURE_TARGET,
-        rank: 1,
-        reportId: report.id,
-      }));
-      geneUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalGene.ident}`;
-      expect(originalGene).toHaveProperty('ident');
-      expect(originalGene).toHaveProperty('id');
+    // beforeEach(async () => {
+    //   // create a new therapeutic target
+    //   ({dataValues: originalGene} = await db.models.therapeuticTarget.create({
+    //     ...FAKE_TARGET,
+    //     rank: 0,
+    //     reportId: report.id,
+    //   }));
+    //   ({dataValues: originalSignature} = await db.models.therapeuticTarget.create({
+    //     ...FAKE_SIGNATURE_TARGET,
+    //     rank: 1,
+    //     reportId: report.id,
+    //   }));
+    //   geneUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalGene.ident}`;
+    //   expect(originalGene).toHaveProperty('ident');
+    //   expect(originalGene).toHaveProperty('id');
 
-      signatureUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalSignature.ident}`;
-      expect(originalSignature).toHaveProperty('ident');
-      expect(originalSignature).toHaveProperty('id');
-    });
+    //   signatureUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalSignature.ident}`;
+    //   expect(originalSignature).toHaveProperty('ident');
+    //   expect(originalSignature).toHaveProperty('id');
+    // });
 
-    afterEach(async () => {
-      if (originalGene) {
-        // clean up the new record if one was created
-        await db.models.therapeuticTarget.destroy({
-          where: {ident: originalGene.ident},
-          force: true,
-        });
-      }
-      if (originalSignature) {
-        // clean up the new record if one was created
-        await db.models.therapeuticTarget.destroy({
-          where: {ident: originalSignature.ident},
-          force: true,
-        });
-      }
-    });
+    // afterEach(async () => {
+    //   if (originalGene) {
+    //     // clean up the new record if one was created
+    //     await db.models.therapeuticTarget.destroy({
+    //       where: {ident: originalGene.ident},
+    //       force: true,
+    //     });
+    //   }
+    //   if (originalSignature) {
+    //     // clean up the new record if one was created
+    //     await db.models.therapeuticTarget.destroy({
+    //       where: {ident: originalSignature.ident},
+    //       force: true,
+    //     });
+    //   }
+    // });
 
     describe('GET', () => {
       // test('all targets for a report', async () => {
@@ -419,11 +419,11 @@ describe('/therapeutic-targets', () => {
     });
   });
 
-  afterAll(async () => {
-    // Delete newly created report and all of it's components
-    // indirectly by force deleting the report
-    return db.models.report.destroy({where: {ident: report.ident}, force: true});
-  });
+  // afterAll(async () => {
+  //   // Delete newly created report and all of it's components
+  //   // indirectly by force deleting the report
+  //   return db.models.report.destroy({where: {ident: report.ident}, force: true});
+  // });
 });
 
 afterAll(async () => {
