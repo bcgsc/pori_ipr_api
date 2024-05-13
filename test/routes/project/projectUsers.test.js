@@ -48,10 +48,11 @@ beforeAll(async () => {
   });
   if (!managerUser) {
     managerUser = await db.models.user.create({
+      ident: uuidv4(),
       username: 'ipr-bamboo-manager',
-      email: 'dat@bcgsc.ca',
       firstname: 'ipr-bamboo-manager',
       lastname: 'ipr-bamboo-manager',
+      email: 'dat@bcgsc.ca',
     });
   }
   managerGroup = await db.models.userGroup.findOne({
