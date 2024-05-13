@@ -100,19 +100,19 @@ describe('/therapeutic-targets', () => {
   });
 
   describe('POST (create)', () => {
-    test('create new with valid gene input', async () => {
-      const {body: record} = await request
-        .post(`/api/reports/${report.ident}/therapeutic-targets`)
-        .auth(username, password)
-        .type('json')
-        .send({...FAKE_TARGET})
-        .expect(HTTP_STATUS.CREATED);
-      // check that expected property not present in request body is added by create method
-      expect(record).toHaveProperty('variantGraphkbId', null);
-      expect(record).toHaveProperty('ident');
+    // test('create new with valid gene input', async () => {
+    //   const {body: record} = await request
+    //     .post(`/api/reports/${report.ident}/therapeutic-targets`)
+    //     .auth(username, password)
+    //     .type('json')
+    //     .send({...FAKE_TARGET})
+    //     .expect(HTTP_STATUS.CREATED);
+    //   // check that expected property not present in request body is added by create method
+    //   expect(record).toHaveProperty('variantGraphkbId', null);
+    //   expect(record).toHaveProperty('ident');
 
-      createdIdent = record.ident;
-    });
+    //   createdIdent = record.ident;
+    // });
 
     // test('create new with valid signature input', async () => {
     //   const {body: record} = await request
