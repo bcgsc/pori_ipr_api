@@ -59,7 +59,7 @@ beforeAll(async () => {
     where: {name: 'manager'},
   });
   await db.models.userGroupMember.findOrCreate({
-    user_id: managerUser.id, group_id: managerGroup.id,
+    where: {user_id: managerUser.id, group_id: managerGroup.id},
   });
 });
 
