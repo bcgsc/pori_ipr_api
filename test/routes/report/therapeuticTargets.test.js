@@ -73,7 +73,7 @@ describe('/therapeutic-targets', () => {
     // create report
     report = await db.models.report.create({
       templateId: template.id,
-      patientId: 'PATIENT1234',
+      patientId: 'PATIENT12346878976846513203168',
     });
   });
 
