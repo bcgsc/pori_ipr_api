@@ -521,9 +521,6 @@ templateAppendix.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-analysisReports.belongsTo(project, {
-  as: 'project', foreignKey: 'primaryProjectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
 // Germline Small Mutations
 require('./germlineSmallMutation')(sequelize, Sq);
 
