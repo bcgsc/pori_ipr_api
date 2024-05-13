@@ -81,7 +81,7 @@ beforeAll(async () => {
     where: {name: 'Bioinformatician'},
   });
   if (!bioinformaticianGroup) {
-    bioinformaticianUser = await db.models.userGroup.create({
+    bioinformaticianGroup = await db.models.userGroup.create({
       ident: uuidv4(),
       name: 'Bioinformatician',
     });
