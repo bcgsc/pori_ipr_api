@@ -67,37 +67,37 @@ describe('/therapeutic-targets', () => {
   let createdIdent;
   let createdSignatureIdent;
 
-  beforeAll(async () => {
-    // Get genomic template
-    const template = await db.models.template.findOne({where: {name: 'genomic'}});
-    // create report
-    report = await db.models.report.create({
-      templateId: template.id,
-      patientId: 'PATIENT1234',
-    });
-  });
+  // beforeAll(async () => {
+  //   // Get genomic template
+  //   const template = await db.models.template.findOne({where: {name: 'genomic'}});
+  //   // create report
+  //   report = await db.models.report.create({
+  //     templateId: template.id,
+  //     patientId: 'PATIENT1234',
+  //   });
+  // });
 
-  beforeEach(() => {
-    createdIdent = null;
-    createdSignatureIdent = null;
-  });
+  // beforeEach(() => {
+  //   createdIdent = null;
+  //   createdSignatureIdent = null;
+  // });
 
-  afterEach(async () => {
-    if (createdIdent) {
-      // clean up the new record if one was created
-      await db.models.therapeuticTarget.destroy({
-        where: {ident: createdIdent},
-        force: true,
-      });
-    }
-    if (createdSignatureIdent) {
-      // clean up the new record if one was created
-      await db.models.therapeuticTarget.destroy({
-        where: {ident: createdSignatureIdent},
-        force: true,
-      });
-    }
-  });
+  // afterEach(async () => {
+  //   if (createdIdent) {
+  //     // clean up the new record if one was created
+  //     await db.models.therapeuticTarget.destroy({
+  //       where: {ident: createdIdent},
+  //       force: true,
+  //     });
+  //   }
+  //   if (createdSignatureIdent) {
+  //     // clean up the new record if one was created
+  //     await db.models.therapeuticTarget.destroy({
+  //       where: {ident: createdSignatureIdent},
+  //       force: true,
+  //     });
+  //   }
+  // });
 
   describe('POST (create)', () => {
     // test('create new with valid gene input', async () => {
