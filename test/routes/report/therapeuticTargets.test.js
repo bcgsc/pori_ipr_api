@@ -77,10 +77,10 @@ describe('/therapeutic-targets', () => {
     });
   });
 
-  beforeEach(() => {
-    createdIdent = null;
-    createdSignatureIdent = null;
-  });
+  // beforeEach(() => {
+  //   createdIdent = null;
+  //   createdSignatureIdent = null;
+  // });
 
   // afterEach(async () => {
   //   if (createdIdent) {
