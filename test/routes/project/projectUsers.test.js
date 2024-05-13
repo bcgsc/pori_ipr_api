@@ -35,12 +35,23 @@ const checkProjectUsers = (users) => {
 
 let server;
 let request;
+let managerUser;
+let managerGroup;
 
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
   request = supertest(server);
+  managerUser = await db.models.user.findOne({
+    where: {username: managerUsername},
+  });
+  managerGroup = await db.models.userGroup.findOne({
+    where: {name: 'manager'},
+  });
+  await db.models.userGroupMember.findOrCreate({
+    user_id: managerUser.id, group_id: managerGroup.id,
+  });
 });
 
 // Tests for project user endpoints
@@ -51,7 +62,6 @@ describe('/project/:project/user', () => {
   let user01;
   let user02;
   let user03;
-  let managerUser;
   let managerProjectBinding;
 
   beforeAll(async () => {
@@ -63,9 +73,6 @@ describe('/project/:project/user', () => {
     // Create project
     project = await db.models.project.create({name: 'user-project-test01'});
     nonManagerProject = await db.models.project.create({name: 'user-project-test02'});
-    managerUser = await db.models.user.findOne({
-      where: {username: managerUsername},
-    });
     // Create users
     user01 = await db.models.user.create({
       ident: uuidv4(),
