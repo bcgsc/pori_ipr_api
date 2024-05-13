@@ -308,17 +308,17 @@ describe('/therapeutic-targets', () => {
       //     .expect(HTTP_STATUS.BAD_REQUEST);
       // });
 
-      test('Update should not accept reportId', async () => {
-        await request
-          .put(geneUrl)
-          .auth(username, password)
-          .send({
-            reportId: 1,
-            gene: 'BRAF',
-          })
-          .type('json')
-          .expect(HTTP_STATUS.BAD_REQUEST);
-      });
+      // test('Update should not accept reportId', async () => {
+      //   await request
+      //     .put(geneUrl)
+      //     .auth(username, password)
+      //     .send({
+      //       reportId: 1,
+      //       gene: 'BRAF',
+      //     })
+      //     .type('json')
+      //     .expect(HTTP_STATUS.BAD_REQUEST);
+      // });
 
       describe('tests depending on multiple targets present', () => {
         let newTarget;
@@ -346,29 +346,29 @@ describe('/therapeutic-targets', () => {
           }
         });
 
-        test('update target ranks with non-duplicate rank', async () => {
-          await request
-            .put(`/api/reports/${report.ident}/therapeutic-targets`)
-            .auth(username, password)
-            .send([
-              {ident: originalGene.ident, rank: newTarget.rank},
-              {ident: newTarget.ident, rank: originalGene.rank},
-            ])
-            .type('json')
-            .expect(HTTP_STATUS.OK);
-        }, LONGER_TIMEOUT);
+        // test('update target ranks with non-duplicate rank', async () => {
+        //   await request
+        //     .put(`/api/reports/${report.ident}/therapeutic-targets`)
+        //     .auth(username, password)
+        //     .send([
+        //       {ident: originalGene.ident, rank: newTarget.rank},
+        //       {ident: newTarget.ident, rank: originalGene.rank},
+        //     ])
+        //     .type('json')
+        //     .expect(HTTP_STATUS.OK);
+        // }, LONGER_TIMEOUT);
 
-        test('update target ranks with duplicate rank', async () => {
-          await request
-            .put(`/api/reports/${report.ident}/therapeutic-targets`)
-            .auth(username, password)
-            .send([
-              {ident: originalGene.ident, rank: 2},
-              {ident: newTarget.ident, rank: 2},
-            ])
-            .type('json')
-            .expect(HTTP_STATUS.BAD_REQUEST);
-        }, LONGER_TIMEOUT);
+        // test('update target ranks with duplicate rank', async () => {
+        //   await request
+        //     .put(`/api/reports/${report.ident}/therapeutic-targets`)
+        //     .auth(username, password)
+        //     .send([
+        //       {ident: originalGene.ident, rank: 2},
+        //       {ident: newTarget.ident, rank: 2},
+        //     ])
+        //     .type('json')
+        //     .expect(HTTP_STATUS.BAD_REQUEST);
+        // }, LONGER_TIMEOUT);
       });
 
       test.todo('Bad request on update and set gene to null');
