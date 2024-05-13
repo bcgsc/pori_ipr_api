@@ -99,7 +99,7 @@ describe('/therapeutic-targets', () => {
     }
   });
 
-  describe.skip('POST (create)', () => {
+  describe('POST (create)', () => {
     test('create new with valid gene input', async () => {
       const {body: record} = await request
         .post(`/api/reports/${report.ident}/therapeutic-targets`)
