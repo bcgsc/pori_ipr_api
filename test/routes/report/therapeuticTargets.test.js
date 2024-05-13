@@ -323,28 +323,28 @@ describe('/therapeutic-targets', () => {
       describe('tests depending on multiple targets present', () => {
         let newTarget;
 
-        beforeEach(async () => {
-          // create a new therapeutic target
-          ({dataValues: newTarget} = await db.models.therapeuticTarget.create({
-            ...FAKE_TARGET,
-            rank: 2,
-            reportId: report.id,
-          }));
+        // beforeEach(async () => {
+        //   // create a new therapeutic target
+        //   ({dataValues: newTarget} = await db.models.therapeuticTarget.create({
+        //     ...FAKE_TARGET,
+        //     rank: 2,
+        //     reportId: report.id,
+        //   }));
 
-          expect(newTarget).toHaveProperty('id');
-          expect(newTarget).toHaveProperty('ident');
-          expect(newTarget).toHaveProperty('rank');
-        });
+        //   expect(newTarget).toHaveProperty('id');
+        //   expect(newTarget).toHaveProperty('ident');
+        //   expect(newTarget).toHaveProperty('rank');
+        // });
 
-        afterEach(async () => {
-          if (newTarget) {
-            // clean up the new record if one was created
-            await db.models.therapeuticTarget.destroy({
-              where: {ident: newTarget.ident},
-              force: true,
-            });
-          }
-        });
+        // afterEach(async () => {
+        //   if (newTarget) {
+        //     // clean up the new record if one was created
+        //     await db.models.therapeuticTarget.destroy({
+        //       where: {ident: newTarget.ident},
+        //       force: true,
+        //     });
+        //   }
+        // });
 
         // test('update target ranks with non-duplicate rank', async () => {
         //   await request
