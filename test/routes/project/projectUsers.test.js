@@ -37,12 +37,15 @@ let server;
 let request;
 let managerUser;
 let managerGroup;
+let bioinformaticianUser;
+let bioinformaticianGroup;
 
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
   request = supertest(server);
+
   managerUser = await db.models.user.findOne({
     where: {username: managerUsername},
   });
@@ -60,6 +63,25 @@ beforeAll(async () => {
   });
   await db.models.userGroupMember.findOrCreate({
     where: {user_id: managerUser.id, group_id: managerGroup.id},
+  });
+
+  bioinformaticianUser = await db.models.user.findOne({
+    where: {username: bioinformaticianUsername},
+  });
+  if (!bioinformaticianUser) {
+    bioinformaticianUser = await db.models.user.create({
+      ident: uuidv4(),
+      username: 'ipr-bamboo-bioinformatician',
+      firstName: 'ipr-bamboo-bioinformatician',
+      lastName: 'ipr-bamboo-bioinformatician',
+      email: 'dat@bcgsc.ca',
+    });
+  }
+  bioinformaticianGroup = await db.models.userGroup.findOne({
+    where: {name: 'Bioinformatician'},
+  });
+  await db.models.userGroupMember.findOrCreate({
+    where: {user_id: bioinformaticianUser.id, group_id: bioinformaticianGroup.id},
   });
 });
 
