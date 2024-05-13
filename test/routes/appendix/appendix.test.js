@@ -47,6 +47,7 @@ describe('/appendix', () => {
   let template;
   let project;
   let body;
+  let testAppendix;
 
   beforeAll(async () => {
     // create a template to be used in tests
@@ -69,22 +70,19 @@ describe('/appendix', () => {
     };
   });
 
+  beforeEach(async () => {
+    testAppendix = await db.models.templateAppendix.create({
+      ...CREATE_DATA,
+      templateId: template.id,
+      projectId: project.id,
+    });
+  });
+
+  afterEach(async () => {
+    return testAppendix.destroy({force: true});
+  });
+
   describe('GET', () => {
-    let getTestAppendix;
-
-    beforeEach(async () => {
-      // create a template to be used in tests
-      getTestAppendix = await db.models.templateAppendix.create({
-        ...CREATE_DATA,
-        templateId: template.id,
-        projectId: project.id,
-      });
-    });
-
-    afterEach(async () => {
-      return getTestAppendix.destroy({force: true});
-    });
-
     test('/ - 200 Success', async () => {
       const res = await request
         .get('/api/appendix')
@@ -99,23 +97,6 @@ describe('/appendix', () => {
   });
 
   describe('PUT', () => {
-    let putTestAppendix;
-
-    beforeEach(async () => {
-      putTestAppendix = await db.models.templateAppendix.create({
-        ...CREATE_DATA,
-        templateId: template.id,
-        projectId: project.id,
-      });
-    });
-
-    afterEach(async () => {
-      return db.models.templateAppendix.destroy({
-        where: {ident: putTestAppendix.ident},
-        force: true,
-      });
-    });
-
     test('/ - 200 Success', async () => {
       const res = await request
         .put('/api/appendix')
@@ -131,7 +112,7 @@ describe('/appendix', () => {
 
     test('/ - 500 Internal Server Error', async () => {
       // First soft-delete record
-      await putTestAppendix.destroy();
+      await testAppendix.destroy();
 
       await request
         .put('/api/appendix')
@@ -160,20 +141,6 @@ describe('/appendix', () => {
   });
 
   describe('DELETE', () => {
-    let deleteTestAppendix;
-
-    beforeEach(async () => {
-      deleteTestAppendix = await db.models.templateAppendix.create({
-        ...CREATE_DATA,
-        templateId: template.id,
-        projectId: project.id,
-      });
-    });
-
-    afterEach(async () => {
-      return deleteTestAppendix.destroy({force: true});
-    });
-
     test('/ - 204 No Content', async () => {
       await request
         .delete('/api/appendix')
@@ -184,7 +151,7 @@ describe('/appendix', () => {
 
       // Verify that the record was soft deleted
       const result = await db.models.templateAppendix.findOne({
-        where: {id: deleteTestAppendix.id},
+        where: {id: testAppendix.id},
         paranoid: false,
       });
       expect(result).not.toBeNull();
@@ -193,7 +160,7 @@ describe('/appendix', () => {
 
     test('/ - 500 Internal Server Error', async () => {
       // First soft-delete record
-      await deleteTestAppendix.destroy();
+      await testAppendix.destroy();
 
       await request
         .delete('/api/appendix')
