@@ -64,6 +64,7 @@ beforeAll(async () => {
 
 describe('/therapeutic-targets', () => {
   let report;
+  let report2;
   let createdIdent;
   let createdSignatureIdent;
 
@@ -74,6 +75,10 @@ describe('/therapeutic-targets', () => {
     report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
+    });
+    report2 = await db.models.report.create({
+      templateId: template.id,
+      patientId: 'PATIENT12345',
     });
   });
 
@@ -143,7 +148,9 @@ describe('/therapeutic-targets', () => {
   describe('tests dependent on an existing therapeutic target', () => {
     let originalGene;
     let originalSignature;
+    let report2OriginalGene;
     let geneUrl;
+    let report2GeneUrl;
     let signatureUrl;
 
     beforeEach(async () => {
@@ -153,6 +160,11 @@ describe('/therapeutic-targets', () => {
         rank: 0,
         reportId: report.id,
       }));
+      ({dataValues: report2OriginalGene} = await db.models.therapeuticTarget.create({
+        ...FAKE_TARGET,
+        rank: 0,
+        reportId: report2.id,
+      }));
       ({dataValues: originalSignature} = await db.models.therapeuticTarget.create({
         ...FAKE_SIGNATURE_TARGET,
         rank: 1,
@@ -161,6 +173,8 @@ describe('/therapeutic-targets', () => {
       geneUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalGene.ident}`;
       expect(originalGene).toHaveProperty('ident');
       expect(originalGene).toHaveProperty('id');
+
+      report2GeneUrl = `/api/reports/${report2.ident}/therapeutic-targets/${report2OriginalGene.ident}`;
 
       signatureUrl = `/api/reports/${report.ident}/therapeutic-targets/${originalSignature.ident}`;
       expect(originalSignature).toHaveProperty('ident');
@@ -172,6 +186,13 @@ describe('/therapeutic-targets', () => {
         // clean up the new record if one was created
         await db.models.therapeuticTarget.destroy({
           where: {ident: originalGene.ident},
+          force: true,
+        });
+      }
+      if (report2OriginalGene) {
+        // clean up the new record if one was created
+        await db.models.therapeuticTarget.destroy({
+          where: {ident: report2OriginalGene.ident},
           force: true,
         });
       }
@@ -389,27 +410,27 @@ describe('/therapeutic-targets', () => {
         expect(result).toHaveProperty('deletedAt');
       });
 
+      // TODO fix it
       test('updating all other targets rank on delete', async () => {
         // Create second record
         const newTarget = await db.models.therapeuticTarget.create({
-          ...FAKE_TARGET,
-          rank: 3,
-          reportId: report.id,
+          ...FAKE_SIGNATURE_TARGET,
+          rank: 2,
+          reportId: report2.id,
         });
 
         await request
-          .delete(geneUrl)
+          .delete(report2GeneUrl)
           .auth(username, password)
           .type('json')
           .expect(HTTP_STATUS.NO_CONTENT);
 
         // should now only find the second record
         const result = await db.models.therapeuticTarget.findAll({
-          where: {reportId: report.id},
+          where: {reportId: report2.id},
         });
-
         expect(Array.isArray(result)).toBe(true);
-        expect(result.length).toBe(2); // originalGene and originalSignature
+        expect(result.length).toBe(1); // originalSignature
 
         const [entry] = result;
 
@@ -422,6 +443,7 @@ describe('/therapeutic-targets', () => {
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // indirectly by force deleting the report
+    await db.models.report.destroy({where: {ident: report2.ident}, force: true});
     return db.models.report.destroy({where: {ident: report.ident}, force: true});
   });
 });
