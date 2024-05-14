@@ -281,9 +281,11 @@ describe('/reports/{REPORTID}', () => {
     });
 
     // Test GET with offset
+    // TODO fix test
     test('/ - offset - 200 Success', async () => {
+      const totalReports2 = await db.models.report.count();
       const res = await request
-        .get(`/api/reports?paginated=true&offset=${totalReports - 3}`)
+        .get(`/api/reports?paginated=true&offset=${totalReports2 - 3}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -480,8 +482,10 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
+    // TODO fix test
     test('No queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
+      const totalReports2 = await db.models.report.count();
       const res = await request
         .get('/api/reports')
         .auth(username, password)
@@ -489,7 +493,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.OK);
 
       // Check if the number of reports returned by api is the same as db
-      expect(res.body.total).toEqual(totalReports);
+      expect(res.body.total).toEqual(totalReports2);
     });
 
     test('State querying is OK', async () => {
