@@ -3,7 +3,7 @@ const db = require('../app/models');
 const CONFIG = require('../app/config');
 
 CONFIG.set('env', 'test');
-const {managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
+const {user, managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
 
 // TODO: move uuid creation to defaults for ident fields in the db;
 // remove fixed idents here
@@ -14,7 +14,7 @@ beforeAll(async () => {
   // managerUser = await db.models.user.findOne({
   //  where: {username: managerUsername},
   // });
-  const adminUser = await db.models.user.findOne({where:{username: 'admin'}});
+  const adminUser = await db.models.user.findOne({where:{username: user}});
   const [managerUser] = await db.models.user.findOrCreate({
     where: {
       username: managerUsername,
