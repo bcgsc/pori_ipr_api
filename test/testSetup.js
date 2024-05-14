@@ -14,6 +14,7 @@ beforeAll(async () => {
   // managerUser = await db.models.user.findOne({
   //  where: {username: managerUsername},
   // });
+  const adminUser = await db.models.user.findOne({where:{username: 'admin'}});
   const [managerUser] = await db.models.user.findOrCreate({
     where: {
       username: managerUsername,
@@ -26,6 +27,7 @@ beforeAll(async () => {
   const [managerGroup] = await db.models.userGroup.findOrCreate({
     where: {
       name: 'manager',
+      owner_id: adminUser.id,
     },
   });
 
@@ -45,6 +47,7 @@ beforeAll(async () => {
   const [bioinformaticianGroup] = await db.models.userGroup.findOrCreate({
     where: {
       name: 'Bioinformatician',
+      owner_id: adminUser.id,
     },
   });
 
