@@ -8,7 +8,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const {username, managerUsername, password} = CONFIG.get('testing');
 
 const LONGER_TIMEOUT = 50000;
 
@@ -116,6 +116,15 @@ describe('/project', () => {
       await db.models.project.destroy({where: {ident: res.body.ident}, force: true});
     });
 
+    test('/ - 403 forbidden to non-admin', async () => {
+      await request
+        .post('/api/project')
+        .auth(managerUsername, password)
+        .type('json')
+        .send({name: 'new-project-test-project02'})
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     test('/ - 409 Conflict - Project name is taken', async () => {
       await request
         .post('/api/project')
@@ -170,6 +179,20 @@ describe('/project', () => {
       expect(res.body.description).toBe('put-test-updated-description01');
     });
 
+    test('/{project} - 403 forbidden to non-admin', async () => {
+      await request
+        .put(`/api/project/${putTestProject.ident}`)
+        .send(
+          {
+            name: 'put-test-updated-project01',
+            description: 'put-test-updated-description01',
+          },
+        )
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     test('/{project} - 400 Bad Request - Name too short', async () => {
       await request
         .put(`/api/project/${putTestProject.ident}`)
@@ -194,15 +217,20 @@ describe('/project', () => {
 
   describe('DELETE', () => {
     let deleteTestProject;
+    let deleteTestProject2;
 
     beforeEach(async () => {
       deleteTestProject = await db.models.project.create({
         name: 'delete-test-project01',
       });
+      deleteTestProject2 = await db.models.project.create({
+        name: 'delete-test-project02',
+      });
     });
 
     afterEach(async () => {
       return deleteTestProject.destroy({force: true});
+      return deleteTestProject2.destroy({force: true});
     });
 
     test('/{project} - 204 Success', async () => {
@@ -217,6 +245,14 @@ describe('/project', () => {
         where: {ident: deleteTestProject.ident}, paranoid: false,
       });
       expect(deletedUser.deletedAt).not.toBeNull();
+    });
+
+    test('/{project} - 403 forbidden to non-admin', async () => {
+      await request
+        .delete(`/api/project/${deleteTestProject2.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
   });
 });

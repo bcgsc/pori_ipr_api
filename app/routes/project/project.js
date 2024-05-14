@@ -24,8 +24,6 @@ const updateSchema = schemaGenerator(db.models.project, {
 
 router.param('project', projectMiddleware);
 
-// TODO add manager/admin restrictions
-
 // Project routes
 router.route('/:project([A-z0-9-]{36})')
   .get(async (req, res) => {
@@ -110,7 +108,7 @@ router.route('/')
       const projects = await db.models.project.scope('public').findAll(opts);
       return res.json(projects);
     } catch (error) {
-      logger.error(`Error while trying to retrieve projects${error}`);
+      logger.error(`Error while trying to retrieve projects ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to retrieve projects'},
       });
