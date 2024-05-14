@@ -290,14 +290,11 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
       const totalReports3 = await db.models.report.count();
-      console.log(totalReports2);
+      console.log(totalReports2, totalReports3);
       console.log('latest is here');
       checkReports(res.body.reports);
       expect(res.body.reports.length).toBe(3);
 
-      const totalReports3 = await db.models.report.count();
-      console.log(totalReports2);
-      console.log(totalReports3);
     }, LONGER_TIMEOUT);
 
     test('/ - offset - 400 Bad Request', async () => {
@@ -678,6 +675,7 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
+    await db.models.report.destroy({where: {id: reportDualProj.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 
