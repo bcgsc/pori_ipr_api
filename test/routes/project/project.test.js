@@ -229,8 +229,8 @@ describe('/project', () => {
     });
 
     afterEach(async () => {
-      return deleteTestProject.destroy({force: true});
-      return deleteTestProject2.destroy({force: true});
+      await deleteTestProject.destroy({force: true});
+      await deleteTestProject2.destroy({force: true});
     });
 
     test('/{project} - 204 Success', async () => {

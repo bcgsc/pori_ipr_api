@@ -206,7 +206,7 @@ describe('/user/group/{group}/member', () => {
         email: 'updateUser@email.com',
       });
 
-      const res = await request
+      await request
         .post(`/api/user/group/${group.ident}/member`)
         .auth(bioinformaticianUsername, password)
         .type('json')
