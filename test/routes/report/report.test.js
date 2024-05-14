@@ -289,7 +289,9 @@ describe('/reports/{REPORTID}', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-
+      const totalReports3 = await db.models.report.count();
+      console.log(totalReports2);
+      console.log('latest is here');
       checkReports(res.body.reports);
       expect(res.body.reports.length).toBe(3);
 
