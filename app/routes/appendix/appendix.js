@@ -21,7 +21,10 @@ const updateSchema = schemaGenerator(db.models.templateAppendix, {
 router.use('/', async (req, res, next) => {
   try {
     if (!req.body.projectId && !req.body.templateId) {
-      req.templateAppendix = await db.models.templateAppendix.scope('extended').findAll();
+      req.templateAppendix = await db.models.templateAppendix.scope('public').findAll({include: [
+        {model: db.models.template.scope('public'), as: 'template'},
+        {model: db.models.project.scope('public'), as: 'project'},
+      ]});
     } else {
       if (!req.body.projectId) {
         req.body.projectId = null;
@@ -38,7 +41,8 @@ router.use('/', async (req, res, next) => {
                 ],
               },
         include:
-              [{model: db.models.project.scope('public'), as: 'project'}],
+              [{model: db.models.template.scope('public'), as: 'template'},
+                {model: db.models.project.scope('public'), as: 'project'}],
       });
     }
   } catch (error) {
@@ -53,7 +57,7 @@ router.use('/', async (req, res, next) => {
 router.route('/')
   .get(async (req, res) => {
     if (!req.templateAppendix.length) {
-      return res.json(req.templateAppendix.view('extended'));
+      return res.json(req.templateAppendix.view('public'));
     }
     return res.json(req.templateAppendix);
   })

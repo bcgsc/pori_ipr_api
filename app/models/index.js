@@ -521,12 +521,6 @@ templateAppendix.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-const templateExtendedScope = {
-  attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
-  include: [],
-};
-templateAppendix.addScope('extended', templateExtendedScope);
-
 // Germline Small Mutations
 require('./germlineSmallMutation')(sequelize, Sq);
 
