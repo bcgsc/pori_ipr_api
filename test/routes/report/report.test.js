@@ -1,6 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 
-const {v4: uuidv4} = require('uuid');
+const {v4: uuidv4, stringify} = require('uuid');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../app/models');
@@ -98,7 +98,7 @@ describe('/reports/{REPORTID}', () => {
     });
     offsetTestProject = await db.models.project.create({
       where: {
-        name: `offset${uuidv4()}`
+        name: `offset${stringify(randomUuid)}`,
       }
     })
 
