@@ -346,8 +346,6 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    // Test GET with offset
-    // TODO fix test
     test('/ - offset - 200 Success', async () => {
       const totalOffsetReports = 5;
       const res = await request
@@ -549,7 +547,6 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
-    // TODO fix test
     test('No queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const totalReports2 = await db.models.report.count();
