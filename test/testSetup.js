@@ -7,6 +7,9 @@ const CONFIG = require('../app/config');
 CONFIG.set('env', 'test');
 const {managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
 
+// TODO: move uuid creation to defaults for ident fields in the db;
+// remove fixed idents here
+
 beforeAll(async () => {
   let managerUser;
   let managerGroup;
@@ -16,24 +19,28 @@ beforeAll(async () => {
     where: {username: managerUsername},
   });
   if (!managerUser) {
-    managerUser = await db.models.user.create({
-      ident: uuidv4(),
-      username: 'ipr-bamboo-manager',
-      firstName: 'ipr-bamboo-manager',
-      lastName: 'ipr-bamboo-manager',
+    managerUser = await db.models.user.findOrCreate({
+      where: {
+      ident: '2a46cd1e-913f-4e7c-a055-0050d0586ed2',
+      username: managerUsername,
+      firstName: managerUsername,
+      lastName: managerUsername,
       email: 'dat@bcgsc.ca',
+      }
     });
   }
   managerGroup = await db.models.userGroup.findOne({
     where: {name: 'manager'},
   });
   if (!managerGroup) {
-    managerGroup = await db.models.userGroup.create({
-      ident: uuidv4(),
+    managerGroup = await db.models.userGroup.findOrCreate({
+      where: {
+      ident: 'c748c8d9-af5b-4a53-b94f-410eef89f8d0',
       name: 'manager',
+      }
     });
   }
-  await db.models.userGroupMember.findOrCreate({
+  const managerAddedToGroup = await db.models.userGroupMember.findOrCreate({
     where: {user_id: managerUser.id, group_id: managerGroup.id},
   });
 
@@ -41,22 +48,26 @@ beforeAll(async () => {
     where: {username: bioinformaticianUsername},
   });
   if (!bioinformaticianUser) {
-    bioinformaticianUser = await db.models.user.create({
-      ident: uuidv4(),
-      username: 'ipr-bamboo-bioinformatician',
-      firstName: 'ipr-bamboo-bioinformatician',
-      lastName: 'ipr-bamboo-bioinformatician',
+    bioinformaticianUser = await db.models.user.findOrCreate({
+      where: {
+      ident: '5080af7a-8b6b-4249-b026-d2e781bd8efa',
+      username: bioinformaticianUsername,
+      firstName: bioinformaticianUsername,
+      lastName: bioinformaticianUsername,
       email: 'dat@bcgsc.ca',
+      }
     });
   }
   bioinformaticianGroup = await db.models.userGroup.findOne({
     where: {name: 'Bioinformatician'},
   });
   if (!bioinformaticianGroup) {
-    bioinformaticianGroup = await db.models.userGroup.create({
-      ident: uuidv4(),
+    bioinformaticianGroup = await db.models.userGroup.findOrCreate({
+      where: {
+      ident: '3dfcf75e-fed8-11e6-bc64-92361f002671',
       name: 'Bioinformatician',
       owner_id: managerUser.id,
+      }
     });
   }
   await db.models.userGroupMember.findOrCreate({
