@@ -292,6 +292,10 @@ describe('/reports/{REPORTID}', () => {
 
       checkReports(res.body.reports);
       expect(res.body.reports.length).toBe(3);
+
+      const totalReports3 = await db.models.report.count();
+      console.log(totalReports2);
+      console.log(totalReports3);
     }, LONGER_TIMEOUT);
 
     test('/ - offset - 400 Bad Request', async () => {
