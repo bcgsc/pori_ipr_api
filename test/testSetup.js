@@ -5,10 +5,8 @@ const CONFIG = require('../app/config');
 CONFIG.set('env', 'test');
 const {username, managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
 
-
 beforeAll(async () => {
-
-  const adminUser = await db.models.user.findOne({where:{username: username}});
+  const adminUser = await db.models.user.findOne({where: {username}});
   const [managerUser] = await db.models.user.findOrCreate({
     where: {
       username: managerUsername,
