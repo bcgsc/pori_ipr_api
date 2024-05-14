@@ -36,7 +36,6 @@ const checkProjectUsers = (users) => {
 let server;
 let request;
 let managerUser;
-let bioinformaticianUser;
 
 // Start API
 beforeAll(async () => {
@@ -46,10 +45,6 @@ beforeAll(async () => {
 
   managerUser = await db.models.user.findOne({
     where: {username: managerUsername},
-  });
-
-  bioinformaticianUser = await db.models.user.findOne({
-    where: {username: bioinformaticianUsername},
   });
 });
 
