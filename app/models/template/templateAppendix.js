@@ -44,6 +44,10 @@ module.exports = (sequelize, Sq) => {
       const {id, projectId, templateId, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
+    if (scope === 'extended') {
+      const {id, deletedAt, updatedBy, ...extendedView} = this.dataValues;
+      return extendedView;
+    }
     return this;
   };
 
