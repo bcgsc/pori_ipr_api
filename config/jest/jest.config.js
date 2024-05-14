@@ -46,6 +46,8 @@ module.exports = {
     '<rootDir>/test/graphkb.mock.js',
     '<rootDir>/config/jest/jestSetup.js',
   ],
-  globalSetup: '<rootDir>/test/testSetup.js',
+  setupFilesAfterEnv: [
+    '<rootDir>/test/testSetup.js',
+  ],
   testTimeout: 10000,
 };

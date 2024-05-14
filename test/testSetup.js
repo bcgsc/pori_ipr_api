@@ -7,8 +7,7 @@ const CONFIG = require('../app/config');
 CONFIG.set('env', 'test');
 const {managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
 
-// Start API
-module.exports = async () => {
+beforeAll(async () => {
   let managerUser;
   let managerGroup;
   let bioinformaticianUser;
@@ -62,4 +61,4 @@ module.exports = async () => {
   await db.models.userGroupMember.findOrCreate({
     where: {user_id: bioinformaticianUser.id, group_id: bioinformaticianGroup.id},
   });
-};
+});
