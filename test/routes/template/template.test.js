@@ -371,7 +371,7 @@ describe('/templates', () => {
 
       checkTemplate(res.body);
       expect(res.body).toEqual(expect.objectContaining({
-        name: 'New Name',
+        name: 'New Name - by manager',
         organization: 'New Orgs',
         sections: ['therapeutic-targets', 'genes'],
         description: 'New Description',
