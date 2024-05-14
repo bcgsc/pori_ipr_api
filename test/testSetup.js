@@ -56,6 +56,7 @@ beforeAll(async () => {
     bioinformaticianGroup = await db.models.userGroup.create({
       ident: uuidv4(),
       name: 'Bioinformatician',
+      owner_id: managerUser.id,
     });
   }
   await db.models.userGroupMember.findOrCreate({
