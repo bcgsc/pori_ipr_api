@@ -83,7 +83,6 @@ describe('/reports/{REPORTID}', () => {
 
   beforeAll(async () => {
     // Get genomic template
-    console.log('check here 86');
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create Report and associate projects
     project = await db.models.project.findOne({
@@ -97,7 +96,6 @@ describe('/reports/{REPORTID}', () => {
       },
     });
     offsetTestProject = await db.models.project.create({name: `offset${randomUuid.toString()}`});
-    console.log('check here 100');
 
     report = await db.models.report.create({
       templateId: template.id,
@@ -119,7 +117,6 @@ describe('/reports/{REPORTID}', () => {
       reportId: reportReady.id,
       project_id: project.id,
     });
-    console.log('check here 122');
 
     reportNonProduction = await db.models.report.create({
       templateId: template.id,
@@ -165,7 +162,6 @@ describe('/reports/{REPORTID}', () => {
       project_id: project2.id,
       additionalProject: true,
     });
-    console.log('check here 168');
 
     // create a second set of reports for use in the offset test, which relies on
     // a predictable set of reports in the db which means using a specific project
@@ -202,7 +198,6 @@ describe('/reports/{REPORTID}', () => {
       project_id: offsetTestProject.id,
     });
 
-    console.log('check here 205');
     reportReviewed2 = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
@@ -222,8 +217,6 @@ describe('/reports/{REPORTID}', () => {
       reportId: reportCompleted2.id,
       project_id: offsetTestProject.id,
     });
-    console.log('check here 224');
-
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -559,10 +552,8 @@ describe('/reports/{REPORTID}', () => {
       // tests created for this module
       const expectedReports = [report, reportReady, reportReviewed, reportCompleted, reportNonProduction, report2, reportReady2, reportReviewed2, reportCompleted2, reportNonProduction2, reportDualProj];
       expect(res.body.total).toBeGreaterThanOrEqual(expectedReports.length);
-
       const expectedIds = (expectedReports).map((elem) => {return elem.ident;});
       const foundIds = (res.body.reports).map((elem) => {return elem.ident;});
-
       const allPresent = expectedIds.every((elem) => {return foundIds.includes(elem);});
       expect(allPresent).toBeTruthy();
     });
