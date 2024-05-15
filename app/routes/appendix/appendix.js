@@ -19,27 +19,62 @@ const updateSchema = schemaGenerator(db.models.templateAppendix, {
 
 // Add middleware to get template appendix
 router.use('/', async (req, res, next) => {
+  const {
+    query: {
+      templateId, projectId,
+    },
+  } = req;
   try {
-    if (!req.body.projectId && !req.body.templateId) {
-      req.templateAppendix = await db.models.templateAppendix.scope('public').findAll();
+    if (!templateId && !projectId) {
+      req.templateAppendix = await db.models.templateAppendix.scope('public').findAll({include: [
+        {model: db.models.template.scope('minimal'), as: 'template'},
+        {model: db.models.project.scope('public'), as: 'project'},
+      ]});
     } else {
-      if (!req.body.projectId) {
-        req.body.projectId = null;
+      if (templateId !== 'null') {
+        req.template = await db.models.template.findOne({
+          where:
+            {ident: templateId},
+        });
+        req.templateId = req.template.id;
+      } else {
+        req.templateId = null;
       }
-      if (!req.body.templateId) {
-        req.body.templateId = null;
+      if (projectId !== 'null') {
+        req.project = await db.models.project.findOne({
+          where:
+            {ident: projectId},
+        });
+        req.projectId = req.project.id;
+      } else {
+        req.projectId = null;
       }
       req.templateAppendix = await db.models.templateAppendix.findOne({
         where:
               {
                 [Op.and]: [
-                  {templateId: req.body.templateId},
-                  {projectId: req.body.projectId},
+                  {templateId: req.templateId},
+                  {projectId: req.projectId},
                 ],
               },
         include:
-              [{model: db.models.project.scope('public'), as: 'project'}],
+              [{model: db.models.template.scope('minimal'), as: 'template'},
+                {model: db.models.project.scope('public'), as: 'project'}],
       });
+      // when there is no template with specific project id
+      if (!req.templateAppendix) {
+        req.templateAppendix = await db.models.templateAppendix.findOne({
+          where:
+                {
+                  [Op.and]: [
+                    {templateId: req.template.id},
+                  ],
+                },
+          include:
+                [{model: db.models.template.scope('minimal'), as: 'template'},
+                  {model: db.models.project.scope('public'), as: 'project'}],
+        });
+      }
     }
   } catch (error) {
     logger.error(`Unable to get template appendix ${error}`);

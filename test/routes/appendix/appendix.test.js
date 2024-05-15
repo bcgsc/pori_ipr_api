@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
+const {v4: uuidv4} = require('uuid');
 const db = require('../../../app/models');
 
 const CONFIG = require('../../../app/config');
@@ -8,6 +9,8 @@ const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
 const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
+
+const NON_EXISTENT_PROJECT_ID = uuidv4();
 
 let server;
 let request;
@@ -55,8 +58,6 @@ describe('/appendix', () => {
   let template;
   let project;
   let nonManagerProject;
-  let body;
-  let nonManagerProjectBody;
   let testAppendix;
   let testAppendix2;
   let managerUser;
@@ -80,15 +81,6 @@ describe('/appendix', () => {
     // create the manage-user/project binding
     managerUser = await db.models.user.findOne({where: {username: managerUsername}});
     await db.models.userProject.create({project_id: project.id, user_id: managerUser.id});
-
-    body = {
-      templateId: template.id,
-      projectId: project.id,
-    };
-    nonManagerProjectBody = {
-      templateId: template.id,
-      projectId: nonManagerProject.id,
-    };
   });
 
   beforeEach(async () => {
@@ -113,10 +105,9 @@ describe('/appendix', () => {
   describe('GET', () => {
     test('/ - 200 Success', async () => {
       const res = await request
-        .get('/api/appendix')
+        .get(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send(body)
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
@@ -127,10 +118,10 @@ describe('/appendix', () => {
   describe('PUT', () => {
     test('/ - 200 Success', async () => {
       const res = await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send({...UPDATE_DATA, ...body})
+        .send({...UPDATE_DATA})
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
@@ -140,10 +131,10 @@ describe('/appendix', () => {
 
     test('/ - 200 Success - by manager', async () => {
       const res = await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(managerUsername, password)
         .type('json')
-        .send({...UPDATE_DATA2, ...body})
+        .send({...UPDATE_DATA2})
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
@@ -153,19 +144,19 @@ describe('/appendix', () => {
 
     test('/ - 403 forbidden to manager without project membership', async () => {
       await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${nonManagerProject.ident}`)
         .auth(managerUsername, password)
         .type('json')
-        .send({...UPDATE_DATA2, ...nonManagerProjectBody})
+        .send({...UPDATE_DATA2})
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/ - 403 forbidden to bioinformatician', async () => {
       await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(bioinformaticianUsername, password)
         .type('json')
-        .send({...UPDATE_DATA2, ...body})
+        .send({...UPDATE_DATA2})
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
@@ -174,10 +165,9 @@ describe('/appendix', () => {
       await testAppendix.destroy();
 
       await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${NON_EXISTENT_PROJECT_ID}`)
         .send({
           text: '<h3>Updated Title</h3><p>Updated text</p>',
-          projectId: 0,
         })
         .auth(username, password)
         .type('json')
@@ -186,12 +176,11 @@ describe('/appendix', () => {
 
     test('/ - 400 Bad Request - Invalid type', async () => {
       await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .send({
           text: {
             data: 'TEST DATA',
           },
-          projectId: 0,
         })
         .auth(username, password)
         .type('json')
@@ -202,8 +191,7 @@ describe('/appendix', () => {
   describe('DELETE', () => {
     test('/ - 204 No Content', async () => {
       await request
-        .delete('/api/appendix')
-        .send(body)
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -219,8 +207,7 @@ describe('/appendix', () => {
 
     test('/ - 204 No Content by manager', async () => {
       await request
-        .delete('/api/appendix')
-        .send(body)
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(managerUsername, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -236,8 +223,7 @@ describe('/appendix', () => {
 
     test('/ - 403 forbidden when manager does not have project membership', async () => {
       await request
-        .delete('/api/appendix')
-        .send(nonManagerProjectBody)
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${nonManagerProject.ident}`)
         .auth(managerUsername, password)
         .type('json')
         .expect(HTTP_STATUS.FORBIDDEN);
@@ -245,8 +231,7 @@ describe('/appendix', () => {
 
     test('/ - 403 forbidden to bioinformatician', async () => {
       await request
-        .delete('/api/appendix')
-        .send(body)
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(bioinformaticianUsername, password)
         .type('json')
         .expect(HTTP_STATUS.FORBIDDEN);
@@ -257,8 +242,7 @@ describe('/appendix', () => {
       await testAppendix.destroy();
 
       await request
-        .delete('/api/appendix')
-        .send({projectId: 0})
+        .delete(`/api/appendix?projectId=${NON_EXISTENT_PROJECT_ID}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
