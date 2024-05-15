@@ -539,7 +539,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
-    test.skip('No queries is OK', async () => {
+    test('No queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
         .get('/api/reports')
