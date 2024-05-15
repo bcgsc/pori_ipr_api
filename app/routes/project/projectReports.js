@@ -4,6 +4,8 @@ const express = require('express');
 const db = require('../../models');
 const logger = require('../../log');
 
+const {isAdmin} = require('../../libs/helperFunctions');
+
 const router = express.Router({mergeParams: true});
 
 // Report-project binding routes
@@ -30,6 +32,12 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: 'Unable to find the supplied report'},
       });
+    }
+
+    if (!isAdmin(req.user) && !(req.user.projects).map((proj) => {return proj.name;}).includes(req.project.name)) {
+      const msg = 'User does not have permission to add reports to this group';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
 
     // Check for binding
@@ -91,6 +99,12 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: `Unable to find report ${req.body.report}`},
       });
+    }
+
+    if (!isAdmin(req.user) && !(req.user.projects).map((proj) => {return proj.name;}).includes(req.project.name)) {
+      const msg = 'User does not have permission to add this project from reports';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
 
     let binding;

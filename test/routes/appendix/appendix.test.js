@@ -8,7 +8,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 
 const NON_EXISTENT_PROJECT_ID = uuidv4();
 
@@ -19,8 +19,16 @@ const CREATE_DATA = {
   text: '<h3>Title</h3><p>Test text</p>',
 };
 
+const CREATE_DATA2 = {
+  text: '<h3>Title2</h3><p>Test text</p>',
+};
+
 const UPDATE_DATA = {
   text: '<h2>Updated Title</h2><p>Updated test text</p>',
+};
+
+const UPDATE_DATA2 = {
+  text: '<h2>Updated 2 Title</h2><p>Updated test text</p>',
 };
 
 const templateAppendixProperties = [
@@ -49,7 +57,10 @@ beforeAll(async () => {
 describe('/appendix', () => {
   let template;
   let project;
+  let nonManagerProject;
   let testAppendix;
+  let testAppendix2;
+  let managerUser;
 
   beforeAll(async () => {
     // create a template to be used in tests
@@ -63,8 +74,13 @@ describe('/appendix', () => {
       ],
     });
 
-    // Create project
+    // Create projects
     project = await db.models.project.create({name: 'test-appendix-project'});
+    nonManagerProject = await db.models.project.create({name: 'test-appendix-nonManagerProject'});
+
+    // create the manage-user/project binding
+    managerUser = await db.models.user.findOne({where: {username: managerUsername}});
+    await db.models.userProject.create({project_id: project.id, user_id: managerUser.id});
   });
 
   beforeEach(async () => {
@@ -73,10 +89,17 @@ describe('/appendix', () => {
       templateId: template.id,
       projectId: project.id,
     });
+
+    testAppendix2 = await db.models.templateAppendix.create({
+      ...CREATE_DATA2,
+      templateId: template.id,
+      projectId: nonManagerProject.id,
+    });
   });
 
   afterEach(async () => {
-    return testAppendix.destroy({force: true});
+    await testAppendix.destroy({force: true});
+    await testAppendix2.destroy({force: true});
   });
 
   describe('GET', () => {
@@ -104,6 +127,37 @@ describe('/appendix', () => {
       expect(res.body).not.toBeNull();
       checkTemplateAppendix(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
+    });
+
+    test('/ - 200 Success - by manager', async () => {
+      const res = await request
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({...UPDATE_DATA2})
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).not.toBeNull();
+      checkTemplateAppendix(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA2));
+    });
+
+    test('/ - 403 forbidden to manager without project membership', async () => {
+      await request
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${nonManagerProject.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .send({...UPDATE_DATA2})
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('/ - 403 forbidden to bioinformatician', async () => {
+      await request
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .send({...UPDATE_DATA2})
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/ - 500 Internal Server Error', async () => {
@@ -149,6 +203,38 @@ describe('/appendix', () => {
       });
       expect(result).not.toBeNull();
       expect(result.deletedAt).not.toBeNull();
+    });
+
+    test('/ - 204 No Content by manager', async () => {
+      await request
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify that the record was soft deleted
+      const result = await db.models.templateAppendix.findOne({
+        where: {id: testAppendix.id},
+        paranoid: false,
+      });
+      expect(result).not.toBeNull();
+      expect(result.deletedAt).not.toBeNull();
+    });
+
+    test('/ - 403 forbidden when manager does not have project membership', async () => {
+      await request
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${nonManagerProject.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('/ - 403 forbidden to bioinformatician', async () => {
+      await request
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/ - 500 Internal Server Error', async () => {
