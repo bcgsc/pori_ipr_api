@@ -96,11 +96,7 @@ describe('/reports/{REPORTID}', () => {
         name: 'TEST2',
       },
     });
-    offsetTestProject = await db.models.project.create({
-      where: {
-        name: `offset${stringify(randomUuid)}`,
-      }
-    })
+    offsetTestProject = await db.models.project.create({name: `offset${randomUuid.toString()}`})
 
     report = await db.models.report.create({
       templateId: template.id,
