@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
+const {v4: uuidv4} = require('uuid');
 const db = require('../../../app/models');
 
 const CONFIG = require('../../../app/config');
@@ -8,6 +9,8 @@ const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
+
+const NON_EXISTENT_PROJECT_ID = uuidv4();
 
 let server;
 let request;
@@ -46,7 +49,6 @@ beforeAll(async () => {
 describe('/appendix', () => {
   let template;
   let project;
-  let body;
   let testAppendix;
 
   beforeAll(async () => {
@@ -63,11 +65,6 @@ describe('/appendix', () => {
 
     // Create project
     project = await db.models.project.create({name: 'test-appendix-project'});
-
-    body = {
-      templateId: template.id,
-      projectId: project.id,
-    };
   });
 
   beforeEach(async () => {
@@ -85,10 +82,9 @@ describe('/appendix', () => {
   describe('GET', () => {
     test('/ - 200 Success', async () => {
       const res = await request
-        .get('/api/appendix')
+        .get(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send(body)
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
@@ -99,10 +95,10 @@ describe('/appendix', () => {
   describe('PUT', () => {
     test('/ - 200 Success', async () => {
       const res = await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send({...UPDATE_DATA, ...body})
+        .send({...UPDATE_DATA})
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
@@ -115,10 +111,9 @@ describe('/appendix', () => {
       await testAppendix.destroy();
 
       await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${NON_EXISTENT_PROJECT_ID}`)
         .send({
           text: '<h3>Updated Title</h3><p>Updated text</p>',
-          projectId: 0,
         })
         .auth(username, password)
         .type('json')
@@ -127,12 +122,11 @@ describe('/appendix', () => {
 
     test('/ - 400 Bad Request - Invalid type', async () => {
       await request
-        .put('/api/appendix')
+        .put(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .send({
           text: {
             data: 'TEST DATA',
           },
-          projectId: 0,
         })
         .auth(username, password)
         .type('json')
@@ -143,8 +137,7 @@ describe('/appendix', () => {
   describe('DELETE', () => {
     test('/ - 204 No Content', async () => {
       await request
-        .delete('/api/appendix')
-        .send(body)
+        .delete(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
@@ -163,8 +156,7 @@ describe('/appendix', () => {
       await testAppendix.destroy();
 
       await request
-        .delete('/api/appendix')
-        .send({projectId: 0})
+        .delete(`/api/appendix?projectId=${NON_EXISTENT_PROJECT_ID}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
