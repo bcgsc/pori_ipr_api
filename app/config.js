@@ -21,6 +21,8 @@ if (ENV === 'production') {
 
 const DEFAULT_TEST_USER = 'ipr-bamboo-admin';
 const DEFAULT_EMAIL_ADDRESS = 'PORIReportUpdates';
+const DEFAULT_TEST_MANAGER_USER = 'ipr-bamboo-manager';
+const DEFAULT_TEST_BIOINFORMATICIAN_USER = 'ipr-bamboo-bioinformatician';
 
 const DEFAULTS = {
   env: ENV,
@@ -46,6 +48,9 @@ const DEFAULTS = {
   },
   testing: {
     username: DEFAULT_TEST_USER,
+    managerUsername: DEFAULT_TEST_MANAGER_USER,
+    bioinformaticianUsername: DEFAULT_TEST_BIOINFORMATICIAN_USER,
+
   },
   email: {
     email: DEFAULT_EMAIL_ADDRESS,
@@ -141,6 +146,12 @@ const CONFIG = nconf
     },
     'testing.username': {
       alias: 'testing:username',
+    },
+    'testing.bioinformaticianUsername': {
+      alias: 'testing:bioinformaticianUsername',
+    },
+    'testing.managerUsername': {
+      alias: 'testing:managerUsername',
     },
     'email.email': {
       alias: 'email.email',
