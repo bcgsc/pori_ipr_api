@@ -170,6 +170,15 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       defaultValue: null,
     },
+    primaryProjectId: {
+      name: 'primaryProjectId',
+      field: 'primary_project_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'projects',
+        key: 'id',
+      },
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
