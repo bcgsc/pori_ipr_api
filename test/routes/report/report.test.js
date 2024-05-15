@@ -221,7 +221,7 @@ describe('/reports/{REPORTID}', () => {
 
   describe('GET', () => {
     // Test regular GET
-    test.skip('/ - 200 Success', async () => {
+    test('/ - 200 Success', async () => {
       const res = await request
         .get('/api/reports')
         .auth(username, password)
@@ -232,7 +232,7 @@ describe('/reports/{REPORTID}', () => {
     }, LONGER_TIMEOUT);
 
     // Test GET with paginated
-    test.skip('/ - paginated - 400 Bad Request', async () => {
+    test('/ - paginated - 400 Bad Request', async () => {
       await request
         .get('/api/reports?paginated=NOT_BOOLEAN')
         .auth(username, password)
@@ -240,7 +240,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test.skip('/ - 200 GET non-production reports with "non-production access" group', async () => {
+    test('/ - 200 GET non-production reports with "non-production access" group', async () => {
       const res = await request
         .get('/api/reports')
         .query({
@@ -255,7 +255,7 @@ describe('/reports/{REPORTID}', () => {
       expect(checkState(res.body.reports, 'nonproduction')).toBeTruthy();
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
+    test('/ - 200 NOT GET non-production reports with non-authorized group', async () => {
       const res = await request
         .get('/api/reports')
         .query({
@@ -270,7 +270,7 @@ describe('/reports/{REPORTID}', () => {
       expect(checkState(res.body.reports, 'nonproduction')).not.toBeTruthy();
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - 200 GET report if have additional report permission', async () => {
+    test('/ - 200 GET report if have additional report permission', async () => {
       const res = await request
         .get('/api/reports')
         .query({
@@ -289,7 +289,7 @@ describe('/reports/{REPORTID}', () => {
       ).length > 0).toBeTruthy();
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - 200 GET unreviewed reports with "unreviewed access" group', async () => {
+    test('/ - 200 GET unreviewed reports with "unreviewed access" group', async () => {
       const res = await request
         .get('/api/reports')
         .query({
@@ -304,7 +304,7 @@ describe('/reports/{REPORTID}', () => {
       expect(checkState(res.body.reports, 'ready')).toBeTruthy();
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - 200 NOT GET unreviewed reports with non-authorized group', async () => {
+    test('/ - 200 NOT GET unreviewed reports with non-authorized group', async () => {
       const res = await request
         .get('/api/reports')
         .query({
@@ -320,7 +320,7 @@ describe('/reports/{REPORTID}', () => {
     }, LONGER_TIMEOUT);
 
     // Test GET with limit
-    test.skip('/ - limit - 200 Success', async () => {
+    test('/ - limit - 200 Success', async () => {
       const res = await request
         .get('/api/reports?paginated=true&limit=4')
         .auth(username, password)
@@ -331,7 +331,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.reports.length).toBeLessThanOrEqual(4);
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - limit - 400 Bad Request', async () => {
+    test('/ - limit - 400 Bad Request', async () => {
       await request
         .get('/api/reports?paginated=true&limit=NOT_INTEGER')
         .auth(username, password)
@@ -339,7 +339,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test.skip('/ - offset - 200 Success', async () => {
+    test('/ - offset - 200 Success', async () => {
       const totalOffsetReports = 5;
       const res = await request
         .get(`/api/reports?project=${offsetTestProject.name}&paginated=true&offset=${totalOffsetReports - 3}`)
@@ -351,7 +351,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.reports.length).toBe(3);
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - offset - 400 Bad Request', async () => {
+    test('/ - offset - 400 Bad Request', async () => {
       await request
         .get('/api/reports?paginated=true&offset=NOT_INTEGER')
         .auth(username, password)
@@ -360,7 +360,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     // Test GET with sort
-    test.skip('/ - sort - 200 Success', async () => {
+    test('/ - sort - 200 Success', async () => {
       const res = await request
         .get('/api/reports?sort=patientId:desc')
         .auth(username, password)
@@ -371,7 +371,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.reports[0].patientId).toEqual(res.body.reports[1].patientId);
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - sort - 400 Bad Request', async () => {
+    test('/ - sort - 400 Bad Request', async () => {
       await request
         .get('/api/reports?sort=INVALID_FIELD:desc')
         .auth(username, password)
@@ -380,7 +380,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     // Test GET with project
-    test.skip('/ - project - 200 Success', async () => {
+    test('/ - project - 200 Success', async () => {
       const res = await request
         .get('/api/reports?project=TEST')
         .auth(username, password)
@@ -396,7 +396,7 @@ describe('/reports/{REPORTID}', () => {
       ]));
     });
 
-    test.skip('/ - project - 403 Forbidden', async () => {
+    test('/ - project - 403 Forbidden', async () => {
       await request
         .get('/api/reports?project=SUPER-SECURE')
         .auth(username, password)
@@ -405,7 +405,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     // Test GET with states
-    test.skip('/ - states - 200 Success', async () => {
+    test('/ - states - 200 Success', async () => {
       const res = await request
         .get('/api/reports?states=ready')
         .auth(username, password)
@@ -419,7 +419,7 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - states - 400 Bad Request', async () => {
+    test('/ - states - 400 Bad Request', async () => {
       await request
         .get('/api/reports?states=INVALID_STATE')
         .auth(username, password)
@@ -428,7 +428,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     // Test GET with role
-    test.skip('/ - role - 200 Success', async () => {
+    test('/ - role - 200 Success', async () => {
       const res = await request
         .get('/api/reports?role=clinician')
         .auth(username, password)
@@ -440,7 +440,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.reports).toEqual([]);
     }, LONGER_TIMEOUT);
 
-    test.skip('/ - role - 400 Bad Request', async () => {
+    test('/ - role - 400 Bad Request', async () => {
       await request
         .get('/api/reports?role=INVALID_ROLE')
         .auth(username, password)
@@ -449,7 +449,7 @@ describe('/reports/{REPORTID}', () => {
     });
 
     // Test GET with search text
-    test.skip('/ - search text - 200 Success', async () => {
+    test('/ - search text - 200 Success', async () => {
       const res = await request
         .get('/api/reports?searchText=UPLOADPAT01')
         .auth(username, password)
@@ -463,7 +463,7 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
-    test.skip('fetches known ident ok', async () => {
+    test('fetches known ident ok', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}`)
         .auth(username, password)
@@ -473,7 +473,7 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
-    test.skip('fetches additional project permission ok', async () => {
+    test('fetches additional project permission ok', async () => {
       const res = await request
         .get(`/api/reports/${reportDualProj.ident}`)
         .query({
@@ -487,7 +487,7 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
-    test.skip('fetches non-production ident with group OK', async () => {
+    test('fetches non-production ident with group OK', async () => {
       const res = await request
         .get(`/api/reports/${reportNonProduction.ident}`)
         .query({
@@ -501,7 +501,7 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
-    test.skip('error on non-production ident with wrong group', async () => {
+    test('error on non-production ident with wrong group', async () => {
       await request
         .get(`/api/reports/${reportNonProduction.ident}`)
         .query({
@@ -513,7 +513,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
-    test.skip('fetches unreviewed ident with group OK', async () => {
+    test('fetches unreviewed ident with group OK', async () => {
       const res = await request
         .get(`/api/reports/${reportReady.ident}`)
         .query({
@@ -527,7 +527,7 @@ describe('/reports/{REPORTID}', () => {
       checkReport(res.body);
     });
 
-    test.skip('error on unreviewed ident with wrong group', async () => {
+    test('error on unreviewed ident with wrong group', async () => {
       await request
         .get(`/api/reports/${reportReady.ident}`)
         .query({
@@ -558,7 +558,7 @@ describe('/reports/{REPORTID}', () => {
       expect(allPresent).toBeTruthy();
     });
 
-    test.skip('State querying is OK', async () => {
+    test('State querying is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
         .get('/api/reports')
@@ -572,7 +572,7 @@ describe('/reports/{REPORTID}', () => {
       });
     });
 
-    test.skip('Multiple queries is OK', async () => {
+    test('Multiple queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
         .get('/api/reports')
@@ -592,7 +592,7 @@ describe('/reports/{REPORTID}', () => {
       });
     });
 
-    test.skip('error on non-existant ident', async () => {
+    test('error on non-existant ident', async () => {
       await request
         .get(`/api/reports/${randomUuid}`)
         .auth(username, password)
@@ -602,7 +602,7 @@ describe('/reports/{REPORTID}', () => {
   });
 
   describe('PUT', () => {
-    test.skip('state updated to ready when reviewed OK', async () => {
+    test('state updated to ready when reviewed OK', async () => {
       const res = await request
         .put(`/api/reports/${reportReviewed.ident}`)
         .auth(username, password)
@@ -616,7 +616,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('state', 'ready');
     });
 
-    test.skip('state NOT updated to ready when NOT reviewed OK', async () => {
+    test('state NOT updated to ready when NOT reviewed OK', async () => {
       const res = await request
         .put(`/api/reports/${reportCompleted.ident}`)
         .auth(username, password)
@@ -630,7 +630,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('state', 'completed');
     });
 
-    test.skip('tumour content update OK', async () => {
+    test('tumour content update OK', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
@@ -644,7 +644,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
-    test.skip('completed report update OK', async () => {
+    test('completed report update OK', async () => {
       const res = await request
         .put(`/api/reports/${reportCompleted.ident}`)
         .auth(username, password)
@@ -658,7 +658,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('tumourContent', 23.2);
     });
 
-    test.skip('completed report update FORBIDDEN', async () => {
+    test('completed report update FORBIDDEN', async () => {
       await request
         .put(`/api/reports/${reportCompleted.ident}`)
         .query({
@@ -673,7 +673,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
     });
 
-    test.skip('M1M2 Score update OK', async () => {
+    test('M1M2 Score update OK', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
@@ -687,7 +687,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('m1m2Score', 98.5);
     });
 
-    test.skip('ploidy update OK', async () => {
+    test('ploidy update OK', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
@@ -701,7 +701,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('ploidy', 'triploid');
     });
 
-    test.skip('subtyping update OK', async () => {
+    test('subtyping update OK', async () => {
       const res = await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
@@ -715,7 +715,7 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body).toHaveProperty('subtyping', 'ER positive');
     });
 
-    test.skip('error on unexpected value', async () => {
+    test('error on unexpected value', async () => {
       await request
         .put(`/api/reports/${report.ident}`)
         .auth(username, password)
