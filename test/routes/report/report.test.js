@@ -1,6 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 
-const {v4: uuidv4, stringify} = require('uuid');
+const {v4: uuidv4} = require('uuid');
 const supertest = require('supertest');
 const getPort = require('get-port');
 const db = require('../../../app/models');
@@ -74,7 +74,6 @@ describe('/reports/{REPORTID}', () => {
   let reportReviewed;
   let reportCompleted;
   let reportNonProduction;
-  let totalReports;
   let report2;
   let reportReady2;
   let reportReviewed2;
@@ -96,7 +95,7 @@ describe('/reports/{REPORTID}', () => {
         name: 'TEST2',
       },
     });
-    offsetTestProject = await db.models.project.create({name: `offset${randomUuid.toString()}`})
+    offsetTestProject = await db.models.project.create({name: `offset${randomUuid.toString()}`});
 
     report = await db.models.report.create({
       templateId: template.id,
@@ -218,8 +217,6 @@ describe('/reports/{REPORTID}', () => {
       reportId: reportCompleted2.id,
       project_id: offsetTestProject.id,
     });
-
-    totalReports = await db.models.report.count();
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -352,7 +349,6 @@ describe('/reports/{REPORTID}', () => {
 
       checkReports(res.body.reports);
       expect(res.body.reports.length).toBe(3);
-
     }, LONGER_TIMEOUT);
 
     test('/ - offset - 400 Bad Request', async () => {
@@ -546,7 +542,7 @@ describe('/reports/{REPORTID}', () => {
     test.skip('No queries is OK', async () => {
       // TODO: Add checks when https://www.bcgsc.ca/jira/browse/DEVSU-1273 is done
       const res = await request
-        .get(`/api/reports`)
+        .get('/api/reports')
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -554,15 +550,14 @@ describe('/reports/{REPORTID}', () => {
       // when multiple report-generating test modules are running simultaneously
       // the full content of res.body can't be guaranteed; restrict checks to
       // tests created for this module
-      const expectedReports = [report,reportReady,reportReviewed,reportCompleted,reportNonProduction,report2,reportReady2,reportReviewed2,reportCompleted2,reportNonProduction2,reportDualProj]
+      const expectedReports = [report, reportReady, reportReviewed, reportCompleted, reportNonProduction, report2, reportReady2, reportReviewed2, reportCompleted2, reportNonProduction2, reportDualProj];
       expect(res.body.total).toBeGreaterThanOrEqual(expectedReports.length);
 
-      const expectedIds = (expectedReports).map((elem)=> {return elem.id});
-      const foundIds = (res.body).map((elem)=> {return elem.id});
+      const expectedIds = (expectedReports).map((elem) => {return elem.id;});
+      const foundIds = (res.body).map((elem) => {return elem.id;});
 
-      const allPresent = expectedIds.every(elem => foundIds.includes(elem));
-      expect(allPresent).to.be.true;
-
+      const allPresent = expectedIds.every((elem) => {return foundIds.includes(elem);});
+      expect(allPresent).toBeTruthy();
     });
 
     test('State querying is OK', async () => {
