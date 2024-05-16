@@ -54,7 +54,20 @@ router.route('/:target([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target update request ${error}`}});
     }
 
+    if ((req.body.gene || req.body.gene_graphkb_id) && (req.body.signature || req.body.signature_graphkb_id)) {
+      const msg = 'Can not set both signature and gene values in therapeutics target table';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
+    }
+
     try {
+      if (req.body.gene || req.body.gene_graphkb_id) {
+        req.body.signature = null;
+        req.body.signatureGraphkbId = null;
+      } else if (req.body.signature || req.body.signature_graphkb_id) {
+        req.body.gene = null;
+        req.body.geneGraphkbId = null;
+      }
       await req.target.update(req.body, {userId: req.user.id});
       return res.json(req.target.view('public'));
     } catch (error) {
@@ -94,13 +107,18 @@ router.route('/')
   .post(async (req, res) => {
     // Create new entry
     const {report: {id: reportId}, body} = req;
-
     // Validate request against schema
     try {
       validateAgainstSchema(createSchema, body);
     } catch (error) {
       logger.error(`Error while validating target create request ${error}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Error while validating target create request ${error}`}});
+    }
+
+    if ((req.body.gene || req.body.gene_graphkb_id) && (req.body.signature || req.body.signature_graphkb_id)) {
+      const msg = 'Can not set both signature and gene values in therapeutics target table';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
     }
 
     try {
