@@ -63,8 +63,8 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
-  const NON_PROD_ACCESS = 'Non-Production Access';
-  const UNREVIEWED_ACCESS = 'Unreviewed Access';
+  const NON_PROD_ACCESS = 'non-production Access';
+  const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   let project;
   let project2;
