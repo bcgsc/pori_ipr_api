@@ -38,7 +38,7 @@ beforeAll(async () => {
 
   const [bioinformaticianGroup] = await db.models.userGroup.findOrCreate({
     where: {
-      name: 'Bioinformatician',
+      name: 'bioinformatician',
       owner_id: adminUser.id,
     },
   });
