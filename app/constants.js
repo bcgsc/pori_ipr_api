@@ -50,7 +50,8 @@ module.exports = {
   DEFAULT_LOGO_WIDTH: 64,
   DEFAULT_HEADER_HEIGHT: 96,
   DEFAULT_HEADER_WIDTH: 300,
-  MASTER_ACCESS: ['admin', 'manager'],
+  MASTER_ACCESS: ['admin'],
+  MANAGER_ACCESS: ['admin', 'manager'],
   MASTER_REPORT_ACCESS: ['admin', 'manager', 'report manager'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
 };
