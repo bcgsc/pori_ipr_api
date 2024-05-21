@@ -201,6 +201,7 @@ module.exports = {
   hasAccessToUnreviewedReports,
   hasAccessToGermlineReports,
   hasMasterAccess,
+  hasManagerAccess,
   projectAccess,
   isIntersectionBy,
 };
