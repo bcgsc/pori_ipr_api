@@ -115,7 +115,6 @@ module.exports = async (req, res, next) => {
     ).json({error: {message: 'User does not have access to Germline reports'}});
   }
 
-  const ug = (req.user.groups).map(elem => elem.name);
   if (req.report) {
     // check if user is bound to report depending on report type
     let boundUser;
