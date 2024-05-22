@@ -1,5 +1,5 @@
 const sanitize = require('sanitize-html');
-const {MASTER_ACCESS} = require('../constants');
+const {MASTER_ACCESS, MANAGER_ACCESS} = require('../constants');
 
 /**
  * Checks that all target values exist
@@ -151,6 +151,16 @@ const hasMasterAccess = (user) => {
 };
 
 /**
+ * Checks if user has manager access
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has master access
+ */
+const hasManagerAccess = (user) => {
+  return hasAccess(user, MANAGER_ACCESS);
+};
+
+/**
  * Checks if user has access to the project
  * that the report belongs to
  *
@@ -191,6 +201,7 @@ module.exports = {
   hasAccessToUnreviewedReports,
   hasAccessToGermlineReports,
   hasMasterAccess,
+  hasManagerAccess,
   projectAccess,
   isIntersectionBy,
 };

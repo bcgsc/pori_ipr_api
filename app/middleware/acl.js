@@ -1,7 +1,7 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
 const {
-  isAdmin, isManager, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
+  isAdmin, isManager, isIntersectionBy, hasAccess, hasManagerAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
 const db = require('../models');
@@ -79,7 +79,7 @@ module.exports = async (req, res, next) => {
   }
 
   try {
-    if (req.query.clinician_view && hasMasterAccess(req.user)) {
+    if (req.query.clinician_view && hasManagerAccess(req.user)) {
       req.user.groups = [{name: 'Clinician'}];
     }
   } catch {
@@ -161,7 +161,7 @@ module.exports = async (req, res, next) => {
     }
 
     // Allow users to edit themselves for allowNotifications field
-    if ((UPDATE_METHODS.includes(req.method) && !hasMasterAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
+    if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},
