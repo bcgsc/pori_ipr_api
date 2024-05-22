@@ -39,12 +39,23 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/templates'),
-    POST: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/templates/:template'),
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
   },
   {
     path: pathToRegexp('/api/template/:template'),
-    PUT: [{name: 'admin'}, {name: 'manager'}],
-    DELETE: [{name: 'admin'}, {name: 'manager'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/appendix'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
   },
   {
     path: pathToRegexp('/api/project'),
@@ -104,6 +115,7 @@ module.exports = async (req, res, next) => {
     ).json({error: {message: 'User does not have access to Germline reports'}});
   }
 
+  const ug = (req.user.groups).map(elem => elem.name);
   if (req.report) {
     // check if user is bound to report depending on report type
     let boundUser;
