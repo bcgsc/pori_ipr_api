@@ -39,7 +39,6 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/templates'),
-    GET: [{name: 'admin'}, {name: 'manager'}],
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
