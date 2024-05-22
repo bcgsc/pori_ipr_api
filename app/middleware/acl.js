@@ -14,6 +14,10 @@ const SPECIAL_CASES = [
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
+    path: pathToRegexp('/api/user/me'),
+    GET: ['*'],
+  },
+  {
     path: pathToRegexp('/api/user/:user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
     PUT: [{name: 'admin'}, {name: 'manager'}],
