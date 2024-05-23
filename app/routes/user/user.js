@@ -7,7 +7,7 @@ const logger = require('../../log');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {createSchema, updateSchema} = require('../../schemas/user');
+const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
 
 const router = express.Router({mergeParams: true});
 
@@ -61,6 +61,30 @@ router.param('userByIdent', async (req, res, next, ident) => {
   req.userByIdent = result;
   return next();
 });
+
+// Routes for operating on a notifications of a single user
+router.route('/:userByIdent([A-z0-9-]{36})/notifications')
+  .put(async (req, res) => {
+    try {
+      // Validate input
+      validateAgainstSchema(notificationUpdateSchema, req.body, false);
+    } catch (error) {
+      const message = `There was an error validating the user notification update request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    try {
+      await req.userByIdent.update(req.body, {userId: req.user.id});
+      await req.userByIdent.reload();
+      return res.json(req.userByIdent.view('public'));
+    } catch (error) {
+      logger.error(`Error while trying to update user notifications ${req.userByIdent.username} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to update user notifications'},
+      });
+    }
+  });
 
 // Routes for operating on a single user
 router.route('/:userByIdent([A-z0-9-]{36})')
