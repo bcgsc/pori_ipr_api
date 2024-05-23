@@ -18,6 +18,10 @@ const SPECIAL_CASES = [
     GET: ['*'],
   },
   {
+    path: pathToRegexp('/api/user/:user/notifications'),
+    PUT: ['*'],
+  },
+  {
     path: pathToRegexp('/api/user/:user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
     PUT: [{name: 'admin'}, {name: 'manager'}],
