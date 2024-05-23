@@ -25,7 +25,12 @@ const updateSchema = schemaGenerator(db.models.user, {
   baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId'], nothingRequired: true,
 });
 
+const notificationUpdateSchema = schemaGenerator(db.models.user, {
+  baseUri: '/update', exclude: [...BASE_EXCLUDE, 'logoId', 'headerId', 'firstName', 'email', 'lastName', 'username'], required: ['allowNotifications'],
+});
+
 module.exports = {
   createSchema,
   updateSchema,
+  notificationUpdateSchema,
 };
