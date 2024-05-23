@@ -19,7 +19,7 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/user/:user/notifications'),
-    PUT: [{'*'}],
+    PUT: ['*'],
   },
   {
     path: pathToRegexp('/api/user/:user'),
