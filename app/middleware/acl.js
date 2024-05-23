@@ -180,7 +180,6 @@ module.exports = async (req, res, next) => {
 
     // Allow users to edit themselves for allowNotifications field
     if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
-      console.dir(req.body);
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},
