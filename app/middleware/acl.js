@@ -14,6 +14,10 @@ const SPECIAL_CASES = [
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
+    path: pathToRegexp('/api/user/me'),
+    GET: ['*'],
+  },
+  {
     path: pathToRegexp('/api/user/:user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
     PUT: [{name: 'admin'}, {name: 'manager'}],
@@ -35,13 +39,23 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/templates'),
-    GET: [{name: 'admin'}, {name: 'manager'}],
-    POST: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/templates/:template'),
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
   },
   {
     path: pathToRegexp('/api/template/:template'),
-    PUT: [{name: 'admin'}, {name: 'manager'}],
-    DELETE: [{name: 'admin'}, {name: 'manager'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/appendix'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
   },
   {
     path: pathToRegexp('/api/project'),

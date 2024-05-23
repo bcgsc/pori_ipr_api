@@ -1,5 +1,5 @@
 const sanitize = require('sanitize-html');
-const {MASTER_ACCESS, MANAGER_ACCESS} = require('../constants');
+const {MASTER_ACCESS, MANAGER_ACCESS, ALL_PROJECTS_ACCESS} = require('../constants');
 
 /**
  * Checks that all target values exist
@@ -161,6 +161,16 @@ const hasManagerAccess = (user) => {
 };
 
 /**
+ * Checks if user has all-projects access
+ *
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has all-projects access
+ */
+const hasAllProjectsAccess = (user) => {
+  return hasAccess(user, ALL_PROJECTS_ACCESS);
+};
+
+/**
  * Checks if user has access to the project
  * that the report belongs to
  *
@@ -169,7 +179,7 @@ const hasManagerAccess = (user) => {
  * @returns {boolean} - Returns true if user is allowed to access report
  */
 const projectAccess = (user, report) => {
-  if (hasMasterAccess(user)) {
+  if (hasMasterAccess(user) || hasAllProjectsAccess(user)) {
     return true;
   }
   return isIntersectionBy(user.projects, report.projects, 'ident');
@@ -183,7 +193,7 @@ const projectAccess = (user, report) => {
  * @returns {Array<string>} - Returns an array of projects
  */
 const getUserProjects = async (project, user) => {
-  if (hasMasterAccess(user)) {
+  if (hasMasterAccess(user) || hasAllProjectsAccess(user)) {
     return project.scope('public').findAll();
   }
 
@@ -202,6 +212,7 @@ module.exports = {
   hasAccessToGermlineReports,
   hasMasterAccess,
   hasManagerAccess,
+  hasAllProjectsAccess,
   projectAccess,
   isIntersectionBy,
 };

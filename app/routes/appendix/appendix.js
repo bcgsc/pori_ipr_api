@@ -6,7 +6,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const {sanitizeHtml, isAdmin} = require('../../libs/helperFunctions');
+const {sanitizeHtml, isAdmin, hasAllProjectsAccess} = require('../../libs/helperFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -104,7 +104,7 @@ router.route('/')
 
     const userProjects = (req.user.projects).map((elem) => {return elem.name;});
     // if user is manager and does not have the project id for this appendix
-    if (!isAdmin(req.user) && !userProjects.includes(req.templateAppendix.project?.name)) {
+    if (!isAdmin(req.user) && !hasAllProjectsAccess(req.user) && !userProjects.includes(req.templateAppendix.project?.name)) {
       const msg = 'Non-admin user can not edit template text without project membership';
       logger.error(msg);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {msg}});
@@ -130,7 +130,7 @@ router.route('/')
     // Soft delete template appendix
     const userProjects = (req.user.projects).map((elem) => {return elem.name;});
     // if user is manager and does not have the project id for this appendix
-    if (!isAdmin(req.user) && !userProjects.includes(req.templateAppendix.project?.name)) {
+    if (!isAdmin(req.user) && !hasAllProjectsAccess(req.user) && !userProjects.includes(req.templateAppendix.project?.name)) {
       const msg = 'Non-admin user can not delete template text without project membership';
       logger.error(msg);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {msg}});
