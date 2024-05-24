@@ -101,7 +101,7 @@ router.route('/')
           return project.ident;
         }),
       },
-      group: ['project.id', 'users.id'],
+      group: ['project.id', 'users.id', 'users.username', 'users.email', 'users.firstName', 'users.lastName', 'users.allow_notifications', 'users.type', 'users.ident', 'users.updated_at', 'users.created_at'],
     };
 
     try {
