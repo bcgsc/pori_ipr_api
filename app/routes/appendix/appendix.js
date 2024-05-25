@@ -75,6 +75,22 @@ router.use('/', async (req, res, next) => {
                   {model: db.models.project.scope('public'), as: 'project'}],
         });
       }
+
+      // Throw an error for a POST when a template appendix already exists
+      if (req.templateAppendix && req.method === 'POST') {
+        if (req.project) {
+          const msg = `Template appendix already exists for ${req.template.name} for project ${req.project.name}`;
+          logger.error(msg);
+          return res.status(HTTP_STATUS.CONFLICT).json({
+            error: {message: msg},
+          });
+        }
+        const msg = `Non-project specific template appendix already exists for ${req.template.name}`;
+        logger.error(msg);
+        return res.status(HTTP_STATUS.CONFLICT).json({
+          error: {message: msg},
+        });
+      }
     }
   } catch (error) {
     logger.error(`Unable to get template appendix ${error}`);
@@ -90,7 +106,53 @@ router.route('/')
     if (!req.templateAppendix.length) {
       return res.json(req.templateAppendix.view('public'));
     }
+
     return res.json(req.templateAppendix);
+  })
+  .post(async (req, res) => {
+    try {
+      validateAgainstSchema(updateSchema, req.body, false);
+    } catch (error) {
+      const message = `Error while validating template appendix update request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    const userProjects = (req.user.projects).map((elem) => {return elem.name;});
+    // if user is manager and does not have the project id for this appendix
+    if (!isAdmin(req.user) && !hasAllProjectsAccess(req.user) && !userProjects.includes(req.project?.name)) {
+      const msg = 'Non-admin user can not create template text without project membership';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {msg}});
+    }
+
+    // Sanitize text
+    if (req.body.text) {
+      req.body.text = sanitizeHtml(req.body.text);
+    }
+
+    // Create new entry in db
+    try {
+      let result;
+      if (req.project) {
+        result = await db.models.templateAppendix.create({
+          ...req.body,
+          templateId: req.template.id,
+          projectId: req.project.id,
+        });
+      } else {
+        result = await db.models.templateAppendix.create({
+          ...req.body,
+          templateId: req.template.id,
+        });
+      }
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
+    } catch (error) {
+      logger.error(`Unable to create template appendix ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create template appendix'},
+      });
+    }
   })
   .put(async (req, res) => {
     // Validate request against schema
