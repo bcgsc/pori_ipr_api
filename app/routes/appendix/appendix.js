@@ -40,7 +40,8 @@ router.use('/', async (req, res, next) => {
       } else {
         req.templateId = null;
       }
-      if (projectId !== 'null') {
+
+      if (projectId !== 'null' && projectId) {
         req.project = await db.models.project.findOne({
           where:
             {ident: projectId},
@@ -61,6 +62,7 @@ router.use('/', async (req, res, next) => {
               [{model: db.models.template.scope('minimal'), as: 'template'},
                 {model: db.models.project.scope('public'), as: 'project'}],
       });
+
       // when there is no template with specific project id
       if (!req.templateAppendix) {
         req.templateAppendix = await db.models.templateAppendix.findOne({
@@ -68,6 +70,7 @@ router.use('/', async (req, res, next) => {
                 {
                   [Op.and]: [
                     {templateId: req.template.id},
+                    {projectId: null},
                   ],
                 },
           include:
