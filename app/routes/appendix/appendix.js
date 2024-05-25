@@ -64,7 +64,7 @@ router.use('/', async (req, res, next) => {
       });
 
       // when there is no template with specific project id
-      if (!req.templateAppendix) {
+      if (!req.templateAppendix && !req.projectId) {
         req.templateAppendix = await db.models.templateAppendix.findOne({
           where:
                 {
