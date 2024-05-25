@@ -51,8 +51,6 @@ module.exports = (sequelize, Sq) => {
           },
         },
       ],
-    },
-    {
       ...DEFAULT_OPTIONS,
       tableName: 'templates_appendix',
       scopes: {
