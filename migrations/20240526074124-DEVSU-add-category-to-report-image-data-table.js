@@ -11,6 +11,22 @@ module.exports = {
         },
         {transaction},
       );
+      await queryInterface.addColumn(
+        TABLE,
+        'height',
+        {
+          type: Sq.INTEGER,
+        },
+        {transaction},
+      );
+      await queryInterface.addColumn(
+        TABLE,
+        'width',
+        {
+          type: Sq.INTEGER,
+        },
+        {transaction},
+      );
     });
   },
 

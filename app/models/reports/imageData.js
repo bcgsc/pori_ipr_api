@@ -39,6 +39,12 @@ module.exports = (sequelize, Sq) => {
       category: {
         type: Sq.TEXT,
       },
+      height: {
+        type: Sq.INTEGER,
+      },
+      width: {
+        type: Sq.INTEGER,
+      },
     },
     {
       ...DEFAULT_REPORT_OPTIONS,
