@@ -36,6 +36,9 @@ module.exports = (sequelize, Sq) => {
       caption: {
         type: Sq.TEXT,
       },
+      category: {
+        type: Sq.TEXT,
+      },
     },
     {
       ...DEFAULT_REPORT_OPTIONS,
