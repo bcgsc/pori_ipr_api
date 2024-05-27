@@ -104,12 +104,8 @@ describe('/appendix', () => {
 
   describe('GET', () => {
     test('/ - 200 Success with project/template combo', async () => {
-      const template1 = await db.models.template.create({name: 'Test Template1',
-        organization: 'Test Org',
-        sections: ['microbial']});
-
-      const res = await request
-        .get(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+const res = await request
+        .get(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
