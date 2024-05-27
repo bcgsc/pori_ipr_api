@@ -35,6 +35,10 @@ const templateAppendixProperties = [
   'ident', 'createdAt', 'updatedAt', 'text',
 ];
 
+const get_template_name = () => {
+  return uuidv4()
+};
+
 const checkTemplateAppendix = (appendixObject) => {
   templateAppendixProperties.forEach((element) => {
     expect(appendixObject).toHaveProperty(element);
@@ -117,7 +121,7 @@ describe('/appendix', () => {
 
   describe('POST', () => {
     test('/ - 200 Success with project/template combo', async () => {
-      const template1 = await db.models.template.create({name: 'Test Template1',
+      const template1 = await db.models.template.create({name:  get_template_name(),
         organization: 'Test Org',
         sections: ['summary', 'microbial'],
       });
@@ -135,7 +139,7 @@ describe('/appendix', () => {
 
     // TODO failing
     test('/ - 200 Success with null-project/template combo', async () => {
-      const template2 = await db.models.template.create({name: 'Test Template2',
+      const template2 = await db.models.template.create({name:  get_template_name(),
         organization: 'Test Org',
         sections: ['summary', 'microbial']
       });
@@ -152,7 +156,7 @@ describe('/appendix', () => {
 
     // TODO failing
     test('/ - 200 Success - by manager', async () => {
-      const template1 = await db.models.template.create({name: 'Test Template23',
+      const template1 = await db.models.template.create({name:  get_template_name(),
         organization: 'Test Org1',
         sections: ['microbial']});
 
@@ -170,7 +174,7 @@ describe('/appendix', () => {
     });
 
     test('/ - 400 bad request due to non-unique project/template combo', async () => {
-      const template2 = await db.models.template.create({name: 'Test Template24',
+      const template2 = await db.models.template.create({name: get_template_name(),
         organization: 'Test Org',
         sections: ['microbial']});
 
@@ -194,7 +198,7 @@ describe('/appendix', () => {
 
     // TODO failing
     test('/ - 400 bad request due to non-unique default template text', async () => {
-      const template2 = await db.models.template.create({name: 'Test Template3',
+      const template2 = await db.models.template.create({name: get_template_name(),
         organization: 'Test Org',
         sections: ['microbial']});
 

@@ -81,7 +81,6 @@ router.use('/', async (req, res, next) => {
 
       // Throw an error for a POST when a template appendix already exists
       if (req.templateAppendix && req.method === 'POST') {
-        console.dir(templateAppendix);
         if (req.project) {
           const msg = `Template appendix already exists for ${req.template.name} for project ${req.project.name}`;
           logger.error(msg);
