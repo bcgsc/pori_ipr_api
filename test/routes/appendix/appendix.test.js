@@ -35,10 +35,6 @@ const templateAppendixProperties = [
   'ident', 'createdAt', 'updatedAt', 'text',
 ];
 
-const get_template_name = () => {
-  return uuidv4()
-};
-
 const checkTemplateAppendix = (appendixObject) => {
   templateAppendixProperties.forEach((element) => {
     expect(appendixObject).toHaveProperty(element);
@@ -121,10 +117,9 @@ describe('/appendix', () => {
 
   describe('POST', () => {
     test('/ - 200 Success with project/template combo', async () => {
-      const template1 = await db.models.template.create({name:  get_template_name(),
+      const template1 = await db.models.template.create({name: uuidv4(),
         organization: 'Test Org',
-        sections: ['summary', 'microbial'],
-      });
+        sections: ['summary', 'microbial']});
 
       const res = await request
         .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
@@ -139,10 +134,9 @@ describe('/appendix', () => {
 
     // TODO failing
     test('/ - 200 Success with null-project/template combo', async () => {
-      const template2 = await db.models.template.create({name:  get_template_name(),
+      const template2 = await db.models.template.create({name: uuidv4(),
         organization: 'Test Org',
-        sections: ['summary', 'microbial']
-      });
+        sections: ['summary', 'microbial']});
       const res = await request
         .post(`/api/appendix?templateId=${template2.ident}`)
         .auth(username, password)
@@ -156,7 +150,7 @@ describe('/appendix', () => {
 
     // TODO failing
     test('/ - 200 Success - by manager', async () => {
-      const template1 = await db.models.template.create({name:  get_template_name(),
+      const template1 = await db.models.template.create({name: uuidv4(),
         organization: 'Test Org1',
         sections: ['microbial']});
 
@@ -174,7 +168,7 @@ describe('/appendix', () => {
     });
 
     test('/ - 400 bad request due to non-unique project/template combo', async () => {
-      const template2 = await db.models.template.create({name: get_template_name(),
+      const template2 = await db.models.template.create({name: uuidv4(),
         organization: 'Test Org',
         sections: ['microbial']});
 
@@ -198,7 +192,7 @@ describe('/appendix', () => {
 
     // TODO failing
     test('/ - 400 bad request due to non-unique default template text', async () => {
-      const template2 = await db.models.template.create({name: get_template_name(),
+      const template2 = await db.models.template.create({name: uuidv4(),
         organization: 'Test Org',
         sections: ['microbial']});
 
