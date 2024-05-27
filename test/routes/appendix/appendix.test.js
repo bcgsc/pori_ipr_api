@@ -119,7 +119,8 @@ describe('/appendix', () => {
     test('/ - 200 Success with project/template combo', async () => {
       const template1 = await db.models.template.create({name: 'Test Template1',
         organization: 'Test Org',
-        sections: ['microbial']});
+        sections: ['summary', 'microbial'],
+      });
 
       const res = await request
         .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
@@ -132,12 +133,12 @@ describe('/appendix', () => {
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
+    // TODO failing
     test('/ - 200 Success with null-project/template combo', async () => {
       const template2 = await db.models.template.create({name: 'Test Template2',
         organization: 'Test Org',
-        sections: ['microbial']});
-      console.log('here at 139');
-      console.dir(template2);
+        sections: ['summary', 'microbial']
+      });
       const res = await request
         .post(`/api/appendix?templateId=${template2.ident}`)
         .auth(username, password)
@@ -149,8 +150,9 @@ describe('/appendix', () => {
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
+    // TODO failing
     test('/ - 200 Success - by manager', async () => {
-      const template1 = await db.models.template.create({name: 'Test Template2',
+      const template1 = await db.models.template.create({name: 'Test Template23',
         organization: 'Test Org1',
         sections: ['microbial']});
 
@@ -190,6 +192,7 @@ describe('/appendix', () => {
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
+    // TODO failing
     test('/ - 400 bad request due to non-unique default template text', async () => {
       const template2 = await db.models.template.create({name: 'Test Template3',
         organization: 'Test Org',

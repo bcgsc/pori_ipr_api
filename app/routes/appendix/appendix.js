@@ -32,6 +32,7 @@ router.use('/', async (req, res, next) => {
       ]});
     } else {
       if (templateId !== 'null') {
+        console.dir(templateId);
         req.template = await db.models.template.findOne({
           where:
             {ident: templateId},
@@ -42,6 +43,7 @@ router.use('/', async (req, res, next) => {
       }
 
       if (projectId !== 'null' && projectId) {
+        console.dir(projectId);
         req.project = await db.models.project.findOne({
           where:
             {ident: projectId},
