@@ -107,11 +107,11 @@ router.use('/', async (req, res, next) => {
 router.route('/')
   .get(async (req, res) => {
     if (!req.templateAppendix) {
-      logger.error(`Unable to find template appendix`);
+      logger.error('Unable to find template appendix');
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: 'Unable to find template appendix'},
       });
-    } else if (!req.templateAppendix?.length) {
+    } if (!req.templateAppendix?.length) {
       return res.json(req.templateAppendix.view('public'));
     }
 
