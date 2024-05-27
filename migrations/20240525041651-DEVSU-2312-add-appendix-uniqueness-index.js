@@ -1,23 +1,33 @@
 const TABLE = 'templates_appendix';
 
 module.exports = {
-  up: async (queryInterface, Sq) => {
+  up: async (queryInterface) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-      queryInterface.addIndex(TABLE, ['template_id', 'project_id'], {
-        where: {
-          deleted_at: null,
+      await queryInterface.addIndex(
+        TABLE,
+        ['template_id', 'project_id'],
+        {
+          where: {
+            deleted_at: null,
+          },
+          name: 'templates_appendix_template_project',
+          unique: true,
         },
-        name: 'templates_appendix_template_project',
-        unique: true,
-      });
-      queryInterface.addIndex(TABLE, ['template_id'], {
-        where: {
-          deleted_at: null,
-          project_id: null,
+        {transaction},
+      );
+      await queryInterface.addIndex(
+        TABLE,
+        ['template_id'],
+        {
+          where: {
+            deleted_at: null,
+            project_id: null,
+          },
+          name: 'templates_appendix_template_null_project',
+          unique: true,
         },
-        name: 'templates_appendix_template_null_project',
-        unique: true,
-      });
+        {transaction},
+      );
     });
   },
 
