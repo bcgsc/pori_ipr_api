@@ -106,7 +106,7 @@ router.use('/', async (req, res, next) => {
 
 router.route('/')
   .get(async (req, res) => {
-    if (!req.templateAppendix.length) {
+    if (!req.templateAppendix?.length) {
       return res.json(req.templateAppendix.view('public'));
     }
 
