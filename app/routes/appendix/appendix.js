@@ -32,7 +32,6 @@ router.use('/', async (req, res, next) => {
       ]});
     } else {
       if (templateId !== 'null') {
-        console.dir(templateId);
         req.template = await db.models.template.findOne({
           where:
             {ident: templateId},
@@ -43,7 +42,6 @@ router.use('/', async (req, res, next) => {
       }
 
       if (projectId !== 'null' && projectId) {
-        console.dir(projectId);
         req.project = await db.models.project.findOne({
           where:
             {ident: projectId},
@@ -83,6 +81,7 @@ router.use('/', async (req, res, next) => {
 
       // Throw an error for a POST when a template appendix already exists
       if (req.templateAppendix && req.method === 'POST') {
+        console.dir(templateAppendix);
         if (req.project) {
           const msg = `Template appendix already exists for ${req.template.name} for project ${req.project.name}`;
           logger.error(msg);
