@@ -122,7 +122,7 @@ describe('/appendix', () => {
 
   describe('POST', () => {
     test('/ - 200 Success with project/template combo', async () => {
-      template1 = await db.models.template.create({
+      const template1 = await db.models.template.create({
         name: 'Test Template1',
         organization: 'Test Org',
         sections: ['microbial']});
@@ -139,7 +139,7 @@ describe('/appendix', () => {
     });
 
     test('/ - 200 Success with null-project/template combo', async () => {
-      template2 = await db.models.template.create({
+      const template2 = await db.models.template.create({
         name: 'Test Template2',
         organization: 'Test Org',
         sections: ['microbial']});
@@ -168,7 +168,7 @@ describe('/appendix', () => {
     });
 
     test('/ - 400 bad request due to non-unique project/template combo', async () => {
-      template2 = await db.models.template.create({
+      const template2 = await db.models.template.create({
         name: 'Test Template24',
         organization: 'Test Org',
         sections: ['microbial']});
@@ -192,7 +192,7 @@ describe('/appendix', () => {
     });
 
     test('/ - 400 bad request due to non-unique default template text', async () => {
-      template2 = await db.models.template.create({
+      const template2 = await db.models.template.create({
         name: 'Test Template3',
         organization: 'Test Org',
         sections: ['microbial']});
