@@ -156,8 +156,13 @@ describe('/appendix', () => {
     });
 
     test('/ - 200 Success - by manager', async () => {
+      const template1 = await db.models.template.create({
+        name: 'Test Template2',
+        organization: 'Test Org1',
+        sections: ['microbial']});
+
       const res = await request
-        .post(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
         .auth(managerUsername, password)
         .type('json')
         .send({...UPDATE_DATA2})
@@ -165,6 +170,8 @@ describe('/appendix', () => {
 
       expect(res.body).not.toBeNull();
       checkTemplateAppendix(res.body);
+      await template1.destroy({force: true});
+      await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
     test('/ - 400 bad request due to non-unique project/template combo', async () => {
@@ -174,7 +181,7 @@ describe('/appendix', () => {
         sections: ['microbial']});
 
         const res = await request
-        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+        .post(`/api/appendix?templateId=${template2.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -182,7 +189,7 @@ describe('/appendix', () => {
       expect(res.body).not.toBeNull();
 
       await request
-        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+        .post(`/api/appendix?templateId=${template2.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CONFLICT);
