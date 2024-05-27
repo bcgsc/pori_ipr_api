@@ -64,7 +64,7 @@ describe('/appendix', () => {
 
   beforeAll(async () => {
     // create a template to be used in tests
-    const template = await db.models.template.create({
+    template = await db.models.template.create({
       name: 'Test Template',
       organization: 'Test Org',
       sections: [
@@ -75,22 +75,22 @@ describe('/appendix', () => {
     });
 
     // Create projects
-    const project = await db.models.project.create({name: 'test-appendix-project'});
-    const nonManagerProject = await db.models.project.create({name: 'test-appendix-nonManagerProject'});
+    project = await db.models.project.create({name: 'test-appendix-project'});
+    nonManagerProject = await db.models.project.create({name: 'test-appendix-nonManagerProject'});
 
     // create the manage-user/project binding
-    const managerUser = await db.models.user.findOne({where: {username: managerUsername}});
+    managerUser = await db.models.user.findOne({where: {username: managerUsername}});
     await db.models.userProject.create({project_id: project.id, user_id: managerUser.id});
   });
 
   beforeEach(async () => {
-    const testAppendix = await db.models.templateAppendix.create({
+    testAppendix = await db.models.templateAppendix.create({
       ...CREATE_DATA,
       templateId: template.id,
       projectId: project.id,
     });
 
-    const testAppendix2 = await db.models.templateAppendix.create({
+    testAppendix2 = await db.models.templateAppendix.create({
       ...CREATE_DATA2,
       templateId: template.id,
       projectId: nonManagerProject.id,
