@@ -104,7 +104,7 @@ describe('/appendix', () => {
 
   describe('GET', () => {
     test('/ - 200 Success with project/template combo', async () => {
-const res = await request
+      const res = await request
         .get(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
@@ -136,7 +136,8 @@ const res = await request
       const template2 = await db.models.template.create({name: 'Test Template2',
         organization: 'Test Org',
         sections: ['microbial']});
-
+      console.log('here at 139');
+      console.dir(template2);
       const res = await request
         .post(`/api/appendix?templateId=${template2.ident}`)
         .auth(username, password)
