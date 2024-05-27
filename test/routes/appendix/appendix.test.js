@@ -185,7 +185,7 @@ describe('/appendix', () => {
         .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.BAD_REQUEST);
+        .expect(HTTP_STATUS.CONFLICT);
 
       await template2.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
@@ -209,7 +209,7 @@ describe('/appendix', () => {
         .post(`/api/appendix?templateId=${template2.ident}`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.BAD_REQUEST);
+        .expect(HTTP_STATUS.CONFLICT);
 
       await template2.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
