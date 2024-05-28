@@ -204,9 +204,9 @@ const createReportVariantSections = async (report, content, transaction) => {
  */
 const createReportSections = async (report, content, transaction) => {
   // add images
-  const promises = (content.images || []).map(async ({path: imagePath, key, caption, title}) => {
+  const promises = (content.images || []).map(async ({path: imagePath, key, caption, title, width, height, category}) => {
     return uploadReportImage(report.id, key, imagePath, {
-      filename: path.basename(imagePath), caption, title, transaction,
+      filename: path.basename(imagePath), caption, title, transaction, width, height, category
     });
   });
 
