@@ -27,6 +27,10 @@ module.exports = async (req, res, next, ident) => {
         {model: db.models.user.scope('public'), as: 'user'},
       ],
     },
+    {
+      model: db.models.signatures.scope('public'),
+      as: 'signatures',
+    },
   ];
 
   let result;
