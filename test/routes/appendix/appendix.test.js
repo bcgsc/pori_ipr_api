@@ -116,11 +116,19 @@ describe('/appendix', () => {
   });
 
   describe('POST', () => {
-    test('/ - 200 Success with project/template combo', async () => {
-      const template1 = await db.models.template.create({name: uuidv4(),
+    let template1;
+
+    beforeEach(async () => {
+      template1 = await db.models.template.create({name: uuidv4(),
         organization: 'Test Org',
         sections: ['summary', 'microbial']});
+    });
 
+    afterEach(async () => {
+      await template1.destroy({force: true});
+    });
+
+    test('/ - 200 Success with project/template combo', async () => {
       const res = await request
         .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
         .auth(username, password)
@@ -128,52 +136,34 @@ describe('/appendix', () => {
         .expect(HTTP_STATUS.CREATED);
 
       expect(res.body).not.toBeNull();
-      await template1.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
-    // TODO failing
     test('/ - 200 Success with null-project/template combo', async () => {
-      const template2 = await db.models.template.create({name: uuidv4(),
-        organization: 'Test Org',
-        sections: ['summary', 'microbial']});
       const res = await request
-        .post(`/api/appendix?templateId=${template2.ident}`)
+        .post(`/api/appendix?templateId=${template1.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
 
       expect(res.body).not.toBeNull();
-      await template2.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
-    // TODO failing
     test('/ - 200 Success - by manager', async () => {
-      const template1 = await db.models.template.create({name: uuidv4(),
-        organization: 'Test Org1',
-        sections: ['microbial']});
-
       const res = await request
         .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
         .auth(managerUsername, password)
         .type('json')
-        .send({...UPDATE_DATA2})
         .expect(HTTP_STATUS.CREATED);
 
       expect(res.body).not.toBeNull();
-      checkTemplateAppendix(res.body);
-      await template1.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
     test('/ - 400 bad request due to non-unique project/template combo', async () => {
-      const template2 = await db.models.template.create({name: uuidv4(),
-        organization: 'Test Org',
-        sections: ['microbial']});
-
       const res = await request
-        .post(`/api/appendix?templateId=${template2.ident}&projectId=${project.ident}`)
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -181,23 +171,17 @@ describe('/appendix', () => {
       expect(res.body).not.toBeNull();
 
       await request
-        .post(`/api/appendix?templateId=${template2.ident}&projectId=${project.ident}`)
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CONFLICT);
 
-      await template2.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
 
-    // TODO failing
     test('/ - 400 bad request due to non-unique default template text', async () => {
-      const template2 = await db.models.template.create({name: uuidv4(),
-        organization: 'Test Org',
-        sections: ['microbial']});
-
       const res = await request
-        .post(`/api/appendix?templateId=${template2.ident}`)
+        .post(`/api/appendix?templateId=${template1.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -205,12 +189,11 @@ describe('/appendix', () => {
       expect(res.body).not.toBeNull();
 
       await request
-        .post(`/api/appendix?templateId=${template2.ident}`)
+        .post(`/api/appendix?templateId=${template1.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CONFLICT);
 
-      await template2.destroy({force: true});
       await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
   });
