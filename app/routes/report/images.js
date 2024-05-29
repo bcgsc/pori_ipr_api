@@ -222,8 +222,8 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
       data: imageData,
       caption: options.caption,
       title: options.title,
-      width: options.width,
-      height: options.height,
+      width: config.width,
+      height: config.height,
       category: options.category,
     }, {transaction: options.transaction});
   } catch (error) {
