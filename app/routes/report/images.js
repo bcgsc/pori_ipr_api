@@ -224,7 +224,7 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
       title: options.title,
       width: options.width,
       height: options.height,
-      category: options.category
+      category: options.category,
     }, {transaction: options.transaction});
   } catch (error) {
     logger.error(`Error processing report image ${options.filename} ${error}`);
