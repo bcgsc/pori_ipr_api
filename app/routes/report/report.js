@@ -217,6 +217,10 @@ router.route('/')
           attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
           through: {attributes: ['additionalProject']},
         },
+        {
+          model: db.models.signatures.scope('public'),
+          as: 'signatures',
+        },
         ...((role) ? [{
           model: db.models.reportUser,
           as: 'ReportUserFilter',
