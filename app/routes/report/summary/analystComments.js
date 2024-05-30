@@ -8,6 +8,7 @@ const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 
 const logger = require('../../../log');
+const {sanitizeHtml} = require('../../../libs/helperFunctions');
 
 // Generate schema's
 const updateSchema = schemaGenerator(db.models.analystComments, {baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true});
@@ -50,6 +51,9 @@ router.route('/')
       }
     } else {
       // Update DB Version for Entry
+      if (req.analystComments) {
+        req.analystComments = sanitizeHtml(req.analystComments);
+      }
       try {
         try {
           // validate against the model
