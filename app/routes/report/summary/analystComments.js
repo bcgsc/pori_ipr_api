@@ -43,6 +43,7 @@ router.route('/')
 
       // Create new entry
       try {
+        req.body.text = sanitizeHtml(req.body.text);
         req.analystComments = await db.models.analystComments.create(req.body);
         return res.json(req.analystComments.view('public'));
       } catch (error) {
@@ -51,9 +52,6 @@ router.route('/')
       }
     } else {
       // Update DB Version for Entry
-      if (req.analystComments) {
-        req.analystComments = sanitizeHtml(req.analystComments);
-      }
       try {
         try {
           // validate against the model
@@ -63,6 +61,7 @@ router.route('/')
           logger.error(message);
           return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
         }
+        req.body.text = sanitizeHtml(req.body.text);
         await req.analystComments.update(req.body, {userId: req.user.id});
         return res.json(req.analystComments.view('public'));
       } catch (error) {
