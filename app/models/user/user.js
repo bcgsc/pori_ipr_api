@@ -24,7 +24,7 @@ module.exports = (sequelize, Sq) => {
       name: 'allowNotifications',
       field: 'allow_notifications',
       type: Sq.BOOLEAN,
-      defaultValue: true,
+      defaultValue: false,
     },
     firstName: {
       type: Sq.STRING,
