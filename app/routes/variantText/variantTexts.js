@@ -17,7 +17,7 @@ const createSchema = schemaGenerator(db.models.variantText, {
   baseUri: '/create', exclude: [...BASE_EXCLUDE],
 });
 const updateSchema = schemaGenerator(db.models.variantText, {
-  baseUri: '/update', exclude: [...BASE_EXCLUDE], nothingRequired: true,
+  baseUri: '/update', include: ['text'], nothingRequired: true,
 });
 
 const pairs = {
@@ -63,6 +63,71 @@ router.use(async (req, res, next) => {
   }
 });
 
+// Middleware for germline reviews
+router.param('variantText', async (req, res, next, ident) => {
+  let result;
+  try {
+    result = await db.models.variantText.findOne({
+      where: {ident},
+      include: [
+        {model: db.models.template.scope('minimal'), as: 'template'},
+        {model: db.models.project.scope('minimal'), as: 'project'},
+      ],
+    });
+  } catch (error) {
+    logger.error(`Error while trying to get variant text ${error}`);
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      error: {message: 'Error while trying to get variant text'},
+    });
+  }
+
+  if (!result) {
+    logger.error('Unable to find variant text');
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      error: {message: 'Unable to find variant text'},
+    });
+  }
+
+  req.variantText = result;
+  return next();
+});
+
+router.route('/:variantText([A-z0-9-]{36})')
+  .get(async (req, res) => {
+    return res.json(req.variantText.view('public'));
+  })
+  .put(async (req, res) => {
+    try {
+      // validate against the model
+      validateAgainstSchema(updateSchema, req.body, false);
+    } catch (error) {
+      const message = `There was an error updating variant text ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    try {
+      await req.variantText.update(req.body, {userId: req.user.id});
+      await req.variantText.reload();
+      return res.json(req.variantText.view('public'));
+    } catch (error) {
+      logger.error(`Error while trying to update variant text ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to update variant text'},
+      });
+    }
+  })
+  .delete(async (req, res) => {
+    try {
+      await req.variantText.destroy();
+      return res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      logger.error(`Error while trying to remove variant text ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to remove variant text'},
+      });
+    }
+  });
 router.route('/')
   .get(async (req, res) => {
     const userProjects = await getUserProjects(db.models.project, req.user);
@@ -74,9 +139,9 @@ router.route('/')
       }
 
       if (!projectAccess) {
-        logger.error(`user ${req.user.username} does not have access to project ${req.body.project}`);
+        logger.error(`user ${req.user.username} does not have access to variant text ${req.body.project}`);
         return res.status(HTTP_STATUS.FORBIDDEN).json({
-          error: {message: `user ${req.user.username} does not have access to project ${req.body.project}`},
+          error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
         });
       }
     }
@@ -117,7 +182,7 @@ router.route('/')
 
       await validateAgainstSchema(createSchema, req.body);
     } catch (error) {
-      const message = `Error while validating template create request ${error}`;
+      const message = `Error while validating variant text create request ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
