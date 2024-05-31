@@ -1,0 +1,149 @@
+// TODO: Add html sanitazing
+const HTTP_STATUS = require('http-status-codes');
+const express = require('express');
+
+const db = require('../../models');
+const logger = require('../../log');
+
+const {getUserProjects, isAdmin, hasVariantTextEditAccess, sanitizeHtml} = require('../../libs/helperFunctions');
+const schemaGenerator = require('../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {BASE_EXCLUDE} = require('../../schemas/exclude');
+
+const router = express.Router({mergeParams: true});
+
+// Generate schema's
+const createSchema = schemaGenerator(db.models.variantText, {
+  baseUri: '/create', exclude: [...BASE_EXCLUDE],
+});
+const updateSchema = schemaGenerator(db.models.variantText, {
+  baseUri: '/update', exclude: [...BASE_EXCLUDE], nothingRequired: true,
+});
+
+const pairs = {
+  project: db.models.project,
+  template: db.models.template,
+};
+
+// for each entry in pairs, assumes the key-named value in
+// req.body is the ident, and gets the id of the corresponding object.
+router.use(async (req, res, next) => {
+  const operations = [];
+
+  for (const [key, value] of Object.entries(pairs)) {
+    delete req.body[`${key}Id`]
+    if (req.body[key]) {
+      const operation = value.findOne({
+        where: {ident: req.body[key]},
+      }).then((obj) => {
+        if (!obj || !obj.id) {
+          logger.error(`Unable to find ${key} ${req.body[key]}`);
+          // Throw an error object that includes a status code
+          const error = new Error(`Unable to find ${key}`);
+          error.statusCode = HTTP_STATUS.NOT_FOUND;
+          throw error;
+        }
+        req.body[`${key}Id`] = obj.id;
+      });
+
+      operations.push(operation);
+    }
+  }
+
+  try {
+    await Promise.all(operations);
+    next();
+  } catch (error) {
+    logger.error(`Error while trying to find key: ${error.message}`);
+    // Use the status code from the error object, if it exists; otherwise, use 500
+    const statusCode = error.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    res.status(statusCode).json({
+      error: {message: `Error while trying to find key: ${error.message}`},
+    });
+  }
+});
+
+router.route('/')
+  .get(async (req, res) => {
+    const userProjects = await getUserProjects(db.models.project, req.user);
+    const projectIdents = userProjects.map((project) => {return project.ident;});
+
+    if (req.body.project) {
+      if (isAdmin(req.user) || projectIdents.includes(req.body.project)) {
+        projectAccess = true;
+      }
+
+      if (!projectAccess) {
+        logger.error(`user ${req.user.username} does not have access to project ${req.body.project}`);
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          error: {message: `user ${req.user.username} does not have access to project ${req.body.project}`},
+        });
+      }
+    }
+
+    try {
+      const whereClause = {
+        ...((req.body.templateId == null) ? {} : {templateId: req.body.templateId}),
+        ...((req.body.projectId == null) ? {} : {projectId: req.body.projectId}),
+        ...((req.body.variantName == null) ? {} : {variantName: req.body.variantName}),
+        ...((req.body.variantGkbId == null) ? {} : {variantGkbId: req.body.variantGkbId}),
+        ...((req.body.cancerType == null) ? {} : {cancerType: req.body.cancerType}),
+        ...((req.body.cancerTypeGkbId == null) ? {} : {cancerTypeGkbId: req.body.cancerTypeGkbId}),
+      };
+
+      let results = await db.models.variantText.scope('public').findAll({
+        where: whereClause,
+      });
+      if (!isAdmin(req.user)) {
+        results = results.filter((variantText) => {return projectIdents.includes(variantText.project.ident);});
+      }
+      return res.json(results);
+    } catch (error) {
+      logger.error(`${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Problem getting variant texts'},
+      });
+    }
+  })
+  .post(async (req, res) => {
+    if (!hasVariantTextEditAccess(req.user)) {
+      return res.status(HTTP_STATUS.FORBIDDEN);
+    }
+
+    // Validate request against schema
+    try {
+      delete req.body.project
+      delete req.body.template
+
+      await validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `Error while validating template create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+    
+    try {
+      // Sanitize text
+      if (req.body.text) {
+        req.body.text = sanitizeHtml(req.body.text);
+      }
+
+      const newVariantText = await db.models.variantText.create(
+        req.body
+      );
+
+      // Load new variant text with associations
+      const result = await db.models.variantText.scope('public').findOne({
+        where: {id: newVariantText.id},
+      });
+
+      return res.status(HTTP_STATUS.CREATED).json(result);
+    } catch (error) {
+      logger.error(`Error while creating variant text ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while creating variant text'},
+      });
+    }
+  });
+
+module.exports = router;

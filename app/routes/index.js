@@ -16,6 +16,7 @@ const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
 const notificationRoute = require('./notification');
+const variantTextRoute = require('./variantText');
 const templateRoute = require('./template');
 const appendixRoute = require('./appendix');
 
@@ -90,6 +91,9 @@ class Routing extends RouterInterface {
 
     // Get Notification Routes
     this.router.use('/notification', notificationRoute);
+
+    // Get Variant Texts Routes
+    this.router.use('/variant-texts', variantTextRoute);
 
     // Get template routes
     this.router.use('/templates', templateRoute);
