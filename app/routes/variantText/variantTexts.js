@@ -1,11 +1,15 @@
-// TODO: Add html sanitazing
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models');
 const logger = require('../../log');
 
-const {getUserProjects, isAdmin, hasVariantTextEditAccess, sanitizeHtml} = require('../../libs/helperFunctions');
+const {
+  getUserProjects,
+  isAdmin,
+  sanitizeHtml,
+  projectAccess,
+} = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
@@ -31,7 +35,8 @@ router.use(async (req, res, next) => {
   const operations = [];
 
   for (const [key, value] of Object.entries(pairs)) {
-    delete req.body[`${key}Id`]
+    // delete user input ids for safety
+    delete req.body[`${key}Id`];
     if (req.body[key]) {
       const operation = value.findOne({
         where: {ident: req.body[key]},
@@ -88,6 +93,15 @@ router.param('variantText', async (req, res, next, ident) => {
     });
   }
 
+  const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: result.project.ident}]});
+
+  if (!userHasProjectAccess) {
+    logger.error(`user ${req.user.username} does not have access to variant text ${req.body.project}`);
+    return res.status(HTTP_STATUS.FORBIDDEN).json({
+      error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
+    });
+  }
+
   req.variantText = result;
   return next();
 });
@@ -101,9 +115,13 @@ router.route('/:variantText([A-z0-9-]{36})')
       // validate against the model
       validateAgainstSchema(updateSchema, req.body, false);
     } catch (error) {
-      const message = `There was an error updating variant text ${error}`;
+      const message = `There was an error validating variant text ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    if (req.body.text) {
+      req.body.text = sanitizeHtml(req.body.text);
     }
 
     try {
@@ -134,11 +152,9 @@ router.route('/')
     const projectIdents = userProjects.map((project) => {return project.ident;});
 
     if (req.body.project) {
-      if (isAdmin(req.user) || projectIdents.includes(req.body.project)) {
-        projectAccess = true;
-      }
+      const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: req.body.project}]});
 
-      if (!projectAccess) {
+      if (!userHasProjectAccess) {
         logger.error(`user ${req.user.username} does not have access to variant text ${req.body.project}`);
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
@@ -171,14 +187,10 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    if (!hasVariantTextEditAccess(req.user)) {
-      return res.status(HTTP_STATUS.FORBIDDEN);
-    }
-
     // Validate request against schema
     try {
-      delete req.body.project
-      delete req.body.template
+      delete req.body.project;
+      delete req.body.template;
 
       await validateAgainstSchema(createSchema, req.body);
     } catch (error) {
@@ -186,7 +198,7 @@ router.route('/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-    
+
     try {
       // Sanitize text
       if (req.body.text) {
@@ -194,7 +206,7 @@ router.route('/')
       }
 
       const newVariantText = await db.models.variantText.create(
-        req.body
+        req.body,
       );
 
       // Load new variant text with associations
