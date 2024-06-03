@@ -145,8 +145,6 @@ schemas.variantTextAssociations = schemaGenerator(db.models.variantText, {
   isJsonSchema: false, title: 'variantTextAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'projectId'], associations: true, includeAssociations: ['template', 'project'],
 });
 
-
-
 // appendices
 schemas.appendices = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'appendices', include: ['sampleInfo', 'seqQC', 'config'],

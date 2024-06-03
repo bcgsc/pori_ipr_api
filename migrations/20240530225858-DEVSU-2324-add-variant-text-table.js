@@ -5,7 +5,7 @@ module.exports = {
   up: (queryInterface, Sq) => {
     // Create new variant texts table
     return queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.createTable(TABLE,     {
+      await queryInterface.createTable(TABLE, {
         ...DEFAULT_COLUMNS,
         projectId: {
           type: Sq.INTEGER,

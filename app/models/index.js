@@ -518,7 +518,6 @@ variantText.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
-
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
 

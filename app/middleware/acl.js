@@ -28,7 +28,7 @@ const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/variant-texts/:variantText'),
     PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
-    DELETE:  [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
   },
   {
     path: pathToRegexp('/api/user/:user'),

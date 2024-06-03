@@ -268,16 +268,17 @@ describe('/variant-texts', () => {
 
   describe('DELETE - /:variantText', () => {
     let deleteVariantText;
+
     beforeEach(async () => {
       // Create variant text to be used in delete tests
       deleteVariantText = await db.models.variantText.create(CREATE_DATA);
     });
-  
+
     afterEach(async () => {
       // delete newly created data and all of their components
       deleteVariantText.destroy({force: true});
     });
-  
+
     test('/ - 200 Success', async () => {
       await request
         .delete(`${BASE_URI}/${deleteVariantText.ident}`)
@@ -289,15 +290,15 @@ describe('/variant-texts', () => {
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
 
-        // Verify variant text is soft-deleted
-        const deletedVariantText = await db.models.variantText.findOne({
-          where: {ident: deleteVariantText.ident},
-          paranoid: false,
-        });
+      // Verify variant text is soft-deleted
+      const deletedVariantText = await db.models.variantText.findOne({
+        where: {ident: deleteVariantText.ident},
+        paranoid: false,
+      });
 
-        console.log(deletedVariantText);
-  
-        expect(deletedVariantText.deletedAt).not.toBeNull();
+      console.log(deletedVariantText);
+
+      expect(deletedVariantText.deletedAt).not.toBeNull();
     });
 
     test('/ - 403 Forbidden user group', async () => {
@@ -311,13 +312,13 @@ describe('/variant-texts', () => {
         .type('json')
         .expect(HTTP_STATUS.FORBIDDEN);
 
-        // Verify variant text is soft-deleted
-        const deletedVariantText = await db.models.variantText.findOne({
-          where: {ident: deleteVariantText.ident},
-          paranoid: false,
-        });
-  
-        expect(deletedVariantText.deletedAt).toBeNull();
+      // Verify variant text is soft-deleted
+      const deletedVariantText = await db.models.variantText.findOne({
+        where: {ident: deleteVariantText.ident},
+        paranoid: false,
+      });
+
+      expect(deletedVariantText.deletedAt).toBeNull();
     });
   });
 });
