@@ -5408,7 +5408,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "403": {
-            "description": "Insufficient access to get reports"
+            "description": "Insufficient access to get Variant Text"
           }
         }
       },
@@ -5565,7 +5565,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report not found"
+            "description": "Variant Text not found"
           }
         }
       }
