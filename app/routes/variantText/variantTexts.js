@@ -68,7 +68,7 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Middleware for germline reviews
+// Middleware for variant texts
 router.param('variantText', async (req, res, next, ident) => {
   let result;
   try {
