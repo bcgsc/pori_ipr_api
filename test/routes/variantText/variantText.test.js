@@ -9,7 +9,7 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const BASE_URI = '/api/variant-texts';
+const BASE_URI = '/api/variant-text';
 
 jest.mock('../../../app/middleware/auth.js');
 
@@ -57,7 +57,7 @@ const checkVariantText = (reportObject) => {
   }));
 };
 
-const checkVariantTexts = (reports) => {
+const checkvariantText = (reports) => {
   reports.forEach((report) => {
     checkVariantText(report);
   });
@@ -70,7 +70,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-describe('/variant-texts', () => {
+describe('/variant-text', () => {
   let project;
   let unauthorizedProject;
   let template;
@@ -116,10 +116,10 @@ describe('/variant-texts', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkVariantTexts(res.body);
+      checkvariantText(res.body);
     });
 
-    test('/ - 200 Dont get variant texts without project access', async () => {
+    test('/ - 200 Dont get variant text without project access', async () => {
       const res = await request
         .get(BASE_URI)
         .query({
@@ -144,7 +144,7 @@ describe('/variant-texts', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toHaveLength(0);
-      checkVariantTexts(res.body);
+      checkvariantText(res.body);
     });
 
     test('/ - 200 Dont get filtered out results', async () => {

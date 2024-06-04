@@ -68,7 +68,7 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Middleware for variant texts
+// Middleware for variant text
 router.param('variantText', async (req, res, next, ident) => {
   let result;
   try {
@@ -184,7 +184,7 @@ router.route('/')
     } catch (error) {
       logger.error(`${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Problem getting variant texts'},
+        error: {message: 'Problem getting variant text'},
       });
     }
   })

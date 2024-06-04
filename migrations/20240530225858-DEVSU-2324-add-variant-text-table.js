@@ -3,7 +3,7 @@ const {DEFAULT_COLUMNS} = require('../app/models/base');
 
 module.exports = {
   up: (queryInterface, Sq) => {
-    // Create new variant texts table
+    // Create new variant text table
     return queryInterface.sequelize.transaction(async (transaction) => {
       await queryInterface.createTable(TABLE, {
         ...DEFAULT_COLUMNS,

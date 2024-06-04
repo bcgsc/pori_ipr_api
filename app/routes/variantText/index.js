@@ -1,9 +1,9 @@
 const express = require('express');
 
-const variantTexts = require('./variantTexts');
+const variantText = require('./variantText');
 
 const router = express.Router({mergeParams: true});
 
-router.use('/', variantTexts);
+router.use('/', variantText);
 
 module.exports = router;

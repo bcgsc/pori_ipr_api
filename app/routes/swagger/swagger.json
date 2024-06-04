@@ -5378,12 +5378,12 @@
         }
       }
     },
-    "/variant-texts": {
+    "/variant-text": {
       "get": {
-        "summary": "Get Variant Texts",
-        "description": "Retrieve all Variant Texts that you have access to",
+        "summary": "Get variant text",
+        "description": "Retrieve all variant text that you have access to",
         "tags": [
-          "Variant Texts"
+          "variant text"
         ],
         "security": [
           {
@@ -5392,7 +5392,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns an array of Variant Texts",
+            "description": "Returns an array of variant text",
             "content": {
               "application/json": {
                 "schema": {
@@ -5416,7 +5416,7 @@
         "summary": "Add Variant Text",
         "description": "Upload a Variant Text",
         "tags": [
-          "Variant Texts"
+          "variant text"
         ],
         "parameters": [],
         "security": [
@@ -5461,7 +5461,7 @@
         }
       }
     },
-    "/variant-texts/{variantText}": {
+    "/variant-text/{variantText}": {
       "get": {
         "summary": "Get Variant Text",
         "description": "Retrieve a Variant Text",
@@ -5471,7 +5471,7 @@
           }
         ],
         "tags": [
-          "Variant Texts"
+          "variant text"
         ],
         "security": [
           {
@@ -5501,7 +5501,7 @@
         "summary": "Update Variant Text",
         "description": "Update the details of a Variant Text",
         "tags": [
-          "Variant Texts"
+          "variant text"
         ],
         "parameters": [
           {
@@ -5550,7 +5550,7 @@
           }
         ],
         "tags": [
-          "Variant Texts"
+          "variant text"
         ],
         "security": [
           {

@@ -92,8 +92,8 @@ class Routing extends RouterInterface {
     // Get Notification Routes
     this.router.use('/notification', notificationRoute);
 
-    // Get Variant Texts Routes
-    this.router.use('/variant-texts', variantTextRoute);
+    // Get variant text Routes
+    this.router.use('/variant-text', variantTextRoute);
 
     // Get template routes
     this.router.use('/templates', templateRoute);
