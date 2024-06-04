@@ -16,7 +16,8 @@ jest.mock('../../../app/middleware/auth.js');
 let server;
 let request;
 
-const NON_ADMIN_GROUP = 'NON AUTHORIZED GROUP';
+const NON_ADMIN_GROUP = 'NON ADMIN GROUP';
+const ALL_PROJECTS_ACCESS = 'all projects access';
 const VARIANT_EDIT_ACCESS = 'variant-text edit access';
 
 const CREATE_DATA = {
@@ -57,7 +58,7 @@ const checkVariantText = (reportObject) => {
   }));
 };
 
-const checkvariantText = (reports) => {
+const checkVariantTexts = (reports) => {
   reports.forEach((report) => {
     checkVariantText(report);
   });
@@ -116,7 +117,23 @@ describe('/variant-text', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkvariantText(res.body);
+      expect(res.body).not.toHaveLength(0);
+      checkVariantTexts(res.body);
+    });
+
+    test.only('/ - 200 Get variant text with all project access', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_ADMIN_GROUP}, {name: ALL_PROJECTS_ACCESS}],
+          projects: [],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).not.toHaveLength(0);
+      checkVariantTexts(res.body);
     });
 
     test('/ - 200 Dont get variant text without project access', async () => {
@@ -144,7 +161,7 @@ describe('/variant-text', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toHaveLength(0);
-      checkvariantText(res.body);
+      checkVariantTexts(res.body);
     });
 
     test('/ - 200 Dont get filtered out results', async () => {
@@ -295,8 +312,6 @@ describe('/variant-text', () => {
         where: {ident: deleteVariantText.ident},
         paranoid: false,
       });
-
-      console.log(deletedVariantText);
 
       expect(deletedVariantText.deletedAt).not.toBeNull();
     });
