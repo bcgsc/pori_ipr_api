@@ -93,13 +93,15 @@ router.param('variantText', async (req, res, next, ident) => {
     });
   }
 
-  const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: result.project.ident}]});
+  if(result.project.ident){
+    const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: result.project.ident}]});
 
-  if (!userHasProjectAccess) {
-    logger.error(`user ${req.user.username} does not have access to variant text ${req.body.project}`);
-    return res.status(HTTP_STATUS.FORBIDDEN).json({
-      error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
-    });
+    if (!userHasProjectAccess) {
+      logger.error(`user ${req.user.username} does not have access to project ${req.body.project}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
+      });
+    }
   }
 
   req.variantText = result;
