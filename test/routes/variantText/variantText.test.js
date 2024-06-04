@@ -121,7 +121,7 @@ describe('/variant-text', () => {
       checkVariantTexts(res.body);
     });
 
-    test.only('/ - 200 Get variant text with all project access', async () => {
+    test('/ - 200 Get variant text with all project access', async () => {
       const res = await request
         .get(BASE_URI)
         .query({
