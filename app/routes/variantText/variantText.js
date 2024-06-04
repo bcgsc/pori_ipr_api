@@ -6,7 +6,6 @@ const logger = require('../../log');
 
 const {
   getUserProjects,
-  isAdmin,
   sanitizeHtml,
   projectAccess,
 } = require('../../libs/helperFunctions');
@@ -93,7 +92,7 @@ router.param('variantText', async (req, res, next, ident) => {
     });
   }
 
-  if(result.project.ident){
+  if (result.project.ident) {
     const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: result.project.ident}]});
 
     if (!userHasProjectAccess) {
