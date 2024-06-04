@@ -177,9 +177,9 @@ router.route('/')
       let results = await db.models.variantText.scope('public').findAll({
         where: whereClause,
       });
-      if (!isAdmin(req.user)) {
-        results = results.filter((variantText) => {return projectIdents.includes(variantText.project.ident);});
-      }
+
+      results = results.filter((variantText) => {return projectIdents.includes(variantText.project.ident);});
+
       return res.json(results);
     } catch (error) {
       logger.error(`${error}`);
