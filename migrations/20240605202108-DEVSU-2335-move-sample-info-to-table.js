@@ -120,6 +120,8 @@ module.exports = {
       }
     }
 
+    console.log(data);
+
     await queryInterface.bulkInsert(SAMPLE_INFO_TABLE, data);
   },
 
