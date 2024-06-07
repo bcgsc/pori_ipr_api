@@ -157,7 +157,7 @@ describe('/reports/{REPORTID}/sample-info', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   }, LONGER_TIMEOUT);
 });
 
