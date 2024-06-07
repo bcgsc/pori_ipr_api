@@ -120,9 +120,13 @@ module.exports = {
       }
     }
 
-    console.log(data);
+    console.log(`updating ${data.length} rows`);
 
-    await queryInterface.bulkInsert(SAMPLE_INFO_TABLE, data);
+    if (!data.length === 0) {
+      await queryInterface.bulkInsert(SAMPLE_INFO_TABLE, data);
+    } else {
+      console.log('empty array, skipping migration');
+    }
   },
 
   down: async () => {
