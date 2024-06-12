@@ -22,6 +22,15 @@ const SPECIAL_CASES = [
     PUT: ['*'],
   },
   {
+    path: pathToRegexp('/api/variant-text'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/variant-text/:variantText'),
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
+  },
+  {
     path: pathToRegexp('/api/user/:user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
     PUT: [{name: 'admin'}, {name: 'manager'}],

@@ -502,6 +502,22 @@ notification.belongsTo(userGroup, {
   as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Variant text
+const variantText = require('./variantText/variantText')(sequelize, Sq);
+
+template.hasMany(variantText, {
+  as: 'variant_texts', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
+});
+project.hasMany(variantText, {
+  as: 'variant_texts', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+});
+variantText.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+variantText.belongsTo(project, {
+  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Template Appendix
 const templateAppendix = require('./template/templateAppendix')(sequelize, Sq);
 
