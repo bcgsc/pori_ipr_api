@@ -5378,6 +5378,198 @@
         }
       }
     },
+    "/variant-text": {
+      "get": {
+        "summary": "Get variant text",
+        "description": "Retrieve all variant text that you have access to",
+        "tags": [
+          "variant text"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of variant text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/variantTextAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Insufficient access to get Variant Text"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Variant Text",
+        "description": "Upload a Variant Text",
+        "tags": [
+          "variant text"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/variantTextCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns an object containing a message and the ident of the Variant Text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "ident": {
+                      "$ref": "#/components/schemas/ident"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/variant-text/{variantText}": {
+      "get": {
+        "summary": "Get Variant Text",
+        "description": "Retrieve a Variant Text",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variantText"
+          }
+        ],
+        "tags": [
+          "variant text"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified Variant Text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/variantTextAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Variant Text not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Variant Text",
+        "description": "Update the details of a Variant Text",
+        "tags": [
+          "variant text"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variantText"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/variantTextUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated Variant Text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/variantTextAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Variant Text not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Variant Text",
+        "description": "Removes the specified Variant Text",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/variantText"
+          }
+        ],
+        "tags": [
+          "variant text"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Variant Text not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/signatures/revoke/{role}": {
       "put": {
         "summary": "Remove Signature",
@@ -6734,6 +6926,16 @@
         "in": "path",
         "required": true,
         "description": "Analysis report ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "variantText": {
+        "name": "variantText",
+        "in": "path",
+        "required": true,
+        "description": "Variant Text report ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
