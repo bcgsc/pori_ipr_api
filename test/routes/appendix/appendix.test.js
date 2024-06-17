@@ -103,7 +103,7 @@ describe('/appendix', () => {
   });
 
   describe('GET', () => {
-    test('/ - 200 Success', async () => {
+    test('/ - 200 Success with project/template combo', async () => {
       const res = await request
         .get(`/api/appendix?templateId=${template.ident}&projectId=${project.ident}`)
         .auth(username, password)
@@ -112,6 +112,89 @@ describe('/appendix', () => {
 
       expect(res.body).not.toBeNull();
       expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
+    });
+  });
+
+  describe('POST', () => {
+    let template1;
+
+    beforeEach(async () => {
+      template1 = await db.models.template.create({name: uuidv4(),
+        organization: 'Test Org',
+        sections: ['summary', 'microbial']});
+    });
+
+    afterEach(async () => {
+      await template1.destroy({force: true});
+    });
+
+    test('/ - 200 Success with project/template combo', async () => {
+      const res = await request
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).not.toBeNull();
+      await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
+    });
+
+    test('/ - 200 Success with null-project/template combo', async () => {
+      const res = await request
+        .post(`/api/appendix?templateId=${template1.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).not.toBeNull();
+      await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
+    });
+
+    test('/ - 200 Success - by manager', async () => {
+      const res = await request
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).not.toBeNull();
+      await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
+    });
+
+    test('/ - 400 bad request due to non-unique project/template combo', async () => {
+      const res = await request
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).not.toBeNull();
+
+      await request
+        .post(`/api/appendix?templateId=${template1.ident}&projectId=${project.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CONFLICT);
+
+      await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
+    });
+
+    test('/ - 400 bad request due to non-unique default template text', async () => {
+      const res = await request
+        .post(`/api/appendix?templateId=${template1.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).not.toBeNull();
+
+      await request
+        .post(`/api/appendix?templateId=${template1.ident}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CONFLICT);
+
+      await db.models.templateAppendix.destroy({where: {ident: res.body.ident}, force: true});
     });
   });
 
