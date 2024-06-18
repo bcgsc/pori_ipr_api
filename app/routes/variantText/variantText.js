@@ -177,7 +177,12 @@ router.route('/')
         where: whereClause,
       });
 
-      results = results.filter((variantText) => {return projectIdents.includes(variantText.project.ident);});
+      results = results.filter((variantText) => {
+        if (variantText.project.ident) {
+          return projectIdents.includes(variantText.project.ident);
+        }
+        return true;
+      });
 
       return res.json(results);
     } catch (error) {
