@@ -518,7 +518,8 @@
         {
             "key": "mutSignature.barplot.sbs",
             "path": "test/testData/images/msig_snvs_all_strelka.png",
-            "title": "Test adding a title to an image"
+            "title": "Test adding a title to an image",
+            "category": "testCategory"
         },
         {
             "key": "cnvLoh.circos",
