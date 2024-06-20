@@ -36,6 +36,14 @@ const UPLOAD_DATA = {
   cancerTypeGkbId: 'ct_gkb_id',
 };
 
+const UPLOAD_DATA_NO_PROJECT = {
+  text: '<p>sample text</p>',
+  variantName: 'variant name',
+  variantGkbId: 'v_gkb_id',
+  cancerType: 'cancer type',
+  cancerTypeGkbId: 'ct_gkb_id',
+};
+
 const UPDATE_DATA = {
   text: '<p>new sample text</p>',
 };
@@ -334,6 +342,30 @@ describe('/variant-text', () => {
       });
 
       expect(deletedVariantText.deletedAt).toBeNull();
+    });
+  });
+
+  describe('GET - project optional', () => {
+    test('/ - 200 Get variant text with project is null', async () => {
+      await request
+        .get(BASE_URI)
+        .send(UPLOAD_DATA_NO_PROJECT)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_ADMIN_GROUP}, {name: ALL_PROJECTS_ACCESS}],
+          projects: [],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).not.toHaveLength(0);
+      checkVariantTexts(res.body);
     });
   });
 });
