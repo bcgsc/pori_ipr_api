@@ -122,7 +122,7 @@ module.exports = {
 
     console.log(`updating ${data.length} rows`);
 
-    if (!data.length === 0) {
+    if (data.length !== 0) {
       await queryInterface.bulkInsert(SAMPLE_INFO_TABLE, data);
     } else {
       console.log('empty array, skipping migration');
