@@ -1706,6 +1706,93 @@
         }
       }
     },
+    "/reports-async": {
+      "post": {
+        "summary": "Add Genomic Report (Async)",
+        "description": "Upload a genomic report and all of the report sections (async)",
+        "tags": [
+          "Reports Async"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/reportCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns an object containing a message and the ident of the new report, or the ident to check the report status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "ident": {
+                      "$ref": "#/components/schemas/ident"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/reports-async/{report}": {
+      "get": {
+        "summary": "Get Genomic Report (Async)",
+        "description": "Retrieve a specific genomic report (Async)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Reports Async"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified genomic report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/reportAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/user": {
       "get": {
         "summary": "Get Report Users",
