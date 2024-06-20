@@ -105,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant
       },
     } = req;
 
@@ -125,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -171,6 +171,9 @@ router.route('/')
             {patientId: {[Op.iLike]: `%${searchText}%`}},
             {alternateIdentifier: {[Op.iLike]: `%${searchText}%`}},
           ],
+        } : {}),
+        ...((keyVariant) ? {
+          '$genomicAlterationsIdentified.geneVariant$': {[Op.iLike]: `%${keyVariant}%`},
         } : {}),
       },
       distinct: 'id',
@@ -228,6 +231,10 @@ router.route('/')
             user_id: req.user.id,
             role,
           },
+        }] : []),
+        ...((keyVariant) ? [{
+          model: db.models.genomicAlterationsIdentified.scope('public'),
+          as: 'genomicAlterationsIdentified',
         }] : []),
       ],
     };
