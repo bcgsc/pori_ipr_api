@@ -346,19 +346,24 @@ describe('/variant-text', () => {
   });
 
   describe('GET - project optional', () => {
-    test('/ - 200 Get variant text with project is null', async () => {
-      await request
-        .get(BASE_URI)
-        .send(UPLOAD_DATA_NO_PROJECT)
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
+    let variantTextOpt;
 
+    beforeEach(async () => {
+      // Create variant text to be used in delete tests
+      variantTextOpt = await db.models.variantText.create(UPLOAD_DATA_NO_PROJECT);
+    });
+
+    afterEach(async () => {
+      // delete newly created data and all of their components
+      variantTextOpt.destroy({force: true});
+    });
+
+    test('/ - 200 Get variant text with project is null', async () => {
       const res = await request
         .get(BASE_URI)
         .query({
-          groups: [{name: NON_ADMIN_GROUP}, {name: ALL_PROJECTS_ACCESS}],
-          projects: [],
+          groups: [{name: NON_ADMIN_GROUP}],
+          projects: [{name: unauthorizedProject.name, ident: unauthorizedProject.ident}],
         })
         .auth(username, password)
         .type('json')
