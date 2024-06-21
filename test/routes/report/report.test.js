@@ -66,6 +66,8 @@ describe('/reports/{REPORTID}', () => {
   const NON_PROD_ACCESS = 'non-production Access';
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
+  const KEYVARIANT = 'uniqueKeyVariant';
+
   let project;
   let project2;
   let offsetTestProject;
@@ -106,6 +108,10 @@ describe('/reports/{REPORTID}', () => {
     await db.models.reportProject.create({
       reportId: report.id,
       project_id: project.id,
+    });
+    await db.models.genomicAlterationsIdentified.create({
+      geneVariant: KEYVARIANT,
+      reportId: report.id,
     });
 
     reportReady = await db.models.report.create({
@@ -461,6 +467,22 @@ describe('/reports/{REPORTID}', () => {
       expect(res.body.reports).toEqual(expect.arrayContaining([
         expect.objectContaining({patientId: expect.stringContaining('UPLOADPAT01')}),
       ]));
+    }, LONGER_TIMEOUT);
+
+    test('/ - key variant - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?keyVariant=${KEYVARIANT}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      for (const resReport of res.body.reports) {
+        for (const gAI of resReport.genomicAlterationsIdentified) {
+          expect(gAI.geneVariant).toEqual(KEYVARIANT);
+        }
+      }
     }, LONGER_TIMEOUT);
 
     test('fetches known ident ok', async () => {
