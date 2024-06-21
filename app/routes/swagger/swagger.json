@@ -1459,6 +1459,15 @@
             }
           },
           {
+            "name": "keyVariant",
+            "in": "query",
+            "required": false,
+            "description": "String to be searched in the Key Genomic and Transcriptomic Alterations Identified variants",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "states",
             "in": "query",
             "required": false,
