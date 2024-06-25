@@ -214,7 +214,7 @@ router.route('/')
         {
           model: db.models.project,
           as: 'projects',
-          ...((isAdmin(req.user)) ? {required: false} : {}),
+          ...((isAdmin(req.user) && !project) ? {required: false} : {}),
           where: {
             name: projects,
           },
