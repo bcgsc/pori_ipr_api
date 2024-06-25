@@ -10,7 +10,7 @@ const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
-  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
+  hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -214,6 +214,7 @@ router.route('/')
         {
           model: db.models.project,
           as: 'projects',
+          ...((isAdmin(req.user)) ? {required: false} : {}),
           where: {
             name: projects,
           },
