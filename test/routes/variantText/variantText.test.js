@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
+const {v4: uuidv4} = require('uuid');
 const db = require('../../../app/models');
 
 const CONFIG = require('../../../app/config');
@@ -38,7 +39,7 @@ const UPLOAD_DATA = {
 
 const UPLOAD_DATA_NO_PROJECT = {
   text: '<p>sample text</p>',
-  variantName: 'variant name',
+  variantName: uuidv4(),
   variantGkbId: 'v_gkb_id',
   cancerType: 'cancer type',
   cancerTypeGkbId: 'ct_gkb_id',
@@ -69,6 +70,12 @@ const checkVariantText = (reportObject) => {
 const checkVariantTexts = (reports) => {
   reports.forEach((report) => {
     checkVariantText(report);
+  });
+};
+
+const checkVariantTextsProjectPermissions = (reports) => {
+  reports.forEach((report) => {
+    expect(report.project.ident).toEqual(null);
   });
 };
 
@@ -155,7 +162,7 @@ describe('/variant-text', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body).toHaveLength(0);
+      checkVariantTextsProjectPermissions(res.body);
     });
 
     test('/ - 200 Get filtered results', async () => {
@@ -190,7 +197,7 @@ describe('/variant-text', () => {
     test('/ - 201 Create successful', async () => {
       const res = await request
         .post(BASE_URI)
-        .send(UPLOAD_DATA)
+        .send({...UPLOAD_DATA, variantName: 'create successful'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -205,7 +212,7 @@ describe('/variant-text', () => {
           groups: [{name: VARIANT_EDIT_ACCESS}],
           projects: [{name: project.name, ident: project.ident}],
         })
-        .send(UPLOAD_DATA)
+        .send({...UPLOAD_DATA, variantName: 'create successful on allowed groups'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -296,7 +303,7 @@ describe('/variant-text', () => {
 
     beforeEach(async () => {
       // Create variant text to be used in delete tests
-      deleteVariantText = await db.models.variantText.create(CREATE_DATA);
+      deleteVariantText = await db.models.variantText.create({...CREATE_DATA, variantName: uuidv4()});
     });
 
     afterEach(async () => {
@@ -345,7 +352,7 @@ describe('/variant-text', () => {
     });
   });
 
-  describe('GET - project optional', () => {
+  describe('Extra features test', () => {
     let variantTextOpt;
 
     beforeEach(async () => {
@@ -358,7 +365,7 @@ describe('/variant-text', () => {
       variantTextOpt.destroy({force: true});
     });
 
-    test('/ - 200 Get variant text with project is null', async () => {
+    test('GET / - 200 Get variant text with project is null', async () => {
       const res = await request
         .get(BASE_URI)
         .query({
@@ -371,6 +378,15 @@ describe('/variant-text', () => {
 
       expect(res.body).not.toHaveLength(0);
       checkVariantTexts(res.body);
+    });
+
+    test('POST / - 400 test constraint on null project', async () => {
+      await request
+        .post(BASE_URI)
+        .send(UPLOAD_DATA_NO_PROJECT)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });

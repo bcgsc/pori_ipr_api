@@ -49,6 +49,18 @@ module.exports = (sequelize, Sq) => {
     },
     {
       ...DEFAULT_OPTIONS,
+      indexes: [
+        {
+          name: 'variant_text_unique_index',
+          unique: true,
+          fields: ['variant_name', 'cancer_type', 'template_id', 'project_id'],
+          where: {
+            deleted_at: {
+              [Sq.Op.eq]: null,
+            },
+          },
+        },
+      ],
       tableName: 'variant_texts',
       scopes: {
         public: {
