@@ -7,7 +7,7 @@ fi
 
 if [ "$DATABASE_NAME" = "" ];
 then
-    DATABASE_NAME="ipr_demo"
+    DATABASE_NAME="ipr"
 fi
 
 if [ "$SERVICE_USER" = "" ];
