@@ -2,7 +2,7 @@
 
 if [ "$DB_DUMP_LOCATION" = "" ];
 then
-    DB_DUMP_LOCATION="/tmp/psql_data/ipr_demodb.postgres.dump"
+    DB_DUMP_LOCATION="/tmp/psql_data/ipr_new_deployment.postgres.dump"
 fi
 
 if [ "$DATABASE_NAME" = "" ];
