@@ -204,6 +204,13 @@ router.route('/')
           required: true,
         },
         {
+          // Not using scope due to sequelize bug only returning one result when using scope,
+          // update when sequelize has fixed that
+          model: db.models.reportSampleInfo,
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+          as: 'reportSampleInfo',
+        },
+        {
           model: db.models.reportUser,
           as: 'users',
           attributes: ['ident', 'role', 'createdAt', 'updatedAt'],

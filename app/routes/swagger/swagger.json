@@ -5200,6 +5200,218 @@
         }
       }
     },
+    "/reports/{report}/sample-info": {
+      "get": {
+        "summary": "Get a list of sample-info for a specific report",
+        "description": "Return an array of sample-info from a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Sample Info"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get the array of sample-info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a sample-info for a specific report",
+        "description": "Return the created sample-info for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "The sample-info to be created",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/reportSampleInfoCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Sample Info"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The created sample-info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input was provided"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/sample-info/{sampleInfo}": {
+      "get": {
+        "summary": "Get a single sample-info for a specific report",
+        "description": "Return a sample-info object from a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/sampleInfo"
+          }
+        ],
+        "tags": [
+          "Sample Info"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a single sample-info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found or sample-info not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a single sample-info for a specific report",
+        "description": "Return no content if successful",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/sampleInfo"
+          }
+        ],
+        "tags": [
+          "Sample Info"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found or sample-info not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a sample-info for a specific report",
+        "description": "Return the updated sample-info for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/sampleInfo"
+          }
+        ],
+        "requestBody": {
+          "description": "The sample-info to be updated",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/reportSampleInfoUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Sample Info"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated sample-info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input was provided"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/probe-results": {
       "get": {
         "summary": "Get Probe Results",
@@ -7121,6 +7333,16 @@
         "in": "path",
         "required": true,
         "description": "discussion ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "sampleInfo": {
+        "name": "sampleInfo",
+        "in": "path",
+        "required": true,
+        "description": "sample-info ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
