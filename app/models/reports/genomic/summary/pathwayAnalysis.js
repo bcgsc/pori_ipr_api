@@ -21,9 +21,9 @@ module.exports = (sequelize, Sq) => {
       },
     },
     legend: {
-      type: Sq.ENUM(['v1', 'v2', 'custom']),
+      type: Sq.ENUM(['v1', 'v2', 'v3', 'custom']),
       allowNull: false,
-      defaultValue: 'v1',
+      defaultValue: 'v3',
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,

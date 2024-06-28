@@ -9,11 +9,11 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, password} = CONFIG.get('testing');
+const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 
 const userProperties = [
   'ident', 'createdAt', 'updatedAt', 'username',
-  'type', 'firstName', 'lastName', 'email',
+  'type', 'firstName', 'lastName', 'email', 'allowNotifications',
 ];
 
 const checkUser = (userObject) => {
@@ -46,11 +46,15 @@ beforeAll(async () => {
 // Tests for user related endpoints
 describe('/user', () => {
   let testUser;
+  let adminGroup;
 
   beforeAll(async () => {
     // get test user
     testUser = await db.models.user.findOne({
       where: {username},
+    });
+    adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
     });
   });
 
@@ -162,6 +166,39 @@ describe('/user', () => {
       await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
 
+    test('/ - 200 Success by manager', async () => {
+      const res = await request
+        .post('/api/user')
+        .auth(managerUsername, password)
+        .type('json')
+        .send({
+          username: `Testuser-${uuidv4()}`,
+          type: 'bcgsc',
+          email: 'testuser1@test.com',
+          firstName: 'FirstName1Test',
+          lastName: 'LastName1Test',
+        })
+        .expect(HTTP_STATUS.CREATED);
+
+      // Remove test user from db
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
+    });
+
+    test('/ - 403 forbidden for bioinformatician', async () => {
+      await request
+        .post('/api/user')
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .send({
+          username: `Testuser-${uuidv4()}`,
+          type: 'bcgsc',
+          email: 'testuser2@test.com',
+          firstName: 'FirstName2Test',
+          lastName: 'LastName2Test',
+        })
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     test('/ - 409 Conflict - Username taken', async () => {
       await request
         .post('/api/user')
@@ -254,6 +291,7 @@ describe('/user', () => {
 
   describe('PUT', () => {
     let putTestUser;
+    let adminPutTestUser;
 
     beforeEach(async () => {
       putTestUser = await db.models.user.create({
@@ -263,10 +301,22 @@ describe('/user', () => {
         firstName: 'putTestFirstName',
         lastName: 'putTestLastName',
       });
+      adminPutTestUser = await db.models.user.create({
+        username: `putTestUser-${uuidv4()}`,
+        type: 'bcgsc',
+        email: 'putTest@email.com',
+        firstName: 'putTestFirstName',
+        lastName: 'putTestLastName',
+      });
+
+      await db.models.userGroupMember.create({
+        user_id: adminPutTestUser.id, group_id: adminGroup.id,
+      });
     });
 
     afterEach(async () => {
-      return db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: adminPutTestUser.ident}, force: true});
     });
 
     test('/{user} - 200 Success', async () => {
@@ -281,6 +331,38 @@ describe('/user', () => {
       expect(res.body.firstName).toBe('NewFirstName');
     });
 
+    test('/{user} - 200 Success by manager', async () => {
+      const res = await request
+        .put(`/api/user/${putTestUser.ident}`)
+        .send({firstName: 'NewFirstName-manager'})
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkUser(res.body);
+      expect(res.body.firstName).toBe('NewFirstName-manager');
+    });
+
+    test('/{user} - 403 - forbidden to manager when user is admin', async () => {
+      await request
+        .put(`/api/user/${adminPutTestUser.ident}`)
+        .send({firstName: 'NewFirstName'})
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('/{user} - 403 - forbidden to bioinformatician', async () => {
+      await request
+        .put(`/api/user/${putTestUser.ident}`)
+        .send({firstName: 'NewFirstName'})
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    // add test that non-admins can't edit admin users
+
     test('/{user} - 400 Bad Request - Invalid email', async () => {
       await request
         .put(`/api/user/${putTestUser.ident}`)
@@ -293,6 +375,9 @@ describe('/user', () => {
 
   describe('DELETE', () => {
     let deleteTestUser;
+    let deleteTestUserManager;
+    let deleteTestUserForbidden;
+    let deleteTestUserWhoIsAdmin;
 
     beforeEach(async () => {
       deleteTestUser = await db.models.user.create({
@@ -301,10 +386,34 @@ describe('/user', () => {
         lastName: 'deleteLastName01',
         email: 'delete@email.com',
       });
+      deleteTestUserManager = await db.models.user.create({
+        username: uuidv4(),
+        firstName: 'delete1FirstName01',
+        lastName: 'delete1LastName01',
+        email: 'delete1@email.com',
+      });
+      deleteTestUserForbidden = await db.models.user.create({
+        username: uuidv4(),
+        firstName: 'delete2FirstName01',
+        lastName: 'delete2LastName01',
+        email: 'delete2@email.com',
+      });
+      deleteTestUserWhoIsAdmin = await db.models.user.create({
+        username: uuidv4(),
+        firstName: 'delete3FirstName01',
+        lastName: 'delete3LastName01',
+        email: 'delete3@email.com',
+      });
+      await db.models.userGroupMember.create({
+        user_id: deleteTestUserWhoIsAdmin.id, group_id: adminGroup.id,
+      });
     });
 
     afterEach(async () => {
-      return db.models.user.destroy({where: {ident: deleteTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUserManager.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUserForbidden.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUserWhoIsAdmin.ident}, force: true});
     });
 
     test('/{user} - 204 Success', async () => {
@@ -319,6 +428,36 @@ describe('/user', () => {
         where: {ident: deleteTestUser.ident}, paranoid: false,
       });
       expect(deletedUser.deletedAt).not.toBeNull();
+    });
+
+    test('/{user} - 204 Success by manager', async () => {
+      await request
+        .delete(`/api/user/${deleteTestUserManager.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify user is soft-deleted
+      const deletedUser = await db.models.user.findOne({
+        where: {ident: deleteTestUserManager.ident}, paranoid: false,
+      });
+      expect(deletedUser.deletedAt).not.toBeNull();
+    });
+
+    test('/{user} - 403 forbidden to manager when user is admin', async () => {
+      await request
+        .delete(`/api/user/${deleteTestUserWhoIsAdmin.ident}`)
+        .auth(managerUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
+    test('/{user} - 403 forbidden to bioinformatician', async () => {
+      await request
+        .delete(`/api/user/${deleteTestUserForbidden.ident}`)
+        .auth(bioinformaticianUsername, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
     });
 
     test('/{user} - 404 Not Found', async () => {

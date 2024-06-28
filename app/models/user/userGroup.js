@@ -15,6 +15,10 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
+    description: {
+      type: Sq.STRING,
+      allowNull: true,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'user_groups',

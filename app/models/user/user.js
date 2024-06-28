@@ -20,6 +20,12 @@ module.exports = (sequelize, Sq) => {
       type: Sq.ENUM('bcgsc', 'local'),
       defaultValue: 'local',
     },
+    allowNotifications: {
+      name: 'allowNotifications',
+      field: 'allow_notifications',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+    },
     firstName: {
       type: Sq.STRING,
       allowNull: false,

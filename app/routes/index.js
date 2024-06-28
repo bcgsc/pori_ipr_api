@@ -11,11 +11,14 @@ const APIVersion = require('./version');
 const userRoute = require('./user');
 
 const reportsRoute = require('./report/report');
+const reportsAsyncRoute = require('./report/reportAsync');
 const swaggerSpec = require('./swagger/swaggerSpec');
 const swaggerSpecJson = require('./swagger/swaggerSpecJson');
 const projectRoute = require('./project');
 const notificationRoute = require('./notification');
+const variantTextRoute = require('./variantText');
 const templateRoute = require('./template');
+const appendixRoute = require('./appendix');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
@@ -23,6 +26,7 @@ const germlineReports = require('./germlineSmallMutation/reports');
 const germlineReportSections = require('./germlineSmallMutation');
 const germlineReportsExport = require('./germlineSmallMutation/export.download');
 const graphkbRouter = require('./graphkb');
+const emailRouter = require('./email');
 const reportSections = require('./report');
 
 const router = express.Router({mergeParams: true});
@@ -62,12 +66,15 @@ class Routing extends RouterInterface {
     // Add Single Routes
     // Setup other routes
     this.router.use('/graphkb', graphkbRouter);
+    this.router.use('/email', emailRouter);
     this.router.use('/version', APIVersion);
 
     this.router.use('/user', userRoute);
 
     this.router.use('/reports', reportsRoute);
     this.router.use('/reports/:report', reportSections);
+
+    this.router.use('/reports-async', reportsAsyncRoute);
 
     this.router.use('/spec', swaggerSpec);
     this.router.use('/spec.json', swaggerSpecJson);
@@ -85,8 +92,14 @@ class Routing extends RouterInterface {
     // Get Notification Routes
     this.router.use('/notification', notificationRoute);
 
+    // Get variant text Routes
+    this.router.use('/variant-text', variantTextRoute);
+
     // Get template routes
     this.router.use('/templates', templateRoute);
+
+    // Get appendix routes
+    this.router.use('/appendix', appendixRoute);
 
     return true;
   }

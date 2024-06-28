@@ -21,6 +21,26 @@
             "Collection Date": "01-01-20"
         }
     ],
+    "reportSampleInfo": [
+        {
+            "sample": "Tumour",
+            "pathoTc": "68%",
+            "biopsySite": "US guided liver",
+            "biopsyType": "Biopsy type",
+            "sampleName": "UPLOADPAT01",
+            "primarySite": "Liver",
+            "collectionDate": "01-01-20"
+        },
+        {
+            "sample": "Constitutional",
+            "pathoTc": "na",
+            "biopsySite": "Normal tissue",
+            "biopsyType": "Biopsy type",
+            "sampleName": "UPLOADPAT01",
+            "primarySite": "Blood-Peripheral",
+            "collectionDate": "01-01-20"
+        }
+    ],
     "seqQC": [
         {
             "Reads": "na",
@@ -79,6 +99,8 @@
     "presentationDate": null,
     "kbUrl": "https://ipr.bcgsc.ca/testurl",
     "kbDiseaseMatch": "Colorectal Cancer",
+    "legacyReportFilepath": "/sample/filepath",
+    "legacyPresentationFilepath": "/sample/filepath",
     "analysisStartedAt": "2020-01-01T20:20:00+00:00",
     "oncotreeTumourType": "tumour type",
     "patientInformation": {
@@ -516,7 +538,8 @@
         {
             "key": "mutSignature.barplot.sbs",
             "path": "test/testData/images/msig_snvs_all_strelka.png",
-            "title": "Test adding a title to an image"
+            "title": "Test adding a title to an image",
+            "category": "testCategory"
         },
         {
             "key": "cnvLoh.circos",

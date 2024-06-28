@@ -52,6 +52,9 @@ module.exports = {
     searchText: {
       type: 'string',
     },
+    keyVariant: {
+      type: 'string',
+    },
   },
   required: [],
   additionalProperties: false,

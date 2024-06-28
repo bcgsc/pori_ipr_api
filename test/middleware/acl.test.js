@@ -73,7 +73,7 @@ describe('Testing ACL methods', () => {
     });
 
     test('GET request when user has master access', async () => {
-      req.user.groups = [{name: 'manager'}];
+      req.user.groups = [{name: 'admin'}];
       req.user.projects = [];
 
       req.report.projects = [];

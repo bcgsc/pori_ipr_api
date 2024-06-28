@@ -23,6 +23,7 @@ const checkUserGroup = (groupObject) => {
     id: expect.any(Number),
     owner_id: expect.any(Number),
     deletedAt: expect.any(String),
+    description: expect.any(String),
   }));
 };
 
@@ -63,7 +64,7 @@ beforeAll(async () => {
     email: 'email02@email.com',
   });
 
-  group = await db.models.userGroup.create({name: 'Test group', owner_id: user01.id});
+  group = await db.models.userGroup.create({name: 'Test group', owner_id: user01.id, description: 'test'});
 });
 
 // Tests for user group related endpoints

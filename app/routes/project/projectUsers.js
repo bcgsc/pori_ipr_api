@@ -4,6 +4,8 @@ const express = require('express');
 const db = require('../../models');
 const logger = require('../../log');
 
+const {isAdmin} = require('../../libs/helperFunctions');
+
 const router = express.Router({mergeParams: true});
 
 // User-project binding routes
@@ -28,6 +30,12 @@ router.route('/')
     if (!user) {
       logger.error(`Unable to find user ${req.body.user}`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find user'}});
+    }
+
+    if (!isAdmin(req.user) && !(req.user.projects).map((proj) => {return proj.name;}).includes(req.project.name)) {
+      const msg = 'User does not have permission to add other users to this group';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
 
     let binding;
@@ -88,6 +96,12 @@ router.route('/')
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: 'Unable to find the provided user'},
       });
+    }
+
+    if (!isAdmin(req.user) && !(req.user.projects).map((proj) => {return proj.name;}).includes(req.project.name)) {
+      const msg = 'User does not have permission to remove other users from this group';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
 
     try {

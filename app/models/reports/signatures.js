@@ -69,6 +69,14 @@ module.exports = (sequelize, Sq) => {
           {model: sequelize.models.user.scope('public'), as: 'creatorSignature'},
         ],
       },
+      history: {
+        attributes: {exclude: ['id', 'reportId', 'reviewerId', 'authorId', 'creatorId', 'updatedBy']},
+        include: [
+          {model: sequelize.models.user.scope('public'), as: 'reviewerSignature'},
+          {model: sequelize.models.user.scope('public'), as: 'authorSignature'},
+          {model: sequelize.models.user.scope('public'), as: 'creatorSignature'},
+        ],
+      },
     },
   });
 

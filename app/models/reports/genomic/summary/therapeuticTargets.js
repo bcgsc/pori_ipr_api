@@ -42,6 +42,16 @@ module.exports = (sequelize, Sq) => {
       defaultValue: null,
       field: 'variant_graphkb_id',
     },
+    signature: {
+      type: Sq.TEXT,
+      defaultValue: null,
+    },
+    signatureGraphkbId: {
+      name: 'signatureGraphkbId',
+      type: Sq.TEXT,
+      defaultValue: null,
+      field: 'signature_graphkb_id',
+    },
     therapy: {
       type: Sq.STRING,
       allowNull: false,

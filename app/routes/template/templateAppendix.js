@@ -6,7 +6,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const {sanitizeHtml} = require('../../libs/helperFunctions');
+const {sanitizeHtml, isAdmin} = require('../../libs/helperFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -39,7 +39,6 @@ router.use('/', async (req, res, next) => {
     } else {
       projectId = null;
     }
-
     req.templateAppendix = await db.models.templateAppendix.findOne({
       where:
       {
@@ -87,6 +86,16 @@ router.use('/', async (req, res, next) => {
     });
   }
 
+  if (!isAdmin(req.user) && req.body.projectId) {
+    const userProject = await db.models.userProject.findOne({
+      where: {user_id: req.user.id, project_id: req.body.projectId},
+    });
+    if (!userProject) {
+      const msg = 'Non-admin user can not make template appendix changes where project is not in user projects';
+      logger.error(msg);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+    }
+  }
   return next();
 });
 

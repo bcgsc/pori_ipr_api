@@ -27,7 +27,8 @@ const checkReport = (report) => {
     'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
-    'kbUrl', 'pediatricIds', 'captiv8Score', 'hrdetectScore', 'appendix',
+    'kbUrl', 'pediatricIds', 'captiv8Score', 'appendix', 'hrdetectScore',
+    'legacyReportFilepath', 'legacyPresentationFilepath', 'signatures',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
@@ -62,17 +63,24 @@ describe('/reports/{REPORTID}', () => {
   const randomUuid = uuidv4();
 
   const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
-  const NON_PROD_ACCESS = 'Non-Production Access';
-  const UNREVIEWED_ACCESS = 'Unreviewed Access';
+  const NON_PROD_ACCESS = 'non-production Access';
+  const UNREVIEWED_ACCESS = 'unreviewed Access';
+
+  const KEYVARIANT = 'uniqueKeyVariant';
 
   let project;
   let project2;
+  let offsetTestProject;
   let report;
   let reportReady;
   let reportReviewed;
   let reportCompleted;
   let reportNonProduction;
-  let totalReports;
+  let report2;
+  let reportReady2;
+  let reportReviewed2;
+  let reportCompleted2;
+  let reportNonProduction2;
   let reportDualProj;
 
   beforeAll(async () => {
@@ -89,6 +97,7 @@ describe('/reports/{REPORTID}', () => {
         name: 'TEST2',
       },
     });
+    offsetTestProject = await db.models.project.create({name: `offset${randomUuid.toString()}`});
 
     report = await db.models.report.create({
       templateId: template.id,
@@ -99,6 +108,10 @@ describe('/reports/{REPORTID}', () => {
     await db.models.reportProject.create({
       reportId: report.id,
       project_id: project.id,
+    });
+    await db.models.genomicAlterationsIdentified.create({
+      geneVariant: KEYVARIANT,
+      reportId: report.id,
     });
 
     reportReady = await db.models.report.create({
@@ -156,7 +169,60 @@ describe('/reports/{REPORTID}', () => {
       additionalProject: true,
     });
 
-    totalReports = await db.models.report.count();
+    // create a second set of reports for use in the offset test, which relies on
+    // a predictable set of reports in the db which means using a specific project
+    // and creating reports just for it. otherwise other tests running at the same
+    // time can interfere
+    report2 = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+      tumourContent: 100,
+      m1m2Score: 22.5,
+    });
+    await db.models.reportProject.create({
+      reportId: report2.id,
+      project_id: offsetTestProject.id,
+    });
+
+    reportReady2 = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+      state: 'ready',
+    });
+    await db.models.reportProject.create({
+      reportId: reportReady2.id,
+      project_id: offsetTestProject.id,
+    });
+
+    reportNonProduction2 = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+      state: 'nonproduction',
+    });
+    await db.models.reportProject.create({
+      reportId: reportNonProduction2.id,
+      project_id: offsetTestProject.id,
+    });
+
+    reportReviewed2 = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+      state: 'reviewed',
+    });
+    await db.models.reportProject.create({
+      reportId: reportReviewed2.id,
+      project_id: offsetTestProject.id,
+    });
+
+    reportCompleted2 = await db.models.report.create({
+      templateId: template.id,
+      patientId: mockReportData.patientId,
+      state: 'completed',
+    });
+    await db.models.reportProject.create({
+      reportId: reportCompleted2.id,
+      project_id: offsetTestProject.id,
+    });
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -279,10 +345,10 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    // Test GET with offset
     test('/ - offset - 200 Success', async () => {
+      const totalOffsetReports = 5;
       const res = await request
-        .get(`/api/reports?paginated=true&offset=${totalReports - 3}`)
+        .get(`/api/reports?project=${offsetTestProject.name}&paginated=true&offset=${totalOffsetReports - 3}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -403,6 +469,22 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
+    test('/ - key variant - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?keyVariant=${KEYVARIANT}`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      for (const resReport of res.body.reports) {
+        for (const gAI of resReport.genomicAlterationsIdentified) {
+          expect(gAI.geneVariant).toEqual(KEYVARIANT);
+        }
+      }
+    }, LONGER_TIMEOUT);
+
     test('fetches known ident ok', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}`)
@@ -487,8 +569,15 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      // Check if the number of reports returned by api is the same as db
-      expect(res.body.total).toEqual(totalReports);
+      // when multiple report-generating test modules are running simultaneously
+      // the full content of res.body can't be guaranteed; restrict checks to
+      // tests created for this module
+      const expectedReports = [report, reportReady, reportReviewed, reportCompleted, reportNonProduction, report2, reportReady2, reportReviewed2, reportCompleted2, reportNonProduction2, reportDualProj];
+      expect(res.body.total).toBeGreaterThanOrEqual(expectedReports.length);
+      const expectedIds = (expectedReports).map((elem) => {return elem.ident;});
+      const foundIds = (res.body.reports).map((elem) => {return elem.ident;});
+      const allPresent = expectedIds.every((elem) => {return foundIds.includes(elem);});
+      expect(allPresent).toBeTruthy();
     });
 
     test('State querying is OK', async () => {
@@ -667,6 +756,13 @@ describe('/reports/{REPORTID}', () => {
     await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
     await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
     await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
+    await db.models.report.destroy({where: {id: report2.id}, force: true});
+    await db.models.report.destroy({where: {id: reportReady2.id}, force: true});
+    await db.models.report.destroy({where: {id: reportReviewed2.id}, force: true});
+    await db.models.report.destroy({where: {id: reportCompleted2.id}, force: true});
+    await db.models.report.destroy({where: {id: reportNonProduction2.id}, force: true});
+    await db.models.report.destroy({where: {id: reportDualProj.id}, force: true});
+    await db.models.project.destroy({where: {id: offsetTestProject.id}, force: true});
   }, LONGER_TIMEOUT);
 });
 

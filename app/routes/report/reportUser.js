@@ -8,7 +8,8 @@ const router = express.Router({mergeParams: true});
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {REPORT_CREATE_BASE_URI} = require('../../constants');
+const email = require('../../libs/email');
+const {REPORT_CREATE_BASE_URI, NOTIFICATION_EVENT} = require('../../constants');
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate create schema
@@ -128,6 +129,21 @@ router.route('/')
         role,
         addedBy_id: req.user.id,
       });
+
+      // Try sending email
+      try {
+        await email.notifyUsers(
+          `${bindUser.firstName} ${bindUser.lastName} has been bound to a report`,
+          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident} as ${role}`,
+          {
+            eventType: NOTIFICATION_EVENT.USER_BOUND,
+            templateId: req.report.templateId,
+          },
+        );
+        logger.info('Email sent successfully');
+      } catch (error) {
+        logger.error(`Email not sent successfully: ${error}`);
+      }
 
       await req.report.reload();
       return res.status(HTTP_STATUS.CREATED).json(req.report.view('public'));

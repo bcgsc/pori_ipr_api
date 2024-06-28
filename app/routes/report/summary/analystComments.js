@@ -8,6 +8,7 @@ const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 
 const logger = require('../../../log');
+const {sanitizeHtml} = require('../../../libs/helperFunctions');
 
 // Generate schema's
 const updateSchema = schemaGenerator(db.models.analystComments, {baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true});
@@ -42,6 +43,7 @@ router.route('/')
 
       // Create new entry
       try {
+        req.body.text = sanitizeHtml(req.body.text);
         req.analystComments = await db.models.analystComments.create(req.body);
         return res.json(req.analystComments.view('public'));
       } catch (error) {
@@ -59,6 +61,7 @@ router.route('/')
           logger.error(message);
           return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
         }
+        req.body.text = sanitizeHtml(req.body.text);
         await req.analystComments.update(req.body, {userId: req.user.id});
         return res.json(req.analystComments.view('public'));
       } catch (error) {

@@ -454,6 +454,16 @@ comparators.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Sample Info
+const reportSampleInfo = require('./reports/reportSampleInfo')(sequelize, Sq);
+
+analysisReports.hasMany(reportSampleInfo, {
+  as: 'reportSampleInfo', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+reportSampleInfo.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Images
 const image = require('./image')(sequelize, Sq);
 
@@ -500,6 +510,22 @@ notification.belongsTo(project, {
 });
 notification.belongsTo(userGroup, {
   as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// Variant text
+const variantText = require('./variantText/variantText')(sequelize, Sq);
+
+template.hasMany(variantText, {
+  as: 'variant_texts', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
+});
+project.hasMany(variantText, {
+  as: 'variant_texts', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+});
+variantText.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+variantText.belongsTo(project, {
+  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Template Appendix
