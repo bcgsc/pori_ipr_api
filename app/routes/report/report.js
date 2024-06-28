@@ -10,7 +10,7 @@ const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
-  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
+  hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -204,6 +204,13 @@ router.route('/')
           required: true,
         },
         {
+          // Not using scope due to sequelize bug only returning one result when using scope,
+          // update when sequelize has fixed that
+          model: db.models.reportSampleInfo,
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+          as: 'reportSampleInfo',
+        },
+        {
           model: db.models.reportUser,
           as: 'users',
           attributes: ['ident', 'role', 'createdAt', 'updatedAt'],
@@ -214,6 +221,7 @@ router.route('/')
         {
           model: db.models.project,
           as: 'projects',
+          ...((isAdmin(req.user) && !project) ? {required: false} : {}),
           where: {
             name: projects,
           },
