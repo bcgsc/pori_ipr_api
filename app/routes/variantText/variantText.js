@@ -131,6 +131,11 @@ router.route('/:variantText([A-z0-9-]{36})')
       return res.json(req.variantText.view('public'));
     } catch (error) {
       logger.error(`Error while trying to update variant text ${error}`);
+      if (`${error}` === 'SequelizeUniqueConstraintError: Validation error') {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Error while creating variant text: Variant text not unique'},
+        });
+      }
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to update variant text'},
       });
@@ -223,6 +228,11 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Error while creating variant text ${error}`);
+      if (`${error}` === 'SequelizeUniqueConstraintError: Validation error') {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Error while creating variant text: Variant text not unique'},
+        });
+      }
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while creating variant text'},
       });
