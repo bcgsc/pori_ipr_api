@@ -1,7 +1,7 @@
 const {FORBIDDEN} = require('http-status-codes');
 const {pathToRegexp} = require('path-to-regexp');
 const {
-  isAdmin, isIntersectionBy, hasAccess, hasMasterAccess, projectAccess, hasAccessToGermlineReports,
+  isAdmin, isManager, isIntersectionBy, hasAccess, hasManagerAccess, projectAccess, hasAccessToGermlineReports,
 } = require('../libs/helperFunctions');
 const {MASTER_REPORT_ACCESS, UPDATE_METHODS} = require('../constants');
 const db = require('../models');
@@ -10,11 +10,37 @@ const logger = require('../log');
 const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/user'),
-    GET: [{name: 'admin'}],
+    GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
+  },
+  {
+    path: pathToRegexp('/api/user/me'),
+    GET: ['*'],
+  },
+  {
+    path: pathToRegexp('/api/user/:user/notifications'),
+    PUT: ['*'],
+  },
+  {
+    path: pathToRegexp('/api/variant-text'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/variant-text/:variantText'),
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
   },
   {
     path: pathToRegexp('/api/user/:user'),
-    DELETE: [{name: 'admin'}],
+    GET: [{name: 'admin'}, {name: 'manager'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
+  },
+  {
+    path: pathToRegexp('/api/user/group/:group/member'),
+    GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/reports'),
@@ -25,13 +51,24 @@ const SPECIAL_CASES = [
     POST: ['*'],
   },
   {
-    path: pathToRegexp('/api/template'),
-    POST: [{name: 'admin'}],
+    path: pathToRegexp('/api/templates'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/templates/:template'),
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
   },
   {
     path: pathToRegexp('/api/template/:template'),
-    PUT: [{name: 'admin'}],
-    DELETE: [{name: 'admin'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'template edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/appendix'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
   },
   {
     path: pathToRegexp('/api/project'),
@@ -45,10 +82,14 @@ const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/project/:project/user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}, {name: 'manager'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
     path: pathToRegexp('/api/project/:project/reports'),
     GET: [{name: 'admin'}, {name: 'manager'}],
+    POST: [{name: 'admin'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
 ];
 
@@ -65,7 +106,7 @@ module.exports = async (req, res, next) => {
   }
 
   try {
-    if (req.query.clinician_view && hasMasterAccess(req.user)) {
+    if (req.query.clinician_view && hasManagerAccess(req.user)) {
       req.user.groups = [{name: 'Clinician'}];
     }
   } catch {
@@ -80,7 +121,7 @@ module.exports = async (req, res, next) => {
   // Get route
   const [route] = req.originalUrl.split('?');
 
-  if (!hasAccessToGermlineReports(req.user) && route.includes('/germline-small-mutation-reports')) {
+  if (!hasAccessToGermlineReports(req.user) && !isManager(req.user) && route.includes('/germline-small-mutation-reports')) {
     logger.error('User does not have germline access');
     return res.status(
       FORBIDDEN,
@@ -146,7 +187,8 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    if ((UPDATE_METHODS.includes(req.method) && !hasMasterAccess(req.user))) {
+    // Allow users to edit themselves for allowNotifications field
+    if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},

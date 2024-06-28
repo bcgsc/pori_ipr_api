@@ -108,7 +108,7 @@ router.route('/')
       const projects = await db.models.project.scope('public').findAll(opts);
       return res.json(projects);
     } catch (error) {
-      logger.error(`Error while trying to retrieve projects${error}`);
+      logger.error(`Error while trying to retrieve projects ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to retrieve projects'},
       });

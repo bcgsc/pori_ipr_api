@@ -115,7 +115,7 @@ describe('Tests for uploading a report and all of its components', () => {
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // by force deleting the report
-    return db.models.report.destroy({where: {id: reportId}, force: true});
+    return db.models.report.destroy({where: {id: reportId}});
   });
 });
 

@@ -36,6 +36,15 @@ module.exports = (sequelize, Sq) => {
       caption: {
         type: Sq.TEXT,
       },
+      category: {
+        type: Sq.TEXT,
+      },
+      height: {
+        type: Sq.INTEGER,
+      },
+      width: {
+        type: Sq.INTEGER,
+      },
     },
     {
       ...DEFAULT_REPORT_OPTIONS,
@@ -44,6 +53,11 @@ module.exports = (sequelize, Sq) => {
         public: {
           attributes: {
             exclude: ['id', 'reportId', 'deletedAt', 'updatedBy'],
+          },
+        },
+        keylist: {
+          attributes: {
+            exclude: ['id', 'deletedAt', 'updatedBy', 'data'],
           },
         },
       },
@@ -57,6 +71,10 @@ module.exports = (sequelize, Sq) => {
         id, reportId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
       return publicView;
+    }
+    if (scope === 'keylist') {
+      const {id, deletedAt, updatedBy, exclue, ...keylistView} = this.dataValues;
+      return keylistView;
     }
     return this;
   };
