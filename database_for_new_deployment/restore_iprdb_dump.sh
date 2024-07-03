@@ -1,0 +1,75 @@
+#!/bin/bash
+
+if [ "$DB_DUMP_LOCATION" = "" ];
+then
+    DB_DUMP_LOCATION="/tmp/psql_data/ipr_new_deployment.postgres.dump"
+fi
+
+if [ "$DATABASE_NAME" = "" ];
+then
+    DATABASE_NAME="ipr"
+fi
+
+if [ "$SERVICE_USER" = "" ];
+then
+    SERVICE_USER="ipr_service"
+fi
+
+if [ "$TEMPLATE_NAME" = "" ];
+then
+    TEMPLATE_NAME="templateipr"
+fi
+
+if [ "$POSTGRES_USER" = "" ];
+then
+    POSTGRES_USER="postgres"
+fi
+
+if [ "$READONLY_USER" = "" ];
+then
+    READONLY_USER="ipr_ro"
+fi
+
+if [ "$READONLY_PASSWORD" = "" ];
+then
+    READONLY_PASSWORD=$SERVICE_PASSWORD
+fi
+
+if [ "$TRIGGERS_OPTION" = "" ];
+then
+    SECTION=""
+fi
+
+if [ "$TRIGGERS_OPTION" = "no_triggers" ];
+then
+    SECTION="--section=pre-data --section=data"
+fi
+
+if [ "$TRIGGERS_OPTION" = "only_triggers" ];
+then
+    SECTION="--section=post-data"
+fi
+
+
+
+echo "*** CREATING DATABASE ***"
+
+export PGPASSWORD=$POSTGRES_PASSWORD
+# create the required service role
+psql -U $POSTGRES_USER  -c "CREATE ROLE $SERVICE_USER; ALTER ROLE $SERVICE_USER WITH NOSUPERUSER INHERIT NOCREATEROLE CREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD '$SERVICE_PASSWORD'"
+psql -U $POSTGRES_USER  -c "CREATE ROLE $READONLY_USER; ALTER ROLE $READONLY_USER WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD '$READONLY_PASSWORD'"
+
+# create the template database
+psql -U $POSTGRES_USER -c "CREATE DATABASE $TEMPLATE_NAME OWNER $SERVICE_USER IS_TEMPLATE = true;"
+psql -U $POSTGRES_USER -c "GRANT CONNECT ON DATABASE $TEMPLATE_NAME TO PUBLIC; REVOKE TEMPORARY ON DATABASE $TEMPLATE_NAME FROM PUBLIC;"
+
+# import dump
+PGPASSWORD=$SERVICE_PASSWORD createdb -U $SERVICE_USER -T $TEMPLATE_NAME $DATABASE_NAME
+PGPASSWORD=$SERVICE_PASSWORD pg_restore -U $SERVICE_USER -n public $SECTION --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$DATABASE_NAME"
+
+# create the RO user for demos
+psql -U $POSTGRES_USER -c "GRANT CONNECT ON DATABASE $DATABASE_NAME TO $READONLY_USER;"
+psql -U $POSTGRES_USER -d $DATABASE_NAME -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO $READONLY_USER;"
+
+
+echo "*** DATABASE CREATED! ***"
