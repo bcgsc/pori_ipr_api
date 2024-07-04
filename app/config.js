@@ -81,7 +81,7 @@ const DEFAULTS = {
       ? 6380
       : 6379,
   },
-  redis_queue: {
+  redisqueue: {
     // TODO: enable on staging and prod when ready
     enableQueue: !(ENV === 'staging' || ENV === 'production'),
     host: 'iprdevredis.bcgsc.ca',
