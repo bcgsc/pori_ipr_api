@@ -163,7 +163,7 @@ describe('/variant-text', () => {
       const res = await request
         .get(BASE_URI)
         .send({
-          variantGkbId: variantText.variantGkbId,
+          cancerType: variantText.cancerType[0],
         })
         .auth(username, password)
         .type('json')
@@ -177,7 +177,7 @@ describe('/variant-text', () => {
       const res = await request
         .get(BASE_URI)
         .send({
-          variantGkbId: 'none',
+          cancerType: uuidv4(),
         })
         .auth(username, password)
         .type('json')
