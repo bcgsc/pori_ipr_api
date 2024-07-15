@@ -12,18 +12,18 @@ const {REPORT_UPDATE_BASE_URI, REPORT_CREATE_BASE_URI} = require('../../constant
 const {REPORT_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schemas
-const updateSchema = schemaGenerator(db.models.reportSampleInfo, {
+const updateSchema = schemaGenerator(db.models.sampleInfo, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
-const createSchema = schemaGenerator(db.models.reportSampleInfo, {
+const createSchema = schemaGenerator(db.models.sampleInfo, {
   baseUri: REPORT_CREATE_BASE_URI, exclude: REPORT_EXCLUDE,
 });
 
 // Middleware for sample info
-router.param('reportSampleInfo', async (req, res, next, ident) => {
+router.param('sampleInfo', async (req, res, next, ident) => {
   let result;
   try {
-    result = await db.models.reportSampleInfo.findOne({
+    result = await db.models.sampleInfo.findOne({
       where: {
         reportId: req.report.id,
         ident,
@@ -49,7 +49,7 @@ router.param('reportSampleInfo', async (req, res, next, ident) => {
 });
 
 // Handle requests for sample info
-router.route('/:reportSampleInfo')
+router.route('/:sampleInfo')
   .get((req, res) => {
     return res.json(req.sampleInfo.view('public'));
   })
@@ -90,7 +90,7 @@ router.route('/')
   .get(async (req, res) => {
     // Get all sample info for this report
     try {
-      const results = await db.models.reportSampleInfo.scope('public').findAll({
+      const results = await db.models.sampleInfo.scope('public').findAll({
         where: {
           reportId: req.report.id,
         },
@@ -116,7 +116,7 @@ router.route('/')
 
     try {
       // Add new sample info
-      const result = await db.models.reportSampleInfo.create({
+      const result = await db.models.sampleInfo.create({
         ...req.body,
         reportId: req.report.id,
       });

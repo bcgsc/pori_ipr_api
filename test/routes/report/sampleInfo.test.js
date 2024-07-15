@@ -50,7 +50,7 @@ describe('/reports/{REPORTID}/sample-info', () => {
       templateId: template.id,
       patientId: mockReportData.patientId,
     });
-    sampleInfo = await db.models.reportSampleInfo.create({
+    sampleInfo = await db.models.sampleInfo.create({
       reportId: report.id,
       sample: 'sample',
       pathoTc: 'patho tc',
@@ -136,7 +136,7 @@ describe('/reports/{REPORTID}/sample-info', () => {
 
   describe('DELETE', () => {
     test('Deleting a sample info is ok', async () => {
-      const deleteSampleInfo = await db.models.reportSampleInfo.create({
+      const deleteSampleInfo = await db.models.sampleInfo.create({
         reportId: report.id,
         sample: 'deleteSample',
       });
@@ -148,7 +148,7 @@ describe('/reports/{REPORTID}/sample-info', () => {
         .expect(HTTP_STATUS.NO_CONTENT);
 
       expect(
-        await db.models.reportSampleInfo.findOne({
+        await db.models.sampleInfo.findOne({
           where: {ident: deleteSampleInfo.ident},
         }),
       ).toBe(null);

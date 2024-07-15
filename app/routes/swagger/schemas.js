@@ -147,7 +147,7 @@ schemas.variantTextAssociations = schemaGenerator(db.models.variantText, {
 
 // appendices
 schemas.appendices = schemaGenerator(db.models.report, {
-  isJsonSchema: false, title: 'appendices', include: ['sampleInfo', 'seqQC', 'config'],
+  isJsonSchema: false, title: 'appendices', include: ['seqQC', 'config'],
 });
 
 // signatures - earliest signoff
