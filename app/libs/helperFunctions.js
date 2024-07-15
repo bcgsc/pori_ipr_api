@@ -127,6 +127,20 @@ const hasAccessToGermlineReports = (user) => {
 };
 
 /**
+ * Checks if user has access to appendix edit
+ * 
+ * @param {object} user - Sequelize user model
+ * @returns {boolean} - Returns a boolean indicating if the user has access to appendix edit
+ */
+const hasAccessToAppendixEdit = (user) => {
+  return user.groups?.some((group) => {
+    return group.name.toLowerCase() === 'admin'
+    || group.name.toLowerCase() === 'manager'
+    || group.name.toLowerCase() === 'appendix edit access';
+  })
+}
+
+/**
  * Checks if a user belongs to atleast one
  * of the access groups
  *
@@ -210,6 +224,7 @@ module.exports = {
   hasAccessToNonProdReports,
   hasAccessToUnreviewedReports,
   hasAccessToGermlineReports,
+  hasAccessToAppendixEdit,
   hasMasterAccess,
   hasManagerAccess,
   hasAllProjectsAccess,
