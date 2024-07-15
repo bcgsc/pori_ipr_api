@@ -5225,7 +5225,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                    "$ref": "#/components/schemas/sampleInfoAssociations"
                   }
                 }
               }
@@ -5253,7 +5253,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/reportSampleInfoCreate"
+                "$ref": "#/components/schemas/sampleInfoCreate"
               }
             }
           }
@@ -5272,7 +5272,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                  "$ref": "#/components/schemas/sampleInfoAssociations"
                 }
               }
             }
@@ -5315,7 +5315,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                  "$ref": "#/components/schemas/sampleInfoAssociations"
                 }
               }
             }
@@ -5376,7 +5376,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/reportSampleInfoUpdate"
+                "$ref": "#/components/schemas/sampleInfoUpdate"
               }
             }
           }
@@ -5395,7 +5395,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/reportSampleInfoAssociations"
+                  "$ref": "#/components/schemas/sampleInfoAssociations"
                 }
               }
             }
