@@ -1,8 +1,7 @@
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
-  // Naming table reportSampleInfo due to conflict with sampleInfo column in reports
-  const reportSampleInfo = sequelize.define('reportSampleInfo', {
+  const sampleInfo = sequelize.define('sampleInfo', {
     ...DEFAULT_COLUMNS,
     reportId: {
       name: 'reportId',
@@ -57,7 +56,7 @@ module.exports = (sequelize, Sq) => {
   });
 
   // set instance methods
-  reportSampleInfo.prototype.view = function (scope) {
+  sampleInfo.prototype.view = function (scope) {
     if (scope === 'public') {
       const {
         id, reportId, deletedAt, updatedBy, ...publicView
@@ -67,5 +66,5 @@ module.exports = (sequelize, Sq) => {
     return this;
   };
 
-  return reportSampleInfo;
+  return sampleInfo;
 };

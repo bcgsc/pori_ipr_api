@@ -23,7 +23,7 @@ let request;
 const checkReport = (report) => {
   [
     'tumourContent', 'ploidy', 'subtyping', 'ident', 'patientId',
-    'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
+    'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
     'kbUrl', 'pediatricIds', 'captiv8Score', 'hrdetectScore', 'appendix',
