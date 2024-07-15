@@ -276,21 +276,20 @@ router.route('/')
     // Clean sampleInfo input
     const cleanSampleInfo = [];
     for (const sampleInfoObject of req.body.sampleInfo) {
-      console.log(sampleInfoObject)
       cleanSampleInfo.push(
         {
-          sample: (sampleInfoObject['Sample']) ? sampleInfoObject['Sample'] : sampleInfoObject.sample,
+          sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
           pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
           biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
           biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
           sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
           primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
           collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
-        }
-      )
+        },
+      );
     }
     req.body.sampleInfo = cleanSampleInfo;
-  
+
     try {
       validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
