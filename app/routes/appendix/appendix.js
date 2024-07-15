@@ -6,7 +6,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const {sanitizeHtml, isAdmin, hasAllProjectsAccess} = require('../../libs/helperFunctions');
+const {sanitizeHtml, isAdmin, hasAllProjectsAccess, hasAccessToAppendixEdit} = require('../../libs/helperFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -173,8 +173,8 @@ router.route('/')
     }
 
     const userProjects = (req.user.projects).map((elem) => {return elem.name;});
-    // if user is manager and does not have the project id for this appendix
-    if (!isAdmin(req.user) && !hasAllProjectsAccess(req.user) && !userProjects.includes(req.templateAppendix.project?.name)) {
+    // Checks if user is either A. Admin or B. Has access to appendix edit (which includes manager) AND has project access permissions or if appendix has no projects
+    if (!(isAdmin(req.user) || (hasAccessToAppendixEdit(req.user) && (hasAllProjectsAccess(req.user) || userProjects.includes(req.templateAppendix.project?.name) || req.templateAppendix.project?.ident === null)))) {
       const msg = 'Non-admin user can not edit template text without project membership';
       logger.error(msg);
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {msg}});
