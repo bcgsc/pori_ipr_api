@@ -6,7 +6,7 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const {sanitizeHtml, isAdmin, isManager, hasAllProjectsAccess, hasAccessToAppendixEdit} = require('../../libs/helperFunctions');
+const {sanitizeHtml, isAdmin, hasAllProjectsAccess, hasAccessToAppendixEdit} = require('../../libs/helperFunctions');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
