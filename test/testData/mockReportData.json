@@ -21,6 +21,14 @@
             "sampleName": "UPLOADPAT01",
             "primarySite": "Blood-Peripheral",
             "collectionDate": "01-01-20"
+        },
+        {
+            "Sample": "Tumour",
+            "Patho TC": "68%",
+            "Biopsy Site": "US guided liver",
+            "Sample Name": "UPLOADPAT01",
+            "Primary Site": "Liver",
+            "Collection Date": "01-01-20"
         }
     ],
     "seqQC": [
