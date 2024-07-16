@@ -24,16 +24,17 @@ const groupMappings = {
 }
 
 module.exports = {
-  up: async (queryInterface) => {
-    return queryInterface.sequelize.transaction(async () => {
+  up: async (queryInterface, Sq) => {
+    try {
+      await queryInterface.sequelize.transaction(async (transaction) => {
 
-      for (groupMapping in groupMappings) {
-        for (let key in groupMappings) {
-          let startingGroupName = key;
-          for (let targetGroupName of groupMappings[key]) {
-            let groupMembers = await queryInterface.sequelize.query(
-              // eslint-disable-next-line no-multi-str
-              `insert into user_group_members
+        for (groupMapping in groupMappings) {
+          for (let key in groupMappings) {
+            let startingGroupName = key;
+            for (let targetGroupName of groupMappings[key]) {
+              await queryInterface.sequelize.query(
+                // eslint-disable-next-line no-multi-str
+                `insert into user_group_members
               (created_at, updated_at, user_id, group_id)
               select now(), now(), user_id, target_group_id
               from
@@ -53,16 +54,30 @@ module.exports = {
                   join user_groups on group_id = user_groups.id
                   where user_group_members.deleted_at is null
                   and user_groups.name = '${targetGroupName}'
+              )`,
+                {
+                  type: queryInterface.sequelize.QueryTypes.SELECT,
+                  transaction
+                },
               );
-              `,
-              {
-                type: queryInterface.sequelize.QueryTypes.SELECT,
-              },
-            );
+            }
           }
         }
-      }
-    })
+      });
+
+
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `delete from user_groups where name = '${startingGroupName}'`,
+        {
+          transaction
+        },
+      );
+
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   },
 
   down: async () => {
