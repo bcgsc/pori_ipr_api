@@ -14,13 +14,12 @@ const tcgaV8 = require('../../../database/exp_matrix.v8.json');
 const tcgaV9 = require('../../../database/exp_matrix.v9.json');
 
 const APPENDIX_DATA = {
-  sampleInfo: [{Sample: 'Tumour', 'Collection Date': '23-09-20'}],
   seqQC: [{Reads: '2534M', bioQC: 'passed'}],
   config: 'TEST CONFIG',
 };
 
 const appendixProperties = [
-  'sampleInfo', 'seqQC', 'config',
+  'seqQC', 'config',
 ];
 
 const checkAppendix = (appendixObject) => {
