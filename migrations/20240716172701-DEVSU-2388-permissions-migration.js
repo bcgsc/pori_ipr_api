@@ -1,40 +1,34 @@
-'use strict';
-
-const { v4: uuidv4 } = require('uuid');
-
-const germline = 'Germline Access'
-const nonprod = 'non-production access'
-const unreviewed = 'Unreviewed Access'
-const createAccess = 'create reports access'
-const reportAssign = 'report assignment access'
+const germline = 'Germline Access';
+const nonprod = 'non-production access';
+const unreviewed = 'Unreviewed Access';
+const createAccess = 'create reports access';
+const reportAssign = 'report assignment access';
 
 const groupMappings = {
-  'Bioinformatician': [germline, nonprod, unreviewed, createAccess],
-  'Analyst': [germline, nonprod, unreviewed, createAccess],
+  Bioinformatician: [germline, nonprod, unreviewed, createAccess],
+  Analyst: [germline, nonprod, unreviewed, createAccess],
   'Report Manager': [reportAssign, germline, nonprod, unreviewed, createAccess],
-  'Collaborator': [],
-  'Clinician': [],
+  Collaborator: [],
+  Clinician: [],
   'External Analyst': [],
-  'Projects': [germline, nonprod, unreviewed],
-  'Pipelines': [germline, nonprod, unreviewed],
-  'Biopsies': [germline, nonprod, unreviewed],
-  'LIMS': [germline, nonprod, unreviewed],
-  'Research': [germline, nonprod, unreviewed],
-  'BioApps': [germline, nonprod, unreviewed],
-}
+  Projects: [germline, nonprod, unreviewed],
+  Pipelines: [germline, nonprod, unreviewed],
+  Biopsies: [germline, nonprod, unreviewed],
+  LIMS: [germline, nonprod, unreviewed],
+  Research: [germline, nonprod, unreviewed],
+  BioApps: [germline, nonprod, unreviewed],
+};
 
 module.exports = {
-  up: async (queryInterface, Sq) => {
+  up: async (queryInterface) => {
     try {
       await queryInterface.sequelize.transaction(async (transaction) => {
-
-        for (groupMapping in groupMappings) {
-          for (let key in groupMappings) {
-            let startingGroupName = key;
-            for (let targetGroupName of groupMappings[key]) {
-              await queryInterface.sequelize.query(
-                // eslint-disable-next-line no-multi-str
-                `insert into user_group_members
+        for (const [key, value] of groupMappings) {
+          const startingGroupName = key;
+          for (const targetGroupName of value) {
+            await queryInterface.sequelize.query(
+              // eslint-disable-next-line no-multi-str
+              `insert into user_group_members
               (created_at, updated_at, user_id, group_id)
               select now(), now(), user_id, target_group_id
               from
@@ -55,25 +49,23 @@ module.exports = {
                   where user_group_members.deleted_at is null
                   and user_groups.name = '${targetGroupName}'
               )`,
-                {
-                  type: queryInterface.sequelize.QueryTypes.SELECT,
-                  transaction
-                },
-              );
-            }
+              {
+                type: queryInterface.sequelize.QueryTypes.SELECT,
+                transaction,
+              },
+            );
           }
         }
+        for (const key of Object.keys(groupMappings)) {
+          await queryInterface.sequelize.query(
+            // eslint-disable-next-line no-multi-str
+            `delete from user_groups where name = '${key}'`,
+            {
+              transaction,
+            },
+          );
+        }
       });
-
-
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `delete from user_groups where name = '${startingGroupName}'`,
-        {
-          transaction
-        },
-      );
-
     } catch (err) {
       console.log(err);
       throw err;
