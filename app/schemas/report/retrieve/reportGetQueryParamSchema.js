@@ -57,7 +57,7 @@ module.exports = {
     },
     matchingThreshold: {
       type: 'string',
-    }
+    },
   },
   required: [],
   additionalProperties: false,
