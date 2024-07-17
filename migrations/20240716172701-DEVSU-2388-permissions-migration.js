@@ -56,16 +56,31 @@ module.exports = {
             );
           }
         }
-        for (const key of Object.keys(groupMappings)) {
-          await queryInterface.sequelize.query(
-            // eslint-disable-next-line no-multi-str
-            `delete from user_groups where name = '${key}'`,
-            {
-              transaction,
-            },
-          );
-        }
       });
+      const groupsToKeep = [
+        reportAssign, germline, nonprod, unreviewed, createAccess,
+        'variant-text edit access',
+        'template edit access',
+        'manager',
+        'admin',
+        'appendix edit access',
+        'all projects access'
+      ]
+
+      const groupsToDelete = await queryInterface.sequelize.query(
+        `SELECT id FROM user_groups WHERE name NOT IN (:groupnames)`,
+        {
+          replacements: { groupnames: groupsToKeep },
+          type: queryInterface.sequelize.QueryTypes.SELECT
+        }
+      );
+
+      const groupIdsToDelete = groupsToDelete.map(group => group.id);
+
+      await queryInterface.bulkDelete('user_groups', { id: groupIdsToDelete });
+
+      console.log(`Deleted ${groupIdsToDelete.length} groups.`);
+
     } catch (err) {
       console.log(err);
       throw err;
