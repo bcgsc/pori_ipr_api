@@ -1,6 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const {Op} = require('sequelize');
+const {Op, literal} = require('sequelize');
 
 const email = require('../../libs/email');
 const createReport = require('../../libs/createReport');
@@ -173,7 +173,13 @@ router.route('/')
           ],
         } : {}),
         ...((keyVariant) ? {
-          '$genomicAlterationsIdentified.geneVariant$': {[Op.iLike]: `%${keyVariant}%`},
+          '$genomicAlterationsIdentified.geneVariant$': {
+            [Op.in]: literal(
+              `(SELECT "geneVariant" 
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              WHERE word_similarity > 0.8)`
+            ),
+          },
         } : {}),
       },
       distinct: 'id',
