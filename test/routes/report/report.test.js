@@ -480,6 +480,7 @@ describe('/reports/{REPORTID}', () => {
 
       for (const resReport of res.body.reports) {
         for (const gAI of resReport.genomicAlterationsIdentified) {
+          console.log(gAI.geneVariant);
           expect(gAI.geneVariant).toEqual(KEYVARIANT);
         }
       }
