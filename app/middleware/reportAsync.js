@@ -46,7 +46,7 @@ module.exports = async (req, res, next, ident) => {
   // Nothing found?
   if (!result) {
     const jobStatus = await retrieveJobFromReportQueue(ident);
-    return res.status(HTTP_STATUS.OK).json(jobStatus);
+    return res.status(HTTP_STATUS.OK).json({jobStatus});
   }
 
   if (!hasAccessToUnreviewedReports(req.user) && (result.state !== 'reviewed' && result.state !== 'completed')) {
