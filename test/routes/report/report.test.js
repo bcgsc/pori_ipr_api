@@ -67,7 +67,7 @@ describe('/reports/{REPORTID}', () => {
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   const KEYVARIANT = 'uniqueKeyVariant';
-  const MATCHINGTHRESHOLD = '1';
+  const MATCHINGTHRESHOLD = 1;
 
   let project;
   let project2;
