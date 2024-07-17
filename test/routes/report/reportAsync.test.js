@@ -58,6 +58,12 @@ describe('/reports/{REPORTID}', () => {
         name: 'TEST',
       },
     });
+    // Assure project exists before creating report
+    await db.models.project.findOrCreate({
+      where: {
+        name: 'TEST2',
+      },
+    });
 
     report = await db.models.report.create({
       templateId: template.id,
@@ -108,7 +114,7 @@ describe('/reports/{REPORTID}', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {id: report.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}});
   }, LONGER_TIMEOUT);
 });
 
