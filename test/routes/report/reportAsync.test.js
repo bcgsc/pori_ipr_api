@@ -80,7 +80,7 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkReport(res.body);
+      checkReport(res.body.report);
     });
   });
 
