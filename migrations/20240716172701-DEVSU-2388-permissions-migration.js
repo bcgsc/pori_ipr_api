@@ -1,7 +1,7 @@
 const germline = 'Germline Access';
 const nonprod = 'non-production access';
 const unreviewed = 'Unreviewed Access';
-const createAccess = 'create reports access';
+const createAccess = 'create report access';
 const reportAssign = 'report assignment access';
 
 const groupMappings = {
