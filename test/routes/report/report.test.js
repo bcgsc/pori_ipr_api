@@ -471,7 +471,7 @@ describe('/reports/{REPORTID}', () => {
 
     test('/ - key variant - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports?keyVariant=${KEYVARIANT}&&matchingThreshold=1`)
+        .get(`/api/reports?keyVariant=${KEYVARIANT}&&matchingThreshold=0.8`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
