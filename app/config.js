@@ -6,10 +6,22 @@ const ENV = process.env.NODE_ENV || 'local';
 // set the default db name based on the node-env
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
 
+let REDIS_QUEUE_CONFIG = {
+  // TODO: enable on prod when ready
+  enableQueue: !(ENV === 'production'),
+  host: 'iprdevredis.bcgsc.ca',
+  port: 6381,
+};
+
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
 } else if (ENV === 'staging') {
   DEFAULT_DB_NAME = 'ipr-sync-staging';
+  REDIS_QUEUE_CONFIG = {
+    enableQueue: true,
+    host: 'iprdevredis.bcgsc.ca',
+    port: 6382,
+  };
 }
 
 let DEFAULT_LOG_LEVEL = 'debug';
@@ -81,12 +93,7 @@ const DEFAULTS = {
       ? 6380
       : 6379,
   },
-  redis_queue: {
-    // TODO: enable on staging and prod when ready
-    enableQueue: !(ENV === 'staging' || ENV === 'production'),
-    host: 'iprdevredis.bcgsc.ca',
-    port: 6381,
-  },
+  redis_queue: REDIS_QUEUE_CONFIG,
   paths: {
     data: {
       POGdata: '/projects/tumour_char/pog/reports/genomic',
