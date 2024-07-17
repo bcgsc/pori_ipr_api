@@ -59,7 +59,7 @@ router.route('/')
 
 router.route('/:reportAsync')
   .get((req, res) => {
-    return res.json(req.report.view('public'));
+    return res.json({report: req.report.view('public')});
   });
 
 module.exports = router;
