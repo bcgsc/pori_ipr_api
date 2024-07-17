@@ -67,6 +67,7 @@ describe('/reports/{REPORTID}', () => {
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   const KEYVARIANT = 'uniqueKeyVariant';
+  const MATCHINGTHRESHOLD = '1';
 
   let project;
   let project2;
@@ -471,7 +472,7 @@ describe('/reports/{REPORTID}', () => {
 
     test('/ - key variant - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports?keyVariant=${KEYVARIANT}`)
+        .get(`/api/reports?keyVariant=${KEYVARIANT}&&matchingThreshold=${MATCHINGTHRESHOLD}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);

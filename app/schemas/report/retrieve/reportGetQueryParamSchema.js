@@ -55,6 +55,9 @@ module.exports = {
     keyVariant: {
       type: 'string',
     },
+    matchingThreshold: {
+      type: 'string',
+    }
   },
   required: [],
   additionalProperties: false,
