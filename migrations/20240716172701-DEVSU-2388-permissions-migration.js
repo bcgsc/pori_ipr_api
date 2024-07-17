@@ -64,23 +64,22 @@ module.exports = {
         'manager',
         'admin',
         'appendix edit access',
-        'all projects access'
-      ]
+        'all projects access',
+      ];
 
       const groupsToDelete = await queryInterface.sequelize.query(
-        `SELECT id FROM user_groups WHERE name NOT IN (:groupnames)`,
+        'SELECT id FROM user_groups WHERE name NOT IN (:groupnames)',
         {
-          replacements: { groupnames: groupsToKeep },
-          type: queryInterface.sequelize.QueryTypes.SELECT
-        }
+          replacements: {groupnames: groupsToKeep},
+          type: queryInterface.sequelize.QueryTypes.SELECT,
+        },
       );
 
-      const groupIdsToDelete = groupsToDelete.map(group => group.id);
+      const groupIdsToDelete = groupsToDelete.map((group) => {return group.id;});
 
-      await queryInterface.bulkDelete('user_groups', { id: groupIdsToDelete });
+      await queryInterface.bulkDelete('user_groups', {id: groupIdsToDelete});
 
       console.log(`Deleted ${groupIdsToDelete.length} groups.`);
-
     } catch (err) {
       console.log(err);
       throw err;
