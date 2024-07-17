@@ -23,7 +23,7 @@ module.exports = {
   up: async (queryInterface) => {
     try {
       await queryInterface.sequelize.transaction(async (transaction) => {
-        for (const [key, value] of groupMappings) {
+        for (const [key, value] of Object.entries(groupMappings)) {
           const startingGroupName = key;
           for (const targetGroupName of value) {
             await queryInterface.sequelize.query(
