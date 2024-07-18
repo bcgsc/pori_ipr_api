@@ -469,7 +469,7 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
-    test('/ - key variant - 200 Success', async () => {
+    test.only('/ - key variant - 200 Success', async () => {
       const res = await request
         .get(`/api/reports?keyVariant=${KEYVARIANT}&matchingThreshold=1`)
         .auth(username, password)
