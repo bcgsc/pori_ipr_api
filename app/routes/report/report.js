@@ -176,7 +176,7 @@ router.route('/')
           '$genomicAlterationsIdentified.geneVariant$': {
             [Op.in]: literal(
               `(SELECT "geneVariant" 
-              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              FROM (SELECT "geneVariant", word_similarity("${keyVariant}", "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
               WHERE word_similarity >= ${matchingThreshold})`,
             ),
           },
