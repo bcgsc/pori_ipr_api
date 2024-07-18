@@ -7,14 +7,18 @@ const ENV = process.env.NODE_ENV || 'local';
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
 
 let REDIS_QUEUE_CONFIG = {
-  // TODO: enable on prod when ready
-  enableQueue: !(ENV === 'production'),
+  enableQueue: true,
   host: 'iprdevredis.bcgsc.ca',
   port: 6381,
 };
 
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
+  REDIS_QUEUE_CONFIG = {
+    enableQueue: true,
+    host: 'iprredis01.bcgsc.ca',
+    port: 6380,
+  };
 } else if (ENV === 'staging') {
   DEFAULT_DB_NAME = 'ipr-sync-staging';
   REDIS_QUEUE_CONFIG = {
