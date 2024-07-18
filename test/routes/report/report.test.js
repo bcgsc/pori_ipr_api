@@ -751,18 +751,18 @@ describe('/reports/{REPORTID}', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {id: report.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReady.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
-    await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
-    await db.models.report.destroy({where: {id: report2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReady2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReviewed2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportCompleted2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportDualProj.id}, force: true});
-    await db.models.project.destroy({where: {id: offsetTestProject.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}, force: false});
+    await db.models.report.destroy({where: {id: reportReady.id}, force: false});
+    await db.models.report.destroy({where: {id: reportReviewed.id}, force: false});
+    await db.models.report.destroy({where: {id: reportCompleted.id}, force: false});
+    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: false});
+    await db.models.report.destroy({where: {id: report2.id}, force: false});
+    await db.models.report.destroy({where: {id: reportReady2.id}, force: false});
+    await db.models.report.destroy({where: {id: reportReviewed2.id}, force: false});
+    await db.models.report.destroy({where: {id: reportCompleted2.id}, force: false});
+    await db.models.report.destroy({where: {id: reportNonProduction2.id}, force: false});
+    await db.models.report.destroy({where: {id: reportDualProj.id}, force: false});
+    await db.models.project.destroy({where: {id: offsetTestProject.id}, force: false});
   }, LONGER_TIMEOUT);
 });
 
