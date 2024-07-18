@@ -44,11 +44,15 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/reports'),
-    POST: ['*'],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
+  },
+  {
+    path: pathToRegexp('/api/reports-async'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
   {
     path: pathToRegexp('/api/germline-small-mutation-reports'),
-    POST: ['*'],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
   {
     path: pathToRegexp('/api/templates'),
@@ -148,7 +152,7 @@ module.exports = async (req, res, next) => {
     // and they don't have update permissions throw an error
     if (!projectAccess(req.user, req.report)
       || (UPDATE_METHODS.includes(req.method)
-      && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
+        && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
     ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
