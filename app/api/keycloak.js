@@ -5,6 +5,8 @@ const logger = require('../log');
 
 const $keycloak = {};
 
+const REALMS_URL = 'https://keycloakdev01.bcgsc.ca/auth/admin/realms';
+const REALM = 'GSC';
 $keycloak.getToken = async (username, password) => {
   const {clientId, uri} = nconf.get('keycloak');
   const options = {
@@ -25,92 +27,90 @@ $keycloak.getToken = async (username, password) => {
   return request(options);
 };
 
-$keycloak.createPORIUser = async (username, password, token, newUsername, newEmail) => {
-  const {clientId, uri} = nconf.get('keycloak');
-  const headers = headers: {
+$keycloak.createPORIUser = async (token, newUsername, newEmail) => {
+  const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `bearer ${token}`
-  },
+    Authorization: `bearer ${token}`,
+  };
   const newUserOptions = {
     method: 'POST',
-    url: "https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users",
+    url: `${REALMS_URL}/GSC/users`,
     json: true,
-    headers: headers,
+    headers,
     data: {
-      "username": newUsername,
-      "email": newEmail,
-      "enabled": true,
-      "emailVerified": true
-    }
+      username: newUsername,
+      email: newEmail,
+      enabled: true,
+      emailVerified: true,
+    },
   };
   const newUserSuccess = request(newUserOptions);
-
-  const userslist = request(method: "GET",
-  url: "https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users",
-  headers=HEADERS);
-  const newUser = (userslist).filter(item => item.username===newUsername)[0]
-  console.dir(newUser)
-  const roleslist = request(method: "GET",
-  url: "https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/roles", headers: headers);
+  console.dir(newUserSuccess);
+  const userslist = request({method: 'GET',
+    url: `${REALMS_URL}/${REALM}/users`,
+    headers});
+  const newUser = (userslist).filter((item) => {return item.username === newUsername;})[0];
+  console.dir(newUser);
+  const roleslist = request({method: 'GET',
+    url: `${REALMS_URL}/${REALM}/roles`,
+    headers});
   console.dir(roleslist);
-  const iprRoleId = (roleslist).filter(item => item.name==='IPR')[0]['id']
-  const graphkbRoleId = (roleslist).filter(item => item.name==='IPR')[0]['id']
+  const iprRoleId = (roleslist).filter((item) => {return item.name === 'IPR';})[0].id;
+  const graphkbRoleId = (roleslist).filter((item) => {return item.name === 'GraphKB';})[0].id;
   console.dir(iprRoleId);
   console.dir(graphkbRoleId);
 
   const roleMappingSuccess = request(
-    method: "POST",
-    url: `https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users/${user['id']}/role-mappings/realm`
-    headers: headers,
-    data: [{
-      'id': gkbRoleId,
-      'name': "GraphKB"
-    }, {
-      'id': iprRoleId,
-      "name": "IPR"
-    }],
-    );
+    {method: 'POST',
+      url: `${REALMS_URL}/${REALM}/users/${newUser.id}/role-mappings/realm`,
+      headers,
+      data: [{
+        id: graphkbRoleId,
+        name: 'GraphKB',
+      }, {
+        id: iprRoleId,
+        name: 'IPR',
+      }]},
+  );
   console.dir(roleMappingSuccess);
   return roleMappingSuccess.status_code;
-
 };
 
-$keycloak.addUserCreateRoles = async (username, password, token, editUsername, editUseremail) => {
-  const headers = headers: {
+$keycloak.addUserCreateRoles = async (token, editUsername, editUseremail) => {
+  const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `bearer ${token}`
-  },
-  const userslist = request(method: "GET",
-  url: "https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users",
-  headers=HEADERS);
-  const currUser = (userslist).filter(item => item.username===editUsername && item.email === editUseremail)[0]
-  console.dir(currUser)
-  const roleslist = request(method: "GET",
-  url: "https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/roles", headers: headers);
+    Authorization: `bearer ${token}`,
+  };
+  const userslist = request({method: 'GET',
+    url: 'https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users',
+    headers});
+  const currUser = (userslist).filter((item) => {return item.username === editUsername && item.email === editUseremail;})[0];
+  console.dir(currUser);
+  const roleslist = request({method: 'GET',
+    url: 'https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/roles',
+    headers});
   console.dir(roleslist);
-  const iprRoleId = (roleslist).filter(item => item.name==='IPR')[0]['id']
-  const graphkbRoleId = (roleslist).filter(item => item.name==='IPR')[0]['id']
+  const iprRoleId = (roleslist).filter((item) => {return item.name === 'IPR';})[0].id;
+  const graphkbRoleId = (roleslist).filter((item) => {return item.name === 'GraphKB';})[0].id;
   console.dir(iprRoleId);
   console.dir(graphkbRoleId);
 
-  const roleMappingSuccess = request(
-    method: "POST",
-    url: `https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users/${user['id']}/role-mappings/realm`
-    headers: headers,
+  const roleMappingSuccess = request({method: 'POST',
+    url: `https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users/${user.id}/role-mappings/realm`,
+    headers,
     data: [{
-      'id': gkbRoleId,
-      'name': "GraphKB"
+      id: graphkbRoleId,
+      name: 'GraphKB',
     }, {
-      'id': iprRoleId,
-      "name": "IPR"
-    }],
-    );
+      id: iprRoleId,
+      name: 'IPR',
+    }]});
   console.dir(roleMappingSuccess);
   return roleMappingSuccess.status_code;
 };
 
-$keycloak.removeUserCreateRoles = async (username, password, token, editUser) => {
-  const {clientId, uri} = nconf.get('keycloak');
+$keycloak.removeUserCreateRoles = async (token, editUser) => {
+  const {uri} = nconf.get('keycloak');
   const options = {
     method: 'DELETE',
     url: uri,
@@ -118,7 +118,7 @@ $keycloak.removeUserCreateRoles = async (username, password, token, editUser) =>
 
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `bearer ${token}`
+      Authorization: `bearer ${token}`,
     },
   };
   logger.debug(`Requesting token from ${uri}`);
