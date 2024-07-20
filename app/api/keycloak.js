@@ -82,31 +82,36 @@ $keycloak.addUserCreateRoles = async (token, editUsername, editUseremail) => {
     Authorization: `bearer ${token}`,
   };
   const userslist = request({method: 'GET',
-    url: 'https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users',
+    url: `${REALMS_URL}/${REALM}/users`,
     headers});
   const currUser = (userslist).filter((item) => {return item.username === editUsername && item.email === editUseremail;})[0];
   console.dir(currUser);
-  const roleslist = request({method: 'GET',
-    url: 'https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/roles',
-    headers});
-  console.dir(roleslist);
-  const iprRoleId = (roleslist).filter((item) => {return item.name === 'IPR';})[0].id;
-  const graphkbRoleId = (roleslist).filter((item) => {return item.name === 'GraphKB';})[0].id;
-  console.dir(iprRoleId);
-  console.dir(graphkbRoleId);
+  const currUserId = currUser.id;
 
-  const roleMappingSuccess = request({method: 'POST',
-    url: `https://keycloakdev01.bcgsc.ca/auth/admin/realms/GSC/users/${user.id}/role-mappings/realm`,
+  const clients = request({method: 'GET',
+    url: `${REALMS_URL}/${REALM}/clients`,
+    headers});
+  const rmClient = (clients).filter((item) => {return item.clientId === 'realm-management';})[0];
+  const rmclientId = rmClient.id;
+
+  const clientRoleMappings = request({
+    method: 'GET',
+    url: `${REALMS_URL}/${REALM}/users/${currUserId}/role-mappings/clients/${rmClientId}`,
+    headers,
+  });
+  const clientRM = (clientRoleMappings).filter((item) => {return item.name === 'realm-management';})[0];
+  const clientRMid = clientRM.id;
+  console.dir(clientRM);
+
+  const postclientroles = request({method: 'POST',
+    url: `${REALMS_URL}/${REALM}/users/${currUserId}/role-mappings/clients/${rmclientId}`,
     headers,
     data: [{
-      id: graphkbRoleId,
-      name: 'GraphKB',
-    }, {
-      id: iprRoleId,
-      name: 'IPR',
+      id: clientRMid,
+      name: 'realm-admin',
     }]});
-  console.dir(roleMappingSuccess);
-  return roleMappingSuccess.status_code;
+
+  console.dir(postclientroles);
 };
 
 $keycloak.removeUserCreateRoles = async (token, editUser) => {
