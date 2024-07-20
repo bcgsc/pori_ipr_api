@@ -131,18 +131,26 @@ $keycloak.ungrantRealmAdmin = async (token, editUser) => {
     return
   }
 
-  const options = {
-    method: 'DELETE',
-    url: baseuri,
-    json: true,
+  const clientRoleMappings = request({
+    method: 'GET',
+    url: `${REALMS_URL}/${REALM}/users/${currUserId}/role-mappings/clients/${rmClientId}`,
+    headers,
+  });
+  const clientRM = (clientRoleMappings).filter((item) => {return item.name === 'realm-management';})[0];
+  const clientRMid = clientRM.id;
+  console.dir(clientRM);
 
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `bearer ${token}`
-    },
-  };
-  logger.debug(`Requesting token from ${uri}`);
-  return request(options);
+  const deleteOutcome = request({
+    method: "DELETE",
+    url: `${REALMS_URL}/${REALM}/users/${currUserId}/role-mappings/clients/${rmClientId}`,
+    headers: headers,
+    data: [{
+      id: clientRMid,
+      name: 'realm-admin',
+    }]
+  })
+  console.dir(deleteOutcome);
+  return deleteOutcome;
 };
 
 module.exports = $keycloak;
