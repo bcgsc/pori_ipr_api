@@ -52,7 +52,7 @@ module.exports = {
   DEFAULT_HEADER_WIDTH: 300,
   MASTER_ACCESS: ['admin'],
   MANAGER_ACCESS: ['admin', 'manager'],
-  MASTER_REPORT_ACCESS: ['admin', 'manager', 'report manager'],
+  MASTER_REPORT_ACCESS: ['admin', 'manager'],
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
 };
