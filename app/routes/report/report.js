@@ -143,7 +143,7 @@ router.route('/')
     } catch (error) {
       const message = `Error while trying to get project access ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message}});
     }
 
     // Check if they want reports from a specific project
@@ -175,8 +175,8 @@ router.route('/')
         ...((keyVariant && matchingThreshold) ? {
           '$genomicAlterationsIdentified.geneVariant$': {
             [Op.in]: literal(
-              `(SELECT "geneVariant" 
-              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              `(SELECT "geneVariant"
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery
               WHERE word_similarity >= ${matchingThreshold})`,
             ),
           },
