@@ -66,6 +66,8 @@ describe('/reports/{REPORTID}', () => {
   const NON_PROD_ACCESS = 'non-production Access';
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
+  const KEYVARIANT = 'uniqueKeyVariant';
+
   let project;
   let project2;
   let offsetTestProject;
@@ -106,6 +108,10 @@ describe('/reports/{REPORTID}', () => {
     await db.models.reportProject.create({
       reportId: report.id,
       project_id: project.id,
+    });
+    await db.models.genomicAlterationsIdentified.create({
+      geneVariant: KEYVARIANT,
+      reportId: report.id,
     });
 
     reportReady = await db.models.report.create({
@@ -463,6 +469,22 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
+    test('/ - key variant - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?keyVariant=${KEYVARIANT}&&matchingThreshold=1`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      for (const resReport of res.body.reports) {
+        for (const gAI of resReport.genomicAlterationsIdentified) {
+          expect(gAI.geneVariant).toEqual(KEYVARIANT);
+        }
+      }
+    }, LONGER_TIMEOUT);
+
     test('fetches known ident ok', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}`)
@@ -729,18 +751,18 @@ describe('/reports/{REPORTID}', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {id: report.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReady.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
-    await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
-    await db.models.report.destroy({where: {id: report2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReady2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReviewed2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportCompleted2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportDualProj.id}, force: true});
-    await db.models.project.destroy({where: {id: offsetTestProject.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}});
+    await db.models.report.destroy({where: {id: reportReady.id}});
+    await db.models.report.destroy({where: {id: reportReviewed.id}});
+    await db.models.report.destroy({where: {id: reportCompleted.id}});
+    await db.models.report.destroy({where: {id: reportNonProduction.id}});
+    await db.models.report.destroy({where: {id: report2.id}});
+    await db.models.report.destroy({where: {id: reportReady2.id}});
+    await db.models.report.destroy({where: {id: reportReviewed2.id}});
+    await db.models.report.destroy({where: {id: reportCompleted2.id}});
+    await db.models.report.destroy({where: {id: reportNonProduction2.id}});
+    await db.models.report.destroy({where: {id: reportDualProj.id}});
+    await db.models.project.destroy({where: {id: offsetTestProject.id}});
   }, LONGER_TIMEOUT);
 });
 

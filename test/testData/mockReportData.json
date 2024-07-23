@@ -5,19 +5,29 @@
     "appendix": "this is an example of an appendix",
     "sampleInfo": [
         {
+            "sample": "Tumour",
+            "pathoTc": "68%",
+            "biopsySite": "US guided liver",
+            "biopsyType": "Biopsy type",
+            "sampleName": "UPLOADPAT01",
+            "primarySite": "Liver",
+            "collectionDate": "01-01-20"
+        },
+        {
+            "sample": "Constitutional",
+            "pathoTc": "na",
+            "biopsySite": "Normal tissue",
+            "biopsyType": "Biopsy type",
+            "sampleName": "UPLOADPAT01",
+            "primarySite": "Blood-Peripheral",
+            "collectionDate": "01-01-20"
+        },
+        {
             "Sample": "Tumour",
             "Patho TC": "68%",
             "Biopsy Site": "US guided liver",
             "Sample Name": "UPLOADPAT01",
             "Primary Site": "Liver",
-            "Collection Date": "01-01-20"
-        },
-        {
-            "Sample": "Constitutional",
-            "Patho TC": "na",
-            "Biopsy Site": "Normal tissue",
-            "Sample Name": "UPLOADPAT01",
-            "Primary Site": "Blood-Peripheral",
             "Collection Date": "01-01-20"
         }
     ],
@@ -518,7 +528,8 @@
         {
             "key": "mutSignature.barplot.sbs",
             "path": "test/testData/images/msig_snvs_all_strelka.png",
-            "title": "Test adding a title to an image"
+            "title": "Test adding a title to an image",
+            "category": "testCategory"
         },
         {
             "key": "cnvLoh.circos",

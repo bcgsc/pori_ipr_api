@@ -1,6 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const {Op} = require('sequelize');
+const {Op, literal} = require('sequelize');
 
 const email = require('../../libs/email');
 const createReport = require('../../libs/createReport');
@@ -10,7 +10,7 @@ const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
-  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
+  hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -105,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
       },
     } = req;
 
@@ -125,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -172,6 +172,15 @@ router.route('/')
             {alternateIdentifier: {[Op.iLike]: `%${searchText}%`}},
           ],
         } : {}),
+        ...((keyVariant && matchingThreshold) ? {
+          '$genomicAlterationsIdentified.geneVariant$': {
+            [Op.in]: literal(
+              `(SELECT "geneVariant" 
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              WHERE word_similarity >= ${matchingThreshold})`,
+            ),
+          },
+        } : {}),
       },
       distinct: 'id',
       // **searchText with paginated with patientInformation set to required: true
@@ -201,6 +210,13 @@ router.route('/')
           required: true,
         },
         {
+          // Not using scope due to sequelize bug only returning one result when using scope,
+          // update when sequelize has fixed that
+          model: db.models.sampleInfo,
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+          as: 'sampleInfo',
+        },
+        {
           model: db.models.reportUser,
           as: 'users',
           attributes: ['ident', 'role', 'createdAt', 'updatedAt'],
@@ -211,6 +227,7 @@ router.route('/')
         {
           model: db.models.project,
           as: 'projects',
+          ...((isAdmin(req.user) && !project) ? {required: false} : {}),
           where: {
             name: projects,
           },
@@ -228,6 +245,10 @@ router.route('/')
             user_id: req.user.id,
             role,
           },
+        }] : []),
+        ...((keyVariant && matchingThreshold) ? [{
+          model: db.models.genomicAlterationsIdentified.scope('public'),
+          as: 'genomicAlterationsIdentified',
         }] : []),
       ],
     };
@@ -257,6 +278,26 @@ router.route('/')
   })
   .post(async (req, res) => {
     // validate loaded report against schema
+
+    if (req.body.sampleInfo) {
+      // Clean sampleInfo input
+      const cleanSampleInfo = [];
+      for (const sampleInfoObject of req.body.sampleInfo) {
+        cleanSampleInfo.push(
+          {
+            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
+            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
+            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
+            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
+            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
+            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
+            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
+          },
+        );
+      }
+      req.body.sampleInfo = cleanSampleInfo;
+    }
+
     try {
       validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {

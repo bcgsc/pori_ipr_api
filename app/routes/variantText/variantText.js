@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {Op} = require('sequelize');
 
 const db = require('../../models');
 const logger = require('../../log');
@@ -131,6 +132,11 @@ router.route('/:variantText([A-z0-9-]{36})')
       return res.json(req.variantText.view('public'));
     } catch (error) {
       logger.error(`Error while trying to update variant text ${error}`);
+      if (`${error}` === 'SequelizeUniqueConstraintError: Validation error') {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Error while creating variant text: Variant text not unique'},
+        });
+      }
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to update variant text'},
       });
@@ -168,16 +174,20 @@ router.route('/')
         ...((req.body.templateId == null) ? {} : {templateId: req.body.templateId}),
         ...((req.body.projectId == null) ? {} : {projectId: req.body.projectId}),
         ...((req.body.variantName == null) ? {} : {variantName: req.body.variantName}),
-        ...((req.body.variantGkbId == null) ? {} : {variantGkbId: req.body.variantGkbId}),
-        ...((req.body.cancerType == null) ? {} : {cancerType: req.body.cancerType}),
-        ...((req.body.cancerTypeGkbId == null) ? {} : {cancerTypeGkbId: req.body.cancerTypeGkbId}),
+        ...((req.body.cancerType == null) ? {}
+          : {cancerType: {[Op.contains]: [req.body.cancerType]}}),
       };
 
       let results = await db.models.variantText.scope('public').findAll({
         where: whereClause,
       });
 
-      results = results.filter((variantText) => {return projectIdents.includes(variantText.project.ident);});
+      results = results.filter((variantText) => {
+        if (variantText.project.ident) {
+          return projectIdents.includes(variantText.project.ident);
+        }
+        return true;
+      });
 
       return res.json(results);
     } catch (error) {
@@ -218,6 +228,11 @@ router.route('/')
       return res.status(HTTP_STATUS.CREATED).json(result);
     } catch (error) {
       logger.error(`Error while creating variant text ${error}`);
+      if (`${error}` === 'SequelizeUniqueConstraintError: Validation error') {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Error while creating variant text: Variant text not unique'},
+        });
+      }
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while creating variant text'},
       });

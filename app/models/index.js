@@ -454,6 +454,16 @@ comparators.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Sample Info
+const sampleInfo = require('./reports/sampleInfo')(sequelize, Sq);
+
+analysisReports.hasMany(sampleInfo, {
+  as: 'sampleInfo', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+sampleInfo.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Images
 const image = require('./image')(sequelize, Sq);
 

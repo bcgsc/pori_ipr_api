@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
+const {v4: uuidv4} = require('uuid');
 const db = require('../../../app/models');
 
 const CONFIG = require('../../../app/config');
@@ -23,17 +24,19 @@ const VARIANT_EDIT_ACCESS = 'variant-text edit access';
 const CREATE_DATA = {
   text: '<p>sample text</p>',
   variantName: 'variant name',
-  variantGkbId: 'v_gkb_id',
-  cancerType: 'cancer type',
-  cancerTypeGkbId: 'ct_gkb_id',
+  cancerType: ['cancer type'],
 };
 
 const UPLOAD_DATA = {
   text: '<p>sample text</p>',
   variantName: 'variant name',
-  variantGkbId: 'v_gkb_id',
-  cancerType: 'cancer type',
-  cancerTypeGkbId: 'ct_gkb_id',
+  cancerType: ['cancer type'],
+};
+
+const UPLOAD_DATA_NO_PROJECT = {
+  text: '<p>sample text</p>',
+  variantName: uuidv4(),
+  cancerType: ['cancer type'],
 };
 
 const UPDATE_DATA = {
@@ -45,7 +48,7 @@ const INVALID_UPDATE_DATA = {
 
 const variantTextProperties = [
   'ident', 'createdAt', 'updatedAt', 'project', 'template', 'text',
-  'variantName', 'variantGkbId', 'cancerType', 'cancerTypeGkbId',
+  'variantName', 'cancerType',
 ];
 
 const checkVariantText = (reportObject) => {
@@ -61,6 +64,12 @@ const checkVariantText = (reportObject) => {
 const checkVariantTexts = (reports) => {
   reports.forEach((report) => {
     checkVariantText(report);
+  });
+};
+
+const checkVariantTextsProjectPermissions = (reports) => {
+  reports.forEach((report) => {
+    expect(report.project.ident).toEqual(null);
   });
 };
 
@@ -147,14 +156,14 @@ describe('/variant-text', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body).toHaveLength(0);
+      checkVariantTextsProjectPermissions(res.body);
     });
 
     test('/ - 200 Get filtered results', async () => {
       const res = await request
         .get(BASE_URI)
         .send({
-          variantGkbId: variantText.variantGkbId,
+          cancerType: variantText.cancerType[0],
         })
         .auth(username, password)
         .type('json')
@@ -168,7 +177,7 @@ describe('/variant-text', () => {
       const res = await request
         .get(BASE_URI)
         .send({
-          variantGkbId: 'none',
+          cancerType: uuidv4(),
         })
         .auth(username, password)
         .type('json')
@@ -182,7 +191,7 @@ describe('/variant-text', () => {
     test('/ - 201 Create successful', async () => {
       const res = await request
         .post(BASE_URI)
-        .send(UPLOAD_DATA)
+        .send({...UPLOAD_DATA, variantName: 'create successful'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -197,7 +206,7 @@ describe('/variant-text', () => {
           groups: [{name: VARIANT_EDIT_ACCESS}],
           projects: [{name: project.name, ident: project.ident}],
         })
-        .send(UPLOAD_DATA)
+        .send({...UPLOAD_DATA, variantName: 'create successful on allowed groups'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -288,7 +297,7 @@ describe('/variant-text', () => {
 
     beforeEach(async () => {
       // Create variant text to be used in delete tests
-      deleteVariantText = await db.models.variantText.create(CREATE_DATA);
+      deleteVariantText = await db.models.variantText.create({...CREATE_DATA, variantName: uuidv4()});
     });
 
     afterEach(async () => {
@@ -334,6 +343,44 @@ describe('/variant-text', () => {
       });
 
       expect(deletedVariantText.deletedAt).toBeNull();
+    });
+  });
+
+  describe('Extra features test', () => {
+    let variantTextOpt;
+
+    beforeEach(async () => {
+      // Create variant text to be used in delete tests
+      variantTextOpt = await db.models.variantText.create(UPLOAD_DATA_NO_PROJECT);
+    });
+
+    afterEach(async () => {
+      // delete newly created data and all of their components
+      variantTextOpt.destroy({force: true});
+    });
+
+    test('GET / - 200 Get variant text with project is null', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_ADMIN_GROUP}],
+          projects: [{name: unauthorizedProject.name, ident: unauthorizedProject.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).not.toHaveLength(0);
+      checkVariantTexts(res.body);
+    });
+
+    test('POST / - 400 test constraint on null project', async () => {
+      await request
+        .post(BASE_URI)
+        .send(UPLOAD_DATA_NO_PROJECT)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 });
