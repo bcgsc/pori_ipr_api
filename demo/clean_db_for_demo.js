@@ -278,6 +278,91 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
     {transaction, replacements: {username: 'iprdemo', demouser: demoUser.id, reportsToKeep}},
   );
 
+  console.log('create the admin user if not exists');
+  let [adminUser] = await queryInterface.sequelize.query(
+    'SELECT * FROM users where username = :username AND deleted_at IS NULL',
+    {
+      transaction,
+      type: queryInterface.sequelize.QueryTypes.SELECT,
+      replacements: {
+        username: 'ipr-bamboo-admin',
+        firstName: 'ipr-bamboo-admin',
+        lastName: 'ipr-bamboo-admin',
+        type: 'bcgsc',
+        email: 'ipr@bcgsc.ca',
+      },
+    },
+  );
+  if (!adminUser) {
+    [[adminUser]] = await queryInterface.sequelize.query(
+      `INSERT INTO users (
+        ident, username, password, type,
+        "firstName", "lastName", "email",
+        created_at, deleted_at, updated_at
+      ) values (
+        :uuid, :username, '', :type,
+        :firstName, :lastName, :email,
+        NOW(), NULL, NOW()
+      ) RETURNING id`,
+      {
+        transaction,
+        replacements: {
+          username: 'ipr-bamboo-admin',
+          firstName: 'ipr-bamboo-admin',
+          lastName: 'ipr-bamboo-admin',
+          type: 'bcgsc',
+          email: 'ipr@bcgsc.ca',
+          uuid: uuidv4(),
+        },
+      },
+    );
+    console.log('created', adminUser);
+  }
+
+  console.log('create the demo user metadata if not exists');
+
+  const [adminUserMetadata] = await queryInterface.sequelize.query(
+    'SELECT * FROM user_metadata where id = :id AND deleted_at IS NULL',
+    {
+      transaction,
+      type: queryInterface.sequelize.QueryTypes.SELECT,
+      replacements: {
+        id: adminUser.id,
+      },
+    },
+  );
+  console.log(adminUser.id);
+  console.log(adminUserMetadata);
+  if (!adminUserMetadata) {
+    await queryInterface.sequelize.query(
+      `INSERT INTO user_metadata (
+        ident, user_id,
+        created_at, updated_at
+      ) values (
+        :uuid, :id,
+        NOW(), NOW()
+      )`,
+      {
+        transaction,
+        replacements: {
+          uuid: uuidv4(),
+          id: adminUser.id,
+        },
+      },
+    );
+  }
+
+  console.log('make admin user the group owner of all groups');
+  await queryInterface.sequelize.query(
+    'UPDATE user_groups SET owner_id = :owner',
+    {transaction, replacements: {owner: adminUser.id}},
+  );
+
+  await addDemoUserToGroup(queryInterface, transaction, adminUser, 'admin');
+  await addDemoUserToGroup(queryInterface, transaction, adminUser, 'manager');
+  await addDemoUserToProject(queryInterface, transaction, adminUser, 'PORI');
+  await addDemoUserToProject(queryInterface, transaction, adminUser, 'TEST');
+
   console.log('DROP all user_projects where user has been deleted');
   await queryInterface.sequelize.query(
     `DELETE FROM user_projects WHERE user_id not in (select id from users);
