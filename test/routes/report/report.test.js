@@ -475,6 +475,8 @@ describe('/reports/{REPORTID}', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
+      
+      console.log(res.body);
 
       checkReports(res.body.reports);
 
