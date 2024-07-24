@@ -132,7 +132,7 @@ router.route('/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-
+    console.log('here', keyVariant, 135);
     // Get projects the user has access to
     let projects;
     try {
@@ -143,7 +143,7 @@ router.route('/')
     } catch (error) {
       const message = `Error while trying to get project access ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message}});
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
     // Check if they want reports from a specific project
@@ -157,7 +157,7 @@ router.route('/')
         });
       }
     }
-
+    console.log('here', keyVariant, 160);
     // Generate options for report query
     const opts = {
       where: {
@@ -265,13 +265,14 @@ router.route('/')
         state: ['reviewed', 'completed'],
       };
     }
-
+    console.log('here', keyVariant, 256);
     try {
       const reports = await db.models.report.scope('public').findAndCountAll(opts);
       const results = {total: reports.count, reports: reports.rows};
 
       return res.json(results);
     } catch (error) {
+      console.log('here', keyVariant, 275);
       logger.error(`Unable to lookup reports ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup reports'}});
     }
