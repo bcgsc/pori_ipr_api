@@ -4,7 +4,7 @@ const {merge} = require('lodash');
 const ENV = process.env.NODE_ENV || 'local';
 
 // set the default db name based on the node-env
-let DEFAULT_DB_NAME = 'ipr-sync-dev';
+let DEFAULT_DB_NAME = 'fuzzy_demo';
 
 let REDIS_QUEUE_CONFIG = {
   enableQueue: true,
