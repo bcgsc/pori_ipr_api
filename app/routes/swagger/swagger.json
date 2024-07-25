@@ -1468,6 +1468,15 @@
             }
           },
           {
+            "name": "matchingThreshold",
+            "in": "query",
+            "required": false,
+            "description": "Matching power for searching Key Genomic and Transcriptomic Alterations Identified variants",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "states",
             "in": "query",
             "required": false,

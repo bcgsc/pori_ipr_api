@@ -1,6 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const {Op} = require('sequelize');
+const {Op, literal} = require('sequelize');
 
 const email = require('../../libs/email');
 const createReport = require('../../libs/createReport');
@@ -105,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
       },
     } = req;
 
@@ -125,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -172,8 +172,14 @@ router.route('/')
             {alternateIdentifier: {[Op.iLike]: `%${searchText}%`}},
           ],
         } : {}),
-        ...((keyVariant) ? {
-          '$genomicAlterationsIdentified.geneVariant$': {[Op.iLike]: `%${keyVariant}%`},
+        ...((keyVariant && matchingThreshold) ? {
+          '$genomicAlterationsIdentified.geneVariant$': {
+            [Op.in]: literal(
+              `(SELECT "geneVariant" 
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              WHERE word_similarity >= ${matchingThreshold})`,
+            ),
+          },
         } : {}),
       },
       distinct: 'id',
@@ -240,7 +246,7 @@ router.route('/')
             role,
           },
         }] : []),
-        ...((keyVariant) ? [{
+        ...((keyVariant && matchingThreshold) ? [{
           model: db.models.genomicAlterationsIdentified.scope('public'),
           as: 'genomicAlterationsIdentified',
         }] : []),

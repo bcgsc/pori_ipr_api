@@ -62,7 +62,7 @@ app.js --database.hostname someTestServerName
 
 Unit and Integration tests are run and written using Jest + Supertest with code coverage reports generated using Clover. Tests are configured to run using the `test` environment variable - this currently cannot be overridden.
 
-To run unit tests, cd into the project root directory and run the command `npm run test_local`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run
+To run unit tests, cd into the project root directory and run the command `npm run test_local`. Once completed, it should generate and print summaries for the tests and their coverage. The database user credentials and API user credentials must be set before tests can be run.
 
 ```bash
 npm run test -- --database.password someDbPassword --testing.password someApiPassword
@@ -75,6 +75,8 @@ export IPR_DATABASE_PASSWORD=someDbPassword
 export IPR_TESTING_PASSWORD=someApiPassword
 npm run test
 ```
+
+Regarding destructions of prop records after tests (e.g.: afterAll(async () => {await db.models.report.destroy({where: {id: report.id}, force: true});})), "force: true" will not pass locally but will pass on GitHub tests. This property ensures that prop records are deleted after the tests finish running.
 
 ### Common problems
 #### Cache:
