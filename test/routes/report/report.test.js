@@ -476,8 +476,6 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      console.log(res.body);
-
       checkReports(res.body.reports);
 
       for (const resReport of res.body.reports) {
