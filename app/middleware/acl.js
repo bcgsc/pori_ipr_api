@@ -10,7 +10,7 @@ const logger = require('../log');
 const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/user'),
-    GET: [{name: 'admin'}, {name: 'manager'}],
+    GET: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
@@ -32,7 +32,7 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/user/:user'),
-    GET: [{name: 'admin'}, {name: 'manager'}],
+    GET: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
@@ -147,7 +147,7 @@ module.exports = async (req, res, next) => {
 
     logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
     return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this'},
+      error: {message: 'You do not have the correct permissions to access this 1'},
     });
   }
 
@@ -182,7 +182,7 @@ module.exports = async (req, res, next) => {
     ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
-        error: {message: 'You do not have the correct permissions to access this'},
+        error: {message: 'You do not have the correct permissions to access this 2'},
       });
     }
 
@@ -205,7 +205,7 @@ module.exports = async (req, res, next) => {
   if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
     logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
     return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this'},
+      error: {message: 'You do not have the correct permissions to access this 3'},
     });
   }
 
