@@ -147,7 +147,7 @@ module.exports = async (req, res, next) => {
 
     logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
     return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this 1'},
+      error: {message: 'You do not have the correct permissions to access this'},
     });
   }
 
@@ -182,7 +182,7 @@ module.exports = async (req, res, next) => {
     ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
-        error: {message: 'You do not have the correct permissions to access this 2'},
+        error: {message: 'You do not have the correct permissions to access this'},
       });
     }
 
@@ -205,7 +205,7 @@ module.exports = async (req, res, next) => {
   if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
     logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
     return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this 3'},
+      error: {message: 'You do not have the correct permissions to access this'},
     });
   }
 
