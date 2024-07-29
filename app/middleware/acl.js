@@ -10,7 +10,7 @@ const logger = require('../log');
 const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/user'),
-    GET: [{name: 'admin'}, {name: 'manager'}],
+    GET: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
     POST: [{name: 'admin'}, {name: 'manager'}],
   },
   {
@@ -32,7 +32,7 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/user/:user'),
-    GET: [{name: 'admin'}, {name: 'manager'}],
+    GET: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
