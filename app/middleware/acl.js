@@ -152,14 +152,6 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  // Allow users to edit themselves for allowNotifications field
-  if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
-    logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
-    return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this'},
-    });
-  }
-
   if (!hasAccessToGermlineReports(req.user) && !isManager(req.user) && route.includes('/germline-small-mutation-reports')) {
     logger.error('User does not have germline access');
     return res.status(
@@ -206,6 +198,17 @@ module.exports = async (req, res, next) => {
         error: {message: 'Report is marked as completed and update has been restricted'},
       });
     }
+
+    return next();
   }
+
+  // Allow users to edit themselves for allowNotifications field
+  if (UPDATE_METHODS.includes(req.method) && !req.originalUrl.includes('/api/user')) {
+    logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
+    return res.status(FORBIDDEN).json({
+      error: {message: 'You do not have the correct permissions to access this'},
+    });
+  }
+
   return next();
 };
