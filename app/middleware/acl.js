@@ -33,7 +33,6 @@ const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/user/:user'),
     GET: [{name: 'admin'}, {name: 'manager'}],
-    PUT: [{name: 'admin'}, {name: 'manager'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}],
   },
   {
