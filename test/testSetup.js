@@ -19,6 +19,8 @@ beforeAll(async () => {
   const [managerGroup] = await db.models.userGroup.findOrCreate({
     where: {
       name: 'manager',
+    },
+    defaults: {
       owner_id: adminUser.id,
     },
   });
@@ -38,7 +40,9 @@ beforeAll(async () => {
 
   const [bioinformaticianGroup] = await db.models.userGroup.findOrCreate({
     where: {
-      name: 'bioinformatician',
+      name: 'Bioinformatician',
+    },
+    defaults: {
       owner_id: adminUser.id,
     },
   });

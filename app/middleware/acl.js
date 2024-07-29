@@ -44,11 +44,23 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/reports'),
-    POST: ['*'],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
+  },
+  {
+    path: pathToRegexp('/api/reports/:report/user'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
+  },
+  {
+    path: pathToRegexp('/api/reports/:report/user/:reportUser'),
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
+  },
+  {
+    path: pathToRegexp('/api/reports-async'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
   {
     path: pathToRegexp('/api/germline-small-mutation-reports'),
-    POST: ['*'],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
   {
     path: pathToRegexp('/api/templates'),
@@ -121,6 +133,33 @@ module.exports = async (req, res, next) => {
   // Get route
   const [route] = req.originalUrl.split('?');
 
+  // See if route exists in special cases
+  const spCase = SPECIAL_CASES.find((value) => {
+    return route.match(value.path);
+  });
+
+  // Check that route and method have special rules
+  if (spCase && spCase[req.method]) {
+    if (spCase[req.method].includes('*')
+          || isIntersectionBy(req.user.groups, spCase[req.method], 'name')
+    ) {
+      return next();
+    }
+
+    logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
+    return res.status(FORBIDDEN).json({
+      error: {message: 'You do not have the correct permissions to access this'},
+    });
+  }
+
+  // Allow users to edit themselves for allowNotifications field
+  if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
+    logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
+    return res.status(FORBIDDEN).json({
+      error: {message: 'You do not have the correct permissions to access this'},
+    });
+  }
+
   if (!hasAccessToGermlineReports(req.user) && !isManager(req.user) && route.includes('/germline-small-mutation-reports')) {
     logger.error('User does not have germline access');
     return res.status(
@@ -148,7 +187,7 @@ module.exports = async (req, res, next) => {
     // and they don't have update permissions throw an error
     if (!projectAccess(req.user, req.report)
       || (UPDATE_METHODS.includes(req.method)
-      && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
+        && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
     ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
@@ -167,34 +206,6 @@ module.exports = async (req, res, next) => {
         error: {message: 'Report is marked as completed and update has been restricted'},
       });
     }
-  } else {
-    // See if route exists in special cases
-    const spCase = SPECIAL_CASES.find((value) => {
-      return route.match(value.path);
-    });
-
-    // Check that route and method have special rules
-    if (spCase && spCase[req.method]) {
-      if (spCase[req.method].includes('*')
-        || isIntersectionBy(req.user.groups, spCase[req.method], 'name')
-      ) {
-        return next();
-      }
-
-      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
-      return res.status(FORBIDDEN).json({
-        error: {message: 'You do not have the correct permissions to access this'},
-      });
-    }
-
-    // Allow users to edit themselves for allowNotifications field
-    if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
-      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
-      return res.status(FORBIDDEN).json({
-        error: {message: 'You do not have the correct permissions to access this'},
-      });
-    }
   }
-
   return next();
 };

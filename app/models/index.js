@@ -455,12 +455,12 @@ comparators.belongsTo(analysisReports, {
 });
 
 // Sample Info
-const reportSampleInfo = require('./reports/reportSampleInfo')(sequelize, Sq);
+const sampleInfo = require('./reports/sampleInfo')(sequelize, Sq);
 
-analysisReports.hasMany(reportSampleInfo, {
-  as: 'reportSampleInfo', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+analysisReports.hasMany(sampleInfo, {
+  as: 'sampleInfo', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
-reportSampleInfo.belongsTo(analysisReports, {
+sampleInfo.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 

@@ -23,7 +23,7 @@ let request;
 const checkReport = (report) => {
   [
     'tumourContent', 'ploidy', 'subtyping', 'ident', 'patientId',
-    'sampleInfo', 'seqQC', 'reportVersion', 'm1m2Score',
+    'seqQC', 'reportVersion', 'm1m2Score',
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
     'kbUrl', 'pediatricIds', 'captiv8Score', 'hrdetectScore', 'appendix',
@@ -58,6 +58,12 @@ describe('/reports/{REPORTID}', () => {
         name: 'TEST',
       },
     });
+    // Assure project exists before creating report
+    await db.models.project.findOrCreate({
+      where: {
+        name: 'TEST2',
+      },
+    });
 
     report = await db.models.report.create({
       templateId: template.id,
@@ -80,7 +86,7 @@ describe('/reports/{REPORTID}', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkReport(res.body);
+      checkReport(res.body.report);
     });
   });
 
@@ -108,7 +114,7 @@ describe('/reports/{REPORTID}', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {id: report.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}});
   }, LONGER_TIMEOUT);
 });
 
