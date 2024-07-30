@@ -9,6 +9,10 @@ module.exports = {
     msi: 'msi',
     tmb: 'tmburMutationBurden',
   },
+  NOTIFICATION_EVENT: {
+    USER_BOUND: 'userBound',
+    REPORT_CREATED: 'reportCreated',
+  },
   KB_PIVOT_COLUMN: 'variantType',
   GENE_LINKED_VARIANT_MODELS: [
     'expressionVariants',
@@ -46,7 +50,9 @@ module.exports = {
   DEFAULT_LOGO_WIDTH: 64,
   DEFAULT_HEADER_HEIGHT: 96,
   DEFAULT_HEADER_WIDTH: 300,
-  MASTER_ACCESS: ['admin', 'manager'],
-  MASTER_REPORT_ACCESS: ['admin', 'manager', 'report manager'],
+  MASTER_ACCESS: ['admin'],
+  MANAGER_ACCESS: ['admin', 'manager'],
+  MASTER_REPORT_ACCESS: ['admin', 'manager'],
+  ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
 };

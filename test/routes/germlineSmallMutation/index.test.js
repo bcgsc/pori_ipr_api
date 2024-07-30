@@ -20,9 +20,9 @@ let testUser;
 const mockData = require('../../testData/mockGermlineReportData.json');
 
 const NON_AUTHORIZED_GROUP = 'NON AUTHORIZED GROUP';
-const NON_PROD_ACCESS = 'Non-Production Access';
-const UNREVIEWED_ACCESS = 'Unreviewed Access';
-const GERMLINE_ACCESS = 'Germline Access';
+const NON_PROD_ACCESS = 'non-production access';
+const UNREVIEWED_ACCESS = 'unreviewed access';
+const GERMLINE_ACCESS = 'germline access';
 
 const CREATE_DATA = {
   normalLibrary: 'test library',

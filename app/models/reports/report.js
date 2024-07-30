@@ -66,18 +66,6 @@ module.exports = (sequelize, Sq) => {
       },
       allowNull: false,
     },
-    sampleInfo: {
-      type: Sq.JSONB,
-      jsonSchema: {
-        schema: {
-          type: 'array',
-          items: {
-            type: 'object',
-          },
-          example: [{Sample: 'Tumour', 'Collection Date': '23-09-20'}],
-        },
-      },
-    },
     seqQC: {
       type: Sq.JSONB,
       jsonSchema: {
@@ -156,6 +144,18 @@ module.exports = (sequelize, Sq) => {
       name: 'oncotreeTumourType',
       field: 'oncotree_tumour_type',
       type: Sq.TEXT,
+      defaultValue: null,
+    },
+    legacyReportFilepath: {
+      name: 'legacyReportFilepath',
+      field: 'legacy_report_filepath',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
+    legacyPresentationFilepath: {
+      name: 'legacyPresentationFilepath',
+      field: 'legacy_presentation_filepath',
+      type: Sq.STRING,
       defaultValue: null,
     },
   }, {

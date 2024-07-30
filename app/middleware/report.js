@@ -11,6 +11,13 @@ module.exports = async (req, res, next, ident) => {
   const include = [
     {model: db.models.patientInformation.scope('public'), as: 'patientInformation'},
     {model: db.models.user.scope('public'), as: 'createdBy'},
+    // Not using scope due to sequelize bug only returning one result when using scope,
+    // update when sequelize has fixed that
+    {
+      model: db.models.sampleInfo,
+      attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+      as: 'sampleInfo',
+    },
     {model: db.models.template.scope('minimal'), as: 'template'},
     {
       model: db.models.project,
@@ -26,6 +33,10 @@ module.exports = async (req, res, next, ident) => {
       include: [
         {model: db.models.user.scope('public'), as: 'user'},
       ],
+    },
+    {
+      model: db.models.signatures.scope('public'),
+      as: 'signatures',
     },
   ];
 

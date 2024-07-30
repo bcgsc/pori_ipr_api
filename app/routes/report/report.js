@@ -1,7 +1,8 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const {Op} = require('sequelize');
+const {Op, literal} = require('sequelize');
 
+const email = require('../../libs/email');
 const createReport = require('../../libs/createReport');
 const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
@@ -9,7 +10,7 @@ const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
-  hasAccessToUnreviewedReports} = require('../../libs/helperFunctions');
+  hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -17,7 +18,7 @@ const router = express.Router({mergeParams: true});
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {REPORT_UPDATE_BASE_URI, NOTIFICATION_EVENT} = require('../../constants');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 const reportGetSchema = require('../../schemas/report/retrieve/reportGetQueryParamSchema');
@@ -104,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
       },
     } = req;
 
@@ -124,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -171,6 +172,15 @@ router.route('/')
             {alternateIdentifier: {[Op.iLike]: `%${searchText}%`}},
           ],
         } : {}),
+        ...((keyVariant && matchingThreshold) ? {
+          '$genomicAlterationsIdentified.geneVariant$': {
+            [Op.in]: literal(
+              `(SELECT "geneVariant" 
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              WHERE word_similarity >= ${matchingThreshold})`,
+            ),
+          },
+        } : {}),
       },
       distinct: 'id',
       // **searchText with paginated with patientInformation set to required: true
@@ -200,6 +210,13 @@ router.route('/')
           required: true,
         },
         {
+          // Not using scope due to sequelize bug only returning one result when using scope,
+          // update when sequelize has fixed that
+          model: db.models.sampleInfo,
+          attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+          as: 'sampleInfo',
+        },
+        {
           model: db.models.reportUser,
           as: 'users',
           attributes: ['ident', 'role', 'createdAt', 'updatedAt'],
@@ -210,11 +227,16 @@ router.route('/')
         {
           model: db.models.project,
           as: 'projects',
+          ...((isAdmin(req.user) && !project) ? {required: false} : {}),
           where: {
             name: projects,
           },
           attributes: {exclude: ['id', 'deletedAt', 'updatedBy']},
           through: {attributes: ['additionalProject']},
+        },
+        {
+          model: db.models.signatures.scope('public'),
+          as: 'signatures',
         },
         ...((role) ? [{
           model: db.models.reportUser,
@@ -223,6 +245,10 @@ router.route('/')
             user_id: req.user.id,
             role,
           },
+        }] : []),
+        ...((keyVariant && matchingThreshold) ? [{
+          model: db.models.genomicAlterationsIdentified.scope('public'),
+          as: 'genomicAlterationsIdentified',
         }] : []),
       ],
     };
@@ -252,6 +278,26 @@ router.route('/')
   })
   .post(async (req, res) => {
     // validate loaded report against schema
+
+    if (req.body.sampleInfo) {
+      // Clean sampleInfo input
+      const cleanSampleInfo = [];
+      for (const sampleInfoObject of req.body.sampleInfo) {
+        cleanSampleInfo.push(
+          {
+            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
+            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
+            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
+            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
+            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
+            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
+            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
+          },
+        );
+      }
+      req.body.sampleInfo = cleanSampleInfo;
+    }
+
     try {
       validateAgainstSchema(reportUploadSchema, req.body);
     } catch (error) {
@@ -262,9 +308,28 @@ router.route('/')
 
     try {
       req.body.createdBy_id = req.user.id;
-      const reportIdent = await createReport(req.body);
+      const report = await createReport(req.body);
+      const projectIdArray = [];
+      report.projects.forEach((project) => {
+        projectIdArray.push(project.project_id);
+      });
 
-      return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: reportIdent});
+      await email.notifyUsers(
+        `Report Created: ${req.body.patientId} ${req.body.template}`,
+        `New report:
+        Ident: ${report.ident}
+        Created by: ${req.user.firstName} ${req.user.lastName}
+        Project: ${req.body.project}
+        Template: ${req.body.template}
+        Patient: ${req.body.patientId}`,
+        {
+          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
+          templateId: report.templateId,
+          projectId: projectIdArray,
+        },
+      );
+
+      return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
     } catch (error) {
       logger.error(error.message || error);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: error.message}});

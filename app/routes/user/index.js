@@ -17,3 +17,5 @@ router.use('/group/:group/member', member);
 router.use('/settings', settings);
 
 module.exports = router;
+
+// TODO: add manager/admin restrictions
