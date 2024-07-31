@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {Op} = require('sequelize');
 
 const db = require('../../models');
 const logger = require('../../log');
@@ -173,9 +174,8 @@ router.route('/')
         ...((req.body.templateId == null) ? {} : {templateId: req.body.templateId}),
         ...((req.body.projectId == null) ? {} : {projectId: req.body.projectId}),
         ...((req.body.variantName == null) ? {} : {variantName: req.body.variantName}),
-        ...((req.body.variantGkbId == null) ? {} : {variantGkbId: req.body.variantGkbId}),
-        ...((req.body.cancerType == null) ? {} : {cancerType: req.body.cancerType}),
-        ...((req.body.cancerTypeGkbId == null) ? {} : {cancerTypeGkbId: req.body.cancerTypeGkbId}),
+        ...((req.body.cancerType == null) ? {}
+          : {cancerType: {[Op.contains]: [req.body.cancerType]}}),
       };
 
       let results = await db.models.variantText.scope('public').findAll({

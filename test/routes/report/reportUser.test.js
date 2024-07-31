@@ -7,6 +7,8 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
+jest.mock('../../../app/middleware/auth.js');
+
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
@@ -45,6 +47,10 @@ const checkReportUsers = (reportUsers) => {
   });
 };
 
+const REPORT_ASSIGNMENT_ACCESS = 'report assignment access';
+const ALL_PROJECTS_ACCESS = 'all projects access';
+const UNREVIEWED_ACCESS = 'unreviewed access';
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -61,13 +67,15 @@ describe('/reports/{REPORTID}/user', () => {
   beforeAll(async () => {
     // Get genomic template
     const template = await db.models.template.findOne({where: {name: 'genomic'}});
+
+    user = await db.models.user.findOne({where: {username}});
+
     // create a report to be used in tests
     report = await db.models.report.create({
       templateId: template.id,
       patientId: 'PATIENT1234',
+      createdBy_id: user.id,
     });
-
-    user = await db.models.user.findOne({where: {username}});
 
     createUser = await db.models.user.create({
       username: uuidv4(),
@@ -132,7 +140,33 @@ describe('/reports/{REPORTID}/user', () => {
       expect(binding.deletedAt).toBeNull();
 
       // Delete binding
-      await db.models.reportUser.destroy({where: {ident: binding.ident}, force: true});
+      await db.models.reportUser.destroy({where: {ident: binding.ident}});
+    });
+
+    test('/ - 201 Created with assignment access', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/user`)
+        .send({user: createUser.ident, role: 'reviewer'})
+        .query({
+          groups: [
+            {name: REPORT_ASSIGNMENT_ACCESS},
+            {name: ALL_PROJECTS_ACCESS},
+            {name: UNREVIEWED_ACCESS},
+          ],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      // Find created binding
+      const binding = await db.models.reportUser.findOne({
+        where: {reportId: report.id, user_id: createUser.id, role: 'reviewer'},
+      });
+      expect(binding).not.toBeNull();
+      expect(binding.deletedAt).toBeNull();
+
+      // Delete binding
+      await db.models.reportUser.destroy({where: {ident: binding.ident}});
     });
 
     test('/ - 400 Bad Request - Invalid user', async () => {
@@ -162,6 +196,18 @@ describe('/reports/{REPORTID}/user', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
+    test('/ - 403 Forbidden with no assignment access', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/user`)
+        .send({user: createUser.ident, role: 'reviewer'})
+        .query({
+          groups: [{name: ALL_PROJECTS_ACCESS}, {name: UNREVIEWED_ACCESS}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     test('/ - 404 Not Found - User not found', async () => {
       await request
         .post(`/api/reports/${report.ident}/user`)
@@ -188,7 +234,7 @@ describe('/reports/{REPORTID}/user', () => {
         .expect(HTTP_STATUS.CONFLICT);
 
       // Destroy binding
-      await db.models.reportUser.destroy({where: {ident: binding.ident}, force: true});
+      await db.models.reportUser.destroy({where: {ident: binding.ident}});
     });
   });
 
@@ -206,7 +252,7 @@ describe('/reports/{REPORTID}/user', () => {
 
     afterEach(async () => {
       return db.models.reportUser.destroy({
-        where: {ident: deleteBinding.ident}, force: true,
+        where: {ident: deleteBinding.ident},
       });
     });
 
@@ -224,6 +270,38 @@ describe('/reports/{REPORTID}/user', () => {
       expect(result.deletedAt).not.toBeNull();
     });
 
+    test('/{reportUser} - 204 No content with assignment access', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/user/${deleteBinding.ident}`)
+        .query({
+          groups: [
+            {name: REPORT_ASSIGNMENT_ACCESS},
+            {name: ALL_PROJECTS_ACCESS},
+            {name: UNREVIEWED_ACCESS},
+          ],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify that the record was soft-deleted
+      const result = await db.models.reportUser.findOne({
+        where: {ident: deleteBinding.ident}, paranoid: false,
+      });
+      expect(result.deletedAt).not.toBeNull();
+    });
+
+    test('/{reportUser} - 403 Forbidden with no assignment access', async () => {
+      await request
+        .delete(`/api/reports/${report.ident}/user/${deleteBinding.ident}`)
+        .query({
+          groups: [{name: ALL_PROJECTS_ACCESS}, {name: UNREVIEWED_ACCESS}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.FORBIDDEN);
+    });
+
     test('/{reportUser} - 404 Not Found - Binding does not exist', async () => {
       await request
         .delete(`/api/reports/${report.ident}/user/${uuidv4()}`)
@@ -237,7 +315,7 @@ describe('/reports/{REPORTID}/user', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

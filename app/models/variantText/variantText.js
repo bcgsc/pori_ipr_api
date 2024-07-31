@@ -31,20 +31,10 @@ module.exports = (sequelize, Sq) => {
         field: 'variant_name',
         type: Sq.TEXT,
       },
-      variantGkbId: {
-        name: 'variantGkbId',
-        field: 'variant_gkb_id',
-        type: Sq.TEXT,
-      },
       cancerType: {
         name: 'cancerType',
         field: 'cancer_type',
-        type: Sq.TEXT,
-      },
-      cancerTypeGkbId: {
-        name: 'cancerTypeGkbId',
-        field: 'cancer_type_gkb_id',
-        type: Sq.TEXT,
+        type: Sq.ARRAY(Sq.TEXT),
       },
     },
     {

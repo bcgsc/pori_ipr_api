@@ -24,25 +24,19 @@ const VARIANT_EDIT_ACCESS = 'variant-text edit access';
 const CREATE_DATA = {
   text: '<p>sample text</p>',
   variantName: 'variant name',
-  variantGkbId: 'v_gkb_id',
-  cancerType: 'cancer type',
-  cancerTypeGkbId: 'ct_gkb_id',
+  cancerType: ['cancer type'],
 };
 
 const UPLOAD_DATA = {
   text: '<p>sample text</p>',
   variantName: 'variant name',
-  variantGkbId: 'v_gkb_id',
-  cancerType: 'cancer type',
-  cancerTypeGkbId: 'ct_gkb_id',
+  cancerType: ['cancer type'],
 };
 
 const UPLOAD_DATA_NO_PROJECT = {
   text: '<p>sample text</p>',
   variantName: uuidv4(),
-  variantGkbId: 'v_gkb_id',
-  cancerType: 'cancer type',
-  cancerTypeGkbId: 'ct_gkb_id',
+  cancerType: ['cancer type'],
 };
 
 const UPDATE_DATA = {
@@ -54,7 +48,7 @@ const INVALID_UPDATE_DATA = {
 
 const variantTextProperties = [
   'ident', 'createdAt', 'updatedAt', 'project', 'template', 'text',
-  'variantName', 'variantGkbId', 'cancerType', 'cancerTypeGkbId',
+  'variantName', 'cancerType',
 ];
 
 const checkVariantText = (reportObject) => {
@@ -169,7 +163,7 @@ describe('/variant-text', () => {
       const res = await request
         .get(BASE_URI)
         .send({
-          variantGkbId: variantText.variantGkbId,
+          cancerType: variantText.cancerType[0],
         })
         .auth(username, password)
         .type('json')
@@ -183,7 +177,7 @@ describe('/variant-text', () => {
       const res = await request
         .get(BASE_URI)
         .send({
-          variantGkbId: 'none',
+          cancerType: uuidv4(),
         })
         .auth(username, password)
         .type('json')
