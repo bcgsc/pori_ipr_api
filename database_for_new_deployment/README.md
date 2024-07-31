@@ -4,27 +4,27 @@
 
 These instructions assume you are using the BCGSC prod or dev ipr database.
 
-## create a dump of the production database (see migrationTools create).
+## Create a dump of the production database (see migrationTools create).
 
 ```bash
 pg_dump -Fc -U <USER> -h <HOSTNAME> -d <DATABASE_NAME> > new_demo.dump
 ```
 
-## reload and edit that db dump
+#### reload and edit that db dump
 
 Reload that data to the db in a separate database and pare it down to what is needed for a new deployment.
 
 export the following values to terminal (update these values as necessary):
 
-export IPR_SERVICE_PASSWORD=
-export IPR_SERVICE_USER=ipr_service
-export TEMPLATE_NAME=templateipr
-export TEMP_DB_NAME=newdeploymentdb
-export DB_DUMP_LOCATION=
-export DATABASE_HOSTNAME=
+export IPR_SERVICE_PASSWORD= \
+export IPR_SERVICE_USER=ipr_service \
+export TEMPLATE_NAME=templateipr \
+export TEMP_DB_NAME=newdeploymentdb \
+export DB_DUMP_LOCATION= \
+export DATABASE_HOSTNAME= \
 
 
-### create the empty db
+#### create the empty db
 
 ```bash
 PGPASSWORD=$IPR_SERVICE_PASSWORD createdb -U $IPR_SERVICE_USER -T $TEMPLATE_NAME $TEMP_DB_NAME
