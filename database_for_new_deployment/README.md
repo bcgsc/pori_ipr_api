@@ -1,6 +1,6 @@
 # Creating a database dump for use with a new deployment
 
-> :warning: **BEFORE YOU START!** The demo reports is created from a cleaned/stripped version of the production database. Only reports under the PORI project are kept. If any changes have been made to these reports since the last dump then they must be manually reviewed by the developer creating the dump beforehand to double check nothing has been uploaded, edited or added that should not be included in public data (ex. identifiable or proprietary information).
+> :warning: **BEFORE YOU START!** The demo reports in this db are created from a cleaned/stripped version of production data. Only reports under the PORI project are kept. If any changes have been made to these reports since the last dump then they must be manually reviewed by the developer creating the dump beforehand to double check nothing has been uploaded, edited or added that should not be included in public data (ex. identifiable or proprietary information).
 
 These instructions assume you are using the BCGSC prod or dev ipr database.
 
@@ -24,7 +24,7 @@ export DATABASE_HOSTNAME=
 
 1. create the empty db
 2. load the data, but not the triggers (cleaning the db requires these triggers to be absent)
-3. run the clean db script
+3. run the clean db script used for creating the demo; then run the prep db script to create the pori admin user
 4. load the triggers
 
 
@@ -33,7 +33,8 @@ PGPASSWORD=$IPR_SERVICE_PASSWORD createdb -U $IPR_SERVICE_USER -T $TEMPLATE_NAME
 
 PGPASSWORD=$IPR_SERVICE_PASSWORD pg_restore -n public --section=pre-data --section=data --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d $TEMP_DB_NAME -U $IPR_SERVICE_USER -h $DATABASE_HOSTNAME
 
-node database/clean_db_for_new_deployment.js --database.name $TEMP_DB_NAME --database.hostname $DATABASE_HOSTNAME --database.password $IPR_DATABASE_PASSWORD
+node demo/clean_db_for_demo.js --database.name $TEMP_DB_NAME --database.hostname $DATABASE_HOSTNAME --database.password $IPR_DATABASE_PASSWORD
+node database/prep_db_for_new_deployment.js --database.name $TEMP_DB_NAME --database.hostname $DATABASE_HOSTNAME --database.password $IPR_DATABASE_PASSWORD
 
 PGPASSWORD=$IPR_SERVICE_PASSWORD pg_restore -n public --section=post-data --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d $TEMP_DB_NAME -U $IPR_SERVICE_USER -h $DATABASE_HOSTNAME
 ```
