@@ -1,7 +1,7 @@
 const Sq = require('sequelize');
 const {v4: uuidv4} = require('uuid');
-const nconf = require('../../app/config');
-const logger = require('../../app/log');
+const nconf = require('../app/config');
+const logger = require('../app/log');
 // Load logging library
 const dbSettings = nconf.get('database');
 
@@ -96,19 +96,17 @@ const addPoriAdminUser = async (queryInterface, transaction) => {
         },
       },
     );
-  }
+
 
   console.log('make poriAdmin user the group owner of all groups');
-  await queryInterface.sequelize.query(
+  const [updateOutcome] = await queryInterface.sequelize.query(
     'UPDATE user_groups SET owner_id = :owner',
     {transaction, replacements: {owner: poriAdmin.id}},
   );
-
 };
 
 const cleanDb = async () => {
   const queryInterface = sequelize.getQueryInterface();
-
   return queryInterface.sequelize.transaction(async (transaction) => {
     await addPoriAdminUser(queryInterface, transaction);
   });
