@@ -28,58 +28,52 @@ $keycloak.getToken = async (username, password) => {
 $keycloak.createKeycloakUser = async (token, newUsername, newEmail) => {
   const {clientId, baseuri, enableUserCreate} = nconf.get('keycloak');
   if (!enableUserCreate) {
-    return
+    return;
   }
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `bearer ${token}`
+    Authorization: `bearer ${token}`,
   };
   const newUserOptions = {
     method: 'POST',
     url: `${baseuri}/auth/admin/realms/GSC/users`,
     json: true,
-    headers: headers,
+    headers,
     data: {
-      "username": newUsername,
-      "email": newEmail,
-      "enabled": true,
-      "emailVerified": true
-    }
+      username: newUsername,
+      email: newEmail,
+      enabled: true,
+      emailVerified: true,
+    },
   };
   const newUserSuccess = request(newUserOptions);
 
-  const userslist = request({method: "GET",
-  url: `${baseuri}/auth/admin/realms/GSC/users`,
-  headers: headers});
-  const newUser = (userslist).filter(item => item.username===newUsername)[0]
-  console.dir(newUser)
-  const roleslist = request({method: "GET",
-  url: `${baseuri}/auth/admin/realms/GSC/roles`, headers: headers});
-  console.dir(roleslist);
-  const iprRoleId = (roleslist).filter(item => item.name==='IPR')[0]['id']
-  const graphkbRoleId = (roleslist).filter(item => item.name==='IPR')[0]['id']
-  console.dir(iprRoleId);
-  console.dir(graphkbRoleId);
+  const userslist = request({method: 'GET',
+    url: `${baseuri}/auth/admin/realms/GSC/users`,
+    headers});
+  const newUser = (userslist).filter((item) => {return item.username === newUsername;})[0];
+  const roleslist = request({method: 'GET',
+    url: `${baseuri}/auth/admin/realms/GSC/roles`,
+    headers});
+  const iprRoleId = (roleslist).filter((item) => {return item.name === 'IPR';})[0].id;
+  const graphkbRoleId = (roleslist).filter((item) => {return item.name === 'IPR';})[0].id;
 
   const roleMappingSuccess = request({
-    method: "POST",
-    url: `${baseuri}/auth/admin/realms/GSC/users/${user['id']}/role-mappings/realm`,
-    headers: headers,
+    method: 'POST',
+    url: `${baseuri}/auth/admin/realms/GSC/users/${user.id}/role-mappings/realm`,
+    headers,
     data: [{
-      'id': gkbRoleId,
-      'name': "GraphKB"
+      id: gkbRoleId,
+      name: 'GraphKB',
     }, {
-      'id': iprRoleId,
-      "name": "IPR"
+      id: iprRoleId,
+      name: 'IPR',
     }],
-});
-  console.dir(roleMappingSuccess);
+  });
   return roleMappingSuccess.status_code;
-
 };
 
-// aka grantRealmAdmin
-$keycloak.grantKeycloakUserCreateRole = async (token, editUsername, editUseremail) => {
+$keycloak.grantRealmAdmin = async (token, editUsername, editUseremail) => {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `bearer ${token}`,
@@ -106,29 +100,26 @@ $keycloak.grantKeycloakUserCreateRole = async (token, editUsername, editUseremai
   const clientRMid = clientRM.id;
   console.dir(clientRM);
 
-  resp2 = requests.request({
-    method:      "GET",
-  url: `${REALM_URL}/clients/${rm_client['id']}/roles`,
-  headers}
-  )
+  resp2 = requests.request({method: 'GET',
+    url: `${REALM_URL}/clients/${rm_client.id}/roles`,
+    headers});
   const realm_admin = (resp2).filter((item) => {return item.name === 'realm-admin';})[0];
 
   const postclientroles = request({method: 'POST',
     url: `${REALMS_URL}/${REALM}/users/${currUserId}/role-mappings/clients/${rmclientId}`,
     headers,
     data: [{
-      id: realm_admin['id'],
+      id: realm_admin.id,
       name: 'realm-admin',
     }]});
 
   console.dir(postclientroles);
 };
 
-
-$keycloak.ungrantKeycloakUserCreateRole = async (token, editUser) => {
+$keycloak.ungrantRealmAdmin = async (token, editUser) => {
   const {clientId, baseuri, enableUserCreate} = nconf.get('keycloak');
   if (!enableUserCreate) {
-    return
+    return;
   }
 
   const clientRoleMappings = request({
@@ -141,14 +132,14 @@ $keycloak.ungrantKeycloakUserCreateRole = async (token, editUser) => {
   console.dir(clientRM);
 
   const deleteOutcome = request({
-    method: "DELETE",
+    method: 'DELETE',
     url: `${REALMS_URL}/${REALM}/users/${currUserId}/role-mappings/clients/${rmClientId}`,
-    headers: headers,
+    headers,
     data: [{
       id: clientRMid,
       name: 'realm-admin',
-    }]
-  })
+    }],
+  });
   console.dir(deleteOutcome);
   return deleteOutcome;
 };
