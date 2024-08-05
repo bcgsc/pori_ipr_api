@@ -5,7 +5,7 @@ const {Op} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
-
+const {createKeycloakUser} = require('../api/keycloak');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
 
@@ -278,6 +278,13 @@ router.route('/')
 
 router.route('/me')
   .get((req, res) => {
+    return res.json(req.user.view('public'));
+  });
+
+
+router.route('/createkeycloak')
+  .get((req, res) => {
+    //createKeycloakUser
     return res.json(req.user.view('public'));
   });
 

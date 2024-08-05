@@ -25,7 +25,7 @@ $keycloak.getToken = async (username, password) => {
   return request(options);
 };
 
-$keycloak.createPORIUser = async (token, newUsername, newEmail) => {
+$keycloak.createKeycloakUser = async (token, newUsername, newEmail) => {
   const {clientId, baseuri, enableUserCreate} = nconf.get('keycloak');
   if (!enableUserCreate) {
     return
@@ -79,7 +79,7 @@ $keycloak.createPORIUser = async (token, newUsername, newEmail) => {
 };
 
 // aka grantRealmAdmin
-$keycloak.addUserCreateRoles = async (token, editUsername, editUseremail) => {
+$keycloak.grantKeycloakUserCreateRole = async (token, editUsername, editUseremail) => {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `bearer ${token}`,
@@ -125,7 +125,7 @@ $keycloak.addUserCreateRoles = async (token, editUsername, editUseremail) => {
 };
 
 
-$keycloak.ungrantRealmAdmin = async (token, editUser) => {
+$keycloak.ungrantKeycloakUserCreateRole = async (token, editUser) => {
   const {clientId, baseuri, enableUserCreate} = nconf.get('keycloak');
   if (!enableUserCreate) {
     return

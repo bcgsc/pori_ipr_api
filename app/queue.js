@@ -3,7 +3,7 @@ const nodemailer = require('nodemailer');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
 
-const {host, port, enableQueue} = conf.get('redisqueue');
+const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log'); // Load logging library
 
 const CONFIG = require('./config');

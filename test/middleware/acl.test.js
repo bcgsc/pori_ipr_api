@@ -48,7 +48,7 @@ describe('Testing ACL methods', () => {
     });
 
     test('Query parameters work', async () => {
-      req.user.groups = [{name: 'Clinician'}];
+      req.user.groups = [{name: 'hello'}];
       req.originalUrl = '/api/user?par=true';
       req.method = 'GET';
 
@@ -88,7 +88,6 @@ describe('Testing ACL methods', () => {
     });
 
     test('GET request when user has project access', async () => {
-      req.user.groups = [{name: 'Clinician'}];
       req.user.projects = [{ident: 'matching-test-ident'}];
 
       req.report.projects = [{ident: 'matching-test-ident'}];
@@ -103,7 +102,7 @@ describe('Testing ACL methods', () => {
     });
 
     test('GET request when user does not have project access', async () => {
-      req.user.groups = [{name: 'Clinician'}];
+      req.user.groups = [{name: 'hello'}];
       req.user.projects = [{ident: 'not-matching-test-ident'}];
 
       req.report.projects = [{ident: 'matching-test-ident'}];
@@ -133,7 +132,6 @@ describe('Testing ACL methods', () => {
     });
 
     test('Update request when user is bound to report', async () => {
-      req.user.groups = [{name: 'Clinician'}];
       req.user.projects = [{ident: 'matching-test-ident'}];
 
       req.report.projects = [{ident: 'matching-test-ident'}];
@@ -148,7 +146,7 @@ describe('Testing ACL methods', () => {
     });
 
     test('Update request when user is not bound to the report and does not have master access', async () => {
-      req.user.groups = [{name: 'Clinician'}];
+      req.user.groups = [{name: 'hello'}];
       req.user.projects = [{ident: 'matching-test-ident'}];
 
       req.report.projects = [{ident: 'matching-test-ident'}];
@@ -187,7 +185,7 @@ describe('Testing ACL methods', () => {
     });
 
     test('Update request when user does not have master access', async () => {
-      req.user.groups = [{name: 'Clinician'}];
+      req.user.groups = [{name: 'hello'}];
       req.originalUrl = '/api/project/fdgfdgfd/user';
       req.method = 'POST';
 
@@ -197,7 +195,6 @@ describe('Testing ACL methods', () => {
     });
 
     test('GET request that is not a special case', async () => {
-      req.user.groups = [{name: 'Clinician'}];
       req.originalUrl = '/api/template';
       req.method = 'GET';
 
@@ -207,7 +204,7 @@ describe('Testing ACL methods', () => {
     });
 
     test('Special case (matching route and method) where the user is allowed to edit', async () => {
-      req.user.groups = [{name: 'Clinician'}];
+      req.user.groups = [{name: 'create report access'}];
       req.originalUrl = '/api/reports';
       req.method = 'POST';
 
@@ -217,7 +214,6 @@ describe('Testing ACL methods', () => {
     });
 
     test('Special case (matching route and method) where the user is not allowed to edit', async () => {
-      req.user.groups = [{name: 'Clinician'}];
       req.originalUrl = '/api/template/fsddfds';
       req.method = 'PUT';
 

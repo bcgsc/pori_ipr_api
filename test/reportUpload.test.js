@@ -120,10 +120,10 @@ describe('Tests for uploading a report and all of its components', () => {
 });
 
 // Tests for uploading a report and all of its components
-describe('Test for uploading a report with empty image data', () => {
+describe('Tests for uploading a report', () => {
   test('Upload fails on empty image data', async () => {
     // create report
-    const emptyImageMockReportData = mockReportData;
+    const emptyImageMockReportData = JSON.parse(JSON.stringify(mockReportData));
     emptyImageMockReportData.images[0].path = 'test/testData/images/empty_image.png';
     const res = await request
       .post('/api/reports')
@@ -133,6 +133,19 @@ describe('Test for uploading a report with empty image data', () => {
       .expect(HTTP_STATUS.BAD_REQUEST);
 
     expect(typeof res.body).toBe('object');
+  }, LONGER_TIMEOUT);
+
+  test('Upload works when no sampleInfo', async () => {
+    // create report
+    const mockReportNoSampleInfo = JSON.parse(JSON.stringify(mockReportData));
+    delete mockReportNoSampleInfo.sampleInfo;
+
+    await request
+      .post('/api/reports')
+      .auth(username, password)
+      .send(mockReportNoSampleInfo)
+      .type('json')
+      .expect(HTTP_STATUS.CREATED);
   }, LONGER_TIMEOUT);
 });
 
