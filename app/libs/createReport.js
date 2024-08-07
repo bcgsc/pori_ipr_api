@@ -325,11 +325,12 @@ const createReport = async (data) => {
       user_id: bindUser.id,
       reportId: report.id,
       role: 'bioinformatician',
+      addedBy_id: bindUser.id,
     }, {transaction});
   } catch (error) {
     await transaction.rollback();
-    logger.error(`Error trying to find user to bind ${bindUser}`);
-    throw new Error(`Unable to create report ${error.message || error}`);
+    logger.error(`Error binding creating user ${bindUser}`);
+    throw new Error(`Unable to bind creating user to report ${error.message || error}`);
   }
 
   report.projects = [];
