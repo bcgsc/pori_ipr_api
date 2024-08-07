@@ -101,7 +101,7 @@ const DEFAULTS = {
       ? 6380
       : 6379,
   },
-  redis_queue: REDIS_QUEUE_CONFIG,
+  redisqueue: REDIS_QUEUE_CONFIG,
   paths: {
     data: {
       POGdata: '/projects/tumour_char/pog/reports/genomic',
