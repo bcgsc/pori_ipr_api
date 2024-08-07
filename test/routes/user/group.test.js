@@ -12,7 +12,7 @@ CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
 const groupProperties = [
-  'ident', 'createdAt', 'updatedAt', 'name', 'users', 'owner',
+  'ident', 'createdAt', 'updatedAt', 'name', 'users',
 ];
 
 const checkUserGroup = (groupObject) => {
