@@ -318,21 +318,22 @@ const createReport = async (data) => {
   }
 
   // Bind the creating user to the report as a bioinformatician
-  let bindUser;
-  try {
-    bindUser = await db.models.user.findOne({where: {id: report.createdBy_id}});
-    await db.models.reportUser.create({
-      user_id: bindUser.id,
-      reportId: report.id,
-      role: 'bioinformatician',
-      addedBy_id: bindUser.id,
-    }, {transaction});
-  } catch (error) {
-    await transaction.rollback();
-    logger.error(`Error binding creating user ${bindUser}`);
-    throw new Error(`Unable to bind creating user to report ${error.message || error}`);
+  if (report.createdBy_id) {
+    let bindUser;
+    try {
+      bindUser = await db.models.user.findOne({where: {id: report.createdBy_id}});
+      await db.models.reportUser.create({
+        user_id: bindUser.id,
+        reportId: report.id,
+        role: 'bioinformatician',
+        addedBy_id: bindUser.id,
+      }, {transaction});
+    } catch (error) {
+      await transaction.rollback();
+      logger.error(`Error binding creating user ${bindUser}`);
+      throw new Error(`Unable to bind creating user to report ${error.message || error}`);
+    }
   }
-
   report.projects = [];
 
   // find or create report-project association
