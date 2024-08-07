@@ -317,6 +317,21 @@ const createReport = async (data) => {
     throw new Error(`Unable to create report ${error.message || error}`);
   }
 
+  // Bind the creating user to the report as a bioinformatician
+  let bindUser;
+  try {
+    bindUser = await db.models.user.findOne({where: {id: report.createdBy_id}});
+    await db.models.reportUser.create({
+      user_id: bindUser.id,
+      reportId: report.id,
+      role: 'bioinformatician',
+    }, {transaction});
+  } catch (error) {
+    await transaction.rollback();
+    logger.error(`Error trying to find user to bind ${bindUser}`);
+    throw new Error(`Unable to create report ${error.message || error}`);
+  }
+
   report.projects = [];
 
   // find or create report-project association
@@ -344,6 +359,7 @@ const createReport = async (data) => {
     await transaction.rollback();
     throw error;
   }
+
 };
 
 module.exports = createReport;
