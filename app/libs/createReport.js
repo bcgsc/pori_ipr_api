@@ -359,7 +359,6 @@ const createReport = async (data) => {
     await transaction.rollback();
     throw error;
   }
-
 };
 
 module.exports = createReport;
