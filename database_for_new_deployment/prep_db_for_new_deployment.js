@@ -24,7 +24,6 @@ const sequelize = new Sq(
   },
 );
 
-
 // TODO - keep all users needed for deployment - pori_admin
 const addPoriAdminUser = async (queryInterface, transaction) => {
   console.log('create the pori_admin user. we assume the user does not already exist');
@@ -52,8 +51,7 @@ const addPoriAdminUser = async (queryInterface, transaction) => {
   );
   console.log('created', poriAdmin);
 
-  console.log(poriAdmin.id);
-  const [poriAdminUserMetadata] = await queryInterface.sequelize.query(
+  await queryInterface.sequelize.query(
     `INSERT INTO user_metadata (
         ident, user_id,
         created_at, updated_at
@@ -69,6 +67,7 @@ const addPoriAdminUser = async (queryInterface, transaction) => {
       },
     },
   );
+
   const [group] = await queryInterface.sequelize.query(
     'SELECT * FROM user_groups WHERE deleted_at IS NULL AND name = :name',
     {
@@ -80,26 +79,25 @@ const addPoriAdminUser = async (queryInterface, transaction) => {
     },
   );
 
-  const [groupMember] = await queryInterface.sequelize.query(
-      `INSERT INTO user_group_members (
+  await queryInterface.sequelize.query(
+    `INSERT INTO user_group_members (
         user_id, group_id,
         created_at, deleted_at, updated_at
       ) values (
         :userId, :groupId,
         NOW(), NULL, NOW()
       )`,
-      {
-        transaction,
-        replacements: {
-          userId: poriAdmin.id,
-          groupId: group.id,
-        },
+    {
+      transaction,
+      replacements: {
+        userId: poriAdmin.id,
+        groupId: group.id,
       },
-    );
-
+    },
+  );
 
   console.log('make poriAdmin user the group owner of all groups');
-  const [updateOutcome] = await queryInterface.sequelize.query(
+  await queryInterface.sequelize.query(
     'UPDATE user_groups SET owner_id = :owner',
     {transaction, replacements: {owner: poriAdmin.id}},
   );
