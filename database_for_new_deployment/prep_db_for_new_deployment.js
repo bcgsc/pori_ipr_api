@@ -24,7 +24,6 @@ const sequelize = new Sq(
   },
 );
 
-// TODO - keep all users needed for deployment - pori_admin
 const addPoriAdminUser = async (queryInterface, transaction) => {
   console.log('create the pori_admin user. we assume the user does not already exist');
   const [[poriAdmin]] = await queryInterface.sequelize.query(
