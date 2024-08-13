@@ -1,7 +1,6 @@
-const { graphkbGetReadonlyGroupId, graphkbAddUser } = require('./api/graphkb');
-
 const {Queue, Worker} = require('bullmq');
 const nodemailer = require('nodemailer');
+const {graphkbGetReadonlyGroupId, graphkbAddUser} = require('./api/graphkb');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
 
@@ -233,8 +232,7 @@ const setUpGraphkbNewUserWorker = (graphkbJobProcessor) => {
           host,
           port,
         },
-        autorun: true,
-        },
+        autorun: true},
       );
     }
     return null;
@@ -256,7 +254,7 @@ const setUpGraphkbNewUserWorker = (graphkbJobProcessor) => {
 const graphkbNewUserProcessor = async (job) => {
   // Process the job data
   try {
-    const groupId = await graphkbGetReadonlyGroupId(job.data.graphkbToken)
+    const groupId = await graphkbGetReadonlyGroupId(job.data.graphkbToken);
     const addUser = await graphkbAddUser(job.data.graphkbToken, job.data.body.username, job.data.body.email, groupId.result[0]['@rid']);
     if (!addUser.result) {
       throw new Error(`Error adding new user to GraphKb: ${addUser}`);

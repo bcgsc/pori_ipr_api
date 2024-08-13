@@ -29,7 +29,7 @@ const graphkbIprLoginMiddleware = async (req, res, next) => {
     try {
       // expired or not logged in, retry
       const {uri} = CONFIG.get('graphkb');
-      const token = req.header("Authorization");
+      const token = req.header('Authorization');
       const options = {
         method: 'POST',
         url: `${uri}/token`,

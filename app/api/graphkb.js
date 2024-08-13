@@ -140,7 +140,7 @@ const graphkbGetReadonlyGroupId = async (graphkbToken) => {
 
   const query = {
     filters: [
-      {'name': 'readonly'},
+      {name: 'readonly'},
     ],
     target: 'UserGroup',
     returnProperties: [
@@ -158,7 +158,7 @@ const graphkbGetReadonlyGroupId = async (graphkbToken) => {
       'Content-Type': 'application/json',
     },
   });
-}
+};
 
 const graphkbAddUser = async (graphkbToken, userName, userEmail, groupId) => {
   const {uri} = CONFIG.get('graphkb');
