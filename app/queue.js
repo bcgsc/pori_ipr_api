@@ -1,3 +1,5 @@
+const { graphkbGetReadonlyGroupId, graphkbAddUser } = require('./api/graphkb');
+
 const {Queue, Worker} = require('bullmq');
 const nodemailer = require('nodemailer');
 const conf = require('./config');
@@ -186,4 +188,85 @@ const reportProcessor = async (job) => {
 
 setUpReportWorker(reportProcessor);
 
-module.exports = {addJobToEmailQueue, addJobToReportQueue, retrieveJobFromReportQueue};
+const setUpGraphkbNewUserQueue = () => {
+  if (enableQueue) {
+    logger.info('graphkb new user queue enabled');
+    return new Queue('graphkbNewUserQueue', {
+      connection: {
+        host,
+        port,
+      },
+    });
+  }
+  logger.info('graphkb new user queue not enabled');
+  return null;
+};
+
+const graphkbNewUserQueue = setUpGraphkbNewUserQueue();
+
+const GRAPHKB_REMOVE_CONFIG = {
+  removeOnComplete: {
+    age: 3600,
+  },
+  removeOnFail: {
+    age: 24 * 3600,
+  },
+  attempts: 3,
+};
+
+const addJobToGraphkbNewUserQueue = async (data) => {
+  if (graphkbNewUserQueue) {
+    logger.info('adding graphkb new user to queue: ', data.body);
+    return graphkbNewUserQueue.add('job', data, GRAPHKB_REMOVE_CONFIG);
+  }
+  return null;
+};
+
+// Initialize a new worker
+const setUpGraphkbNewUserWorker = (graphkbJobProcessor) => {
+  const worker = () => {
+    if (enableQueue) {
+      return new Worker(
+        'graphkbNewUserQueue',
+        graphkbJobProcessor,
+        {connection: {
+          host,
+          port,
+        },
+        autorun: true,
+        },
+      );
+    }
+    return null;
+  };
+
+  const workerInstance = worker();
+  if (workerInstance) {
+    workerInstance.on('completed', async (job) => {
+      await job.remove();
+      logger.info(`Graphkb new user job with ID ${job.id} has been completed.`);
+    });
+
+    workerInstance.on('failed', (job, err) => {
+      logger.error(`Graphkb new user job with ID ${job.id} has failed with error: ${err.message}`);
+    });
+  }
+};
+
+const graphkbNewUserProcessor = async (job) => {
+  // Process the job data
+  try {
+    const groupId = await graphkbGetReadonlyGroupId(job.data.graphkbToken)
+    const addUser = await graphkbAddUser(job.data.graphkbToken, job.data.body.username, job.data.body.email, groupId.result[0]['@rid']);
+    if (!addUser.result) {
+      throw new Error(`Error adding new user to GraphKb: ${addUser}`);
+    }
+  } catch (err) {
+    logger.error(JSON.stringify(job.data.body));
+    throw new Error(err);
+  }
+};
+
+setUpGraphkbNewUserWorker(graphkbNewUserProcessor);
+
+module.exports = {addJobToEmailQueue, addJobToReportQueue, addJobToGraphkbNewUserQueue, retrieveJobFromReportQueue};

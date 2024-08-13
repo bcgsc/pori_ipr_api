@@ -5,11 +5,15 @@ const {Op} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
+const {addJobToGraphkbNewUserQueue} = require('../../queue');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
+const graphkbIprLoginMiddleware = require('../../middleware/graphkbIprLogin');
 
 const router = express.Router({mergeParams: true});
+
+router.use(graphkbIprLoginMiddleware);
 
 // Middleware for getting/updating a user by ident
 router.param('userByIdent', async (req, res, next, ident) => {
@@ -45,14 +49,14 @@ router.param('userByIdent', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Error while trying to find user by ident ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
       error: {message: 'Error while trying to find user by ident'},
     });
   }
 
   if (!result) {
     logger.error(`Unable to find user with ident: ${ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({
+    return res.status(HTTP_STATUS.StatusCodes.NOT_FOUND).json({
       error: {message: 'Unable to find user with'},
     });
   }
@@ -71,7 +75,7 @@ router.route('/:userByIdent([A-z0-9-]{36})/notifications')
     } catch (error) {
       const message = `There was an error validating the user notification update request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(HTTP_STATUS.StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     try {
@@ -80,7 +84,7 @@ router.route('/:userByIdent([A-z0-9-]{36})/notifications')
       return res.json(req.userByIdent.view('public'));
     } catch (error) {
       logger.error(`Error while trying to update user notifications ${req.userByIdent.username} ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to update user notifications'},
       });
     }
@@ -91,7 +95,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
   .get((req, res) => {
     if (!isAdmin(req.user) && !isManager(req.user) && req.user.id !== req.userByIdent.id) {
       logger.error(`User: ${req.user.username} is not allowed to view this user`);
-      return res.status(HTTP_STATUS.FORBIDDEN).send({
+      return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).send({
         error: {message: 'You are not allowed to perform this action'},
       });
     }
@@ -108,14 +112,14 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     if (!isAdmin(req.user) && subjectUserIsAdmin) {
       const msg = 'User who is not admin may not edit admin user';
       logger.error(msg);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+      return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({error: {message: msg}});
     }
 
     const manager = isManager(req.user);
 
     if (!manager && req.user.id !== req.userByIdent.id) {
       logger.error(`User: ${req.user.username} is not allowed to edit another user`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
+      return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({
         error: {message: 'You are not allowed to perform this action'},
       });
     }
@@ -124,13 +128,13 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     if (!manager) {
       if (req.body.username) {
         logger.error(`User: ${req.user.username} is not allowed to update their username`);
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
+        return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({
           error: {message: 'You are not allowed to update your username'},
         });
       }
       if (req.body.type) {
         logger.error(`User: ${req.user.username} is not allowed to update their account type`);
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
+        return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({
           error: {message: 'You are not allowerd to update your account type'},
         });
       }
@@ -142,7 +146,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     } catch (error) {
       const message = `There was an error validating the user update request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(HTTP_STATUS.StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     if (req.body.password) {
@@ -155,7 +159,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       return res.json(req.userByIdent.view('public'));
     } catch (error) {
       logger.error(`Error while trying to update user ${req.userByIdent.username} ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to update user'},
       });
     }
@@ -171,15 +175,15 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     if (!isAdmin(req.user) && subjectUserIsAdmin) {
       const msg = 'User who is not admin may not delete admin user';
       logger.error(msg);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
+      return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({error: {message: msg}});
     }
 
     try {
       await req.userByIdent.destroy();
-      return res.status(HTTP_STATUS.NO_CONTENT).send();
+      return res.status(HTTP_STATUS.StatusCodes.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while trying to delete user ${req.userByIdent.username} ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to delete user'},
       });
     }
@@ -211,7 +215,7 @@ router.route('/')
       return res.json(users);
     } catch (error) {
       logger.error(`Error while trying to get all users ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to get all users'},
       });
     }
@@ -223,7 +227,7 @@ router.route('/')
     } catch (error) {
       const message = `There was an error validating the user create request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(HTTP_STATUS.StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     let userExists;
@@ -235,7 +239,7 @@ router.route('/')
       });
     } catch (error) {
       logger.error(`Error while trying to search for username ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to search for username'},
       });
     }
@@ -243,7 +247,7 @@ router.route('/')
     // if username exists return 409
     if (userExists) {
       logger.error(`Username: ${req.body.username} is already taken`);
-      return res.status(HTTP_STATUS.CONFLICT).json({
+      return res.status(HTTP_STATUS.StatusCodes.CONFLICT).json({
         error: {message: 'Username is already taken'},
       });
     }
@@ -255,6 +259,9 @@ router.route('/')
       req.body.password = null;
     }
 
+    // // Add new user to graphkb by adding a job to graphkb new user queue
+    // await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
+
     let transaction;
     try {
       // Create transaction
@@ -265,12 +272,16 @@ router.route('/')
       await db.models.userMetadata.create({userId: createdUser.id}, {transaction});
       // Commit changes
       await transaction.commit();
+      if (req.query.gkb === true) {
+        // Add new user to graphkb by adding a job to graphkb new user queue
+        await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
+      }
       // Return new user
-      return res.status(HTTP_STATUS.CREATED).json(createdUser.view('public'));
+      return res.status(HTTP_STATUS.StatusCodes.CREATED).json(createdUser.view('public'));
     } catch (error) {
       await transaction.rollback();
       logger.error(`Error while trying to create new user ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to create new user'},
       });
     }
@@ -299,7 +310,7 @@ router.route('/search')
       return res.json(users);
     } catch (error) {
       logger.error(`Error while trying to search users ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to search users'},
       });
     }
