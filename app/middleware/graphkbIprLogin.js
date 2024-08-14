@@ -12,6 +12,8 @@ const CONFIG = require('../config');
 const graphkbIprLoginMiddleware = async (req, res, next) => {
   const currentToken = req.graphkbToken;
 
+  console.log(currentToken);
+
   let validToken = false;
   if (currentToken) {
     // check if the current token is valid still
