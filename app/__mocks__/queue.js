@@ -1,6 +1,7 @@
 const createReport = require('../libs/createReport');
 
 const queue = [];
+const graphKbQueue = [];
 
 const addJobToEmailQueue = async (data) => {
   queue.push(data);
@@ -12,4 +13,9 @@ const addJobToReportQueue = async (data, customIdent) => {
   return {id: customIdent};
 };
 
-module.exports = {addJobToEmailQueue, addJobToReportQueue};
+const addJobToGraphkbNewUserQueue = async (data) => {
+  graphKbQueue.push(data);
+  return graphKbQueue;
+};
+
+module.exports = {addJobToEmailQueue, addJobToReportQueue, addJobToGraphkbNewUserQueue};
