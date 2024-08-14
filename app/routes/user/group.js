@@ -12,7 +12,6 @@ const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
-
 // Generate schema's
 const groupCreateSchema = schemaGenerator(db.models.userGroup, {
   baseUri: '/create',

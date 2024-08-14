@@ -111,7 +111,6 @@ describe('/user/group', () => {
 
       await db.models.userGroup.destroy({where: {ident: res.body.ident}, force: true});
     });
-
   });
 
   // Tests for PUT endpoint
@@ -150,7 +149,6 @@ describe('/user/group', () => {
         .send({name: 'testGroup'})
         .expect(HTTP_STATUS.NOT_FOUND);
     });
-
   });
 
   // Tests for DELETE endpoint
