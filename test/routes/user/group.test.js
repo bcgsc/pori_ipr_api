@@ -21,7 +21,6 @@ const checkUserGroup = (groupObject) => {
   });
   expect(groupObject).toEqual(expect.not.objectContaining({
     id: expect.any(Number),
-    owner_id: expect.any(Number),
     deletedAt: expect.any(String),
     description: expect.any(String),
   }));
@@ -64,7 +63,7 @@ beforeAll(async () => {
     email: 'email02@email.com',
   });
 
-  group = await db.models.userGroup.create({name: 'Test group', owner_id: user01.id, description: 'test'});
+  group = await db.models.userGroup.create({name: 'Test group', description: 'test'});
 });
 
 // Tests for user group related endpoints
@@ -105,7 +104,7 @@ describe('/user/group', () => {
         .post('/api/user/group')
         .auth(username, password)
         .type('json')
-        .send({name: 'testGroup', owner: user02.ident})
+        .send({name: 'testGroup'})
         .expect(HTTP_STATUS.CREATED);
 
       checkUserGroup(res.body);
@@ -113,32 +112,6 @@ describe('/user/group', () => {
       await db.models.userGroup.destroy({where: {ident: res.body.ident}, force: true});
     });
 
-    test('/ - 400 Bad Request - Name is required', async () => {
-      await request
-        .post('/api/user/group')
-        .auth(username, password)
-        .type('json')
-        .send({owner: user02.ident})
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-
-    test('/ - 400 Bad Request - Owner is required', async () => {
-      await request
-        .post('/api/user/group')
-        .auth(username, password)
-        .type('json')
-        .send({name: 'testGroup'})
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-
-    test('/ - 400 Bad Request - Owner must be a uuid', async () => {
-      await request
-        .post('/api/user/group')
-        .auth(username, password)
-        .type('json')
-        .send({name: 'testGroup', owner: 'NOT_UUID'})
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
   });
 
   // Tests for PUT endpoint
@@ -147,7 +120,7 @@ describe('/user/group', () => {
 
     beforeEach(async () => {
       updateGroup = await db.models.userGroup.create({
-        name: 'updateTestGroup', owner_id: user01.id,
+        name: 'updateTestGroup',
       });
     });
 
@@ -156,7 +129,7 @@ describe('/user/group', () => {
     });
 
     test('/{group} - 200 Success', async () => {
-      const UPDATE_DATA = {name: 'testGroupUpdated', owner: user02.ident};
+      const UPDATE_DATA = {name: 'testGroupUpdated'};
 
       const res = await request
         .put(`/api/user/group/${updateGroup.ident}`)
@@ -167,7 +140,6 @@ describe('/user/group', () => {
 
       checkUserGroup(res.body);
       expect(res.body.name).toBe(UPDATE_DATA.name);
-      expect(res.body.owner.ident).toBe(UPDATE_DATA.owner);
     });
 
     test('/{group} - 404 Not Found', async () => {
@@ -175,18 +147,10 @@ describe('/user/group', () => {
         .put(`/api/user/group/${updateGroup.ident}`)
         .auth(username, password)
         .type('json')
-        .send({name: 'testGroup', owner: uuidv4()})
+        .send({name: 'testGroup'})
         .expect(HTTP_STATUS.NOT_FOUND);
     });
 
-    test('/{group} - 400 Bad Request - Owner must be a uuid', async () => {
-      await request
-        .put(`/api/user/group/${updateGroup.ident}`)
-        .auth(username, password)
-        .type('json')
-        .send({name: 'updatedGroup', owner: 'NOT_UUID'})
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
   });
 
   // Tests for DELETE endpoint
@@ -195,7 +159,7 @@ describe('/user/group', () => {
 
     beforeEach(async () => {
       deleteGroup = await db.models.userGroup.create({
-        name: 'testGroup', owner_id: user01.id,
+        name: 'testGroup',
       });
     });
 

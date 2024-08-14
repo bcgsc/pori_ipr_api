@@ -256,12 +256,6 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
     );
   }
 
-  console.log('make iprdemo user the group owner of all groups');
-  await queryInterface.sequelize.query(
-    'UPDATE user_groups SET owner_id = :owner',
-    {transaction, replacements: {owner: demoUser.id}},
-  );
-
   await addDemoUserToGroup(queryInterface, transaction, demoUser, 'admin');
   await addDemoUserToGroup(queryInterface, transaction, demoUser, 'manager');
   await addDemoUserToProject(queryInterface, transaction, demoUser, 'PORI');
@@ -351,12 +345,6 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
       },
     );
   }
-
-  console.log('make admin user the group owner of all groups');
-  await queryInterface.sequelize.query(
-    'UPDATE user_groups SET owner_id = :owner',
-    {transaction, replacements: {owner: adminUser.id}},
-  );
 
   await addDemoUserToGroup(queryInterface, transaction, adminUser, 'admin');
   await addDemoUserToGroup(queryInterface, transaction, adminUser, 'manager');

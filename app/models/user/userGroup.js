@@ -7,14 +7,6 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       allowNull: false,
     },
-    owner_id: {
-      type: Sq.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
     description: {
       type: Sq.STRING,
       allowNull: true,
@@ -26,7 +18,7 @@ module.exports = (sequelize, Sq) => {
       public: {
         order: [['name', 'ASC']],
         attributes: {
-          exclude: ['id', 'owner_id', 'deletedAt', 'updatedBy'],
+          exclude: ['id', 'deletedAt', 'updatedBy'],
         },
         include: [
           {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}, through: {attributes: []}},
@@ -41,7 +33,7 @@ module.exports = (sequelize, Sq) => {
   // set instance methods
   userGroup.prototype.view = function (scope) {
     if (scope === 'public') {
-      const {id, owner_id, deletedAt, updatedBy, ...publicView} = this.dataValues;
+      const {id, deletedAt, updatedBy, ...publicView} = this.dataValues;
       return publicView;
     }
     return this;
