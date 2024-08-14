@@ -9,11 +9,11 @@ const {addJobToGraphkbNewUserQueue} = require('../../queue');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
-const graphkbIprLoginMiddleware = require('../../middleware/graphkbIprLogin');
+// const graphkbIprLoginMiddleware = require('../../middleware/graphkbIprLogin');
 
 const router = express.Router({mergeParams: true});
 
-router.use(graphkbIprLoginMiddleware);
+// router.use(graphkbIprLoginMiddleware);
 
 // Middleware for getting/updating a user by ident
 router.param('userByIdent', async (req, res, next, ident) => {
@@ -260,7 +260,6 @@ router.route('/')
     }
 
     // // Add new user to graphkb by adding a job to graphkb new user queue
-    // await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
 
     let transaction;
     try {
@@ -272,10 +271,10 @@ router.route('/')
       await db.models.userMetadata.create({userId: createdUser.id}, {transaction});
       // Commit changes
       await transaction.commit();
-      if (req.query.gkb === true) {
-        // Add new user to graphkb by adding a job to graphkb new user queue
-        await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
-      }
+      // if (req.query.gkb === true) {
+      //   // Add new user to graphkb by adding a job to graphkb new user queue
+      //   await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
+      // }
       // Return new user
       return res.status(HTTP_STATUS.CREATED).json(createdUser.view('public'));
     } catch (error) {
