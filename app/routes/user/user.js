@@ -9,11 +9,11 @@ const {addJobToGraphkbNewUserQueue} = require('../../queue');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
-// const graphkbIprLoginMiddleware = require('../../middleware/graphkbIprLogin');
+const graphkbIprLoginMiddleware = require('../../middleware/graphkbIprLogin');
 
 const router = express.Router({mergeParams: true});
 
-// router.use(graphkbIprLoginMiddleware);
+router.use(graphkbIprLoginMiddleware);
 
 // Middleware for getting/updating a user by ident
 router.param('userByIdent', async (req, res, next, ident) => {
