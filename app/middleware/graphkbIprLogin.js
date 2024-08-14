@@ -45,7 +45,7 @@ const graphkbIprLoginMiddleware = async (req, res, next) => {
       req.graphkbToken = kbToken;
     } catch (error) {
       logger.error(error);
-      return res.status(HTTP_STATUS.StatusCodes.SERVICE_UNAVAILABLE).json(`GraphKB login error: ${error}`);
+      return res.status(HTTP_STATUS.SERVICE_UNAVAILABLE).json(`GraphKB login error: ${error}`);
     }
   }
   return next();
