@@ -143,7 +143,7 @@ describe('/user/group', () => {
 
     test('/{group} - 404 Not Found', async () => {
       await request
-        .put(`/api/user/group/${updateGroup.ident}`)
+        .put(`/api/user/group/${uuidv4()}`)
         .auth(username, password)
         .type('json')
         .send({name: 'testGroup'})
