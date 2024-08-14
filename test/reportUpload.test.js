@@ -112,6 +112,17 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(template.id).toBe(report.templateId);
   });
 
+  test('Creating user was linked correctly', async () => {
+    // Get Report and test that the template data in the report is correct
+    const report = await db.models.report.findOne({where: {id: reportId}, attributes: ['createdBy_id']});
+    const boundUser = await db.models.reportUser.findOne({where: {report_id: reportId}});
+
+    expect(boundUser).not.toBeNull();
+    expect(boundUser.deletedAt).toBeNull();
+    expect(boundUser.role).toBe('bioinformatician');
+    expect(boundUser.user_id).toBe(report.createdBy_id);
+  });
+
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // by force deleting the report
