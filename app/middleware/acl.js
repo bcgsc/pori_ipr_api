@@ -190,7 +190,7 @@ module.exports = async (req, res, next) => {
     // and they dont have update permissions, throw an error
     if (UPDATE_METHODS.includes(req.method)
       && req.report.state === 'completed'
-      && !(hasAccess(req.user, MASTER_REPORT_ACCESS))
+      && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS))
     ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
       return res.status(FORBIDDEN).json({
