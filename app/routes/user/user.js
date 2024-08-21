@@ -157,7 +157,7 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
-    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+    const subjectUserIsAdmin = await db.models.userGroup.findOne({
       where: {group: 'admin', userId: req.userByIdent.id},
     });
 
