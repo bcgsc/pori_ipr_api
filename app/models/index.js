@@ -88,9 +88,6 @@ user.belongsToMany(userGroup, {
 userGroup.belongsToMany(user, {
   as: 'users', through: {model: userGroupMember, unique: false}, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE',
 });
-userGroup.belongsTo(user, {
-  as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL',
-});
 
 // IMPORTANT must be done before the variant models are defined
 const genes = require('./reports/genes')(sequelize, Sq);

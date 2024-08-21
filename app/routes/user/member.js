@@ -45,7 +45,7 @@ router.route('/')
             model: db.models.userGroup,
             as: 'groups',
             attributes: {
-              exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+              exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
             },
             through: {attributes: []},
           },

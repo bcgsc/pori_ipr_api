@@ -12,22 +12,16 @@ const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
-const groupProperties = {
-  owner: {type: 'string', format: 'uuid'},
-};
-
 // Generate schema's
 const groupCreateSchema = schemaGenerator(db.models.userGroup, {
   baseUri: '/create',
-  exclude: [...BASE_EXCLUDE, 'owner_id'],
-  properties: groupProperties,
-  required: ['owner'],
+  exclude: [...BASE_EXCLUDE],
+  nothingRequired: true,
 });
 
 const groupUpdateSchema = schemaGenerator(db.models.userGroup, {
   baseUri: '/update',
-  exclude: [...BASE_EXCLUDE, 'owner_id'],
-  properties: groupProperties,
+  exclude: [...BASE_EXCLUDE],
   nothingRequired: true,
 });
 
@@ -47,31 +41,6 @@ router.route('/:group([A-z0-9-]{36})')
       const message = `There was an error validating the user group update request ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
-    }
-
-    // Check if group owner is being updated
-    if (req.body.owner) {
-      let user;
-      try {
-        user = await db.models.user.findOne({
-          where: {ident: req.body.owner},
-          attributes: ['id', 'ident'],
-        });
-      } catch (error) {
-        logger.error('Error while trying to find new group owner');
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-          error: {message: 'Error while trying to find new group owner'},
-        });
-      }
-
-      if (!user) {
-        logger.error('User doesn\'t exist');
-        return res.status(HTTP_STATUS.NOT_FOUND).json({
-          error: {message: 'User doesn\'t exist'},
-        });
-      }
-
-      req.body.owner_id = user.id;
     }
 
     // Update Group
@@ -122,28 +91,6 @@ router.route('/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-
-    // Find group owner
-    let user;
-    try {
-      user = await db.models.user.findOne({
-        where: {ident: req.body.owner},
-        attributes: ['id', 'ident'],
-      });
-    } catch (error) {
-      logger.error(`Error while trying to find group owner ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Error while trying to find group owner'},
-      });
-    }
-
-    if (!user) {
-      logger.error('User doesn\'t exist');
-      return res.status(HTTP_STATUS.NOT_FOUND).json({message: 'User doesn\'t exist'});
-    }
-
-    // Add owner to request
-    req.body.owner_id = user.id;
 
     try {
       // Add new group
