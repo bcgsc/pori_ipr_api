@@ -13,7 +13,7 @@ module.exports = (sequelize, Sq) => {
       },
       allowNull: false,
     },
-    group: {
+    name: {
       type: Sq.ENUM(
         'admin',
         'manager',

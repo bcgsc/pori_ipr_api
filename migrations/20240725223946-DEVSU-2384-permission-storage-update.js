@@ -22,7 +22,7 @@ module.exports = {
             key: 'id',
           },
         },
-        group: {
+        name: {
           type: Sq.ENUM(
             'admin',
             'manager',

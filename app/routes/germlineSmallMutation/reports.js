@@ -92,7 +92,7 @@ router.route('/')
 
     // Check if user belongs to the Projects group
     const inProjectsGroup = req.user.groups.some((group) => {
-      return group.group.trim().toLowerCase() === 'projects';
+      return group.name.trim().toLowerCase() === 'projects';
     });
 
     // Generate cache key
