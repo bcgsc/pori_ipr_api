@@ -9,7 +9,7 @@ module.exports = async (req, res, next, ident) => {
     result = await db.models.userGroup.findOne({
       where: {ident},
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}, through: {attributes: []}},
+        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
       ],
     });
   } catch (error) {

@@ -7,7 +7,6 @@ const include = [
     attributes: {
       exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
     },
-    through: {attributes: []},
   },
   {
     model: db.models.project,

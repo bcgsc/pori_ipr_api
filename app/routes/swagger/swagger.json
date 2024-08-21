@@ -7721,8 +7721,7 @@
           }
         }
       },
-      "userProject": {},
-      "userGroupMember": {}
+      "userProject": {}
     },
     "responses": {
       "UnauthorizedError": {

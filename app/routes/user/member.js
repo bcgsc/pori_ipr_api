@@ -11,9 +11,9 @@ const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema
-const memberSchema = schemaGenerator(db.models.userGroupMember, {
+const memberSchema = schemaGenerator(db.models.userGroup, {
   baseUri: '/create-delete',
-  exclude: [...BASE_EXCLUDE, 'user_id', 'group_id'],
+  exclude: [...BASE_EXCLUDE, 'userId'],
   properties: {
     user: {type: 'string', format: 'uuid'},
   },

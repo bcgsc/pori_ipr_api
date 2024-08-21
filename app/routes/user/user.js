@@ -24,7 +24,6 @@ router.param('userByIdent', async (req, res, next, ident) => {
           attributes: {
             exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
-          through: {attributes: []},
         },
         {
           model: db.models.project,

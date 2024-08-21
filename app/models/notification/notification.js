@@ -66,7 +66,6 @@ module.exports = (sequelize, Sq) => {
           },
           include: [
             {model: sequelize.models.user.scope('minimal'), as: 'user'},
-            {model: sequelize.models.userGroup.scope('minimal'), as: 'userGroup'},
             {model: sequelize.models.template.scope('minimal'), as: 'template'},
             {model: sequelize.models.project.scope('minimal'), as: 'project'},
           ],
@@ -74,7 +73,6 @@ module.exports = (sequelize, Sq) => {
         extended: {
           include: [
             {model: sequelize.models.user, as: 'user'},
-            {model: sequelize.models.userGroup, as: 'userGroup', include: {model: sequelize.models.user, as: 'users', through: {attributes: []}}},
             {model: sequelize.models.template, as: 'template'},
             {model: sequelize.models.project, as: 'project'},
           ],

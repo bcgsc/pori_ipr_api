@@ -68,7 +68,7 @@ const sanitizeHtml = (html) => {
  */
 const isAdmin = (user) => {
   return user.groups?.some((group) => {
-    return group.name.toLowerCase() === 'admin';
+    return group.group.toLowerCase() === 'admin';
   });
 };
 
@@ -80,7 +80,7 @@ const isAdmin = (user) => {
  */
 const isManager = (user) => {
   return user.groups?.some((group) => {
-    return group.name.toLowerCase() === 'admin' || group.name.toLowerCase() === 'manager';
+    return group.group.toLowerCase() === 'admin' || group.group.toLowerCase() === 'manager';
   });
 };
 
@@ -92,9 +92,9 @@ const isManager = (user) => {
  */
 const hasAccessToNonProdReports = (user) => {
   return user.groups?.some((group) => {
-    return group.name.toLowerCase() === 'admin'
-    || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'non-production access';
+    return group.group.toLowerCase() === 'admin'
+    || group.group.toLowerCase() === 'manager'
+    || group.group.toLowerCase() === 'non-production access';
   });
 };
 
@@ -106,9 +106,9 @@ const hasAccessToNonProdReports = (user) => {
  */
 const hasAccessToUnreviewedReports = (user) => {
   return user.groups?.some((group) => {
-    return group.name.toLowerCase() === 'admin'
-    || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'unreviewed access';
+    return group.group.toLowerCase() === 'admin'
+    || group.group.toLowerCase() === 'manager'
+    || group.group.toLowerCase() === 'unreviewed access';
   });
 };
 
@@ -120,9 +120,9 @@ const hasAccessToUnreviewedReports = (user) => {
  */
 const hasAccessToGermlineReports = (user) => {
   return user.groups?.some((group) => {
-    return group.name.toLowerCase() === 'admin'
-    || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'germline access';
+    return group.group.toLowerCase() === 'admin'
+    || group.group.toLowerCase() === 'manager'
+    || group.group.toLowerCase() === 'germline access';
   });
 };
 
@@ -134,9 +134,9 @@ const hasAccessToGermlineReports = (user) => {
  */
 const hasAccessToAppendixEdit = (user) => {
   return user.groups?.some((group) => {
-    return group.name.toLowerCase() === 'admin'
-    || group.name.toLowerCase() === 'manager'
-    || group.name.toLowerCase() === 'appendix edit access';
+    return group.group.toLowerCase() === 'admin'
+    || group.group.toLowerCase() === 'manager'
+    || group.group.toLowerCase() === 'appendix edit access';
   });
 };
 
@@ -150,7 +150,7 @@ const hasAccessToAppendixEdit = (user) => {
  */
 const hasAccess = (user, accessGroups) => {
   return user.groups?.some((group) => {
-    return accessGroups.includes(group.name.toLowerCase());
+    return accessGroups.includes(group.group.toLowerCase());
   });
 };
 
