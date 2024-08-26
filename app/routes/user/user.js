@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
+const nconf = require('../../config');
 const logger = require('../../log');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
 const {createKeycloakUser, deleteKeycloakUser} = require('../../api/keycloak');
@@ -179,12 +180,12 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       if (enableV16UserManagement) {
         try {
           const token = req.adminCliToken;
-          await deleteKeycloakUser(token, req.userByIdent.username, req.userByIdent.email);
+          await deleteKeycloakUser(token, req.userByIdent.username);
         } catch (error) {
-          logger.error(`Error while trying to delete user from keycloak`);
+          logger.error('Error while trying to delete user from keycloak');
           return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            error: {message: 'User deletion succeeded but error removing user from keycloak'}
-          })
+            error: {message: 'User deletion succeeded but error removing user from keycloak'},
+          });
         }
       }
       await req.userByIdent.destroy();
@@ -284,10 +285,10 @@ router.route('/')
           const token = req.adminCliToken;
           await createKeycloakUser(token, req.userByIdent.username, req.userByIdent.email);
         } catch (error) {
-          logger.error(`Error while trying to create user in keycloak`);
+          logger.error('Error while trying to create user in keycloak');
           return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            error: {message: 'User deletion succeeded but error creating user in keycloak'}
-          })
+            error: {message: 'User deletion succeeded but error creating user in keycloak'},
+          });
         }
       }
       return res.status(HTTP_STATUS.CREATED).json(createdUser.view('public'));

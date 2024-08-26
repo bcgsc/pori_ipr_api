@@ -1,22 +1,16 @@
 const HTTP_STATUS = require('http-status-codes');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const db = require('../models');
 const keycloak = require('../api/keycloak');
 const nconf = require('../config');
-const cache = require('../cache');
 
 const logger = require('../log');
 
-const pubKey = fs.readFileSync(nconf.get('keycloak:keyfile')).toString();
-
 const getAdminCliToken = async (req, res) => {
-    const {enableV16UserManagement} = nconf.get('keycloak');
-    if (!enableV16UserManagement) {
-        return;
-    }
-  let token = req.header('Authorization') || '';
-
+  const {enableV16UserManagement} = nconf.get('keycloak');
+  if (!enableV16UserManagement) {
+    return null;
+  }
+  const token = req.header('Authorization') || '';
+  let adminToken;
   // Check for basic authorization header
   if (token.includes('Basic')) {
     let credentials;
@@ -27,7 +21,7 @@ const getAdminCliToken = async (req, res) => {
     }
     try {
       const adminCliToken = await keycloak.getAdminCliToken(credentials[0], credentials[1]);
-      const adminToken = adminCliToken.access_token;
+      adminToken = adminCliToken.access_token;
     } catch (error) {
       let errorDescription;
       try {
@@ -36,7 +30,6 @@ const getAdminCliToken = async (req, res) => {
         // if the error is propagated from upstread of the keycloak server it will not have the error.error_description format (ex. certificate failure)
         errorDescription = error;
       }
-      console.dir(credentials);
       logger.error(`Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Authentication failed ${error.name} ${error.statusCode} - ${errorDescription}`}});
     }

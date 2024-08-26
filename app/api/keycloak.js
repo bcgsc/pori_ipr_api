@@ -5,18 +5,18 @@ const logger = require('../log');
 
 const $keycloak = {};
 
-const headers = (token) => {
+const getHeaders = (token) => {
   return {
-    'Accept': 'application/json',
-    "Content-Encoding": "deflate",
+    Accept: 'application/json',
+    'Content-Encoding': 'deflate',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token['access_token']}`,
+    Authorization: `Bearer ${token.access_token}`,
   };
-}
+};
 
-const realmUri = (baseuri, realm) => {
+const getRealmUri = (baseuri, realm) => {
   return `${baseuri}/auth/admin/realms/${realm}`;
-}
+};
 
 $keycloak.getToken = async (username, password) => {
   const {clientId, uri} = nconf.get('keycloak');
@@ -63,8 +63,8 @@ $keycloak.createKeycloakUser = async (token, newUsername, newEmail) => {
   if (!enableV16UserManagement) {
     return {};
   }
-  const headers = headers(token);
-  const realmUri = realmUri(baseuri, realm);
+  const headers = getHeaders(token);
+  const realmUri = getRealmUri(baseuri, realm);
 
   // create the user
   await request({
@@ -101,20 +101,19 @@ $keycloak.createKeycloakUser = async (token, newUsername, newEmail) => {
     headers,
     body: JSON.stringify([
       {id: graphkbRoleId, name: 'GraphKB'},
-      {id: iprRoleId, name: 'IPR'}
+      {id: iprRoleId, name: 'IPR'},
     ]),
   });
   return roleMappingResult.status_code;
 };
 
-
-$keycloak.deleteKeycloakUser = async (token, username, email) => {
+$keycloak.deleteKeycloakUser = async (token, username) => {
   const {enableV16UserManagement, baseuri, realm} = nconf.get('keycloak');
   if (!enableV16UserManagement) {
     return {};
   }
-  const headers = headers(token);
-  const realmUri = realmUri(baseuri, realm);
+  const headers = getHeaders(token);
+  const realmUri = getRealmUri(baseuri, realm);
   const userslist = await request({method: 'GET',
     json: true,
     url: `${realmUri}/users`,
@@ -124,8 +123,8 @@ $keycloak.deleteKeycloakUser = async (token, username, email) => {
     method: 'DELETE',
     json: true,
     headers,
-    url: `${realmUri}/users/${currUser.id}`
-  })
+    url: `${realmUri}/users/${currUser.id}`,
+  });
   return deleteUserSuccess.status_code;
 };
 
@@ -134,9 +133,9 @@ $keycloak.grantRealmAdmin = async (token, editUsername, editUseremail) => {
   if (!enableV16UserManagement) {
     return {};
   }
-  const headers = headers(token);
-  const realmUri = realmUri(baseuri, realm);
-  
+  const headers = getHeaders(token);
+  const realmUri = getRealmUri(baseuri, realm);
+
   // get the id of the user to be updated
   const userslist = await request({method: 'GET',
     url: `${realmUri}/users`,
@@ -147,7 +146,7 @@ $keycloak.grantRealmAdmin = async (token, editUsername, editUseremail) => {
   // get the id of the realm-management client
   const clients = await request({method: 'GET',
     url: `${realmUri}/clients`,
-    json: true, 
+    json: true,
     headers});
   const rmClient = (clients).filter((item) => {return item.clientId === 'realm-management';})[0];
 
@@ -165,8 +164,7 @@ $keycloak.grantRealmAdmin = async (token, editUsername, editUseremail) => {
     body: JSON.stringify([{
       id: realmAdmin.id,
       name: 'realm-admin',
-    }]),
-  });
+    }])});
   return postclientroles;
 };
 
@@ -175,21 +173,21 @@ $keycloak.ungrantRealmAdmin = async (token, editUsername, editUseremail) => {
   if (!enableV16UserManagement) {
     return {};
   }
-  const headers = headers(token);
-  const realmUri = realmUri(baseuri, realm);
-  
+  const headers = getHeaders(token);
+  const realmUri = getRealmUri(baseuri, realm);
+
   // get the record for the current user
   const userslist = await request({method: 'GET',
     url: `${realmUri}/users`,
     headers});
   const currUser = (userslist).filter((item) => {return item.username === editUsername && item.email === editUseremail;})[0];
-  
+
   // get the record for the realm-management client
   const clients = await request({method: 'GET',
     url: `${realmUri}/clients`,
     headers});
   const rmClient = (clients).filter((item) => {return item.clientId === 'realm-management';})[0];
-  
+
   // get the record connecting the user to the role
   const clientRoleMappings = await request({
     method: 'GET',

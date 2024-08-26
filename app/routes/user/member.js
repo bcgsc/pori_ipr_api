@@ -4,13 +4,14 @@ const express = require('express');
 const db = require('../../models');
 const logger = require('../../log');
 
+const nconf = require('../../config');
+
 const router = express.Router({mergeParams: true});
 const {isAdmin} = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 const {grantRealmAdmin, ungrantRealmAdmin} = require('../../api/keycloak');
-
 
 // Generate schema
 const memberSchema = schemaGenerator(db.models.userGroupMember, {
@@ -91,10 +92,10 @@ router.route('/')
           const token = req.adminCliToken;
           await grantRealmAdmin(token, user.username, user.email);
         } catch (error) {
-          logger.error(`Error while trying to add user to keycloak realm-management`);
+          logger.error('Error while trying to add user to keycloak realm-management');
           return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            error: {message: 'User creation succeeded but error granting user realm-management role in keycloak'}
-          })
+            error: {message: 'User creation succeeded but error granting user realm-management role in keycloak'},
+          });
         }
       }
       return res.status(HTTP_STATUS.CREATED).json(user.view('public'));
@@ -174,10 +175,10 @@ router.route('/')
           const token = req.adminCliToken;
           await ungrantRealmAdmin(token, req.body.username, req.body.email);
         } catch (error) {
-          logger.error(`Error while trying to ungrant user keycloak realm-management`);
+          logger.error('Error while trying to ungrant user keycloak realm-management');
           return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            error: {message: 'User group removal succeeded but error removing user realm-management role in keycloak'}
-          })
+            error: {message: 'User group removal succeeded but error removing user realm-management role in keycloak'},
+          });
         }
       }
       // Remove membership
