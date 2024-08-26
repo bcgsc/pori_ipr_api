@@ -116,12 +116,10 @@ describe('/notification/notifications', () => {
     userGroup1 = await db.models.userGroup.create({
       ident: uuidv4(),
       name: uuidv4(),
-      owner_id: testUser.id,
     });
     userGroup2 = await db.models.userGroup.create({
       ident: uuidv4(),
       name: uuidv4(),
-      owner_id: testUser.id,
     });
 
     pun1 = await db.models.notification.create({

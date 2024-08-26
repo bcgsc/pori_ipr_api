@@ -1,3 +1,5 @@
+# This file left in repo for compatibility with current bcgsc/PORI package;
+# to be removed when that package is updated
 FROM postgres:13-alpine
 
 RUN mkdir -p /tmp/psql_data/

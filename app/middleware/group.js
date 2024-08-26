@@ -10,7 +10,6 @@ module.exports = async (req, res, next, ident) => {
       where: {ident},
       include: [
         {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}, through: {attributes: []}},
-        {as: 'owner', model: db.models.user.scope('public')},
       ],
     });
   } catch (error) {

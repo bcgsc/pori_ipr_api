@@ -385,15 +385,10 @@
                   "name": {
                     "description": "Name of the new group",
                     "type": "string"
-                  },
-                  "owner": {
-                    "description": "UUID of the owner of the new group",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "name",
-                  "owner"
+                  "name"
                 ]
               }
             }
@@ -493,13 +488,8 @@
                     "description": "Name of the new group",
                     "type": "string"
                   },
-                  "owner": {
-                    "description": "UUID of the owner of the new group",
-                    "type": "string"
-                  },
                   "required": [
-                    "name",
-                    "owner"
+                    "name"
                   ]
                 }
               }
