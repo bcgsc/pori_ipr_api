@@ -59,6 +59,12 @@ class Routing extends RouterInterface {
     // To every route except for specification routes (/spec and /spec.json)
     this.router.use(/^((?!^\/spec).)*$/i, authMiddleware);
 
+    // Add keycloak 16 admin-cli token getter
+    // To every route that uses that token (user management routes)
+    // If keycloak user management is enabled
+    this.router.use('/user', userManagementMiddleware)
+    this.router.use('/user/member', userManagementMiddleware)
+
     // Acl middleware
     // To every route except for specification and report routes
     this.router.use(/^(?!^\/spec|\/germline-small-mutation-reports(?:\/([^\\?]+?))|\/reports(?:\/([^\\?]+?))[\\?]?.*)/i, aclMiddleware);

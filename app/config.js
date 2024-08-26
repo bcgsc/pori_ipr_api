@@ -53,8 +53,9 @@ const DEFAULTS = {
     baseuri: ENV === 'production'
       ? 'https://sso.bcgsc.ca'
       : 'https://keycloakdev01.bcgsc.ca',
-    enableUserCreate: false,
+    enableV16UserManagerment: false,  // keycloak 16
     clientId: 'IPR',
+    realm: 'PORI',
     role: 'IPR',
     keyfile: ENV === 'production'
       ? 'keys/prodkey.pem'
@@ -123,7 +124,6 @@ const processEnvVariables = (env = process.env, opt = {}) => {
 
   for (const [key, value] of Object.entries(env)) {
     let newKey = key;
-
     if (/^ipr_\w+$/i.exec(key)) {
       if (lowerCase) {
         newKey = newKey.toLowerCase();

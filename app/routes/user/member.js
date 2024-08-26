@@ -9,6 +9,8 @@ const {isAdmin} = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
+const {grantRealmAdmin, ungrantRealmAdmin} = require('../../api/keycloak');
+
 
 // Generate schema
 const memberSchema = schemaGenerator(db.models.userGroupMember, {
@@ -83,6 +85,18 @@ router.route('/')
       // Add user to group
       await db.models.userGroupMember.create({group_id: req.group.id, user_id: user.id});
       await user.reload();
+      const {enableV16UserManagement} = nconf.get('keycloak');
+      if ((groupIsAdmin || req.group.name === 'manager') && enableV16UserManagement) {
+        try {
+          const token = req.adminCliToken;
+          await grantRealmAdmin(token, user.username, user.email);
+        } catch (error) {
+          logger.error(`Error while trying to add user to keycloak realm-management`);
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            error: {message: 'User creation succeeded but error granting user realm-management role in keycloak'}
+          })
+        }
+      }
       return res.status(HTTP_STATUS.CREATED).json(user.view('public'));
     } catch (error) {
       logger.error(`Error while trying to add user to group ${error}`);
@@ -153,9 +167,20 @@ router.route('/')
           error: {message: 'User doesn\'t belong to group'},
         });
       }
-
-      // Remove membership
       await membership.destroy();
+      const {enableV16UserManagement} = nconf.get('keycloak');
+      if ((groupIsAdmin || req.group.name === 'manager') && enableV16UserManagement) {
+        try {
+          const token = req.adminCliToken;
+          await ungrantRealmAdmin(token, req.body.username, req.body.email);
+        } catch (error) {
+          logger.error(`Error while trying to ungrant user keycloak realm-management`);
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            error: {message: 'User group removal succeeded but error removing user realm-management role in keycloak'}
+          })
+        }
+      }
+      // Remove membership
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while trying to remove user from group ${error}`);

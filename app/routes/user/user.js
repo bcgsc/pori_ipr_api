@@ -5,7 +5,7 @@ const {Op} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
-const {createKeycloakUser} = require('../api/keycloak');
+const {createKeycloakUser, deleteKeycloakUser} = require('../../api/keycloak');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
 
@@ -175,6 +175,18 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
 
     try {
+      const {enableV16UserManagement} = nconf.get('keycloak');
+      if (enableV16UserManagement) {
+        try {
+          const token = req.adminCliToken;
+          await deleteKeycloakUser(token, req.userByIdent.username, req.userByIdent.email);
+        } catch (error) {
+          logger.error(`Error while trying to delete user from keycloak`);
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            error: {message: 'User deletion succeeded but error removing user from keycloak'}
+          })
+        }
+      }
       await req.userByIdent.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
@@ -266,6 +278,18 @@ router.route('/')
       // Commit changes
       await transaction.commit();
       // Return new user
+      const {enableV16UserManagement} = nconf.get('keycloak');
+      if (enableV16UserManagement) {
+        try {
+          const token = req.adminCliToken;
+          await createKeycloakUser(token, req.userByIdent.username, req.userByIdent.email);
+        } catch (error) {
+          logger.error(`Error while trying to create user in keycloak`);
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            error: {message: 'User deletion succeeded but error creating user in keycloak'}
+          })
+        }
+      }
       return res.status(HTTP_STATUS.CREATED).json(createdUser.view('public'));
     } catch (error) {
       await transaction.rollback();
@@ -278,13 +302,6 @@ router.route('/')
 
 router.route('/me')
   .get((req, res) => {
-    return res.json(req.user.view('public'));
-  });
-
-
-router.route('/createkeycloak')
-  .get((req, res) => {
-    //createKeycloakUser
     return res.json(req.user.view('public'));
   });
 
