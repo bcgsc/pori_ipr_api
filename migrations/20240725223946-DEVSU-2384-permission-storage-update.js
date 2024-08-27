@@ -52,7 +52,7 @@ module.exports = {
         );
 
       await queryInterface.sequelize.query(
-        'CREATE UNIQUE INDEX groups_unique ON user_groups ((ARRAY[cast_to_text("group"), user_id::text])) where deleted_at is null;',
+        'CREATE UNIQUE INDEX groups_unique ON user_groups ((ARRAY[cast_to_text("name"), user_id::text])) where deleted_at is null;',
         {
           transaction,
         },
@@ -63,7 +63,7 @@ module.exports = {
       await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
         `insert into user_groups
-        (ident, created_at, updated_at, user_id, "group")
+        (ident, created_at, updated_at, user_id, "name")
         select gen_random_uuid(), now(), now(), user_id, LOWER(ug.name)::enum_user_groups_name from user_group_members ugm 
           join user_groups_old ug on (ugm.group_id = ug.id)
           where ugm.deleted_at is null;`,
