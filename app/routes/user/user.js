@@ -189,8 +189,7 @@ router.route('/')
           {
             as: 'groups',
             model: db.models.userGroup,
-            attributes: {exclude: ['id', 'user_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
-            through: {attributes: []},
+            attributes: {exclude: ['id', 'userId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
           },
           {
             as: 'projects',

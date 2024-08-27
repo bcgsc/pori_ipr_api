@@ -1,4 +1,5 @@
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
+const {USER_GROUPS} = require('../../constants');
 
 module.exports = (sequelize, Sq) => {
   const userGroup = sequelize.define('userGroup', {
@@ -14,19 +15,7 @@ module.exports = (sequelize, Sq) => {
       allowNull: false,
     },
     name: {
-      type: Sq.ENUM(
-        'admin',
-        'manager',
-        'report assignment access',
-        'create report access',
-        'germline access',
-        'non-production access',
-        'unreviewed access',
-        'all projects access',
-        'template edit access',
-        'appendix edit access',
-        'variant-text edit access',
-      ),
+      type: Sq.ENUM(USER_GROUPS),
       allowNull: false,
     },
   }, {

@@ -3,13 +3,12 @@ const db = require('../models');
 const logger = require('../log');
 
 // Middleware for user groups
-module.exports = async (req, res, next, ident) => {
+module.exports = async (req, res, next, group) => {
   let result;
   try {
-    result = await db.models.userGroup.findOne({
-      where: {ident},
+    result = await db.models.user.scope('public').findAll({
       include: [
-        {as: 'users', model: db.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
+        {as: 'groups', model: db.models.userGroup, attributes: [], where: {name: group}},
       ],
     });
   } catch (error) {
@@ -20,12 +19,12 @@ module.exports = async (req, res, next, ident) => {
   }
 
   if (!result) {
-    logger.error(`Unable to find group ${ident}`);
+    logger.error(`Unable to find group ${group}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({
       error: {message: 'Unable to find group'},
     });
   }
 
-  req.group = result;
+  req.group = {name: group, users: result};
   return next();
 };
