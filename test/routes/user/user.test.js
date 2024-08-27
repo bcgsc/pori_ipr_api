@@ -401,7 +401,7 @@ describe('/user', () => {
         email: 'delete3@email.com',
       });
       await db.models.userGroup.create({
-        userId: deleteTestUserWhoIsAdmin.id, group_id: 'admin',
+        userId: deleteTestUserWhoIsAdmin.id, name: 'admin',
       });
     });
 
