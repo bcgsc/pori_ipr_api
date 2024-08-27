@@ -50,7 +50,12 @@ const DEFAULTS = {
     uri: ENV === 'production'
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
+    baseuri: ENV === 'production'
+      ? 'https://sso.bcgsc.ca'
+      : 'https://keycloakdev01.bcgsc.ca',
+    enableV16UserManagerment: false,  // keycloak 16
     clientId: 'IPR',
+    realm: 'PORI',
     role: 'IPR',
     keyfile: ENV === 'production'
       ? 'keys/prodkey.pem'
@@ -97,7 +102,7 @@ const DEFAULTS = {
       ? 6380
       : 6379,
   },
-  redis_queue: REDIS_QUEUE_CONFIG,
+  redisqueue: REDIS_QUEUE_CONFIG,
   paths: {
     data: {
       POGdata: '/projects/tumour_char/pog/reports/genomic',
@@ -119,7 +124,6 @@ const processEnvVariables = (env = process.env, opt = {}) => {
 
   for (const [key, value] of Object.entries(env)) {
     let newKey = key;
-
     if (/^ipr_\w+$/i.exec(key)) {
       if (lowerCase) {
         newKey = newKey.toLowerCase();

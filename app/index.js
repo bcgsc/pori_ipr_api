@@ -115,6 +115,11 @@ const listen = async (port = null) => {
   // ensure the db connection is ready
   await sequelize.authenticate();
 
+  const enableV16UserManagement = conf.get('keycloak:enablev16usermanagement');
+  if (enableV16UserManagement) {
+    logger.info(`user management with Keycloak 16 is enabled`);
+  }
+
   // set up the routing
   const routing = new Routing();
   try {
