@@ -46,15 +46,11 @@ beforeAll(async () => {
 // Tests for user related endpoints
 describe('/user', () => {
   let testUser;
-  let adminGroup;
 
   beforeAll(async () => {
     // get test user
     testUser = await db.models.user.findOne({
       where: {username},
-    });
-    adminGroup = await db.models.userGroup.findOne({
-      where: {name: 'admin'},
     });
   });
 
@@ -309,8 +305,8 @@ describe('/user', () => {
         lastName: 'putTestLastName',
       });
 
-      await db.models.userGroupMember.create({
-        user_id: adminPutTestUser.id, group_id: adminGroup.id,
+      await db.models.userGroup.create({
+        userId: adminPutTestUser.id, name: 'admin',
       });
     });
 
@@ -404,8 +400,8 @@ describe('/user', () => {
         lastName: 'delete3LastName01',
         email: 'delete3@email.com',
       });
-      await db.models.userGroupMember.create({
-        user_id: deleteTestUserWhoIsAdmin.id, group_id: adminGroup.id,
+      await db.models.userGroup.create({
+        userId: deleteTestUserWhoIsAdmin.id, group_id: 'admin',
       });
     });
 
