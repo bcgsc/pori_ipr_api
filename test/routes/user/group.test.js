@@ -12,7 +12,7 @@ CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
 const groupProperties = [
-  'ident', 'createdAt', 'updatedAt', 'name', 'users',
+  'name',
 ];
 
 const checkUserGroup = (groupObject) => {
@@ -22,7 +22,6 @@ const checkUserGroup = (groupObject) => {
   expect(groupObject).toEqual(expect.not.objectContaining({
     id: expect.any(Number),
     deletedAt: expect.any(String),
-    description: expect.any(String),
   }));
 };
 
@@ -36,9 +35,7 @@ let server;
 let request;
 
 // Variables to be used for group tests
-let user01;
-let user02;
-let group;
+let user;
 
 // Start API
 beforeAll(async () => {
@@ -47,7 +44,7 @@ beforeAll(async () => {
   request = supertest(server);
 
   // make sure there are at least 2 users
-  user01 = await db.models.user.create({
+  user = await db.models.user.create({
     ident: uuidv4(),
     username: uuidv4(),
     firstName: 'firstName01',
@@ -55,15 +52,10 @@ beforeAll(async () => {
     email: 'email01@email.com',
   });
 
-  user02 = await db.models.user.create({
-    ident: uuidv4(),
-    username: uuidv4(),
-    firstName: 'firstName02',
-    lastName: 'lastName02',
-    email: 'email02@email.com',
+  await db.models.userGroup.create({
+    userId: user.id,
+    name: 'germline access',
   });
-
-  group = await db.models.userGroup.create({name: 'Test group', description: 'test'});
 });
 
 // Tests for user group related endpoints
@@ -84,7 +76,6 @@ describe('/user/group', () => {
 
 afterAll(async () => {
   // Delete group and users
-  await db.models.userGroup.destroy({where: {ident: group.ident}, force: true});
-  await db.models.user.destroy({where: {ident: [user01.ident, user02.ident]}, force: true});
+  await db.models.user.destroy({where: {ident: user.ident}, force: true});
   await server.close();
 });
