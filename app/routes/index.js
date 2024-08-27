@@ -5,6 +5,7 @@ const reportMiddleware = require('../middleware/report');
 const germlineMiddleware = require('../middleware/germlineSmallMutation/reports');
 const authMiddleware = require('../middleware/auth');
 const aclMiddleware = require('../middleware/acl');
+const keycloakUserManagement = require('../middleware/keycloakUserManagement');
 
 // Get route files
 const APIVersion = require('./version');
@@ -62,8 +63,8 @@ class Routing extends RouterInterface {
     // Add keycloak 16 admin-cli token getter
     // To every route that uses that token (user management routes)
     // If keycloak user management is enabled
-    this.router.use('/user', userManagementMiddleware)
-    this.router.use('/user/member', userManagementMiddleware)
+    this.router.use('/user', keycloakUserManagement)
+    this.router.use('/user/:user/member', keycloakUserManagement)
 
     // Acl middleware
     // To every route except for specification and report routes
