@@ -1,5 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
+const {USER_GROUPS} = require('../../constants');
 
 const db = require('../../models');
 const logger = require('../../log');
@@ -71,6 +72,14 @@ router.route('/')
         });
       }
     }
+
+    if (!USER_GROUPS.includes(req.body.user_group) && req.body.user_group) {
+      logger.error(`${req.body.user_group} group not found`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        error: {message: `${req.body.user_group} group not found`},
+      });
+    }
+
     try {
       const whereClause = {
         ...((req.body.user_id == null) ? {} : {user_id: req.body.user_id}),
@@ -126,6 +135,13 @@ router.route('/')
     if (!req.body.event_type) {
       return res.status(HTTP_STATUS.CONFLICT).json({
         error: {message: 'Event type must be specified'},
+      });
+    }
+
+    if (!USER_GROUPS.includes(req.body.user_group) && req.body.user_group) {
+      logger.error(`${req.body.user_group} group not found`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        error: {message: `${req.body.user_group} group not found`},
       });
     }
 
