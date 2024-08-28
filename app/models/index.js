@@ -483,9 +483,6 @@ const notification = require('./notification/notification')(sequelize, Sq);
 user.hasMany(notification, {
   as: 'notifications', foreignKey: 'userId', onDelete: 'CASCADE', constraints: true,
 });
-userGroup.hasMany(notification, {
-  as: 'notifications', foreignKey: 'userGroupId', onDelete: 'CASCADE', constraints: true,
-});
 project.hasMany(notification, {
   as: 'notifications', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
 });
@@ -500,9 +497,6 @@ notification.belongsTo(user, {
 });
 notification.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-notification.belongsTo(userGroup, {
-  as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Variant text

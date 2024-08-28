@@ -15,7 +15,7 @@ const punProperties = [
   'ident', 'createdAt', 'updatedAt', 'eventType',
   'user', 'userGroup', 'project', 'template',
 ];
-const punObjectProperties = ['userGroup', 'project', 'template'];
+const punObjectProperties = ['project', 'template'];
 const punUserProperties = [
   'ident', 'username',
 ];
@@ -57,6 +57,8 @@ beforeAll(async () => {
 
 // Tests for project user endpoints
 describe('/notification/notifications', () => {
+  const userGroup1 = 'create report access';
+  const userGroup2 = 'germline access';
   let testUser;
   let project;
   let project2;
@@ -71,8 +73,6 @@ describe('/notification/notifications', () => {
   let binding1;
   let binding2;
   let binding3;
-  let userGroup1;
-  let userGroup2;
 
   beforeAll(async () => {
     // get test user
@@ -112,16 +112,6 @@ describe('/notification/notifications', () => {
     binding2 = await db.models.userProject.create({project_id: project.id, user_id: user01.id});
     binding3 = await db.models.userProject.create({project_id: project2.id, user_id: user01.id});
 
-    // Create userGroups
-    userGroup1 = await db.models.userGroup.create({
-      ident: uuidv4(),
-      name: uuidv4(),
-    });
-    userGroup2 = await db.models.userGroup.create({
-      ident: uuidv4(),
-      name: uuidv4(),
-    });
-
     pun1 = await db.models.notification.create({
       ident: uuidv4(),
       projectId: project.id,
@@ -149,7 +139,7 @@ describe('/notification/notifications', () => {
     pun4 = await db.models.notification.create({
       ident: uuidv4(),
       projectId: project.id,
-      userGroupId: userGroup1.id,
+      userGroup: userGroup1,
       templateId: template.id,
       eventType: 'test event 1',
     });
@@ -157,7 +147,7 @@ describe('/notification/notifications', () => {
     pun5 = await db.models.notification.create({
       ident: uuidv4(),
       projectId: project.id,
-      userGroupId: userGroup2.id,
+      userGroup: userGroup2,
       templateId: template.id,
       eventType: 'test event 2',
     });
@@ -165,7 +155,7 @@ describe('/notification/notifications', () => {
     pun6 = await db.models.notification.create({
       ident: uuidv4(),
       projectId: project2.id,
-      userGroupId: userGroup1.id,
+      userGroup: userGroup1,
       templateId: template.id,
       eventType: 'test event 3',
     });
@@ -183,8 +173,6 @@ describe('/notification/notifications', () => {
       binding1.destroy({force: true}),
       binding2.destroy({force: true}),
       binding3.destroy({force: true}),
-      userGroup1.destroy({force: true}),
-      userGroup2.destroy({force: true}),
       pun4.destroy({force: true}),
       pun5.destroy({force: true}),
       pun6.destroy({force: true}),
@@ -213,7 +201,7 @@ describe('/notification/notifications', () => {
         .get('/api/notification/notifications')
         .auth(username, password)
         .type('json')
-        .send({user_group: userGroup1.ident})
+        .send({user_group: userGroup1})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -252,7 +240,7 @@ describe('/notification/notifications', () => {
         .get('/api/notification/notifications')
         .auth(username, password)
         .type('json')
-        .send({user_group: userGroup1.ident, project: project.ident})
+        .send({user_group: userGroup1, project: project.ident})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -289,7 +277,9 @@ describe('/notification/notifications', () => {
   });
 
   describe('POST', () => {
-    test('/ - 200 Success user', async () => {
+    test.only('/ - 200 Success user', async () => {
+      console.log([username, password]);
+      console.log({user: testUser.ident, project: project.ident, event_type: 'test event', template: template.ident});
       await request
         .post('/api/notification/notifications')
         .auth(username, password)
@@ -316,12 +306,12 @@ describe('/notification/notifications', () => {
         .post('/api/notification/notifications')
         .auth(username, password)
         .type('json')
-        .send({user_group: userGroup1.ident, project: project.ident, event_type: 'test event 5', template: template.ident})
+        .send({user_group: userGroup1, project: project.ident, event_type: 'test event 5', template: template.ident})
         .expect(HTTP_STATUS.CREATED);
 
       // Check the binding was created
       const result = await db.models.notification.findOne({
-        where: {project_id: project.id, user_group_id: userGroup1.id, event_type: 'test event 5'},
+        where: {project_id: project.id, user_group: userGroup1, event_type: 'test event 5'},
       });
 
       expect(result).not.toBeNull();

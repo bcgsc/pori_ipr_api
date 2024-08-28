@@ -12,7 +12,6 @@ const pairs = {
   user: db.models.user,
   project: db.models.project,
   template: db.models.template,
-  user_group: db.models.userGroup,
 };
 
 // for each entry in pairs, assumes the key-named value in
@@ -75,7 +74,7 @@ router.route('/')
     try {
       const whereClause = {
         ...((req.body.user_id == null) ? {} : {user_id: req.body.user_id}),
-        ...((req.body.user_group_id == null) ? {} : {user_group_id: req.body.user_group_id}),
+        ...((req.body.user_group == null) ? {} : {user_group: req.body.user_group}),
         ...((req.body.template_id == null) ? {} : {template_id: req.body.template_id}),
         ...((req.body.project_id == null) ? {} : {project_id: req.body.project_id}),
       };
@@ -100,13 +99,13 @@ router.route('/')
       return res.status(HTTP_STATUS.FORBIDDEN);
     }
 
-    if (req.body.user_id && req.body.user_group_id) {
+    if (req.body.user_id && req.body.user_group) {
       return res.status(HTTP_STATUS.CONFLICT).json({
         error: {message: 'Only one of user and user group should be specified'},
       });
     }
 
-    if (!req.body.user_id && !req.body.user_group_id) {
+    if (!req.body.user_id && !req.body.user_group) {
       return res.status(HTTP_STATUS.CONFLICT).json({
         error: {message: 'Exactly one of user and user group should be specified'},
       });
@@ -173,7 +172,7 @@ router.route('/')
         where: {
           projectId: req.body.project_id,
           userId: req.body.user_id ? req.body.user_id : null,
-          userGroupId: req.body.user_group_id ? req.body.user_group_id : null,
+          userGroup: req.body.user_group ? req.body.user_group : null,
           eventType: req.body.event_type,
           templateId: req.body.template_id,
         },
