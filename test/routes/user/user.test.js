@@ -406,10 +406,10 @@ describe('/user', () => {
     });
 
     afterEach(async () => {
-      await db.models.user.destroy({where: {ident: deleteTestUser.ident}, force: true});
-      await db.models.user.destroy({where: {ident: deleteTestUserManager.ident}, force: true});
-      await db.models.user.destroy({where: {ident: deleteTestUserForbidden.ident}, force: true});
-      await db.models.user.destroy({where: {ident: deleteTestUserWhoIsAdmin.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUser.ident}});
+      await db.models.user.destroy({where: {ident: deleteTestUserManager.ident}});
+      await db.models.user.destroy({where: {ident: deleteTestUserForbidden.ident}});
+      await db.models.user.destroy({where: {ident: deleteTestUserWhoIsAdmin.ident}});
     });
 
     test('/{user} - 204 Success', async () => {

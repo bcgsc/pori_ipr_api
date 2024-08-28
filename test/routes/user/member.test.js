@@ -288,9 +288,9 @@ describe('/user/group/{group}/member', () => {
     });
 
     afterEach(async () => {
-      await db.models.user.destroy({where: {ident: deleteUser.ident}, force: true});
-      await db.models.user.destroy({where: {ident: deleteUser2.ident}, force: true});
-      await db.models.user.destroy({where: {ident: adminDeleteUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteUser.ident}});
+      await db.models.user.destroy({where: {ident: deleteUser2.ident}});
+      await db.models.user.destroy({where: {ident: adminDeleteUser.ident}});
     });
 
     test('/ - 204 Success', async () => {

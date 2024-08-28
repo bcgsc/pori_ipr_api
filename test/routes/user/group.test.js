@@ -76,6 +76,6 @@ describe('/user/group', () => {
 
 afterAll(async () => {
   // Delete group and users
-  await db.models.user.destroy({where: {ident: user.ident}, force: true});
+  await db.models.user.destroy({where: {ident: user.ident}});
   await server.close();
 });
