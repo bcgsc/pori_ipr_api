@@ -277,9 +277,7 @@ describe('/notification/notifications', () => {
   });
 
   describe('POST', () => {
-    test.only('/ - 200 Success user', async () => {
-      console.log([username, password]);
-      console.log({user: testUser.ident, project: project.ident, event_type: 'test event', template: template.ident});
+    test('/ - 200 Success user', async () => {
       await request
         .post('/api/notification/notifications')
         .auth(username, password)
