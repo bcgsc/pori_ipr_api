@@ -118,7 +118,7 @@ describe('/user/group/{group}/member', () => {
       expect(groupNames.includes(group.name)).toBe(true);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: updateUser.ident}});
     });
 
     test('/ - 200 Success by manager', async () => {
@@ -147,7 +147,7 @@ describe('/user/group/{group}/member', () => {
       expect(groupNames.includes(group.name)).toBe(true);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: updateUser.ident}});
     });
 
     test('/ - 403 forbidden to non-admin to give admin role', async () => {
@@ -168,7 +168,7 @@ describe('/user/group/{group}/member', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: updateUser.ident}});
     });
 
     test('/ - 403 forbidden to non-admin to give role to admin user', async () => {
@@ -190,7 +190,7 @@ describe('/user/group/{group}/member', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: updateUser.ident}});
     });
 
     test('/ - 403 forbidden to bioinformatician', async () => {
@@ -211,7 +211,7 @@ describe('/user/group/{group}/member', () => {
         .expect(HTTP_STATUS.FORBIDDEN);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: updateUser.ident}});
     });
 
     test('/ - 400 Bad Request - User is required', async () => {
@@ -385,6 +385,6 @@ describe('/user/group/{group}/member', () => {
 });
 
 afterAll(async () => {
-  await db.models.user.destroy({where: {ident: [user01.ident, user02.ident]}, force: true});
+  await db.models.user.destroy({where: {ident: [user01.ident, user02.ident]}});
   await server.close();
 });

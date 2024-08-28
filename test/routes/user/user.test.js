@@ -139,7 +139,7 @@ describe('/user', () => {
       expect(res.body[0].firstName).toBe(firstName);
 
       // Delete user
-      await db.models.user.destroy({where: {ident: searchUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: searchUser.ident}});
     });
   });
 
@@ -159,7 +159,7 @@ describe('/user', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Remove test user from db
-      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
+      await db.models.user.destroy({where: {ident: res.body.ident}});
     });
 
     test('/ - 200 Success by manager', async () => {
@@ -177,7 +177,7 @@ describe('/user', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Remove test user from db
-      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
+      await db.models.user.destroy({where: {ident: res.body.ident}});
     });
 
     test('/ - 403 forbidden for bioinformatician', async () => {
@@ -311,8 +311,8 @@ describe('/user', () => {
     });
 
     afterEach(async () => {
-      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
-      await db.models.user.destroy({where: {ident: adminPutTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: putTestUser.ident}});
+      await db.models.user.destroy({where: {ident: adminPutTestUser.ident}});
     });
 
     test('/{user} - 200 Success', async () => {
