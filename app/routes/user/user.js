@@ -26,7 +26,7 @@ router.param('userByIdent', async (req, res, next, ident) => {
           model: db.models.userGroup,
           as: 'groups',
           attributes: {
-            exclude: ['id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
           through: {attributes: []},
         },
@@ -200,7 +200,7 @@ router.route('/')
           {
             as: 'groups',
             model: db.models.userGroup,
-            attributes: {exclude: ['id', 'user_id', 'owner_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
+            attributes: {exclude: ['id', 'user_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
             through: {attributes: []},
           },
           {
