@@ -64,7 +64,7 @@ const SPECIAL_CASES = [
   {
     path: pathToRegexp('/api/germline-small-mutation-reports/:report/review'),
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
-    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
+    DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}, {name: 'germline access'}, {name: 'Germline Access'}],
   },
   {
     path: pathToRegexp('/api/templates'),
