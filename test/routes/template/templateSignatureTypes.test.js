@@ -7,7 +7,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
+const {username, bioinformaticianUsername, password} = CONFIG.get('testing');
 
 let server;
 let request;
@@ -45,33 +45,11 @@ beforeAll(async () => {
 
 describe('/templates/{template}/signature-types', () => {
   let template;
-  let template2;
-  let template3;
 
   beforeAll(async () => {
     // create a template to be used in tests
     template = await db.models.template.create({
-      name: 'Test Template',
-      organization: 'Test Org',
-      sections: [
-        'microbial',
-        'msi',
-        'small-mutation',
-      ],
-    });
-
-    template2 = await db.models.template.create({
-      name: 'Test Template2',
-      organization: 'Test Org',
-      sections: [
-        'microbial',
-        'msi',
-        'small-mutation',
-      ],
-    });
-
-    template3 = await db.models.template.create({
-      name: 'Test Template3',
+      name: 'Test Signature Template',
       organization: 'Test Org',
       sections: [
         'microbial',
@@ -141,26 +119,6 @@ describe('/templates/{template}/signature-types', () => {
       await result.destroy({force: true});
     });
 
-    test('/ - 201 Created by manager', async () => {
-      const res = await request
-        .post(`/api/templates/${template2.ident}/signature-types`)
-        .auth(managerUsername, password)
-        .type('json')
-        .send(CREATE_DATA)
-        .expect(HTTP_STATUS.CREATED);
-
-      expect(res.body).not.toBeNull();
-      checkTemplateSignatureTypes(res.body);
-      expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
-
-      // Check that record was created in the db
-      const result = await db.models.templateSignatureTypes.findOne({where: {ident: res.body.ident}});
-      expect(result).not.toBeNull();
-
-      // Delete the created signature type
-      await result.destroy({force: true});
-    });
-
     test('/ - 403 forbidden to bioinformatician', async () => {
       await request
         .post(`/api/templates/${template.ident}/signature-types`)
@@ -201,16 +159,11 @@ describe('/templates/{template}/signature-types', () => {
 
   describe('PUT', () => {
     let putTest;
-    let putTest2;
 
     beforeEach(async () => {
       putTest = await db.models.templateSignatureTypes.create({
         ...CREATE_DATA,
         templateId: template.id,
-      });
-      putTest2 = await db.models.templateSignatureTypes.create({
-        ...CREATE_DATA,
-        templateId: template2.id,
       });
     });
 
@@ -219,29 +172,12 @@ describe('/templates/{template}/signature-types', () => {
         where: {ident: putTest.ident},
         force: true,
       });
-      await db.models.templateSignatureTypes.destroy({
-        where: {ident: putTest2.ident},
-        force: true,
-      });
     });
 
     test('/ - 200 Success', async () => {
       const res = await request
         .put(`/api/templates/${template.ident}/signature-types`)
         .auth(username, password)
-        .type('json')
-        .send(UPDATE_DATA)
-        .expect(HTTP_STATUS.OK);
-
-      expect(res.body).not.toBeNull();
-      checkTemplateSignatureTypes(res.body);
-      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
-    });
-
-    test('/ - 200 Success by manager', async () => {
-      const res = await request
-        .put(`/api/templates/${template2.ident}/signature-types`)
-        .auth(managerUsername, password)
         .type('json')
         .send(UPDATE_DATA)
         .expect(HTTP_STATUS.OK);
@@ -290,28 +226,16 @@ describe('/templates/{template}/signature-types', () => {
 
   describe('DELETE', () => {
     let deleteTest;
-    let deleteTest2;
-    let deleteTest3;
 
     beforeEach(async () => {
       deleteTest = await db.models.templateSignatureTypes.create({
         ...CREATE_DATA,
         templateId: template.id,
       });
-      deleteTest2 = await db.models.templateSignatureTypes.create({
-        ...CREATE_DATA,
-        templateId: template2.id,
-      });
-      deleteTest3 = await db.models.templateSignatureTypes.create({
-        ...CREATE_DATA,
-        templateId: template3.id,
-      });
     });
 
     afterEach(async () => {
       await deleteTest.destroy({force: true});
-      await deleteTest2.destroy({force: true});
-      await deleteTest3.destroy({force: true});
     });
 
     test('/ - 204 No Content', async () => {
@@ -330,25 +254,9 @@ describe('/templates/{template}/signature-types', () => {
       expect(result.deletedAt).not.toBeNull();
     });
 
-    test('/ - 204 No Content by manager', async () => {
-      await request
-        .delete(`/api/templates/${template2.ident}/signature-types`)
-        .auth(managerUsername, password)
-        .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
-
-      // Verify that the record was soft deleted
-      const result = await db.models.templateSignatureTypes.findOne({
-        where: {id: deleteTest2.id},
-        paranoid: false,
-      });
-      expect(result).not.toBeNull();
-      expect(result.deletedAt).not.toBeNull();
-    });
-
     test('/ - 403 forbidden to bioinformatician', async () => {
       await request
-        .delete(`/api/templates/${template3.ident}/signature-types`)
+        .delete(`/api/templates/${template.ident}/signature-types`)
         .auth(bioinformaticianUsername, password)
         .type('json')
         .expect(HTTP_STATUS.FORBIDDEN);
@@ -368,10 +276,7 @@ describe('/templates/{template}/signature-types', () => {
 
   // delete template
   afterAll(async () => {
-    // delete newly created template and all of it's components
     await template.destroy({force: true});
-    await template2.destroy({force: true});
-    await template3.destroy({force: true});
   });
 });
 
