@@ -22,7 +22,7 @@ const updateSchema = schemaGenerator(db.models.templateSignatureTypes, {
 router.use('/', async (req, res, next) => {
   try {
     req.templateSignatureTypes = await db.models.templateSignatureTypes.findOne({
-      where:{templateId: req.template.id},
+      where: {templateId: req.template.id},
     });
   } catch (error) {
     logger.error(`Unable to get template signature type ${error}`);

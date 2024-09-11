@@ -1,7 +1,6 @@
 const HTTP_STATUS = require('http-status-codes');
 const supertest = require('supertest');
 const getPort = require('get-port');
-const {v4: uuidv4} = require('uuid');
 const db = require('../../../app/models');
 
 const CONFIG = require('../../../app/config');
@@ -20,8 +19,6 @@ const CREATE_DATA = {
 const UPDATE_DATA = {
   signatureType: 'reviewerupdate',
 };
-
-const NON_EXISTENT_PROJECT_ID = uuidv4();
 
 const templateSignatureProperties = [
   'ident', 'createdAt', 'updatedAt', 'signatureType',
