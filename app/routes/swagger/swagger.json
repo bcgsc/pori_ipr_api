@@ -7210,6 +7210,165 @@
           }
         }
       }
+    },
+    "/templates/{template}/signature-types": {
+      "get": {
+        "summary": "Get Template Signature Types",
+        "description": "Retrieve a templates signature types",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of a templates signature types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateSignatureTypes"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or signature types not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Template Signature Types",
+        "description": "Upload a new template signature types",
+        "parameters": [],
+        "requestBody": {
+          "description": "Template signature types data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/templateSignatureTypesCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the created template signature types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateSignatureTypes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "A signature type already exists for this template"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Template Signature Types",
+        "description": "Update the details of a templates signature type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "requestBody": {
+          "description": "Template Signature Types data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/templateSignatureTypesUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated template signature type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateSignatureTypes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or signature type not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Template Signature Types",
+        "description": "Removes the specified templates signature type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or signature types not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
