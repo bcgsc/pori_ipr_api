@@ -67,6 +67,7 @@ describe('/reports/{REPORTID}', () => {
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   const KEYVARIANT = 'uniqueKeyVariant';
+  const KBVARIANT = 'kbVariant';
 
   let project;
   let project2;
@@ -111,6 +112,10 @@ describe('/reports/{REPORTID}', () => {
     });
     await db.models.genomicAlterationsIdentified.create({
       geneVariant: KEYVARIANT,
+      reportId: report.id,
+    });
+    await db.models.kbMatches.create({
+      geneVariant: KBVARIANT,
       reportId: report.id,
     });
 
@@ -481,6 +486,22 @@ describe('/reports/{REPORTID}', () => {
       for (const resReport of res.body.reports) {
         for (const gAI of resReport.genomicAlterationsIdentified) {
           expect(gAI.geneVariant).toEqual(KEYVARIANT);
+        }
+      }
+    }, LONGER_TIMEOUT);
+
+    test('/ - kb match - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?kbVariant=${KBVARIANT}&&matchingThreshold=1`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      for (const resReport of res.body.reports) {
+        for (const gAI of resReport.kbMatches) {
+          expect(gAI.kbMatches).toEqual(KBVARIANT);
         }
       }
     }, LONGER_TIMEOUT);
