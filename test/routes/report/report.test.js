@@ -67,7 +67,6 @@ describe('/reports/{REPORTID}', () => {
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   const KEYVARIANT = 'uniqueKeyVariant';
-  const KBVARIANT = 'kbVariant';
 
   let project;
   let project2;
@@ -114,9 +113,22 @@ describe('/reports/{REPORTID}', () => {
       geneVariant: KEYVARIANT,
       reportId: report.id,
     });
-    await db.models.kbMatches.create({
-      geneVariant: KBVARIANT,
+
+    const gene = await db.models.genes.create({
       reportId: report.id,
+      name: mockReportData.genes[0].name,
+    });
+    const variant = await db.models.copyVariants.create({
+      reportId: report.id,
+      geneId: gene.id,
+    });
+
+    await db.models.kbMatches.create({
+      reportId: report.id,
+      variantId: variant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
     });
 
     reportReady = await db.models.report.create({
@@ -492,7 +504,7 @@ describe('/reports/{REPORTID}', () => {
 
     test('/ - kb match - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports?kbVariant=${KBVARIANT}&&matchingThreshold=1`)
+        .get(`/api/reports?category=unknown&variantType=cnv&matchingThreshold=1`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -501,7 +513,7 @@ describe('/reports/{REPORTID}', () => {
 
       for (const resReport of res.body.reports) {
         for (const gAI of resReport.kbMatches) {
-          expect(gAI.kbMatches).toEqual(KBVARIANT);
+          expect(gAI.variantType).toEqual('cnv');
         }
       }
     }, LONGER_TIMEOUT);
