@@ -3,6 +3,7 @@ const nodemailer = require('nodemailer');
 const {graphkbGetReadonlyGroupId, graphkbAddUser} = require('./api/graphkb');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
+const db = require('./models');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log'); // Load logging library
@@ -69,13 +70,43 @@ const setUpEmailWorker = (emailJobProcessor) => {
   const workerInstance = worker();
   if (workerInstance) {
     workerInstance.on('completed', async (job) => {
+      await onEmailWorkderCompleted(job);
       await job.remove();
       logger.info(`Email job with ID ${job.id} has been completed.`);
     });
 
-    workerInstance.on('failed', (job, err) => {
+    workerInstance.on('failed', async (job, err) => {
+      await onEmailWorkderFailed(job);
       logger.error(`Email job with ID ${job.id} has failed with error: ${err.message}`);
     });
+  }
+};
+
+const onEmailWorkderCompleted = async (job) => {
+  try {
+    await db.models.notificationTrack.create({
+      notificationId: job.data.notifId,
+      recipient: job.data.mailOptions.to,
+      reason: job.data.eventType,
+      outcome: 'completed',
+    });
+  } catch (error) {
+    logger.error(`Unable to create notification track ${error}`);
+    throw new Error(error);
+  }
+};
+
+const onEmailWorkderFailed = async (job) => {
+  try {
+    await db.models.notificationTrack.create({
+      notificationId: job.data.notifId,
+      recipient: job.data.mailOptions.to,
+      reason: job.data.eventType,
+      outcome: 'Failed',
+    });
+  } catch (error) {
+    logger.error(`Unable to create notification track ${error}`);
+    throw new Error(error);
   }
 };
 
@@ -93,9 +124,9 @@ const emailProcessor = async (job) => {
   });
 
   try {
-    await transporter.sendMail(job.data);
+    await transporter.sendMail(job.data.mailOptions);
   } catch (err) {
-    logger.error(JSON.stringify(job.data));
+    logger.error(JSON.stringify(job.data.mailOptions));
     throw new Error(err);
   }
 };
