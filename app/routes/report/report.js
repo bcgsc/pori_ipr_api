@@ -319,7 +319,7 @@ router.route('/')
           userId: req.user.id,
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
-          projectId: report.projects[0],
+          projectId: report.projects[0].project_id,
           status: 'Pending',
         },
       });
