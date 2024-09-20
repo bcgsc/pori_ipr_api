@@ -38,14 +38,14 @@ const getEmailList = async (triggers) => {
       if (!emailList.includes(notif.user.email)
           && notif.user.email.endsWith(domain)
           && notif.user.allowNotifications) {
-        emailList.push(notif.user.email);
+        emailList.push({toEmail: notif.user.email, notifId: notif.id, eventType: notif.eventType});
       }
     } else if (notif.userGroup) {
       for (const groupUser of notif.userGroup.users) {
         if (!emailList.includes(groupUser.email)
             && groupUser.email.endsWith(domain)
             && groupUser.allowNotifications) {
-          emailList.push(groupUser.email);
+          emailList.push({toEmail: groupUser.email, notifId: notif.id, eventType: notif.eventType});
         }
       }
     }
@@ -57,15 +57,14 @@ const getEmailList = async (triggers) => {
 const notifyUsers = async (subject, text, triggers) => {
   const emailList = await getEmailList(triggers);
 
-  emailList.forEach((toEmail) => {
+  emailList.forEach(({toEmail, notifId, eventType}) => {
     const mailOptions = {
       from: `${email}${domain}`,
       to: toEmail,
       subject,
       text,
     };
-
-    addJobToEmailQueue(mailOptions);
+    addJobToEmailQueue({mailOptions, notifId, eventType});
   });
 };
 
