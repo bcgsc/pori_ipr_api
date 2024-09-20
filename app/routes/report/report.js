@@ -314,20 +314,38 @@ router.route('/')
         projectIdArray.push(project.project_id);
       });
 
-      await email.notifyUsers(
-        `Report Created: ${req.body.patientId} ${req.body.template}`,
-        `New report:
-        Ident: ${report.ident}
-        Created by: ${req.user.firstName} ${req.user.lastName}
-        Project: ${req.body.project}
-        Template: ${req.body.template}
-        Patient: ${req.body.patientId}`,
-        {
+      const notif = await db.models.notification.findOrCreate({
+        where: {
+          userId: req.user.id,
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
-          projectId: projectIdArray,
+          projectId: report.projects[0],
+          status: 'Pending',
         },
-      );
+      });
+
+      try {
+        await email.notifyUsers(
+          `Report Created: ${req.body.patientId} ${req.body.template}`,
+          `New report:
+          Ident: ${report.ident}
+          Created by: ${req.user.firstName} ${req.user.lastName}
+          Project: ${req.body.project}
+          Template: ${req.body.template}
+          Patient: ${req.body.patientId}`,
+          {
+            eventType: NOTIFICATION_EVENT.REPORT_CREATED,
+            templateId: report.templateId,
+            projectId: projectIdArray,
+          },
+        );
+
+        await notif[0].update({status: 'Success'}, {userId: req.user.id});
+        logger.info('Email sent successfully');
+      } catch (error) {
+        await notif[0].update({status: 'Unsuccess'}, {userId: req.user.id});
+        logger.error(`Email not sent successfully: ${error}`);
+      }
 
       return res.status(HTTP_STATUS.CREATED).json({message: 'Report upload was successful', ident: report.ident});
     } catch (error) {
