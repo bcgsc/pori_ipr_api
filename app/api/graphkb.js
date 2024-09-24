@@ -135,8 +135,56 @@ const graphkbStatement = async (graphkbToken, statementId) => {
   });
 };
 
+const graphkbGetReadonlyGroupId = async (graphkbToken) => {
+  const {uri} = CONFIG.get('graphkb');
+
+  const query = {
+    filters: [
+      {name: 'readonly'},
+    ],
+    target: 'UserGroup',
+    returnProperties: [
+      '@rid',
+    ],
+  };
+
+  return request({
+    url: `${uri}/query`,
+    method: 'POST',
+    body: JSON.stringify(query),
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+const graphkbAddUser = async (graphkbToken, userName, userEmail, groupId) => {
+  const {uri} = CONFIG.get('graphkb');
+
+  const query = {
+    name: userName,
+    email: userEmail,
+    groups: [groupId],
+  };
+
+  return request({
+    url: `${uri}/users`,
+    method: 'POST',
+    body: JSON.stringify(query),
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 module.exports = {
   graphkbAutocomplete,
   graphkbEvidenceLevels,
   graphkbStatement,
+  graphkbGetReadonlyGroupId,
+  graphkbAddUser,
 };
