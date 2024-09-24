@@ -114,6 +114,23 @@ describe('/reports/{REPORTID}', () => {
       reportId: report.id,
     });
 
+    const gene = await db.models.genes.create({
+      reportId: report.id,
+      name: mockReportData.genes[0].name,
+    });
+    const variant = await db.models.copyVariants.create({
+      reportId: report.id,
+      geneId: gene.id,
+    });
+
+    await db.models.kbMatches.create({
+      reportId: report.id,
+      variantId: variant.id,
+      category: 'unknown',
+      variantType: 'cnv',
+      iprEvidenceLevel: 'IPR-A',
+    });
+
     reportReady = await db.models.report.create({
       templateId: template.id,
       patientId: mockReportData.patientId,
@@ -481,6 +498,22 @@ describe('/reports/{REPORTID}', () => {
       for (const resReport of res.body.reports) {
         for (const gAI of resReport.genomicAlterationsIdentified) {
           expect(gAI.geneVariant).toEqual(KEYVARIANT);
+        }
+      }
+    }, LONGER_TIMEOUT);
+
+    test('/ - kb match - 200 Success', async () => {
+      const res = await request
+        .get('/api/reports?category=unknown&variantType=cnv&matchingThreshold=1')
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      for (const resReport of res.body.reports) {
+        for (const gAI of resReport.kbMatches) {
+          expect(gAI.variantType).toEqual('cnv');
         }
       }
     }, LONGER_TIMEOUT);
