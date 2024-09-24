@@ -72,9 +72,6 @@ module.exports = {
           transaction,
         },
       );
-
-      await queryInterface.dropTable('user_group_members', {transaction, cascade: true});
-      await queryInterface.dropTable(OLD_TABLE, {transaction, cascade: true});
     });
   },
 
