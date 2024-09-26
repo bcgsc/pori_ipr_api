@@ -509,6 +509,15 @@ notification.belongsTo(userGroup, {
   as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+const notificationTrack = require('./notification/notificationTrack')(sequelize, Sq);
+
+notification.hasMany(notificationTrack, {
+  as: 'notifications_tracks', foreignKey: 'notificationId', onDelete: 'CASCADE', constraints: true,
+});
+notificationTrack.belongsTo(notification, {
+  as: 'notifications', foreignKey: 'notificationId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Variant text
 const variantText = require('./variantText/variantText')(sequelize, Sq);
 
