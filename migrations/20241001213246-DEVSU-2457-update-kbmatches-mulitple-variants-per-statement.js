@@ -1,7 +1,7 @@
-const KB_MATCHED_STATEMENTS = 'kb_matched_statements';
-const KB_MATCH_JOIN = 'kb_match_join';
-const KB_MATCHES = 'kb_matches';
-const KB_MATCHES_OLD = 'kb_matches_old';
+const KB_MATCHED_STATEMENTS = 'reports_kb_matched_statements';
+const KB_MATCH_JOIN = 'reports_kb_match_join';
+const KB_MATCHES = 'reports_kb_matches';
+const KB_MATCHES_OLD = 'reports_kb_matches_old';
 const {DEFAULT_COLUMNS, DEFAULT_MAPPING_COLUMNS} = require('../app/models/base');
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../app/constants');
 
@@ -10,8 +10,8 @@ module.exports = {
     return queryInterface.sequelize.transaction(async (transaction) => {
       // Duplicate old kb matches table to kb matches table old
       await queryInterface.renameTable(
-        KB_MATCHES_OLD,
         KB_MATCHES,
+        KB_MATCHES_OLD,
         {transaction},
       );
 
@@ -49,7 +49,7 @@ module.exports = {
           field: 'kb_variant_id',
           type: Sq.TEXT,
         },
-      });
+      }, {transaction});
 
       // Create new Kb Matched Statements table
       await queryInterface.createTable(KB_MATCHED_STATEMENTS, {
@@ -172,7 +172,7 @@ module.exports = {
           unique: false,
           allowNull: false,
           references: {
-            model: 'kbMatches',
+            model: 'reports_kb_matches',
             key: 'id',
           },
         },
@@ -183,23 +183,22 @@ module.exports = {
           unique: false,
           allowNull: false,
           references: {
-            model: 'kbMatchedStatements',
+            model: 'reports_kb_matched_statements',
             key: 'id',
           },
         },
-      });
+      }, {transaction});
 
       // Migrate data from old Kb Matches to new Kb Matches
       await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
-        `insert into kb_matches
+        `insert into reports_kb_matches
         (ident, id, created_at, updated_at, deleted_at, updated_by, 
           report_id, kb_variant, variant_type, variant_id, kb_variant_id)
         select ident, id, created_at, updated_at, deleted_at, updated_by, report_id, 
           kb_variant, variant_type, variant_id, kb_variant_id 
-        from kb_matches_old;`,
+        from reports_kb_matches_old;`,
         {
-          type: queryInterface.sequelize.QueryTypes.SELECT,
           transaction,
         },
       );
@@ -207,18 +206,17 @@ module.exports = {
       // Migrate data from old Kb Matches to new Kb Matched Statements
       await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
-        `insert into kb_matched_statements
+        `insert into reports_kb_matched_statements
         (ident, created_at, updated_at, 
           report_id, category, approved_therapy, disease, relevance, context, status, reference, 
           sample, evidence_level, ipr_evidence_level, matched_cancer, pmid_ref, kb_statement_id, 
           kb_data, external_source, external_statement_id, review_status, kb_match_id)
         select gen_random_uuid(), now(), now(), 
-          report_id, category, approved_therapy, disease, relevance, context, status, reference, 
+          report_id, category::text::enum_reports_kb_matched_statements_category, approved_therapy, disease, relevance, context, status, reference, 
           sample, evidence_level, ipr_evidence_level, matched_cancer, pmid_ref, kb_statement_id, 
           kb_data, external_source, external_statement_id, review_status, id
-        from kb_matches_old;`,
+        from reports_kb_matches_old;`,
         {
-          type: queryInterface.sequelize.QueryTypes.SELECT,
           transaction,
         },
       );
@@ -226,10 +224,10 @@ module.exports = {
       // Migrate data from old Kb Matches to new Kb Matches
       await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
-        `insert into kb_match_join
+        `insert into reports_kb_match_join
         (kb_matched_statement_id, kb_match_id, created_at, updated_at)
         select id, kb_match_id, now(), now()
-        from kb_matched_statements;`,
+        from reports_kb_matched_statements;`,
         {
           type: queryInterface.sequelize.QueryTypes.SELECT,
           transaction,
