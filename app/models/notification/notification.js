@@ -1,5 +1,4 @@
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
-const {USER_GROUPS} = require('../../constants');
 
 module.exports = (sequelize, Sq) => {
   const notification = sequelize.define(
@@ -35,12 +34,16 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
-      userGroup: {
-        name: 'userGroup',
-        field: 'user_group',
+      userGroupId: {
+        type: Sq.INTEGER,
+        name: 'userGroupId',
+        field: 'user_group_id',
         unique: false,
         allowNull: true,
-        type: Sq.ENUM(USER_GROUPS),
+        references: {
+          model: 'user_groups',
+          key: 'id',
+        },
       },
       templateId: {
         type: Sq.INTEGER,
@@ -59,10 +62,11 @@ module.exports = (sequelize, Sq) => {
       scopes: {
         public: {
           attributes: {
-            exclude: ['id', 'deletedAt', 'updatedBy', 'userId', 'projectId', 'templateId'],
+            exclude: ['id', 'deletedAt', 'updatedBy', 'userId', 'projectId', 'userGroupId', 'templateId'],
           },
           include: [
             {model: sequelize.models.user.scope('minimal'), as: 'user'},
+            {model: sequelize.models.userGroup.scope('minimal'), as: 'userGroup'},
             {model: sequelize.models.template.scope('minimal'), as: 'template'},
             {model: sequelize.models.project.scope('minimal'), as: 'project'},
           ],
@@ -70,6 +74,7 @@ module.exports = (sequelize, Sq) => {
         extended: {
           include: [
             {model: sequelize.models.user, as: 'user'},
+            {model: sequelize.models.userGroup, as: 'userGroup', include: {model: sequelize.models.user, as: 'users', through: {attributes: []}}},
             {model: sequelize.models.template, as: 'template'},
             {model: sequelize.models.project, as: 'project'},
           ],

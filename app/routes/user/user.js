@@ -26,8 +26,9 @@ router.param('userByIdent', async (req, res, next, ident) => {
           model: db.models.userGroup,
           as: 'groups',
           attributes: {
-            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'userId'],
+            exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
+          through: {attributes: []},
         },
         {
           model: db.models.project,
@@ -101,8 +102,11 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     return res.json(req.userByIdent.view('public'));
   })
   .put(async (req, res) => {
-    const subjectUserIsAdmin = await db.models.userGroup.findOne({
-      where: {name: 'admin', userId: req.userByIdent.id},
+    const adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
+    });
+    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+      where: {group_id: adminGroup.id, user_id: req.userByIdent.id},
     });
 
     if (!isAdmin(req.user) && subjectUserIsAdmin) {
@@ -161,8 +165,11 @@ router.route('/:userByIdent([A-z0-9-]{36})')
     }
   })
   .delete(async (req, res) => {
-    const subjectUserIsAdmin = await db.models.userGroup.findOne({
-      where: {name: 'admin', userId: req.userByIdent.id},
+    const adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
+    });
+    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+      where: {group_id: adminGroup.id, user_id: req.userByIdent.id},
     });
 
     if (!isAdmin(req.user) && subjectUserIsAdmin) {
@@ -193,7 +200,8 @@ router.route('/')
           {
             as: 'groups',
             model: db.models.userGroup,
-            attributes: {exclude: ['id', 'userId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
+            attributes: {exclude: ['id', 'user_id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy']},
+            through: {attributes: []},
           },
           {
             as: 'projects',

@@ -1,35 +1,31 @@
 const {DEFAULT_COLUMNS, DEFAULT_OPTIONS} = require('../base');
-const {USER_GROUPS} = require('../../constants');
 
 module.exports = (sequelize, Sq) => {
   const userGroup = sequelize.define('userGroup', {
     ...DEFAULT_COLUMNS,
-    userId: {
-      name: 'userId',
-      field: 'user_id',
-      type: Sq.INTEGER,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+    name: {
+      type: Sq.STRING,
       allowNull: false,
     },
-    name: {
-      type: Sq.ENUM(USER_GROUPS),
-      allowNull: false,
+    description: {
+      type: Sq.STRING,
+      allowNull: true,
     },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'user_groups',
     scopes: {
       public: {
-        order: [['user_id', 'ASC']],
+        order: [['name', 'ASC']],
         attributes: {
           exclude: ['id', 'deletedAt', 'updatedBy'],
         },
         include: [
-          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}},
+          {as: 'users', model: sequelize.models.user, attributes: {exclude: ['id', 'deletedAt', 'password', 'updatedBy']}, through: {attributes: []}},
         ],
+      },
+      minimal: {
+        attributes: ['ident', 'name'],
       },
     },
   });
