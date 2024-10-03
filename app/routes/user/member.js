@@ -11,9 +11,9 @@ const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 // Generate schema
-const memberSchema = schemaGenerator(db.models.userGroup, {
+const memberSchema = schemaGenerator(db.models.userGroupMember, {
   baseUri: '/create-delete',
-  exclude: [...BASE_EXCLUDE, 'userId', 'name'],
+  exclude: [...BASE_EXCLUDE, 'user_id', 'group_id'],
   properties: {
     user: {type: 'string', format: 'uuid'},
   },
@@ -45,8 +45,9 @@ router.route('/')
             model: db.models.userGroup,
             as: 'groups',
             attributes: {
-              exclude: ['id', 'userId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+              exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
             },
+            through: {attributes: []},
           },
         ],
       });
@@ -80,18 +81,11 @@ router.route('/')
 
     try {
       // Add user to group
-      await db.models.userGroup.create({name: req.group.name, userId: user.id});
+      await db.models.userGroupMember.create({group_id: req.group.id, user_id: user.id});
       await user.reload();
       return res.status(HTTP_STATUS.CREATED).json(user.view('public'));
     } catch (error) {
       logger.error(`Error while trying to add user to group ${error}`);
-
-      if (`${error}` === 'SequelizeUniqueConstraintError: Validation error') {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({
-          error: {message: 'Error while trying to add user to group: User already in group'},
-        });
-      }
-
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to add user to group'},
       });
@@ -135,8 +129,11 @@ router.route('/')
       return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: msg}});
     }
 
-    const subjectUserIsAdmin = await db.models.userGroup.findOne({
-      where: {name: 'admin', userId: user.id},
+    const adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
+    });
+    const subjectUserIsAdmin = await db.models.userGroupMember.findOne({
+      where: {group_id: adminGroup.id, user_id: user.id},
     });
 
     if (!reqUserIsAdmin && subjectUserIsAdmin) {
@@ -146,8 +143,8 @@ router.route('/')
     }
     try {
       // Find membership
-      const membership = await db.models.userGroup.findOne({
-        where: {name: req.group.name, userId: user.id},
+      const membership = await db.models.userGroupMember.findOne({
+        where: {group_id: req.group.id, user_id: user.id},
       });
 
       if (!membership) {

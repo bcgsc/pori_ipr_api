@@ -46,11 +46,15 @@ beforeAll(async () => {
 // Tests for user related endpoints
 describe('/user', () => {
   let testUser;
+  let adminGroup;
 
   beforeAll(async () => {
     // get test user
     testUser = await db.models.user.findOne({
       where: {username},
+    });
+    adminGroup = await db.models.userGroup.findOne({
+      where: {name: 'admin'},
     });
   });
 
@@ -139,7 +143,7 @@ describe('/user', () => {
       expect(res.body[0].firstName).toBe(firstName);
 
       // Delete user
-      await db.models.user.destroy({where: {ident: searchUser.ident}});
+      await db.models.user.destroy({where: {ident: searchUser.ident}, force: true});
     });
   });
 
@@ -159,7 +163,7 @@ describe('/user', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Remove test user from db
-      await db.models.user.destroy({where: {ident: res.body.ident}});
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
 
     test('/ - 200 Success by manager', async () => {
@@ -177,7 +181,7 @@ describe('/user', () => {
         .expect(HTTP_STATUS.CREATED);
 
       // Remove test user from db
-      await db.models.user.destroy({where: {ident: res.body.ident}});
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
 
     test('/ - 403 forbidden for bioinformatician', async () => {
@@ -305,14 +309,14 @@ describe('/user', () => {
         lastName: 'putTestLastName',
       });
 
-      await db.models.userGroup.create({
-        userId: adminPutTestUser.id, name: 'admin',
+      await db.models.userGroupMember.create({
+        user_id: adminPutTestUser.id, group_id: adminGroup.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.user.destroy({where: {ident: putTestUser.ident}});
-      await db.models.user.destroy({where: {ident: adminPutTestUser.ident}});
+      await db.models.user.destroy({where: {ident: putTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: adminPutTestUser.ident}, force: true});
     });
 
     test('/{user} - 200 Success', async () => {
@@ -400,16 +404,16 @@ describe('/user', () => {
         lastName: 'delete3LastName01',
         email: 'delete3@email.com',
       });
-      await db.models.userGroup.create({
-        userId: deleteTestUserWhoIsAdmin.id, name: 'admin',
+      await db.models.userGroupMember.create({
+        user_id: deleteTestUserWhoIsAdmin.id, group_id: adminGroup.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.user.destroy({where: {ident: deleteTestUser.ident}});
-      await db.models.user.destroy({where: {ident: deleteTestUserManager.ident}});
-      await db.models.user.destroy({where: {ident: deleteTestUserForbidden.ident}});
-      await db.models.user.destroy({where: {ident: deleteTestUserWhoIsAdmin.ident}});
+      await db.models.user.destroy({where: {ident: deleteTestUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUserManager.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUserForbidden.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteTestUserWhoIsAdmin.ident}, force: true});
     });
 
     test('/{user} - 204 Success', async () => {

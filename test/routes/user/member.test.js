@@ -67,12 +67,15 @@ beforeAll(async () => {
     email: 'email02@email.com',
   });
 
-  group = {name: 'germline access'};
-  adminGroup = {name: 'admin'};
+  // Create groups
+  group = await db.models.userGroup.create({name: 'Test group'});
+  adminGroup = await db.models.userGroup.findOne({
+    where: {name: 'admin'},
+  });
 
   // Make users group members
-  await db.models.userGroup.create({userId: user01.id, name: group.name});
-  await db.models.userGroup.create({userId: user02.id, name: group.name});
+  await db.models.userGroupMember.create({user_id: user01.id, group_id: group.id});
+  await db.models.userGroupMember.create({user_id: user02.id, group_id: group.id});
 });
 
 // Tests for user group member related endpoints
@@ -81,7 +84,7 @@ describe('/user/group/{group}/member', () => {
   describe('GET', () => {
     test('/ - 200 Success', async () => {
       const res = await request
-        .get(`/api/user/group/${group.name}/member`)
+        .get(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -103,7 +106,7 @@ describe('/user/group/{group}/member', () => {
       });
 
       const res = await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: updateUser.ident})
@@ -112,13 +115,13 @@ describe('/user/group/{group}/member', () => {
       checkUser(res.body);
 
       // Check user belongs to group
-      const groupNames = res.body.groups.map((g) => {
-        return g.name;
+      const groupIdents = res.body.groups.map((g) => {
+        return g.ident;
       });
-      expect(groupNames.includes(group.name)).toBe(true);
+      expect(groupIdents.includes(group.ident)).toBe(true);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}});
+      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
     });
 
     test('/ - 200 Success by manager', async () => {
@@ -132,7 +135,7 @@ describe('/user/group/{group}/member', () => {
       });
 
       const res = await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(managerUsername, password)
         .type('json')
         .send({user: updateUser.ident})
@@ -141,13 +144,13 @@ describe('/user/group/{group}/member', () => {
       checkUser(res.body);
 
       // Check user belongs to group
-      const groupNames = res.body.groups.map((g) => {
-        return g.name;
+      const groupIdents = res.body.groups.map((g) => {
+        return g.ident;
       });
-      expect(groupNames.includes(group.name)).toBe(true);
+      expect(groupIdents.includes(group.ident)).toBe(true);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}});
+      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
     });
 
     test('/ - 403 forbidden to non-admin to give admin role', async () => {
@@ -161,14 +164,14 @@ describe('/user/group/{group}/member', () => {
       });
 
       await request
-        .post(`/api/user/group/${adminGroup.name}/member`)
+        .post(`/api/user/group/${adminGroup.ident}/member`)
         .auth(managerUsername, password)
         .type('json')
         .send({user: updateUser.ident})
         .expect(HTTP_STATUS.FORBIDDEN);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}});
+      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
     });
 
     test('/ - 403 forbidden to non-admin to give role to admin user', async () => {
@@ -181,16 +184,16 @@ describe('/user/group/{group}/member', () => {
         email: 'updateUser2@email.com',
       });
 
-      await db.models.userGroup.create({userId: updateUser.id, name: adminGroup.name});
+      await db.models.userGroupMember.create({user_id: updateUser.id, group_id: adminGroup.id});
       await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(managerUsername, password)
         .type('json')
         .send({user: updateUser.ident})
         .expect(HTTP_STATUS.FORBIDDEN);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}});
+      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
     });
 
     test('/ - 403 forbidden to bioinformatician', async () => {
@@ -204,19 +207,19 @@ describe('/user/group/{group}/member', () => {
       });
 
       await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(bioinformaticianUsername, password)
         .type('json')
         .send({user: updateUser.ident})
         .expect(HTTP_STATUS.FORBIDDEN);
 
       // Remove user
-      await db.models.user.destroy({where: {ident: updateUser.ident}});
+      await db.models.user.destroy({where: {ident: updateUser.ident}, force: true});
     });
 
     test('/ - 400 Bad Request - User is required', async () => {
       await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({})
@@ -225,7 +228,7 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 400 Bad Request - User must be a uuid', async () => {
       await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: 'NOT_UUID'})
@@ -234,7 +237,7 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 404 Not Found - User does not exist', async () => {
       await request
-        .post(`/api/user/group/${group.name}/member`)
+        .post(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: uuidv4()})
@@ -273,59 +276,59 @@ describe('/user/group/{group}/member', () => {
         email: 'deleteUser1@email.com',
       });
 
-      await db.models.userGroup.create({
-        userId: deleteUser.id, name: group.name,
+      await db.models.userGroupMember.create({
+        user_id: deleteUser.id, group_id: group.id,
       });
-      await db.models.userGroup.create({
-        userId: deleteUser2.id, name: group.name,
+      await db.models.userGroupMember.create({
+        user_id: deleteUser2.id, group_id: group.id,
       });
-      await db.models.userGroup.create({
-        userId: adminDeleteUser.id, name: group.name,
+      await db.models.userGroupMember.create({
+        user_id: adminDeleteUser.id, group_id: group.id,
       });
-      await db.models.userGroup.create({
-        userId: adminDeleteUser.id, name: adminGroup.name,
+      await db.models.userGroupMember.create({
+        user_id: adminDeleteUser.id, group_id: adminGroup.id,
       });
     });
 
     afterEach(async () => {
-      await db.models.user.destroy({where: {ident: deleteUser.ident}});
-      await db.models.user.destroy({where: {ident: deleteUser2.ident}});
-      await db.models.user.destroy({where: {ident: adminDeleteUser.ident}});
+      await db.models.user.destroy({where: {ident: deleteUser.ident}, force: true});
+      await db.models.user.destroy({where: {ident: deleteUser2.ident}, force: true});
+      await db.models.user.destroy({where: {ident: adminDeleteUser.ident}, force: true});
     });
 
     test('/ - 204 Success', async () => {
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: deleteUser.ident})
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify group-member association is deleted
-      const delGroupMember = await db.models.userGroup.findOne({
-        where: {userId: deleteUser.id, name: group.name}, paranoid: false,
+      const delGroupMember = await db.models.userGroupMember.findOne({
+        where: {user_id: deleteUser.id, group_id: group.id}, paranoid: false,
       });
       expect(delGroupMember.deletedAt).not.toBeNull();
     });
 
     test('/ - 204 Success by manager', async () => {
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(managerUsername, password)
         .type('json')
         .send({user: deleteUser2.ident})
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify group-member association is deleted
-      const delGroupMember = await db.models.userGroup.findOne({
-        where: {userId: deleteUser2.id, name: group.name}, paranoid: false,
+      const delGroupMember = await db.models.userGroupMember.findOne({
+        where: {user_id: deleteUser2.id, group_id: group.id}, paranoid: false,
       });
       expect(delGroupMember.deletedAt).not.toBeNull();
     });
 
     test('/ - 403 forbidden to non-admin to remove admin role', async () => {
       await request
-        .delete(`/api/user/group/${adminGroup.name}/member`)
+        .delete(`/api/user/group/${adminGroup.ident}/member`)
         .auth(managerUsername, password)
         .type('json')
         .send({user: adminDeleteUser.ident})
@@ -334,7 +337,7 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 403 forbidden to non-admin to remove any role from admin user', async () => {
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(managerUsername, password)
         .type('json')
         .send({user: adminDeleteUser.ident})
@@ -343,7 +346,7 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 403 forbidden to bioinformatician', async () => {
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(bioinformaticianUsername, password)
         .type('json')
         .send({user: deleteUser.ident})
@@ -352,7 +355,7 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 400 Bad Request', async () => {
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: 'INVALID_UUID'})
@@ -361,7 +364,7 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 404 Not Found - User does not exist', async () => {
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: uuidv4()})
@@ -370,12 +373,12 @@ describe('/user/group/{group}/member', () => {
 
     test('/ - 404 Not Found - User is not group member', async () => {
       // Delete group-member binding
-      await db.models.userGroup.destroy({
-        where: {userId: deleteUser.id, name: group.name},
+      await db.models.userGroupMember.destroy({
+        where: {user_id: deleteUser.id, group_id: group.id},
       });
 
       await request
-        .delete(`/api/user/group/${group.name}/member`)
+        .delete(`/api/user/group/${group.ident}/member`)
         .auth(username, password)
         .type('json')
         .send({user: deleteUser.ident})
@@ -385,6 +388,7 @@ describe('/user/group/{group}/member', () => {
 });
 
 afterAll(async () => {
-  await db.models.user.destroy({where: {ident: [user01.ident, user02.ident]}});
+  await db.models.userGroup.destroy({where: {ident: group.ident}, force: true});
+  await db.models.user.destroy({where: {ident: [user01.ident, user02.ident]}, force: true});
   await server.close();
 });

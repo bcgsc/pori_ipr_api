@@ -80,9 +80,13 @@ user.belongsToMany(analysisReports, {
 });
 
 const userGroup = require('./user/userGroup')(sequelize, Sq);
+const userGroupMember = require('./user/userGroupMember')(sequelize, Sq);
 
-user.hasMany(userGroup, {
-  as: 'groups', foreignKey: 'userId', onDelete: 'CASCADE', constraints: true,
+user.belongsToMany(userGroup, {
+  as: 'groups', through: {model: userGroupMember, unique: false}, foreignKey: 'user_id', otherKey: 'group_id', onDelete: 'CASCADE',
+});
+userGroup.belongsToMany(user, {
+  as: 'users', through: {model: userGroupMember, unique: false}, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE',
 });
 
 // IMPORTANT must be done before the variant models are defined
@@ -483,6 +487,9 @@ const notification = require('./notification/notification')(sequelize, Sq);
 user.hasMany(notification, {
   as: 'notifications', foreignKey: 'userId', onDelete: 'CASCADE', constraints: true,
 });
+userGroup.hasMany(notification, {
+  as: 'notifications', foreignKey: 'userGroupId', onDelete: 'CASCADE', constraints: true,
+});
 project.hasMany(notification, {
   as: 'notifications', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
 });
@@ -497,6 +504,9 @@ notification.belongsTo(user, {
 });
 notification.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+notification.belongsTo(userGroup, {
+  as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 const notificationTrack = require('./notification/notificationTrack')(sequelize, Sq);

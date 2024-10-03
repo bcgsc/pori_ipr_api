@@ -55,17 +55,4 @@ module.exports = {
   MASTER_REPORT_ACCESS: ['admin', 'manager'],
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
-  USER_GROUPS: [
-    'admin',
-    'manager',
-    'report assignment access',
-    'create report access',
-    'germline access',
-    'non-production access',
-    'unreviewed access',
-    'all projects access',
-    'template edit access',
-    'appendix edit access',
-    'variant-text edit access',
-  ],
 };

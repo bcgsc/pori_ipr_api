@@ -15,8 +15,9 @@ const include = [
     model: db.models.userGroup,
     as: 'groups',
     attributes: {
-      exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'userId'],
+      exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
     },
+    through: {attributes: []},
   },
   {
     model: db.models.project,

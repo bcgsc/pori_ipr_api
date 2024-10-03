@@ -364,6 +364,196 @@
             "description": "You are not authorized to view this resource"
           }
         }
+      },
+      "post": {
+        "summary": "Create new group",
+        "description": "Create a new ACL group in the Report API",
+        "tags": [
+          "Group"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of the new group",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group successfully added to database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userGroupAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "You are not allowed to create new group entries."
+          }
+        }
+      }
+    },
+    "/user/group/{group}": {
+      "get": {
+        "summary": "Get a group",
+        "description": "Get detailed group object from ident.",
+        "tags": [
+          "Group"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "description": "Group UUID string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group found, API will return the detailed group object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userGroupAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "You are not authorized to view the resource"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a group",
+        "description": "Update the groups definition in the IPR API database",
+        "tags": [
+          "Group"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "description": "Group UUID string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of the new group",
+                    "type": "string"
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated the group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userGroupAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "You are not authorized to perform this action"
+          },
+          "404": {
+            "description": "Unable to find the group"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove a group",
+        "description": "Remove a group entry from the database. Doing this will immediately\nrevoke group member's access to defined resources.",
+        "tags": [
+          "Group"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "description": "Group UUID string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The group was successfully removed"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "You are not authorized to perform this action"
+          },
+          "404": {
+            "description": "Unable to find the group or user"
+          }
+        }
       }
     },
     "/user/group/{group}/member": {
@@ -7690,7 +7880,8 @@
           }
         }
       },
-      "userProject": {}
+      "userProject": {},
+      "userGroupMember": {}
     },
     "responses": {
       "UnauthorizedError": {

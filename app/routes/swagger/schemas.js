@@ -14,7 +14,7 @@ const ID_FIELDS = [
 ];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt', 'updatedBy'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
-const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germlineReport', 'userProject'];
+const GENERAL_EXCLUDE_ASSOCIATIONS = ['report', 'reports', 'germlineReport', 'userProject', 'userGroupMember'];
 
 const MODELS_WITH_VARIANTS = ['kbMatches', 'genes'];
 
@@ -96,7 +96,7 @@ const getExcludes = (model) => {
 
 // Remove joining models from the list of models to use for generating schemas
 const {
-  reportProject, userProject, ...models
+  userGroupMember, reportProject, userProject, ...models
 } = db.models;
 
 // Generate schemas from Sequelize models. One for the public returned value, one
