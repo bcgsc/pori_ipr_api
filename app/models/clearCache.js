@@ -12,7 +12,7 @@ const CLEAR_GERMLINE_CACHE_MODELS = [
 ];
 
 const CLEAR_USER_CACHE_MODELS = [
-  'userGroup', 'userGroupMember', 'userProject',
+  'userGroup', 'userProject',
 ];
 
 /**
