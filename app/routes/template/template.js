@@ -145,8 +145,14 @@ router.route('/')
         ...((organization) ? {organization: {[Op.iLike]: `%${organization}%`}} : {}),
       },
       include: [
-        {as: 'logoImage', model: db.models.image.scope('public')},
-        {as: 'headerImage', model: db.models.image.scope('public')},
+        {
+          model: db.models.image.scope('public'),
+          as: 'logoImage',
+        },
+        {
+          model: db.models.image.scope('public'),
+          as: 'headerImage',
+        },
         {
           model: db.models.templateSignatureTypes,
           as: 'signatureTypes',
@@ -154,7 +160,7 @@ router.route('/')
             exclude: ['id', 'templateId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
           },
         },
-      ]
+      ],
     };
 
     try {
