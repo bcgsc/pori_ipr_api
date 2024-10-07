@@ -556,8 +556,8 @@ templateAppendix.belongsTo(project, {
 // Template Signature Types
 const templateSignatureTypes = require('./template/templateSignatureTypes')(sequelize, Sq);
 
-template.hasOne(templateSignatureTypes, {
-  as: 'signature_types', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+template.hasMany(templateSignatureTypes, {
+  as: 'signatureTypes', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 templateSignatureTypes.belongsTo(template, {

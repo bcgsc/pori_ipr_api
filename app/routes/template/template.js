@@ -144,6 +144,13 @@ router.route('/')
         ...((name) ? {name: {[Op.iLike]: `%${name}%`}} : {}),
         ...((organization) ? {organization: {[Op.iLike]: `%${organization}%`}} : {}),
       },
+      include: {
+        model: db.models.templateSignatureTypes,
+        as: 'signatureTypes',
+        attributes: {
+          exclude: ['id', 'templateId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+        },
+      },
     };
 
     try {

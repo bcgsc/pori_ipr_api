@@ -14,16 +14,19 @@ const {BASE_EXCLUDE} = require('../../schemas/exclude');
 const createSchema = schemaGenerator(db.models.templateSignatureTypes, {
   baseUri: '/create', exclude: [...BASE_EXCLUDE, 'templateId'],
 });
-const updateSchema = schemaGenerator(db.models.templateSignatureTypes, {
-  baseUri: '/update', exclude: [...BASE_EXCLUDE, 'templateId'], nothingRequired: true,
-});
 
 // Add middleware to get template signature type
 router.use('/', async (req, res, next) => {
   try {
-    req.templateSignatureTypes = await db.models.templateSignatureTypes.findOne({
-      where: {templateId: req.template.id},
-    });
+    if (req.body.signatureType) {
+      req.templateSignatureTypes = await db.models.templateSignatureTypes.scope('public').findOne({
+        where: {templateId: req.template.id, signatureType: req.body.signatureType},
+      });
+    } else {
+      req.templateSignatureTypes = await db.models.templateSignatureTypes.scope('public').findAll({
+        where: {templateId: req.template.id},
+      });
+    }
   } catch (error) {
     logger.error(`Unable to get template signature type ${error}`);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -33,14 +36,12 @@ router.use('/', async (req, res, next) => {
 
   // Throw an error for a POST when a template signature already exists
   if (req.templateSignatureTypes && req.method === 'POST') {
-    logger.error(`Template signature type already exists for ${req.template.name}`);
-    return res.status(HTTP_STATUS.CONFLICT).json({
-      error: {message: `Template signature type already exists for ${req.template.name}`},
-    });
+    logger.warn(`Template signature type ${req.body.signatureType} already exists for ${req.template.name}`);
+    return res.status(HTTP_STATUS.CREATED).json(req.templateSignatureTypes.view('public'));
   }
 
   // Throw an error for everything but a POST if the signature doesn't exist
-  if (!req.templateSignatureTypes && req.method !== 'POST') {
+  if ((!req.templateSignatureTypes || req.templateSignatureTypes.length === 0) && req.method !== 'POST') {
     logger.error(`Template signature type does not exist for ${req.template.name}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({
       error: {message: `Template signature type does not exist for ${req.template.name}`},
@@ -52,7 +53,7 @@ router.use('/', async (req, res, next) => {
 // Handle requests for template by ident
 router.route('/')
   .get((req, res) => {
-    return res.json(req.templateSignatureTypes.view('public'));
+    return res.json(req.templateSignatureTypes);
   })
   .post(async (req, res) => {
     // Validate request against schema
@@ -77,30 +78,10 @@ router.route('/')
       });
     }
   })
-  .put(async (req, res) => {
-    // Validate request against schema
-    try {
-      validateAgainstSchema(updateSchema, req.body, false);
-    } catch (error) {
-      const message = `Error while validating template signature type update request ${error}`;
-      logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
-    }
-    // Update db entry
-    try {
-      await req.templateSignatureTypes.update(req.body, {userId: req.user.id});
-      return res.json(req.templateSignatureTypes.view('public'));
-    } catch (error) {
-      logger.error(`Unable to update template signature type ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: {message: 'Unable to update template signature type'},
-      });
-    }
-  })
   .delete(async (req, res) => {
     // Soft delete template signature type
     try {
-      await req.templateSignatureTypes.destroy();
+      await db.models.templateSignatureTypes.destroy({where: {templateId: req.template.id}});
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while removing template signature type ${error}`);
