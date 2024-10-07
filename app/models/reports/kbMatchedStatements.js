@@ -1,4 +1,3 @@
-// const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
@@ -108,70 +107,14 @@ module.exports = (sequelize, Sq) => {
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matched_statements',
-    // scopes: {
-    //   public: {
-    //     attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
-    //     include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-    //       return {model: sequelize.models[modelName].scope('public'), as: modelName};
-    //     }),
-    //   },
-    //   extended: {
-    //     attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
-    //     include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-    //       return {model: sequelize.models[modelName].scope('extended'), as: modelName};
-    //     }),
-    //   },
-    // },
-    // hooks: {
-    //   ...DEFAULT_REPORT_OPTIONS.hooks,
-    //   afterFind: (findResult) => {
-    //     if (!Array.isArray(findResult)) {
-    //       findResult = [findResult];
-    //     }
-    //     for (const instance of findResult) {
-    //       const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
-
-    //       for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
-    //         const modelName = KB_PIVOT_MAPPING[pivotType];
-
-    //         if (instance[modelName] !== undefined) {
-    //           if (pivotType === currentPivotValue) {
-    //             instance.variant = instance[modelName];
-    //             instance.dataValues.variant = instance[modelName].dataValues;
-    //           }
-    //           // To prevent mistakes:
-    //           delete instance[modelName];
-    //           delete instance.dataValues[modelName];
-    //         }
-    //       }
-    //     }
-    //   },
-    // },
+    scopes: {
+      public: {
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+      },
+    },
     modelName: 'kbMatchedStatements',
     sequelize,
   });
-
-  //   // set instance methods
-  //   KbMatchedStatements.prototype.view = function (scope) {
-  //     if (scope === 'public') {
-  //       const {
-  //         id, reportId, variantId, deletedAt, updatedBy, ...publicView
-  //       } = this.dataValues;
-  //       return publicView;
-  //     }
-  //     return this;
-  //   };
-
-  //   KbMatchedStatements.prototype.getVariant = function (options) {
-  //     const targetModel = this.experimentalVariantType;
-
-  //     if (!targetModel) {
-  //       return Promise.resolve(null);
-  //     }
-
-  //     const mixinMethodName = `get${targetModel[0].toUpperCase()}${targetModel.slice(1)}`;
-  //     return this[mixinMethodName](options);
-  //   };
 
   return KbMatchedStatements;
 };

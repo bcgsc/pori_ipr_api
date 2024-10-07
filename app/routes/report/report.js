@@ -295,6 +295,7 @@ router.route('/')
           model: db.models.genomicAlterationsIdentified.scope('public'),
           as: 'genomicAlterationsIdentified',
         }] : []),
+        // TODO: Fix this
         ...((category || approvedTherapy || kbVariant || disease || relevance || context || status || reference || sample || evidenceLevel || matchedCancer || pmidRef || variantType) ? [{
           model: db.models.kbMatches.scope('public'),
           as: 'kbMatches',

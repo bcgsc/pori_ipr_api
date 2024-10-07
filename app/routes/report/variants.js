@@ -30,6 +30,7 @@ const getVariants = async (tableName, variantType, reportId) => {
   });
 };
 
+// TODO: Fix rapid report filter
 const therapeuticAssociationFilter = {
   id: {[Op.ne]: null},
   [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],

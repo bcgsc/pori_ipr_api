@@ -30,7 +30,7 @@ module.exports = (sequelize, Sq) => {
     },
     {
       ...DEFAULT_MAPPING_OPTIONS,
-      tableName: 'report_projects',
+      tableName: 'reports_kb_match_join',
       scopes: {
         public: {
           attributes: {

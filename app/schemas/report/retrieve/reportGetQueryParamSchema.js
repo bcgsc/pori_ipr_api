@@ -1,5 +1,6 @@
 const {models: {report, reportUser, kbMatches}} = require('../../../models');
 
+// TODO: Fix this to the correct columns
 module.exports = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: '/reports/get/params/report.json',
@@ -60,7 +61,6 @@ module.exports = {
     },
     category: {
       type: 'string',
-      enum: kbMatches.rawAttributes.category.values,
     },
     approvedTherapy: {
       type: 'boolean',

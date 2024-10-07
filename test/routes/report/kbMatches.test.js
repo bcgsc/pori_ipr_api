@@ -19,10 +19,8 @@ let server;
 let request;
 
 const kbMatchProperties = [
-  'ident', 'createdAt', 'updatedAt', 'category', 'approvedTherapy', 'kbVariant', 'disease',
-  'relevance', 'context', 'status', 'reference', 'sample', 'evidenceLevel', 'matchedCancer',
-  'pmidRef', 'variantType', 'kbVariantId', 'kbStatementId', 'kbData', 'variant',
-  'reviewStatus', 'externalSource', 'externalStatementId', 'reviewStatus',
+  'ident', 'createdAt', 'updatedAt', 'kbVariant', 
+  'variantType', 'variant', 'kbVariantId', 'kbMatchedStatements'
 ];
 
 const checkKbMatch = (kbMatchObject) => {
@@ -45,8 +43,13 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   let gene;
   let variant;
   let kbMatch;
+  let kbMatchFiltering;
   let createData;
   let createDataFilteringTest;
+  let createDataStatement;
+  let createDataStatementFiltering;
+  let statement;
+  let statementFiltering;
 
   beforeAll(async () => {
     // Get genomic template
@@ -68,21 +71,35 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     createData = {
       reportId: report.id,
       variantId: variant.id,
-      category: 'unknown',
       variantType: 'cnv',
-      iprEvidenceLevel: 'IPR-A',
     };
 
     createDataFilteringTest = {
       reportId: report.id,
       variantId: variant.id,
-      category: 'unknown',
       variantType: 'cnv',
-      iprEvidenceLevel: 'IPR-B',
     };
 
     kbMatch = await db.models.kbMatches.create(createData);
-    await db.models.kbMatches.create(createDataFilteringTest);
+    kbMatchFiltering = await db.models.kbMatches.create(createDataFilteringTest);
+
+    createDataStatement = {
+      reportId: report.id,
+      category: 'unknown',
+      iprEvidenceLevel: 'IPR-A',
+    };
+
+    createDataStatementFiltering = {
+      reportId: report.id,
+      category: 'unknown',
+      iprEvidenceLevel: 'IPR-B',
+    };
+
+    statement = await db.models.kbMatchedStatements.create(createDataStatement)
+    statementFiltering = await db.models.kbMatchedStatements.create(createDataStatementFiltering)
+
+    await db.models.kbMatchJoin.create({kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id})
+    await db.models.kbMatchJoin.create({kbMatchId: kbMatchFiltering.id, kbMatchedStatementId: statementFiltering.id})
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {
@@ -98,6 +115,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
 
     test('Filtering kb-matches is ok', async () => {
+      // Fix this
       const res = await request
         .get(`/api/reports/${report.ident}/kb-matches`)
         .query({iprEvidenceLevel: 'IPR-A,IPR-C'})
@@ -107,7 +125,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
       expect(Array.isArray(res.body)).toBe(true);
       checkKbMatch(res.body[0]);
-      res.body.every((match) => {return expect(match.iprEvidenceLevel).toEqual('IPR-A');});
+      res.body.every((match) => {return expect(match.kbMatchedStatements[0].iprEvidenceLevel).toEqual('IPR-A');});
     });
 
     test('Getting a specific kb-match is ok', async () => {
