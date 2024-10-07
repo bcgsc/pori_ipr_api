@@ -144,13 +144,17 @@ router.route('/')
         ...((name) ? {name: {[Op.iLike]: `%${name}%`}} : {}),
         ...((organization) ? {organization: {[Op.iLike]: `%${organization}%`}} : {}),
       },
-      include: {
-        model: db.models.templateSignatureTypes,
-        as: 'signatureTypes',
-        attributes: {
-          exclude: ['id', 'templateId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+      include: [
+        {as: 'logoImage', model: db.models.image.scope('public')},
+        {as: 'headerImage', model: db.models.image.scope('public')},
+        {
+          model: db.models.templateSignatureTypes,
+          as: 'signatureTypes',
+          attributes: {
+            exclude: ['id', 'templateId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+          },
         },
-      },
+      ]
     };
 
     try {
