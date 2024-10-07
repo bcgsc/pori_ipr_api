@@ -130,6 +130,18 @@ router.route('/')
         addedBy_id: req.user.id,
       });
 
+      const report = await db.models.report.findOne({where: {id: req.report.id}});
+      const reportProject = await db.models.reportProject.findOne({where: {report_id: req.report.id}});
+      const notif = await db.models.notification.findOrCreate({
+        where: {
+          userId: req.user.id,
+          eventType: NOTIFICATION_EVENT.USER_BOUND,
+          templateId: report.templateId,
+          projectId: reportProject.project_id,
+          status: 'Pending',
+        },
+      });
+
       // Try sending email
       try {
         await email.notifyUsers(
@@ -140,8 +152,11 @@ router.route('/')
             templateId: req.report.templateId,
           },
         );
+
+        await notif[0].update({status: 'Success'}, {userId: req.user.id});
         logger.info('Email sent successfully');
       } catch (error) {
+        await notif[0].update({status: 'Unsuccess'}, {userId: req.user.id});
         logger.error(`Email not sent successfully: ${error}`);
       }
 
