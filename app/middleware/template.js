@@ -10,6 +10,11 @@ module.exports = async (req, res, next, ident) => {
       include: [
         {as: 'logoImage', model: db.models.image.scope('public')},
         {as: 'headerImage', model: db.models.image.scope('public')},
+        {as: 'signatureTypes',
+          model: db.models.templateSignatureTypes,
+          attributes: {
+            exclude: ['id', 'templateId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+          }},
       ],
     });
   } catch (error) {

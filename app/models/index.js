@@ -543,6 +543,17 @@ templateAppendix.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Template Signature Types
+const templateSignatureTypes = require('./template/templateSignatureTypes')(sequelize, Sq);
+
+template.hasMany(templateSignatureTypes, {
+  as: 'signatureTypes', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+templateSignatureTypes.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Germline Small Mutations
 require('./germlineSmallMutation')(sequelize, Sq);
 
