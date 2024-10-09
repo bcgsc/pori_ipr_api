@@ -3,13 +3,13 @@ const express = require('express');
 const {Op} = require('sequelize');
 
 const router = express.Router({mergeParams: true});
-const kbMatchMiddlware = require('../../../middleware/kbMatch');
+const kbMatchMiddleware = require('../../../middleware/kbMatch');
 
 const db = require('../../../models');
 const logger = require('../../../log');
 const {KB_PIVOT_MAPPING} = require('../../../constants');
 
-router.param('kbMatch', kbMatchMiddlware);
+router.param('kbMatch', kbMatchMiddleware);
 
 // Handle requests for kb match
 router.route('/:kbMatch([A-z0-9-]{36})')
@@ -53,6 +53,7 @@ router.route('/')
               ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
             },
             through: {attributes: []},
+            required: false,
           },
           ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
             return {model: db.models[modelName].scope('public'), as: modelName};

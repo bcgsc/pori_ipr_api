@@ -2,12 +2,12 @@ const HTTP_STATUS = require('http-status-codes');
 
 const supertest = require('supertest');
 const getPort = require('get-port');
-const db = require('../../../app/models');
+const db = require('../../../../app/models');
 
-const mockReportData = require('../../testData/mockReportData.json');
+const mockReportData = require('../../../testData/mockReportData.json');
 
-const CONFIG = require('../../../app/config');
-const {listen} = require('../../../app');
+const CONFIG = require('../../../../app/config');
+const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
 
@@ -19,8 +19,8 @@ let server;
 let request;
 
 const kbMatchProperties = [
-  'ident', 'createdAt', 'updatedAt', 'kbVariant', 
-  'variantType', 'variant', 'kbVariantId', 'kbMatchedStatements'
+  'ident', 'createdAt', 'updatedAt', 'kbVariant',
+  'variantType', 'variant', 'kbVariantId', 'kbMatchedStatements',
 ];
 
 const checkKbMatch = (kbMatchObject) => {
@@ -95,11 +95,11 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       iprEvidenceLevel: 'IPR-B',
     };
 
-    statement = await db.models.kbMatchedStatements.create(createDataStatement)
-    statementFiltering = await db.models.kbMatchedStatements.create(createDataStatementFiltering)
+    statement = await db.models.kbMatchedStatements.create(createDataStatement);
+    statementFiltering = await db.models.kbMatchedStatements.create(createDataStatementFiltering);
 
-    await db.models.kbMatchJoin.create({kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id})
-    await db.models.kbMatchJoin.create({kbMatchId: kbMatchFiltering.id, kbMatchedStatementId: statementFiltering.id})
+    await db.models.kbMatchJoin.create({kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id});
+    await db.models.kbMatchJoin.create({kbMatchId: kbMatchFiltering.id, kbMatchedStatementId: statementFiltering.id});
   }, LONGER_TIMEOUT);
 
   describe('GET', () => {

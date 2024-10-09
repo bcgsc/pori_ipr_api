@@ -116,5 +116,16 @@ module.exports = (sequelize, Sq) => {
     sequelize,
   });
 
+  // set instance methods
+  KbMatchedStatements.prototype.view = function (scope) {
+    if (scope === 'public') {
+      const {
+        id, reportId, deletedAt, updatedBy, ...publicView
+      } = this.dataValues;
+      return publicView;
+    }
+    return this;
+  };
+
   return KbMatchedStatements;
 };

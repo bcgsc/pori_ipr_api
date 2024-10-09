@@ -42,9 +42,11 @@ const checkRapidReportMatches = (
   }
 
   kbMatches.forEach((match) => {
-    if (!(match.evidenceLevel === expectedTable)) {
-      found = false;
-    }
+    match.kbMatchedStatements.forEach((statement) => {
+      if (!(statement.evidenceLevel === expectedTable)) {
+        found = false;
+      }
+    });
   });
 
   expect(found).toBe(true);

@@ -40,7 +40,18 @@ router.route('/:kbMatchedStatement([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Soft delete the entry
     try {
-      await req.kbMatchedStatement.destroy();
+      const binding = await db.models.kbMatchJoin.findOne({
+        where: {kbMatchId: req.kbMatch.id, kbMatchedStatementId: req.kbMatchedStatement.id},
+      });
+
+      if (!binding) {
+        logger.error(`Variant: ${req.kbMatch.ident} is not bound to statement: ${req.kbMatchedStatement.ident}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Variant is not bound to Statement'},
+        });
+      }
+
+      await binding.destroy();
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove kb matched statement ${error}`);
@@ -63,7 +74,6 @@ router.route('/')
           ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
           ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
         },
-        order: [['variantType', 'ASC'], ['variantId', 'ASC']],
         include: [
           {
             model: db.models.kbMatches,
