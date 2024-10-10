@@ -1,6 +1,5 @@
 const {models: {report, reportUser, kbMatches}} = require('../../../models');
 
-// TODO: Fix this to the correct columns
 module.exports = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: '/reports/get/params/report.json',

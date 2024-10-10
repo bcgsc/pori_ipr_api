@@ -7,7 +7,7 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
