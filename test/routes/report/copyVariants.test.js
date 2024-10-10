@@ -143,7 +143,7 @@ describe('/reports/{report}/copy-variants', () => {
 
     afterEach(async () => {
       await db.models.copyVariants.destroy({
-        where: {ident: copyVariantUpdate.ident}, force: true,
+        where: {ident: copyVariantUpdate.ident},
       });
     });
 
@@ -177,7 +177,7 @@ describe('/reports/{report}/copy-variants', () => {
 
     afterEach(async () => {
       await db.models.copyVariants.destroy({
-        where: {ident: copyVariantDelete.ident}, force: true,
+        where: {ident: copyVariantDelete.ident},
       });
     });
 

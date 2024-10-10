@@ -85,7 +85,7 @@ router.route('/')
               {
                 model: db.models.kbMatchedStatements,
                 as: 'kbMatchedStatements',
-                attributes: 
+                attributes:
                   ['category'],
                 through: {attributes: []},
               },
