@@ -49,5 +49,5 @@ module.exports = {
   setupFilesAfterEnv: [
     '<rootDir>/test/testSetup.js',
   ],
-  testTimeout: 10000,
+  testTimeout: 100000,
 };

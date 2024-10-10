@@ -47,6 +47,67 @@ const createReportSection = async (reportId, modelName, sectionContent, options 
 };
 
 /**
+ * Creates a new section for the report with the provided data
+ *
+ * @param {Number} reportId - The id of the report this section belongs to
+ * @param {string} modelName - Name of the model for this section
+ * @param {Array|Object} sectionContent - The record or records to be created for this section
+ * @param {object} options - Options for creating report sections
+ * @property {object} options.transaction - Transaction to run bulkCreate under
+ *
+ * @returns {undefined}
+ */
+const createReportKbMatchSection = async (reportId, modelName, sectionContent, options = {}) => {
+  const records = Array.isArray(sectionContent)
+    ? sectionContent
+    : [sectionContent];
+
+  try {
+    for (const record of records) {
+      let kbMatchData;
+      let statementData;
+      // Check for new format vs old format of kbMatches
+      if (record.kbMatchedStatements) {
+        statementData = record.kbMatchedStatements;
+        kbMatchData = {...record};
+        delete kbMatchData.kbMatchedStatements;
+      } else {
+        kbMatchData = {
+          variantType: record.variantType,
+          variantId: record.variantId,
+          kbVariant: record.kbVariant,
+        };
+
+        const statementCopy = {...record};
+        delete statementCopy.variantType;
+        delete statementCopy.variantId;
+        delete statementCopy.kbVariant;
+        statementData = [{...statementCopy}];
+      }
+
+      const kbMatch = await db.models.kbMatches.create({
+        reportId,
+        ...kbMatchData,
+      }, options);
+
+      for (const createStatement of statementData) {
+        const [statement] = await db.models.kbMatchedStatements.findOrCreate({
+          where: {
+            reportId,
+            ...createStatement,
+          },
+          ...options,
+        });
+
+        await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+      }
+    }
+  } catch (error) {
+    throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+  }
+};
+
+/**
  * Given the content for a report to be created, pull gene names from
  * the variant sections and create the genes which will be used as
  * foreign keys in these records
@@ -191,7 +252,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     return {...match, variantId: variantMapping[variantType][variant], variantType};
   });
 
-  return createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+  return createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
 };
 
 /**

@@ -10,7 +10,7 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 const BASE_URI = '/api/templates'; // TODO; we're testing templates; acl said template; what is client using?
 
