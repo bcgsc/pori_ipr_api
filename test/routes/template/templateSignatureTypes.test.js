@@ -16,12 +16,8 @@ const CREATE_DATA = {
   signatureType: 'reviewer',
 };
 
-const UPDATE_DATA = {
-  signatureType: 'reviewerupdate',
-};
-
 const templateSignatureProperties = [
-  'ident', 'createdAt', 'updatedAt', 'signatureType',
+  'createdAt', 'ident', 'signatureType', 'updatedAt',
 ];
 
 const checkTemplateSignatureTypes = (signatureObject) => {
@@ -82,8 +78,8 @@ describe('/templates/{template}/signature-types', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toBeNull();
-      checkTemplateSignatureTypes(res.body);
-      expect(res.body).toEqual(expect.objectContaining(CREATE_DATA));
+      checkTemplateSignatureTypes(res.body[0]);
+      expect(res.body[0]).toEqual(expect.objectContaining(CREATE_DATA));
     });
 
     test('/ - 404 Not Found', async () => {
@@ -137,89 +133,6 @@ describe('/templates/{template}/signature-types', () => {
           signatureType: 'reviewer',
           additional: 'ADDITIONAL_PROPERTY',
         })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-
-    test('/ - 409 Conflict - Signature type already exists for template', async () => {
-      const dupSignature = await db.models.templateSignatureTypes.create({
-        ...CREATE_DATA,
-        templateId: template.id,
-      });
-
-      await request
-        .post(`/api/templates/${template.ident}/signature-types`)
-        .auth(username, password)
-        .type('json')
-        .send(CREATE_DATA)
-        .expect(HTTP_STATUS.CONFLICT);
-
-      await dupSignature.destroy({force: true});
-    });
-  });
-
-  describe('PUT', () => {
-    let putTest;
-
-    beforeEach(async () => {
-      putTest = await db.models.templateSignatureTypes.create({
-        ...CREATE_DATA,
-        templateId: template.id,
-      });
-    });
-
-    afterEach(async () => {
-      await db.models.templateSignatureTypes.destroy({
-        where: {ident: putTest.ident},
-        force: true,
-      });
-    });
-
-    test('/ - 200 Success', async () => {
-      const res = await request
-        .put(`/api/templates/${template.ident}/signature-types`)
-        .auth(username, password)
-        .type('json')
-        .send(UPDATE_DATA)
-        .expect(HTTP_STATUS.OK);
-
-      expect(res.body).not.toBeNull();
-      checkTemplateSignatureTypes(res.body);
-      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
-    });
-
-    test('/ - 403 forbidden to bioinformatician', async () => {
-      await request
-        .put(`/api/templates/${template.ident}/signature-types`)
-        .auth(bioinformaticianUsername, password)
-        .type('json')
-        .send(UPDATE_DATA)
-        .expect(HTTP_STATUS.FORBIDDEN);
-    });
-
-    test('/ - 404 Not Found', async () => {
-      // First soft-delete record
-      await putTest.destroy();
-
-      await request
-        .put(`/api/templates/${template.ident}/signature-types`)
-        .send({
-          signatureType: 'reviewer',
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
-    });
-
-    test('/ - 400 Bad Request - Invalid type', async () => {
-      await request
-        .put(`/api/templates/${template.ident}/signature-types`)
-        .send({
-          text: {
-            data: 'TEST DATA',
-          },
-        })
-        .auth(username, password)
-        .type('json')
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
