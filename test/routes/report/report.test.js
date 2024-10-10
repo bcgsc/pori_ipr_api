@@ -500,7 +500,7 @@ describe('/reports/{REPORTID}', () => {
       }
     }, LONGER_TIMEOUT);
 
-    test.only('/ - kb match - 200 Success', async () => {
+    test('/ - kb match - 200 Success', async () => {
       const res = await request
         .get('/api/reports?category=unknown&variantType=cnv&matchingThreshold=1')
         .auth(username, password)
