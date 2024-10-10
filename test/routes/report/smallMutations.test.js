@@ -77,7 +77,6 @@ describe('/reports/{report}/small-mutations', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'mut',
       variantId: variant.id,
     });
@@ -183,7 +182,7 @@ describe('/reports/{report}/small-mutations', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

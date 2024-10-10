@@ -137,11 +137,12 @@ describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () 
 
     beforeEach(async () => {
       statementDelete = await db.models.kbMatchedStatements.create(createDataStatement);
+      await db.models.kbMatchJoin.create({kbMatchId: kbMatch.id, kbMatchedStatementId: statementDelete.id});
     });
 
     afterEach(async () => {
       if (statementDelete) {
-        await db.models.kbMatchedStatements.destroy({where: {ident: statementDelete.ident}, force: true});
+        await db.models.kbMatchedStatements.destroy({where: {ident: statementDelete.ident}});
       }
     });
 
@@ -153,14 +154,14 @@ describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () 
         .expect(HTTP_STATUS.NO_CONTENT);
 
       // Verify it was deleted from db
-      const results = await db.models.kbMatchedStatements.findAll({where: {ident: statementDelete.ident}});
+      const results = await db.models.kbMatchJoin.findAll({where: {kbMatchId: kbMatch.id, kbMatchedStatementId: statementDelete.id}});
       expect(results.length).toBe(0);
     });
   });
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {id: report.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}});
   }, LONGER_TIMEOUT);
 });
 

@@ -87,7 +87,6 @@ describe('/reports/{report}/protein-variants', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'protein',
       variantId: variant.id,
     });
@@ -193,7 +192,7 @@ describe('/reports/{report}/protein-variants', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

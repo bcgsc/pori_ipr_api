@@ -93,7 +93,16 @@ router.route('/')
         include: [
           {
             model: db.models.kbMatches,
-            attributes: ['ident', 'category'],
+            attributes: ['ident'],
+            include: [
+              {
+                model: db.models.kbMatchedStatements,
+                as: 'kbMatchedStatements',
+                attributes: 
+                  ['category'],
+                through: {attributes: []},
+              },
+            ],
           },
         ],
       });

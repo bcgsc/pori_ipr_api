@@ -83,7 +83,6 @@ describe('/reports/{report}/structural-variants', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'sv',
       variantId: variant.id,
     });
@@ -141,7 +140,7 @@ describe('/reports/{report}/structural-variants', () => {
 
     afterEach(async () => {
       await db.models.structuralVariants.destroy({
-        where: {ident: structuralVariantUpdate.ident}, force: true,
+        where: {ident: structuralVariantUpdate.ident},
       });
     });
 
@@ -194,7 +193,7 @@ describe('/reports/{report}/structural-variants', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

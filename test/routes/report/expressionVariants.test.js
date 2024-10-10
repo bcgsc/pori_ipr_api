@@ -82,7 +82,6 @@ describe('/reports/{report}/expression-variants', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'exp',
       variantId: variant.id,
     });
@@ -136,7 +135,7 @@ describe('/reports/{report}/expression-variants', () => {
 
     afterEach(async () => {
       await db.models.expressionVariants.destroy({
-        where: {ident: expressionVariantUpdate.ident}, force: true,
+        where: {ident: expressionVariantUpdate.ident},
       });
     });
 
@@ -189,7 +188,7 @@ describe('/reports/{report}/expression-variants', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

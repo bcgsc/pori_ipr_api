@@ -91,7 +91,6 @@ describe('/reports/{report}/copy-variants', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'cnv',
       variantId: variant.id,
     });
@@ -197,7 +196,7 @@ describe('/reports/{report}/copy-variants', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 
