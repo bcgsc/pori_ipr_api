@@ -270,41 +270,41 @@ router.route('/')
               model: db.models.kbMatchedStatements.scope('public'),
               as: 'kbMatchedStatements',
               through: {attributes: []},
-              where:{
-                  ...((category) ? {
-                    category: {[Op.eq]: `${category}`},
-                  } : {}),
-                  ...((approvedTherapy) ? {
-                    approvedTherapy: {[Op.eq]: `${approvedTherapy}`},
-                  } : {}),
-                  ...((disease) ? {
-                    disease: {[Op.eq]: `${disease}`},
-                  } : {}),
-                  ...((relevance) ? {
-                    relevance: {[Op.eq]: `${relevance}`},
-                  } : {}),
-                  ...((context) ? {
-                    context: {[Op.eq]: `${context}`},
-                  } : {}),
-                  ...((status) ? {
-                    status: {[Op.eq]: `${status}`},
-                  } : {}),
-                  ...((reference) ? {
-                    reference: {[Op.eq]: `${reference}`},
-                  } : {}),
-                  ...((sample) ? {
-                    sample: {[Op.eq]: `${sample}`},
-                  } : {}),
-                  ...((evidenceLevel) ? {
-                    evidence_level: {[Op.eq]: `${evidenceLevel}`},
-                  } : {}),
-                  ...((matchedCancer) ? {
-                    matched_cancer: {[Op.eq]: `${matchedCancer}`},
-                  } : {}),
-                  ...((pmidRef) ? {
-                    pmid_ref: {[Op.eq]: `${pmidRef}`},
-                  } : {}),
-                }
+              where: {
+                ...((category) ? {
+                  category: {[Op.eq]: `${category}`},
+                } : {}),
+                ...((approvedTherapy) ? {
+                  approvedTherapy: {[Op.eq]: `${approvedTherapy}`},
+                } : {}),
+                ...((disease) ? {
+                  disease: {[Op.eq]: `${disease}`},
+                } : {}),
+                ...((relevance) ? {
+                  relevance: {[Op.eq]: `${relevance}`},
+                } : {}),
+                ...((context) ? {
+                  context: {[Op.eq]: `${context}`},
+                } : {}),
+                ...((status) ? {
+                  status: {[Op.eq]: `${status}`},
+                } : {}),
+                ...((reference) ? {
+                  reference: {[Op.eq]: `${reference}`},
+                } : {}),
+                ...((sample) ? {
+                  sample: {[Op.eq]: `${sample}`},
+                } : {}),
+                ...((evidenceLevel) ? {
+                  evidence_level: {[Op.eq]: `${evidenceLevel}`},
+                } : {}),
+                ...((matchedCancer) ? {
+                  matched_cancer: {[Op.eq]: `${matchedCancer}`},
+                } : {}),
+                ...((pmidRef) ? {
+                  pmid_ref: {[Op.eq]: `${pmidRef}`},
+                } : {}),
+              },
             },
           ],
         }] : []),
