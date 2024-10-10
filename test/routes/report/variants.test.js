@@ -159,7 +159,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}, force: true});
+    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}});
+    // , force: true
   }, LONGER_TIMEOUT);
 });
 
