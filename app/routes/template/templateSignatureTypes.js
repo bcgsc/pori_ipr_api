@@ -41,7 +41,7 @@ router.use('/', async (req, res, next) => {
   }
 
   // Throw an error for everything but a POST if the signature doesn't exist
-  if ((!req.templateSignatureTypes || req.templateSignatureTypes.length === 0) && req.method !== 'POST') {
+  if ((!req.templateSignatureTypes || req.templateSignatureTypes.length === 0) && req.method === 'DELETE') {
     logger.error(`Template signature type does not exist for ${req.template.name}`);
     return res.status(HTTP_STATUS.NOT_FOUND).json({
       error: {message: `Template signature type does not exist for ${req.template.name}`},
