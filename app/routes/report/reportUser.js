@@ -138,7 +138,6 @@ router.route('/')
           eventType: NOTIFICATION_EVENT.USER_BOUND,
           templateId: report.templateId,
           projectId: reportProject.project_id,
-          status: 'Pending',
         },
       });
 

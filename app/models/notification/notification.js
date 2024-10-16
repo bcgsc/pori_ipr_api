@@ -55,11 +55,6 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
-      status: {
-        name: 'status',
-        field: 'status',
-        type: Sq.STRING,
-      },
     },
     {
       ...DEFAULT_OPTIONS,

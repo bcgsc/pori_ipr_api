@@ -1,13 +1,13 @@
-const TABLE = 'notifications';
+const TABLE = 'notifications_tracks';
 
 module.exports = {
   up: async (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
       await queryInterface.addColumn(
         TABLE,
-        'status',
+        'job_id',
         {
-          type: Sq.STRING,
+          type: Sq.INTEGER,
         },
         {transaction},
       );
