@@ -25,7 +25,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   if (targetType === 'context') {
     query.target = 'Vocabulary';
     query.queryType = 'ancestors';
-    query.filters = {name: 'therapeutic efficacy'};
+    query.filters = {name: 'therapeutic indicator'};
   } else {
     if (targetType === 'evidenceLevel') {
       query.target = 'EvidenceLevel';
@@ -49,7 +49,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
     }
   }
 
-  return request({
+  const res = await request({
     url: `${uri}/query`,
     method: 'POST',
     body: JSON.stringify(query),
@@ -59,6 +59,19 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
       'Content-Type': 'application/json',
     },
   });
+
+  // DEVSU-2344; Filtering results for context route
+  // Needs to be done after the query since cannot be combined with ancestors as a subquery
+  if (targetType === 'context') {
+    res.result = res.result.filter((term) => {
+      return [
+        'resistance', 'sensitivity', 'toxicity',
+      ].includes(term.displayName);
+    });
+    res.metadata.records = res.result.length;
+  }
+
+  return res;
 };
 
 /* Get IPR evidence level descriptions from GraphKB
