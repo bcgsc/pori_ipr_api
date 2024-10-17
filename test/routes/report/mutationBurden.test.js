@@ -23,7 +23,7 @@ const mutationBurdenProperties = [
   'ident', 'createdAt', 'updatedAt', 'role', 'codingSnvCount', 'truncatingSnvCount',
   'codingIndelsCount', 'frameshiftIndelsCount', 'qualitySvCount', 'qualitySvExpressedCount',
   'codingSnvPercentile', 'codingIndelPercentile', 'qualitySvPercentile',
-  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb',
+  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb', 'svBurdenHidden',
 ];
 
 const checkMutationBurden = (mutationObject) => {
@@ -61,7 +61,7 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
     });
 
     mutationBurden = await db.models.mutationBurden.create({
-      reportId: report.id,
+      reportId: report.ident,
       role: 'primary',
       codingSnvCount: 13,
     });
