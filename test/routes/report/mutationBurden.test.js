@@ -61,7 +61,7 @@ describe('/reports/{REPORTID}/mutation-burden', () => {
     });
 
     mutationBurden = await db.models.mutationBurden.create({
-      reportId: report.id,
+      reportId: report.ident,
       role: 'primary',
       codingSnvCount: 13,
     });
