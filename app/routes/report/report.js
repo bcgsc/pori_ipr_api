@@ -175,8 +175,8 @@ router.route('/')
         ...((keyVariant && matchingThreshold) ? {
           '$genomicAlterationsIdentified.geneVariant$': {
             [Op.in]: literal(
-              `(SELECT "geneVariant" 
-              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              `(SELECT "geneVariant"
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery
               WHERE word_similarity >= ${matchingThreshold})`,
             ),
           },
@@ -361,6 +361,15 @@ router.route('/')
       const projectIdArray = [];
       report.projects.forEach((project) => {
         projectIdArray.push(project.project_id);
+      });
+
+      await db.models.notification.findOrCreate({
+        where: {
+          userId: req.user.id,
+          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
+          templateId: report.templateId,
+          projectId: report.projects[0].project_id,
+        },
       });
 
       await email.notifyUsers(

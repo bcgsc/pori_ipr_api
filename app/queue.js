@@ -41,7 +41,20 @@ const EMAIL_REMOVE_CONFIG = {
 const addJobToEmailQueue = async (data) => {
   if (emailQueue) {
     logger.info('adding email to queue: ', data);
-    return emailQueue.add('job', data, EMAIL_REMOVE_CONFIG);
+    const job = await emailQueue.add('job', data, EMAIL_REMOVE_CONFIG);
+    try {
+      await db.models.notificationTrack.create({
+        notificationId: data.notifId,
+        jobId: job.id,
+        recipient: data.mailOptions.to,
+        reason: data.eventType,
+        outcome: 'created',
+      });
+    } catch (error) {
+      logger.error(`Unable to create notification track ${error}`);
+      throw new Error(error);
+    }
+    return job;
   }
   return null;
 };
@@ -84,10 +97,13 @@ const setUpEmailWorker = (emailJobProcessor) => {
 
 const onEmailWorkderCompleted = async (job) => {
   try {
-    await db.models.notificationTrack.create({
-      notificationId: job.data.notifId,
-      recipient: job.data.mailOptions.to,
-      reason: job.data.eventType,
+    const notification = await db.models.notificationTrack.findOne({
+      where: {
+        notificationId: job.data.notifId,
+        jobId: job.id,
+      },
+    });
+    await notification.update({
       outcome: 'completed',
     });
   } catch (error) {
@@ -98,11 +114,14 @@ const onEmailWorkderCompleted = async (job) => {
 
 const onEmailWorkderFailed = async (job) => {
   try {
-    await db.models.notificationTrack.create({
-      notificationId: job.data.notifId,
-      recipient: job.data.mailOptions.to,
-      reason: job.data.eventType,
-      outcome: 'Failed',
+    const notification = await db.models.notificationTrack.findOne({
+      where: {
+        notificationId: job.data.notifId,
+        jobId: job.id,
+      },
+    });
+    await notification.update({
+      outcome: 'failed',
     });
   } catch (error) {
     logger.error(`Unable to create notification track ${error}`);
@@ -124,6 +143,20 @@ const emailProcessor = async (job) => {
   });
 
   try {
+    try {
+      const notification = await db.models.notificationTrack.findOne({
+        where: {
+          notificationId: job.data.notifId,
+          jobId: job.id,
+        },
+      });
+      await notification.update({
+        outcome: 'processing',
+      });
+    } catch (error) {
+      logger.error(`Unable to add process notification track ${error}`);
+      throw new Error(error);
+    }
     await transporter.sendMail(job.data.mailOptions);
   } catch (err) {
     logger.error(JSON.stringify(job.data.mailOptions));
