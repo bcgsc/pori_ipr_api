@@ -4658,6 +4658,162 @@
         }
       }
     },
+    "/reports/{report}/kb-matches/{kbMatch}/kbMatchedStatements": {
+      "get": {
+        "summary": "Get KB Matched Statements",
+        "description": "Retrieve KB Matched Statements for a given report and kbMatch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          },
+          {
+            "name": "matchedCancer",
+            "in": "query",
+            "required": false,
+            "description": "Filter by matchedCancer field",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "approvedTherapy",
+            "in": "query",
+            "required": false,
+            "description": "Filter by approvedTherapy field",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filter by category field. Comma separated field",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iprEvidenceLevel",
+            "in": "query",
+            "required": false,
+            "description": "Filter by iprEvidenceLevel field. Comma separated field",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of KB Matched Statements for the given KbMatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches/{kbMatch}/kbMatchedStatements/{kbMatchedStatement}": {
+      "get": {
+        "summary": "Get KB Matched Statement by Ident",
+        "description": "Retrieve a specific KB Matched Statement from the report by report ident and KB match ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatchedStatement"
+          }
+        ],
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified KB Matched Statement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or KB Matched not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete KB Match",
+        "description": "Removes the specified KB Match",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatchedStatement"
+          }
+        ],
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or KB Match or kb Matched Statement not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/mavis": {
       "get": {
         "summary": "Get Mavis Summaries",
@@ -7521,6 +7677,16 @@
         "in": "path",
         "required": true,
         "description": "KB Match ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "kbMatchedStatement": {
+        "name": "kbMatchedStatement",
+        "in": "path",
+        "required": true,
+        "description": "KB Matched Statement ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"

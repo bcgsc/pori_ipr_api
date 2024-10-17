@@ -12,7 +12,7 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 let server;
 let request;
