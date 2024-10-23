@@ -201,7 +201,7 @@ describe('/reports/{REPORTID}/sigv', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    await db.models.report.destroy({where: {ident: report.ident}});
+    report.destroy({force: true});
 
     // verify report is deleted
     const result = await db.models.report.findOne({where: {ident: report.ident}, paranoid: false});
