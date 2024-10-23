@@ -8,6 +8,7 @@ module.exports = {
     protein: 'proteinVariants',
     msi: 'msi',
     tmb: 'tmburMutationBurden',
+    sigv: 'signatureVariants',
   },
   NOTIFICATION_EVENT: {
     USER_BOUND: 'userBound',

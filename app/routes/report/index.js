@@ -27,6 +27,7 @@ const comparators = require('./comparators');
 const patientInformation = require('./patientInformation');
 const images = require('./image');
 const msi = require('./msi');
+const signatureVariants = require('./signatureVariants');
 const reportUser = require('./reportUser');
 const variants = require('./variants');
 
@@ -59,6 +60,7 @@ router.use('/genes', gene);
 router.use('/sample-info', sampleInfo);
 router.use('/patient-information', patientInformation);
 router.use('/msi', msi);
+router.use('/signature-variants', signatureVariants);
 router.use('/user', reportUser);
 router.use('/variants', variants);
 router.use('/protein-variants', proteinVariants);

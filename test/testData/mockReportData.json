@@ -304,6 +304,25 @@
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"
+        },
+        {
+            "category": "cancer predisposition",
+            "variantType": "sigv",
+            "variant": "sigv",
+            "kbVariant": "protein increased expression",
+            "disease": "colorectal cancer",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
+            "status": "na",
+            "reference": "12345678#",
+            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "externalSource": "CIViC",
+            "externalStatementId": "1234",
+            "reviewStatus": "pending"
         }
     ],
     "genes": [
@@ -518,6 +537,12 @@
             "score": 19.5,
             "kbCategory": "moderate",
             "key": "msi"
+        }
+    ],
+    "signatureVariants": [
+        {
+            "displayName": "Signature Variant",
+            "key": "sigv"
         }
     ],
     "project": "TEST",

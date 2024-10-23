@@ -217,6 +217,16 @@ msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Signature Variants
+const signatureVariants = require('./reports/signatureVariants')(sequelize, Sq);
+
+analysisReports.hasMany(signatureVariants, {
+  as: 'signatureVariants', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+signatureVariants.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Tmbur Mutation Burden
 const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
 

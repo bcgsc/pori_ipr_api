@@ -61,6 +61,17 @@ const generateVariantUploadSchemas = (isJsonSchema) => {
     isSubSchema: true,
   });
 
+  variantSchemas.signatureVariants = schemaGenerator(db.models.signatureVariants, {
+    isJsonSchema,
+    baseUri: UPLOAD_BASE_URI,
+    properties: {
+      key: {
+        type: 'string', description: 'Unique identifier for this variant within this section used to link it to kb-matches',
+      },
+    },
+    isSubSchema: true,
+  });
+
   variantSchemas.tmburMutationBurden = schemaGenerator(db.models.tmburMutationBurden, {
     isJsonSchema,
     baseUri: UPLOAD_BASE_URI,

@@ -167,6 +167,8 @@ module.exports = async (instance, method) => {
       return removeKeys(`/reports/${report.ident}/immune-cell-types`);
     case 'msi':
       return removeKeys(`/reports/${report.ident}/msi`);
+    case 'signatureVariants':
+      return removeKeys(`/reports/${report.ident}/signature-variants`);
     case 'signatures':
       return removeKeys(`/reports/${report.ident}/signatures`);
     case 'smallMutations':
