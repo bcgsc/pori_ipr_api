@@ -57,15 +57,16 @@ const getEmailList = async (triggers) => {
 const notifyUsers = async (subject, text, triggers) => {
   const emailList = await getEmailList(triggers);
 
-  emailList.forEach(({toEmail, notifId, eventType}) => {
+  for (const emailItem of emailList) {
+    const {toEmail, notifId, eventType} = emailItem;
     const mailOptions = {
       from: `${email}${domain}`,
       to: toEmail,
       subject,
       text,
     };
-    addJobToEmailQueue({mailOptions, notifId, eventType});
-  });
+    await addJobToEmailQueue({mailOptions, notifId, eventType});
+  }
 };
 
 module.exports = {sendEmail, getEmailList, notifyUsers};
