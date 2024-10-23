@@ -23,7 +23,7 @@ const mutationBurdenProperties = [
   'ident', 'createdAt', 'updatedAt', 'role', 'codingSnvCount', 'truncatingSnvCount',
   'codingIndelsCount', 'frameshiftIndelsCount', 'qualitySvCount', 'qualitySvExpressedCount',
   'codingSnvPercentile', 'codingIndelPercentile', 'qualitySvPercentile',
-  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb',
+  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb', 'svBurdenHidden',
 ];
 
 const checkMutationBurden = (mutationObject) => {
