@@ -82,15 +82,17 @@ describe('/templates/{template}/signature-types', () => {
       expect(res.body[0]).toEqual(expect.objectContaining(CREATE_DATA));
     });
 
-    test('/ - 404 Not Found', async () => {
+    test('/ - 200 Success - empty array', async () => {
       // Soft delete signature types
       await getTestSignatureType.destroy();
 
-      await request
+      const res = await request
         .get(`/api/templates/${template.ident}/signature-types`)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NOT_FOUND);
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual([]);
     });
   });
 

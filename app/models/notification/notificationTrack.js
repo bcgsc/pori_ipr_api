@@ -16,6 +16,13 @@ module.exports = (sequelize, Sq) => {
         },
         allowNull: false,
       },
+      jobId: {
+        name: 'jobId',
+        field: 'job_id',
+        unique: false,
+        type: Sq.INTEGER,
+        allowNull: false,
+      },
       recipient: {
         name: 'recipient',
         field: 'recipient',
