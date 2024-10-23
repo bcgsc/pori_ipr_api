@@ -204,7 +204,7 @@ describe('/reports/{REPORTID}/sigv', () => {
     report.destroy({force: true});
 
     // verify report is deleted
-    const result = await db.models.report.findOne({where: {ident: report.ident}, paranoid: false});
+    const result = await db.models.report.findOne({where: {ident: report.ident}, paranoid: true});
     expect(result).toBeNull();
   });
 });
