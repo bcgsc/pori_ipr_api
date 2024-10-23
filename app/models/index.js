@@ -221,7 +221,7 @@ msi.belongsTo(analysisReports, {
 const signatureVariants = require('./reports/signatureVariants')(sequelize, Sq);
 
 analysisReports.hasMany(signatureVariants, {
-  as: 'osv', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+  as: 'signatureVariants', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 signatureVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
