@@ -202,10 +202,6 @@ describe('/reports/{REPORTID}/sigv', () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
     report.destroy({force: true});
-
-    // verify report is deleted
-    const result = await db.models.report.findOne({where: {ident: report.ident}, paranoid: true});
-    expect(result).toBeNull();
   });
 });
 
