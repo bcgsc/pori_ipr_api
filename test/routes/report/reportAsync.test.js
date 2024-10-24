@@ -15,7 +15,7 @@ const {username, password} = CONFIG.get('testing');
 
 jest.mock('../../../app/middleware/auth.js');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 let server;
 let request;

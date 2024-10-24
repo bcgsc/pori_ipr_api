@@ -60,7 +60,6 @@ module.exports = {
     },
     category: {
       type: 'string',
-      enum: kbMatches.rawAttributes.category.values,
     },
     approvedTherapy: {
       type: 'boolean',

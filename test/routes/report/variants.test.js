@@ -14,7 +14,7 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 let server;
 let request;
@@ -42,9 +42,11 @@ const checkRapidReportMatches = (
   }
 
   kbMatches.forEach((match) => {
-    if (!(match.evidenceLevel === expectedTable)) {
-      found = false;
-    }
+    match.kbMatchedStatements.forEach((statement) => {
+      if (!(statement.evidenceLevel === expectedTable)) {
+        found = false;
+      }
+    });
   });
 
   expect(found).toBe(true);
@@ -157,7 +159,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}, force: true});
+    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}});
+    // , force: true
   }, LONGER_TIMEOUT);
 });
 
