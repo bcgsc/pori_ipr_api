@@ -4658,7 +4658,7 @@
         }
       }
     },
-    "/reports/{report}/kb-matches/{kbMatch}/kbMatchedStatements": {
+    "/reports/{report}/kb-matches/kb-matched-statements": {
       "get": {
         "summary": "Get KB Matched Statements",
         "description": "Retrieve KB Matched Statements for a given report and kbMatch",
@@ -4737,7 +4737,7 @@
         }
       }
     },
-    "/reports/{report}/kb-matches/{kbMatch}/kbMatchedStatements/{kbMatchedStatement}": {
+    "/reports/{report}/kb-matches/kb-matched-statements/{kbMatchedStatement}": {
       "get": {
         "summary": "Get KB Matched Statement by Ident",
         "description": "Retrieve a specific KB Matched Statement from the report by report ident and KB match ident",

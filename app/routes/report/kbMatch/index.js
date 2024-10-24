@@ -10,6 +10,6 @@ const router = express.Router({mergeParams: true});
 router.param('kbMatch', kbMatchMiddleware);
 
 router.use('/', kbMatches);
-router.use('/:kbMatch/kb-matched-statements', kbMatchedStatements);
+router.use('/kb-matched-statements', kbMatchedStatements);
 
 module.exports = router;

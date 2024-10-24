@@ -74,17 +74,6 @@ router.route('/')
           ...((typeof matchedCancer === 'boolean') ? {matchedCancer} : {}),
           ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
         },
-        include: [
-          {
-            model: db.models.kbMatches,
-            as: 'kbMatches',
-            attributes: {attributes: []},
-            where: {
-              id: req.kbMatch.id,
-            },
-            through: {attributes: []},
-          },
-        ],
       });
 
       return res.json(results);

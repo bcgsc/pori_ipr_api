@@ -1,4 +1,5 @@
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
+const {KB_PIVOT_MAPPING, KB_PIVOT_COLUMN} = require('../../constants');
 
 module.exports = (sequelize, Sq) => {
   const KbMatchedStatements = sequelize.define('kbMatchedStatements', {
@@ -110,6 +111,49 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+        include: [
+          {
+            model: sequelize.models.kbMatches,
+            as: 'kbMatches',
+            include: [
+              ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+                return {model: sequelize.models[modelName].scope('public'), as: modelName};
+              }),
+            ],
+            attributes: {
+              exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'reportId'],
+            },
+            through: {attributes: []},
+          },
+        ],
+      },
+    },
+    hooks: {
+      ...DEFAULT_REPORT_OPTIONS.hooks,
+      afterFind: (findResult) => {
+        if (!Array.isArray(findResult)) {
+          findResult = [findResult];
+        }
+        for (const statement of findResult) {
+          if (statement.kbMatches.length > 0) {
+            for (const instance of statement.kbMatches) {
+              const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
+              for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
+                const modelName = KB_PIVOT_MAPPING[pivotType];
+                
+                if (instance[modelName] !== undefined) {
+                  if (pivotType === currentPivotValue) {
+                    instance.variant = instance[modelName];
+                    instance.dataValues.variant = instance[modelName].dataValues;
+                  }
+                  // To prevent mistakes:
+                  delete instance[modelName];
+                  delete instance.dataValues[modelName];
+                }
+              }
+            }
+          }
+        }
       },
     },
     modelName: 'kbMatchedStatements',
