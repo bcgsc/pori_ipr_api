@@ -140,7 +140,6 @@ module.exports = (sequelize, Sq) => {
               const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
               for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
                 const modelName = KB_PIVOT_MAPPING[pivotType];
-                
                 if (instance[modelName] !== undefined) {
                   if (pivotType === currentPivotValue) {
                     instance.variant = instance[modelName];
