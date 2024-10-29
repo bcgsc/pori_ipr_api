@@ -98,7 +98,7 @@ describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () 
   describe('GET', () => {
     test('Getting all kb-matches is ok', async () => {
       const res = await request
-        .get(`/api/reports/${report.ident}/kb-matches/${kbMatch.ident}/kb-matched-statements`)
+        .get(`/api/reports/${report.ident}/kb-matches/kb-matched-statements`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -110,7 +110,7 @@ describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () 
     test('Filtering kb-matched-statements is ok', async () => {
       // Fix this
       const res = await request
-        .get(`/api/reports/${report.ident}/kb-matches/${kbMatch.ident}/kb-matched-statements`)
+        .get(`/api/reports/${report.ident}/kb-matches/kb-matched-statements`)
         .query({iprEvidenceLevel: 'IPR-A,IPR-C'})
         .auth(username, password)
         .type('json')
@@ -123,7 +123,7 @@ describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () 
 
     test('Getting a specific kb-matched-statement is ok', async () => {
       const res = await request
-        .get(`/api/reports/${report.ident}/kb-matches/${kbMatch.ident}/kb-matched-statements/${statement.ident}`)
+        .get(`/api/reports/${report.ident}/kb-matches/kb-matched-statements/${statement.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -148,7 +148,7 @@ describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () 
 
     test('/{kbMatchedStatements} - 204 Successful statement delete', async () => {
       await request
-        .delete(`/api/reports/${report.ident}/kb-matches/${kbMatch.ident}/kb-matched-statements/${statementDelete.ident}`)
+        .delete(`/api/reports/${report.ident}/kb-matches/kb-matched-statements/${statementDelete.ident}`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NO_CONTENT);
