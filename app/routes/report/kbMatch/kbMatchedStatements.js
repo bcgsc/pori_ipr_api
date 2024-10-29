@@ -44,7 +44,7 @@ router.route('/:kbMatchedStatement([A-z0-9-]{36})')
         where: {kbMatchedStatementId: req.kbMatchedStatement.id},
       });
 
-      const bindingsIds = []
+      const bindingsIds = [];
       for (const bindingEntry of bindings) {
         bindingsIds.push(bindingEntry.id);
       }
@@ -52,7 +52,7 @@ router.route('/:kbMatchedStatement([A-z0-9-]{36})')
       const kbMatchesIds = [];
       for (const kbMatchEntry of bindings) {
         const kbMatchesBindings = await db.models.kbMatchJoin.findAll({
-          where: {kbMatchId: kbMatchEntry.kbMatchId}
+          where: {kbMatchId: kbMatchEntry.kbMatchId},
         });
 
         if (kbMatchesBindings.length <= 1) {
@@ -69,14 +69,14 @@ router.route('/:kbMatchedStatement([A-z0-9-]{36})')
             },
           },
         });
-      };
+      }
       await db.models.kbMatchJoin.destroy({
         where: {
           id: {
             [Op.in]: bindingsIds,
           },
         },
-      })
+      });
 
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
