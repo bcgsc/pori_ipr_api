@@ -135,7 +135,7 @@ module.exports = (sequelize, Sq) => {
           findResult = [findResult];
         }
         for (const statement of findResult) {
-          if (statement.kbMatches?.length > 0) {
+          if (statement?.kbMatches?.length > 0) {
             for (const instance of statement.kbMatches) {
               const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
               for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
