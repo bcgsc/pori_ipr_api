@@ -267,7 +267,7 @@ router.route('/')
           as: 'kbMatches',
           include: [
             {
-              model: db.models.kbMatchedStatements.scope('public'),
+              model: db.models.kbMatchedStatements.scope('kbMatchesInclude'),
               as: 'kbMatchedStatements',
               through: {attributes: []},
               where: {

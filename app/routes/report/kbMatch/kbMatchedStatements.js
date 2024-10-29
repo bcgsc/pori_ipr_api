@@ -40,18 +40,44 @@ router.route('/:kbMatchedStatement([A-z0-9-]{36})')
   .delete(async (req, res) => {
     // Soft delete the entry
     try {
-      const binding = await db.models.kbMatchJoin.findOne({
-        where: {kbMatchId: req.kbMatch.id, kbMatchedStatementId: req.kbMatchedStatement.id},
+      const bindings = await db.models.kbMatchJoin.findAll({
+        where: {kbMatchedStatementId: req.kbMatchedStatement.id},
       });
 
-      if (!binding) {
-        logger.error(`Variant: ${req.kbMatch.ident} is not bound to statement: ${req.kbMatchedStatement.ident}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({
-          error: {message: 'Variant is not bound to Statement'},
-        });
+      const bindingsIds = []
+      for (const bindingEntry of bindings) {
+        bindingsIds.push(bindingEntry.id);
       }
 
-      await binding.destroy();
+      const kbMatchesIds = [];
+      for (const kbMatchEntry of bindings) {
+        const kbMatchesBindings = await db.models.kbMatchJoin.findAll({
+          where: {kbMatchId: kbMatchEntry.kbMatchId}
+        });
+
+        if (kbMatchesBindings.length <= 1) {
+          kbMatchesIds.push(kbMatchEntry.kbMatchId);
+        }
+      }
+
+      await req.kbMatchedStatement.destroy();
+      if (kbMatchesIds) {
+        await db.models.kbMatches.destroy({
+          where: {
+            id: {
+              [Op.in]: kbMatchesIds,
+            },
+          },
+        });
+      };
+      await db.models.kbMatchJoin.destroy({
+        where: {
+          id: {
+            [Op.in]: bindingsIds,
+          },
+        },
+      })
+
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       logger.error(`Unable to remove kb matched statement ${error}`);

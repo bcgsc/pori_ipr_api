@@ -127,6 +127,9 @@ module.exports = (sequelize, Sq) => {
           },
         ],
       },
+      kbMatchesInclude: {
+        attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+      },
     },
     hooks: {
       ...DEFAULT_REPORT_OPTIONS.hooks,
