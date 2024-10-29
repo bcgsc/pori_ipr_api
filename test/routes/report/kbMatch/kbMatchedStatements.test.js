@@ -40,7 +40,7 @@ beforeAll(async () => {
 });
 
 // Tests for /kb-matches endpoint
-describe('/reports/{REPORTID}/kb-matches/{KBMATCHID}/kb-matched-statements', () => {
+describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
   let report;
   let gene;
   let variant;
