@@ -121,7 +121,7 @@ module.exports = (sequelize, Sq) => {
               }),
             ],
             attributes: {
-              exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'reportId'],
+              exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'reportId', 'variantId'],
             },
             through: {attributes: []},
           },
@@ -168,6 +168,7 @@ module.exports = (sequelize, Sq) => {
       const {
         id, reportId, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
+      console.log(publicView);
       return publicView;
     }
     return this;

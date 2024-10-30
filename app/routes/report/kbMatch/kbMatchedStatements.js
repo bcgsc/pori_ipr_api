@@ -10,8 +10,13 @@ const logger = require('../../../log');
 // Middleware for kbMatchedStatements
 router.param('kbMatchedStatement', async (req, res, next, kbMatchedStatementIdent) => {
   let result;
+  let getReturnResult;
   try {
     result = await db.models.kbMatchedStatements.findOne({
+      where: {ident: kbMatchedStatementIdent, reportId: req.report.id},
+    });
+
+    getReturnResult = await db.models.kbMatchedStatements.scope('public').findOne({
       where: {ident: kbMatchedStatementIdent, reportId: req.report.id},
     });
   } catch (error) {
@@ -29,13 +34,14 @@ router.param('kbMatchedStatement', async (req, res, next, kbMatchedStatementIden
   }
 
   req.kbMatchedStatement = result;
+  req.returnStatement = getReturnResult;
   return next();
 });
 
 // Handle requests for kb match
 router.route('/:kbMatchedStatement([A-z0-9-]{36})')
   .get((req, res) => {
-    return res.json(req.kbMatchedStatement.view('public'));
+    return res.json(req.returnStatement);
   })
   .delete(async (req, res) => {
     // Soft delete the entry

@@ -56,23 +56,25 @@ module.exports = (sequelize, Sq) => {
     hooks: {
       ...DEFAULT_REPORT_OPTIONS.hooks,
       afterFind: (findResult) => {
-        if (!Array.isArray(findResult)) {
-          findResult = [findResult];
-        }
-        for (const instance of findResult) {
-          const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
+        if (findResult) {
+          if (!Array.isArray(findResult)) {
+            findResult = [findResult];
+          }
+          for (const instance of findResult) {
+            const {[KB_PIVOT_COLUMN]: currentPivotValue} = instance;
 
-          for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
-            const modelName = KB_PIVOT_MAPPING[pivotType];
+            for (const pivotType of Object.keys(KB_PIVOT_MAPPING)) {
+              const modelName = KB_PIVOT_MAPPING[pivotType];
 
-            if (instance[modelName] !== undefined) {
-              if (pivotType === currentPivotValue) {
-                instance.variant = instance[modelName];
-                instance.dataValues.variant = instance[modelName].dataValues;
+              if (instance[modelName] !== undefined) {
+                if (pivotType === currentPivotValue) {
+                  instance.variant = instance[modelName];
+                  instance.dataValues.variant = instance[modelName].dataValues;
+                }
+                // To prevent mistakes:
+                delete instance[modelName];
+                delete instance.dataValues[modelName];
               }
-              // To prevent mistakes:
-              delete instance[modelName];
-              delete instance.dataValues[modelName];
             }
           }
         }
