@@ -1,5 +1,7 @@
 const {Op} = require('sequelize');
 const db = require('../models');
+const {KB_PIVOT_MAPPING} = require('../constants');
+
 
 /**
  * Get content related to a given gene
@@ -59,24 +61,40 @@ const getGeneRelatedContent = async ({reportId, name, id}) => {
   };
 
   // do after so that we can use the variant Ids for filtering
-  const kbMatches = await db.models.kbMatches.scope('public').findAll({
-    where: {
-      [Op.and]: [
-        {reportId},
-        {
-          [Op.or]: [
-            {variantType: 'exp', variantId: {[Op.in]: expRNA.map(popIdField)}},
-            {variantType: 'sv', variantId: {[Op.in]: structuralVariants.map(popIdField)}},
-            {variantType: 'cnv', variantId: {[Op.in]: copyNumber.map(popIdField)}},
-            {variantType: 'mut', variantId: {[Op.in]: smallMutations.map(popIdField)}},
+  const kbMatchedStatements = await db.models.kbMatchedStatements.findAll({
+    attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
+    include: [
+      {
+        model: db.models.kbMatches,
+        as: 'kbMatches',
+        include: [
+          ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+            return {model: db.models[modelName].scope('public'), as: modelName};
+          }),
+        ],
+        attributes: {
+          exclude: ['id', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy', 'reportId', 'variantId'],
+        },
+        through: {attributes: []},
+        where: {
+          [Op.and]: [
+            {reportId},
+            {
+              [Op.or]: [
+                {variantType: 'exp', variantId: {[Op.in]: expRNA.map(popIdField)}},
+                {variantType: 'sv', variantId: {[Op.in]: structuralVariants.map(popIdField)}},
+                {variantType: 'cnv', variantId: {[Op.in]: copyNumber.map(popIdField)}},
+                {variantType: 'mut', variantId: {[Op.in]: smallMutations.map(popIdField)}},
+              ],
+            },
           ],
         },
-      ],
-    },
+      },
+    ],
   });
 
   return {
-    kbMatches,
+    kbMatchedStatements,
     smallMutations,
     copyNumber,
     expRNA,

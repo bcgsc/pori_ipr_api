@@ -4138,10 +4138,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "kbMatches": {
+                    "kbMatchedStatements": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/kbMatchesAssociations"
+                        "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
                       }
                     },
                     "smallMutations": {
