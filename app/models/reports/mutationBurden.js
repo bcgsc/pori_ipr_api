@@ -112,6 +112,16 @@ module.exports = (sequelize, Sq) => {
         description: 'somatic indels and SNVs per megabase in the genome',
       },
     },
+    svBurdenHidden: {
+      name: 'svBurdenHidden',
+      field: 'sv_burden_hidden',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+      jsonSchema: {
+        description: 'SV Burden Hidden',
+      },
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_mutation_burden',
