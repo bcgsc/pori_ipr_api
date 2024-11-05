@@ -2,7 +2,6 @@ const {Op} = require('sequelize');
 const db = require('../models');
 const {KB_PIVOT_MAPPING} = require('../constants');
 
-
 /**
  * Get content related to a given gene
  *
