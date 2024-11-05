@@ -72,7 +72,7 @@ const cancerRelevanceFilter = {
 };
 
 const unknownSignificanceIncludes = ['mut'];
-const signatureVariant = ['tmb', 'msi'];
+const signatureVariant = ['tmb', 'msi', 'sigv'];
 
 const unknownSignificanceGeneFilter = {
   [Op.or]: [{oncogene: true}, {tumourSuppressor: true}, {cancerGeneListMatch: true}],
