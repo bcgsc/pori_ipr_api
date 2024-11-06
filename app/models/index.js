@@ -374,6 +374,16 @@ analysisReports.hasMany(kbMatches, {
   as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+const kbMatchedStatements = require('./reports/kbMatchedStatements')(sequelize, Sq);
+const kbMatchJoin = require('./reports/kbMatchJoin')(sequelize, Sq);
+
+kbMatchedStatements.belongsToMany(kbMatches, {
+  as: 'kbMatches', through: {model: kbMatchJoin, unique: false}, foreignKey: 'kbMatchedStatementId', otherKey: 'kbMatchId', onDelete: 'CASCADE',
+});
+kbMatches.belongsToMany(kbMatchedStatements, {
+  as: 'kbMatchedStatements', through: {model: kbMatchJoin, unique: false}, foreignKey: 'kbMatchId', otherKey: 'kbMatchedStatementId', onDelete: 'CASCADE',
+});
+
 for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   sequelize.models[modelName].hasMany(kbMatches, {
     foreignKey: 'variantId',
