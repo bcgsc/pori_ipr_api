@@ -26,6 +26,11 @@ module.exports = (sequelize, Sq) => {
       field: 'hrdetect_score',
       type: Sq.FLOAT,
     },
+    intersectTmbScore: {
+      name: 'intersectTmbScore',
+      field: 'intersect_tmb_score',
+      type: Sq.FLOAT,
+    },
     alternateIdentifier: {
       name: 'alternateIdentifier',
       field: 'alternate_identifier',
