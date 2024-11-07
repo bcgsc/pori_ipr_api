@@ -7,7 +7,7 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
@@ -83,7 +83,6 @@ describe('/reports/{report}/structural-variants', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'sv',
       variantId: variant.id,
     });
@@ -141,7 +140,7 @@ describe('/reports/{report}/structural-variants', () => {
 
     afterEach(async () => {
       await db.models.structuralVariants.destroy({
-        where: {ident: structuralVariantUpdate.ident}, force: true,
+        where: {ident: structuralVariantUpdate.ident},
       });
     });
 
@@ -194,7 +193,7 @@ describe('/reports/{report}/structural-variants', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

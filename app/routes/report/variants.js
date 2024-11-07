@@ -10,6 +10,7 @@ const logger = require('../../log');
 const {KB_PIVOT_MAPPING} = require('../../constants');
 
 const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy'];
+const STATEMENTEXCLUDE = ['id', 'reportId', 'deletedAt', 'updatedBy'];
 const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
 
 const getVariants = async (tableName, variantType, reportId) => {
@@ -30,14 +31,21 @@ const getVariants = async (tableName, variantType, reportId) => {
   });
 };
 
-const therapeuticAssociationFilter = {
+const therapeuticAssociationFilterKbMatch = {
+  id: {[Op.ne]: null},
+  variantType: {[Op.and]: [
+    {[Op.is]: literal('distinct from \'exp\'')},
+  ]},
+  // Regex filter for finding columns with 2 or more spaces that end with
+  // mutation or mutations
+  [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
+};
+
+const therapeuticAssociationFilterStatement = {
   id: {[Op.ne]: null},
   [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
   category: 'therapeutic',
   matchedCancer: true,
-  variantType: {[Op.and]: [
-    {[Op.is]: literal('distinct from \'exp\'')},
-  ]},
   [Op.and]: {
     [Op.or]: [
       {
@@ -49,9 +57,6 @@ const therapeuticAssociationFilter = {
       },
     ],
   },
-  // Regex filter for finding columns with 2 or more spaces that end with
-  // mutation or mutations
-  [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
 };
 
 // PSQL natively ignores null on equal checks.
@@ -67,7 +72,7 @@ const cancerRelevanceFilter = {
 };
 
 const unknownSignificanceIncludes = ['mut'];
-const signatureVariant = ['tmb', 'msi'];
+const signatureVariant = ['tmb', 'msi', 'sigv'];
 
 const unknownSignificanceGeneFilter = {
   [Op.or]: [{oncogene: true}, {tumourSuppressor: true}, {cancerGeneListMatch: true}],
@@ -86,7 +91,20 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       {
         model: db.models.kbMatches,
         attributes: {exclude: KBMATCHEXCLUDE},
-        where: {...therapeuticAssociationFilter},
+        where: {...therapeuticAssociationFilterKbMatch},
+        include: [
+          {
+            model: db.models.kbMatchedStatements,
+            as: 'kbMatchedStatements',
+            attributes: {
+              exclude: STATEMENTEXCLUDE,
+            },
+            where: {
+              ...therapeuticAssociationFilterStatement,
+            },
+            through: {attributes: []},
+          },
+        ],
       },
     ],
   });
@@ -110,6 +128,16 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         model: db.models.kbMatches,
         where: {...cancerRelevanceFilter},
         attributes: {exclude: KBMATCHEXCLUDE},
+        include: [
+          {
+            model: db.models.kbMatchedStatements,
+            as: 'kbMatchedStatements',
+            attributes: {
+              exclude: STATEMENTEXCLUDE,
+            },
+            through: {attributes: []},
+          },
+        ],
       },
     ],
   });
@@ -160,6 +188,19 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           {
             model: db.models.kbMatches,
             attributes: {exclude: KBMATCHEXCLUDE},
+            include: [
+              {
+                model: db.models.kbMatchedStatements,
+                as: 'kbMatchedStatements',
+                attributes: {
+                  exclude: STATEMENTEXCLUDE,
+                },
+                where: {
+                  ...therapeuticAssociationFilterStatement,
+                },
+                through: {attributes: []},
+              },
+            ],
           },
           {
             model: db.models.genes.scope('minimal'),

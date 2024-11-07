@@ -217,6 +217,16 @@ msi.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+// Signature Variants
+const signatureVariants = require('./reports/signatureVariants')(sequelize, Sq);
+
+analysisReports.hasMany(signatureVariants, {
+  as: 'signatureVariants', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+signatureVariants.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Tmbur Mutation Burden
 const tmburMutationBurden = require('./reports/tmburMutationBurden')(sequelize, Sq);
 
@@ -362,6 +372,16 @@ kbMatches.belongsTo(analysisReports, {
 });
 analysisReports.hasMany(kbMatches, {
   as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
+const kbMatchedStatements = require('./reports/kbMatchedStatements')(sequelize, Sq);
+const kbMatchJoin = require('./reports/kbMatchJoin')(sequelize, Sq);
+
+kbMatchedStatements.belongsToMany(kbMatches, {
+  as: 'kbMatches', through: {model: kbMatchJoin, unique: false}, foreignKey: 'kbMatchedStatementId', otherKey: 'kbMatchId', onDelete: 'CASCADE',
+});
+kbMatches.belongsToMany(kbMatchedStatements, {
+  as: 'kbMatchedStatements', through: {model: kbMatchJoin, unique: false}, foreignKey: 'kbMatchId', otherKey: 'kbMatchedStatementId', onDelete: 'CASCADE',
 });
 
 for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
