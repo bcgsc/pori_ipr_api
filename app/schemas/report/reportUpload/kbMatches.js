@@ -13,6 +13,7 @@ module.exports = (isJsonSchema) => {
         type: 'array', description: 'kbMatched statement object',
       },
       category: {type: 'string', description: 'legacy kbMatch loading'},
+      approvedTherapy: {type: 'boolean', description: 'legacy kbMatch loading'},
       disease: {type: 'string', description: 'legacy kbMatch loading'},
       relevance: {type: 'string', description: 'legacy kbMatch loading'},
       context: {type: 'string', description: 'legacy kbMatch loading'},
