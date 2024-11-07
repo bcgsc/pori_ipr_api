@@ -116,7 +116,7 @@ module.exports = (sequelize, Sq) => {
       name: 'svBurdenHidden',
       field: 'sv_burden_hidden',
       type: Sq.BOOLEAN,
-      defaultValue: false,
+      defaultValue: true,
       allowNull: false,
       jsonSchema: {
         description: 'SV Burden Hidden',
