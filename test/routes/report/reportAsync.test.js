@@ -27,6 +27,7 @@ const checkReport = (report) => {
     'state', 'expression_matrix', 'alternateIdentifier', 'ageOfConsent',
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
     'kbUrl', 'pediatricIds', 'captiv8Score', 'hrdetectScore', 'appendix',
+    'intersectTmbScore',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
