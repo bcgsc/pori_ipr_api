@@ -256,6 +256,7 @@
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
+            "kbVariantId": "123321",
             "category": "cancer predisposition",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
