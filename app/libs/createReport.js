@@ -76,12 +76,14 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
           variantType: record.variantType,
           variantId: record.variantId,
           kbVariant: record.kbVariant,
+          kbVariantId: record.kbVariantId,
         };
 
         const statementCopy = {...record};
         delete statementCopy.variantType;
         delete statementCopy.variantId;
         delete statementCopy.kbVariant;
+        delete statementCopy.kbVariantId;
         statementData = [{...statementCopy}];
       }
 
