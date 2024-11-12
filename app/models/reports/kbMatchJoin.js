@@ -38,6 +38,16 @@ module.exports = (sequelize, Sq) => {
           },
         },
       },
+      indexes: [
+        {
+          name: 'idx_kb_match_id_join',
+          fields: ['kb_match_id'],
+        },
+        {
+          name: 'idx_kb_matched_statement_id_join',
+          fields: ['kb_matched_statement_id'],
+        },
+      ],
     },
   );
 };
