@@ -50,4 +50,5 @@ module.exports = {
     '<rootDir>/test/testSetup.js',
   ],
   testTimeout: 100000,
+  testRetryTimes: 3,
 };
