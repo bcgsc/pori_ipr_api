@@ -203,6 +203,10 @@ router.route('/')
       delete req.body.project;
       delete req.body.template;
 
+      if (typeof req.body.cancerType === 'string') {
+        req.body.cancerType = [req.body.cancerType];
+      }
+
       await validateAgainstSchema(createSchema, req.body);
     } catch (error) {
       const message = `Error while validating variant text create request ${error}`;
