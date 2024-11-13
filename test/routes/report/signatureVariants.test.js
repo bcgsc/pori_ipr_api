@@ -124,7 +124,7 @@ describe('/reports/{REPORTID}/sigv', () => {
     });
 
     afterEach(async () => {
-      await db.models.signatureVariants.destroy({where: {ident: sigvUpdate.ident}, force: true});
+      await db.models.signatureVariants.destroy({where: {ident: sigvUpdate.ident}});
     });
 
     test('/{sigv} - 200 Success', async () => {
@@ -169,7 +169,7 @@ describe('/reports/{REPORTID}/sigv', () => {
     });
 
     afterEach(async () => {
-      await db.models.signatureVariants.destroy({where: {ident: sigvDelete.ident}, force: true});
+      await db.models.signatureVariants.destroy({where: {ident: sigvDelete.ident}});
     });
 
     test('/{sigv} - 204 No content', async () => {
@@ -201,7 +201,7 @@ describe('/reports/{REPORTID}/sigv', () => {
   afterAll(async () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
-    report.destroy({force: true});
+    report.destroy();
   });
 });
 

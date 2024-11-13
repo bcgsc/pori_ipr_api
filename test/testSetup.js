@@ -6,8 +6,6 @@ CONFIG.set('env', 'test');
 const {managerUsername, bioinformaticianUsername} = CONFIG.get('testing');
 
 beforeAll(async () => {
-  jest.retryTimes(5, {logErrorsBeforeRetry: true});
-
   const [managerUser] = await db.models.user.findOrCreate({
     where: {
       username: managerUsername,
