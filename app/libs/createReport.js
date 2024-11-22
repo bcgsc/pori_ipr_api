@@ -13,6 +13,7 @@ const EXCLUDE_SECTIONS = new Set([
   'template',
   'genes',
   'kbMatches',
+  'kbMatchedStatements',
   'presentationDiscussion',
   'presentationSlides',
   'signatures',
@@ -57,6 +58,53 @@ const createReportSection = async (reportId, modelName, sectionContent, options 
  *
  * @returns {undefined}
  */
+const createReportKbMatchedStatementsSection = async (reportId, modelName, sectionContent, options = {}) => {
+  const records = Array.isArray(sectionContent)
+    ? sectionContent
+    : [sectionContent];
+  try {
+    for (const record of records) {
+      let kbMatchData;
+      let statementData;
+      // Check for new format vs old format of kbMatches
+      if (record.kbMatches) {
+        statementData = [{...record}];
+        kbMatchData = record.kbMatches;
+        delete statementData.kbMatches;
+      }
+
+      for (const createStatement of statementData) {
+        const statement = await db.models.kbMatchedStatements.create({
+          reportId,
+          ...createStatement,
+        }, options);
+
+        for (const match of kbMatchData) {
+          const kbMatch = await db.models.kbMatches.create({
+            reportId,
+            ...match,
+          }, options);
+
+          await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+        }
+      }
+    }
+  } catch (error) {
+    throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+  }
+};
+
+/**
+ * Creates a new section for the report with the provided data
+ *
+ * @param {Number} reportId - The id of the report this section belongs to
+ * @param {string} modelName - Name of the model for this section
+ * @param {Array|Object} sectionContent - The record or records to be created for this section
+ * @param {object} options - Options for creating report sections
+ * @property {object} options.transaction - Transaction to run bulkCreate under
+ *
+ * @returns {undefined}
+ */
 const createReportKbMatchSection = async (reportId, modelName, sectionContent, options = {}) => {
   const records = Array.isArray(sectionContent)
     ? sectionContent
@@ -69,15 +117,15 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
       // Check for new format vs old format of kbMatches
       if (record.kbMatchedStatements) {
         statementData = record.kbMatchedStatements;
-        kbMatchData = {...record};
+        kbMatchData = [{...record}];
         delete kbMatchData.kbMatchedStatements;
       } else {
-        kbMatchData = {
+        kbMatchData = [{
           variantType: record.variantType,
           variantId: record.variantId,
           kbVariant: record.kbVariant,
           kbVariantId: record.kbVariantId,
-        };
+        }];
 
         const statementCopy = {...record};
         delete statementCopy.variantType;
@@ -86,22 +134,21 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
         delete statementCopy.kbVariantId;
         statementData = [{...statementCopy}];
       }
+      for (const match of kbMatchData) {
+        const kbMatch = await db.models.kbMatches.create({
+          reportId,
+          ...match,
+        }, options);
 
-      const kbMatch = await db.models.kbMatches.create({
-        reportId,
-        ...kbMatchData,
-      }, options);
-
-      for (const createStatement of statementData) {
-        const [statement] = await db.models.kbMatchedStatements.findOrCreate({
-          where: {
+        // TODO revert this test change
+        for (const createStatement of statementData) {
+          const statement = await db.models.kbMatchedStatements.create({
             reportId,
             ...createStatement,
-          },
-          ...options,
-        });
+          }, options);
 
-        await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+          await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+        }
       }
     }
   } catch (error) {
@@ -254,7 +301,26 @@ const createReportVariantSections = async (report, content, transaction) => {
     return {...match, variantId: variantMapping[variantType][variant], variantType};
   });
 
-  return createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
+  const createdKbmatches = createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
+
+  // then the kb matched statements, which have nested kb matches that must be linked to the variants
+  const kbMatchedStatements = (content.kbMatchedStatements || []).map(({kbMatches: matches, ...stmt}) => {
+    const kbms = [];
+    for (const kbMatch of matches) {
+      if (variantMapping[kbMatch.variantType] === undefined) {
+        throw new Error(`cannot link kb-matches to variant type ${kbMatch.variantType} as none were specified`);
+      }
+      if (variantMapping[kbMatch.variantType][kbMatch.variant] === undefined) {
+        throw new Error(`invalid link (variant=${kbMatch.variant}) variant definition does not exist`);
+      }
+      kbMatch.variantId = variantMapping[kbMatch.variantType][kbMatch.variant];
+      kbms.push(kbMatch);
+    }
+    return {...stmt, kbMatches: kbms};
+  });
+
+  const createdKbMatchedStatements = createReportKbMatchedStatementsSection(report.id, 'kbMatchedStatements', kbMatchedStatements, {transaction});
+  return Promise.all([createdKbmatches, createdKbMatchedStatements]);
 };
 
 /**
@@ -272,7 +338,6 @@ const createReportSections = async (report, content, transaction) => {
       filename: path.basename(imagePath), caption, title, transaction, category,
     });
   });
-
   // add variant sections
   promises.push(createReportVariantSections(report, content, transaction));
 
@@ -296,7 +361,6 @@ const createReportSections = async (report, content, transaction) => {
       promises.push(createReportSection(report.id, model, content[model], {transaction}));
     }
   });
-
   return Promise.all(promises);
 };
 

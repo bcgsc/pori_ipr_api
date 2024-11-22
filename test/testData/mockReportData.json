@@ -119,6 +119,15 @@
         {
             "geneVariant": "ZNF217 (amplification)",
             "germline": true
+        },
+        {
+            "geneVariant": "APC:p.T1556fs"
+        },
+        {
+            "geneVariant": "APC:p.L616fs"
+        },
+        {
+            "geneVariant": "ZFP36L2:p.Q401del"
         }
     ],
     "pathwayAnalysis": {
@@ -251,6 +260,36 @@
         "kbCategory": "test kb category",
         "msiScore": 0.0
     },
+    "kbMatchedStatements": [
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test multivariant statement",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#999:999",
+            "matchedCancer": true,
+            "reference": "pmid:TEST2",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "kbMatches": [
+                {
+                    "kbVariant": "APC:p.T1556fs",
+                    "variant": "a12458ff7c8eb865656fd61f670cd0d5",
+                    "variantType": "mut",
+                    "kbVariantId": "#158:1343"
+                },
+                {
+                    "kbVariant": "ZFP36L2:p.Q401del",
+                    "variant": "TEST1",
+                    "variantType": "mut",
+                    "kbVariantId": "#999:9999"
+                }
+            ]
+        }
+    ],
     "kbMatches": [
         {
             "approvedTherapy": false,
@@ -282,6 +321,40 @@
             "relevance": "resistance",
             "externalSource": "IPRKB",
             "externalStatementId": "2c463a78-efdc-4858-b378-250096ba086e",
+            "reviewStatus": "pending",
+            "kbData": {}
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test inhibitor",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#999:999",
+            "kbVariant": "APC:p.T1556fs",
+            "variant": "a12458ff7c8eb865656fd61f670cd0d5",
+            "variantType": "mut",
+            "kbVariantId": "#158:1343",
+            "matchedCancer": true,
+            "reference": "pmid:TEST",
+            "relevance": "resistance",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {}
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test inhibitor",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#999:999",
+            "kbVariant": "ZFP36L2:p.Q401del",
+            "variant": "TEST1",
+            "variantType": "mut",
+            "kbVariantId": "#999:9999",
+            "matchedCancer": true,
+            "reference": "pmid:TEST",
+            "relevance": "resistance",
+            "externalSource": "IPRKB",
             "reviewStatus": "pending",
             "kbData": {}
         },
@@ -477,6 +550,7 @@
             "hgvsProtein": "ZFP36L2:p.Q401del",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
             "hgvsGenomic": "2:g.43451740_43451742delCTG",
+            "key": "TEST1",
             "germline": false,
             "tumourRefCopies": 60,
             "tumourAltCopies": 20,
