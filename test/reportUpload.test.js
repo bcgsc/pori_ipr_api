@@ -95,7 +95,7 @@ describe('Tests for uploading a report and all of its components', () => {
 
   test('Genes entries were created correctly from variant and gene rows', async () => {
     const genes = await db.models.genes.findAll({where: {reportId}});
-    expect(genes).toHaveProperty('length', 5);
+    expect(genes).toHaveProperty('length', 6);
 
     // gene flags should be added from genes section if given
     expect(genes).toEqual(expect.arrayContaining([expect.objectContaining({
@@ -121,6 +121,26 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(boundUser.deletedAt).toBeNull();
     expect(boundUser.role).toBe('bioinformatician');
     expect(boundUser.user_id).toBe(report.createdBy_id);
+  });
+
+  test('Only multivariant kbstatements are linked to multiple nested kbvariants', async () => {
+    // Get Kbstatements and check that only multivariant inputs have multiple kbvariants
+    const res = await request
+      .get(`/api/reports/${reportIdent}/kb-matches/kb-matched-statements`)
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+
+    const singleVariantStatements = res.body.filter((item) => {return item.context !== 'test multivariant statement';}); // Replace 'value1' with the specific value for x1
+    const multiVariantStatements = res.body.filter((item) => {return item.context === 'test multivariant statement';});
+
+    expect(singleVariantStatements.every((item) => {return Array.isArray(item.kbMatches) && item.kbMatches.length === 1;})).toBe(true);
+    expect(multiVariantStatements.every((item) => {return Array.isArray(item.kbMatches) && item.kbMatches.length === 2;})).toBe(true);
+    expect(multiVariantStatements).toHaveProperty('length', 1);
+  });
+
+  test('Kbvariants are linked to their nested kbstatements', async () => {
+
   });
 
   afterAll(async () => {

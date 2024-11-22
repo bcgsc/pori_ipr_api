@@ -268,7 +268,7 @@
             "disease": "colorectal cancer [DOID:9256]",
             "kbStatementId": "#999:999",
             "matchedCancer": true,
-            "reference": "pmid:TEST2",
+            "reference": "pmid:TEST1",
             "relevance": "resistance",
             "iprEvidenceLevel": "IPR-D",
             "externalSource": "IPRKB",
