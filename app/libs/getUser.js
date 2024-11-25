@@ -76,7 +76,7 @@ const getUser = async (req, res) => {
   }
   // Check for IPR access
   if (!decoded.realm_access.roles.includes(nconf.get('keycloak:role'))) {
-    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'IPR Access Error'});
+    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'IPR Access Error: Keycloak role missing'});
   }
   const username = decoded.preferred_username;
   const expiry = decoded.exp;
