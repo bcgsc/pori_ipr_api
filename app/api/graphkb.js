@@ -90,6 +90,7 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
         filters: {name: 'ipr'},
       },
     },
+    orderBy: 'displayName',
     limit: 100,
     skip: 0,
     target: 'EvidenceLevel',
