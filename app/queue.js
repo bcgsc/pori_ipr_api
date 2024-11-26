@@ -4,13 +4,14 @@ const {graphkbGetReadonlyGroupId, graphkbAddUser} = require('./api/graphkb');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
 const db = require('./models');
+const {sendEmail} = require('./libs/email');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log'); // Load logging library
 
 const CONFIG = require('./config');
 
-const {email, password, ehost} = CONFIG.get('email');
+const {email, password, ehost, failemail} = CONFIG.get('email');
 
 const setUpEmailQueue = () => {
   if (enableQueue) {
@@ -126,6 +127,14 @@ const onEmailWorkderFailed = async (job) => {
   } catch (error) {
     logger.error(`Unable to create notification track ${error}`);
     throw new Error(error);
+  }
+
+  try {
+    if (failemail) {
+      await sendEmail('Notification failed', job.data, failemail);
+    }
+  } catch (error) {
+    logger.error(`Unable to send email ${error}`);
   }
 };
 
