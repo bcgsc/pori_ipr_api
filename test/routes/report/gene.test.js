@@ -171,7 +171,7 @@ describe('/reports/{report}/genes', () => {
         .type('json')
         .expect(HTTP_STATUS.CREATED);
 
-        checkGene(res.body);
+      checkGene(res.body);
       expect(res.body).toEqual(expect.objectContaining(GENE_DATA));
 
       // Check that record was created in the db
