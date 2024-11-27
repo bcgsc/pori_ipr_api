@@ -3,7 +3,13 @@ const express = require('express');
 
 const logger = require('../../log');
 const loginMiddleware = require('../../middleware/graphkb');
-const {graphkbAutocomplete, graphkbEvidenceLevels, graphkbStatement} = require('../../api/graphkb');
+const {
+  graphkbAutocomplete,
+  graphkbEvidenceLevels,
+  graphkbStatement,
+  graphkbAddUser,
+  graphkbGetReadonlyGroupId,
+} = require('../../api/graphkb');
 
 const router = express.Router({mergeParams: true});
 
@@ -54,6 +60,23 @@ router.get('/statements/:statementId', async (req, res) => {
   } catch (error) {
     logger.error(error);
     return res.status(StatusCodes.SERVICE_UNAVAILABLE).json(`GraphKB lookup error: ${error}`);
+  }
+});
+
+router.post('/new-user', async (req, res) => {
+  try {
+    const {graphkbToken, body: {email, username}} = req;
+    const groupId = await graphkbGetReadonlyGroupId(graphkbToken);
+    const gkbCreateResp = await graphkbAddUser(graphkbToken, username, email, groupId);
+    if (/error/i.test(gkbCreateResp.name)) {
+      throw new Error(gkbCreateResp.message);
+    }
+    return res.status(StatusCodes.CREATED).json();
+  } catch (error) {
+    logger.error(error);
+    return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
+      message: 'GraphKB user creation error',
+    });
   }
 });
 
