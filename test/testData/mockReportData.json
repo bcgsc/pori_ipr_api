@@ -2,7 +2,7 @@
     "template": "genomic",
     "captiv8Score": 20,
     "hrdetectScore": 10.5,
-    "intersectTmbScore": 9.75,
+    "genomeTmb": 9.75,
     "appendix": "this is an example of an appendix",
     "sampleInfo": [
         {
