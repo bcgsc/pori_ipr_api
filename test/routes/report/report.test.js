@@ -29,7 +29,7 @@ const checkReport = (report) => {
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
     'kbUrl', 'pediatricIds', 'captiv8Score', 'appendix', 'hrdetectScore',
     'legacyReportFilepath', 'legacyPresentationFilepath', 'signatures',
-    'intersectTmbScore',
+    'genomeTmb',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
