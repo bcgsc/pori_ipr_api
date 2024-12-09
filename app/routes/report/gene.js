@@ -11,9 +11,12 @@ const router = express.Router({mergeParams: true});
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-const {REPORT_UPDATE_BASE_URI} = require('../../constants');
+const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
 
 // Generate schemas
+const createSchema = schemaGenerator(db.models.genes, {
+  baseUri: REPORT_CREATE_BASE_URI,
+});
 const updateSchema = schemaGenerator(db.models.genes, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });
@@ -136,6 +139,30 @@ router.route('/')
       logger.error(`Unable to retrieve genes ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to retrieve genes'},
+      });
+    }
+  })
+  .post(async (req, res) => {
+    // Validate request against schema
+    try {
+      validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `Error while validating gene create request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    // Create new entry in db
+    try {
+      const result = await db.models.genes.create({
+        ...req.body,
+        reportId: req.report.id,
+      });
+      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
+    } catch (error) {
+      logger.error(`Unable to create gene ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to create gene'},
       });
     }
   });
