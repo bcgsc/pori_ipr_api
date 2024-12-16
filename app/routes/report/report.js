@@ -105,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant,
       },
     } = req;
 
@@ -125,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant,
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
