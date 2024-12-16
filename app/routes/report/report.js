@@ -105,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, category, approvedTherapy, kbVariant, disease, relevance, context, status, reference, sample, evidenceLevel, matchedCancer, pmidRef, variantType,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant
       },
     } = req;
 
@@ -125,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, category, approvedTherapy, kbVariant, disease, relevance, context, status, reference, sample, evidenceLevel, matchedCancer, pmidRef, variantType,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -184,14 +184,11 @@ router.route('/')
         ...((kbVariant && matchingThreshold) ? {
           '$kbMatches.kb_variant$': {
             [Op.in]: literal(
-              `(SELECT "kb_variant" 
-              FROM (SELECT "kb_variant", word_similarity('${kbVariant}', "kb_variant") FROM reports_kb_matches) AS subquery 
+              `(SELECT "kb_variant"
+              FROM (SELECT "kb_variant", word_similarity('${kbVariant}', "kb_variant") FROM reports_kb_matches) AS subquery
               WHERE word_similarity >= ${matchingThreshold})`,
             ),
           },
-        } : {}),
-        ...((variantType) ? {
-          '$kbMatches.variant_type$': {[Op.eq]: `${variantType}`},
         } : {}),
       },
       distinct: 'id',
@@ -262,51 +259,9 @@ router.route('/')
           model: db.models.genomicAlterationsIdentified.scope('public'),
           as: 'genomicAlterationsIdentified',
         }] : []),
-        ...((category || approvedTherapy || kbVariant || disease || relevance || context || status || reference || sample || evidenceLevel || matchedCancer || pmidRef || variantType) ? [{
-          model: db.models.kbMatches.scope('public'),
+        ...((kbVariant && matchingThreshold) ? [{
+          model: db.models.kbMatches.scope('minimal'),
           as: 'kbMatches',
-          include: [
-            {
-              model: db.models.kbMatchedStatements.scope('kbMatchesInclude'),
-              as: 'kbMatchedStatements',
-              through: {attributes: []},
-              where: {
-                ...((category) ? {
-                  category: {[Op.eq]: `${category}`},
-                } : {}),
-                ...((approvedTherapy) ? {
-                  approvedTherapy: {[Op.eq]: `${approvedTherapy}`},
-                } : {}),
-                ...((disease) ? {
-                  disease: {[Op.eq]: `${disease}`},
-                } : {}),
-                ...((relevance) ? {
-                  relevance: {[Op.eq]: `${relevance}`},
-                } : {}),
-                ...((context) ? {
-                  context: {[Op.eq]: `${context}`},
-                } : {}),
-                ...((status) ? {
-                  status: {[Op.eq]: `${status}`},
-                } : {}),
-                ...((reference) ? {
-                  reference: {[Op.eq]: `${reference}`},
-                } : {}),
-                ...((sample) ? {
-                  sample: {[Op.eq]: `${sample}`},
-                } : {}),
-                ...((evidenceLevel) ? {
-                  evidence_level: {[Op.eq]: `${evidenceLevel}`},
-                } : {}),
-                ...((matchedCancer) ? {
-                  matched_cancer: {[Op.eq]: `${matchedCancer}`},
-                } : {}),
-                ...((pmidRef) ? {
-                  pmid_ref: {[Op.eq]: `${pmidRef}`},
-                } : {}),
-              },
-            },
-          ],
         }] : []),
       ],
     };
