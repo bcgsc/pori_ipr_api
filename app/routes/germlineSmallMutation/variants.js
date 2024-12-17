@@ -5,7 +5,6 @@ const router = express.Router({mergeParams: true});
 
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -98,27 +97,10 @@ router.route('/:variant')
 // Handles requests for all germline variants for a report
 router.route('/')
   .get(async (req, res) => {
-    const key = `/germline/${req.report.ident}/variants`;
-
-    try {
-      const cacheResults = await cache.get(key);
-
-      if (cacheResults) {
-        res.type('json');
-        return res.send(cacheResults);
-      }
-    } catch (error) {
-      logger.error(`Error while checking cache for germline variants ${error}`);
-    }
-
     try {
       const results = await db.models.germlineSmallMutationVariant.scope('public').findAll({
         where: {germlineReportId: req.report.id},
       });
-
-      if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 14400);
-      }
 
       return res.json(results);
     } catch (error) {
