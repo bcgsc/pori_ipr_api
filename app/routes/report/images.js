@@ -176,6 +176,66 @@ const IMAGES_CONFIG = [
     height: 450,
     format: 'PNG',
   },
+  {
+    pattern: 'copyNumberChr(1|2)',
+    width: 1625,
+    height: 875,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(3|4|5)',
+    width: 1300,
+    height: 875,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(6|7|X)',
+    width: 1150,
+    height: 875,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(8|9)',
+    width: 1100,
+    height: 875,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(10|11|12|13|14)',
+    width: 1000,
+    height: 1000,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr15',
+    width: 1000,
+    height: 1150,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(16|17|18)',
+    width: 900,
+    height: 1150,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(19|20|Y)',
+    width: 700,
+    height: 1150,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberChr(21|22)',
+    width: 550,
+    height: 1150,
+    format: 'PNG',
+  },
+  {
+    pattern: 'copyNumberLegend',
+    width: 300,
+    height: 1150,
+    format: 'PNG',
+  },
 ];
 
 /**
