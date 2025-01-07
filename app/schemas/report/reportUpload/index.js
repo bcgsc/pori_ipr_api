@@ -31,7 +31,6 @@ const generateReportUploadSchema = (isJsonSchema) => {
     },
     images: {
       type: 'array',
-      maxItems: 80,
       items: {
         type: 'object',
         required: ['path', 'key'],
