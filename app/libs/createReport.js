@@ -419,27 +419,23 @@ const createReport = async (data) => {
   try {
     await createReportSections(report, data, transaction);
 
-    try {
-      const result = await db.query(
-        `SELECT
+    const result = await db.query(
+      `SELECT
             SUM(pg_column_size("reports_image_data")) AS avg_size_bytes
           FROM
             "reports_image_data"
           WHERE
             "report_id" = :reportId`,
-        {
-          replacements: {reportId: report.id},
-          type: 'select',
-          transaction,
-        },
-      );
+      {
+        replacements: {reportId: report.id},
+        type: 'select',
+        transaction,
+      },
+    );
 
-      const totalImageSize = result[0].avg_size_bytes;
-      if (totalImageSize > IMAGE_UPLOAD_LIMIT) {
-        throw new Error(`Total image size exceeds ${IMAGE_UPLOAD_LIMIT / 1000000} megabytes`);
-      }
-    } catch (error) {
-      throw new Error('Error getting image size');
+    const totalImageSize = result[0].avg_size_bytes;
+    if (totalImageSize > IMAGE_UPLOAD_LIMIT) {
+      throw new Error(`Total image size exceeds ${IMAGE_UPLOAD_LIMIT / 1000000} megabytes`);
     }
 
     await transaction.commit();
