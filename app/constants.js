@@ -37,4 +37,5 @@ module.exports = {
   MASTER_REPORT_ACCESS: ['admin', 'manager'],
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
+  IMAGE_UPLOAD_LIMIT: 3000000,
 };

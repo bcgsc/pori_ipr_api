@@ -11,7 +11,6 @@ const db = require('../models');
  */
 const autoDownsize = async (image, size, format = 'png') => {
   // Base case: If the image size is less than or equal to size, return the image
-  console.log(size);
   if (image.info.size <= size) {
     return image;
   }
