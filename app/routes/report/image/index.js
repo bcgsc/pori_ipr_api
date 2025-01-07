@@ -61,11 +61,6 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
     }
 
-    if (Object.entries(req.files).length > 80) {
-      logger.error('Image limit reached');
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Image limit reached'}});
-    }
-
     try {
       const results = await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
         // Remove trailing space from key
