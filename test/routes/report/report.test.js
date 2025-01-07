@@ -68,6 +68,7 @@ describe('/reports/{REPORTID}', () => {
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   const KEYVARIANT = 'uniqueKeyVariant';
+  const KBVARIANT = 'uniqueKbVariant';
 
   let project;
   let project2;
@@ -503,7 +504,7 @@ describe('/reports/{REPORTID}', () => {
 
     test('/ - kb match - 200 Success', async () => {
       const res = await request
-        .get('/api/reports?category=unknown&variantType=cnv')
+        .get(`/api/reports?kbVariant=${KBVARIANT}&&matchingThreshold=1`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -512,7 +513,7 @@ describe('/reports/{REPORTID}', () => {
 
       for (const resReport of res.body.reports) {
         for (const gAI of resReport.kbMatches) {
-          expect(gAI.variantType).toEqual('cnv');
+          expect(gAI.kbVariant).toEqual(KBVARIANT);
         }
       }
     }, LONGER_TIMEOUT);
