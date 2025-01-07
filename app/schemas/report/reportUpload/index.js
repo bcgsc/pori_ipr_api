@@ -3,7 +3,7 @@ const {BASE_EXCLUDE} = require('../../exclude');
 const variantSchemas = require('./variant');
 const kbMatchesSchema = require('./kbMatches');
 const schemaGenerator = require('../../schemaGenerator');
-const {VALID_IMAGE_KEY_PATTERN, UPLOAD_BASE_URI} = require('../../../constants');
+const {UPLOAD_BASE_URI} = require('../../../constants');
 
 /**
  * Generate schema for uploading a report
@@ -31,6 +31,7 @@ const generateReportUploadSchema = (isJsonSchema) => {
     },
     images: {
       type: 'array',
+      maxItems: 80,
       items: {
         type: 'object',
         required: ['path', 'key'],
@@ -40,7 +41,6 @@ const generateReportUploadSchema = (isJsonSchema) => {
           },
           key: {
             type: 'string',
-            pattern: VALID_IMAGE_KEY_PATTERN,
           },
         },
       },

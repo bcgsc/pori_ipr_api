@@ -5,7 +5,6 @@ const {Op} = require('sequelize');
 const db = require('../../../models');
 const logger = require('../../../log');
 const {uploadReportImage} = require('../images');
-const {VALID_IMAGE_KEY_PATTERN} = require('../../../constants');
 
 const router = express.Router({mergeParams: true});
 
@@ -62,26 +61,9 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
     }
 
-    // Check for valid and duplicate keys
-    const keys = [];
-    const pattern = new RegExp(VALID_IMAGE_KEY_PATTERN);
-
-    for (let [key, value] of Object.entries(req.files)) {
-      key = key.trim();
-
-      // Check if key is valid
-      if (!pattern.test(key)) {
-        logger.error(`Invalid key: ${key}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Invalid key: ${key}`}});
-      }
-
-      // Check if key is a duplicate
-      if (keys.includes(key) || Array.isArray(value)) {
-        logger.error(`Duplicate keys are not allowed. Duplicate key: ${key}`);
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Duplicate keys are not allowed. Duplicate key: ${key}`}});
-      }
-
-      keys.push(key);
+    if (Object.entries(req.files).length > 80) {
+      logger.error('Image limit reached');
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'Image limit reached'}});
     }
 
     try {
