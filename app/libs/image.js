@@ -2,6 +2,35 @@ const sharp = require('sharp');
 const db = require('../models');
 
 /**
+ * Delete image from images table
+ *
+ * @param {string} ident - Ident of image to delete
+ * @param {boolean} force - Whether it is a hard delete or not
+ * @param {object} transaction - Transaction to run delete under
+ * @returns {Promise<object>} - Returns the newly updated image data
+ */
+const autoDownsize = async (image, size, format = 'png') => {
+  // Base case: If the image size is less than or equal to size, return the image
+  console.log(size);
+  if (image.info.size <= size) {
+    return image;
+  }
+
+  // Process the image (resize and format) and update the size
+  const resizedImage = await sharp(image.data)
+    .resize(
+      Math.floor(image.info.width / 1.5),
+      Math.floor(image.info.height / 1.5),
+      {fit: 'inside', withoutEnlargement: true},
+    )
+    .toFormat(format.toLowerCase())
+    .toBuffer({resolveWithObject: true});
+
+  // Recursive call with the resized image
+  return autoDownsize(resizedImage, size, format);
+};
+
+/**
  * Resize, reformat and return base64 representation of image.
  *
  * @param {Buffer|string} image - Buffer containing image data or the absolute path to an image file
@@ -12,13 +41,14 @@ const db = require('../models');
  * @returns {Promise<string>} - Returns base64 representation of image
  * @throws {Promise<Error>} - File doesn't exist, incorrect permissions, etc.
  */
-const processImage = async (image, width, height, format = 'png') => {
-  const imageData = await sharp(image)
-    .resize(width, height, {fit: 'inside', withoutEnlargement: true})
+const processImage = async (image, size, format = 'png') => {
+  let imageData = await sharp(image)
     .toFormat(format.toLowerCase())
-    .toBuffer();
+    .toBuffer({resolveWithObject: true});
 
-  return imageData.toString('base64');
+  imageData = await autoDownsize(imageData, size, format);
+
+  return imageData.data.toString('base64');
 };
 
 /**
@@ -37,11 +67,11 @@ const processImage = async (image, width, height, format = 'png') => {
  */
 const uploadImage = async (image, options = {}) => {
   const {
-    data, width, height, filename, format, type,
+    data, filename, format, type,
   } = image;
 
   // Resize image
-  const imageData = await processImage(data, width, height, format.replace('image/', ''));
+  const imageData = await processImage(data, format.replace('image/', ''));
 
   // Upload image data
   return db.models.image.create({
