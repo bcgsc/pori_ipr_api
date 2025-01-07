@@ -39,6 +39,7 @@ module.exports = {
     'scpPlot',
     'msi.scatter',
     'pathwayAnalysis.legend',
+    'copyNumber(.*)',
   ].map((patt) => {
     return `(${patt})`;
   }).join('|')}$`,
