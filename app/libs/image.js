@@ -1,5 +1,6 @@
 const sharp = require('sharp');
 const db = require('../models');
+const {IMAGE_SIZE_LIMIT} = require('../constants');
 
 /**
  * Delete image from images table
@@ -40,7 +41,7 @@ const autoDownsize = async (image, size, format = 'png') => {
  * @returns {Promise<string>} - Returns base64 representation of image
  * @throws {Promise<Error>} - File doesn't exist, incorrect permissions, etc.
  */
-const processImage = async (image, size, format = 'png') => {
+const processImage = async (image, size = IMAGE_SIZE_LIMIT, format = 'png') => {
   let imageData = await sharp(image)
     .toFormat(format.toLowerCase())
     .toBuffer({resolveWithObject: true});
@@ -70,7 +71,7 @@ const uploadImage = async (image, options = {}) => {
   } = image;
 
   // Resize image
-  const imageData = await processImage(data, format.replace('image/', ''));
+  const imageData = await processImage(data, IMAGE_SIZE_LIMIT, format.replace('image/', ''));
 
   // Upload image data
   return db.models.image.create({

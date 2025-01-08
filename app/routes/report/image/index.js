@@ -61,6 +61,20 @@ router.route('/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: 'No attached images to upload'}});
     }
 
+    const keys = [];
+
+    for (let [key, value] of Object.entries(req.files)) {
+      key = key.trim();
+
+      // Check if key is a duplicate
+      if (keys.includes(key) || Array.isArray(value)) {
+        logger.error(`Duplicate keys are not allowed. Duplicate key: ${key}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `Duplicate keys are not allowed. Duplicate key: ${key}`}});
+      }
+
+      keys.push(key);
+    }
+
     try {
       const results = await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
         // Remove trailing space from key

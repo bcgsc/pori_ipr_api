@@ -1,8 +1,8 @@
 const logger = require('../../log');
 const db = require('../../models');
 const {processImage} = require('../../libs/image');
+const {IMAGE_SIZE_LIMIT} = require('../../constants');
 
-const DEFAULT_SIZE = 20000; // In bytes
 const DEFAULT_FORMAT = 'PNG';
 
 /**
@@ -24,7 +24,7 @@ const DEFAULT_FORMAT = 'PNG';
 const uploadReportImage = async (reportId, key, image, options = {}) => {
   logger.verbose(`Loading (${key}) image`);
 
-  const config = {format: DEFAULT_FORMAT, size: DEFAULT_SIZE};
+  const config = {format: DEFAULT_FORMAT, size: IMAGE_SIZE_LIMIT};
 
   try {
     const imageData = await processImage(image, config.size, config.format);

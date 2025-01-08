@@ -38,4 +38,5 @@ module.exports = {
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
   IMAGE_UPLOAD_LIMIT: 3000000,
+  IMAGE_SIZE_LIMIT: 20000, // in bytes
 };
