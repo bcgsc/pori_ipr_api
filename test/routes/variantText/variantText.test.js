@@ -43,7 +43,7 @@ const UPDATE_DATA = {
   text: '<p>new sample text</p>',
 };
 const INVALID_UPDATE_DATA = {
-  variantName: 'new variant name',
+  project: uuidv4(),
 };
 
 const variantTextProperties = [
