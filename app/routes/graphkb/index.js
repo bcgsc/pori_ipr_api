@@ -73,9 +73,9 @@ router.post('/new-user', async (req, res) => {
     }
     return res.status(StatusCodes.CREATED).json();
   } catch (error) {
-    logger.error(error);
+    logger.error(`Error trying to create user on GraphKB, ${error}`);
     return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
-      message: 'GraphKB user creation error',
+      error: {message: `GraphKB user creation error: ${error}`},
     });
   }
 });
