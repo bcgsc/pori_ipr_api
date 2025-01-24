@@ -1,11 +1,11 @@
-const {Op} = require('sequelize');
+const { Op } = require('sequelize');
 const path = require('path');
 
 const db = require('../models');
-const {uploadReportImage} = require('../routes/report/images');
+const { uploadReportImage } = require('../routes/report/images');
 const logger = require('../log');
-const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../constants');
-const {sanitizeHtml} = require('./helperFunctions');
+const { GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING } = require('../constants');
+const { sanitizeHtml } = require('./helperFunctions');
 
 const EXCLUDE_SECTIONS = new Set([
   ...GENE_LINKED_VARIANT_MODELS,
@@ -39,7 +39,7 @@ const createReportSection = async (reportId, modelName, sectionContent, options 
 
   try {
     await db.models[modelName].bulkCreate(records.map((newEntry) => {
-      return {...newEntry, reportId};
+      return { ...newEntry, reportId };
     }), options);
   } catch (error) {
     throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
@@ -66,26 +66,23 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
     for (const record of records) {
       let kbMatchData;
       let statementData;
-      // Check for new format vs old format of kbMatches
-      if (record.kbMatchedStatements) {
-        statementData = record.kbMatchedStatements;
-        kbMatchData = {...record};
-        delete kbMatchData.kbMatchedStatements;
-      } else {
-        kbMatchData = {
-          variantType: record.variantType,
-          variantId: record.variantId,
-          kbVariant: record.kbVariant,
-          kbVariantId: record.kbVariantId,
-        };
 
-        const statementCopy = {...record};
-        delete statementCopy.variantType;
-        delete statementCopy.variantId;
-        delete statementCopy.kbVariant;
-        delete statementCopy.kbVariantId;
-        statementData = [{...statementCopy}];
-      }
+      kbMatchData = {
+        variantType: record.variantType,
+        variantId: record.variantId,
+        variantUploadKey: record.variant,
+        kbVariant: record.kbVariant,
+        kbVariantId: record.kbVariantId,
+      };
+
+      const statementCopy = { ...record };
+      delete statementCopy.variantType;
+      delete statementCopy.variantId;
+      delete statementCopy.kbVariant;
+      delete statementCopy.kbVariantId;
+      delete statementCopy.variant;
+      statementData = [{ ...statementCopy }];
+
 
       const kbMatch = await db.models.kbMatches.create({
         reportId,
@@ -93,6 +90,8 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
       }, options);
 
       for (const createStatement of statementData) {
+        if (createStatement)
+        console.log(createStatement);
         const [statement] = await db.models.kbMatchedStatements.findOrCreate({
           where: {
             reportId,
@@ -101,7 +100,9 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
           ...options,
         });
 
-        await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+        console.log('creating old')
+        await db.models.kbMatchJoin.create({ reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id }, options);
+      
       }
     }
   } catch (error) {
@@ -128,13 +129,13 @@ const createReportGenes = async (report, content, options = {}) => {
     for (const variant of content[model] || []) {
       if (model === 'structuralVariants') {
         if (variant.gene1) {
-          geneDefns[variant.gene1] = {name: variant.gene1};
+          geneDefns[variant.gene1] = { name: variant.gene1 };
         }
         if (variant.gene2) {
-          geneDefns[variant.gene2] = {name: variant.gene2};
+          geneDefns[variant.gene2] = { name: variant.gene2 };
         }
       } else {
-        geneDefns[variant.gene] = {name: variant.gene};
+        geneDefns[variant.gene] = { name: variant.gene };
       }
     }
   }
@@ -147,7 +148,7 @@ const createReportGenes = async (report, content, options = {}) => {
 
   try {
     const genes = await db.models.genes.bulkCreate(Object.values(geneDefns).map((newEntry) => {
-      return {...newEntry, reportId: report.id};
+      return { ...newEntry, reportId: report.id };
     }), options);
 
     for (const gene of genes) {
@@ -175,7 +176,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   const keyCheck = new Set();
   let records;
   // check the 'key' is unique
-  for (const {key} of sectionContent) {
+  for (const { key } of sectionContent) {
     if (key) {
       if (keyCheck.has(key)) {
         throw new Error(`Bad input. The variant key violated unique constraint (key=${key})`);
@@ -199,7 +200,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
       }), options);
     } else {
       // add the gene FK association
-      records = await db.models[modelName].bulkCreate(sectionContent.map(({key, gene, ...newEntry}) => {
+      records = await db.models[modelName].bulkCreate(sectionContent.map(({ key, gene, ...newEntry }) => {
         return {
           ...newEntry,
           reportId,
@@ -222,7 +223,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
 
 const createReportVariantSections = async (report, content, transaction) => {
   // create the genes first since they will need to be linked to the variant records
-  const geneDefns = await createReportGenes(report, content, {transaction});
+  const geneDefns = await createReportGenes(report, content, { transaction });
 
   // create the variants and create a mapping from their input 'key' value to the new records
   const variantMapping = {};
@@ -234,27 +235,27 @@ const createReportVariantSections = async (report, content, transaction) => {
       content[variantModel] = [content[variantModel]];
     }
 
-    const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
+    const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], { transaction });
     variantMapping[variantType] = mapping;
   });
 
   // create the probe results (linked to gene but not to kbMatches)
-  variantPromises.push(createReportVariantsSection(report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction}));
+  variantPromises.push(createReportVariantsSection(report.id, geneDefns, 'probeResults', content.probeResults || [], { transaction }));
 
   await Promise.all(variantPromises);
 
   // then the kb matches which must be linked to the variants
-  const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
+  const kbMatches = (content.kbMatches || []).map(({ variant, variantType, ...match }) => {
     if (variantMapping[variantType] === undefined) {
       throw new Error(`cannot link kb-matches to variant type ${variantType} as none were specified`);
     }
     if (variantMapping[variantType][variant] === undefined) {
       throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
     }
-    return {...match, variantId: variantMapping[variantType][variant], variantType};
+    return { ...match, variantId: variantMapping[variantType][variant], variantType, variant };
   });
 
-  return createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
+  await createReportKbMatchSection(report.id, 'kbMatches', kbMatches, { transaction });
 };
 
 /**
@@ -267,7 +268,7 @@ const createReportVariantSections = async (report, content, transaction) => {
  */
 const createReportSections = async (report, content, transaction) => {
   // add images
-  const promises = (content.images || []).map(async ({path: imagePath, key, caption, title, category}) => {
+  const promises = (content.images || []).map(async ({ path: imagePath, key, caption, title, category }) => {
     return uploadReportImage(report.id, key, imagePath, {
       filename: path.basename(imagePath), caption, title, transaction, category,
     });
@@ -293,12 +294,51 @@ const createReportSections = async (report, content, transaction) => {
           target.rank = i;
         });
       }
-      promises.push(createReportSection(report.id, model, content[model], {transaction}));
+      promises.push(createReportSection(report.id, model, content[model], { transaction }));
     }
   });
 
   return Promise.all(promises);
 };
+
+/**
+ * Creates all the sections of a report
+ *
+ * @param {object} report - The report to create all sections for
+ * @param {object} content - The data for all the reports sections
+ * @param {object} transaction - The transaction to run all the creates under
+ * @returns {undefined}
+ */
+const createStatementMatching = async (report, content, transaction) => {
+  for (const statementMatch of content.kbStatementMatchedConditions) {
+    const statement = await db.models.kbMatchedStatements.findOne({
+      where: {
+        kbStatementId: statementMatch.kbStatementId,
+        reportId: report.id
+      },
+      transaction: transaction
+    });
+
+    for (const kbMatchedCondition of statementMatch.matchedConditions) {
+      const match = await db.models.kbMatches.findOne({
+        where: {
+          variantUploadKey: kbMatchedCondition.observedVariantKey,
+          kbVariantId: kbMatchedCondition.kbVariantId,
+          reportId: report.id
+        },
+        transaction: transaction
+      });
+
+      console.log('creating new')
+      await db.models.kbMatchJoin.create({
+        reportId: report.id,
+        kbMatchId: match.id,
+        kbMatchedStatementId: statement.id
+      }, { transaction });
+    }
+  }
+};
+
 
 /**
  * Creates a genomic report and all report sections
@@ -374,7 +414,7 @@ const createReport = async (data) => {
   // create report
   let report;
   try {
-    report = await db.models.report.create(data, {transaction});
+    report = await db.models.report.create(data, { transaction });
   } catch (error) {
     await transaction.rollback();
     throw new Error(`Unable to create report ${error.message || error}`);
@@ -384,13 +424,13 @@ const createReport = async (data) => {
   if (report.createdBy_id) {
     let bindUser;
     try {
-      bindUser = await db.models.user.findOne({where: {id: report.createdBy_id}});
+      bindUser = await db.models.user.findOne({ where: { id: report.createdBy_id } });
       await db.models.reportUser.create({
         user_id: bindUser.id,
         reportId: report.id,
         role: 'bioinformatician',
         addedBy_id: bindUser.id,
-      }, {transaction});
+      }, { transaction });
     } catch (error) {
       await transaction.rollback();
       logger.error(`Error binding creating user ${bindUser}`);
@@ -408,7 +448,7 @@ const createReport = async (data) => {
         additionalProject: projectEntry.additionalProject,
       };
 
-      const project = await db.models.reportProject.findOrCreate({where: reportProjectData, defaults: reportProjectData, transaction});
+      const project = await db.models.reportProject.findOrCreate({ where: reportProjectData, defaults: reportProjectData, transaction });
       report.projects.push(project[0]);
     } catch (error) {
       await transaction.rollback();
@@ -418,6 +458,7 @@ const createReport = async (data) => {
   // Create report sections
   try {
     await createReportSections(report, data, transaction);
+    await createStatementMatching(report, data, transaction);
     await transaction.commit();
     return report;
   } catch (error) {

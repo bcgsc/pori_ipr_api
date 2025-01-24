@@ -9,9 +9,6 @@ module.exports = (isJsonSchema) => {
       variant: {
         type: 'string', description: 'the variant key linking this to one of the variant records',
       },
-      kbMatchedStatements: {
-        type: 'array', description: 'kbMatched statement object',
-      },
       category: {type: 'string', description: 'legacy kbMatch loading'},
       approvedTherapy: {type: 'boolean', description: 'legacy kbMatch loading'},
       disease: {type: 'string', description: 'legacy kbMatch loading'},
