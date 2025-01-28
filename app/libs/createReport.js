@@ -64,10 +64,7 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
 
   try {
     for (const record of records) {
-      let kbMatchData;
-      let statementData;
-
-      kbMatchData = {
+      const kbMatchData = {
         variantType: record.variantType,
         variantId: record.variantId,
         variantUploadKey: record.variant,
@@ -81,7 +78,7 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
       delete statementCopy.kbVariant;
       delete statementCopy.kbVariantId;
       delete statementCopy.variant;
-      statementData = [{...statementCopy}];
+      const statementData = [{...statementCopy}];
 
       const kbMatch = await db.models.kbMatches.create({
         reportId,
@@ -89,17 +86,17 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
       }, options);
 
       for (const createStatement of statementData) {
-        if (createStatement) console.log(createStatement);
-        const [statement] = await db.models.kbMatchedStatements.findOrCreate({
-          where: {
-            reportId,
-            ...createStatement,
-          },
-          ...options,
-        });
+        if (Object.keys(createStatement).length) {
+          const [statement] = await db.models.kbMatchedStatements.findOrCreate({
+            where: {
+              reportId,
+              ...createStatement,
+            },
+            ...options,
+          });
 
-        console.log('creating old');
-        await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+          await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
+        }
       }
     }
   } catch (error) {
@@ -326,7 +323,6 @@ const createStatementMatching = async (report, content, transaction) => {
         transaction,
       });
 
-      console.log('creating new');
       await db.models.kbMatchJoin.create({
         reportId: report.id,
         kbMatchId: match.id,
