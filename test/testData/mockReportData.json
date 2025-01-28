@@ -338,6 +338,15 @@
                     "kbVariantId": "784512"
                 }
             ]
+        },
+        {
+            "kbStatementId": "#999:999",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "hash12345678",
+                    "kbVariantId": "123321"
+                }
+            ]
         }
     ],
     "genes": [
