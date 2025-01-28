@@ -390,7 +390,6 @@ analysisReports.hasMany(kbMatchedStatements, {
   as: 'kbMatchedStatements', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
-
 for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   sequelize.models[modelName].hasMany(kbMatches, {
     foreignKey: 'variantId',
