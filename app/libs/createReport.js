@@ -304,30 +304,32 @@ const createReportSections = async (report, content, transaction) => {
  * @returns {undefined}
  */
 const createStatementMatching = async (report, content, transaction) => {
-  for (const statementMatch of content.kbStatementMatchedConditions) {
-    const statement = await db.models.kbMatchedStatements.findOne({
-      where: {
-        kbStatementId: statementMatch.kbStatementId,
-        reportId: report.id,
-      },
-      transaction,
-    });
-
-    for (const kbMatchedCondition of statementMatch.matchedConditions) {
-      const match = await db.models.kbMatches.findOne({
+  if (Array.isArray(content.kbStatementMatchedConditions)) {
+    for (const statementMatch of content.kbStatementMatchedConditions) {
+      const statement = await db.models.kbMatchedStatements.findOne({
         where: {
-          variantUploadKey: kbMatchedCondition.observedVariantKey,
-          kbVariantId: kbMatchedCondition.kbVariantId,
+          kbStatementId: statementMatch.kbStatementId,
           reportId: report.id,
         },
         transaction,
       });
 
-      await db.models.kbMatchJoin.create({
-        reportId: report.id,
-        kbMatchId: match.id,
-        kbMatchedStatementId: statement.id,
-      }, {transaction});
+      for (const kbMatchedCondition of statementMatch.matchedConditions) {
+        const match = await db.models.kbMatches.findOne({
+          where: {
+            variantUploadKey: kbMatchedCondition.observedVariantKey,
+            kbVariantId: kbMatchedCondition.kbVariantId,
+            reportId: report.id,
+          },
+          transaction,
+        });
+
+        await db.models.kbMatchJoin.create({
+          reportId: report.id,
+          kbMatchId: match.id,
+          kbMatchedStatementId: statement.id,
+        }, {transaction});
+      }
     }
   }
 };
