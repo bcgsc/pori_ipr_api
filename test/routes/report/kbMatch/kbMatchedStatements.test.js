@@ -148,8 +148,8 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
 
     test('/{kbMatchedStatements} - 200 Successful statement put', async () => {
       const UPDATE_DATA = {
-        category: 'prognostic'
-      }
+        category: 'test2',
+      };
       const res = await request
         .put(`/api/reports/${report.ident}/kb-matches/kb-matched-statements/${statementUpdate.ident}`)
         .send(UPDATE_DATA)
@@ -160,7 +160,7 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
       checkStatement(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
     });
-  })
+  });
 
   describe('DELETE', () => {
     let statementDelete;
