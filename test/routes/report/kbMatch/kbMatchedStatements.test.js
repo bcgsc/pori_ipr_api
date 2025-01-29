@@ -132,6 +132,36 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
     });
   });
 
+  describe('PUT', () => {
+    let statementUpdate;
+
+    beforeEach(async () => {
+      statementUpdate = await db.models.kbMatchedStatements.create(createDataStatement);
+      await db.models.kbMatchJoin.create({kbMatchId: kbMatch.id, kbMatchedStatementId: statementUpdate.id});
+    });
+
+    afterEach(async () => {
+      if (statementUpdate) {
+        await db.models.kbMatchedStatements.destroy({where: {ident: statementUpdate.ident}});
+      }
+    });
+
+    test('/{kbMatchedStatements} - 200 Successful statement put', async () => {
+      const UPDATE_DATA = {
+        category: 'prognostic'
+      }
+      const res = await request
+        .put(`/api/reports/${report.ident}/kb-matches/kb-matched-statements/${statementUpdate.ident}`)
+        .send(UPDATE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      checkStatement(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
+    });
+  })
+
   describe('DELETE', () => {
     let statementDelete;
 
