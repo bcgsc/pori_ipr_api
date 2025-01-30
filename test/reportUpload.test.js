@@ -123,6 +123,8 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(boundUser.user_id).toBe(report.createdBy_id);
   });
 
+  // TODO: Add test to check the statement matching and if condition statements were created separately
+
   afterAll(async () => {
     // Delete newly created report and all of it's components
     // by force deleting the report

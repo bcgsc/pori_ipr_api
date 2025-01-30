@@ -105,6 +105,11 @@ module.exports = (sequelize, Sq) => {
       field: 'review_status',
       type: Sq.TEXT,
     },
+    requiredKbMatches: {
+      name: 'requiredKbMatches',
+      field: 'required_kb_matches',
+      type: Sq.ARRAY(Sq.TEXT),
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matched_statements',
