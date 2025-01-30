@@ -146,11 +146,13 @@
     "microbial": [
         {
             "species": "species1",
-            "integrationSite": "None"
+            "integrationSite": "None",
+            "microbialHidden": false
         },
         {
             "species": "species2",
-            "integrationSite": "None"
+            "integrationSite": "None",
+            "microbialHidden": false
         }
     ],
     "comparators": [
