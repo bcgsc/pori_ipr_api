@@ -29,7 +29,7 @@ const MICROBIAL_UPDATE_DATA = {
 };
 
 const microbialProperties = [
-  'ident', 'createdAt', 'updatedAt', 'species', 'integrationSite',
+  'ident', 'createdAt', 'updatedAt', 'species', 'integrationSite', 'microbialHidden',
 ];
 
 const checkMicrobialProperties = (microbial) => {

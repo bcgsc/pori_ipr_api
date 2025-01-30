@@ -132,6 +132,41 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
     });
   });
 
+  describe('PUT', () => {
+    let statementUpdate;
+
+    beforeEach(async () => {
+      statementUpdate = await db.models.kbMatchedStatements.create(createDataStatement);
+      await db.models.kbMatchJoin.create({kbMatchId: kbMatch.id, kbMatchedStatementId: statementUpdate.id});
+    });
+
+    afterEach(async () => {
+      if (statementUpdate) {
+        await db.models.kbMatchedStatements.destroy({where: {ident: statementUpdate.ident}});
+      }
+    });
+
+    test('/{kbMatchedStatements} - 200 Successful statement put', async () => {
+      const UPDATE_DATA = JSON.parse(JSON.stringify(statementUpdate));
+      UPDATE_DATA.category = 'prognostic';
+      UPDATE_DATA.kbData = {test: 'test2'};
+      const popFields = ['createdAt', 'createdBy', 'updatedAt', 'updatedBy', 'deletedAt', 'deletedBy', 'id', 'ident', 'reportId'];
+      popFields.forEach((item) => {
+        delete UPDATE_DATA[item];
+      });
+
+      const res = await request
+        .put(`/api/reports/${report.ident}/kb-matches/kb-matched-statements/${statementUpdate.ident}`)
+        .send(UPDATE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkStatement(res.body);
+      expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
+    });
+  });
+
   describe('DELETE', () => {
     let statementDelete;
 

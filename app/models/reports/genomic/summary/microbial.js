@@ -18,6 +18,16 @@ module.exports = (sequelize, Sq) => {
     integrationSite: {
       type: Sq.TEXT,
     },
+    microbialHidden: {
+      name: 'microbialHidden',
+      field: 'microbial_hidden',
+      type: Sq.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+      jsonSchema: {
+        description: 'Microbial Hidden',
+      },
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_summary_microbial',
