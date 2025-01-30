@@ -147,15 +147,21 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
     });
 
     test('/{kbMatchedStatements} - 200 Successful statement put', async () => {
-      const UPDATE_DATA = {
-        category: 'test2',
-      };
+      const UPDATE_DATA = JSON.parse(JSON.stringify(statementUpdate));
+      UPDATE_DATA['category'] = 'prognostic';
+      UPDATE_DATA['kbData'] = {test: 'test2'};
+      popFields = ['createdAt', 'createdBy', 'updatedAt', 'updatedBy', 'deletedAt', 'deletedBy', 'id', 'ident', 'reportId']
+      popFields.forEach((item) => {
+        delete UPDATE_DATA[item];
+      });
+
       const res = await request
         .put(`/api/reports/${report.ident}/kb-matches/kb-matched-statements/${statementUpdate.ident}`)
         .send(UPDATE_DATA)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.NO_CONTENT);
+        .expect(HTTP_STATUS.OK);
+
 
       checkStatement(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
