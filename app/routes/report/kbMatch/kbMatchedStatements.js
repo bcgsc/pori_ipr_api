@@ -7,6 +7,15 @@ const router = express.Router({mergeParams: true});
 const db = require('../../../models');
 const logger = require('../../../log');
 
+const schemaGenerator = require('../../../schemas/schemaGenerator');
+const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
+const {REPORT_UPDATE_BASE_URI} = require('../../../constants');
+
+const updateSchema = schemaGenerator(db.models.kbMatchedStatements, {
+  baseUri: REPORT_UPDATE_BASE_URI,
+  nothingRequired: true,
+});
+
 // Middleware for kbMatchedStatements
 router.param('kbMatchedStatement', async (req, res, next, kbMatchedStatementIdent) => {
   let result;
@@ -42,6 +51,22 @@ router.param('kbMatchedStatement', async (req, res, next, kbMatchedStatementIden
 router.route('/:kbMatchedStatement([A-z0-9-]{36})')
   .get((req, res) => {
     return res.json(req.returnStatement);
+  })
+  .put(async (req, res) => {
+    try {
+      validateAgainstSchema(updateSchema, req.body, false);
+    } catch (error) {
+      const message = `Error while validating patient information update request ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+    try {
+      await req.kbMatchedStatement.update(req.body, {userId: req.user.id});
+      return res.json(req.kbMatchedStatement.view('public'));
+    } catch (error) {
+      logger.error(`Unable to update kbMatchedStatement ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update kbMatchedStatement'}});
+    }
   })
   .delete(async (req, res) => {
     // Soft delete the entry
