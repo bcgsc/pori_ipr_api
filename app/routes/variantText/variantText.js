@@ -21,7 +21,7 @@ const createSchema = schemaGenerator(db.models.variantText, {
   baseUri: '/create', exclude: [...BASE_EXCLUDE],
 });
 const updateSchema = schemaGenerator(db.models.variantText, {
-  baseUri: '/update', include: ['text'], nothingRequired: true,
+  baseUri: '/update', include: ['cancerType', 'text'], nothingRequired: true,
 });
 
 const pairs = {
