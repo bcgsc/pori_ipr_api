@@ -19,6 +19,7 @@ const EXCLUDE_SECTIONS = new Set([
   'projects',
   'ReportUserFilter',
   'users',
+  'kbMatchedStatements',
 ]);
 
 /**
@@ -87,13 +88,13 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
 
       for (const createStatement of statementData) {
         if (Object.keys(createStatement).length) {
-          const [statement] = await db.models.kbMatchedStatements.findOrCreate({
-            where: {
+          const [statement] = await db.models.kbMatchedStatements.create(
+            {
               reportId,
               ...createStatement,
             },
             ...options,
-          });
+          );
 
           await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
         }
@@ -306,6 +307,7 @@ const createReportSections = async (report, content, transaction) => {
 const createStatementMatching = async (report, content, transaction) => {
   if (Array.isArray(content.kbStatementMatchedConditions)) {
     for (const statementMatch of content.kbStatementMatchedConditions) {
+      // TODO: Statement has to be unique for each condition, convert the findOne to create and add the data
       const statement = await db.models.kbMatchedStatements.findOne({
         where: {
           kbStatementId: statementMatch.kbStatementId,
