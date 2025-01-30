@@ -148,9 +148,9 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
 
     test('/{kbMatchedStatements} - 200 Successful statement put', async () => {
       const UPDATE_DATA = JSON.parse(JSON.stringify(statementUpdate));
-      UPDATE_DATA['category'] = 'prognostic';
-      UPDATE_DATA['kbData'] = {test: 'test2'};
-      popFields = ['createdAt', 'createdBy', 'updatedAt', 'updatedBy', 'deletedAt', 'deletedBy', 'id', 'ident', 'reportId']
+      UPDATE_DATA.category = 'prognostic';
+      UPDATE_DATA.kbData = {test: 'test2'};
+      const popFields = ['createdAt', 'createdBy', 'updatedAt', 'updatedBy', 'deletedAt', 'deletedBy', 'id', 'ident', 'reportId'];
       popFields.forEach((item) => {
         delete UPDATE_DATA[item];
       });
@@ -161,7 +161,6 @@ describe('/reports/{REPORTID}/kb-matches/kb-matched-statements', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-
 
       checkStatement(res.body);
       expect(res.body).toEqual(expect.objectContaining(UPDATE_DATA));
