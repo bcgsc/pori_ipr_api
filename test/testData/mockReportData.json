@@ -282,6 +282,18 @@
             "kbVariantId": "986532"
         },
         {
+            "variantType": "mut",
+            "variant": "test1",
+            "kbVariant": "test kbvariant name",
+            "kbVariantId": "#111:111",
+        },
+        {
+            "variantType": "mut",
+            "variant": "test2",
+            "kbVariant": "test kbvariant name",
+            "kbVariantId": "#111:111",
+        },
+        {
             "variantType": "tmb",
             "variant": "tmb",
             "kbVariant": "protein increased expression",
@@ -313,7 +325,7 @@
             "category": "therapeutic",
             "context": "test multivariant statement",
             "disease": "colorectal cancer [DOID:9256]",
-            "kbStatementId": "#999:999",
+            "kbStatementId": "#999:991",
             "matchedCancer": true,
             "reference": "pmid:TEST1",
             "relevance": "resistance",
@@ -322,22 +334,97 @@
             "reviewStatus": "pending",
             "kbData": {},
             "requiredKbMatches": [
-                "#158:1343",
-                "#999:9999"
+                "#111:111",
+                "#333:333"
+            ]
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test partial-match multivariant statement",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#999:992",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#333:333",
+                "#444:444"
+            ]
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test single-variant statement with multiple possible matches",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#999:993",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#111:111",
             ]
         }
     ],
     "kbStatementMatchedConditions": [
         {
-            "kbStatementId": "#999:999",
+            "kbStatementId": "#999:991",
             "matchedConditions": [
                 {
-                    "observedVariantKey": "msi",
-                    "kbVariantId": "986532"
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#111:111"
                 },
                 {
                     "observedVariantKey": "tmb",
-                    "kbVariantId": "784512"
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#999:991",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test2",
+                    "kbVariantId": "#111:111"
+                },
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#999:992",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#999:993",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test2",
+                    "kbVariantId": "#111:111"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#999:993",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#111:111"
                 }
             ]
         },
@@ -365,7 +452,7 @@
         {
             "gene": "ZFP36L2",
             "transcript": "ENST00000282388",
-            "proteinChange": "p.Q401del",
+            "proteinChange": "p.Q111del",
             "startPosition": 43451739,
             "endPosition": 43451739,
             "chromosome": "2",
@@ -382,14 +469,43 @@
             "normalAltCount": 0,
             "normalDepth": 40,
             "ncbiBuild": "GRCh37",
-            "hgvsProtein": "ZFP36L2:p.Q401del",
+            "hgvsProtein": "ZFP36L2:p.Q999del",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
             "hgvsGenomic": "2:g.43451740_43451742delCTG",
             "germline": false,
             "tumourRefCopies": 60,
             "tumourAltCopies": 20,
             "library": "TEST LIBRARY",
-            "selected": false
+            "selected": false,
+            "key": "test2"
+        },
+        {
+            "gene": "ZFP36L2",
+            "transcript": "ENST00000282388",
+            "proteinChange": "p.Q999del",
+            "startPosition": 43451739,
+            "endPosition": 43451739,
+            "chromosome": "2",
+            "refSeq": "CCTG",
+            "altSeq": "C",
+            "zygosity": "sub [0/3]",
+            "tumourRefCount": 583,
+            "tumourAltCount": 4,
+            "tumourDepth": 590,
+            "rnaRefCount": 400,
+            "rnaAltCount": 15,
+            "rnaDepth": 415,
+            "normalRefCount": 40,
+            "normalAltCount": 0,
+            "normalDepth": 40,
+            "ncbiBuild": "GRCh37",
+            "hgvsProtein": "ZFP36L2:p.Q111del",
+            "germline": false,
+            "tumourRefCopies": 60,
+            "tumourAltCopies": 20,
+            "library": "TEST LIBRARY",
+            "selected": false,
+            "key": "test1"
         }
     ],
     "mutationSignature": [
