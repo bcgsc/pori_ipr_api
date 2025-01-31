@@ -110,6 +110,10 @@ const DEFAULTS = {
   swagger: {
     url: null,
   },
+  image: {
+    image_upload_limit: 3000000,
+    scale_factor: 1.5,
+  }
 };
 
 const processEnvVariables = (env = process.env, opt = {}) => {

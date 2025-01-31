@@ -1,3 +1,5 @@
+const CONFIG = require("./config");
+
 module.exports = {
   UUIDregex: '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}',
   KB_PIVOT_MAPPING: {
@@ -37,6 +39,6 @@ module.exports = {
   MASTER_REPORT_ACCESS: ['admin', 'manager'],
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
-  IMAGE_UPLOAD_LIMIT: 3000000,
+  IMAGE_UPLOAD_LIMIT: CONFIG.get('image:image_upload_limit'),
   IMAGE_SIZE_LIMIT: 20000, // in bytes
 };

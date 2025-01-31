@@ -421,7 +421,7 @@ const createReport = async (data) => {
 
     const result = await db.query(
       `SELECT
-            SUM(pg_column_size("reports_image_data")) AS avg_size_bytes
+            SUM(pg_column_size("reports_image_data")) AS total_bytes
           FROM
             "reports_image_data"
           WHERE

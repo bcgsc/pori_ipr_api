@@ -1,7 +1,9 @@
 const sharp = require('sharp');
 const db = require('../models');
 const {IMAGE_SIZE_LIMIT} = require('../constants');
+const CONFIG = require('../config');
 
+const SCALE_FACTOR = CONFIG.get('image:scale_factor');
 /**
  * Delete image from images table
  *
@@ -19,8 +21,8 @@ const autoDownsize = async (image, size, format = 'png') => {
   // Process the image (resize and format) and update the size
   const resizedImage = await sharp(image.data)
     .resize(
-      Math.floor(image.info.width / 1.5),
-      Math.floor(image.info.height / 1.5),
+      Math.floor(image.info.width / SCALE_FACTOR),
+      Math.floor(image.info.height / SCALE_FACTOR),
       {fit: 'inside', withoutEnlargement: true},
     )
     .toFormat(format.toLowerCase())
