@@ -63,45 +63,65 @@ const createReportKbMatchSection = async (reportId, modelName, sectionContent, o
     ? sectionContent
     : [sectionContent];
 
+  const retvals = [];
   try {
     for (const record of records) {
       const kbMatchData = {
         variantType: record.variantType,
         variantId: record.variantId,
-        variantUploadKey: record.variant,
         kbVariant: record.kbVariant,
         kbVariantId: record.kbVariantId,
       };
-
-      const statementCopy = {...record};
-      delete statementCopy.variantType;
-      delete statementCopy.variantId;
-      delete statementCopy.kbVariant;
-      delete statementCopy.kbVariantId;
-      delete statementCopy.variant;
-      const statementData = [{...statementCopy}];
 
       const kbMatch = await db.models.kbMatches.create({
         reportId,
         ...kbMatchData,
       }, options);
-
-      for (const createStatement of statementData) {
-        if (Object.keys(createStatement).length) {
-          const [statement] = await db.models.kbMatchedStatements.create(
-            {
-              reportId,
-              ...createStatement,
-            },
-            ...options,
-          );
-
-          await db.models.kbMatchJoin.create({reportId, kbMatchId: kbMatch.id, kbMatchedStatementId: statement.id}, options);
-        }
-      }
+      kbMatch.dataValues.variant = record.variant;
+      retvals.push(kbMatch.dataValues);
     }
+    return retvals;
   } catch (error) {
     throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+  }
+};
+
+/**
+ * Creates all the sections of a report
+ *
+ * @param {object} reportId - The report id to use when creating the records
+ * @param {object} content - The data for all the reports sections
+ * @param {object} createdKbMatches - The records of createdKbData which can be matched
+ * to the conditions
+ * @param {object} transaction - The transaction to run all the creates under
+ * @returns {undefined}
+ */
+const createStatementMatching = async (reportId, content, createdKbMatches, transaction) => {
+  if (Array.isArray(content.kbStatementMatchedConditions)) {
+    for (const conditionSet of content.kbStatementMatchedConditions) {
+      const statement = content.kbMatchedStatements.find((obj) => {
+        return obj.kbStatementId === conditionSet.kbStatementId;
+      });
+      const createdStatement = await db.models.kbMatchedStatements.create(
+        {
+          reportId,
+          ...statement,
+        },
+        {transaction},
+      );
+      for (const condition of conditionSet.matchedConditions) {
+        const kbmatch = createdKbMatches.find((obj) => {
+          return (
+            condition.observedVariantKey === obj.variant
+            && condition.kbVariantId === obj.kbVariantId);
+        });
+        await db.models.kbMatchJoin.create({
+          reportId,
+          kbMatchId: kbmatch.id,
+          kbMatchedStatementId: createdStatement.dataValues.id,
+        }, {transaction});
+      }
+    }
   }
 };
 
@@ -154,6 +174,42 @@ const createReportGenes = async (report, content, options = {}) => {
   } catch (error) {
     throw new Error(`Unable to create report genes ${error.message || error}`);
   }
+};
+
+/**
+ * Converts old-style kbmatch report input content into new-style kbmatch/statement/conditionset format
+ *
+ * @param {object} content - The data for all the reports sections
+ * @returns {object} content - The reformatted data
+ */
+const updateKbMatchesInputFormat = (content) => {
+  content.kbMatches.forEach((item) => {
+    if ('kbStatementId' in item) {
+      const statement = {...item};
+      delete statement.variantType;
+      delete statement.variantId;
+      delete statement.kbVariant;
+      delete statement.kbVariantId;
+      delete statement.variant;
+
+      // TODO probably need to add this in actually if not present;
+      // deleting for now if found to deal with column not in db FIX AND REMOVE
+      if (('requiredKbMatches' in statement)) {
+        delete statement.requiredKbVariants;
+      }
+      content.kbMatchedStatements.push(statement);
+
+      const conditionSet = {
+        kbStatementId: item.kbStatementId,
+        matchedConditions: [{
+          observedVariantKey: item.variant,
+          kbVariantId: item.kbVariantId,
+        }],
+      };
+      content.kbStatementMatchedConditions.push(conditionSet);
+    }
+  });
+  return content;
 };
 
 /**
@@ -250,7 +306,11 @@ const createReportVariantSections = async (report, content, transaction) => {
     return {...match, variantId: variantMapping[variantType][variant], variantType, variant};
   });
 
-  await createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
+  content = updateKbMatchesInputFormat(content);
+
+  const createdKbMatches = await createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
+
+  await createStatementMatching(report.id, content, createdKbMatches, transaction);
 };
 
 /**
@@ -294,46 +354,6 @@ const createReportSections = async (report, content, transaction) => {
   });
 
   return Promise.all(promises);
-};
-
-/**
- * Creates all the sections of a report
- *
- * @param {object} report - The report to create all sections for
- * @param {object} content - The data for all the reports sections
- * @param {object} transaction - The transaction to run all the creates under
- * @returns {undefined}
- */
-const createStatementMatching = async (report, content, transaction) => {
-  if (Array.isArray(content.kbStatementMatchedConditions)) {
-    for (const statementMatch of content.kbStatementMatchedConditions) {
-      // TODO: Statement has to be unique for each condition, convert the findOne to create and add the data
-      const statement = await db.models.kbMatchedStatements.findOne({
-        where: {
-          kbStatementId: statementMatch.kbStatementId,
-          reportId: report.id,
-        },
-        transaction,
-      });
-
-      for (const kbMatchedCondition of statementMatch.matchedConditions) {
-        const match = await db.models.kbMatches.findOne({
-          where: {
-            variantUploadKey: kbMatchedCondition.observedVariantKey,
-            kbVariantId: kbMatchedCondition.kbVariantId,
-            reportId: report.id,
-          },
-          transaction,
-        });
-
-        await db.models.kbMatchJoin.create({
-          reportId: report.id,
-          kbMatchId: match.id,
-          kbMatchedStatementId: statement.id,
-        }, {transaction});
-      }
-    }
-  }
 };
 
 /**
@@ -454,7 +474,6 @@ const createReport = async (data) => {
   // Create report sections
   try {
     await createReportSections(report, data, transaction);
-    await createStatementMatching(report, data, transaction);
     await transaction.commit();
     return report;
   } catch (error) {

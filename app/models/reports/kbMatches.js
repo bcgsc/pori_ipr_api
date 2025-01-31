@@ -36,11 +36,6 @@ module.exports = (sequelize, Sq) => {
       field: 'kb_variant_id',
       type: Sq.TEXT,
     },
-    variantUploadKey: {
-      name: 'variantUploadKey',
-      field: 'variant_upload_key',
-      type: Sq.TEXT,
-    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_kb_matches',

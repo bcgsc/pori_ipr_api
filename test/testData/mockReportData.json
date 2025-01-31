@@ -265,11 +265,10 @@
             "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "kbStatementId": "#666:666",
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending",
@@ -285,35 +284,35 @@
             "variantType": "mut",
             "variant": "test1",
             "kbVariant": "test kbvariant name",
-            "kbVariantId": "#111:111",
+            "kbVariantId": "#111:111"
         },
         {
             "variantType": "mut",
             "variant": "test2",
             "kbVariant": "test kbvariant name",
-            "kbVariantId": "#111:111",
+            "kbVariantId": "#111:111"
         },
         {
             "variantType": "tmb",
             "variant": "tmb",
             "kbVariant": "protein increased expression",
-            "kbVariantId": "784512"
+            "kbVariantId": "#333:333"
         },
         {
             "category": "cancer predisposition",
             "variantType": "sigv",
-            "variant": "sigv",
+            "variant": "sigv-key",
             "kbVariant": "protein increased expression",
+            "kbVariantId": "sigvey-variant-id",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
             "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "kbStatementId": "#555:555",
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"
@@ -370,7 +369,7 @@
             "reviewStatus": "pending",
             "kbData": {},
             "requiredKbMatches": [
-                "#111:111",
+                "#111:111"
             ]
         }
     ],
@@ -425,15 +424,6 @@
                 {
                     "observedVariantKey": "test1",
                     "kbVariantId": "#111:111"
-                }
-            ]
-        },
-        {
-            "kbStatementId": "#999:999",
-            "matchedConditions": [
-                {
-                    "observedVariantKey": "hash12345678",
-                    "kbVariantId": "123321"
                 }
             ]
         }
@@ -684,7 +674,7 @@
     "signatureVariants": [
         {
             "displayName": "Signature Variant",
-            "key": "sigv"
+            "key": "sigv-key"
         }
     ],
     "project": "TEST",
