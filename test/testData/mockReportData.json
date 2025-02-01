@@ -258,7 +258,7 @@
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
-            "kbVariantId": "123321",
+            "kbVariantId": "#backwardscompatible2-variant",
             "category": "cancer predisposition",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
@@ -268,17 +268,17 @@
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "#666:666",
+            "kbStatementId": "#backwardscompatible2",
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending",
             "approvedTherapy": true
         },
         {
-            "variantType": "msi",
-            "variant": "msi",
-            "kbVariant": "protein increased expression",
-            "kbVariantId": "986532"
+            "variantType": "mut",
+            "variant": "test1",
+            "kbVariant": "test kbvariant name2",
+            "kbVariantId": "#backwardscompatible2-variant"
         },
         {
             "variantType": "mut",
@@ -303,7 +303,7 @@
             "variantType": "sigv",
             "variant": "sigv-key",
             "kbVariant": "protein increased expression",
-            "kbVariantId": "sigvey-variant-id",
+            "kbVariantId": "#backwardscompatible1-variant",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
             "context": "lower overall survival",
@@ -312,7 +312,7 @@
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "#555:555",
+            "kbStatementId": "#backwardscompatible1",
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"
@@ -324,7 +324,7 @@
             "category": "therapeutic",
             "context": "test multivariant statement",
             "disease": "colorectal cancer [DOID:9256]",
-            "kbStatementId": "#999:991",
+            "kbStatementId": "#multivariantstmt_singleconditionset",
             "matchedCancer": true,
             "reference": "pmid:TEST1",
             "relevance": "resistance",
@@ -340,9 +340,43 @@
         {
             "approvedTherapy": false,
             "category": "therapeutic",
-            "context": "test partial-match multivariant statement",
+            "context": "test multivariant statement",
             "disease": "colorectal cancer [DOID:9256]",
-            "kbStatementId": "#999:992",
+            "kbStatementId": "#multivariantstmt_multiconditionset",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#111:111",
+                "#333:333"
+            ]
+        },
+        {
+            "category": "cancer predisposition",
+            "disease": "colorectal cancer",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
+            "status": "na",
+            "reference": "12345678#",
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "#backwardscompatible2",
+            "externalSource": "CIViC",
+            "externalStatementId": "1234",
+            "reviewStatus": "pending",
+            "approvedTherapy": true
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "also a partial-match example",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#singlevariantstmt_singleconditionset",
             "matchedCancer": true,
             "reference": "pmid:TEST1",
             "relevance": "resistance",
@@ -360,7 +394,7 @@
             "category": "therapeutic",
             "context": "test single-variant statement with multiple possible matches",
             "disease": "colorectal cancer [DOID:9256]",
-            "kbStatementId": "#999:993",
+            "kbStatementId": "#singlevariantstmt_multiconditionset",
             "matchedCancer": true,
             "reference": "pmid:TEST1",
             "relevance": "resistance",
@@ -375,7 +409,7 @@
     ],
     "kbStatementMatchedConditions": [
         {
-            "kbStatementId": "#999:991",
+            "kbStatementId": "#multivariantstmt_singleconditionset",
             "matchedConditions": [
                 {
                     "observedVariantKey": "test1",
@@ -388,7 +422,20 @@
             ]
         },
         {
-            "kbStatementId": "#999:991",
+            "kbStatementId": "#multivariantstmt_multiconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#111:111"
+                },
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#multivariantstmt_multiconditionset",
             "matchedConditions": [
                 {
                     "observedVariantKey": "test2",
@@ -401,7 +448,7 @@
             ]
         },
         {
-            "kbStatementId": "#999:992",
+            "kbStatementId": "#singlevariantstmt_singleconditionset",
             "matchedConditions": [
                 {
                     "observedVariantKey": "tmb",
@@ -410,7 +457,7 @@
             ]
         },
         {
-            "kbStatementId": "#999:993",
+            "kbStatementId": "#singlevariantstmt_multiconditionset",
             "matchedConditions": [
                 {
                     "observedVariantKey": "test2",
@@ -419,11 +466,20 @@
             ]
         },
         {
-            "kbStatementId": "#999:993",
+            "kbStatementId": "#singlevariantstmt_multiconditionset",
             "matchedConditions": [
                 {
                     "observedVariantKey": "test1",
                     "kbVariantId": "#111:111"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#backwardscompatible2",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#backwardscompatible2-variant"
                 }
             ]
         }
