@@ -231,6 +231,7 @@
     ],
     "tmburMutationBurden": {
         "key": "tmb",
+        "displayName": "tmb",
         "tumour": "T1",
         "normal": "N1",
         "nonNBasesIn1To22AndXAndY": "2667837836",
@@ -523,7 +524,8 @@
             "tumourAltCopies": 20,
             "library": "TEST LIBRARY",
             "selected": false,
-            "key": "test2"
+            "key": "test2",
+            "displayName": "test2"
         },
         {
             "gene": "ZFP36L2",
@@ -551,6 +553,7 @@
             "tumourAltCopies": 20,
             "library": "TEST LIBRARY",
             "selected": false,
+            "displayName": "test1",
             "key": "test1"
         }
     ],
@@ -636,6 +639,7 @@
     "expressionVariants": [
         {
             "key": "hash12345678",
+            "displayName": "hash12345678",
             "gene": "MALAT1",
             "biopsySiteFoldChange": 16,
             "biopsySitekIQR": 16.82,
@@ -724,13 +728,15 @@
         {
             "score": 19.5,
             "kbCategory": "moderate",
-            "key": "msi"
+            "key": "msi",
+            "displayName": "msi"
         }
     ],
     "signatureVariants": [
         {
             "displayName": "Signature Variant",
-            "key": "sigv-key"
+            "key": "sigv-key",
+            "displayName": "sigv-key"
         }
     ],
     "project": "TEST",

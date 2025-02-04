@@ -17,6 +17,61 @@ const LONGER_TIMEOUT = 100000;
 let server;
 let request;
 
+const getVarsForStatement = (kbStmtId, kbStatements, kbVariants, kbJoins) => {
+  const stmts = kbStatements.filter((kbs) => {
+    return kbs.kbStatementId === kbStmtId;
+  });
+  const allAssociatedVars = {};
+  stmts.forEach((stmt) => {
+    const joins = kbJoins.filter((item) => {return stmt.id === item.kbMatchedStatementId;});
+    const varIds = joins.map((item) => {return item.kbMatchId;});
+    const vars = kbVariants.filter((item) => {return varIds.includes(item.id);});
+    allAssociatedVars[stmt.id] = vars;
+  });
+  return allAssociatedVars;
+};
+
+const getVariantName = (kbMatch, allVars) => {
+  const variant = allVars[kbMatch.variantType].filter((item) => {
+    return item.dataValues.id === kbMatch.dataValues.variantId;
+  });
+  expect(variant.length).toBe(1);
+  return variant[0].displayName;
+};
+
+// TODO: these tests are using the displayName field in a way that
+// normal input data would not use it; improve this
+const checkForConditionSetMatch = (varLists, conditionList, allVars) => {
+  /* ConditionList is a group of observed variant/kbVariant pairs.
+  varLists is a list of such groups.
+  This function checks that conditionList matches some element of varlists -
+  ie it checks whether each observed variant/kbvariant pair in the conditionList,
+  is present in the varList element, and vice versa.
+  */
+  for (const group of varLists) {
+    // check every variant in the condition list has a match in the group
+    const conditionMatched = conditionList.every((conditionVariant) => {
+      return group.some((groupVariant) => {
+        return groupVariant.kbStatementId === conditionVariant.kbStatementId
+            && getVariantName(groupVariant, allVars) === conditionVariant.variant;
+      });
+    });
+
+    // check every variant in the group has a match in the condition list
+    const groupMatched = group.every((groupVariant) => {
+      return conditionList.some((conditionVariant) => {
+        return conditionVariant.kbStatementId === groupVariant.kbStatementId
+            && conditionVariant.variant === getVariantName(groupVariant, allVars);
+      });
+    });
+
+    if (conditionMatched && groupMatched) {
+      return true;
+    }
+  }
+  return false;
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -31,6 +86,11 @@ describe('Tests for uploading a report and all of its components', () => {
   let kbStatements;
   let kbVariants;
   let kbJoins;
+  let mutvars;
+  let sigvars;
+  let tmbvars;
+  let expvars;
+  const allVars = {};
 
   beforeAll(async () => {
     // Assure projects exists before creating report
@@ -70,6 +130,17 @@ describe('Tests for uploading a report and all of its components', () => {
 
     kbStatements = await db.models.kbMatchedStatements.findAll({where: {report_id: reportId}});
     kbVariants = await db.models.kbMatches.findAll({where: {report_id: reportId}});
+
+    // there are other types of mutations, but these are the ones used in these tests so far
+    mutvars = await db.models.smallMutations.findAll({where: {report_id: reportId}});
+    expvars = await db.models.expressionVariants.findAll({where: {report_id: reportId}});
+    tmbvars = await db.models.tmburMutationBurden.findAll({where: {report_id: reportId}});
+    sigvars = await db.models.signatureVariants.findAll({where: {report_id: reportId}});
+    allVars.mut = mutvars;
+    allVars.exp = expvars;
+    allVars.tmb = tmbvars;
+    allVars.sig = sigvars;
+
     const kbstmtids = kbStatements.map((obj) => {return obj.id;});
     kbJoins = await db.models.kbMatchJoin.findAll({where: {kbMatchedStatementId: kbstmtids}});
   }, LONGER_TIMEOUT);
@@ -142,7 +213,7 @@ describe('Tests for uploading a report and all of its components', () => {
   // specifically which table depends on what type of variant it is.
   //
 
-  test('kbStatements and kbVariants are all linked via kbJoins', async () => {
+  test('No kbStatements or kbVariants are unlinked', async () => {
     const kbstmtids = kbStatements.map((obj) => {return obj.id;}); // the ipr statement record ids
     const kbvarids = kbVariants.map((obj) => {return obj.id;}); // the ipr variant record ids
 
@@ -155,107 +226,83 @@ describe('Tests for uploading a report and all of its components', () => {
     });
   });
 
-  test('Old-format kbmatch input yields 1-1-1 stmt-join-variant set', async () => {
-    // expect backwards-compatible input format to create one variant-join-statement
-    const stmts = kbStatements.filter((stmt) => {
-      return stmt.kbStatementId === '#backwardscompatible1';
-    });
-    const stmtIds = stmts.map((item) => {return item.dataValues.id;});
-    const joins = kbJoins.filter((item) => {
-      return stmtIds.includes(item.kbMatchedStatementId);
-    });
-    const joinIds = joins.map((item) => {return item.kbMatchId;});
-    const vars = kbVariants.filter((item) => {return joinIds.includes(item.id);});
-    expect(stmts.length).toBe(1);
-    expect(vars.length).toBe(1);
-    expect(joins.length).toBe(1);
-    expect(vars[0].kbVariantId).toBe('#backwardscompatible1-variant');
+  test('One statement record created for each input condition set', async () => {
+    const conditionsets = mockReportData.kbStatementMatchedConditions;
+    const oldFormatConditionSets = mockReportData.kbMatches.filter((item) => {return 'kbStatementId' in item;});
+
+    const totalExpectedStatements = conditionsets.length + oldFormatConditionSets.length;
+    expect(totalExpectedStatements).toEqual(kbStatements.length);
   });
 
-  test('Single-variant statement with single condition set yields 1-1-1 stmt-join-variant set', async () => {
+  test('One variant record created for each input kbmatch record', async () => {
+    const variants = mockReportData.kbMatches;
+    expect(variants.length).toEqual(kbVariants.length);
+  });
+
+  test('Old-format kbmatch input yields 1-1 stmt-variant set', async () => {
+    // expect backwards-compatible input format to create one stmt with one associated variant
+    const vars = getVarsForStatement('#backwardscompatible1', kbStatements, kbVariants, kbJoins);
+    expect(vars.values.length).toBe(1);
+    expect(vars.values[0].kbVariantId).toBe('#backwardscompatible1-variant');
+  });
+
+  test('Single-variant statement with single condition set yields 1-1 stmt-variant set', async () => {
     // expect new format to create single stmt-join-var set in simplest case
     // (single variant stmt, one conditionset)
-    const stmts = kbStatements.filter((kbs) => {
-      return kbs.kbStatementId === '#singlevariantstmt_singleconditionset';
-    });
-    const stmtIds = stmts.map((item) => {return item.dataValues.id;});
-    const joins = kbJoins.filter((item) => {
-      return stmtIds.includes(item.kbMatchedStatementId);
-    });
-    const joinIds = joins.map((item) => {return item.kbMatchId;});
-    const vars = kbVariants.filter((item) => {return joinIds.includes(item.id);});
-    expect(stmts.length).toBe(1);
-    expect(vars.length).toBe(1);
-    expect(joins.length).toBe(1);
-    expect(vars[0].kbVariantId).toBe('#333:333');
+    const vars = getVarsForStatement('#singlevariantstmt_singleconditionset', kbStatements, kbVariants, kbJoins);
+    expect(vars.values.length).toBe(1);
+    expect(vars.values[0].kbVariantId).toBe('#333:333'); // 'tmb'
   });
 
-  test('Single-variant statement with two condition sets yields 2 stmts each with 1-1 join-variant pair', async () => {
+  test('Single-variant statement with two condition sets yields 2 stmts each with 1 variant', async () => {
     // expect new format to create two stmts (and each to have one var, one join)
     // for single variant stmt with two conditionsets
-    const stmts = kbStatements.filter((kbs) => {
-      return kbs.kbStatementId === '#singlevariantstmt_multiconditionset';
-    });
-    expect(stmts.length).toBe(2);
-    const allAssociatedVars = [];
-    stmts.forEach((stmt) => {
-      const joins = kbJoins.filter((item) => {return stmt.id === item.kbMatchedStatementId;});
-      const vars = kbVariants.filter((item) => {return item.id === joins[0].kbMatchId;});
-      expect(vars.length).toBe(1);
-      expect(joins.length).toBe(1);
-      expect(vars[0].kbVariantId).toBe('#111:111'); // expect the vars to have the same graphkb id
-      allAssociatedVars.push(vars[0]);
-    });
-    // expect the vars to have different ipr ids (to be two distinct records)
-    expect(allAssociatedVars[0].variantId).not.toEqual(allAssociatedVars[1].variantId);
+    const varLists = getVarsForStatement('#singlevariantstmt_multiconditionset', kbStatements, kbVariants, kbJoins);
+    expect(varLists.values.length).toBe(2);
+    const conditionSet1 = [
+      {kbVariantId: '#111:111', variant: 'test1'},
+    ];
+    expect(checkForConditionSetMatch(varLists, conditionSet1, allVars)).toBe(true);
+    const conditionSet2 = [
+      {kbVariantId: '#111:111', variant: 'test2'},
+    ];
+    expect(checkForConditionSetMatch(varLists, conditionSet2, allVars)).toBe(True);
   });
 
-  test('Multi-variant statement with one condition sets yields 1 stmt with two 1-1 join-variant pairs', async () => {
+  test('Multi-variant statement with one condition set yields 1 stmt with 2 variants', async () => {
     // expect new format to create two joins, two vars, one stmt
     // for multivariant stmt with one conditionset
-    const stmts = kbStatements.filter((kbs) => {
-      return kbs.kbStatementId === '#multivariantstmt_singleconditionset';
-    });
-    const stmtIds = stmts.map((item) => {return item.dataValues.id;});
-    const joins = kbJoins.filter((item) => {
-      return stmtIds.includes(item.kbMatchedStatementId);
-    });
-    const joinIds = joins.map((item) => {return item.kbMatchId;});
-    const vars = kbVariants.filter((item) => {return joinIds.includes(item.id);});
-    expect(stmts.length).toBe(1);
-    expect(vars.length).toBe(2);
-    expect(joins.length).toBe(2);
-    // expect the vars to have different ipr ids (to be two distinct records)
-    expect(vars[0].id).not.toEqual(vars[1].id);
+    const varLists = getVarsForStatement('#multivariantstmt_singleconditionset', kbStatements, kbVariants, kbJoins);
+    expect(varLists.values.length).toBe(1);
+    const conditionSet1 = [
+      {kbVariantId: '#333:333', variant: 'tmb'},
+      {kbVariantId: '#111:111', variant: 'test1'},
+    ];
+    expect(checkForConditionSetMatch(varLists, conditionSet1, allVars)).toBe(true);
   });
 
-  test('Multi-variant statement with two condition sets yields 2 stmts each with two 1-1 join-variant pairs', async () => {
+  test('Multi-variant statement with two condition sets yields 2 stmts each with two 2 variants', async () => {
     // for multivariant stmt with two conditionsets:
     // expect new format to create two stmts;
     // expect each statement to have two joins;
     // expect the four joins to reference only three total variants -
     // one variant which is used in both conditionsets,
     // while the other condition is met by two different variants
-    const stmts = kbStatements.filter((kbs) => {
-      return kbs.kbStatementId === '#multivariantstmt_multiconditionset';
-    });
-    expect(stmts.length).toBe(2);
-    const allAssociatedVars = [];
-    stmts.forEach((stmt) => {
-      const joins = kbJoins.filter((item) => {return stmt.id === item.kbMatchedStatementId;});
-      const joinIds = joins.map((item) => {return item.kbMatchId;});
-      const vars = kbVariants.filter((item) => {return joinIds.includes(item.id);});
-      expect(joins.length).toBe(2);
-      expect(vars.length).toBe(2);
-      allAssociatedVars.push(...vars);
-    });
-    // get list of unique variant records by id.
-    // expect 3 total, one option for condition 1, two options for condition 2 - see input data
-    const uniqueVarIds = new Set(allAssociatedVars.map((item) => {return item.id;}));
-    expect(uniqueVarIds.size).toBe(3);
+    const varLists = getVarsForStatement('#multivariantstmt_multiconditionset', kbStatements, kbVariants, kbJoins);
+    expect(Object.values(varLists).length).toBe(2);
+    const conditionSet1 = [
+      {kbVariantId: '#333:333', variant: 'tmb'},
+      {kbVariantId: '#111:111', variant: 'test1'},
+    ];
+    expect(checkForConditionSetMatch(Object.values(varLists), conditionSet1, allVars)).toBe(true);
+    const conditionSet2 = [
+      {kbVariantId: '#333:333', variant: 'tmb'},
+      {kbVariantId: '#111:111', variant: 'test2'},
+    ];
+    expect(checkForConditionSetMatch(Object.values(varLists), conditionSet2, allVars)).toBe(true);
   });
 
-  test('Distinct stmts created for stmt referenced in both old and new formats', async () => {
+  test('Distinct stmts are created for stmt referenced in both old and new formats', async () => {
     // basically, this tests conversion of old format to new format
     // after which this situation should be handled like
     // a single-variant-stmt with two condition sets
