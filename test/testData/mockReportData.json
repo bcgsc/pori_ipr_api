@@ -231,7 +231,6 @@
     ],
     "tmburMutationBurden": {
         "key": "tmb",
-        "displayName": "tmb",
         "tumour": "T1",
         "normal": "N1",
         "nonNBasesIn1To22AndXAndY": "2667837836",
@@ -240,7 +239,7 @@
         "genomeSnvTmb": 2.01,
         "genomeIndelTmb": 0.25,
         "adjustedTmb": 2.1,
-        "adjustedTmbComment": "Reviewed",
+        "adjustedTmbComment": "tmb-test",
         "tmbHidden": false,
         "cdsBasesIn1To22AndXAndY": "31990128",
         "cdsSnvs": 63,
@@ -516,7 +515,7 @@
             "normalAltCount": 0,
             "normalDepth": 40,
             "ncbiBuild": "GRCh37",
-            "hgvsProtein": "ZFP36L2:p.Q999del",
+            "hgvsProtein": "ZFP36L2:p.Q999del-test2",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
             "hgvsGenomic": "2:g.43451740_43451742delCTG",
             "germline": false,
@@ -524,8 +523,7 @@
             "tumourAltCopies": 20,
             "library": "TEST LIBRARY",
             "selected": false,
-            "key": "test2",
-            "displayName": "test2"
+            "key": "test2"
         },
         {
             "gene": "ZFP36L2",
@@ -547,13 +545,12 @@
             "normalAltCount": 0,
             "normalDepth": 40,
             "ncbiBuild": "GRCh37",
-            "hgvsProtein": "ZFP36L2:p.Q111del",
+            "hgvsProtein": "ZFP36L2:p.Q111del-test1",
             "germline": false,
             "tumourRefCopies": 60,
             "tumourAltCopies": 20,
             "library": "TEST LIBRARY",
             "selected": false,
-            "displayName": "test1",
             "key": "test1"
         }
     ],
@@ -735,8 +732,7 @@
     "signatureVariants": [
         {
             "displayName": "Signature Variant",
-            "key": "sigv-key",
-            "displayName": "sigv-key"
+            "key": "sigv-key"
         }
     ],
     "project": "TEST",

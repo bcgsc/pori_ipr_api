@@ -21,22 +21,24 @@ const getVarsForStatement = (kbStmtId, kbStatements, kbVariants, kbJoins) => {
   const stmts = kbStatements.filter((kbs) => {
     return kbs.kbStatementId === kbStmtId;
   });
-  const allAssociatedVars = {};
+  const allAssociatedVars = [];
   stmts.forEach((stmt) => {
     const joins = kbJoins.filter((item) => {return stmt.id === item.kbMatchedStatementId;});
     const varIds = joins.map((item) => {return item.kbMatchId;});
     const vars = kbVariants.filter((item) => {return varIds.includes(item.id);});
-    allAssociatedVars[stmt.id] = vars;
+    allAssociatedVars.push(vars);
   });
   return allAssociatedVars;
 };
 
-const getVariantName = (kbMatch, allVars) => {
+const getVariantKeyValue = (kbMatch, allVars, variantKey) => {
   const variant = allVars[kbMatch.variantType].filter((item) => {
     return item.dataValues.id === kbMatch.dataValues.variantId;
   });
   expect(variant.length).toBe(1);
-  return variant[0].displayName;
+
+  const retval = variant[0][variantKey];
+  return retval;
 };
 
 // TODO: these tests are using the displayName field in a way that
@@ -53,7 +55,8 @@ const checkForConditionSetMatch = (varLists, conditionList, allVars) => {
     const conditionMatched = conditionList.every((conditionVariant) => {
       return group.some((groupVariant) => {
         return groupVariant.kbStatementId === conditionVariant.kbStatementId
-            && getVariantName(groupVariant, allVars) === conditionVariant.variant;
+            && getVariantKeyValue(groupVariant, allVars, conditionVariant.variantKey)
+            === conditionVariant.variantKeyValue;
       });
     });
 
@@ -61,7 +64,8 @@ const checkForConditionSetMatch = (varLists, conditionList, allVars) => {
     const groupMatched = group.every((groupVariant) => {
       return conditionList.some((conditionVariant) => {
         return conditionVariant.kbStatementId === groupVariant.kbStatementId
-            && conditionVariant.variant === getVariantName(groupVariant, allVars);
+            && conditionVariant.variantKeyValue
+            === getVariantKeyValue(groupVariant, allVars, conditionVariant.variantKey);
       });
     });
 
@@ -69,6 +73,7 @@ const checkForConditionSetMatch = (varLists, conditionList, allVars) => {
       return true;
     }
   }
+  console.dir(allVars.exp);
   return false;
 };
 
@@ -86,10 +91,6 @@ describe('Tests for uploading a report and all of its components', () => {
   let kbStatements;
   let kbVariants;
   let kbJoins;
-  let mutvars;
-  let sigvars;
-  let tmbvars;
-  let expvars;
   const allVars = {};
 
   beforeAll(async () => {
@@ -132,14 +133,10 @@ describe('Tests for uploading a report and all of its components', () => {
     kbVariants = await db.models.kbMatches.findAll({where: {report_id: reportId}});
 
     // there are other types of mutations, but these are the ones used in these tests so far
-    mutvars = await db.models.smallMutations.findAll({where: {report_id: reportId}});
-    expvars = await db.models.expressionVariants.findAll({where: {report_id: reportId}});
-    tmbvars = await db.models.tmburMutationBurden.findAll({where: {report_id: reportId}});
-    sigvars = await db.models.signatureVariants.findAll({where: {report_id: reportId}});
-    allVars.mut = mutvars;
-    allVars.exp = expvars;
-    allVars.tmb = tmbvars;
-    allVars.sig = sigvars;
+    allVars.mut = await db.models.smallMutations.findAll({where: {report_id: reportId}});
+    allVars.exp = await db.models.expressionVariants.findAll({where: {report_id: reportId}});
+    allVars.tmb = await db.models.tmburMutationBurden.findAll({where: {report_id: reportId}});
+    allVars.sigv = await db.models.signatureVariants.findAll({where: {report_id: reportId}});
 
     const kbstmtids = kbStatements.map((obj) => {return obj.id;});
     kbJoins = await db.models.kbMatchJoin.findAll({where: {kbMatchedStatementId: kbstmtids}});
@@ -242,89 +239,91 @@ describe('Tests for uploading a report and all of its components', () => {
   test('Old-format kbmatch input yields 1-1 stmt-variant set', async () => {
     // expect backwards-compatible input format to create one stmt with one associated variant
     const vars = getVarsForStatement('#backwardscompatible1', kbStatements, kbVariants, kbJoins);
-    expect(vars.values.length).toBe(1);
-    expect(vars.values[0].kbVariantId).toBe('#backwardscompatible1-variant');
+    expect(vars.length).toBe(1); // expect one statement to have been created
+    const conditionSet1 = [
+      {kbVariantId: '#backwardscompatible1-variant', variantKey: 'displayName', variantKeyValue: 'Signature Variant'},
+    ];
+    expect(checkForConditionSetMatch(vars, conditionSet1, allVars)).toBe(true);
   });
 
   test('Single-variant statement with single condition set yields 1-1 stmt-variant set', async () => {
     // expect new format to create single stmt-join-var set in simplest case
     // (single variant stmt, one conditionset)
     const vars = getVarsForStatement('#singlevariantstmt_singleconditionset', kbStatements, kbVariants, kbJoins);
-    expect(vars.values.length).toBe(1);
-    expect(vars.values[0].kbVariantId).toBe('#333:333'); // 'tmb'
+    expect(vars.length).toBe(1); // expect one statement to have been created
+    const conditionSet1 = [
+      {kbVariantId: '#333:333', variantKey: 'adjustedTmbComment', variantKeyValue: 'tmb-test'},
+    ];
+    expect(checkForConditionSetMatch(vars, conditionSet1, allVars)).toBe(true);
   });
 
   test('Single-variant statement with two condition sets yields 2 stmts each with 1 variant', async () => {
     // expect new format to create two stmts (and each to have one var, one join)
     // for single variant stmt with two conditionsets
     const varLists = getVarsForStatement('#singlevariantstmt_multiconditionset', kbStatements, kbVariants, kbJoins);
-    expect(varLists.values.length).toBe(2);
+    expect(varLists.length).toBe(2);
     const conditionSet1 = [
-      {kbVariantId: '#111:111', variant: 'test1'},
+      {kbVariantId: '#111:111', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q111del-test1'},
     ];
     expect(checkForConditionSetMatch(varLists, conditionSet1, allVars)).toBe(true);
     const conditionSet2 = [
-      {kbVariantId: '#111:111', variant: 'test2'},
+      {kbVariantId: '#111:111', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q999del-test2'},
     ];
-    expect(checkForConditionSetMatch(varLists, conditionSet2, allVars)).toBe(True);
+    expect(checkForConditionSetMatch(varLists, conditionSet2, allVars)).toBe(true);
   });
 
   test('Multi-variant statement with one condition set yields 1 stmt with 2 variants', async () => {
     // expect new format to create two joins, two vars, one stmt
     // for multivariant stmt with one conditionset
     const varLists = getVarsForStatement('#multivariantstmt_singleconditionset', kbStatements, kbVariants, kbJoins);
-    expect(varLists.values.length).toBe(1);
+    expect(varLists.length).toBe(1);
     const conditionSet1 = [
-      {kbVariantId: '#333:333', variant: 'tmb'},
-      {kbVariantId: '#111:111', variant: 'test1'},
+      {kbVariantId: '#333:333', variantKey: 'adjustedTmbComment', variantKeyValue: 'tmb-test'},
+      {kbVariantId: '#111:111', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q111del-test1'},
     ];
     expect(checkForConditionSetMatch(varLists, conditionSet1, allVars)).toBe(true);
   });
 
   test('Multi-variant statement with two condition sets yields 2 stmts each with two 2 variants', async () => {
-    // for multivariant stmt with two conditionsets:
     // expect new format to create two stmts;
     // expect each statement to have two joins;
     // expect the four joins to reference only three total variants -
     // one variant which is used in both conditionsets,
     // while the other condition is met by two different variants
     const varLists = getVarsForStatement('#multivariantstmt_multiconditionset', kbStatements, kbVariants, kbJoins);
-    expect(Object.values(varLists).length).toBe(2);
+    expect(varLists.length).toBe(2);
     const conditionSet1 = [
-      {kbVariantId: '#333:333', variant: 'tmb'},
-      {kbVariantId: '#111:111', variant: 'test1'},
+      {kbVariantId: '#333:333', variantKey: 'adjustedTmbComment', variantKeyValue: 'tmb-test'},
+      {kbVariantId: '#111:111', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q111del-test1'},
     ];
-    expect(checkForConditionSetMatch(Object.values(varLists), conditionSet1, allVars)).toBe(true);
+    expect(checkForConditionSetMatch(varLists, conditionSet1, allVars)).toBe(true);
     const conditionSet2 = [
-      {kbVariantId: '#333:333', variant: 'tmb'},
-      {kbVariantId: '#111:111', variant: 'test2'},
+      {kbVariantId: '#333:333', variantKey: 'adjustedTmbComment', variantKeyValue: 'tmb-test'},
+      {kbVariantId: '#111:111', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q999del-test2'},
     ];
-    expect(checkForConditionSetMatch(Object.values(varLists), conditionSet2, allVars)).toBe(true);
+    expect(checkForConditionSetMatch(varLists, conditionSet2, allVars)).toBe(true);
   });
 
   test('Distinct stmts are created for stmt referenced in both old and new formats', async () => {
-    // basically, this tests conversion of old format to new format
-    // after which this situation should be handled like
-    // a single-variant-stmt with two condition sets
-    const stmts = kbStatements.filter(
-      (kbs) => {return kbs.kbStatementId === '#backwardscompatible2';},
-    );
-    expect(stmts.length).toBe(2);
-    const associatedVars = [];
-    stmts.forEach((stmt) => {
-      const join = kbJoins.filter((item) => {return stmt.id === item.kbMatchedStatementId;});
-      const vars = kbVariants.filter((item) => {return item.id === join[0].kbMatchId;});
-      expect(join.length).toBe(1);
-      expect(vars.length).toBe(1);
-      expect(vars[0].kbVariantId).toBe('#backwardscompatible2-variant');
-      associatedVars.push(...vars);
-    });
-    // make sure the two stmt-join-var sets are to the two different variants in the input data:
-    expect(associatedVars[0].variantId).not.toEqual(associatedVars[1].variantId);
+    // basically, this tests conversion of old format to new format after which
+    // this situation should be handled like a single-variant-stmt with two condition sets
+    const varLists = getVarsForStatement('#backwardscompatible2', kbStatements, kbVariants, kbJoins);
+    expect(varLists.length).toBe(2);
+    console.dir(varLists[0]);
+    console.dir(varLists[1]);
+    const conditionSet1 = [
+      {kbVariantId: '#backwardscompatible2-variant', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q111del-test1'},
+    ];
+    expect(checkForConditionSetMatch(varLists, conditionSet1, allVars)).toBe(true);
+
+    const conditionSet2 = [
+      {kbVariantId: '#backwardscompatible2-variant', variantKey: 'location', variantKeyValue: '11:65265233-65273940'},
+    ];
+    expect(checkForConditionSetMatch(varLists, conditionSet2, allVars)).toBe(true);
   });
 
   afterAll(async () => {
-    // Delete newly created report and all of it's components
+    // Delete newly created report and all of its components
     // by force deleting the report
     return db.models.report.destroy({where: {id: reportId}});
   });
