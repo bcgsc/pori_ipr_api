@@ -636,7 +636,6 @@
     "expressionVariants": [
         {
             "key": "hash12345678",
-            "displayName": "hash12345678",
             "gene": "MALAT1",
             "biopsySiteFoldChange": 16,
             "biopsySitekIQR": 16.82,
@@ -726,7 +725,6 @@
             "score": 19.5,
             "kbCategory": "moderate",
             "key": "msi",
-            "displayName": "msi"
         }
     ],
     "signatureVariants": [

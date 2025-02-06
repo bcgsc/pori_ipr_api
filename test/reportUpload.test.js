@@ -41,8 +41,6 @@ const getVariantKeyValue = (kbMatch, allVars, variantKey) => {
   return retval;
 };
 
-// TODO: these tests are using the displayName field in a way that
-// normal input data would not use it; improve this
 const checkForConditionSetMatch = (varLists, conditionList, allVars) => {
   /* ConditionList is a group of observed variant/kbVariant pairs.
   varLists is a list of such groups.
@@ -73,7 +71,6 @@ const checkForConditionSetMatch = (varLists, conditionList, allVars) => {
       return true;
     }
   }
-  console.dir(allVars.exp);
   return false;
 };
 
@@ -198,18 +195,6 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(boundUser.user_id).toBe(report.createdBy_id);
   });
 
-  // FOR CLARITY IN READING THE KB TESTS:
-  // kbStatementId - the graphkb id of a statement; not guaranteed to be unique in ipr
-  // kbMatchedStatementId or kbStatement.id - the unique ipr id of a statement record
-  // kbVariantId - the graphkb id of a variant; not guaranteed to be unique in ipr
-  // kbMatchId or kbMatch.id- the unique ipr id of a matched variant record
-  // (the ipr records contain the graphkb ids)
-  //
-  // variantId - a column in the kbMatch table. the ipr id of the record of for
-  // the observed variant, details of which are stored in a different ipr table;
-  // specifically which table depends on what type of variant it is.
-  //
-
   test('No kbStatements or kbVariants are unlinked', async () => {
     const kbstmtids = kbStatements.map((obj) => {return obj.id;}); // the ipr statement record ids
     const kbvarids = kbVariants.map((obj) => {return obj.id;}); // the ipr variant record ids
@@ -247,8 +232,6 @@ describe('Tests for uploading a report and all of its components', () => {
   });
 
   test('Single-variant statement with single condition set yields 1-1 stmt-variant set', async () => {
-    // expect new format to create single stmt-join-var set in simplest case
-    // (single variant stmt, one conditionset)
     const vars = getVarsForStatement('#singlevariantstmt_singleconditionset', kbStatements, kbVariants, kbJoins);
     expect(vars.length).toBe(1); // expect one statement to have been created
     const conditionSet1 = [
@@ -258,8 +241,6 @@ describe('Tests for uploading a report and all of its components', () => {
   });
 
   test('Single-variant statement with two condition sets yields 2 stmts each with 1 variant', async () => {
-    // expect new format to create two stmts (and each to have one var, one join)
-    // for single variant stmt with two conditionsets
     const varLists = getVarsForStatement('#singlevariantstmt_multiconditionset', kbStatements, kbVariants, kbJoins);
     expect(varLists.length).toBe(2);
     const conditionSet1 = [
@@ -273,8 +254,6 @@ describe('Tests for uploading a report and all of its components', () => {
   });
 
   test('Multi-variant statement with one condition set yields 1 stmt with 2 variants', async () => {
-    // expect new format to create two joins, two vars, one stmt
-    // for multivariant stmt with one conditionset
     const varLists = getVarsForStatement('#multivariantstmt_singleconditionset', kbStatements, kbVariants, kbJoins);
     expect(varLists.length).toBe(1);
     const conditionSet1 = [
@@ -285,11 +264,6 @@ describe('Tests for uploading a report and all of its components', () => {
   });
 
   test('Multi-variant statement with two condition sets yields 2 stmts each with two 2 variants', async () => {
-    // expect new format to create two stmts;
-    // expect each statement to have two joins;
-    // expect the four joins to reference only three total variants -
-    // one variant which is used in both conditionsets,
-    // while the other condition is met by two different variants
     const varLists = getVarsForStatement('#multivariantstmt_multiconditionset', kbStatements, kbVariants, kbJoins);
     expect(varLists.length).toBe(2);
     const conditionSet1 = [
@@ -305,12 +279,10 @@ describe('Tests for uploading a report and all of its components', () => {
   });
 
   test('Distinct stmts are created for stmt referenced in both old and new formats', async () => {
-    // basically, this tests conversion of old format to new format after which
+    // this tests conversion of old format to new format after which
     // this situation should be handled like a single-variant-stmt with two condition sets
     const varLists = getVarsForStatement('#backwardscompatible2', kbStatements, kbVariants, kbJoins);
     expect(varLists.length).toBe(2);
-    console.dir(varLists[0]);
-    console.dir(varLists[1]);
     const conditionSet1 = [
       {kbVariantId: '#backwardscompatible2-variant', variantKey: 'hgvsProtein', variantKeyValue: 'ZFP36L2:p.Q111del-test1'},
     ];
