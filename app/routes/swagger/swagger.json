@@ -4779,6 +4779,55 @@
           }
         }
       },
+      "put": {
+        "summary": "Update a kbMatchedStatement",
+        "description": "Updates and returns the specified kbMatchedStatement",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatchedStatement"
+          }
+        ],
+        "requestBody": {
+          "description": "The kbMatchedStatement to be updated",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/kbMatchedStatementsUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated kbMatchedStatement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or kbMatchedStatement not found"
+          }
+        }
+      },
       "delete": {
         "summary": "Delete KB Match",
         "description": "Removes the specified KB Match",
