@@ -192,10 +192,8 @@ const updateKbMatchesInputFormat = (content) => {
       delete statement.kbVariantId;
       delete statement.variant;
 
-      // TODO probably need to add this in actually if not present;
-      // deleting for now if found to deal with column not in db FIX AND REMOVE
-      if (('requiredKbMatches' in statement)) {
-        delete statement.requiredKbVariants;
+      if (!('kbMatchedStatements' in content)) {
+        content.kbMatchedStatements = [];
       }
       content.kbMatchedStatements.push(statement);
 
@@ -206,6 +204,9 @@ const updateKbMatchesInputFormat = (content) => {
           kbVariantId: item.kbVariantId,
         }],
       };
+      if (!('kbStatementMatchedConditions' in content)) {
+        content.kbStatementMatchedConditions = [];
+      }
       content.kbStatementMatchedConditions.push(conditionSet);
     }
   });
