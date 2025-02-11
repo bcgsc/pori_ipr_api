@@ -239,7 +239,7 @@
         "genomeSnvTmb": 2.01,
         "genomeIndelTmb": 0.25,
         "adjustedTmb": 2.1,
-        "adjustedTmbComment": "Reviewed",
+        "adjustedTmbComment": "tmb-test",
         "tmbHidden": false,
         "cdsBasesIn1To22AndXAndY": "31990128",
         "cdsSnvs": 63,
@@ -258,103 +258,230 @@
             "variantType": "exp",
             "variant": "hash12345678",
             "kbVariant": "protein increased expression",
-            "kbVariantId": "123321",
+            "kbVariantId": "#backwardscompatible2-variant",
             "category": "cancer predisposition",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
             "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "kbStatementId": "#backwardscompatible2",
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending",
             "approvedTherapy": true
         },
         {
-            "variantType": "msi",
-            "variant": "msi",
-            "kbVariant": "protein increased expression",
-            "kbMatchedStatements": [
-                {
-                    "category": "cancer predisposition",
-                    "disease": "colorectal cancer",
-                    "relevance": "unfavourable",
-                    "context": "lower overall survival",
-                    "status": "na",
-                    "reference": "12345678#",
-                    "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
-                    "evidenceLevel": "reported",
-                    "matchedCancer": false,
-                    "pmidRef": "yes",
-                    "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
-                    "externalSource": "CIViC",
-                    "externalStatementId": "1234",
-                    "reviewStatus": "pending"
-                },
-                {
-                    "category": "unknown",
-                    "disease": "unknown disease",
-                    "relevance": "unfavourable",
-                    "context": "lower overall survival",
-                    "status": "na",
-                    "reference": "12345678#",
-                    "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
-                    "evidenceLevel": "reported",
-                    "matchedCancer": true,
-                    "pmidRef": "yes",
-                    "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
-                    "externalSource": "CIViC",
-                    "externalStatementId": "1234",
-                    "reviewStatus": "pending"
-                }
-            ]
+            "variantType": "mut",
+            "variant": "test1",
+            "kbVariant": "test kbvariant name2",
+            "kbVariantId": "#backwardscompatible2-variant"
+        },
+        {
+            "variantType": "mut",
+            "variant": "test1",
+            "kbVariant": "test kbvariant name",
+            "kbVariantId": "#111:111"
+        },
+        {
+            "variantType": "mut",
+            "variant": "test2",
+            "kbVariant": "test kbvariant name",
+            "kbVariantId": "#111:111"
         },
         {
             "variantType": "tmb",
             "variant": "tmb",
             "kbVariant": "protein increased expression",
-            "kbMatchedStatements": [
-                {
-                    "category": "cancer predisposition",
-                    "disease": "colorectal cancer",
-                    "relevance": "unfavourable",
-                    "context": "lower overall survival",
-                    "status": "na",
-                    "reference": "12345678#",
-                    "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
-                    "evidenceLevel": "reported",
-                    "matchedCancer": false,
-                    "pmidRef": "yes",
-                    "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
-                    "externalSource": "CIViC",
-                    "externalStatementId": "1234",
-                    "reviewStatus": "pending"
-                }
-            ]
+            "kbVariantId": "#333:333"
         },
         {
             "category": "cancer predisposition",
             "variantType": "sigv",
-            "variant": "sigv",
+            "variant": "sigv-key",
             "kbVariant": "protein increased expression",
+            "kbVariantId": "#backwardscompatible1-variant",
             "disease": "colorectal cancer",
             "relevance": "unfavourable",
             "context": "lower overall survival",
             "status": "na",
             "reference": "12345678#",
-            "sample": "UPLOADPAT01-FFPE-1; UPLOADPAT01-FFPE-1_trans",
             "evidenceLevel": "reported",
             "matchedCancer": false,
             "pmidRef": "yes",
-            "kbStatementId": "prognostic_unfavourable_lower overall survival_(ELV-PROT_ZNF703_increased expression,True,ns)_colorectal cancer_reported_pubmed_25017610",
+            "kbStatementId": "#backwardscompatible1",
             "externalSource": "CIViC",
             "externalStatementId": "1234",
             "reviewStatus": "pending"
+        }
+    ],
+    "kbMatchedStatements": [
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test multivariant statement",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#multivariantstmt_singleconditionset",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#111:111",
+                "#333:333"
+            ]
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test multivariant statement",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#multivariantstmt_multiconditionset",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#111:111",
+                "#333:333"
+            ]
+        },
+        {
+            "category": "cancer predisposition",
+            "disease": "colorectal cancer",
+            "relevance": "unfavourable",
+            "context": "lower overall survival",
+            "status": "na",
+            "reference": "12345678#",
+            "evidenceLevel": "reported",
+            "matchedCancer": false,
+            "pmidRef": "yes",
+            "kbStatementId": "#backwardscompatible2",
+            "externalSource": "CIViC",
+            "externalStatementId": "1234",
+            "reviewStatus": "pending",
+            "approvedTherapy": true
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "also a partial-match example",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#singlevariantstmt_singleconditionset",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#333:333",
+                "#444:444"
+            ]
+        },
+        {
+            "approvedTherapy": false,
+            "category": "therapeutic",
+            "context": "test single-variant statement with multiple possible matches",
+            "disease": "colorectal cancer [DOID:9256]",
+            "kbStatementId": "#singlevariantstmt_multiconditionset",
+            "matchedCancer": true,
+            "reference": "pmid:TEST1",
+            "relevance": "resistance",
+            "iprEvidenceLevel": "IPR-D",
+            "externalSource": "IPRKB",
+            "reviewStatus": "pending",
+            "kbData": {},
+            "requiredKbMatches": [
+                "#111:111"
+            ]
+        }
+    ],
+    "kbStatementMatchedConditions": [
+        {
+            "kbStatementId": "#multivariantstmt_singleconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#111:111"
+                },
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#multivariantstmt_multiconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#111:111"
+                },
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#multivariantstmt_multiconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test2",
+                    "kbVariantId": "#111:111"
+                },
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#singlevariantstmt_singleconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "tmb",
+                    "kbVariantId": "#333:333"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#singlevariantstmt_multiconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test2",
+                    "kbVariantId": "#111:111"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#singlevariantstmt_multiconditionset",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#111:111"
+                }
+            ]
+        },
+        {
+            "kbStatementId": "#backwardscompatible2",
+            "matchedConditions": [
+                {
+                    "observedVariantKey": "test1",
+                    "kbVariantId": "#backwardscompatible2-variant"
+                }
+            ]
         }
     ],
     "genes": [
@@ -371,7 +498,7 @@
         {
             "gene": "ZFP36L2",
             "transcript": "ENST00000282388",
-            "proteinChange": "p.Q401del",
+            "proteinChange": "p.Q111del",
             "startPosition": 43451739,
             "endPosition": 43451739,
             "chromosome": "2",
@@ -388,14 +515,43 @@
             "normalAltCount": 0,
             "normalDepth": 40,
             "ncbiBuild": "GRCh37",
-            "hgvsProtein": "ZFP36L2:p.Q401del",
+            "hgvsProtein": "ZFP36L2:p.Q999del-test2",
             "hgvsCds": "ENST00000282388:c.4015_4016dup",
             "hgvsGenomic": "2:g.43451740_43451742delCTG",
             "germline": false,
             "tumourRefCopies": 60,
             "tumourAltCopies": 20,
             "library": "TEST LIBRARY",
-            "selected": false
+            "selected": false,
+            "key": "test2"
+        },
+        {
+            "gene": "ZFP36L2",
+            "transcript": "ENST00000282388",
+            "proteinChange": "p.Q999del",
+            "startPosition": 43451739,
+            "endPosition": 43451739,
+            "chromosome": "2",
+            "refSeq": "CCTG",
+            "altSeq": "C",
+            "zygosity": "sub [0/3]",
+            "tumourRefCount": 583,
+            "tumourAltCount": 4,
+            "tumourDepth": 590,
+            "rnaRefCount": 400,
+            "rnaAltCount": 15,
+            "rnaDepth": 415,
+            "normalRefCount": 40,
+            "normalAltCount": 0,
+            "normalDepth": 40,
+            "ncbiBuild": "GRCh37",
+            "hgvsProtein": "ZFP36L2:p.Q111del-test1",
+            "germline": false,
+            "tumourRefCopies": 60,
+            "tumourAltCopies": 20,
+            "library": "TEST LIBRARY",
+            "selected": false,
+            "key": "test1"
         }
     ],
     "mutationSignature": [
@@ -574,7 +730,7 @@
     "signatureVariants": [
         {
             "displayName": "Signature Variant",
-            "key": "sigv"
+            "key": "sigv-key"
         }
     ],
     "project": "TEST",
