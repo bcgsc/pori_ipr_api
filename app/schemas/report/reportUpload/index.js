@@ -29,6 +29,12 @@ const generateReportUploadSchema = (isJsonSchema) => {
       type: 'string',
       description: 'Template name',
     },
+    kbStatementMatchedConditions: {
+      type: 'array',
+      items: {
+        type: 'object',
+      },
+    },
     images: {
       type: 'array',
       items: {
