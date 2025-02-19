@@ -31,16 +31,6 @@ const getVariants = async (tableName, variantType, reportId) => {
   });
 };
 
-const therapeuticAssociationFilterKbMatch = {
-  id: {[Op.ne]: null},
-  variantType: {[Op.and]: [
-    {[Op.is]: literal('distinct from \'exp\'')},
-  ]},
-  // Regex filter for finding columns with 2 or more spaces that end with
-  // mutation or mutations
-  [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
-};
-
 const therapeuticAssociationFilterStatement = {
   id: {[Op.ne]: null},
   [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
@@ -59,18 +49,6 @@ const therapeuticAssociationFilterStatement = {
   },
 };
 
-// PSQL natively ignores null on equal checks.
-// Literal is used in order to accomodate NULL rows.
-const cancerRelevanceFilter = {
-  id: {[Op.ne]: null},
-  variantType: {[Op.and]: [
-    {[Op.is]: literal('distinct from \'exp\'')},
-  ]},
-  // Regex filter for finding columns with 2 or more spaces that end with
-  // mutation or mutations
-  [Op.not]: {kbVariant: {[Op.regexp]: MUTATION_REGEX}},
-};
-
 const unknownSignificanceIncludes = ['mut'];
 const signatureVariant = ['tmb', 'msi', 'sigv'];
 
@@ -79,7 +57,6 @@ const unknownSignificanceGeneFilter = {
 };
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
-
   const allKbMatches = await db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
     attributes: {
@@ -108,51 +85,50 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
   let therapeuticAssociationResults = [];
 
-  if (!(variantType==='exp')) {  // omit expression variants from this table
+  if (!(variantType === 'exp')) { // omit expression variants from this table
     therapeuticAssociationResults = JSON.parse(JSON.stringify(allKbMatches));
 
     // remove nonmatching kbmatches
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
-      let kbmatches = variant.kbMatches.filter((item) => {
+      variant.kbMatches = variant.kbMatches.filter((item) => {
         const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
-        return !(variantRegexMatch)
+        return !(variantRegexMatch);
       });
-      variant.kbMatches = kbmatches;
       return variant;
-    })
+    });
 
     // remove nonmatching statements
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
-      let kbmatches = variant.kbMatches.map((kbmatch) => {
-        let statements = kbmatch.kbMatchedStatements.filter((stmt)=> {
-          if ((stmt.category === 'therapeutic') &&
-          stmt.matchedCancer &&
-          ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel) &&
-          (stmt.relevance === 'sensitivity' || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A'))) {
+      variant.kbMatches = variant.kbMatches.map((kbmatch) => {
+        const statements = kbmatch.kbMatchedStatements.filter((stmt) => {
+          if ((stmt.category === 'therapeutic')
+          && stmt.matchedCancer
+          && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
+          && (stmt.relevance === 'sensitivity' || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A'))) {
             return true;
           }
-        })
+          return false;
+        });
         kbmatch.kbMatchedStatements = statements;
         return kbmatch;
-      })
+      });
       return variant;
-    })
+    });
 
     // remove matches which have no matching statements
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
-      let kbmatches = variant.kbMatches.filter((kbmatch) => {
-        kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements.filter(item => item !== null);
+      variant.kbMatches = variant.kbMatches.filter((kbmatch) => {
+        kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements.filter((item) => {return item !== null;});
         return kbmatch.kbMatchedStatements.length > 0;
-      })
-      variant.kbMatches = kbmatches;
+      });
       return variant;
-    })
+    });
 
     // remove variants which have no matches
     therapeuticAssociationResults = therapeuticAssociationResults.filter((variant) => {
-      kbmatches = variant.kbMatches.filter(item => item !== null);
+      const kbmatches = variant.kbMatches.filter((item) => {return item !== null;});
       return kbmatches.length > 0;
-    })
+    });
   }
 
   if (rapidTable === 'therapeuticAssociation') {
@@ -160,29 +136,29 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   }
 
   let cancerRelevanceResults = [];
-  let cancerRelevanceResultsFiltered = [];
-  if (!(variantType==='exp')) {  // omit expression variants from this table
+  const cancerRelevanceResultsFiltered = [];
+  if (!(variantType === 'exp')) { // omit expression variants from this table
     cancerRelevanceResults = JSON.parse(JSON.stringify(allKbMatches));
 
     // remove nonmatching kbmatches
     cancerRelevanceResults = cancerRelevanceResults.map((variant) => {
-      let kbmatches = variant.kbMatches.filter((item) => {
-        const msiMatch = (item.variantType === 'msi' && item.score >= 20)
+      const kbmatches = variant.kbMatches.filter((item) => {
+        const msiMatch = (item.variantType === 'msi' && item.score >= 20);
         if (msiMatch) {
-          return true
+          return true;
         }
         const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
-        return (!(variantRegexMatch))
+        return (!(variantRegexMatch));
       });
       variant.kbMatches = kbmatches;
       return variant;
-    })
+    });
 
     // remove variants which have now have no matches
     cancerRelevanceResults = cancerRelevanceResults.filter((variant) => {
-      kbmatches = variant.kbMatches.filter(item => item !== null);
+      const kbmatches = variant.kbMatches.filter((item) => {return item !== null;});
       return kbmatches.length > 0;
-    })
+    });
 
     for (const row of cancerRelevanceResults) {
       if (!(therapeuticAssociationResults.find(
@@ -197,7 +173,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     return cancerRelevanceResultsFiltered;
   }
 
-  let unknownSignificanceResultsFiltered = [];
+  const unknownSignificanceResultsFiltered = [];
   let unknownSignificanceResults = [];
 
   if (unknownSignificanceIncludes.includes(variantType)) {
