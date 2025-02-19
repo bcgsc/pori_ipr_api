@@ -7,9 +7,9 @@ const SCALE_FACTOR = CONFIG.get('image:scale_factor');
 /**
  * Delete image from images table
  *
- * @param {string} ident - Ident of image to delete
- * @param {boolean} force - Whether it is a hard delete or not
- * @param {object} transaction - Transaction to run delete under
+ * @param {object} image - All image data for upload
+ * @param {number} size - Permitted size of the final image in bytes
+ * @param {string} format - Format of the output image (default: PNG)
  * @returns {Promise<object>} - Returns the newly updated image data
  */
 const autoDownsize = async (image, size, format = 'png') => {
@@ -36,8 +36,7 @@ const autoDownsize = async (image, size, format = 'png') => {
  * Resize, reformat and return base64 representation of image.
  *
  * @param {Buffer|string} image - Buffer containing image data or the absolute path to an image file
- * @param {number} width - Width of the final image in pixels
- * @param {number} height - Height of the final image in pixels
+ * @param {number} size - Permitted size of the final image in bytes
  * @param {string} format - Format of the output image (default: PNG)
  *
  * @returns {Promise<string>} - Returns base64 representation of image
@@ -88,8 +87,8 @@ const uploadImage = async (image, options = {}) => {
  * Delete image from images table
  *
  * @param {string} ident - Ident of image to delete
- * @param {boolean} force - Whether it is a hard delete or not
  * @param {object} transaction - Transaction to run delete under
+ * @param {boolean} force - Whether it is a hard delete or not
  * @returns {Promise<object>} - Returns the newly updated image data
  */
 const deleteImage = async (ident, transaction, force = false) => {
