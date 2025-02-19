@@ -15,32 +15,16 @@ beforeAll(async () => {
     },
   });
 
-  const [managerGroup] = await db.models.userGroup.findOrCreate({
-    where: {
-      name: 'manager',
-    },
+  await db.models.userGroup.findOrCreate({
+    where: {userId: managerUser.id, name: 'manager'},
   });
 
-  await db.models.userGroupMember.findOrCreate({
-    where: {user_id: managerUser.id, group_id: managerGroup.id},
-  });
-
-  const [bioinformaticianUser] = await db.models.user.findOrCreate({
+  await db.models.user.findOrCreate({
     where: {
       username: bioinformaticianUsername,
       firstName: bioinformaticianUsername,
       lastName: bioinformaticianUsername,
       email: 'ipr@bcgsc.ca',
     },
-  });
-
-  const [bioinformaticianGroup] = await db.models.userGroup.findOrCreate({
-    where: {
-      name: 'Bioinformatician',
-    },
-  });
-
-  await db.models.userGroupMember.findOrCreate({
-    where: {user_id: bioinformaticianUser.id, group_id: bioinformaticianGroup.id},
   });
 });
