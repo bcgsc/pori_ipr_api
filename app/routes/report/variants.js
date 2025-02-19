@@ -79,7 +79,8 @@ const unknownSignificanceGeneFilter = {
 };
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
-  const therapeuticAssociationResults = await db.models[tableName].scope('extended').findAll({
+
+  const allKbMatches = await db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
     attributes: {
       include: [[literal(`'${variantType}'`), 'variantType']],
@@ -91,7 +92,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       {
         model: db.models.kbMatches,
         attributes: {exclude: KBMATCHEXCLUDE},
-        where: {...therapeuticAssociationFilterKbMatch},
         include: [
           {
             model: db.models.kbMatchedStatements,
@@ -99,54 +99,97 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
             attributes: {
               exclude: STATEMENTEXCLUDE,
             },
-            where: {
-              ...therapeuticAssociationFilterStatement,
-            },
             through: {attributes: []},
           },
         ],
       },
     ],
   });
+
+  let therapeuticAssociationResults = [];
+
+  if (!(variantType==='exp')) {  // omit expression variants from this table
+    therapeuticAssociationResults = JSON.parse(JSON.stringify(allKbMatches));
+
+    // remove nonmatching kbmatches
+    therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
+      let kbmatches = variant.kbMatches.filter((item) => {
+        const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
+        return !(variantRegexMatch)
+      });
+      variant.kbMatches = kbmatches;
+      return variant;
+    })
+
+    // remove nonmatching statements
+    therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
+      let kbmatches = variant.kbMatches.map((kbmatch) => {
+        let statements = kbmatch.kbMatchedStatements.filter((stmt)=> {
+          if ((stmt.category === 'therapeutic') &&
+          stmt.matchedCancer &&
+          ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel) &&
+          (stmt.relevance === 'sensitivity' || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A'))) {
+            return true;
+          }
+        })
+        kbmatch.kbMatchedStatements = statements;
+        return kbmatch;
+      })
+      return variant;
+    })
+
+    // remove matches which have no matching statements
+    therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
+      let kbmatches = variant.kbMatches.filter((kbmatch) => {
+        kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements.filter(item => item !== null);
+        return kbmatch.kbMatchedStatements.length > 0;
+      })
+      variant.kbMatches = kbmatches;
+      return variant;
+    })
+
+    // remove variants which have no matches
+    therapeuticAssociationResults = therapeuticAssociationResults.filter((variant) => {
+      kbmatches = variant.kbMatches.filter(item => item !== null);
+      return kbmatches.length > 0;
+    })
+  }
 
   if (rapidTable === 'therapeuticAssociation') {
     return therapeuticAssociationResults;
   }
 
-  const cancerRelevanceResultsFiltered = [];
-  const cancerRelevanceResults = await db.models[tableName].scope('extended').findAll({
-    order: [['id', 'ASC']],
-    attributes: {
-      include: [[literal(`'${variantType}'`), 'variantType']],
-    },
-    where: {
-      reportId,
-      ...((variantType === 'msi') ? {score: {[Op.gte]: 20}} : {}),
-    },
-    include: [
-      {
-        model: db.models.kbMatches,
-        where: {...cancerRelevanceFilter},
-        attributes: {exclude: KBMATCHEXCLUDE},
-        include: [
-          {
-            model: db.models.kbMatchedStatements,
-            as: 'kbMatchedStatements',
-            attributes: {
-              exclude: STATEMENTEXCLUDE,
-            },
-            through: {attributes: []},
-          },
-        ],
-      },
-    ],
-  });
+  let cancerRelevanceResults = [];
+  let cancerRelevanceResultsFiltered = [];
+  if (!(variantType==='exp')) {  // omit expression variants from this table
+    cancerRelevanceResults = JSON.parse(JSON.stringify(allKbMatches));
 
-  for (const row of cancerRelevanceResults) {
-    if (!(therapeuticAssociationResults.find(
-      (e) => {return e.ident === row.ident;},
-    ))) {
-      cancerRelevanceResultsFiltered.push(row);
+    // remove nonmatching kbmatches
+    cancerRelevanceResults = cancerRelevanceResults.map((variant) => {
+      let kbmatches = variant.kbMatches.filter((item) => {
+        const msiMatch = (item.variantType === 'msi' && item.score >= 20)
+        if (msiMatch) {
+          return true
+        }
+        const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
+        return (!(variantRegexMatch))
+      });
+      variant.kbMatches = kbmatches;
+      return variant;
+    })
+
+    // remove variants which have now have no matches
+    cancerRelevanceResults = cancerRelevanceResults.filter((variant) => {
+      kbmatches = variant.kbMatches.filter(item => item !== null);
+      return kbmatches.length > 0;
+    })
+
+    for (const row of cancerRelevanceResults) {
+      if (!(therapeuticAssociationResults.find(
+        (e) => {return e.ident === row.ident;},
+      ))) {
+        cancerRelevanceResultsFiltered.push(row);
+      }
     }
   }
 
@@ -154,27 +197,12 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     return cancerRelevanceResultsFiltered;
   }
 
-  const unknownSignificanceResultsFiltered = [];
+  let unknownSignificanceResultsFiltered = [];
   let unknownSignificanceResults = [];
 
   if (unknownSignificanceIncludes.includes(variantType)) {
     if (signatureVariant.includes(variantType)) {
-      // Variants with signature type are not related to genes
-      unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
-        order: [['id', 'ASC']],
-        attributes: {
-          include: [[literal(`'${variantType}'`), 'variantType']],
-        },
-        where: {
-          reportId,
-        },
-        include: [
-          {
-            model: db.models.kbMatches,
-            attributes: {exclude: KBMATCHEXCLUDE},
-          },
-        ],
-      });
+      unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
     } else {
       unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
         order: [['id', 'ASC']],
