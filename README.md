@@ -152,14 +152,6 @@ sequence by running this SQL command after the insert:
 Otherwise, you will get a unique constraint error when inserting via the API because Sequelize will try use an id
 that is now taken.
 
-## Adding new image types
-
-Steps to add a new image type:
-1. Open file app/routes/report/images.js
-2. Add new object to IMAGES_CONFIG. Pattern will be the regex for the image key being uploaded
-3. Open file app/constants.js
-4. Add new entry to VALID_IMAGE_KEY_PATTERN based on the IMAGES_CONFIG pattern
-
 ## Process Manager
 
 The production installation of IPR is run & managed by [pm2](http://pm2.keymetrics.io/)
