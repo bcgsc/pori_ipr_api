@@ -72,8 +72,6 @@ router.route('/:template([A-z0-9-]{36})')
           data: logo.data,
           filename: logo.name,
           format: logo.mimetype,
-          height: DEFAULT_LOGO_HEIGHT,
-          width: DEFAULT_LOGO_WIDTH,
           type: 'Logo',
         }, {transaction}),
       );
@@ -87,8 +85,6 @@ router.route('/:template([A-z0-9-]{36})')
           data: header.data,
           filename: header.name,
           format: header.mimetype,
-          height: DEFAULT_HEADER_HEIGHT,
-          width: DEFAULT_HEADER_WIDTH,
           type: 'Header',
         }, {transaction}),
       );
