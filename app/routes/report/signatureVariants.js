@@ -94,6 +94,21 @@ router.route('/')
     try {
       const results = await db.models.signatureVariants.scope('public').findAll({
         where: {reportId: req.report.id},
+        include: [
+          {
+            model: db.models.kbMatches,
+            attributes: ['ident'],
+            include: [
+              {
+                model: db.models.kbMatchedStatements,
+                as: 'kbMatchedStatements',
+                attributes:
+                  ['category'],
+                through: {attributes: []},
+              },
+            ],
+          },
+        ],
       });
 
       if (key) {
