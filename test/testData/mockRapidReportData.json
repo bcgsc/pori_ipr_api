@@ -27,7 +27,12 @@
             "kbVariantId": "#21",
             "kbStatementId": "#21",
             "kbData": {
-                "rapidReportSummaryTag": "cancerRelevance"
+                "rapidReportSummaryTags": [
+                    {
+                        "kbVariantId": "#21",
+                        "tag": "cancerRelevance"
+                    }
+                ]
             }
         },
         {
@@ -42,7 +47,12 @@
             "kbVariantId": "#22",
             "kbStatementId": "#22",
             "kbData": {
-                "rapidReportSummaryTag": "unknown"
+                "rapidReportSummaryTags": [
+                    {
+                        "kbVariantId": "#22",
+                        "tag": "unknown"
+                    }
+                ]
             }
         },
         {
@@ -57,7 +67,12 @@
             "kbVariantId": "#23",
             "kbStatementId": "#23",
             "kbData": {
-                "rapidReportSummaryTag": "therapeutic"
+                "rapidReportSummaryTags": [
+                    {
+                        "kbVariantId": "#23",
+                        "tag": "therapeutic"
+                    }
+                ]
             }
         },
         {
