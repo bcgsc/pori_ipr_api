@@ -180,7 +180,6 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       expect(Array.isArray(res.body)).toBe(true);
       checkVariants(res.body[0]);
 
-      console.dir(res.body);
       checkVariantsFilter(
         res.body,
         'table 3',
