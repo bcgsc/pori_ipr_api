@@ -114,6 +114,23 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       );
     });
 
+    test('Getting Therapeutic Association - gets by tag', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkVariants(res.body[0]);
+
+      const taggedVariants = res.body.filter((variant) => {
+        return variant?.gene?.name === 'table1CV-3-tag-test';
+      });
+      expect(taggedVariants.length).toEqual(1);
+    });
+
     test('Getting Cancer Relevance - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
@@ -135,6 +152,23 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       );
     });
 
+    test('Getting Cancer Relevance - gets by tag', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkVariants(res.body[0]);
+
+      const taggedVariants = res.body.filter((variant) => {
+        return variant?.gene?.name === 'table1CV-1-tag-test';
+      });
+      expect(taggedVariants.length).toEqual(1);
+    });
+
     test('Getting Unknown Significance - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
@@ -146,6 +180,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       expect(Array.isArray(res.body)).toBe(true);
       checkVariants(res.body[0]);
 
+      console.dir(res.body);
       checkVariantsFilter(
         res.body,
         'table 3',
@@ -154,6 +189,23 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         res.body,
         'table 3',
       );
+    });
+
+    test('Getting Unknown Significance - gets by tag', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      checkVariants(res.body[0]);
+
+      const taggedVariants = res.body.filter((variant) => {
+        return variant?.gene.name === 'table1CV-2-tag-test';
+      });
+      expect(taggedVariants.length).toEqual(1);
     });
   });
 

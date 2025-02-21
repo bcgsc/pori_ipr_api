@@ -18,6 +18,51 @@
         {
             "category": "therapeutic",
             "variantType": "cnv",
+            "variant": "TA-rapidReportSummaryTagTest-1",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 2 because of rapid report summary tag",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#21",
+            "kbStatementId": "#21",
+            "kbData": {
+                "rapidReportSummaryTag": "cancerRelevance"
+            }
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA-rapidReportSummaryTagTest-2",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "this should be in table 3 because of rapid report summary tag",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 3",
+            "kbVariantId": "#22",
+            "kbStatementId": "#22",
+            "kbData": {
+                "rapidReportSummaryTag": "unknown"
+            }
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA-rapidReportSummaryTagTest-3",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "this should be in table 1 because of rapid report summary tag",
+            "matchedCancer": true,
+            "relevance": "resistance",
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#23",
+            "kbStatementId": "#23",
+            "kbData": {
+                "rapidReportSummaryTag": "therapeutic"
+            }
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
             "variant": "TA",
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this should be in table 1",
@@ -252,6 +297,15 @@
         },
         {
             "name": "table2CV"
+        },
+        {
+            "name": "table1CV-1-tag-test"
+        },
+        {
+            "name": "table1CV-2-tag-test"
+        },
+        {
+            "name": "table1CV-3-tag-test"
         }
     ],
     "smallMutations": [
@@ -290,6 +344,21 @@
         {
             "gene": "table1CV",
             "key": "TA",
+            "displayName": "table 1"
+        },
+        {
+            "gene": "table1CV-1-tag-test",
+            "key": "TA-rapidReportSummaryTagTest-1",
+            "displayName": "table 2"
+        },
+        {
+            "gene": "table1CV-2-tag-test",
+            "key": "TA-rapidReportSummaryTagTest-2",
+            "displayName": "table 3"
+        },
+        {
+            "gene": "table1CV-3-tag-test",
+            "key": "TA-rapidReportSummaryTagTest-3",
             "displayName": "table 1"
         },
         {
