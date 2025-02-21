@@ -84,11 +84,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   });
 
   let therapeuticAssociationResults = [];
+  const taggedVariants = [];
 
   // bring rapidReportSummaryTags up from statements into variants, choose highest
   allKbMatches = allKbMatches.map((variant) => {
     const rapidReportSummaryTags = [];
     variant?.kbMatches.forEach((kbmatch) => {
+      let tagged = false;
       kbmatch.kbMatchedStatements.forEach((stmt) => {
         if (stmt?.kbData?.rapidReportSummaryTags) {
           const matchingTags = stmt.kbData.rapidReportSummaryTags.find((item) => {
@@ -96,9 +98,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           });
           if (matchingTags) {
             rapidReportSummaryTags.push(matchingTags.tag);
+            tagged = true;
           }
         }
       });
+      if (tagged) {
+        taggedVariants.push(variant);
+      }
     });
     if (rapidReportSummaryTags.includes('therapeutic')) {
       variant.rapidReportSummaryTag = 'therapeutic';
@@ -116,10 +122,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   const taggedTherapeuticAssociationResults = allKbMatches.filter((item) => {
     return item?.rapidReportSummaryTag === 'therapeutic';
   });
-  if (variantType === 'cnv') {
-    console.dir(taggedTherapeuticAssociationResults);
-  }
-
   const taggedCancerRelevanceResults = allKbMatches.filter((item) => {
     return item?.rapidReportSummaryTag === 'cancerRelevance';
   });
@@ -265,31 +267,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           },
         ],
       });
-      // bring rapidReportSummaryTags up from statements into variants, choose highest
-      unknownSignificanceResults = unknownSignificanceResults.map((variant) => {
-        const rapidReportSummaryTags = [];
-        variant?.kbMatches.forEach((kbmatch) => {
-          kbmatch.kbMatchedStatements.forEach((stmt) => {
-            if (stmt?.kbData?.rapidReportSummaryTag) {
-              rapidReportSummaryTags.push(stmt.kbData.rapidReportSummaryTag);
-            }
-          });
-        });
-        if (rapidReportSummaryTags.includes('therapeutic')) {
-          variant.rapidReportSummaryTag = 'therapeutic';
-        } else if (rapidReportSummaryTags.includes('cancerRelevance')) {
-          variant.rapidReportSummaryTag = 'cancerRelevance';
-        } else if (rapidReportSummaryTags.includes('unknown')) {
-          variant.rapidReportSummaryTag = 'unknown';
-        } else if (rapidReportSummaryTags.includes('none')) {
-          variant.rapidReportSummaryTag = 'none';
-        }
-        return variant;
-      });
-      // remove otherwise-tagged items from unknownSignificance results
-      unknownSignificanceResults = unknownSignificanceResults.filter((variant) => {
-        return (!('rapidReportSummaryTag' in variant) || variant.rapidReportSummaryTag === 'unknown');
-      });
     }
   }
 
@@ -298,6 +275,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       (e) => {return e.ident === row.ident;},
     )) && !(cancerRelevanceResultsFiltered.find(
       (e) => {return e.ident === row.ident;},
+    )) && !(taggedVariants.find( // remove variants with any other tag
+      (e) => {return e.ident === row.ident && e.rapidReportSummaryTag !== 'unknown';},
     ))) {
       unknownSignificanceResultsFiltered.push(row);
     }
