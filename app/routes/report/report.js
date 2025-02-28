@@ -315,7 +315,7 @@ router.route('/')
     try {
       // eslint-disable-next-line camelcase
       if (ignore_extra_fields) {
-        validateAgainstSchema(reportUploadSchema, req.body, ignore_extra_fields);
+        validateAgainstSchema(reportUploadSchema, req.body, true, ignore_extra_fields);
       } else {
         validateAgainstSchema(reportUploadSchema, req.body);
       }

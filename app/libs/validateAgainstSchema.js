@@ -34,7 +34,7 @@ ajvUpdate.addFormat('svg', (text) => {
  * @throws {Error} when the input object does not comply to the input schema
  * @returns {undefined}
  */
-const validateAgainstSchema = (schema, data, ignorAdditionalProperties = false, useDefaults = true) => {
+const validateAgainstSchema = (schema, data, useDefaults = true, ignorAdditionalProperties = false) => {
   const ajv = (useDefaults) ? ajvCreate : ajvUpdate;
   if (!ajv.validate(schema, data)) {
     const errors = [];
