@@ -1,4 +1,4 @@
-const {models: {report, reportUser}} = require('../../../models');
+const {models: {report, reportUser, kbMatches}} = require('../../../models');
 
 module.exports = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -57,6 +57,46 @@ module.exports = {
     },
     matchingThreshold: {
       type: 'string',
+    },
+    category: {
+      type: 'string',
+    },
+    approvedTherapy: {
+      type: 'boolean',
+    },
+    kbVariant: {
+      type: 'string',
+    },
+    disease: {
+      type: 'string',
+    },
+    relevance: {
+      type: 'string',
+    },
+    context: {
+      type: 'string',
+    },
+    status: {
+      type: 'string',
+    },
+    reference: {
+      type: 'string',
+    },
+    sample: {
+      type: 'string',
+    },
+    evidenceLevel: {
+      type: 'string',
+    },
+    matchedCancer: {
+      type: 'boolean',
+    },
+    pmidRef: {
+      type: 'string',
+    },
+    variantType: {
+      type: 'string',
+      enum: kbMatches.rawAttributes.variantType.values,
     },
   },
   required: [],

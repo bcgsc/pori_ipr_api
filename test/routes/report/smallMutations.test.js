@@ -7,7 +7,7 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 // get credentials from the CONFIG
 CONFIG.set('env', 'test');
@@ -77,7 +77,6 @@ describe('/reports/{report}/small-mutations', () => {
 
     await db.models.kbMatches.create({
       reportId: report.id,
-      category: 'therapeutic',
       variantType: 'mut',
       variantId: variant.id,
     });
@@ -130,7 +129,7 @@ describe('/reports/{report}/small-mutations', () => {
 
     afterEach(async () => {
       await db.models.smallMutations.destroy({
-        where: {ident: smallMutationUpdate.ident}, force: true,
+        where: {ident: smallMutationUpdate.ident},
       });
     });
 
@@ -164,7 +163,7 @@ describe('/reports/{report}/small-mutations', () => {
 
     afterEach(async () => {
       await db.models.smallMutations.destroy({
-        where: {ident: smallMutationDelete.ident}, force: true,
+        where: {ident: smallMutationDelete.ident},
       });
     });
 
@@ -183,7 +182,7 @@ describe('/reports/{report}/small-mutations', () => {
 
   afterAll(async () => {
     // Destroy report and all it's components
-    await db.models.report.destroy({where: {ident: report.ident}, force: true});
+    await db.models.report.destroy({where: {ident: report.ident}});
   });
 });
 

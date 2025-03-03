@@ -88,9 +88,6 @@ user.belongsToMany(userGroup, {
 userGroup.belongsToMany(user, {
   as: 'users', through: {model: userGroupMember, unique: false}, foreignKey: 'group_id', otherKey: 'user_id', onDelete: 'CASCADE',
 });
-userGroup.belongsTo(user, {
-  as: 'owner', model: user, foreignKey: 'owner_id', onDelete: 'SET NULL',
-});
 
 // IMPORTANT must be done before the variant models are defined
 const genes = require('./reports/genes')(sequelize, Sq);
@@ -217,6 +214,16 @@ analysisReports.hasMany(msi, {
   as: 'msi', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 msi.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// Signature Variants
+const signatureVariants = require('./reports/signatureVariants')(sequelize, Sq);
+
+analysisReports.hasMany(signatureVariants, {
+  as: 'signatureVariants', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+signatureVariants.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
@@ -367,6 +374,22 @@ analysisReports.hasMany(kbMatches, {
   as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+const kbMatchedStatements = require('./reports/kbMatchedStatements')(sequelize, Sq);
+const kbMatchJoin = require('./reports/kbMatchJoin')(sequelize, Sq);
+
+kbMatchedStatements.belongsToMany(kbMatches, {
+  as: 'kbMatches', through: {model: kbMatchJoin, unique: false}, foreignKey: 'kbMatchedStatementId', otherKey: 'kbMatchId', onDelete: 'CASCADE',
+});
+kbMatches.belongsToMany(kbMatchedStatements, {
+  as: 'kbMatchedStatements', through: {model: kbMatchJoin, unique: false}, foreignKey: 'kbMatchId', otherKey: 'kbMatchedStatementId', onDelete: 'CASCADE',
+});
+kbMatchedStatements.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(kbMatchedStatements, {
+  as: 'kbMatchedStatements', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   sequelize.models[modelName].hasMany(kbMatches, {
     foreignKey: 'variantId',
@@ -512,6 +535,15 @@ notification.belongsTo(userGroup, {
   as: 'userGroup', foreignKey: 'userGroupId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
+const notificationTrack = require('./notification/notificationTrack')(sequelize, Sq);
+
+notification.hasMany(notificationTrack, {
+  as: 'notifications_tracks', foreignKey: 'notificationId', onDelete: 'CASCADE', constraints: true,
+});
+notificationTrack.belongsTo(notification, {
+  as: 'notifications', foreignKey: 'notificationId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
 // Variant text
 const variantText = require('./variantText/variantText')(sequelize, Sq);
 
@@ -545,6 +577,17 @@ project.hasMany(templateAppendix, {
 
 templateAppendix.belongsTo(project, {
   as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+// Template Signature Types
+const templateSignatureTypes = require('./template/templateSignatureTypes')(sequelize, Sq);
+
+template.hasMany(templateSignatureTypes, {
+  as: 'signatureTypes', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+
+templateSignatureTypes.belongsTo(template, {
+  as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 
 // Germline Small Mutations

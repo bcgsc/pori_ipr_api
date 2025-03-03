@@ -1,3 +1,5 @@
+const CONFIG = require('./config');
+
 module.exports = {
   UUIDregex: '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}',
   KB_PIVOT_MAPPING: {
@@ -8,6 +10,7 @@ module.exports = {
     protein: 'proteinVariants',
     msi: 'msi',
     tmb: 'tmburMutationBurden',
+    sigv: 'signatureVariants',
   },
   NOTIFICATION_EVENT: {
     USER_BOUND: 'userBound',
@@ -22,25 +25,6 @@ module.exports = {
     'probeResults',
     'proteinVariants',
   ],
-  VALID_IMAGE_KEY_PATTERN: `^${[
-    'mutSignature\\.(corPcors|barplot)\\.(dbs|indels|sbs)',
-    'subtypePlot\\.\\S+',
-    '(cnv|loh)\\.[12345]',
-    'cnvLoh.circos',
-    'mutationBurden\\.(barplot|density|legend)_(sv|snv|indel|snv_indel)\\.(primary|secondary|tertiary|quaternary)',
-    'circosSv\\.(genome|transcriptome)',
-    'expDensity\\.(histogram|violin\\.(tcga|gtex|cser|hartwig|pediatric))\\.\\S+',
-    'expression\\.(chart|legend|spearman\\.(tcga|gtex|cser|hartwig|target|pediatric|brca\\.(molecular|receptor)))',
-    'microbial\\.circos\\.(genome|transcriptome)',
-    'cibersort\\.(cd8_positive|combined)_t-cell_scatter',
-    'mixcr\\.circos_trb_vj_gene_usage',
-    'mixcr\\.dominance_vs_alpha_beta_t-cells_scatter',
-    'scpPlot',
-    'msi.scatter',
-    'pathwayAnalysis.legend',
-  ].map((patt) => {
-    return `(${patt})`;
-  }).join('|')}$`,
   REPORT_CREATE_BASE_URI: '/reports/create',
   REPORT_UPDATE_BASE_URI: '/reports/update',
   GERMLINE_CREATE_BASE_URI: '/germline/create',
@@ -55,4 +39,6 @@ module.exports = {
   MASTER_REPORT_ACCESS: ['admin', 'manager'],
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
+  IMAGE_UPLOAD_LIMIT: CONFIG.get('image:image_upload_limit'),
+  IMAGE_SIZE_LIMIT: 20000, // in bytes
 };

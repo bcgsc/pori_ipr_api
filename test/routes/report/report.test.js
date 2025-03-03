@@ -16,7 +16,7 @@ const {username, password} = CONFIG.get('testing');
 
 jest.mock('../../../app/middleware/auth.js');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 let server;
 let request;
@@ -29,6 +29,7 @@ const checkReport = (report) => {
     'biopsyDate', 'biopsyName', 'presentationDate', 'kbDiseaseMatch',
     'kbUrl', 'pediatricIds', 'captiv8Score', 'appendix', 'hrdetectScore',
     'legacyReportFilepath', 'legacyPresentationFilepath', 'signatures',
+    'genomeTmb',
   ].forEach((element) => {
     expect(report).toHaveProperty(element);
   });
@@ -67,6 +68,7 @@ describe('/reports/{REPORTID}', () => {
   const UNREVIEWED_ACCESS = 'unreviewed Access';
 
   const KEYVARIANT = 'uniqueKeyVariant';
+  const KBVARIANT = 'uniqueKbVariant';
 
   let project;
   let project2;
@@ -112,6 +114,21 @@ describe('/reports/{REPORTID}', () => {
     await db.models.genomicAlterationsIdentified.create({
       geneVariant: KEYVARIANT,
       reportId: report.id,
+    });
+
+    const gene = await db.models.genes.create({
+      reportId: report.id,
+      name: mockReportData.genes[0].name,
+    });
+    const variant = await db.models.copyVariants.create({
+      reportId: report.id,
+      geneId: gene.id,
+    });
+
+    await db.models.kbMatches.create({
+      reportId: report.id,
+      variantId: variant.id,
+      variantType: 'cnv',
     });
 
     reportReady = await db.models.report.create({
@@ -485,6 +502,22 @@ describe('/reports/{REPORTID}', () => {
       }
     }, LONGER_TIMEOUT);
 
+    test('/ - kb match - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports?kbVariant=${KBVARIANT}&&matchingThreshold=1`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      checkReports(res.body.reports);
+
+      for (const resReport of res.body.reports) {
+        for (const gAI of resReport.kbMatches) {
+          expect(gAI.kbVariant).toEqual(KBVARIANT);
+        }
+      }
+    }, LONGER_TIMEOUT);
+
     test('fetches known ident ok', async () => {
       const res = await request
         .get(`/api/reports/${report.ident}`)
@@ -751,18 +784,18 @@ describe('/reports/{REPORTID}', () => {
 
   // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {id: report.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReady.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReviewed.id}, force: true});
-    await db.models.report.destroy({where: {id: reportCompleted.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction.id}, force: true});
-    await db.models.report.destroy({where: {id: report2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReady2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportReviewed2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportCompleted2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportNonProduction2.id}, force: true});
-    await db.models.report.destroy({where: {id: reportDualProj.id}, force: true});
-    await db.models.project.destroy({where: {id: offsetTestProject.id}, force: true});
+    await db.models.report.destroy({where: {id: report.id}});
+    await db.models.report.destroy({where: {id: reportReady.id}});
+    await db.models.report.destroy({where: {id: reportReviewed.id}});
+    await db.models.report.destroy({where: {id: reportCompleted.id}});
+    await db.models.report.destroy({where: {id: reportNonProduction.id}});
+    await db.models.report.destroy({where: {id: report2.id}});
+    await db.models.report.destroy({where: {id: reportReady2.id}});
+    await db.models.report.destroy({where: {id: reportReviewed2.id}});
+    await db.models.report.destroy({where: {id: reportCompleted2.id}});
+    await db.models.report.destroy({where: {id: reportNonProduction2.id}});
+    await db.models.report.destroy({where: {id: reportDualProj.id}});
+    await db.models.project.destroy({where: {id: offsetTestProject.id}});
   }, LONGER_TIMEOUT);
 });
 

@@ -97,7 +97,7 @@ describe('/reports/{report}/genes', () => {
     afterEach(async () => {
       return db.models.genes.destroy({
         where: {ident: getGene.ident},
-        force: true,
+        // force: true,
       });
     });
 
@@ -159,6 +159,50 @@ describe('/reports/{report}/genes', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
+    });
+  });
+
+  describe('POST', () => {
+    test('/ - 201 Created', async () => {
+      const res = await request
+        .post(`/api/reports/${report.ident}/genes`)
+        .send(GENE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      checkGene(res.body);
+      expect(res.body).toEqual(expect.objectContaining(GENE_DATA));
+
+      // Check that record was created in the db
+      const result = await db.models.genes.findOne({
+        where: {ident: res.body.ident},
+      });
+      expect(result).not.toBeNull();
+
+      // Delete entry
+      await result.destroy({force: true});
+    });
+
+    test('/ - 400 Bad Request - Additional Property', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/genes`)
+        .send({
+          ...GENE_UPDATE_DATA,
+          additionalProperty: 'ADDITIONAL_PROPERTY',
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('/ - 400 Bad Request - Gene name is required', async () => {
+      await request
+        .post(`/api/reports/${report.ident}/genes`)
+        .send({})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 

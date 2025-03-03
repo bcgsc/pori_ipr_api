@@ -4,7 +4,7 @@ const path = require('path');
 const db = require('../models');
 const {uploadReportImage} = require('../routes/report/images');
 const logger = require('../log');
-const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING} = require('../constants');
+const {GENE_LINKED_VARIANT_MODELS, KB_PIVOT_MAPPING, IMAGE_UPLOAD_LIMIT} = require('../constants');
 const {sanitizeHtml} = require('./helperFunctions');
 
 const EXCLUDE_SECTIONS = new Set([
@@ -19,6 +19,7 @@ const EXCLUDE_SECTIONS = new Set([
   'projects',
   'ReportUserFilter',
   'users',
+  'kbMatchedStatements',
 ]);
 
 /**
@@ -43,6 +44,84 @@ const createReportSection = async (reportId, modelName, sectionContent, options 
     }), options);
   } catch (error) {
     throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+  }
+};
+
+/**
+ * Creates a new section for the report with the provided data
+ *
+ * @param {Number} reportId - The id of the report this section belongs to
+ * @param {string} modelName - Name of the model for this section
+ * @param {Array|Object} sectionContent - The record or records to be created for this section
+ * @param {object} options - Options for creating report sections
+ * @property {object} options.transaction - Transaction to run bulkCreate under
+ *
+ * @returns {undefined}
+ */
+const createReportKbMatchSection = async (reportId, modelName, sectionContent, options = {}) => {
+  const records = Array.isArray(sectionContent)
+    ? sectionContent
+    : [sectionContent];
+
+  const retvals = [];
+  try {
+    for (const record of records) {
+      const kbMatchData = {
+        variantType: record.variantType,
+        variantId: record.variantId,
+        kbVariant: record.kbVariant,
+        kbVariantId: record.kbVariantId,
+      };
+
+      const kbMatch = await db.models.kbMatches.create({
+        reportId,
+        ...kbMatchData,
+      }, options);
+      kbMatch.dataValues.variant = record.variant;
+      retvals.push(kbMatch.dataValues);
+    }
+    return retvals;
+  } catch (error) {
+    throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+  }
+};
+
+/**
+ * Creates all the sections of a report
+ *
+ * @param {object} reportId - The report id to use when creating the records
+ * @param {object} content - The data for all the reports sections
+ * @param {object} createdKbMatches - The records of createdKbData which can be matched
+ * to the conditions
+ * @param {object} transaction - The transaction to run all the creates under
+ * @returns {undefined}
+ */
+const createStatementMatching = async (reportId, content, createdKbMatches, transaction) => {
+  if (Array.isArray(content.kbStatementMatchedConditions)) {
+    for (const conditionSet of content.kbStatementMatchedConditions) {
+      const statement = content.kbMatchedStatements.find((obj) => {
+        return obj.kbStatementId === conditionSet.kbStatementId;
+      });
+      const createdStatement = await db.models.kbMatchedStatements.create(
+        {
+          reportId,
+          ...statement,
+        },
+        {transaction},
+      );
+      for (const condition of conditionSet.matchedConditions) {
+        const kbmatch = createdKbMatches.find((obj) => {
+          return (
+            condition.observedVariantKey === obj.variant
+            && condition.kbVariantId === obj.kbVariantId);
+        });
+        await db.models.kbMatchJoin.create({
+          reportId,
+          kbMatchId: kbmatch.id,
+          kbMatchedStatementId: createdStatement.dataValues.id,
+        }, {transaction});
+      }
+    }
   }
 };
 
@@ -95,6 +174,43 @@ const createReportGenes = async (report, content, options = {}) => {
   } catch (error) {
     throw new Error(`Unable to create report genes ${error.message || error}`);
   }
+};
+
+/**
+ * Converts old-style kbmatch report input content into new-style kbmatch/statement/conditionset format
+ *
+ * @param {object} content - The data for all the reports sections
+ * @returns {object} content - The reformatted data
+ */
+const updateKbMatchesInputFormat = (content) => {
+  content.kbMatches.forEach((item) => {
+    if ('kbStatementId' in item) {
+      const statement = {...item};
+      delete statement.variantType;
+      delete statement.variantId;
+      delete statement.kbVariant;
+      delete statement.kbVariantId;
+      delete statement.variant;
+
+      if (!('kbMatchedStatements' in content)) {
+        content.kbMatchedStatements = [];
+      }
+      content.kbMatchedStatements.push(statement);
+
+      const conditionSet = {
+        kbStatementId: item.kbStatementId,
+        matchedConditions: [{
+          observedVariantKey: item.variant,
+          kbVariantId: item.kbVariantId,
+        }],
+      };
+      if (!('kbStatementMatchedConditions' in content)) {
+        content.kbStatementMatchedConditions = [];
+      }
+      content.kbStatementMatchedConditions.push(conditionSet);
+    }
+  });
+  return content;
 };
 
 /**
@@ -188,10 +304,14 @@ const createReportVariantSections = async (report, content, transaction) => {
     if (variantMapping[variantType][variant] === undefined) {
       throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
     }
-    return {...match, variantId: variantMapping[variantType][variant], variantType};
+    return {...match, variantId: variantMapping[variantType][variant], variantType, variant};
   });
 
-  return createReportSection(report.id, 'kbMatches', kbMatches, {transaction});
+  content = updateKbMatchesInputFormat(content);
+
+  const createdKbMatches = await createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
+
+  await createStatementMatching(report.id, content, createdKbMatches, transaction);
 };
 
 /**
@@ -355,6 +475,26 @@ const createReport = async (data) => {
   // Create report sections
   try {
     await createReportSections(report, data, transaction);
+
+    const result = await db.query(
+      `SELECT
+            SUM(pg_column_size("reports_image_data")) AS total_bytes
+          FROM
+            "reports_image_data"
+          WHERE
+            "report_id" = :reportId`,
+      {
+        replacements: {reportId: report.id},
+        type: 'select',
+        transaction,
+      },
+    );
+
+    const totalImageSize = result[0].avg_size_bytes;
+    if (totalImageSize > IMAGE_UPLOAD_LIMIT) {
+      throw new Error(`Total image size exceeds ${IMAGE_UPLOAD_LIMIT / 1000000} megabytes`);
+    }
+
     await transaction.commit();
     return report;
   } catch (error) {

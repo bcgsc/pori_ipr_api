@@ -61,6 +61,8 @@ beforeAll(async () => {
 describe('/reports/{REPORTID}/user', () => {
   let user;
   let report;
+  let project;
+  let reportProject;
   let createUser;
   let userReportBinding;
 
@@ -75,6 +77,13 @@ describe('/reports/{REPORTID}/user', () => {
       templateId: template.id,
       patientId: 'PATIENT1234',
       createdBy_id: user.id,
+    });
+
+    project = await db.models.project.create({name: 'test'});
+
+    reportProject = await db.models.reportProject.create({
+      reportId: report.id,
+      project_id: project.id,
     });
 
     createUser = await db.models.user.create({
@@ -316,6 +325,8 @@ describe('/reports/{REPORTID}/user', () => {
     // delete newly created report and all of it's components
     // indirectly by hard deleting newly created patient
     await db.models.report.destroy({where: {ident: report.ident}});
+    await db.models.project.destroy({where: {ident: project.ident}});
+    await db.models.reportProject.destroy({where: {id: reportProject.id}});
   });
 });
 

@@ -110,6 +110,10 @@ const DEFAULTS = {
   swagger: {
     url: null,
   },
+  image: {
+    image_upload_limit: 3000000,
+    scale_factor: 1.5,
+  },
 };
 
 const processEnvVariables = (env = process.env, opt = {}) => {
@@ -165,16 +169,19 @@ const CONFIG = nconf
       alias: 'testing:managerUsername',
     },
     'email.email': {
-      alias: 'email.email',
+      alias: 'email:email',
     },
     'email.password': {
-      alias: 'email.password',
+      alias: 'email:password',
     },
     'email.domain': {
-      alias: 'email.domain',
+      alias: 'email:domain',
     },
     'email.ehost': {
-      alias: 'email.ehost',
+      alias: 'email:ehost',
+    },
+    'email.failemail': {
+      alias: 'email:failemail',
     },
     'log.level': {
       alias: 'log:level',

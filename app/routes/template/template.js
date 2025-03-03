@@ -72,8 +72,6 @@ router.route('/:template([A-z0-9-]{36})')
           data: logo.data,
           filename: logo.name,
           format: logo.mimetype,
-          height: DEFAULT_LOGO_HEIGHT,
-          width: DEFAULT_LOGO_WIDTH,
           type: 'Logo',
         }, {transaction}),
       );
@@ -87,8 +85,6 @@ router.route('/:template([A-z0-9-]{36})')
           data: header.data,
           filename: header.name,
           format: header.mimetype,
-          height: DEFAULT_HEADER_HEIGHT,
-          width: DEFAULT_HEADER_WIDTH,
           type: 'Header',
         }, {transaction}),
       );
@@ -144,6 +140,23 @@ router.route('/')
         ...((name) ? {name: {[Op.iLike]: `%${name}%`}} : {}),
         ...((organization) ? {organization: {[Op.iLike]: `%${organization}%`}} : {}),
       },
+      include: [
+        {
+          model: db.models.image.scope('public'),
+          as: 'logoImage',
+        },
+        {
+          model: db.models.image.scope('public'),
+          as: 'headerImage',
+        },
+        {
+          model: db.models.templateSignatureTypes,
+          as: 'signatureTypes',
+          attributes: {
+            exclude: ['id', 'templateId', 'deletedAt', 'updatedAt', 'createdAt', 'updatedBy'],
+          },
+        },
+      ],
     };
 
     try {

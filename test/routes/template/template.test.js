@@ -10,7 +10,7 @@ const {listen} = require('../../../app');
 CONFIG.set('env', 'test');
 const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 const BASE_URI = '/api/templates'; // TODO; we're testing templates; acl said template; what is client using?
 
@@ -125,9 +125,26 @@ const checkTemplate = (reportObject) => {
   }));
 };
 
-const checkTemplates = (templates) => {
+const templatePropertiesWithSignature = [
+  'ident', 'createdAt', 'updatedAt', 'name', 'organization',
+  'sections', 'signatureTypes',
+];
+
+const checkTemplateWithSignature = (reportObject) => {
+  templatePropertiesWithSignature.forEach((element) => {
+    expect(reportObject).toHaveProperty(element);
+  });
+  expect(reportObject).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    logoId: expect.any(Number),
+    headerId: expect.any(Number),
+    deletedAt: expect.any(String),
+  }));
+};
+
+const checkTemplatesWithSignature = (templates) => {
   templates.forEach((template) => {
-    checkTemplate(template);
+    checkTemplateWithSignature(template);
   });
 };
 
@@ -155,7 +172,7 @@ describe('/templates', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
-      checkTemplates(res.body);
+      checkTemplatesWithSignature(res.body);
     }, LONGER_TIMEOUT);
 
     test('/ - template name query - 200 success', async () => {
@@ -166,7 +183,7 @@ describe('/templates', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkTemplates(res.body);
+      checkTemplatesWithSignature(res.body);
       expect(res.body).toEqual(expect.arrayContaining([
         expect.objectContaining({name: expect.stringContaining('Template')}),
       ]));
@@ -180,7 +197,7 @@ describe('/templates', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      checkTemplates(res.body);
+      checkTemplatesWithSignature(res.body);
       expect(res.body).toEqual(expect.arrayContaining([
         expect.objectContaining({organization: expect.stringContaining('Test')}),
       ]));

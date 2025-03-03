@@ -11,9 +11,6 @@ const {GERMLINE_EXCLUDE} = require('../../schemas/exclude');
 
 const db = require('../../models');
 const logger = require('../../log');
-const cache = require('../../cache');
-
-const {generateKey} = require('../../libs/cacheFunctions');
 
 const Variants = require('./util/variants');
 const gsmMiddleware = require('../../middleware/germlineSmallMutation/reports');
@@ -95,19 +92,6 @@ router.route('/')
       return group.name.trim().toLowerCase() === 'projects';
     });
 
-    // Generate cache key
-    const key = generateKey('/germline', req.query, {inProjectsGroup});
-
-    try {
-      const cacheResults = await cache.get(key);
-      if (cacheResults) {
-        res.type('json');
-        return res.send(cacheResults);
-      }
-    } catch (error) {
-      logger.error(`Error while checking cache for germline reports ${error}`);
-    }
-
     // Setup query options
     const opts = {
       where: {
@@ -159,10 +143,6 @@ router.route('/')
     try {
       const gsmReports = await db.models.germlineSmallMutation.scope('public').findAndCountAll(opts);
       const results = {total: gsmReports.count, reports: gsmReports.rows};
-
-      if (key) {
-        cache.set(key, JSON.stringify(results), 'EX', 14400);
-      }
 
       return res.json(results);
     } catch (error) {

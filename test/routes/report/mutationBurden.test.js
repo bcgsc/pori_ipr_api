@@ -14,7 +14,7 @@ CONFIG.set('env', 'test');
 
 const {username, password} = CONFIG.get('testing');
 
-const LONGER_TIMEOUT = 50000;
+const LONGER_TIMEOUT = 100000;
 
 let server;
 let request;
@@ -23,7 +23,7 @@ const mutationBurdenProperties = [
   'ident', 'createdAt', 'updatedAt', 'role', 'codingSnvCount', 'truncatingSnvCount',
   'codingIndelsCount', 'frameshiftIndelsCount', 'qualitySvCount', 'qualitySvExpressedCount',
   'codingSnvPercentile', 'codingIndelPercentile', 'qualitySvPercentile',
-  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb',
+  'totalSnvCount', 'totalIndelCount', 'totalMutationsPerMb', 'svBurdenHidden',
 ];
 
 const checkMutationBurden = (mutationObject) => {

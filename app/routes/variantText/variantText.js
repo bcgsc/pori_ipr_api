@@ -21,7 +21,7 @@ const createSchema = schemaGenerator(db.models.variantText, {
   baseUri: '/create', exclude: [...BASE_EXCLUDE],
 });
 const updateSchema = schemaGenerator(db.models.variantText, {
-  baseUri: '/update', include: ['text'], nothingRequired: true,
+  baseUri: '/update', include: ['cancerType', 'text'], nothingRequired: true,
 });
 
 const pairs = {
@@ -202,6 +202,10 @@ router.route('/')
     try {
       delete req.body.project;
       delete req.body.template;
+
+      if (typeof req.body.cancerType === 'string') {
+        req.body.cancerType = [req.body.cancerType];
+      }
 
       await validateAgainstSchema(createSchema, req.body);
     } catch (error) {

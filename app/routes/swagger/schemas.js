@@ -8,7 +8,7 @@ const germlineReportUploadSchema = require('../../schemas/germlineSmallMutation/
 const schemas = {};
 
 const ID_FIELDS = [
-  'germlineReportId', 'user_id', 'owner_id', 'createdBy_id', 'addedBy_id', 'variantId',
+  'germlineReportId', 'user_id', 'createdBy_id', 'addedBy_id', 'variantId',
   'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId', 'templateId',
   'product_id', 'addedById',
 ];

@@ -1,14 +1,17 @@
 const {Queue, Worker} = require('bullmq');
 const nodemailer = require('nodemailer');
+const {graphkbGetReadonlyGroupId, graphkbAddUser} = require('./api/graphkb');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
+const db = require('./models');
+const {sendEmail} = require('./libs/email');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log'); // Load logging library
 
 const CONFIG = require('./config');
 
-const {email, password, ehost} = CONFIG.get('email');
+const {email, password, ehost, failemail} = CONFIG.get('email');
 
 const setUpEmailQueue = () => {
   if (enableQueue) {
@@ -39,7 +42,20 @@ const EMAIL_REMOVE_CONFIG = {
 const addJobToEmailQueue = async (data) => {
   if (emailQueue) {
     logger.info('adding email to queue: ', data);
-    return emailQueue.add('job', data, EMAIL_REMOVE_CONFIG);
+    const job = await emailQueue.add('job', data, EMAIL_REMOVE_CONFIG);
+    try {
+      await db.models.notificationTrack.create({
+        notificationId: data.notifId,
+        jobId: job.id,
+        recipient: data.mailOptions.to,
+        reason: data.eventType,
+        outcome: 'created',
+      });
+    } catch (error) {
+      logger.error(`Unable to create notification track ${error}`);
+      throw new Error(error);
+    }
+    return job;
   }
   return null;
 };
@@ -68,13 +84,57 @@ const setUpEmailWorker = (emailJobProcessor) => {
   const workerInstance = worker();
   if (workerInstance) {
     workerInstance.on('completed', async (job) => {
+      await onEmailWorkderCompleted(job);
       await job.remove();
       logger.info(`Email job with ID ${job.id} has been completed.`);
     });
 
-    workerInstance.on('failed', (job, err) => {
+    workerInstance.on('failed', async (job, err) => {
+      await onEmailWorkderFailed(job);
       logger.error(`Email job with ID ${job.id} has failed with error: ${err.message}`);
     });
+  }
+};
+
+const onEmailWorkderCompleted = async (job) => {
+  try {
+    const notification = await db.models.notificationTrack.findOne({
+      where: {
+        notificationId: job.data.notifId,
+        jobId: job.id,
+      },
+    });
+    await notification.update({
+      outcome: 'completed',
+    });
+  } catch (error) {
+    logger.error(`Unable to create notification track ${error}`);
+    throw new Error(error);
+  }
+};
+
+const onEmailWorkderFailed = async (job) => {
+  try {
+    const notification = await db.models.notificationTrack.findOne({
+      where: {
+        notificationId: job.data.notifId,
+        jobId: job.id,
+      },
+    });
+    await notification.update({
+      outcome: 'failed',
+    });
+  } catch (error) {
+    logger.error(`Unable to create notification track ${error}`);
+    throw new Error(error);
+  }
+
+  try {
+    if (failemail) {
+      await sendEmail('Notification failed', job.data, failemail);
+    }
+  } catch (error) {
+    logger.error(`Unable to send email ${error}`);
   }
 };
 
@@ -92,9 +152,23 @@ const emailProcessor = async (job) => {
   });
 
   try {
-    await transporter.sendMail(job.data);
+    try {
+      const notification = await db.models.notificationTrack.findOne({
+        where: {
+          notificationId: job.data.notifId,
+          jobId: job.id,
+        },
+      });
+      await notification.update({
+        outcome: 'processing',
+      });
+    } catch (error) {
+      logger.error(`Unable to add process notification track ${error}`);
+      throw new Error(error);
+    }
+    await transporter.sendMail(job.data.mailOptions);
   } catch (err) {
-    logger.error(JSON.stringify(job.data));
+    logger.error(JSON.stringify(job.data.mailOptions));
     throw new Error(err);
   }
 };
@@ -186,4 +260,84 @@ const reportProcessor = async (job) => {
 
 setUpReportWorker(reportProcessor);
 
-module.exports = {addJobToEmailQueue, addJobToReportQueue, retrieveJobFromReportQueue};
+const setUpGraphkbNewUserQueue = () => {
+  if (enableQueue) {
+    logger.info('graphkb new user queue enabled');
+    return new Queue('graphkbNewUserQueue', {
+      connection: {
+        host,
+        port,
+      },
+    });
+  }
+  logger.info('graphkb new user queue not enabled');
+  return null;
+};
+
+const graphkbNewUserQueue = setUpGraphkbNewUserQueue();
+
+const GRAPHKB_REMOVE_CONFIG = {
+  removeOnComplete: {
+    age: 3600,
+  },
+  removeOnFail: {
+    age: 24 * 3600,
+  },
+  attempts: 3,
+};
+
+const addJobToGraphkbNewUserQueue = async (data) => {
+  if (graphkbNewUserQueue) {
+    logger.info('adding graphkb new user to queue: ', data.body);
+    return graphkbNewUserQueue.add('job', data, GRAPHKB_REMOVE_CONFIG);
+  }
+  return null;
+};
+
+// Initialize a new worker
+const setUpGraphkbNewUserWorker = (graphkbJobProcessor) => {
+  const worker = () => {
+    if (enableQueue) {
+      return new Worker(
+        'graphkbNewUserQueue',
+        graphkbJobProcessor,
+        {connection: {
+          host,
+          port,
+        },
+        autorun: true},
+      );
+    }
+    return null;
+  };
+
+  const workerInstance = worker();
+  if (workerInstance) {
+    workerInstance.on('completed', async (job) => {
+      await job.remove();
+      logger.info(`Graphkb new user job with ID ${job.id} has been completed.`);
+    });
+
+    workerInstance.on('failed', (job, err) => {
+      logger.error(`Graphkb new user job with ID ${job.id} has failed with error: ${err.message}`);
+    });
+  }
+};
+
+const graphkbNewUserProcessor = async (job) => {
+  // Process the job data
+  try {
+    const groupId = await graphkbGetReadonlyGroupId(job.data.graphkbToken);
+    const addUser = await graphkbAddUser(job.data.graphkbToken, job.data.body.username, job.data.body.email, groupId.result[0]['@rid']);
+    if (!addUser.result) {
+      throw new Error(`Error adding new user to GraphKb: ${addUser}`);
+    }
+  } catch (err) {
+    logger.error(JSON.stringify(job.data.body));
+    throw new Error(err);
+  }
+};
+
+setUpGraphkbNewUserWorker(graphkbNewUserProcessor);
+
+module.exports = {addJobToEmailQueue, addJobToReportQueue, addJobToGraphkbNewUserQueue, retrieveJobFromReportQueue};

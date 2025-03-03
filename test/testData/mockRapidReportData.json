@@ -11,7 +11,9 @@
             "kbVariant": "this should be in table 1",
             "matchedCancer": true,
             "relevance": "sensitivity",
-            "evidenceLevel": "table 1"
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#20",
+            "kbStatementId": "#20"
         },
         {
             "category": "therapeutic",
@@ -21,7 +23,9 @@
             "kbVariant": "this should be in table 1",
             "matchedCancer": true,
             "relevance": "resistance",
-            "evidenceLevel": "table 1"
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#19",
+            "kbStatementId": "#19"
         },
         {
             "category": "therapeutic",
@@ -31,7 +35,21 @@
             "kbVariant": "thisshouldbeintable1",
             "matchedCancer": true,
             "relevance": "sensitivity",
-            "evidenceLevel": "table 1"
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#18",
+            "kbStatementId": "#18"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "sigv",
+            "variant": "sigv",
+            "iprEvidenceLevel": "IPR-B",
+            "kbVariant": "thisshouldbeintable1",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#17",
+            "kbStatementId": "#17"
         },
         {
             "category": "therapeutic",
@@ -41,7 +59,9 @@
             "kbVariant": "thisshouldbeintable2",
             "matchedCancer": true,
             "relevance": "resistance",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#16",
+            "kbStatementId": "#16"
         },
         {
             "category": "therapeutic",
@@ -51,7 +71,9 @@
             "kbVariant": "geneX specific mutation 7",
             "matchedCancer": true,
             "relevance": "sensitivity",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#15",
+            "kbStatementId": "#15"
         },
         {
             "category": "therapeutic",
@@ -61,7 +83,9 @@
             "kbVariant": "this should be in table 2",
             "matchedCancer": true,
             "relevance": "no sensitivity",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#14",
+            "kbStatementId": "#14"
         },
         {
             "category": "therapeutic",
@@ -70,7 +94,9 @@
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this should be in table 2",
             "matchedCancer": true,
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#13",
+            "kbStatementId": "#13"
         },
         {
             "category": "unknown",
@@ -78,7 +104,9 @@
             "variant": "CR",
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this.should.be:table2",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#12",
+            "kbStatementId": "#12"
         },
         {
             "category": "therapeutic",
@@ -88,7 +116,9 @@
             "matchedCancer": true,
             "relevance": "sensitivity",
             "kbVariant": "also should be table 1",
-            "evidenceLevel": "table 1"
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#11",
+            "kbStatementId": "#11"
         },
         {
             "category": "therapeutic",
@@ -98,7 +128,9 @@
             "matchedCancer": true,
             "relevance": "sensitivity",
             "kbVariant": "geneX specific mutation 2",
-            "evidenceLevel": "table 1"
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#10",
+            "kbStatementId": "#10"
         },
         {
             "category": "therapeutic",
@@ -106,7 +138,9 @@
             "variant": "CR",
             "iprEvidenceLevel": "IPR-C",
             "kbVariant": "table2 specific mutation",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#9",
+            "kbStatementId": "#9"
         },
         {
             "category": "unknown",
@@ -114,7 +148,9 @@
             "variant": "CR",
             "iprEvidenceLevel": "IPR-C",
             "kbVariant": "geneX specific mutation 3",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#8",
+            "kbStatementId": "#8"
         },
         {
             "category": "unknown",
@@ -122,7 +158,9 @@
             "variant": "CR",
             "iprEvidenceLevel": null,
             "kbVariant": "geneX specific mutation 4",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#7",
+            "kbStatementId": "#7"
         },
         {
             "category": "therapeutic",
@@ -130,7 +168,9 @@
             "variant": "CR",
             "iprEvidenceLevel": null,
             "kbVariant": "geneX specific mutation 5",
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#6",
+            "kbStatementId": "#6"
         },
         {
             "category": "therapeutic",
@@ -139,7 +179,9 @@
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "geneX specific mutation 6",
             "matchedCancer": false,
-            "evidenceLevel": "table 2"
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#5",
+            "kbStatementId": "#5"
         },
         {
             "category": "therapeutic",
@@ -148,7 +190,9 @@
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "geneX missense",
             "matchedCancer": true,
-            "evidenceLevel": "table 3"
+            "evidenceLevel": "table 3",
+            "kbVariantId": "#4",
+            "kbStatementId": "#4"
         },
         {
             "category": "therapeutic",
@@ -156,7 +200,9 @@
             "variant": "crgeneric",
             "iprEvidenceLevel": "IPR-C",
             "kbVariant": "geneX mutation",
-            "evidenceLevel": "table 3"
+            "evidenceLevel": "table 3",
+            "kbVariantId": "#3",
+            "kbStatementId": "#3"
         },
         {
             "category": "unknown",
@@ -164,7 +210,9 @@
             "variant": "TA",
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "geneX specific mutation 1",
-            "evidenceLevel": "table null"
+            "evidenceLevel": "table null",
+            "kbVariantId": "#2",
+            "kbStatementId": "#2"
         },
         {
             "category": "therapeutic",
@@ -173,7 +221,9 @@
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "geneX specific mutation 7",
             "matchedCancer": true,
-            "evidenceLevel": "table null"
+            "evidenceLevel": "table null",
+            "kbVariantId": "#1",
+            "kbStatementId": "#1"
         }
     ],
     "genes": [
@@ -269,6 +319,12 @@
             "score": 15,
             "key": "mss",
             "displayName": "table null"
+        }
+    ],
+    "signatureVariants": [
+        {
+            "key": "sigv",
+            "displayName": "table 1"
         }
     ]
 }

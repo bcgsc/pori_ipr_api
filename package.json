@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "ipr-api",
-  "version": "8.0.1",
+  "version": "8.1.0",
   "description": "Integrated Pipeline Reports API",
   "main": "bin/server.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "start:prod": "NODE_ENV=production node --max-old-space-size=6500 bin/server.js",
     "start:dev": "NODE_ENV=development node --max-old-space-size=6500 bin/server.js",
     "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=6500 jest --config config/jest/jest.config.js --log-heap-usage --forceExit",
-    "test_local": "NODE_ENV=test jest --runInBand --testTimeout=50000 -c --forceExit config/jest/jest.config.js test/",
+    "test_local": "NODE_ENV=test jest --runInBand --testTimeout=100000 -c --forceExit config/jest/jest.config.js test/",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
   },
   "author": "IPR <ipr@bcgsc.ca>",

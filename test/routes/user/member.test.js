@@ -68,7 +68,7 @@ beforeAll(async () => {
   });
 
   // Create groups
-  group = await db.models.userGroup.create({name: 'Test group', owner_id: user01.id});
+  group = await db.models.userGroup.create({name: 'Test group'});
   adminGroup = await db.models.userGroup.findOne({
     where: {name: 'admin'},
   });

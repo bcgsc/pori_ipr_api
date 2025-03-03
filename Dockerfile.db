@@ -1,6 +1,8 @@
+# This file left in repo for compatibility with current bcgsc/PORI package;
+# to be removed when that package is updated
 FROM postgres:13-alpine
 
 RUN mkdir -p /tmp/psql_data/
 
-COPY demo/ipr_demodb.postgres.dump /tmp/psql_data/ipr_demodb.postgres.dump
-COPY demo/restore_iprdb_dump.sh /docker-entrypoint-initdb.d/
+COPY database_for_new_deployment/ipr_new_deployment.postgres.dump /tmp/psql_data/ipr_new_deployment.postgres.dump
+COPY database_for_new_deployment/restore_iprdb_dump.sh /docker-entrypoint-initdb.d/

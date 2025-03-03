@@ -71,7 +71,7 @@ router.route('/')
   .post(async (req, res) => {
     // Validate request against schema
     try {
-      await validateAgainstSchema(createSchema, req.body);
+      validateAgainstSchema(createSchema, req.body);
     } catch (error) {
       const message = `Error while validating tmbur mutation burden create request ${error}`;
       logger.error(message);

@@ -385,15 +385,10 @@
                   "name": {
                     "description": "Name of the new group",
                     "type": "string"
-                  },
-                  "owner": {
-                    "description": "UUID of the owner of the new group",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "name",
-                  "owner"
+                  "name"
                 ]
               }
             }
@@ -493,13 +488,8 @@
                     "description": "Name of the new group",
                     "type": "string"
                   },
-                  "owner": {
-                    "description": "UUID of the owner of the new group",
-                    "type": "string"
-                  },
                   "required": [
-                    "name",
-                    "owner"
+                    "name"
                   ]
                 }
               }
@@ -4148,10 +4138,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "kbMatches": {
+                    "kbMatchedStatements": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/kbMatchesAssociations"
+                        "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
                       }
                     },
                     "smallMutations": {
@@ -4664,6 +4654,211 @@
           },
           "404": {
             "description": "Report or KB Match not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches/kb-matched-statements": {
+      "get": {
+        "summary": "Get KB Matched Statements",
+        "description": "Retrieve KB Matched Statements for a given report and kbMatch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          },
+          {
+            "name": "matchedCancer",
+            "in": "query",
+            "required": false,
+            "description": "Filter by matchedCancer field",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "approvedTherapy",
+            "in": "query",
+            "required": false,
+            "description": "Filter by approvedTherapy field",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filter by category field. Comma separated field",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iprEvidenceLevel",
+            "in": "query",
+            "required": false,
+            "description": "Filter by iprEvidenceLevel field. Comma separated field",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of KB Matched Statements for the given KbMatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report Not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/kb-matches/kb-matched-statements/{kbMatchedStatement}": {
+      "get": {
+        "summary": "Get KB Matched Statement by Ident",
+        "description": "Retrieve a specific KB Matched Statement from the report by report ident and KB match ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatchedStatement"
+          }
+        ],
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified KB Matched Statement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or KB Matched not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a kbMatchedStatement",
+        "description": "Updates and returns the specified kbMatchedStatement",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatchedStatement"
+          }
+        ],
+        "requestBody": {
+          "description": "The kbMatchedStatement to be updated",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/kbMatchedStatementsUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated kbMatchedStatement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/kbMatchedStatementsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or kbMatchedStatement not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete KB Match",
+        "description": "Removes the specified KB Match",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatch"
+          },
+          {
+            "$ref": "#/components/parameters/kbMatchedStatement"
+          }
+        ],
+        "tags": [
+          "KB Matched Statements"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or KB Match or kb Matched Statement not found"
           }
         }
       }
@@ -6284,6 +6479,166 @@
         }
       }
     },
+    "/reports/{report}/signature-variants": {
+      "get": {
+        "summary": "Get Signature Variants",
+        "description": "Retrieve all signature variants for a given report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Signature Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of signature variants for the given report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/signatureVariantsAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/signature-variants/{signatureVariant}": {
+      "get": {
+        "summary": "Get Signature Variant",
+        "description": "Retrieves a signature variant from the report by ident",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/signatureVariant"
+          }
+        ],
+        "tags": [
+          "Signature Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified signature variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/signatureVariantsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature variant not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Signature Variant",
+        "description": "Update the details of a signature variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/signatureVariant"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update current signature variant",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signatureVariantsUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Signature Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated signature variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/signatureVariantsAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature variant not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Signature Variant",
+        "description": "Removes the specified signature variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/signatureVariant"
+          }
+        ],
+        "tags": [
+          "Signature Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or signature variant not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/summary/analyst-comments": {
       "get": {
         "summary": "Get an Analyst Comment associated with a given report",
@@ -7220,6 +7575,165 @@
           }
         }
       }
+    },
+    "/templates/{template}/signature-types": {
+      "get": {
+        "summary": "Get Template Signature Types",
+        "description": "Retrieve a templates signature types",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of a templates signature types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateSignatureTypes"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or signature types not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Template Signature Types",
+        "description": "Upload a new template signature types",
+        "parameters": [],
+        "requestBody": {
+          "description": "Template signature types data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/templateSignatureTypesCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the created template signature types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateSignatureTypes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "A signature type already exists for this template"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Template Signature Types",
+        "description": "Update the details of a templates signature type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "requestBody": {
+          "description": "Template Signature Types data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/templateSignatureTypesUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated template signature type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/templateSignatureTypes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or signature type not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Template Signature Types",
+        "description": "Removes the specified templates signature type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/template"
+          }
+        ],
+        "tags": [
+          "Template Signature Types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Template or signature types not found"
+          }
+        }
+      }
     }
   },
   "externalDocs": {
@@ -7377,6 +7891,16 @@
           "format": "UUIDv4"
         }
       },
+      "kbMatchedStatement": {
+        "name": "kbMatchedStatement",
+        "in": "path",
+        "required": true,
+        "description": "KB Matched Statement ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
       "burden": {
         "name": "burden",
         "in": "path",
@@ -7442,6 +7966,16 @@
         "in": "path",
         "required": true,
         "description": "structural variant ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "signatureVariant": {
+        "name": "signature variant",
+        "in": "path",
+        "required": true,
+        "description": "signature variant ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"

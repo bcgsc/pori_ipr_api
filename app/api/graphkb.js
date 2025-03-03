@@ -25,7 +25,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   if (targetType === 'context') {
     query.target = 'Vocabulary';
     query.queryType = 'ancestors';
-    query.filters = {name: 'therapeutic efficacy'};
+    query.filters = {name: 'therapeutic indicator'};
   } else {
     if (targetType === 'evidenceLevel') {
       query.target = 'EvidenceLevel';
@@ -49,7 +49,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
     }
   }
 
-  return request({
+  const res = await request({
     url: `${uri}/query`,
     method: 'POST',
     body: JSON.stringify(query),
@@ -59,6 +59,19 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
       'Content-Type': 'application/json',
     },
   });
+
+  // DEVSU-2344; Filtering results for context route
+  // Needs to be done after the query since cannot be combined with ancestors as a subquery
+  if (targetType === 'context') {
+    res.result = res.result.filter((term) => {
+      return [
+        'resistance', 'sensitivity', 'toxicity',
+      ].includes(term.displayName);
+    });
+    res.metadata.records = res.result.length;
+  }
+
+  return res;
 };
 
 /* Get IPR evidence level descriptions from GraphKB
@@ -77,6 +90,7 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
         filters: {name: 'ipr'},
       },
     },
+    orderBy: 'displayName',
     limit: 100,
     skip: 0,
     target: 'EvidenceLevel',
@@ -135,8 +149,56 @@ const graphkbStatement = async (graphkbToken, statementId) => {
   });
 };
 
+const graphkbGetReadonlyGroupId = async (graphkbToken) => {
+  const {uri} = CONFIG.get('graphkb');
+
+  const query = {
+    filters: [
+      {name: 'readonly'},
+    ],
+    target: 'UserGroup',
+    returnProperties: [
+      '@rid',
+    ],
+  };
+
+  return request({
+    url: `${uri}/query`,
+    method: 'POST',
+    body: JSON.stringify(query),
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+const graphkbAddUser = async (graphkbToken, userName, userEmail, groupId) => {
+  const {uri} = CONFIG.get('graphkb');
+
+  const query = {
+    name: userName,
+    email: userEmail,
+    groups: [groupId],
+  };
+
+  return request({
+    url: `${uri}/users`,
+    method: 'POST',
+    body: JSON.stringify(query),
+    json: true,
+    headers: {
+      Authorization: graphkbToken,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 module.exports = {
   graphkbAutocomplete,
   graphkbEvidenceLevels,
   graphkbStatement,
+  graphkbGetReadonlyGroupId,
+  graphkbAddUser,
 };

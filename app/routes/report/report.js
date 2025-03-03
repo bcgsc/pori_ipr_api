@@ -105,7 +105,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant,
       },
     } = req;
 
@@ -125,7 +125,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold,
+        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant,
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -175,8 +175,17 @@ router.route('/')
         ...((keyVariant && matchingThreshold) ? {
           '$genomicAlterationsIdentified.geneVariant$': {
             [Op.in]: literal(
-              `(SELECT "geneVariant" 
-              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery 
+              `(SELECT "geneVariant"
+              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery
+              WHERE word_similarity >= ${matchingThreshold})`,
+            ),
+          },
+        } : {}),
+        ...((kbVariant && matchingThreshold) ? {
+          '$kbMatches.kb_variant$': {
+            [Op.in]: literal(
+              `(SELECT "kb_variant"
+              FROM (SELECT "kb_variant", word_similarity('${kbVariant}', "kb_variant") FROM reports_kb_matches) AS subquery
               WHERE word_similarity >= ${matchingThreshold})`,
             ),
           },
@@ -250,6 +259,10 @@ router.route('/')
           model: db.models.genomicAlterationsIdentified.scope('public'),
           as: 'genomicAlterationsIdentified',
         }] : []),
+        ...((kbVariant && matchingThreshold) ? [{
+          model: db.models.kbMatches.scope('minimal'),
+          as: 'kbMatches',
+        }] : []),
       ],
     };
 
@@ -312,6 +325,15 @@ router.route('/')
       const projectIdArray = [];
       report.projects.forEach((project) => {
         projectIdArray.push(project.project_id);
+      });
+
+      await db.models.notification.findOrCreate({
+        where: {
+          userId: req.user.id,
+          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
+          templateId: report.templateId,
+          projectId: report.projects[0].project_id,
+        },
       });
 
       await email.notifyUsers(

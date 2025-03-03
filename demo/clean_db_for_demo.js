@@ -157,13 +157,6 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
 };
 
 const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
-  console.log('DROP all non-admin non-manager groups');
-  await queryInterface.sequelize.query(
-    `DELETE FROM user_groups
-      WHERE deleted_at IS NOT NULL OR NOT (name in (:groups))`,
-    {transaction, replacements: {groups: ['admin', 'manager', 'reviewer']}},
-  );
-
   console.log('DROP all reports_signatures');
   await queryInterface.sequelize.query(
     'TRUNCATE reports_signatures',
@@ -256,12 +249,6 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
     );
   }
 
-  console.log('make iprdemo user the group owner of all groups');
-  await queryInterface.sequelize.query(
-    'UPDATE user_groups SET owner_id = :owner',
-    {transaction, replacements: {owner: demoUser.id}},
-  );
-
   await addDemoUserToGroup(queryInterface, transaction, demoUser, 'admin');
   await addDemoUserToGroup(queryInterface, transaction, demoUser, 'manager');
   await addDemoUserToProject(queryInterface, transaction, demoUser, 'PORI');
@@ -351,12 +338,6 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
       },
     );
   }
-
-  console.log('make admin user the group owner of all groups');
-  await queryInterface.sequelize.query(
-    'UPDATE user_groups SET owner_id = :owner',
-    {transaction, replacements: {owner: adminUser.id}},
-  );
 
   await addDemoUserToGroup(queryInterface, transaction, adminUser, 'admin');
   await addDemoUserToGroup(queryInterface, transaction, adminUser, 'manager');
