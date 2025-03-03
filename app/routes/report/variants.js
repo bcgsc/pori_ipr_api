@@ -57,7 +57,7 @@ const unknownSignificanceGeneFilter = {
 };
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
-  const allKbMatches = await db.models[tableName].scope('extended').findAll({
+  let allKbMatches = await db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
     attributes: {
       include: [[literal(`'${variantType}'`), 'variantType']],
@@ -84,6 +84,55 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   });
 
   let therapeuticAssociationResults = [];
+  const taggedVariants = [];
+
+  // bring rapidReportSummaryTags up from statements into variants, choose highest
+  allKbMatches = allKbMatches.map((variant) => {
+    const rapidReportSummaryTags = [];
+    variant?.kbMatches.forEach((kbmatch) => {
+      let tagged = false;
+      kbmatch.kbMatchedStatements.forEach((stmt) => {
+        if (stmt?.kbData?.rapidReportSummaryTags) {
+          const matchingTags = stmt.kbData.rapidReportSummaryTags.find((item) => {
+            return item.kbVariantId === kbmatch.kbVariantId;
+          });
+          if (matchingTags) {
+            rapidReportSummaryTags.push(matchingTags.tag);
+            tagged = true;
+          }
+        }
+      });
+      if (tagged) {
+        taggedVariants.push(variant);
+      }
+    });
+    if (rapidReportSummaryTags.includes('therapeutic')) {
+      variant.rapidReportSummaryTag = 'therapeutic';
+    } else if (rapidReportSummaryTags.includes('cancerRelevance')) {
+      variant.rapidReportSummaryTag = 'cancerRelevance';
+    } else if (rapidReportSummaryTags.includes('unknown')) {
+      variant.rapidReportSummaryTag = 'unknown';
+    } else if (rapidReportSummaryTags.includes('none')) {
+      variant.rapidReportSummaryTag = 'none';
+    }
+    return variant;
+  });
+
+  // extract tagged matches
+  const taggedTherapeuticAssociationResults = allKbMatches.filter((item) => {
+    return item?.rapidReportSummaryTag === 'therapeutic';
+  });
+  const taggedCancerRelevanceResults = allKbMatches.filter((item) => {
+    return item?.rapidReportSummaryTag === 'cancerRelevance';
+  });
+  const taggedUnknownResults = allKbMatches.filter((item) => {
+    return item?.rapidReportSummaryTag === 'unknown';
+  });
+
+  // remove tagged items from allKbMatches since they are already sorted
+  allKbMatches = allKbMatches.filter((variant) => {
+    return (!('rapidReportSummaryTag' in variant));
+  });
 
   if (!(variantType === 'exp')) { // omit expression variants from this table
     therapeuticAssociationResults = JSON.parse(JSON.stringify(allKbMatches));
@@ -131,6 +180,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     });
   }
 
+  therapeuticAssociationResults.push(...taggedTherapeuticAssociationResults);
+
   if (rapidTable === 'therapeuticAssociation') {
     return therapeuticAssociationResults;
   }
@@ -169,6 +220,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     }
   }
 
+  cancerRelevanceResultsFiltered.push(...taggedCancerRelevanceResults);
+
   if (rapidTable === 'cancerRelevance') {
     return cancerRelevanceResultsFiltered;
   }
@@ -180,6 +233,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     if (signatureVariant.includes(variantType)) {
       unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
     } else {
+      // TODO: bring this in line with the rest of these; don't make a separate db call here
       unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
         order: [['id', 'ASC']],
         attributes: {
@@ -221,10 +275,14 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       (e) => {return e.ident === row.ident;},
     )) && !(cancerRelevanceResultsFiltered.find(
       (e) => {return e.ident === row.ident;},
+    )) && !(taggedVariants.find( // remove variants with any other tag
+      (e) => {return e.ident === row.ident && e.rapidReportSummaryTag !== 'unknown';},
     ))) {
       unknownSignificanceResultsFiltered.push(row);
     }
   }
+
+  unknownSignificanceResultsFiltered.push(...taggedUnknownResults);
 
   return unknownSignificanceResultsFiltered;
 };
