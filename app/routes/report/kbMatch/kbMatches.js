@@ -33,6 +33,12 @@ router.route('/')
   .get(async (req, res) => {
     const {query: {matchedCancer, approvedTherapy, category, iprEvidenceLevel}} = req;
 
+    const statementParams = [matchedCancer, approvedTherapy, category, iprEvidenceLevel];
+    let statementRequired = false;
+    if (statementParams.some(param => param !== null)) {
+      statementRequired = true;
+    }
+
     try {
       const results = await db.models.kbMatches.scope('public').findAll({
         where: {
@@ -53,13 +59,15 @@ router.route('/')
               ...((typeof approvedTherapy === 'boolean') ? {approvedTherapy} : {}),
             },
             through: {attributes: []},
-            required: false,
+            required: statementRequired,
           },
           ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
             return {model: db.models[modelName].scope('public'), as: modelName};
           }),
         ],
       });
+
+
 
       return res.json(results);
     } catch (error) {
