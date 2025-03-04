@@ -40,5 +40,5 @@ module.exports = {
   ALL_PROJECTS_ACCESS: ['admin', 'all projects access'],
   UPDATE_METHODS: ['POST', 'PUT', 'DELETE'],
   IMAGE_UPLOAD_LIMIT: CONFIG.get('image:image_upload_limit'),
-  IMAGE_SIZE_LIMIT: 20000, // in bytes
+  IMAGE_SIZE_LIMIT: 1500000, // in bytes
 };
