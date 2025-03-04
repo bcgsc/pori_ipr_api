@@ -35,7 +35,7 @@ router.route('/')
 
     const statementParams = [matchedCancer, approvedTherapy, category, iprEvidenceLevel];
     let statementRequired = false;
-    if (statementParams.some(param => param !== null)) {
+    if (statementParams.some((param) => {return param !== null;})) {
       statementRequired = true;
     }
 
@@ -66,8 +66,6 @@ router.route('/')
           }),
         ],
       });
-
-
 
       return res.json(results);
     } catch (error) {
