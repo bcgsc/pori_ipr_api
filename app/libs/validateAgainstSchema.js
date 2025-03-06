@@ -34,7 +34,7 @@ ajvUpdate.addFormat('svg', (text) => {
  * @throws {Error} when the input object does not comply to the input schema
  * @returns {undefined}
  */
-const validateAgainstSchema = (schema, data, useDefaults = true) => {
+const validateAgainstSchema = (schema, data, useDefaults = true, ignoreAdditionalProperties = false) => {
   const ajv = (useDefaults) ? ajvCreate : ajvUpdate;
   if (!ajv.validate(schema, data)) {
     const errors = [];
@@ -45,12 +45,15 @@ const validateAgainstSchema = (schema, data, useDefaults = true) => {
         return `${key}: ${value}`;
       }).join(', ');
 
-      errors.push(
-        `${error.dataPath ? `${error.dataPath} ${error.message}` : error.message} [${errorParams}]`,
-      );
+      if (!ignoreAdditionalProperties || error.keyword !== 'additionalProperties') {
+        errors.push(
+          `${error.dataPath ? `${error.dataPath} ${error.message}` : error.message} [${errorParams}]`,
+        );
+      }
     });
-
-    throw new Error(errors.join('; '));
+    if (errors.length > 0) {
+      throw new Error(errors.join('; '));
+    }
   }
 };
 

@@ -163,6 +163,16 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       defaultValue: null,
     },
+    uploadContents: {
+      name: 'uploadContents',
+      field: 'upload_contents',
+      type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'object',
+        },
+      },
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports',
