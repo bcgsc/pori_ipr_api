@@ -94,12 +94,6 @@ const addPoriAdminUser = async (queryInterface, transaction) => {
       },
     },
   );
-
-  console.log('make poriAdmin user the group owner of all groups');
-  await queryInterface.sequelize.query(
-    'UPDATE user_groups SET owner_id = :owner',
-    {transaction, replacements: {owner: poriAdmin.id}},
-  );
 };
 
 const cleanDb = async () => {

@@ -29,6 +29,7 @@ const TRUNCATE_TABLES = [
   'germline_small_mutations',
   'germline_small_mutations_review',
   'germline_small_mutations_variant',
+  'notifications',
 ];
 
 const checkReportsCount = async (queryInterface, transaction, minReports = 3) => {
@@ -378,37 +379,48 @@ const cleanDb = async () => {
     console.log('reports to keep', reportsToKeep);
 
     await queryInterface.sequelize.query(
-      'DELETE FROM reports WHERE NOT (id IN (:reportsToKeep))',
+      'DELETE FROM reports WHERE id NOT IN(:reportsId)',
       {
         transaction,
         replacements: {
-          reportsToKeep,
+          reportsId: reportsToKeep,
         },
       },
     );
 
-    const reportTables = await queryInterface.sequelize.query(
+    const reportTables = (await queryInterface.sequelize.query(
       'SELECT table_name FROM information_schema.tables WHERE table_name LIKE :reportTablePattern;',
       {
         transaction,
         type: queryInterface.sequelize.QueryTypes.SELECT,
         replacements: {reportTablePattern: 'reports\\_%'},
       },
-    );
+    )).flat();
     reportTables.push('report_projects'); // does not follow pattern
 
     for (const tablename of reportTables) {
       console.log(`deleting from ${tablename}`);
+      if (tablename === 'reports_kb_match_join') {
+        continue;
+      }
       await queryInterface.sequelize.query(
-        `DELETE FROM ${tablename} WHERE NOT (report_id IN (:reportsToKeep))`,
+        `DELETE FROM ${tablename} WHERE report_id NOT IN(:reportsId)`,
         {
           transaction,
           replacements: {
-            reportsToKeep,
+            reportsId: reportsToKeep,
           },
         },
       );
     }
+
+    await queryInterface.sequelize.query(
+      'DELETE FROM reports_kb_match_join WHERE NOT (kb_match_id IN (select id from reports_kb_matches))',
+      {
+        transaction,
+      },
+    );
+
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
     for (const tableName of TRUNCATE_TABLES) {
       console.log(`truncating ${tableName}`);
@@ -426,13 +438,7 @@ const cleanDb = async () => {
       'UPDATE reports SET "createdBy_id" = NULL',
       {transaction},
     );
-    await queryInterface.sequelize.query(
-      'DELETE FROM reports_kb_matches WHERE evidence_level ILIKE :name',
-      {
-        transaction,
-        replacements: {name: '%oncokb%'},
-      },
-    );
+
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
     await cleanUsers(queryInterface, transaction, reportsToKeep);
