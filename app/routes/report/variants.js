@@ -80,8 +80,34 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           },
         ],
       },
+      {
+        model: db.models.observedVariantAnnotations,
+        as 'observedVariantAnnotations',
+      }
     ],
   });
+
+  // do initial filtering based on contents of annotations - these should override defaults
+  let therapeuticResultsFromAnnotation = [];
+  let cancerRelevanceResultsFromAnnotation = [];
+  let unknownSignificanceFromAnnotation = [];
+  let doNotReport = [];
+
+  allKbMatches.forEach((variant) => {
+    if (variant?.observedVariantAnnotations?.rapidReportTableTag) {
+      // if tagged remove from further filtering
+      variant = allKbMatches.pop(variant);
+    }
+    if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='therapeutic') {
+      therapeuticResultsFromAnnotation.push(variant);
+    } else if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='cancerRelevance') {
+      cancerRelevanceResultsFromAnnotation.push(variant);
+    } else if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='unknownSignificance') {
+      unknownSignificanceFromAnnotation.push(variant);
+    } else if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='noTable') {
+      doNotReport.push(variant);
+    }
+  })
 
   let therapeuticAssociationResults = [];
 
@@ -131,6 +157,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     });
   }
 
+  therapeuticAssociationResults.push(...therapeuticResultsFromAnnotation);
   if (rapidTable === 'therapeuticAssociation') {
     return therapeuticAssociationResults;
   }
@@ -168,6 +195,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       }
     }
   }
+  cancerRelevanceResultsFiltered.push(...cancerRelevanceResultsFromAnnotation);
 
   if (rapidTable === 'cancerRelevance') {
     return cancerRelevanceResultsFiltered;
@@ -180,6 +208,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     if (signatureVariant.includes(variantType)) {
       unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
     } else {
+      // TODO bring this in line with other processing; remove tagged results
       unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
         order: [['id', 'ASC']],
         attributes: {
@@ -226,6 +255,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     }
   }
 
+  unknownSignificanceResultsFiltered.push(unknownSignificanceFromAnnotation);
   return unknownSignificanceResultsFiltered;
 };
 
@@ -261,5 +291,6 @@ router.route('/')
       });
     }
   });
+
 
 module.exports = router;
