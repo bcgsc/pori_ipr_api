@@ -47,8 +47,88 @@ module.exports = {
           },
         },
       }, {transaction});
+
+      // Migrate comments from MUT
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `insert into reports_observed_variant_annotations
+        (ident, created_at, updated_at, report_id, comment, variant_id, variant_type)
+        select gen_random_uuid(), created_at, updated_at, report_id, comment, id,
+        'mut'
+        from reports_small_mutations
+        where comment is not null and deleted_at is null;`,
+        {
+          transaction,
+        },
+      );
+      // EXP
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `insert into reports_observed_variant_annotations
+        (ident, created_at, updated_at, report_id, comment, variant_id, variant_type)
+        select gen_random_uuid(), created_at, updated_at, report_id, comment, id,
+        'exp'
+        from reports_expression_variants
+        where comment is not null and deleted_at is null;`,
+        {
+          transaction,
+        },
+      );
+      // SV
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `insert into reports_observed_variant_annotations
+        (ident, created_at, updated_at, report_id, comment, variant_id, variant_type)
+        select gen_random_uuid(), created_at, updated_at, report_id, comment, id,
+        'sv'
+        from reports_structural_variants
+        where comment is not null and deleted_at is null;`,
+        {
+          transaction,
+        },
+      );
+      // CNV
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `insert into reports_observed_variant_annotations
+        (ident, created_at, updated_at, report_id, comment, variant_id, variant_type)
+        select gen_random_uuid(), created_at, updated_at, report_id, comment, id,
+        'cnv'
+        from reports_copy_variants
+        where comment is not null and deleted_at is null;`,
+        {
+          transaction,
+        },
+      );
+      // TMB
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `insert into reports_observed_variant_annotations
+        (ident, created_at, updated_at, report_id, comment, variant_id, variant_type)
+        select gen_random_uuid(), created_at, updated_at, report_id, comment, id,
+        'tmb'
+        from reports_tmbur_mutation_burden
+        where comment is not null and deleted_at is null;`,
+        {
+          transaction,
+        },
+      );
+      // MSI
+      await queryInterface.sequelize.query(
+        // eslint-disable-next-line no-multi-str
+        `insert into reports_observed_variant_annotations
+        (ident, created_at, updated_at, report_id, comment, variant_id, variant_type)
+        select gen_random_uuid(), created_at, updated_at, report_id, comment, id,
+        'msi'
+        from reports_msi
+        where comment is not null and deleted_at is null;`,
+        {
+          transaction,
+        },
+      );
     });
   },
+
 
   down: () => {
     throw new Error('Not Implemented!');
