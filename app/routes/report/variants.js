@@ -13,6 +13,7 @@ const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']
 const STATEMENTEXCLUDE = ['id', 'reportId', 'deletedAt', 'updatedBy'];
 const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
 
+
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
@@ -26,6 +27,10 @@ const getVariants = async (tableName, variantType, reportId) => {
       {
         model: db.models.kbMatches,
         attributes: {exclude: KBMATCHEXCLUDE},
+      },
+      {
+        model: db.models.observedVariantAnnotations,
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
       },
     ],
   });
@@ -82,7 +87,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       },
       {
         model: db.models.observedVariantAnnotations,
-        as 'observedVariantAnnotations',
+        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
       }
     ],
   });

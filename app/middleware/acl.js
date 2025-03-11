@@ -45,6 +45,11 @@ const SPECIAL_CASES = [
     path: pathToRegexp('/api/reports'),
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
+  { // TODO check these are the right permissions
+    path: pathToRegexp('/api/reports/:report/observed-variant-annotation'),
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
+  },
   {
     path: pathToRegexp('/api/reports/:report/user'),
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],

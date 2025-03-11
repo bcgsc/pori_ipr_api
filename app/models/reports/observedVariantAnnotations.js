@@ -1,6 +1,7 @@
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
+
 module.exports = (sequelize, Sq) => {
   const ObservedVariantAnnotations = sequelize.define('observedVariantAnnotations', {
     ...DEFAULT_COLUMNS,

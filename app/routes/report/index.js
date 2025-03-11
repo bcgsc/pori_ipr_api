@@ -30,6 +30,7 @@ const msi = require('./msi');
 const signatureVariants = require('./signatureVariants');
 const reportUser = require('./reportUser');
 const variants = require('./variants');
+const observedVariantAnnotations = require('./observedVariantAnnotations');
 
 const router = express.Router({mergeParams: true});
 
@@ -64,5 +65,7 @@ router.use('/signature-variants', signatureVariants);
 router.use('/user', reportUser);
 router.use('/variants', variants);
 router.use('/protein-variants', proteinVariants);
+router.use('/observed-variant-annotations', observedVariantAnnotations);
+
 
 module.exports = router;
