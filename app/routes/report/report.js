@@ -241,8 +241,8 @@ router.route('/')
             role,
           },
         }] : []),
-        // ...((searchParams) ? fuzzySearchIncludeKeyVariant(searchParams, db) : []),
-        // ...((searchParams) ? fuzzySearchIncludeKbVariant(searchParams, db) : []),
+        ...((searchParams) ? fuzzySearchIncludeKeyVariant(searchParams, db) : []),
+        ...((searchParams) ? fuzzySearchIncludeKbVariant(searchParams, db) : []),
 
         // {
         //   model: db.models.genomicAlterationsIdentified.scope('public'),
