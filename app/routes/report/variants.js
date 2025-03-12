@@ -99,17 +99,17 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   let doNotReport = [];
 
   allKbMatches.forEach((variant) => {
-    if (variant?.observedVariantAnnotations?.rapidReportTableTag) {
+    if (variant?.observedVariantAnnotation?.rapidReportTableTag) {
       // if tagged remove from further filtering
       variant = allKbMatches.pop(variant);
     }
-    if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='therapeutic') {
+    if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='therapeutic') {
       therapeuticResultsFromAnnotation.push(variant);
-    } else if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='cancerRelevance') {
+    } else if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='cancerRelevance') {
       cancerRelevanceResultsFromAnnotation.push(variant);
-    } else if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='unknownSignificance') {
+    } else if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='unknownSignificance') {
       unknownSignificanceFromAnnotation.push(variant);
-    } else if (variant.observedVariantAnnotations.annotations.rapidReportTableTag=='noTable') {
+    } else if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='noTable') {
       doNotReport.push(variant);
     }
   })
