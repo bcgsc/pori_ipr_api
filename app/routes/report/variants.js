@@ -98,7 +98,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         {
           model: db.models.genes.scope('minimal'),
           as: 'gene',
-          where: unknownSignificanceGeneFilter,
+          where: unknownSignificanceGeneFilter, // TODO does including this remove results that would otherwise be in allKbMatches
         },
       ],
     });
