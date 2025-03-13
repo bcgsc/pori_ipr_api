@@ -62,35 +62,77 @@ const unknownSignificanceGeneFilter = {
 };
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
-  const allKbMatches = await db.models[tableName].scope('extended').findAll({
-    order: [['id', 'ASC']],
-    attributes: {
-      include: [[literal(`'${variantType}'`), 'variantType']],
-    },
-    where: {
-      reportId,
-    },
-    include: [
-      {
-        model: db.models.kbMatches,
-        attributes: {exclude: KBMATCHEXCLUDE},
-        include: [
-          {
-            model: db.models.kbMatchedStatements,
-            as: 'kbMatchedStatements',
-            attributes: {
-              exclude: STATEMENTEXCLUDE,
-            },
-            through: {attributes: []},
-          },
-        ],
+
+  let allKbMatches;
+  if ((unknownSignificanceIncludes.includes(variantType)) && (!(signatureVariant.includes(variantType)))) {
+    allKbMatches = await db.models[tableName].scope('extended').findAll({
+      order: [['id', 'ASC']],
+      attributes: {
+        include: [[literal(`'${variantType}'`), 'variantType']],
       },
-      {
-        model: db.models.observedVariantAnnotations,
-        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
-      }
-    ],
-  });
+      where: {
+        reportId,
+      },
+      include: [
+        {
+          model: db.models.kbMatches,
+          attributes: {exclude: KBMATCHEXCLUDE},
+          include: [
+            {
+              model: db.models.kbMatchedStatements,
+              as: 'kbMatchedStatements',
+              attributes: {
+                exclude: STATEMENTEXCLUDE,
+              },
+              //where: {
+              //  ...therapeuticAssociationFilterStatement,
+              //},
+              through: {attributes: []},
+            },
+          ],
+        },
+        {
+          model: db.models.observedVariantAnnotations,
+          attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+        },
+        {
+          model: db.models.genes.scope('minimal'),
+          as: 'gene',
+          where: unknownSignificanceGeneFilter,
+        },
+      ],
+    });
+  } else {
+    allKbMatches = await db.models[tableName].scope('extended').findAll({
+      order: [['id', 'ASC']],
+      attributes: {
+        include: [[literal(`'${variantType}'`), 'variantType']],
+      },
+      where: {
+        reportId,
+      },
+      include: [
+        {
+          model: db.models.kbMatches,
+          attributes: {exclude: KBMATCHEXCLUDE},
+          include: [
+            {
+              model: db.models.kbMatchedStatements,
+              as: 'kbMatchedStatements',
+              attributes: {
+                exclude: STATEMENTEXCLUDE,
+              },
+              through: {attributes: []},
+            },
+          ],
+        },
+        {
+          model: db.models.observedVariantAnnotations,
+          attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+        }
+      ],
+    });
+  }
 
   // do initial filtering based on contents of annotations - these should override defaults
   let therapeuticResultsFromAnnotation = [];
@@ -99,19 +141,24 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   let doNotReport = [];
 
   allKbMatches.forEach((variant) => {
-    if (variant?.observedVariantAnnotation?.rapidReportTableTag) {
-      // if tagged remove from further filtering
-      variant = allKbMatches.pop(variant);
+    // if tagged remove from further filtering
+    if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag) {
+      const tableTag = variant.observedVariantAnnotation.annotations.rapidReportTableTag;
+      if (tableTag==='therapeutic') {
+        therapeuticResultsFromAnnotation.push(variant);
+      } else if (tableTag==='cancerRelevance') {
+        cancerRelevanceResultsFromAnnotation.push(variant);
+      } else if (tableTag==='unknownSignificance') {
+        unknownSignificanceFromAnnotation.push(variant);
+      } else if (tableTag==='noTable') {
+        doNotReport.push(variant);
+      }
     }
-    if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='therapeutic') {
-      therapeuticResultsFromAnnotation.push(variant);
-    } else if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='cancerRelevance') {
-      cancerRelevanceResultsFromAnnotation.push(variant);
-    } else if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='unknownSignificance') {
-      unknownSignificanceFromAnnotation.push(variant);
-    } else if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag=='noTable') {
-      doNotReport.push(variant);
-    }
+  })
+
+  // remove the tagged variants
+  allKbMatches = allKbMatches.filter((variant) => {
+    return (!(variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag));
   })
 
   let therapeuticAssociationResults = [];
@@ -163,6 +210,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   }
 
   therapeuticAssociationResults.push(...therapeuticResultsFromAnnotation);
+
   if (rapidTable === 'therapeuticAssociation') {
     return therapeuticAssociationResults;
   }
@@ -186,7 +234,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       return variant;
     });
 
-    // remove variants which have now have no matches
+    // remove variants which now have no matches
     cancerRelevanceResults = cancerRelevanceResults.filter((variant) => {
       const kbmatches = variant.kbMatches.filter((item) => {return item !== null;});
       return kbmatches.length > 0;
@@ -210,46 +258,15 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   let unknownSignificanceResults = [];
 
   if (unknownSignificanceIncludes.includes(variantType)) {
-    if (signatureVariant.includes(variantType)) {
-      unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
-    } else {
-      // TODO bring this in line with other processing; remove tagged results
-      unknownSignificanceResults = await db.models[tableName].scope('extended').findAll({
-        order: [['id', 'ASC']],
-        attributes: {
-          include: [[literal(`'${variantType}'`), 'variantType']],
-        },
-        where: {
-          reportId,
-        },
-        include: [
-          {
-            model: db.models.kbMatches,
-            attributes: {exclude: KBMATCHEXCLUDE},
-            include: [
-              {
-                model: db.models.kbMatchedStatements,
-                as: 'kbMatchedStatements',
-                attributes: {
-                  exclude: STATEMENTEXCLUDE,
-                },
-                where: {
-                  ...therapeuticAssociationFilterStatement,
-                },
-                through: {attributes: []},
-              },
-            ],
-          },
-          {
-            model: db.models.genes.scope('minimal'),
-            as: 'gene',
-            where: unknownSignificanceGeneFilter,
-          },
-        ],
-      });
-    }
+    unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
   }
 
+  // TODO: handle, and test, the issue where unknownSig variants are already getting
+  // refined at query time by the where: ...therapeuticAssociationFilterStatement;
+  // we want to remove these variants UNLESS they are tagged but need to include
+  // them in the initial query... in case they are tagged
+
+  // remove variants already included in a different section
   for (const row of unknownSignificanceResults) {
     if (!(therapeuticAssociationResults.find(
       (e) => {return e.ident === row.ident;},
@@ -260,7 +277,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     }
   }
 
-  unknownSignificanceResultsFiltered.push(unknownSignificanceFromAnnotation);
+  // add variants that are tagged for this table regardless of whatever other
+  // reason there may be to exclude them
+  unknownSignificanceResultsFiltered.push(...unknownSignificanceFromAnnotation);
   return unknownSignificanceResultsFiltered;
 };
 

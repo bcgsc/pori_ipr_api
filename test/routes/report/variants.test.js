@@ -67,6 +67,14 @@ const checkVariantsFilter = (
   expect(found).toBe(true);
 };
 
+const variantInList = (variant, variantList) => {
+  const matches = variantList.find((item) => {
+    const found = ((item.ident === variant.ident) && (item.variantType === variant.variantType))
+    return found;
+  });
+  return matches !== undefined;
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -155,6 +163,210 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         'table 3',
       );
     });
+
+    test('Tagging non-therapeutic var as therapeutic moves it to therapeutic - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      const allvars = res.body.filter((variant) => {
+        return variant.variantType === 'mut';
+      })
+      const testvar = allvars[0];
+      const res2 = await request
+        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          variantType: testvar.variantType,
+          variantIdent: testvar.ident,
+          annotations: {'rapidReportTableTag': 'therapeutic'},
+        })
+        .expect(HTTP_STATUS.CREATED);
+
+      const therapeutics = await request
+      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+      .query({rapidTable: 'therapeuticAssociation'})
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+      const cancerRelevance = await request
+      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+      .query({rapidTable: 'cancerRelevance'})
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+      const unknownSig = await request
+      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+      .query({rapidTable: 'unknownSignificance'})
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+
+      const variantIsTherapeutic = variantInList(testvar, therapeutics.body)
+      expect(variantIsTherapeutic).toBe(true);
+      const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body)
+      expect(variantIsCancerRelevant).toBe(false);
+      const variantIsUnknown = variantInList(testvar, unknownSig.body)
+      expect(variantIsUnknown).toBe(false);
+    });
+
+    test('Tagging non-cancerRelevance var as cancerRelevance moves it to cancer relevance - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        expect(Array.isArray(res.body)).toBe(true);
+        const allvars = res.body.filter((variant) => {
+          return variant.variantType === 'mut';
+        })
+        const testvar = allvars[0];
+        const res2 = await request
+          .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+          .auth(username, password)
+          .type('json')
+          .send({
+            variantType: testvar.variantType,
+            variantIdent: testvar.ident,
+            annotations: {'rapidReportTableTag': 'cancerRelevance'},
+          })
+          .expect(HTTP_STATUS.CREATED);
+
+          const therapeutics = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        const cancerRelevance = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        const unknownSig = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+        const variantIsTherapeutic = variantInList(testvar, therapeutics.body)
+        expect(variantIsTherapeutic).toBe(false);
+        const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body)
+        expect(variantIsCancerRelevant).toBe(true);
+        const variantIsUnknown = variantInList(testvar, unknownSig.body)
+        expect(variantIsUnknown).toBe(false);
+    });
+
+    test('Tagging non-unknownSig var as unknown sig moves it to unknown sig - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        expect(Array.isArray(res.body)).toBe(true);
+        const allvars = res.body.filter((variant) => {
+          // ensuring this is not an already-annotated var, since we used mut before
+          return variant.variantType === 'cnv';
+        })
+        const testvar = allvars[0];
+        const res2 = await request
+          .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+          .auth(username, password)
+          .type('json')
+          .send({
+            variantType: testvar.variantType,
+            variantIdent: testvar.ident,
+            annotations: {'rapidReportTableTag': 'unknownSignificance'},
+          })
+          .expect(HTTP_STATUS.CREATED);
+
+        const therapeutics = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        const cancerRelevance = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        const unknownSig = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+        const variantIsTherapeutic = variantInList(testvar, therapeutics.body)
+        expect(variantIsTherapeutic).toBe(false);
+        const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body)
+        expect(variantIsCancerRelevant).toBe(false);
+        const variantIsUnknown = variantInList(testvar, unknownSig.body)
+        expect(variantIsUnknown).toBe(true);
+      });
+
+    test('Tagging variant with noTable removes it from rapid report summary results - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        expect(Array.isArray(res.body)).toBe(true);
+        const allvars = res.body.filter((variant) => {
+          // ensuring this is not an already-annotated var, since we used mut and cnv before
+          return variant.variantType === 'msi';
+        })
+        const testvar = allvars[0];
+        const res2 = await request
+          .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+          .auth(username, password)
+          .type('json')
+          .send({
+            variantType: testvar.variantType,
+            variantIdent: testvar.ident,
+            annotations: {'rapidReportTableTag': 'noTable'},
+          })
+          .expect(HTTP_STATUS.CREATED);
+
+        const therapeutics = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        const cancerRelevance = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+        const unknownSig = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+        const variantIsTherapeutic = variantInList(testvar, therapeutics.body)
+        expect(variantIsTherapeutic).toBe(false);
+        const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body)
+        expect(variantIsCancerRelevant).toBe(false);
+        const variantIsUnknown = variantInList(testvar, unknownSig.body)
+        expect(variantIsUnknown).toBe(false);
+    });
+
   });
 
   // delete report

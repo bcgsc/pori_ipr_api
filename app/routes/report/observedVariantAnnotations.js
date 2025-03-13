@@ -15,14 +15,6 @@ const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../constants');
 
-// TODO ADD TESTS
-// - creates a new record for variant
-// gets existing record variant from variants route
-// does not create a new record when variant doesn't exist
-// does not create a new record when there is already an annotation record for the variant
-// put
-// test that variants endpoints for rapid report categorizes variants differently
-// based on annotation tag first
 
 // Generate schemas
 const createSchema = schemaGenerator(db.models.observedVariantAnnotations, {
