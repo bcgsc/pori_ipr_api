@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.18
--- Dumped by pg_dump version 11.17
+-- Dumped from database version 13.14
+-- Dumped by pg_dump version 13.14
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,6 +21,34 @@ SET row_security = off;
 --
 
 CREATE SCHEMA development;
+
+
+--
+-- Name: fuzzystrmatch; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION fuzzystrmatch; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION fuzzystrmatch IS 'determine similarities and distance between strings';
+
+
+--
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
 
 
 --
@@ -132,7 +160,7 @@ CREATE TYPE public.enum_germline_small_mutations_state AS ENUM (
     'active',
     'uploaded',
     'signedoff',
-    'archived',
+    'completed',
     'reviewed',
     'nonproduction'
 );
@@ -254,6 +282,22 @@ CREATE TYPE public.enum_reports_hla_types_protocol AS ENUM (
 
 
 --
+-- Name: enum_reports_kb_matched_statements_category; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_reports_kb_matched_statements_category AS ENUM (
+    'therapeutic',
+    'prognostic',
+    'diagnostic',
+    'biological',
+    'unknown',
+    'novel',
+    'pharmacogenomic',
+    'cancer predisposition'
+);
+
+
+--
 -- Name: enum_reports_kb_matches_variant_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -265,7 +309,8 @@ CREATE TYPE public.enum_reports_kb_matches_variant_type AS ENUM (
     'probe',
     'protein',
     'msi',
-    'tmb'
+    'tmb',
+    'sigv'
 );
 
 
@@ -290,7 +335,7 @@ CREATE TYPE public.enum_reports_state AS ENUM (
     'active',
     'uploaded',
     'signedoff',
-    'archived',
+    'completed',
     'reviewed',
     'nonproduction'
 );
@@ -303,7 +348,8 @@ CREATE TYPE public.enum_reports_state AS ENUM (
 CREATE TYPE public.enum_reports_summary_pathway_analysis_legend AS ENUM (
     'v1',
     'v2',
-    'custom'
+    'custom',
+    'v3'
 );
 
 
@@ -339,9 +385,20 @@ CREATE TYPE public.enum_users_type AS ENUM (
 );
 
 
+--
+-- Name: string_array_to_string(text[], text, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.string_array_to_string(text[], text, text) RETURNS text
+    LANGUAGE sql IMMUTABLE COST 1
+    AS $_$
+          select array_to_string($1, $2, $3)
+        $_$;
+
+
 SET default_tablespace = '';
 
-SET default_with_oids = false;
+SET default_table_access_method = heap;
 
 --
 -- Name: user; Type: TABLE; Schema: development; Owner: -
@@ -454,7 +511,8 @@ CREATE TABLE public.reports_copy_variants (
     germline boolean,
     library text,
     comments text,
-    display_name text
+    display_name text,
+    selected boolean DEFAULT false NOT NULL
 );
 
 
@@ -478,10 +536,10 @@ ALTER SEQUENCE public."copyNumberAnalysis.cnv_id_seq" OWNED BY public.reports_co
 
 
 --
--- Name: reports_kb_matches; Type: TABLE; Schema: public; Owner: -
+-- Name: reports_kb_matches_old; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.reports_kb_matches (
+CREATE TABLE public.reports_kb_matches_old (
     id integer NOT NULL,
     ident uuid NOT NULL,
     category public."enum_detailedGenomicAnalysis.alterations_alterationType" NOT NULL,
@@ -505,7 +563,6 @@ CREATE TABLE public.reports_kb_matches (
     deleted_at timestamp with time zone,
     report_id integer NOT NULL,
     variant_id integer NOT NULL,
-    inferred boolean,
     updated_by integer,
     external_source text,
     external_statement_id text,
@@ -530,7 +587,7 @@ CREATE SEQUENCE public."detailedGenomicAnalysis.alterations_id_seq"
 -- Name: detailedGenomicAnalysis.alterations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public."detailedGenomicAnalysis.alterations_id_seq" OWNED BY public.reports_kb_matches.id;
+ALTER SEQUENCE public."detailedGenomicAnalysis.alterations_id_seq" OWNED BY public.reports_kb_matches_old.id;
 
 
 --
@@ -575,7 +632,8 @@ CREATE TABLE public.reports_expression_variants (
     internal_pancancer_fold_change double precision,
     internal_pancancer_zscore double precision,
     comments text,
-    display_name text
+    display_name text,
+    selected boolean DEFAULT false NOT NULL
 );
 
 
@@ -781,7 +839,10 @@ CREATE TABLE public.reports_image_data (
     deleted_at timestamp with time zone,
     title text,
     caption text,
-    updated_by integer
+    updated_by integer,
+    category character varying(255),
+    height integer,
+    width integer
 );
 
 
@@ -881,6 +942,45 @@ ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
 
 
 --
+-- Name: notifications_tracks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notifications_tracks (
+    ident uuid NOT NULL,
+    updated_by integer,
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    notification_id integer NOT NULL,
+    recipient character varying(255),
+    reason character varying(255),
+    outcome character varying(255),
+    job_id integer
+);
+
+
+--
+-- Name: notifications_tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notifications_tracks_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notifications_tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notifications_tracks_id_seq OWNED BY public.notifications_tracks.id;
+
+
+--
 -- Name: pog_analysis_germline_small_mutations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -945,7 +1045,6 @@ CREATE TABLE public.reports (
     id integer NOT NULL,
     ident character varying(255) NOT NULL,
     "createdBy_id" integer,
-    "sampleInfo" jsonb,
     "seqQC" jsonb,
     config text,
     created_at timestamp with time zone NOT NULL,
@@ -972,7 +1071,12 @@ CREATE TABLE public.reports (
     pediatric_ids text,
     oncotree_tumour_type text,
     m1m2_score double precision,
-    captiv8_score integer
+    captiv8_score integer,
+    appendix text,
+    hrdetect_score double precision,
+    legacy_presentation_filepath character varying(255) DEFAULT NULL::character varying,
+    legacy_report_filepath character varying(255) DEFAULT NULL::character varying,
+    genome_tmb double precision
 );
 
 
@@ -1205,7 +1309,8 @@ CREATE TABLE public.reports_summary_microbial (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     deleted_at timestamp with time zone,
-    updated_by integer
+    updated_by integer,
+    microbial_hidden boolean DEFAULT false NOT NULL
 );
 
 
@@ -1252,7 +1357,8 @@ CREATE TABLE public.reports_mutation_burden (
     total_snv_count integer,
     total_indel_count integer,
     total_mutations_per_mb double precision,
-    updated_by integer
+    updated_by integer,
+    sv_burden_hidden boolean DEFAULT true NOT NULL
 );
 
 
@@ -1394,7 +1500,7 @@ CREATE TABLE public.reports_genes (
     name text NOT NULL,
     tumour_suppressor boolean DEFAULT false,
     oncogene boolean DEFAULT false,
-    cancer_related boolean DEFAULT false,
+    kb_statement_related boolean DEFAULT false,
     drug_targetable boolean DEFAULT false,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
@@ -1403,7 +1509,7 @@ CREATE TABLE public.reports_genes (
     therapeutic_associated boolean DEFAULT false,
     known_small_mutation boolean DEFAULT false,
     updated_by integer,
-    cancer_gene boolean
+    cancer_gene_list_match boolean
 );
 
 
@@ -1486,7 +1592,11 @@ CREATE TABLE public.reports_immune_cell_types (
     kb_category text,
     score double precision,
     percentile double precision,
-    updated_by integer
+    updated_by integer,
+    peds_score double precision,
+    peds_score_comment text,
+    peds_percentile double precision,
+    percentile_hidden boolean DEFAULT false NOT NULL
 );
 
 
@@ -1507,6 +1617,132 @@ CREATE SEQUENCE public.reports_immune_cell_types_id_seq
 --
 
 ALTER SEQUENCE public.reports_immune_cell_types_id_seq OWNED BY public.reports_immune_cell_types.id;
+
+
+--
+-- Name: reports_kb_match_join; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reports_kb_match_join (
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    kb_match_id integer NOT NULL,
+    kb_matched_statement_id integer NOT NULL
+);
+
+
+--
+-- Name: reports_kb_match_join_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reports_kb_match_join_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reports_kb_match_join_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reports_kb_match_join_id_seq OWNED BY public.reports_kb_match_join.id;
+
+
+--
+-- Name: reports_kb_matched_statements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reports_kb_matched_statements (
+    ident uuid NOT NULL,
+    updated_by integer,
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    report_id integer,
+    category public.enum_reports_kb_matched_statements_category NOT NULL,
+    approved_therapy boolean DEFAULT false NOT NULL,
+    disease text,
+    relevance text,
+    context text,
+    status text,
+    reference text,
+    sample text,
+    evidence_level text,
+    ipr_evidence_level text,
+    matched_cancer boolean DEFAULT false NOT NULL,
+    pmid_ref text,
+    kb_statement_id text,
+    kb_data jsonb,
+    external_source text,
+    external_statement_id text,
+    review_status text,
+    required_kb_matches text[]
+);
+
+
+--
+-- Name: reports_kb_matched_statements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reports_kb_matched_statements_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reports_kb_matched_statements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reports_kb_matched_statements_id_seq OWNED BY public.reports_kb_matched_statements.id;
+
+
+--
+-- Name: reports_kb_matches; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reports_kb_matches (
+    ident uuid NOT NULL,
+    updated_by integer,
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    report_id integer,
+    kb_variant text,
+    variant_type public.enum_reports_kb_matches_variant_type NOT NULL,
+    variant_id integer NOT NULL,
+    kb_variant_id text
+);
+
+
+--
+-- Name: reports_kb_matches_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reports_kb_matches_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reports_kb_matches_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reports_kb_matches_id_seq OWNED BY public.reports_kb_matches.id;
 
 
 --
@@ -1566,7 +1802,7 @@ CREATE TABLE public.reports_mutation_signature (
     deleted_at timestamp with time zone,
     report_id integer NOT NULL,
     kb_category text,
-    selected boolean DEFAULT false,
+    selected boolean DEFAULT false NOT NULL,
     updated_by integer
 );
 
@@ -1706,6 +1942,86 @@ ALTER SEQUENCE public.reports_protein_variants_id_seq OWNED BY public.reports_pr
 
 
 --
+-- Name: reports_sample_info; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reports_sample_info (
+    id integer NOT NULL,
+    ident uuid NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_by integer,
+    report_id integer,
+    sample text,
+    patho_tc text,
+    biopsy_site text,
+    biopsy_type text,
+    sample_name text,
+    primary_site text,
+    collection_date text
+);
+
+
+--
+-- Name: reports_sample_info_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reports_sample_info_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reports_sample_info_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reports_sample_info_id_seq OWNED BY public.reports_sample_info.id;
+
+
+--
+-- Name: reports_signature_variants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reports_signature_variants (
+    ident uuid NOT NULL,
+    updated_by integer,
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    report_id integer,
+    signature_name text,
+    variant_type_name text,
+    display_name text
+);
+
+
+--
+-- Name: reports_signature_variants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reports_signature_variants_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reports_signature_variants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reports_signature_variants_id_seq OWNED BY public.reports_signature_variants.id;
+
+
+--
 -- Name: reports_small_mutations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1746,7 +2062,8 @@ CREATE TABLE public.reports_small_mutations (
     updated_by integer,
     library text,
     comments text,
-    display_name text
+    display_name text,
+    selected boolean DEFAULT false NOT NULL
 );
 
 
@@ -1788,7 +2105,8 @@ CREATE TABLE public.reports_structural_variants (
     comments text,
     rna_alt_count integer,
     rna_depth integer,
-    display_name text
+    display_name text,
+    selected boolean DEFAULT false NOT NULL
 );
 
 
@@ -1888,7 +2206,9 @@ CREATE TABLE public.reports_therapeutic_targets (
     evidence_level_graphkb_id text,
     kb_statement_ids text,
     updated_by integer,
-    ipr_evidence_level text
+    ipr_evidence_level text,
+    signature text,
+    signature_graphkb_id text
 );
 
 
@@ -1923,7 +2243,10 @@ CREATE TABLE public.reports_tmbur_mutation_burden (
     msi_score double precision,
     comments text,
     kb_category text,
-    display_name text
+    display_name text,
+    adjusted_tmb double precision,
+    adjusted_tmb_comment text,
+    tmb_hidden boolean DEFAULT false NOT NULL
 );
 
 
@@ -2193,6 +2516,42 @@ ALTER SEQUENCE public.templates_id_seq OWNED BY public.templates.id;
 
 
 --
+-- Name: templates_signature_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.templates_signature_types (
+    ident uuid NOT NULL,
+    updated_by integer,
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    template_id integer NOT NULL,
+    signature_type character varying(255) NOT NULL
+);
+
+
+--
+-- Name: templates_signature_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.templates_signature_types_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: templates_signature_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.templates_signature_types_id_seq OWNED BY public.templates_signature_types.id;
+
+
+--
 -- Name: therapeuticTargets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2252,11 +2611,11 @@ CREATE TABLE public.user_groups (
     id integer NOT NULL,
     ident uuid,
     name character varying(255) NOT NULL,
-    owner_id integer NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     deleted_at timestamp with time zone,
-    updated_by integer
+    updated_by integer,
+    description character varying(255)
 );
 
 
@@ -2291,7 +2650,8 @@ CREATE TABLE public.user_metadata (
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
-    updated_by integer
+    updated_by integer,
+    last_login_at timestamp with time zone
 );
 
 
@@ -2364,7 +2724,7 @@ CREATE TABLE public.users (
     updated_at timestamp with time zone NOT NULL,
     deleted_at timestamp with time zone,
     updated_by integer,
-    last_login_at timestamp with time zone
+    allow_notifications boolean DEFAULT false
 );
 
 
@@ -2385,6 +2745,45 @@ CREATE SEQUENCE public.users_id_seq
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- Name: variant_texts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.variant_texts (
+    ident uuid NOT NULL,
+    updated_by integer,
+    id integer NOT NULL,
+    created_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    project_id integer,
+    template_id integer,
+    text text,
+    variant_name text,
+    cancer_type text[]
+);
+
+
+--
+-- Name: variant_texts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.variant_texts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: variant_texts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.variant_texts_id_seq OWNED BY public.variant_texts.id;
 
 
 --
@@ -2441,6 +2840,13 @@ ALTER TABLE ONLY public.images ALTER COLUMN id SET DEFAULT nextval('public.image
 --
 
 ALTER TABLE ONLY public.notifications ALTER COLUMN id SET DEFAULT nextval('public.notifications_id_seq'::regclass);
+
+
+--
+-- Name: notifications_tracks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications_tracks ALTER COLUMN id SET DEFAULT nextval('public.notifications_tracks_id_seq'::regclass);
 
 
 --
@@ -2514,10 +2920,31 @@ ALTER TABLE ONLY public.reports_immune_cell_types ALTER COLUMN id SET DEFAULT ne
 
 
 --
+-- Name: reports_kb_match_join id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_match_join ALTER COLUMN id SET DEFAULT nextval('public.reports_kb_match_join_id_seq'::regclass);
+
+
+--
+-- Name: reports_kb_matched_statements id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matched_statements ALTER COLUMN id SET DEFAULT nextval('public.reports_kb_matched_statements_id_seq'::regclass);
+
+
+--
 -- Name: reports_kb_matches id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.reports_kb_matches ALTER COLUMN id SET DEFAULT nextval('public."detailedGenomicAnalysis.alterations_id_seq"'::regclass);
+ALTER TABLE ONLY public.reports_kb_matches ALTER COLUMN id SET DEFAULT nextval('public.reports_kb_matches_id_seq'::regclass);
+
+
+--
+-- Name: reports_kb_matches_old id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matches_old ALTER COLUMN id SET DEFAULT nextval('public."detailedGenomicAnalysis.alterations_id_seq"'::regclass);
 
 
 --
@@ -2595,6 +3022,20 @@ ALTER TABLE ONLY public.reports_probe_test_information ALTER COLUMN id SET DEFAU
 --
 
 ALTER TABLE ONLY public.reports_protein_variants ALTER COLUMN id SET DEFAULT nextval('public.reports_protein_variants_id_seq'::regclass);
+
+
+--
+-- Name: reports_sample_info id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_sample_info ALTER COLUMN id SET DEFAULT nextval('public.reports_sample_info_id_seq'::regclass);
+
+
+--
+-- Name: reports_signature_variants id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_signature_variants ALTER COLUMN id SET DEFAULT nextval('public.reports_signature_variants_id_seq'::regclass);
 
 
 --
@@ -2689,6 +3130,13 @@ ALTER TABLE ONLY public.templates_appendix ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: templates_signature_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.templates_signature_types ALTER COLUMN id SET DEFAULT nextval('public.templates_signature_types_id_seq'::regclass);
+
+
+--
 -- Name: user_group_members id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2721,6 +3169,13 @@ ALTER TABLE ONLY public.user_projects ALTER COLUMN id SET DEFAULT nextval('publi
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: variant_texts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.variant_texts ALTER COLUMN id SET DEFAULT nextval('public.variant_texts_id_seq'::regclass);
 
 
 --
@@ -2872,6 +3327,50 @@ COPY public."SequelizeMeta" (name) FROM stdin;
 20231012213005-DEVSU-2038-add-cancer_gene-to-gene.js
 20231117185810-DEVSU-2128-add-lastloginat.js
 20231121203719-DEVSU-2129-datafix-unreviewed-access.js
+20231127211750-DEVSU-2143-update-gene-columns.js
+20231212204938-DEVSU-2149-update-archived-handling.js
+20231215201144-DEVSU-1944-update-germline-permissions.js
+20240118214740-DEVSU-2178-add-appendix-to-reports.js
+20240131210340-DEVSU-2189-remove-inferred-column.js
+20240206214230-DEVSU-2208-update-role-constraint.js
+20240228205731-DEVSU-2219-move-last-login-to-metadata.js
+20240228233545-DEVSU-2230-add-adjusted-tmb-field-to-tmbur-mutation-burden.js
+20240305213852-DEVSU-2230-add-adjusted-tmb-visible-flag.js
+20240304184704-DEVSU-2232-add-hrdetect-to-report.js
+20240307183008-DEVSU-2236-add-selected-to-somatic-variants.js
+20240315204451-DEVSU-2241-peds-cd8t-fields.js
+20240316001420-DEVSU-2241-add-peds-percentage-cd8t.js
+20240320192935-DEVSU-2245-cd8t-percentile-visibility-toggle.js
+20240312201627-DEVSU-2164-link-to-old-reports.js
+20240327210439-DEVSU-1400-add-notifications-setting-to-user.js
+20240417183158-DEVSU-2261-new-pathway-legend.js
+20240510203951-devsu-2099-add-signature-to-pto-table.js
+20240516220552-DEVSU-2304-add-description-usergroups.js
+20240525041651-DEVSU-2312-add-appendix-uniqueness-index.js
+20240526074124-DEVSU-2139-add-category-to-report-image-data-table.js
+20240529180941-DEVSU-2318-set-allow-notifs-default-to-false.js
+20240530225858-DEVSU-2324-add-variant-text-table.js
+20240605202108-DEVSU-2335-move-sample-info-to-table.js
+20240626194744-DEVSU-2356-variant-text-unique.js
+20240708212501-DEVSU-2359-convert-cancer-type-to-list.js
+20240708213555-DEVSU-2356-variant-text-unique.js
+20240715170955-DEVSU-2378-remove-sample-info-column.js
+20240716172701-DEVSU-2388-permissions-migration.js
+20240814165504-DEVSU-2400-remove-owner-column.js
+20240910201213-DEVSU-2447-create-template-signature-type-table.js
+20240917214125-DEVSU-2446-create-notifications-track-table.js
+20240918231722-DEVSU-2449-add-job-id-to-notification-track-table.js
+20241001213246-DEVSU-2457-update-kbmatches-mulitple-variants-per-statement.js
+20241021211045-DEVSU-2473-hide-sv-burden-by-default.js
+20241022233039-DEVSU-2458-add-new-variant-type.js
+20241023001234-DEVSU-2458-add-new-table.js
+20241106215517-DEVSU-2462-new-report-field.js
+20241107001943-DEVSU-2473-default-hidesvburden-true.js
+20241112210700-DEVSU-2457-fix-id-sequence.js
+20241112211455-DEVSU-2483-add-kb-match-index.js
+20241129212739-DEVSU-2513-rename-tbm-score.js
+20250120220858-DEVSU-2552-add-visibility-flag-to-microbial.js
+20250124193437-DEVSU-2518-add-requiredKbMatches-field.js
 \.
 
 
@@ -2886,7 +3385,7 @@ SELECT pg_catalog.setval('development.user_id_seq', 1, false);
 -- Name: POGUsers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."POGUsers_id_seq"', 2896, true);
+SELECT pg_catalog.setval('public."POGUsers_id_seq"', 5305, true);
 
 
 --
@@ -2938,10 +3437,10 @@ ALTER TABLE ONLY public.reports_copy_variants
 
 
 --
--- Name: reports_kb_matches detailedGenomicAnalysis.alterations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: reports_kb_matches_old detailedGenomicAnalysis.alterations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.reports_kb_matches
+ALTER TABLE ONLY public.reports_kb_matches_old
     ADD CONSTRAINT "detailedGenomicAnalysis.alterations_pkey" PRIMARY KEY (id);
 
 
@@ -2991,6 +3490,14 @@ ALTER TABLE ONLY public.images
 
 ALTER TABLE ONLY public.notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notifications_tracks notifications_tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications_tracks
+    ADD CONSTRAINT notifications_tracks_pkey PRIMARY KEY (id);
 
 
 --
@@ -3130,6 +3637,30 @@ ALTER TABLE ONLY public.reports_immune_cell_types
 
 
 --
+-- Name: reports_kb_match_join reports_kb_match_join_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_match_join
+    ADD CONSTRAINT reports_kb_match_join_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports_kb_matched_statements reports_kb_matched_statements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matched_statements
+    ADD CONSTRAINT reports_kb_matched_statements_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports_kb_matches reports_kb_matches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matches
+    ADD CONSTRAINT reports_kb_matches_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: reports_msi reports_msi_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3151,6 +3682,22 @@ ALTER TABLE ONLY public.reports_pairwise_expression_correlation
 
 ALTER TABLE ONLY public.reports_protein_variants
     ADD CONSTRAINT reports_protein_variants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports_sample_info reports_sample_info_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_sample_info
+    ADD CONSTRAINT reports_sample_info_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports_signature_variants reports_signature_variants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_signature_variants
+    ADD CONSTRAINT reports_signature_variants_pkey PRIMARY KEY (id);
 
 
 --
@@ -3262,6 +3809,14 @@ ALTER TABLE ONLY public.templates
 
 
 --
+-- Name: templates_signature_types templates_signature_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.templates_signature_types
+    ADD CONSTRAINT templates_signature_types_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: reports_therapeutic_targets therapeuticTargets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3310,6 +3865,14 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: variant_texts variant_texts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.variant_texts
+    ADD CONSTRAINT variant_texts_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: analysis_reports_ident_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3327,7 +3890,7 @@ CREATE UNIQUE INDEX copy_number_analysis_cnv_ident_index ON public.reports_copy_
 -- Name: dga_alterations_ident_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX dga_alterations_ident_index ON public.reports_kb_matches USING btree (ident) WHERE (deleted_at IS NULL);
+CREATE UNIQUE INDEX dga_alterations_ident_index ON public.reports_kb_matches_old USING btree (ident) WHERE (deleted_at IS NULL);
 
 
 --
@@ -3391,6 +3954,20 @@ CREATE INDEX germline_small_mutations_variant_germline_report_id_index ON public
 --
 
 CREATE UNIQUE INDEX germline_small_mutations_variant_ident_index ON public.germline_small_mutations_variant USING btree (ident) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_kb_match_id_join; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kb_match_id_join ON public.reports_kb_match_join USING btree (kb_match_id);
+
+
+--
+-- Name: idx_kb_matched_statement_id_join; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kb_matched_statement_id_join ON public.reports_kb_match_join USING btree (kb_matched_statement_id);
 
 
 --
@@ -3558,21 +4135,21 @@ CREATE INDEX reports_immune_cell_types_report_id_index ON public.reports_immune_
 -- Name: reports_kb_matches_report_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX reports_kb_matches_report_id_index ON public.reports_kb_matches USING btree (report_id) WHERE (deleted_at IS NULL);
+CREATE INDEX reports_kb_matches_report_id_index ON public.reports_kb_matches_old USING btree (report_id) WHERE (deleted_at IS NULL);
 
 
 --
 -- Name: reports_kb_matches_variant_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX reports_kb_matches_variant_id_index ON public.reports_kb_matches USING btree (variant_id);
+CREATE INDEX reports_kb_matches_variant_id_index ON public.reports_kb_matches_old USING btree (variant_id);
 
 
 --
 -- Name: reports_kb_matches_variant_type_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX reports_kb_matches_variant_type_index ON public.reports_kb_matches USING btree (variant_type);
+CREATE INDEX reports_kb_matches_variant_type_index ON public.reports_kb_matches_old USING btree (variant_type);
 
 
 --
@@ -3608,13 +4185,6 @@ CREATE INDEX reports_msi_report_id_index ON public.reports_msi USING btree (repo
 --
 
 CREATE INDEX reports_mutation_burden_report_id_index ON public.reports_mutation_burden USING btree (report_id) WHERE (deleted_at IS NULL);
-
-
---
--- Name: reports_mutation_burden_report_id_role_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX reports_mutation_burden_report_id_role_index ON public.reports_mutation_burden USING btree (report_id, role) WHERE (deleted_at IS NULL);
 
 
 --
@@ -3706,6 +4276,13 @@ CREATE UNIQUE INDEX reports_protein_variants_ident_index ON public.reports_prote
 --
 
 CREATE INDEX reports_protein_variants_report_id_index ON public.reports_protein_variants USING btree (report_id) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: reports_sample_info_ident_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX reports_sample_info_ident_index ON public.reports_sample_info USING btree (ident) WHERE (deleted_at IS NULL);
 
 
 --
@@ -3884,6 +4461,20 @@ CREATE UNIQUE INDEX templates_appendix_ident_index ON public.templates_appendix 
 
 
 --
+-- Name: templates_appendix_template_null_project; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX templates_appendix_template_null_project ON public.templates_appendix USING btree (template_id) WHERE ((deleted_at IS NULL) AND (project_id IS NULL));
+
+
+--
+-- Name: templates_appendix_template_project; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX templates_appendix_template_project ON public.templates_appendix USING btree (template_id, project_id) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: templates_ident_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3940,10 +4531,17 @@ CREATE UNIQUE INDEX users_username_index ON public.users USING btree (username) 
 
 
 --
--- Name: reports_kb_matches FK_alterationsdga.pog_analysis_report; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: variant_text_unique_index; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.reports_kb_matches
+CREATE UNIQUE INDEX variant_text_unique_index ON public.variant_texts USING btree ((ARRAY[variant_name, public.string_array_to_string(cancer_type, ''::text, ''::text), (template_id)::text, (project_id)::text])) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: reports_kb_matches_old FK_alterationsdga.pog_analysis_report; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matches_old
     ADD CONSTRAINT "FK_alterationsdga.pog_analysis_report" FOREIGN KEY (report_id) REFERENCES public.reports(id) ON DELETE CASCADE;
 
 
@@ -4209,6 +4807,22 @@ ALTER TABLE ONLY public.notifications
 
 ALTER TABLE ONLY public.notifications
     ADD CONSTRAINT notifications_template_id_fkey FOREIGN KEY (template_id) REFERENCES public.templates(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: notifications_tracks notifications_tracks_notification_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications_tracks
+    ADD CONSTRAINT notifications_tracks_notification_id_fkey FOREIGN KEY (notification_id) REFERENCES public.notifications(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: notifications_tracks notifications_tracks_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications_tracks
+    ADD CONSTRAINT notifications_tracks_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id);
 
 
 --
@@ -4484,11 +5098,59 @@ ALTER TABLE ONLY public.reports_immune_cell_types
 
 
 --
--- Name: reports_kb_matches reports_kb_matches_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: reports_kb_match_join reports_kb_match_join_kb_match_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_match_join
+    ADD CONSTRAINT reports_kb_match_join_kb_match_id_fkey FOREIGN KEY (kb_match_id) REFERENCES public.reports_kb_matches(id);
+
+
+--
+-- Name: reports_kb_match_join reports_kb_match_join_kb_matched_statement_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_match_join
+    ADD CONSTRAINT reports_kb_match_join_kb_matched_statement_id_fkey FOREIGN KEY (kb_matched_statement_id) REFERENCES public.reports_kb_matched_statements(id);
+
+
+--
+-- Name: reports_kb_matched_statements reports_kb_matched_statements_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matched_statements
+    ADD CONSTRAINT reports_kb_matched_statements_report_id_fkey FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
+-- Name: reports_kb_matched_statements reports_kb_matched_statements_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matched_statements
+    ADD CONSTRAINT reports_kb_matched_statements_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id);
+
+
+--
+-- Name: reports_kb_matches reports_kb_matches_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.reports_kb_matches
+    ADD CONSTRAINT reports_kb_matches_report_id_fkey FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
+-- Name: reports_kb_matches_old reports_kb_matches_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matches_old
     ADD CONSTRAINT reports_kb_matches_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: reports_kb_matches reports_kb_matches_updated_by_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_kb_matches
+    ADD CONSTRAINT reports_kb_matches_updated_by_fkey1 FOREIGN KEY (updated_by) REFERENCES public.users(id);
 
 
 --
@@ -4617,6 +5279,38 @@ ALTER TABLE ONLY public.reports_protein_variants
 
 ALTER TABLE ONLY public.reports_protein_variants
     ADD CONSTRAINT reports_protein_variants_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: reports_sample_info reports_sample_info_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_sample_info
+    ADD CONSTRAINT reports_sample_info_report_id_fkey FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
+-- Name: reports_sample_info reports_sample_info_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_sample_info
+    ADD CONSTRAINT reports_sample_info_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id);
+
+
+--
+-- Name: reports_signature_variants reports_signature_variants_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_signature_variants
+    ADD CONSTRAINT reports_signature_variants_report_id_fkey FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
+-- Name: reports_signature_variants reports_signature_variants_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports_signature_variants
+    ADD CONSTRAINT reports_signature_variants_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id);
 
 
 --
@@ -4812,6 +5506,22 @@ ALTER TABLE ONLY public.templates
 
 
 --
+-- Name: templates_signature_types templates_signature_types_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.templates_signature_types
+    ADD CONSTRAINT templates_signature_types_template_id_fkey FOREIGN KEY (template_id) REFERENCES public.templates(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: templates_signature_types templates_signature_types_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.templates_signature_types
+    ADD CONSTRAINT templates_signature_types_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id);
+
+
+--
 -- Name: templates templates_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4833,14 +5543,6 @@ ALTER TABLE ONLY public.user_group_members
 
 ALTER TABLE ONLY public.user_group_members
     ADD CONSTRAINT "userGroupMembers_user_id_fkey" FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: user_groups userGroups_iwner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.user_groups
-    ADD CONSTRAINT "userGroups_iwner_id_fkey" FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -4889,6 +5591,30 @@ ALTER TABLE ONLY public.user_projects
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: variant_texts variant_texts_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.variant_texts
+    ADD CONSTRAINT variant_texts_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: variant_texts variant_texts_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.variant_texts
+    ADD CONSTRAINT variant_texts_template_id_fkey FOREIGN KEY (template_id) REFERENCES public.templates(id);
+
+
+--
+-- Name: variant_texts variant_texts_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.variant_texts
+    ADD CONSTRAINT variant_texts_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id);
 
 
 --
