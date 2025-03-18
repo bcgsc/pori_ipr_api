@@ -13,7 +13,7 @@ const {getUserProjects} = require('../../libs/helperFunctions');
 const {hasAccessToNonProdReports,
   hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
 
-const {fuzzySearchQuery, fuzzySearchIncludeKeyVariant, fuzzySearchIncludeKbVariant} = require('../../libs/fuzzySearch');
+const {fuzzySearchQuery, fuzzySearchInclude} = require('../../libs/fuzzySearch');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -198,7 +198,10 @@ router.route('/')
           as: 'patientInformation',
           attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
         },
-        {model: db.models.user.scope('public'), as: 'createdBy'},
+        {
+          model: db.models.user.scope('public'),
+          as: 'createdBy',
+        },
         {
           model: db.models.template.scope('minimal'),
           as: 'template',
@@ -210,6 +213,7 @@ router.route('/')
           model: db.models.sampleInfo,
           attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
           as: 'sampleInfo',
+          separate: true,
         },
         {
           model: db.models.reportUser,
@@ -218,6 +222,7 @@ router.route('/')
           include: [
             {model: db.models.user.scope('public'), as: 'user'},
           ],
+          separate: true,
         },
         {
           model: db.models.project,
@@ -236,23 +241,17 @@ router.route('/')
         ...((role) ? [{
           model: db.models.reportUser,
           as: 'ReportUserFilter',
+          separate: true,
           where: {
             user_id: req.user.id,
             role,
           },
         }] : []),
-        ...((searchParams) ? fuzzySearchIncludeKeyVariant(searchParams, db) : []),
-        ...((searchParams) ? fuzzySearchIncludeKbVariant(searchParams, db) : []),
-
-        // {
-        //   model: db.models.genomicAlterationsIdentified.scope('public'),
-        //   as: 'genomicAlterationsIdentified',
-        // },
-
-        // {
-        //   model: db.models.kbMatches.scope('minimal'),
-        //   as: 'kbMatches',
-        // },
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'keyVariant') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'kbVariant') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'structuralVariant') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'smallMutation') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'therapeuticTarget') : []),
       ],
     };
 
