@@ -63,7 +63,7 @@ analysisReports.hasMany(reportUsers, {
   as: 'users', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasMany(reportUsers, {
-  as: 'ReportUserFilter', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'ReportUserFilter', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 reportUsers.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
@@ -93,10 +93,10 @@ userGroup.belongsToMany(user, {
 const genes = require('./reports/genes')(sequelize, Sq);
 
 genes.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(genes, {
-  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'genes', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 const imageData = require('./reports/imageData')(sequelize, Sq);
@@ -241,10 +241,10 @@ tmburMutationBurden.belongsTo(analysisReports, {
 const copyVariants = require('./reports/copyVariants')(sequelize, Sq);
 
 copyVariants.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(copyVariants, {
-  as: 'copyVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'copyVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // MAVIS Summary
@@ -271,10 +271,10 @@ analysisReports.hasMany(structuralVariants, {
 const expressionVariants = require('./reports/expressionVariants')(sequelize, Sq);
 
 expressionVariants.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(expressionVariants, {
-  as: 'expressionVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+  as: 'expressionVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
 // protein variants
@@ -397,13 +397,11 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
     scope: {
       [KB_PIVOT_COLUMN]: pivotValue,
     },
-    foreignKeyConstraint: true,
   });
   kbMatches.belongsTo(sequelize.models[modelName], {
     foreignKey: 'variantId',
     constraints: false,
     as: modelName,
-    foreignKeyConstraint: true,
   });
 }
 
