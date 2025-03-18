@@ -241,7 +241,6 @@ router.route('/')
         ...((role) ? [{
           model: db.models.reportUser,
           as: 'ReportUserFilter',
-          separate: true,
           where: {
             user_id: req.user.id,
             role,
