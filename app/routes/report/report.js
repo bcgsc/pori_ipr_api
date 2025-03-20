@@ -45,7 +45,7 @@ const DEFAULT_PAGE_OFFSET = 0;
 router.param('report', reportMiddleware);
 
 router.route('/schema')
-  .get((res) => {
+  .get((req, res) => {
     const schema = removeKeys(reportUploadSchema, '$id');
     return res.json(schema);
   });
