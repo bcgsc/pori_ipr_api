@@ -329,6 +329,60 @@ describe('Tests for uploading a report', () => {
       .type('json')
       .expect(HTTP_STATUS.CREATED);
   }, LONGER_TIMEOUT);
+
+  test('Upload works with extra fields', async () => {
+    // create report
+    const mockReport = JSON.parse(JSON.stringify(mockReportData));
+    mockReport.extraField = 'extra';
+
+    const res = await request
+      .post('/api/reports')
+      .auth(username, password)
+      .send(mockReport)
+      .type('json')
+      .expect(HTTP_STATUS.BAD_REQUEST);
+
+    expect(typeof res.body).toBe('object');
+  }, LONGER_TIMEOUT);
+
+  test('Upload works with ignored extra fields', async () => {
+    // create report
+    const mockReport = JSON.parse(JSON.stringify(mockReportData));
+    mockReport.extraField = 'extra';
+
+    const res = await request
+      .post('/api/reports?ignore_extra_fields=true')
+      .auth(username, password)
+      .send(mockReport)
+      .type('json')
+      .expect(HTTP_STATUS.CREATED);
+
+    expect(typeof res.body).toBe('object');
+  }, LONGER_TIMEOUT);
+
+  test('Upload works with upload_contents', async () => {
+    // create report
+    const mockReport = JSON.parse(JSON.stringify(mockReportData));
+    let res = await request
+      .post('/api/reports?upload_contents=true')
+      .auth(username, password)
+      .send(mockReport)
+      .type('json')
+      .expect(HTTP_STATUS.CREATED);
+
+    expect(typeof res.body).toBe('object');
+
+    const reportIdent = res.body.ident;
+
+    // check that the report was created
+    res = await request
+      .get(`/api/reports/${reportIdent}`)
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+
+    expect(typeof res.body.uploadContents).toBe('string');
+  }, LONGER_TIMEOUT);
 });
 
 afterAll(async () => {
