@@ -278,8 +278,9 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // validate loaded report against schema
-
+    const {
+      query: {ignore_extra_fields, upload_contents},
+    } = req;
     if (req.body.sampleInfo) {
       // Clean sampleInfo input
       const cleanSampleInfo = [];
@@ -300,11 +301,21 @@ router.route('/')
     }
 
     try {
-      validateAgainstSchema(reportUploadSchema, req.body);
+      // eslint-disable-next-line camelcase
+      if (ignore_extra_fields) {
+        validateAgainstSchema(reportUploadSchema, req.body, true, ignore_extra_fields);
+      } else {
+        validateAgainstSchema(reportUploadSchema, req.body);
+      }
     } catch (error) {
       const message = `There was an error validating the report content ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    // eslint-disable-next-line camelcase
+    if (upload_contents) {
+      req.body.uploadContents = JSON.stringify(req.body);
     }
 
     try {
