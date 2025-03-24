@@ -52,10 +52,7 @@ module.exports = {
     searchText: {
       type: 'string',
     },
-    keyVariant: {
-      type: 'string',
-    },
-    matchingThreshold: {
+    searchParams: {
       type: 'string',
     },
     category: {
@@ -63,9 +60,6 @@ module.exports = {
     },
     approvedTherapy: {
       type: 'boolean',
-    },
-    kbVariant: {
-      type: 'string',
     },
     disease: {
       type: 'string',
