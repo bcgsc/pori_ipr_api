@@ -1,7 +1,6 @@
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../constants');
 const {DEFAULT_COLUMNS, DEFAULT_REPORT_OPTIONS} = require('../base');
 
-
 module.exports = (sequelize, Sq) => {
   const ObservedVariantAnnotations = sequelize.define('observedVariantAnnotations', {
     ...DEFAULT_COLUMNS,
@@ -28,21 +27,21 @@ module.exports = (sequelize, Sq) => {
       allowNull: false,
     },
     comment: {
-        type: Sq.TEXT,
-        allowNull: true,
+      type: Sq.TEXT,
+      allowNull: true,
     },
     annotations: {
-        name: 'annotations',
-        field: 'annotations',
-        type: Sq.JSONB,
-        jsonSchema: {
-          schema: {
-            type: 'object',
-            example: {inferred: true},
-          },
+      name: 'annotations',
+      field: 'annotations',
+      type: Sq.JSONB,
+      jsonSchema: {
+        schema: {
+          type: 'object',
+          example: {inferred: true},
         },
       },
-    }, {
+    },
+  }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_observed_variant_annotations',
     scopes: {

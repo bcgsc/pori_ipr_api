@@ -35,24 +35,6 @@ const getVariants = async (tableName, variantType, reportId) => {
   });
 };
 
-const therapeuticAssociationFilterStatement = {
-  id: {[Op.ne]: null},
-  [Op.or]: [{iprEvidenceLevel: ['IPR-A', 'IPR-B']}],
-  category: 'therapeutic',
-  matchedCancer: true,
-  [Op.and]: {
-    [Op.or]: [
-      {
-        relevance: 'resistance',
-        iprEvidenceLevel: 'IPR-A',
-      },
-      {
-        relevance: 'sensitivity',
-      },
-    ],
-  },
-};
-
 const unknownSignificanceIncludes = ['mut'];
 const signatureVariant = ['tmb', 'msi', 'sigv'];
 
@@ -82,9 +64,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
               attributes: {
                 exclude: STATEMENTEXCLUDE,
               },
-              //where: {
+              // where: {
               //  ...therapeuticAssociationFilterStatement,
-              //},
+              // },
               through: {attributes: []},
             },
           ],
@@ -127,37 +109,37 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         {
           model: db.models.observedVariantAnnotations,
           attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
-        }
+        },
       ],
     });
   }
 
   // do initial filtering based on contents of annotations - these should override defaults
-  let therapeuticResultsFromAnnotation = [];
-  let cancerRelevanceResultsFromAnnotation = [];
-  let unknownSignificanceFromAnnotation = [];
-  let doNotReport = [];
+  const therapeuticResultsFromAnnotation = [];
+  const cancerRelevanceResultsFromAnnotation = [];
+  const unknownSignificanceFromAnnotation = [];
+  const doNotReport = [];
 
   allKbMatches.forEach((variant) => {
     // if tagged remove from further filtering
     if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag) {
       const tableTag = variant.observedVariantAnnotation.annotations.rapidReportTableTag;
-      if (tableTag==='therapeutic') {
+      if (tableTag === 'therapeutic') {
         therapeuticResultsFromAnnotation.push(variant);
-      } else if (tableTag==='cancerRelevance') {
+      } else if (tableTag === 'cancerRelevance') {
         cancerRelevanceResultsFromAnnotation.push(variant);
-      } else if (tableTag==='unknownSignificance') {
+      } else if (tableTag === 'unknownSignificance') {
         unknownSignificanceFromAnnotation.push(variant);
-      } else if (tableTag==='noTable') {
+      } else if (tableTag === 'noTable') {
         doNotReport.push(variant);
       }
     }
-  })
+  });
 
   // remove the tagged variants
   allKbMatches = allKbMatches.filter((variant) => {
     return (!(variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag));
-  })
+  });
 
   let therapeuticAssociationResults = [];
 
@@ -260,10 +242,33 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
   }
 
-    // TODO: handle, and test, the issue where unknownSig variants are already getting
-  // refined at query time by the where: ...therapeuticAssociationFilterStatement;
-  // we want to remove these variants UNLESS they are tagged but need to include
-  // them in the initial query... in case they are tagged
+  // refine unknownSignificance results to only include therapeuticAssoc-qualifying matches
+  // (unless they are tagged - add the tagged results back after filtering)
+  unknownSignificanceResults = unknownSignificanceResults.map((variant) => {
+    variant.kbMatches = variant.kbMatches.map((kbmatch) => {
+      const statements = kbmatch.kbMatchedStatements.filter((stmt) => {
+        if ((stmt.category === 'therapeutic')
+        && stmt.matchedCancer
+        && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
+        && (stmt.relevance === 'sensitivity' || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A'))) {
+          return true;
+        }
+        return false;
+      });
+      kbmatch.kbMatchedStatements = statements;
+      return kbmatch;
+    });
+    return variant;
+  });
+
+  // remove matches which have no matching statements
+  unknownSignificanceResults = unknownSignificanceResults.map((variant) => {
+    variant.kbMatches = variant.kbMatches.filter((kbmatch) => {
+      kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements.filter((item) => {return item !== null;});
+      return kbmatch.kbMatchedStatements.length > 0;
+    });
+    return variant;
+  });
 
   // remove variants already included in a different section
   for (const row of unknownSignificanceResults) {

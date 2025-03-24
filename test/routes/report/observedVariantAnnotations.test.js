@@ -28,55 +28,6 @@ let request;
 // test that variants endpoints for rapid report categorizes variants differently
 // based on annotation tag first
 
-
-const variantsProperties = [
-  'ident', 'kbMatches',
-];
-
-const checkVariants = (variantsObject) => {
-  variantsProperties.forEach((element) => {
-    expect(variantsObject).toHaveProperty(element);
-  });
-};
-
-const checkRapidReportMatches = (
-  variants,
-  expectedTable,
-) => {
-  let found = true;
-
-  let kbMatches = [];
-
-  for (const variant of variants) {
-    kbMatches = kbMatches.concat(variant.kbMatches);
-  }
-
-  kbMatches.forEach((match) => {
-    match.kbMatchedStatements.forEach((statement) => {
-      if (!(statement.evidenceLevel === expectedTable)) {
-        found = false;
-      }
-    });
-  });
-
-  expect(found).toBe(true);
-};
-
-const checkVariantsFilter = (
-  variants,
-  expectedTable,
-) => {
-  let found = true;
-
-  variants.forEach((variant) => {
-    if (!(variant.displayName === expectedTable)) {
-      found = false;
-    }
-  });
-
-  expect(found).toBe(true);
-};
-
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -113,173 +64,168 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
 
       const allvars = res.body.filter((variant) => {
         return variant.variantType === 'cnv'; // choose a random nontherapeutic example
-    })
+      });
 
       const variant = allvars[0];
-      const res2 = await request
+      await request
         .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
         .auth(username, password)
         .type('json')
         .send({
           variantType: 'cnv',
           variantIdent: variant.ident,
-          annotations: {'rapidReportTableTag': 'cancerRelevance'},
-          comment: 'test'
+          annotations: {rapidReportTableTag: 'cancerRelevance'},
+          comment: 'test',
         })
         .expect(HTTP_STATUS.CREATED);
 
-    const allCRVars = await request
-    .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-    .query({rapidTable: 'cancerRelevance'})
-    .auth(username, password)
-    .type('json')
-    .expect(HTTP_STATUS.OK);
-
-    const checkVar = allCRVars.body.filter((item) => {
-        return item.ident == variant.ident
-    });
-    expect(checkVar.length).toEqual(1);
-    const annotation = checkVar[0].observedVariantAnnotation
-    expect(annotation.variantType).toEqual('cnv');
-    expect(annotation.comment).toEqual('test');
-    expect(annotation.annotations.rapidReportTableTag).toEqual('cancerRelevance');
-});
-
-
-  test('Does not create new annotation with no matching variant - OK', async () => {
-    const res2 = await request
-      .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-      .auth(username, password)
-      .type('json')
-      .send({
-        variantType: 'mut',
-        variantIdent: 'hello',
-        annotations: {'rapidReportTableTag': 'therapeutic'},
-        comment: 'test'
-      })
-      .expect(HTTP_STATUS.BAD_REQUEST);
-
-    });
-
-    // TODO: this test is not actually checking the variant type check
-    test('Does not create new annotation with fake variant type- OK', async () => {
-        const res2 = await request
-          .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-          .auth(username, password)
-          .type('json')
-          .send({
-            variantType: 'test',
-            variantIdent: 'hello',
-            annotations: {'rapidReportTableTag': 'therapeutic'},
-            comment: 'test'
-          })
-          .expect(HTTP_STATUS.BAD_REQUEST);
-        });
-
-    test('Does not create new annotation when variant already has one - OK', async () => {
-
-        const res = await request
-            .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-            .query({rapidTable: 'unknownSignificance'})
-            .auth(username, password)
-            .type('json')
-            .expect(HTTP_STATUS.OK);
-
-        const allvars = res.body.filter((variant) => {
-            return variant.variantType === 'mut';
-            })
-
-        const variant = allvars[0];
-        const res2 = await request
-            .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-            .auth(username, password)
-            .type('json')
-            .send({
-            variantType: 'mut',
-            variantIdent: variant.ident,
-            annotations: {'rapidReportTableTag': 'therapeutic'},
-            comment: 'test'
-            })
-            .expect(HTTP_STATUS.CREATED);
-
-        const res3 = await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-        .auth(username, password)
-        .type('json')
-        .send({
-        variantType: 'mut',
-        variantIdent: variant.ident,
-        annotations: {'rapidReportTableTag': 'cancerRelevance'},
-        comment: 'test2'
-        })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-    });
-});
-
-  describe('PUT', () => {
-    test('Update existing annotation - comment field - OK', async () => {
-
-        const res = await request
-            .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-            .query({rapidTable: 'unknownSignificance'})
-            .auth(username, password)
-            .type('json')
-            .expect(HTTP_STATUS.OK);
-
-        const allvars = res.body.filter((variant) => {
-            return variant.variantType === 'mut';
-            })
-
-        const variant = allvars[0];
-        const res1 = await request
-            .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-            .auth(username, password)
-            .type('json')
-            .send({
-            variantType: 'mut',
-            variantIdent: variant.ident,
-            annotations: {'rapidReportTableTag': 'therapeutic'},
-            comment: 'test'
-            })
-            .expect(HTTP_STATUS.CREATED);
-
-            // TODO check that it's present in this list
-            const res2 = await request
-            .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-            .query({rapidTable: 'therapeuticAssociation'})
-            .auth(username, password)
-            .type('json')
-            .expect(HTTP_STATUS.OK);
-
-
-            const checkVar1 = res2.body.filter((item) => {
-                return item.ident == variant.ident
-            });
-        const res3 = await request
-        .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${checkVar1[0].observedVariantAnnotation.ident}`)
-        .auth(username, password)
-        .type('json')
-        .send({
-        annotations: {'rapidReportTableTag': 'cancerRelevance'},
-        comment: 'test2'
-        })
-        .expect(HTTP_STATUS.OK);
-
-        // TODO check that it's updated
-        const res4 = await request
+      const allCRVars = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'cancerRelevance'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-        const checkVar2 = res4.body.filter((item) => {
-            return item.ident == variant.ident
-        });
-        console.dir(checkVar1[0].observedVariantAnnotation);
-        console.dir(checkVar2[0].observedVariantAnnotation);
 
+      const checkVar = allCRVars.body.filter((item) => {
+        return item.ident === variant.ident;
+      });
+      expect(checkVar.length).toEqual(1);
+      const annotation = checkVar[0].observedVariantAnnotation;
+      expect(annotation.variantType).toEqual('cnv');
+      expect(annotation.comment).toEqual('test');
+      expect(annotation.annotations.rapidReportTableTag).toEqual('cancerRelevance');
     });
 
+    test('Does not create new annotation with no matching variant - OK', async () => {
+      await request
+        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          variantType: 'mut',
+          variantIdent: 'hello',
+          annotations: {rapidReportTableTag: 'therapeutic'},
+          comment: 'test',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    // TODO: this test is not actually checking the variant type check
+    test('Does not create new annotation with fake variant type- OK', async () => {
+      await request
+        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          variantType: 'test',
+          variantIdent: 'hello',
+          annotations: {rapidReportTableTag: 'therapeutic'},
+          comment: 'test',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
+    test('Does not create new annotation when variant already has one - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const allvars = res.body.filter((variant) => {
+        return variant.variantType === 'mut';
+      });
+
+      const variant = allvars[0];
+      await request
+        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          variantType: 'mut',
+          variantIdent: variant.ident,
+          annotations: {rapidReportTableTag: 'therapeutic'},
+          comment: 'test',
+        })
+        .expect(HTTP_STATUS.CREATED);
+
+      await request
+        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          variantType: 'mut',
+          variantIdent: variant.ident,
+          annotations: {rapidReportTableTag: 'cancerRelevance'},
+          comment: 'test2',
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+  });
+
+  describe('PUT', () => {
+    test('Update existing annotation - comment field - OK', async () => {
+      const res = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'unknownSignificance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const allvars = res.body.filter((variant) => {
+        return variant.variantType === 'mut';
+      });
+
+      const variant = allvars[0];
+
+      // create the annotation
+      await request
+        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          variantType: 'mut',
+          variantIdent: variant.ident,
+          annotations: {rapidReportTableTag: 'therapeutic'},
+          comment: 'test',
+        })
+        .expect(HTTP_STATUS.CREATED);
+
+      // check that it's present in this list
+      const res2 = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const checkVar1 = res2.body.filter((item) => {
+        return item.ident === variant.ident;
+      });
+
+      // do the update
+      await request
+        .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${checkVar1[0].observedVariantAnnotation.ident}`)
+        .auth(username, password)
+        .type('json')
+        .send({
+          annotations: {rapidReportTableTag: 'cancerRelevance'},
+          comment: 'test2',
+        })
+        .expect(HTTP_STATUS.OK);
+
+      // check that it's updated (moved to diff list)
+      const res4 = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+      const checkVar2 = res4.body.filter((item) => {
+        return item.ident === variant.ident;
+      });
+    });
   });
 
   // delete report
