@@ -165,6 +165,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
 
     test('Tagging non-therapeutic var as therapeutic moves it to therapeutic - OK', async () => {
+      // get first mut-type unknown sig var, tag it as therapeutic
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
@@ -188,6 +189,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         })
         .expect(HTTP_STATUS.CREATED);
 
+      // check it is now in therapeutic and is not in any other variant list
       const therapeutics = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
@@ -216,6 +218,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
 
     test('Tagging non-cancerRelevance var as cancerRelevance moves it to cancer relevance - OK', async () => {
+      // get first unknown sig variant of mut type, tag it as cancer relevance
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
@@ -238,6 +241,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         })
         .expect(HTTP_STATUS.CREATED);
 
+      // check it is now in cancer-relevance and is not in any other variant list
       const therapeutics = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
@@ -266,6 +270,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
 
     test('Tagging non-unknownSig var as unknown sig moves it to unknown sig - OK', async () => {
+      // get first eligible therapeutic var, tag it as unknown sig
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
@@ -289,6 +294,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         })
         .expect(HTTP_STATUS.CREATED);
 
+      // check that it's now in unknown sig, and not in any other variant list
       const therapeutics = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
@@ -317,6 +323,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
     });
 
     test('Tagging variant with noTable removes it from rapid report summary results - OK', async () => {
+      // grab first available therapeutic variant, tag it as noTable
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
@@ -340,6 +347,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         })
         .expect(HTTP_STATUS.CREATED);
 
+      // check that it's now not in any variant list
       const therapeutics = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})

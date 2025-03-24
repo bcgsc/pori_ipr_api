@@ -19,15 +19,6 @@ const LONGER_TIMEOUT = 100000;
 let server;
 let request;
 
-// TODO ADD TESTS
-// - creates a new record for variant
-// gets existing record variant from variants route
-// does not create a new record when variant doesn't exist
-// does not create a new record when there is already an annotation record for the variant
-// put
-// test that variants endpoints for rapid report categorizes variants differently
-// based on annotation tag first
-
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -35,7 +26,7 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-// Tests for /kb-matches endpoint
+// Tests for observed-variant-annotations endpts
 describe('/reports/{REPORTID}/observed-variant-annotations', () => {
   let rapidReportIdent;
 
@@ -110,7 +101,6 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    // TODO: this test is not actually checking the variant type check
     test('Does not create new annotation with fake variant type- OK', async () => {
       await request
         .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
@@ -192,21 +182,32 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         })
         .expect(HTTP_STATUS.CREATED);
 
-      // check that it's present in this list
-      const res2 = await request
+      // check that it's present in this list and not in cancer-relevance
+      const res1a = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
+      const res1b = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'cancerRelevance'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
 
-      const checkVar1 = res2.body.filter((item) => {
+      const checkVar1a = res1a.body.filter((item) => {
         return item.ident === variant.ident;
       });
+      expect(checkVar1a.length).toEqual(1);
+      const checkVar1b = res1b.body.filter((item) => {
+        return item.ident === variant.ident;
+      });
+      expect(checkVar1b.length).toEqual(0);
 
       // do the update
       await request
-        .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${checkVar1[0].observedVariantAnnotation.ident}`)
+        .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${checkVar1a[0].observedVariantAnnotation.ident}`)
         .auth(username, password)
         .type('json')
         .send({
@@ -216,15 +217,27 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .expect(HTTP_STATUS.OK);
 
       // check that it's updated (moved to diff list)
-      const res4 = await request
+      const res2a = await request
+        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+        .query({rapidTable: 'therapeuticAssociation'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+      const res2b = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'cancerRelevance'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-      const checkVar2 = res4.body.filter((item) => {
+
+      const checkVar2a = res2a.body.filter((item) => {
         return item.ident === variant.ident;
       });
+      expect(checkVar2a.length).toEqual(0);
+      const checkVar2b = res2b.body.filter((item) => {
+        return item.ident === variant.ident;
+      });
+      expect(checkVar2b.length).toEqual(1);
     });
   });
 
