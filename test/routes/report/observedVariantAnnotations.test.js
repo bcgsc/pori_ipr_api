@@ -66,7 +66,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'cnv',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
-          comment: 'test',
+          comments: 'test',
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -83,7 +83,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       expect(checkVar.length).toEqual(1);
       const annotation = checkVar[0].observedVariantAnnotation;
       expect(annotation.variantType).toEqual('cnv');
-      expect(annotation.comment).toEqual('test');
+      expect(annotation.comments).toEqual('test');
       expect(annotation.annotations.rapidReportTableTag).toEqual('cancerRelevance');
     });
 
@@ -96,7 +96,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: 'hello',
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comment: 'test',
+          comments: 'test',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
@@ -110,7 +110,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'test',
           variantIdent: 'hello',
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comment: 'test',
+          comments: 'test',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
@@ -136,7 +136,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comment: 'test',
+          comments: 'test',
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -148,14 +148,14 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
-          comment: 'test2',
+          comments: 'test2',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
   describe('PUT', () => {
-    test('Update existing annotation - comment field - OK', async () => {
+    test('Update existing annotation - comments field - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
@@ -178,7 +178,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comment: 'test',
+          comments: 'test',
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -212,7 +212,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .type('json')
         .send({
           annotations: {rapidReportTableTag: 'cancerRelevance'},
-          comment: 'test2',
+          comments: 'test2',
         })
         .expect(HTTP_STATUS.OK);
 

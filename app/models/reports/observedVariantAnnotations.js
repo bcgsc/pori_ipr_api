@@ -26,7 +26,7 @@ module.exports = (sequelize, Sq) => {
       type: Sq.INTEGER,
       allowNull: false,
     },
-    comment: {
+    comments: {
       type: Sq.TEXT,
       allowNull: true,
     },
