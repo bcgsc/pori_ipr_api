@@ -1,7 +1,5 @@
-'use strict';
-
 const TABLE = 'reports_observed_variant_annotations';
-const {DEFAULT_COLUMNS, DEFAULT_MAPPING_COLUMNS} = require('../app/models/base');
+const {DEFAULT_COLUMNS} = require('../app/models/base');
 const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../app/constants');
 
 module.exports = {
@@ -128,7 +126,6 @@ module.exports = {
       );
     });
   },
-
 
   down: () => {
     throw new Error('Not Implemented!');
