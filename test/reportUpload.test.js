@@ -176,6 +176,16 @@ describe('Tests for uploading a report and all of its components', () => {
     })]));
   });
 
+  test('MSI created once', async () => {
+    const msi = await db.models.msi.findAll({where: {reportId}});
+    expect(msi).toHaveProperty('length', 1);
+  });
+
+  test('TMBUR created once', async () => {
+    const tmb = await db.models.tmburMutationBurden.findAll({where: {reportId}});
+    expect(tmb).toHaveProperty('length', 1);
+  });
+
   test('Template was linked correctly', async () => {
     // Get Report and test that the template data in the report is correct
     const report = await db.models.report.findOne({where: {id: reportId}, attributes: ['templateId']});
