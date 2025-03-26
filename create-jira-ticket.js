@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const https = require('https');
 
 function createJiraTicket() {
