@@ -9,6 +9,7 @@ const {sanitizeHtml} = require('./helperFunctions');
 
 const EXCLUDE_SECTIONS = new Set([
   ...GENE_LINKED_VARIANT_MODELS,
+  ...Object.values(KB_PIVOT_MAPPING),
   'createdBy',
   'template',
   'genes',
@@ -337,7 +338,7 @@ const createReportSections = async (report, content, transaction) => {
   Object.keys(db.models.report.associations).filter((model) => {
     return !EXCLUDE_SECTIONS.has(model);
   }).forEach((model) => {
-    logger.debug(`creating report (${model}) section (${report.ident})`);
+    logger.info(`creating report (${model}) section (${report.ident})`);
     if (content[model]) {
       // sanitize html comment if it's not null
       if (model === 'analystComments' && content[model].comments) {
