@@ -25,6 +25,9 @@ router.param('msi', async (req, res, next, ident) => {
   try {
     result = await db.models.msi.findOne({
       where: {ident, reportId: req.report.id},
+      include: [
+        {model: db.models.observedVariantAnnotations.scope('minimal'), as: 'observedVariantAnnotation'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to lookup MSI data error: ${error}`);
@@ -94,6 +97,12 @@ router.route('/')
     try {
       const results = await db.models.msi.scope('public').findAll({
         where: {reportId: req.report.id},
+        include: [
+          {
+            model: db.models.observedVariantAnnotations,
+            as: 'observedVariantAnnotation',
+          },
+        ]
       });
 
       if (key) {

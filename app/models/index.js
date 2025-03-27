@@ -415,6 +415,7 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
     scope: {
       [KB_PIVOT_COLUMN]: pivotValue,
     },
+    as: 'observedVariantAnnotation',
   });
   observedVariantAnnotations.belongsTo(sequelize.models[modelName], {
     foreignKey: 'variantId',

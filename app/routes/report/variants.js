@@ -29,6 +29,7 @@ const getVariants = async (tableName, variantType, reportId) => {
       },
       {
         model: db.models.observedVariantAnnotations,
+        as: 'observedVariantAnnotation',
         attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
       },
     ],
@@ -74,6 +75,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         {
           model: db.models.observedVariantAnnotations,
           attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+          as: 'observedVariantAnnotation',
         },
         {
           model: db.models.genes.scope('minimal'),
@@ -109,6 +111,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         {
           model: db.models.observedVariantAnnotations,
           attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+          as: 'observedVariantAnnotation',
         },
       ],
     });
@@ -298,7 +301,6 @@ router.route('/')
     try {
       const variantTypes = Object.keys(KB_PIVOT_MAPPING);
       const variantsArray = [];
-
       for (const variantType of variantTypes) {
         const tableName = KB_PIVOT_MAPPING[variantType];
 

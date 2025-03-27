@@ -14,6 +14,7 @@ router.param('mutation', async (req, res, next, mutIdent) => {
       where: {ident: mutIdent, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
+        {model: db.models.observedVariantAnnotations.scope('minimal'), as: 'observedVariantAnnotation'},
       ],
     });
   } catch (error) {
@@ -70,7 +71,6 @@ router.route('/:mutation([A-z0-9-]{36})')
 router.route('/')
   .get(async (req, res) => {
     // Get all small mutations for this report
-
     try {
       const results = await db.models.smallMutations.scope('extended').findAll({
         order: [['geneId', 'ASC']],
@@ -91,9 +91,12 @@ router.route('/')
               },
             ],
           },
+          {
+            model: db.models.observedVariantAnnotations,
+            as: 'observedVariantAnnotation',
+          },
         ],
       });
-
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve small mutations ${error}`);

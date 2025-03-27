@@ -68,6 +68,7 @@ router.route('/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
+    
     if (!(variant)) {
       const message = 'Variant not found';
       logger.error(message);
