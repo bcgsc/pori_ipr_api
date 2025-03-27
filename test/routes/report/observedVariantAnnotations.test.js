@@ -65,7 +65,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
   }, LONGER_TIMEOUT);
 
   describe('POST', () => {
-    test.skip('Create new annotation - OK', async () => {
+    test('Create new annotation - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'therapeuticAssociation'})
@@ -107,7 +107,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       expect(annotation.annotations.rapidReportTableTag).toEqual('cancerRelevance');
     });
 
-    test.skip('Does not create new annotation with no matching variant - OK', async () => {
+    test('Does not create new annotation with no matching variant - OK', async () => {
       await request
         .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
         .auth(username, password)
@@ -121,7 +121,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test.skip('Does not create new annotation with fake variant type- OK', async () => {
+    test('Does not create new annotation with fake variant type- OK', async () => {
       await request
         .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
         .auth(username, password)
@@ -135,7 +135,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
-    test.skip('Does not create new annotation when variant already has one - OK', async () => {
+    test('Does not create new annotation when variant already has one - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
@@ -175,7 +175,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
   });
 
   describe('PUT', () => {
-    test.skip('Update existing annotation - comments field - OK', async () => {
+    test('Update existing annotation - comments field - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
@@ -278,9 +278,8 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       let annotation;
       if (variantType === 'tmb') {
         record = res.body;
-        annotation = res.body.observedVariantAnnotation.ident
+        annotation = res.body.observedVariantAnnotation.ident;
       } else {
-        expect(Array.isArray(res.body)).toBe(true);
         [record] = res.body;
         annotation = record.observedVariantAnnotation;
       }

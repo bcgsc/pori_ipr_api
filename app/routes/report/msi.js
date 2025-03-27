@@ -102,7 +102,7 @@ router.route('/')
             model: db.models.observedVariantAnnotations,
             as: 'observedVariantAnnotation',
           },
-        ]
+        ],
       });
 
       if (key) {
