@@ -24,6 +24,9 @@ router.use('/', async (req, res, next) => {
   try {
     result = await db.models.tmburMutationBurden.findOne({
       where: {reportId: req.report.id},
+      include: [
+        {model: db.models.observedVariantAnnotations.scope('minimal'), as: 'observedVariantAnnotation'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to query Tmbur Mutation Burden for report ${req.report.ident} error: ${error}`);

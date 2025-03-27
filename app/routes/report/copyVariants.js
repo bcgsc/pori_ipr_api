@@ -15,6 +15,7 @@ router.param('cnv', async (req, res, next, mutIdent) => {
       where: {ident: mutIdent, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
+        {model: db.models.observedVariantAnnotations.scope('minimal'), as: 'observedVariantAnnotation'},
       ],
     });
   } catch (error) {
@@ -96,6 +97,10 @@ router.route('/')
                 through: {attributes: []},
               },
             ],
+          },
+          {
+            model: db.models.observedVariantAnnotations,
+            as: 'observedVariantAnnotation',
           },
         ],
       });

@@ -16,6 +16,10 @@ router.param('expressionVariant', async (req, res, next, ident) => {
       where: {ident, reportId: req.report.id},
       include: [
         {model: db.models.genes.scope('minimal'), as: 'gene'},
+        {
+          model: db.models.observedVariantAnnotations,
+          as: 'observedVariantAnnotation',
+        },
       ],
     });
   } catch (error) {
@@ -96,6 +100,10 @@ router.route('/')
                 through: {attributes: []},
               },
             ],
+          },
+          {
+            model: db.models.observedVariantAnnotations,
+            as: 'observedVariantAnnotation',
           },
         ],
       });
