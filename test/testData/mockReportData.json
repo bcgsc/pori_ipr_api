@@ -733,7 +733,7 @@
             "key": "sigv-key"
         }
     ],
-    "project": "TEST",
+    "project": "POG",
     "images": [
         {
             "key": "mutSignature.barplot.sbs",

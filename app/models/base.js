@@ -4,8 +4,10 @@ const clearCache = require('./clearCache');
 
 const DEFAULT_UPDATE_EXCLUDE = ['updatedAt', 'updatedBy'];
 
+const DEFAULT_DELETE_EXCLUDE = ['deletedAt', 'deletedBy'];
+
 const SIGNATURE_REMOVAL_EXCLUDE = {
-  report: ['state', 'presentationDate', 'updatedAt', 'updatedBy'],
+  report: ['state', 'presentationDate', 'updatedAt', 'updatedBy', 'deletedAt', 'deletedBy'],
 };
 
 /**
@@ -80,6 +82,15 @@ const DEFAULT_COLUMNS = {
       key: 'id',
     },
   },
+  deletedBy: {
+    name: 'deletedBy',
+    field: 'deleted_by',
+    type: Sq.INTEGER,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
   ...DEFAULT_MAPPING_COLUMNS,
 };
 
@@ -131,6 +142,27 @@ const DEFAULT_OPTIONS = {
 
       // Set the updateBy value for update
       instance.updatedBy = options.userId;
+
+      return instance.constructor.create({
+        ...content, deletedAt: new Date(),
+      }, {
+        silent: true,
+        transaction: options.transaction,
+      });
+    },
+    beforeDestroy: async (instance, options = {}) => {
+      console.log('Deleting now', options);
+      // are excluded from creating a new record
+      const changed = instance.changed();
+      const deleteExclude = (options.newEntryExclude) ? DEFAULT_DELETE_EXCLUDE.concat(options.newEntryExclude) : DEFAULT_DELETE_EXCLUDE;
+      if (!changed || includesAll(deleteExclude, changed)) {
+        return Promise.resolve(true);
+      }
+
+      const {id, ...content} = instance._previousDataValues;
+
+      // Set the updateBy value for update
+      instance.deletedBy = options.userId;
 
       return instance.constructor.create({
         ...content, deletedAt: new Date(),
