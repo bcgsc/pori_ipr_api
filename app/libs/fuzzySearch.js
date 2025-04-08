@@ -50,40 +50,49 @@ const fuzzySearchQuery = (searchParams) => {
     const params = searchParams.match(/(?<=\[).+?(?=\])/g);
     let fuzzyQuery;
     params.forEach((param) => {
-      // Extract search categories, keywords, and matching thresholds from search params
-      const [paramCategory, paramKeyword, matchingThreshold] = param.split('|');
+      try {
+        const delimiter = /[|]/;
+        if (delimiter.test(param)) {
+          // Extract search categories, keywords, and matching thresholds from search params
+          const [paramCategory, paramKeyword, matchingThreshold] = param.split('|');
 
-      // Map out appropriate table, and column names for each category
-      const tableName = PARAM_TABLE_MAP[paramCategory];
-      const columnName = PARAM_COLUMN_MAP[paramCategory];
+          // Map out appropriate table, and column names for each category
+          const tableName = PARAM_TABLE_MAP[paramCategory];
+          const columnName = PARAM_COLUMN_MAP[paramCategory];
 
-      // Construct fuzzy search query
-      if (tableName === 'reports') {
-        const newFuzzyQuery = `SELECT "id"
-                              FROM (SELECT id, word_similarity('${paramKeyword}', "patient_id") 
-                                    FROM reports) AS subquery
-                              WHERE word_similarity >= ${matchingThreshold}
-                              ${fuzzyQuery ? 'INTERSECT' : ''}
-                              ${fuzzyQuery ?? ''}`;
-        fuzzyQuery = newFuzzyQuery;
-      } else if (tableName === 'projects') {
-        const newFuzzyQuery = `SELECT "search_report_id"
-                              FROM (SELECT reports.id AS search_report_id, word_similarity('${paramKeyword}', projects.name) 
-                                    FROM projects 
-                                    JOIN report_projects ON projects.id = report_projects.project_id 
-                                    JOIN reports ON reports.id = report_projects.report_id) AS subquery
-                              WHERE word_similarity >= ${matchingThreshold}
-                              ${fuzzyQuery ? 'INTERSECT' : ''}
-                              ${fuzzyQuery ?? ''}`;
-        fuzzyQuery = newFuzzyQuery;
-      } else {
-        const newFuzzyQuery = `SELECT "report_id"
-                              FROM (SELECT report_id, word_similarity('${paramKeyword}', "${columnName}"), ${tableName}.deleted_at AS dlt 
-                                    FROM ${tableName}) AS subquery
-                              WHERE word_similarity >= ${matchingThreshold} AND dlt IS NULL
-                              ${fuzzyQuery ? 'INTERSECT' : ''}
-                              ${fuzzyQuery ?? ''}`;
-        fuzzyQuery = newFuzzyQuery;
+          // Construct fuzzy search query
+          if (tableName === 'reports') {
+            const newFuzzyQuery = `SELECT "id"
+                                  FROM (SELECT id, word_similarity('${paramKeyword}', "patient_id") 
+                                        FROM reports) AS subquery
+                                  WHERE word_similarity >= ${matchingThreshold}
+                                  ${fuzzyQuery ? 'INTERSECT' : ''}
+                                  ${fuzzyQuery ?? ''}`;
+            fuzzyQuery = newFuzzyQuery;
+          } else if (tableName === 'projects') {
+            const newFuzzyQuery = `SELECT "search_report_id"
+                                  FROM (SELECT reports.id AS search_report_id, word_similarity('${paramKeyword}', projects.name) 
+                                        FROM projects 
+                                        JOIN report_projects ON projects.id = report_projects.project_id 
+                                        JOIN reports ON reports.id = report_projects.report_id) AS subquery
+                                  WHERE word_similarity >= ${matchingThreshold}
+                                  ${fuzzyQuery ? 'INTERSECT' : ''}
+                                  ${fuzzyQuery ?? ''}`;
+            fuzzyQuery = newFuzzyQuery;
+          } else {
+            const newFuzzyQuery = `SELECT "report_id"
+                                  FROM (SELECT report_id, word_similarity('${paramKeyword}', "${columnName}"), ${tableName}.deleted_at AS dlt 
+                                        FROM ${tableName}) AS subquery
+                                  WHERE word_similarity >= ${matchingThreshold} AND dlt IS NULL
+                                  ${fuzzyQuery ? 'INTERSECT' : ''}
+                                  ${fuzzyQuery ?? ''}`;
+            fuzzyQuery = newFuzzyQuery;
+          }
+        } else {
+          throw new Error('Invalid search parameters');
+        }
+      } catch (error) {
+        throw new Error(`Unable to process parameters: ${error.message || error}`);
       }
     });
 
