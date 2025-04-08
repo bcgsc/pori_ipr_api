@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Run the current migrations against specified DB
 export IPR_SERVICE_USER=$IPR_SERVICE_USER
 export IPR_SERVICE_PASS=$IPR_SERVICE_PASS
