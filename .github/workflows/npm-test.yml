@@ -55,11 +55,12 @@ jobs:
           PGHOST: localhost
       - run: npm ci --verbose
       - run: |
-          npx sequelize-cli db:migrate --url postgres://${SERVICE_USER}@localhost:5432/${DATABASE_NAME}
+          bash ./migrationTools/migratedb.sh
         env:
-          SERVICE_USER: ipr_service
-          DATABASE_NAME: ipr_demo
-          PGPASSWORD: demo
+          IPR_SERVICE_USER: ipr_service
+          IRP_DATABASE_NAME: ipr_demo
+          IPR_SERVICE_PASS: demo
+          IPR_DATABASE_SERVER: localhost
           IPR_GRAPHKB_PASSWORD: demo
           IPR_DATABASE_PASSWORD: demo
       - run: npm run test
