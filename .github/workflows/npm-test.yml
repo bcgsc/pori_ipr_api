@@ -59,7 +59,7 @@ jobs:
           IPR_SERVICE_USER: ipr_service
           IPR_SERVICE_PASS: demo
           IPR_DATABASE_SERVER: localhost
-          IRP_DATABASE_NAME: ipr_demo
+          IPR_DATABASE_NAME: ipr_demo
           IPR_GRAPHKB_PASSWORD: demo
           IPR_DATABASE_PASSWORD: demo
       - run: npm run test
