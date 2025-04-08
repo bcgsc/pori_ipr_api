@@ -54,7 +54,12 @@ jobs:
           DB_DUMP_LOCATION: ./demo/ipr_demodb.postgres.dump
           PGHOST: localhost
       - run: npm ci --verbose
-      - run: bash ./migrationTools/migratedb.sh
+      - run: |
+          export IPR_SERVICE_USER=${IPR_SERVICE_USER}
+          export IPR_SERVICE_PASS=${IPR_SERVICE_PASS}
+          export IPR_DATABASE_SERVER=${IPR_DATABASE_SERVER}
+          export IPR_DATABASE_NAME=${IPR_DATABASE_NAME}
+          bash ./migrationTools/migratedb.sh
         env:
           IPR_SERVICE_USER: ipr_service
           IPR_SERVICE_PASS: demo
