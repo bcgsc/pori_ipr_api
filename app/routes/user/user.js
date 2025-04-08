@@ -5,7 +5,6 @@ const {Op} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
-const {addJobToGraphkbNewUserQueue} = require('../../queue');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
 const {createSchema, updateSchema, notificationUpdateSchema} = require('../../schemas/user');
@@ -259,9 +258,6 @@ router.route('/')
       req.body.password = null;
     }
 
-    // // Add new user to graphkb by adding a job to graphkb new user queue
-    // await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
-
     let transaction;
     try {
       // Create transaction
@@ -272,10 +268,6 @@ router.route('/')
       await db.models.userMetadata.create({userId: createdUser.id}, {transaction});
       // Commit changes
       await transaction.commit();
-      if (req.query.gkb === true) {
-        // Add new user to graphkb by adding a job to graphkb new user queue
-        await addJobToGraphkbNewUserQueue({graphkbToken: req.graphkbToken, body: req.body});
-      }
       // Return new user
       return res.status(HTTP_STATUS.StatusCodes.CREATED).json(createdUser.view('public'));
     } catch (error) {
