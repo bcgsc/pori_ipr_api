@@ -26,10 +26,6 @@ module.exports = (sequelize, Sq) => {
       type: Sq.INTEGER,
       allowNull: false,
     },
-    comments: {
-      type: Sq.TEXT,
-      allowNull: true,
-    },
     annotations: {
       name: 'annotations',
       field: 'annotations',

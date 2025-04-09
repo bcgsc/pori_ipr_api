@@ -17,7 +17,7 @@ const createSchema = schemaGenerator(db.models.observedVariantAnnotations, {
   baseUri: REPORT_CREATE_BASE_URI,
 });
 
-// TODO: we only want to allow updates to two fields - comment and annotations
+// TODO: we only want to allow updates to annotations
 const updateSchema = schemaGenerator(db.models.observedVariantAnnotations, {
   baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
 });

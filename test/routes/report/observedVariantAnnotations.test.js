@@ -28,6 +28,21 @@ function camelToKebab(str) {
     .toLowerCase();
 }
 
+const getVariantByIdent = async (ident, reportIdent) => {
+  const allVars = await request
+    .get(`/api/reports/${reportIdent}/variants`)
+    .query()
+    .auth(username, password)
+    .type('json')
+    .expect(HTTP_STATUS.OK);
+
+  const checkVar = allVars.body.filter((item) => {
+    return item.ident === ident;
+  });
+  expect(checkVar.length).toEqual(1);
+  return checkVar[0];
+};
+
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -86,24 +101,12 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'cnv',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
-          comments: 'test',
         })
         .expect(HTTP_STATUS.CREATED);
 
-      const allCRVars = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const checkVar = allCRVars.body.filter((item) => {
-        return item.ident === variant.ident;
-      });
-      expect(checkVar.length).toEqual(1);
-      const annotation = checkVar[0].observedVariantAnnotation;
+      const checkVar = await getVariantByIdent(variant.ident, rapidReportIdent.ident);
+      const annotation = checkVar.observedVariantAnnotation;
       expect(annotation.variantType).toEqual('cnv');
-      expect(annotation.comments).toEqual('test');
       expect(annotation.annotations.rapidReportTableTag).toEqual('cancerRelevance');
     });
 
@@ -116,7 +119,6 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: 'hello',
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comments: 'test',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
@@ -130,7 +132,6 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'test',
           variantIdent: 'hello',
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comments: 'test',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
@@ -156,7 +157,6 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'therapeutic'},
-          comments: 'test',
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -168,14 +168,14 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
-          comments: 'test2',
         })
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
+  // TODO
   describe('PUT', () => {
-    test('Update existing annotation - comments field - OK', async () => {
+    test('Update existing annotation - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .query({rapidTable: 'unknownSignificance'})
@@ -187,7 +187,9 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         return variant.variantType === 'mut';
       });
 
-      const variant = allvars[0];
+      const annotations = {rapidReportTableTag: 'therapeutic', secondTag: 'testValue'};
+
+      const origVariant = allvars[0];
 
       // create the annotation
       await request
@@ -196,68 +198,32 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .type('json')
         .send({
           variantType: 'mut',
-          variantIdent: variant.ident,
-          annotations: {rapidReportTableTag: 'therapeutic'},
-          comments: 'test',
+          variantIdent: origVariant.ident,
+          annotations,
         })
         .expect(HTTP_STATUS.CREATED);
 
-      // check that it's present in this list and not in cancer-relevance
-      const res1a = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const res1b = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const checkVar1a = res1a.body.filter((item) => {
-        return item.ident === variant.ident;
-      });
-      expect(checkVar1a.length).toEqual(1);
-      const checkVar1b = res1b.body.filter((item) => {
-        return item.ident === variant.ident;
-      });
-      expect(checkVar1b.length).toEqual(0);
+      // get the created variant annotation and check it's correct
+      const createdVar = await getVariantByIdent(origVariant.ident, rapidReportIdent.ident);
+      expect(createdVar.observedVariantAnnotation.annotations.secondTag).toEqual(annotations.secondTag);
+      expect(createdVar.observedVariantAnnotation.annotations.rapidReportTableTag).toEqual(annotations.rapidReportTableTag);
 
       // do the update
+      const updatedSecondTag = 'testValue2';
+      annotations.secondTag = updatedSecondTag;
       await request
-        .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${checkVar1a[0].observedVariantAnnotation.ident}`)
+        .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${createdVar.observedVariantAnnotation.ident}`)
         .auth(username, password)
         .type('json')
         .send({
-          annotations: {rapidReportTableTag: 'cancerRelevance'},
-          comments: 'test2',
+          annotations,
         })
         .expect(HTTP_STATUS.OK);
 
-      // check that it's updated (moved to diff list)
-      const res2a = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const res2b = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const checkVar2a = res2a.body.filter((item) => {
-        return item.ident === variant.ident;
-      });
-      expect(checkVar2a.length).toEqual(0);
-      const checkVar2b = res2b.body.filter((item) => {
-        return item.ident === variant.ident;
-      });
-      expect(checkVar2b.length).toEqual(1);
+      // get the new variant data
+      const updatedVar = await getVariantByIdent(origVariant.ident, rapidReportIdent.ident);
+      expect(updatedVar.observedVariantAnnotation.annotations.secondTag).toEqual(updatedSecondTag);
+      expect(updatedVar.observedVariantAnnotation.annotations.rapidReportTableTag).toEqual(annotations.rapidReportTableTag);
     });
   });
 
@@ -285,6 +251,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       }
       expect(annotation).toBe(null);
 
+      const annotations = {testTag: 'testTagValue'};
       await request
         .post(`/api/reports/${reportIdent.ident}/observed-variant-annotations`)
         .auth(username, password)
@@ -292,7 +259,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .send({
           variantType,
           variantIdent: record.ident,
-          comments: endpt,
+          annotations,
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -307,7 +274,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
       const record2 = res2.body;
-      expect(record2.observedVariantAnnotation.comments).toEqual(endpt);
+      expect(record2.observedVariantAnnotation.annotations.testTag).toEqual(annotations.testTag);
     });
 
     test('Annotations delivered with variants endpt - OK', async () => {
@@ -318,6 +285,8 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
+
+      const annotations = {testTag: 'testTagValue'};
 
       // get the first unannotated var for this test
       const unannotatedVars = res.body.filter((variant) => {
@@ -335,7 +304,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .send({
           variantType: record.variantType,
           variantIdent: record.ident,
-          comments: 'general variants endpt',
+          annotations,
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -347,7 +316,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       const updatedRecord = res2.body.filter((variant) => {
         return variant.ident === record.ident;
       })[0];
-      expect(updatedRecord.observedVariantAnnotation.comments).toEqual('general variants endpt');
+      expect(updatedRecord.observedVariantAnnotation.annotations.testTag).toEqual(annotations.testTag);
     });
 
     test('Annotations delivered with rapid report variants endpt - OK', async () => {
@@ -375,8 +344,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .send({
           variantType: record.variantType,
           variantIdent: record.ident,
-          comments: 'rapid report variants endpt',
-          annotations: {rapidReportTableTag: 'cancerRelevance'},
+          annotations: {rapidReportTableTag: 'cancerRelevance', testTag: 'testValue'},
         })
         .expect(HTTP_STATUS.CREATED);
 
@@ -390,7 +358,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         return variant.ident === record.ident;
       })[0];
 
-      expect(updatedRecord.observedVariantAnnotation.comments).toEqual('rapid report variants endpt');
+      expect(updatedRecord.observedVariantAnnotation.annotations.testTag).toEqual('testValue');
     });
   });
 

@@ -29,10 +29,6 @@ module.exports = {
           type: Sq.INTEGER,
           allowNull: false,
         },
-        comments: {
-          type: Sq.TEXT,
-          allowNull: true,
-        },
         annotations: {
           name: 'annotations',
           field: 'annotations',
@@ -45,85 +41,6 @@ module.exports = {
           },
         },
       }, {transaction});
-
-      // Migrate comments from MUT
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `insert into reports_observed_variant_annotations
-        (ident, created_at, updated_at, report_id, comments, variant_id, variant_type)
-        select gen_random_uuid(), created_at, updated_at, report_id, comments, id,
-        'mut'
-        from reports_small_mutations
-        where comments is not null and deleted_at is null;`,
-        {
-          transaction,
-        },
-      );
-      // EXP
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `insert into reports_observed_variant_annotations
-        (ident, created_at, updated_at, report_id, comments, variant_id, variant_type)
-        select gen_random_uuid(), created_at, updated_at, report_id, comments, id,
-        'exp'
-        from reports_expression_variants
-        where comments is not null and deleted_at is null;`,
-        {
-          transaction,
-        },
-      );
-      // SV
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `insert into reports_observed_variant_annotations
-        (ident, created_at, updated_at, report_id, comments, variant_id, variant_type)
-        select gen_random_uuid(), created_at, updated_at, report_id, comments, id,
-        'sv'
-        from reports_structural_variants
-        where comments is not null and deleted_at is null;`,
-        {
-          transaction,
-        },
-      );
-      // CNV
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `insert into reports_observed_variant_annotations
-        (ident, created_at, updated_at, report_id, comments, variant_id, variant_type)
-        select gen_random_uuid(), created_at, updated_at, report_id, comments, id,
-        'cnv'
-        from reports_copy_variants
-        where comments is not null and deleted_at is null;`,
-        {
-          transaction,
-        },
-      );
-      // TMB
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `insert into reports_observed_variant_annotations
-        (ident, created_at, updated_at, report_id, comments, variant_id, variant_type)
-        select gen_random_uuid(), created_at, updated_at, report_id, comments, id,
-        'tmb'
-        from reports_tmbur_mutation_burden
-        where comments is not null and deleted_at is null;`,
-        {
-          transaction,
-        },
-      );
-      // MSI
-      await queryInterface.sequelize.query(
-        // eslint-disable-next-line no-multi-str
-        `insert into reports_observed_variant_annotations
-        (ident, created_at, updated_at, report_id, comments, variant_id, variant_type)
-        select gen_random_uuid(), created_at, updated_at, report_id, comments, id,
-        'msi'
-        from reports_msi
-        where comments is not null and deleted_at is null;`,
-        {
-          transaction,
-        },
-      );
     });
   },
 
