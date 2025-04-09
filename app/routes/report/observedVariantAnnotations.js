@@ -20,7 +20,8 @@ const createSchema = schemaGenerator(db.models.observedVariantAnnotations, {
 // we only want to allow updates to annotations
 const updateSchema = schemaGenerator(db.models.observedVariantAnnotations, {
   baseUri: REPORT_UPDATE_BASE_URI,
-  exclude: ['variantType'],
+  required: ['annotations'],
+  exclude: ['variantType', 'variantId', 'ident', 'createdAt'],
 });
 
 // Middleware for observed variant annotation
@@ -128,6 +129,7 @@ router.route('/')
 router.route('/:observedVariantAnnotation([A-z0-9-]{36})')
   .put(async (req, res) => {
     // Validate request against schema
+
     try {
       await validateAgainstSchema(updateSchema, req.body);
     } catch (error) {

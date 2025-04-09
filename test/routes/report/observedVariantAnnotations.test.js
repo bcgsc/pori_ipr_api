@@ -211,6 +211,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       // do the update
       const updatedSecondTag = 'testValue2';
       annotations.secondTag = updatedSecondTag;
+
       await request
         .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${createdVar.observedVariantAnnotation.ident}`)
         .auth(username, password)
