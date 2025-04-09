@@ -486,9 +486,9 @@ describe('/reports/{REPORTID}', () => {
       ]));
     }, LONGER_TIMEOUT);
 
-    test('/ - key variant - 200 Success', async () => {
+    test('/ - search by key variant - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports?keyVariant=${KEYVARIANT}&&matchingThreshold=1`)
+        .get(`/api/reports?searchParams=[keyVariant|${KEYVARIANT}|1]`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -502,9 +502,9 @@ describe('/reports/{REPORTID}', () => {
       }
     }, LONGER_TIMEOUT);
 
-    test('/ - kb match - 200 Success', async () => {
+    test('/ - search by kb match - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports?kbVariant=${KBVARIANT}&&matchingThreshold=1`)
+        .get(`/api/reports?searchParams=[kbVariant|${KBVARIANT}|1]`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
