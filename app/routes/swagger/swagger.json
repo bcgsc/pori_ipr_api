@@ -1449,19 +1449,10 @@
             }
           },
           {
-            "name": "keyVariant",
+            "name": "searchParams",
             "in": "query",
             "required": false,
-            "description": "String to be searched in the Key Genomic and Transcriptomic Alterations Identified variants",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "matchingThreshold",
-            "in": "query",
-            "required": false,
-            "description": "Matching power for searching Key Genomic and Transcriptomic Alterations Identified variants",
+            "description": "String to be searched for reports with matching keywords",
             "schema": {
               "type": "string"
             }
