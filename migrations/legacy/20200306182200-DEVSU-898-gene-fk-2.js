@@ -1,7 +1,7 @@
 const GENE_TABLE = 'reports_genes';
 const SV_TABLE = 'reports_structural_variation_sv';
 
-const {addUniqueActiveFieldIndex} = require('../migrationTools');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools');
 
 module.exports = {
   up: async (queryInterface, Sq) => {

@@ -3,7 +3,7 @@ const BURDEN_TABLE = 'reports_mutation_burden';
 const EXPRESSION_TABLE = 'reports_expression_variants';
 const ANALYSIS_TABLE = 'reports_summary_tumour_analysis';
 
-const {addUniqueActiveFieldIndex} = require('../migrationTools');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools');
 
 const migrateComparator = async (queryInterface, transaction, replacements, clause = '') => {
   return queryInterface.sequelize.query(

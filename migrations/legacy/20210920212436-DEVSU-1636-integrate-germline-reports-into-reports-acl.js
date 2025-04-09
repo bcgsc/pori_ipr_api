@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
 
 const GERMLINE_REPORT_USER_TABLE = 'germline_report_users';
 
