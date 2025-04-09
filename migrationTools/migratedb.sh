@@ -1,10 +1,6 @@
 #!/bin/bash
 
 # Run the current migrations against specified DB
-export IPR_SERVICE_USER=$IPR_SERVICE_USER
-export IPR_SERVICE_PASS=$IPR_SERVICE_PASS
-export IPR_DATABASE_SERVER=$IPR_DATABASE_SERVER
-export IPR_DATABASE_NAME=$IPR_DATABASE_NAME
 echo "Migrating against: $IPR_DATABASE_NAME"
 
 parent_folder="migrations"
