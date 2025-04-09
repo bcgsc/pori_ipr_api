@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools');
 
 const TABLE = 'reports_therapeutic_targets';
 

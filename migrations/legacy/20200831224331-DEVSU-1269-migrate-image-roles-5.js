@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools');
 
 const IMAGE_TABLE = 'reports_image_data';
 const COMPARATORS_TABLE = 'reports_comparators';

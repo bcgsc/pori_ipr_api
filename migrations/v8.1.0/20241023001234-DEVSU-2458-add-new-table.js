@@ -1,5 +1,5 @@
 const TABLE = 'reports_signature_variants';
-const {DEFAULT_COLUMNS} = require('../app/models/base');
+const {DEFAULT_COLUMNS} = require('../../app/models/base');
 
 module.exports = {
   up: (queryInterface, Sq) => {

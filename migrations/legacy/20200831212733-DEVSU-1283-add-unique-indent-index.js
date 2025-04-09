@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
