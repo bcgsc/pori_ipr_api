@@ -9,6 +9,7 @@ const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
+const {removeKeys} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
   hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
@@ -45,6 +46,12 @@ const DEFAULT_PAGE_OFFSET = 0;
 
 // Register report middleware
 router.param('report', reportMiddleware);
+
+router.route('/schema')
+  .get((req, res) => {
+    const schema = removeKeys(reportUploadSchema, '$id');
+    return res.json(schema);
+  });
 
 router.route('/:report')
   .get((req, res) => {
