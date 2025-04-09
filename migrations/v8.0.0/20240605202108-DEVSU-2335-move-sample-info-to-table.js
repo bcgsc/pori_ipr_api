@@ -1,5 +1,5 @@
 const {v4: uuidv4} = require('uuid');
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
 
 const SAMPLE_INFO_TABLE = 'reports_sample_info';
 

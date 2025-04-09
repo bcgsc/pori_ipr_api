@@ -1,7 +1,7 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
 
 const TMBUR_MUTATION_BURDEN = 'reports_tmbur_mutation_burden';
-const {DEFAULT_COLUMNS} = require('../app/models/base');
+const {DEFAULT_COLUMNS} = require('../../app/models/base');
 
 module.exports = {
   up: (queryInterface, Sq) => {

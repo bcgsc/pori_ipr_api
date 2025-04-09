@@ -1,5 +1,5 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
-const {DEFAULT_COLUMNS} = require('../app/models/base');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
+const {DEFAULT_COLUMNS} = require('../../app/models/base');
 
 const TABLE = 'reports_msi';
 
