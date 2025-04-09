@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
 
 const REPORT_ID_INDEX_TABLES = [
   'reports_copy_variants', 'reports_kb_matches', 'reports_expression_variants',

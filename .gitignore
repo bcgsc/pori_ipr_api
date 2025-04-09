@@ -14,3 +14,4 @@ jsdoc
 .vscode/
 .env.sh
 config/config.json
+ipr-sync-dev.dump

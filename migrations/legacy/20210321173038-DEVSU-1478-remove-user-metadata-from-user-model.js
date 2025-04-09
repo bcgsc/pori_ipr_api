@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
 
 const USER_TABLE = 'users';
 const USER_METADATA_TABLE = 'user_metadata';
