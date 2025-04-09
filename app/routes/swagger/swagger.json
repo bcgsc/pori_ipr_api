@@ -7321,7 +7321,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/observedVariantAnnotationUpdate"
+                "$ref": "#/components/schemas/observedVariantAnnotationsUpdate"
               }
             }
           }
