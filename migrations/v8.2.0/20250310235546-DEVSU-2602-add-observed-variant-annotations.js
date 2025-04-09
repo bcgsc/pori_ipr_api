@@ -1,6 +1,6 @@
 const TABLE = 'reports_observed_variant_annotations';
-const {DEFAULT_COLUMNS} = require('../app/models/base');
-const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../app/constants');
+const {DEFAULT_COLUMNS} = require('../../app/models/base');
+const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../app/constants');
 
 module.exports = {
   up: (queryInterface, Sq) => {
