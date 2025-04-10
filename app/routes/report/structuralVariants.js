@@ -15,6 +15,7 @@ router.param('sv', async (req, res, next, svIdent) => {
       include: [
         {model: db.models.genes.scope('minimal'), foreignKey: 'gene1Id', as: 'gene1'},
         {model: db.models.genes.scope('minimal'), foreignKey: 'gene2Id', as: 'gene2'},
+        {model: db.models.observedVariantAnnotations.scope('minimal'), as: 'observedVariantAnnotation'},
       ],
     });
   } catch (error) {
@@ -103,6 +104,10 @@ router.route('/')
                 through: {attributes: []},
               },
             ],
+          },
+          {
+            model: db.models.observedVariantAnnotations,
+            as: 'observedVariantAnnotation',
           },
         ],
       });

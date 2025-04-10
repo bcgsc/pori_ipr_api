@@ -405,6 +405,25 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   });
 }
 
+// IMPORTANT: Must be defined after variant models so that the includes can be found
+const observedVariantAnnotations = require('./reports/observedVariantAnnotations')(sequelize, Sq);
+
+for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
+  sequelize.models[modelName].hasOne(observedVariantAnnotations, {
+    foreignKey: 'variantId',
+    constraints: false,
+    scope: {
+      [KB_PIVOT_COLUMN]: pivotValue,
+    },
+    as: 'observedVariantAnnotation',
+  });
+  observedVariantAnnotations.belongsTo(sequelize.models[modelName], {
+    foreignKey: 'variantId',
+    constraints: false,
+    as: modelName,
+  });
+}
+
 // Presentation Data
 const presentation = {};
 presentation.discussion = require('./reports/genomic/presentation/discussion.model')(sequelize, Sq);

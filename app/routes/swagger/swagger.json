@@ -7200,6 +7200,163 @@
         }
       }
     },
+    "/reports/{report}/variants": {
+      "get": {
+        "summary": "Get variants for this report",
+        "description": "Retrieve variants for this report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "rapidTable",
+            "in": "query",
+            "required": false,
+            "description": "Filter variants by destination table in rapid report summary",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all variants for this report"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or variants not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/observed-variant-annotations": {
+      "post": {
+        "summary": "Create observed variant annotation for this report",
+        "description": "Retrieve a specific Immune Cell Types Entry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "variantIdent",
+            "in": "query",
+            "required": false,
+            "description": "The ident of the target variant (the variant that is to be annotated)",
+            "schema": {
+              "type": "uuid"
+            }
+          },
+          {
+            "name": "variantType",
+            "in": "query",
+            "required": false,
+            "description": "The type of the target variant",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "annotations",
+            "in": "query",
+            "required": false,
+            "description": "The value of the json field to be stored for this variant",
+            "schema": {
+              "type": "json"
+            }
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Observed Variant Annotations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the created Observed Variant Annotations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/observedVariantAnnotations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or observed variant annotation not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/observed-variant-annotations/{observedVariantAnnotation}": {
+      "put": {
+        "summary": "Update observed variant annotation",
+        "description": "Update observed variant annotation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/observedVariantAnnotation"
+          }
+        ],
+        "requestBody": {
+          "description": "New values to update specified observed variant annotation entry",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/observedVariantAnnotationsUpdate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Observed Variant Annotations"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated Observed Variant Annotations entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/observedVariantAnnotations"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or observed variant annotation not found"
+          }
+        }
+      }
+    },
     "/templates": {
       "get": {
         "summary": "Get Templates",
@@ -8073,6 +8230,16 @@
         "in": "path",
         "required": true,
         "description": "germline-user binding ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "observedVariantAnnotation": {
+        "name": "observedVariantAnnotation",
+        "in": "path",
+        "required": true,
+        "description": "observed variant annotation ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
