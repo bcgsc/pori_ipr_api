@@ -25,6 +25,9 @@ router.param('sigv', async (req, res, next, ident) => {
   try {
     result = await db.models.signatureVariants.findOne({
       where: {ident, reportId: req.report.id},
+      include: [
+        {model: db.models.observedVariantAnnotations.scope('minimal'), as: 'observedVariantAnnotation'},
+      ],
     });
   } catch (error) {
     logger.error(`Unable to lookup signatureVariants data error: ${error}`);
@@ -107,6 +110,10 @@ router.route('/')
                 through: {attributes: []},
               },
             ],
+          },
+          {
+            model: db.models.observedVariantAnnotations,
+            as: 'observedVariantAnnotation',
           },
         ],
       });

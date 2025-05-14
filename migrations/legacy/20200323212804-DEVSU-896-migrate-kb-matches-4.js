@@ -4,7 +4,7 @@
  * kb-matches table
  */
 const {v4: uuidv4} = require('uuid');
-const {equalOrBothNull} = require('../migrationTools');
+const {equalOrBothNull} = require('../../migrationTools');
 
 const KB_TABLE = 'reports_kb_matches';
 const GENE_TABLE = 'reports_genes';

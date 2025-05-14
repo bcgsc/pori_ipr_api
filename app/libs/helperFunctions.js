@@ -214,6 +214,19 @@ const getUserProjects = async (project, user) => {
   return user.projects;
 };
 
+const removeKeys = (obj, targetKey) => {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => {return removeKeys(item, targetKey);});
+  } if (typeof obj === 'object' && obj !== null) {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([key]) => {return key !== targetKey;})
+        .map(([key, value]) => {return [key, removeKeys(value, targetKey)];}),
+    );
+  }
+  return obj;
+};
+
 module.exports = {
   includesAll,
   sanitizeHtml,
@@ -230,4 +243,5 @@ module.exports = {
   hasAllProjectsAccess,
   projectAccess,
   isIntersectionBy,
+  removeKeys,
 };

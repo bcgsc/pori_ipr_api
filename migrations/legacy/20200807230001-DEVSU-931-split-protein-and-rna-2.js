@@ -1,7 +1,7 @@
 const NEW_TABLE = 'reports_protein_variants';
 const OLD_TABLE = 'reports_expression_variants';
 
-const {addUniqueActiveFieldIndex} = require('../migrationTools');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools');
 
 const DROP_COLUMNS = [
   'ptxPerc',

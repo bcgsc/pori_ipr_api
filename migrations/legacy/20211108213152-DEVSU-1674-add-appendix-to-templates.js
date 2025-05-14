@@ -1,4 +1,4 @@
-const {addUniqueActiveFieldIndex} = require('../migrationTools/index');
+const {addUniqueActiveFieldIndex} = require('../../migrationTools/index');
 
 const TEMPLATE_APPENDIX_TABLE = 'templates_appendix';
 
