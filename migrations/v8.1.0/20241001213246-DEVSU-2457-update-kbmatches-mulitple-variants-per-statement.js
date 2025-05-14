@@ -2,8 +2,8 @@ const KB_MATCHED_STATEMENTS = 'reports_kb_matched_statements';
 const KB_MATCH_JOIN = 'reports_kb_match_join';
 const KB_MATCHES = 'reports_kb_matches';
 const KB_MATCHES_OLD = 'reports_kb_matches_old';
-const {DEFAULT_COLUMNS, DEFAULT_MAPPING_COLUMNS} = require('../app/models/base');
-const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../app/constants');
+const {DEFAULT_COLUMNS, DEFAULT_MAPPING_COLUMNS} = require('../../app/models/base');
+const {KB_PIVOT_COLUMN, KB_PIVOT_MAPPING} = require('../../app/constants');
 
 module.exports = {
   up: (queryInterface, Sq) => {

@@ -1,6 +1,7 @@
+/* eslint-disable max-len */
 const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
-const {Op, literal} = require('sequelize');
+const {Op} = require('sequelize');
 
 const email = require('../../libs/email');
 const createReport = require('../../libs/createReport');
@@ -8,9 +9,12 @@ const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
+const {removeKeys} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
   hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
+
+const {fuzzySearchQuery, fuzzySearchInclude} = require('../../libs/fuzzySearch');
 
 const reportMiddleware = require('../../middleware/report');
 
@@ -42,6 +46,12 @@ const DEFAULT_PAGE_OFFSET = 0;
 
 // Register report middleware
 router.param('report', reportMiddleware);
+
+router.route('/schema')
+  .get((req, res) => {
+    const schema = removeKeys(reportUploadSchema, '$id');
+    return res.json(schema);
+  });
 
 router.route('/:report')
   .get((req, res) => {
@@ -105,7 +115,7 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant,
+        paginated, limit, offset, sort, project, states, role, searchText, searchParams,
       },
     } = req;
 
@@ -125,7 +135,7 @@ router.route('/')
     try {
       // validate request query parameters
       validateAgainstSchema(reportGetSchema, {
-        paginated, limit, offset, sort, project, states, role, searchText, keyVariant, matchingThreshold, kbVariant,
+        paginated, limit, offset, sort, project, states, role, searchText, searchParams,
       }, false);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
@@ -172,24 +182,7 @@ router.route('/')
             {alternateIdentifier: {[Op.iLike]: `%${searchText}%`}},
           ],
         } : {}),
-        ...((keyVariant && matchingThreshold) ? {
-          '$genomicAlterationsIdentified.geneVariant$': {
-            [Op.in]: literal(
-              `(SELECT "geneVariant"
-              FROM (SELECT "geneVariant", word_similarity('${keyVariant}', "geneVariant") FROM reports_summary_genomic_alterations_identified) AS subquery
-              WHERE word_similarity >= ${matchingThreshold})`,
-            ),
-          },
-        } : {}),
-        ...((kbVariant && matchingThreshold) ? {
-          '$kbMatches.kb_variant$': {
-            [Op.in]: literal(
-              `(SELECT "kb_variant"
-              FROM (SELECT "kb_variant", word_similarity('${kbVariant}', "kb_variant") FROM reports_kb_matches) AS subquery
-              WHERE word_similarity >= ${matchingThreshold})`,
-            ),
-          },
-        } : {}),
+        ...((searchParams) ? fuzzySearchQuery(searchParams) : {}),
       },
       distinct: 'id',
       // **searchText with paginated with patientInformation set to required: true
@@ -212,7 +205,10 @@ router.route('/')
           as: 'patientInformation',
           attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
         },
-        {model: db.models.user.scope('public'), as: 'createdBy'},
+        {
+          model: db.models.user.scope('public'),
+          as: 'createdBy',
+        },
         {
           model: db.models.template.scope('minimal'),
           as: 'template',
@@ -224,6 +220,7 @@ router.route('/')
           model: db.models.sampleInfo,
           attributes: {exclude: ['id', 'reportId', 'deletedAt', 'updatedBy']},
           as: 'sampleInfo',
+          separate: true,
         },
         {
           model: db.models.reportUser,
@@ -232,6 +229,7 @@ router.route('/')
           include: [
             {model: db.models.user.scope('public'), as: 'user'},
           ],
+          separate: true,
         },
         {
           model: db.models.project,
@@ -255,14 +253,11 @@ router.route('/')
             role,
           },
         }] : []),
-        ...((keyVariant && matchingThreshold) ? [{
-          model: db.models.genomicAlterationsIdentified.scope('public'),
-          as: 'genomicAlterationsIdentified',
-        }] : []),
-        ...((kbVariant && matchingThreshold) ? [{
-          model: db.models.kbMatches.scope('minimal'),
-          as: 'kbMatches',
-        }] : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'keyVariant') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'kbVariant') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'structuralVariant') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'smallMutation') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'therapeuticTarget') : []),
       ],
     };
 
@@ -290,8 +285,9 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // validate loaded report against schema
-
+    const {
+      query: {ignore_extra_fields, upload_contents},
+    } = req;
     if (req.body.sampleInfo) {
       // Clean sampleInfo input
       const cleanSampleInfo = [];
@@ -312,11 +308,21 @@ router.route('/')
     }
 
     try {
-      validateAgainstSchema(reportUploadSchema, req.body);
+      // eslint-disable-next-line camelcase
+      if (ignore_extra_fields) {
+        validateAgainstSchema(reportUploadSchema, req.body, true, ignore_extra_fields);
+      } else {
+        validateAgainstSchema(reportUploadSchema, req.body);
+      }
     } catch (error) {
       const message = `There was an error validating the report content ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    // eslint-disable-next-line camelcase
+    if (upload_contents) {
+      req.body.uploadContents = JSON.stringify(req.body);
     }
 
     try {

@@ -5,7 +5,7 @@ const {
   addUniqueActiveFieldIndex,
   countDistinctRowFrequency,
   removeActiveDuplicates,
-} = require('../migrationTools');
+} = require('../../migrationTools');
 
 const EXP_TABLE = 'reports_expression_variants';
 const CNV_TABLE = 'reports_copy_variants';

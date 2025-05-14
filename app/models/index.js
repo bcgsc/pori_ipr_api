@@ -60,13 +60,13 @@ analysisReports.belongsToMany(project, {
 });
 
 analysisReports.hasMany(reportUsers, {
-  as: 'users', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'users', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasMany(reportUsers, {
   as: 'ReportUserFilter', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 reportUsers.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 reportUsers.belongsTo(user, {
   as: 'addedBy', foreignKey: 'addedBy_id', onDelete: 'SET NULL', constraints: true,
@@ -76,7 +76,7 @@ reportUsers.belongsTo(user, {
 });
 
 user.belongsToMany(analysisReports, {
-  as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE',
+  as: 'reports', through: {model: reportUsers, unique: false}, foreignKey: 'user_id', otherKey: 'reportId', onDelete: 'CASCADE', foreignKeyConstraint: true,
 });
 
 const userGroup = require('./user/userGroup')(sequelize, Sq);
@@ -130,7 +130,7 @@ analysisReports.hasOne(summary.variantCounts, {
   as: 'variantCounts', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(summary.genomicAlterationsIdentified, {
-  as: 'genomicAlterationsIdentified', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'genomicAlterationsIdentified', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasOne(summary.analystComments, {
   as: 'analystComments', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -142,7 +142,7 @@ analysisReports.hasMany(summary.probeResults, {
   as: 'probeResults', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(summary.therapeuticTargets, {
-  as: 'therapeuticTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'therapeuticTarget', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasMany(summary.microbial, {
   as: 'microbial', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -177,7 +177,7 @@ const pairwiseExpressionCorrelation = require('./reports/pairwiseExpressionCorre
 const immuneCellTypes = require('./reports/immuneCellTypes')(sequelize, Sq);
 
 smallMutations.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 mutationSignature.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
@@ -192,7 +192,7 @@ immuneCellTypes.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
 analysisReports.hasMany(smallMutations, {
-  as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'smallMutations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasMany(mutationSignature, {
   as: 'mutationSignature', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
@@ -261,10 +261,10 @@ analysisReports.hasMany(mavis, {
 const structuralVariants = require('./reports/structuralVariants')(sequelize, Sq);
 
 structuralVariants.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasMany(structuralVariants, {
-  as: 'structuralVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'structuralVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 
 // expression variants
@@ -368,10 +368,10 @@ for (const name of GENE_LINKED_VARIANT_MODELS) {
 const kbMatches = require('./reports/kbMatches')(sequelize, Sq);
 
 kbMatches.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 analysisReports.hasMany(kbMatches, {
-  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'kbMatches', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 
 const kbMatchedStatements = require('./reports/kbMatchedStatements')(sequelize, Sq);
@@ -399,6 +399,25 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
     },
   });
   kbMatches.belongsTo(sequelize.models[modelName], {
+    foreignKey: 'variantId',
+    constraints: false,
+    as: modelName,
+  });
+}
+
+// IMPORTANT: Must be defined after variant models so that the includes can be found
+const observedVariantAnnotations = require('./reports/observedVariantAnnotations')(sequelize, Sq);
+
+for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
+  sequelize.models[modelName].hasOne(observedVariantAnnotations, {
+    foreignKey: 'variantId',
+    constraints: false,
+    scope: {
+      [KB_PIVOT_COLUMN]: pivotValue,
+    },
+    as: 'observedVariantAnnotation',
+  });
+  observedVariantAnnotations.belongsTo(sequelize.models[modelName], {
     foreignKey: 'variantId',
     constraints: false,
     as: modelName,
@@ -481,10 +500,10 @@ comparators.belongsTo(analysisReports, {
 const sampleInfo = require('./reports/sampleInfo')(sequelize, Sq);
 
 analysisReports.hasMany(sampleInfo, {
-  as: 'sampleInfo', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+  as: 'sampleInfo', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 sampleInfo.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
 });
 
 // Images
