@@ -110,109 +110,114 @@ const SPECIAL_CASES = [
 ];
 
 module.exports = async (req, res, next) => {
-  // Update last time the user logged in, limit to once a day
-  const currentDate = new Date().toDateString();
-  let userMetadata = await db.models.userMetadata.findOrCreate({where: {userId: req.user.id}});
-  userMetadata = userMetadata[0];
-  const userLastLogin = userMetadata.lastLoginAt
-    ? new Date(userMetadata.lastLoginAt).toDateString()
-    : '';
-  if (userLastLogin !== currentDate) {
-    await userMetadata.update({lastLoginAt: new Date()});
-  }
-
   try {
-    if (req.query.clinician_view && hasManagerAccess(req.user)) {
-      req.user.groups = [{name: 'Clinician'}];
+    // Update last time the user logged in, limit to once a day
+    const currentDate = new Date().toDateString();
+    let userMetadata = await db.models.userMetadata.findOrCreate({where: {userId: req.user.id}});
+    userMetadata = userMetadata[0];
+    const userLastLogin = userMetadata.lastLoginAt
+      ? new Date(userMetadata.lastLoginAt).toDateString()
+      : '';
+    if (userLastLogin !== currentDate) {
+      await userMetadata.update({lastLoginAt: new Date()});
     }
-  } catch {
-    logger.error('Clinician View error: Using users normal group');
-  }
 
-  // Check if user is an admin
-  if (isAdmin(req.user)) {
-    return next();
-  }
+    try {
+      if (req.query.clinician_view && hasManagerAccess(req.user)) {
+        req.user.groups = [{name: 'Clinician'}];
+      }
+    } catch {
+      logger.error('Clinician View error: Using users normal group');
+    }
 
-  // Get route
-  const [route] = req.originalUrl.split('?');
-
-  // See if route exists in special cases
-  const spCase = SPECIAL_CASES.find((value) => {
-    return route.match(value.path);
-  });
-
-  // Check that route and method have special rules
-  if (spCase && spCase[req.method]) {
-    if (spCase[req.method].includes('*')
-          || isIntersectionBy(req.user.groups, spCase[req.method], 'name')
-    ) {
+    // Check if user is an admin
+    if (isAdmin(req.user)) {
       return next();
     }
 
-    logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
-    return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this'},
+    // Get route
+    const [route] = req.originalUrl.split('?');
+
+    // See if route exists in special cases
+    const spCase = SPECIAL_CASES.find((value) => {
+      return route.match(value.path);
     });
-  }
 
-  if (!hasAccessToGermlineReports(req.user) && !isManager(req.user) && route.includes('/germline-small-mutation-reports')) {
-    logger.error('User does not have germline access');
-    return res.status(
-      FORBIDDEN,
-    ).json({error: {message: 'User does not have access to Germline reports'}});
-  }
-
-  if (req.report) {
-    // check if user is bound to report depending on report type
-    let boundUser;
-    try {
-      if (req.report.biofxAssigned) {
-        boundUser = req.report.biofxAssigned.ident === req.user.ident;
-      } else {
-        boundUser = req.report.users.some((reportUser) => {
-          return reportUser.user.ident === req.user.ident;
-        }) || req.report.createdBy?.ident === req.user.ident;
+    // Check that route and method have special rules
+    if (spCase && spCase[req.method]) {
+      if (spCase[req.method].includes('*')
+            || isIntersectionBy(req.user.groups, spCase[req.method], 'name')
+      ) {
+        return next();
       }
-    } catch {
-      logger.error('Error while retrieving bound user');
-    }
 
-    // If the user doesn't have access to the project this report
-    // belongs to or the user is trying to make an update
-    // and they don't have update permissions throw an error
-    if (!projectAccess(req.user, req.report)
-      || (UPDATE_METHODS.includes(req.method)
-        && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
-    ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},
       });
     }
 
-    // If user is trying to make an update and the report is completed
-    // and they dont have update permissions, throw an error
-    if (UPDATE_METHODS.includes(req.method)
-      && req.report.state === 'completed'
-      && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS))
-    ) {
-      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
+    if (!hasAccessToGermlineReports(req.user) && !isManager(req.user) && route.includes('/germline-small-mutation-reports')) {
+      logger.error('User does not have germline access');
+      return res.status(
+        FORBIDDEN,
+      ).json({error: {message: 'User does not have access to Germline reports'}});
+    }
+
+    if (req.report) {
+      // check if user is bound to report depending on report type
+      let boundUser;
+      try {
+        if (req.report.biofxAssigned) {
+          boundUser = req.report.biofxAssigned.ident === req.user.ident;
+        } else {
+          boundUser = req.report.users.some((reportUser) => {
+            return reportUser.user.ident === req.user.ident;
+          }) || req.report.createdBy?.ident === req.user.ident;
+        }
+      } catch {
+        logger.error('Error while retrieving bound user');
+      }
+
+      // If the user doesn't have access to the project this report
+      // belongs to or the user is trying to make an update
+      // and they don't have update permissions throw an error
+      if (!projectAccess(req.user, req.report)
+        || (UPDATE_METHODS.includes(req.method)
+          && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
+      ) {
+        logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
+        return res.status(FORBIDDEN).json({
+          error: {message: 'You do not have the correct permissions to access this'},
+        });
+      }
+
+      // If user is trying to make an update and the report is completed
+      // and they dont have update permissions, throw an error
+      if (UPDATE_METHODS.includes(req.method)
+        && req.report.state === 'completed'
+        && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS))
+      ) {
+        logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
+        return res.status(FORBIDDEN).json({
+          error: {message: 'Report is marked as completed and update has been restricted'},
+        });
+      }
+
+      return next();
+    }
+
+    // Allow users to edit themselves for allowNotifications field
+    if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
+      logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
-        error: {message: 'Report is marked as completed and update has been restricted'},
+        error: {message: 'You do not have the correct permissions to access this'},
       });
     }
 
     return next();
+  } catch (e) {
+    logger.error(`Authentication error: ${e.message}`);
+    return null;
   }
-
-  // Allow users to edit themselves for allowNotifications field
-  if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
-    logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
-    return res.status(FORBIDDEN).json({
-      error: {message: 'You do not have the correct permissions to access this'},
-    });
-  }
-
-  return next();
 };
