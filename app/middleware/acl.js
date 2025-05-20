@@ -218,5 +218,6 @@ module.exports = async (req, res, next) => {
     return next();
   } catch (e) {
     logger.error(`Authentication error: ${e.message}`);
+    return null;
   }
 };
