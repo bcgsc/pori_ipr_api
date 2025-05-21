@@ -132,12 +132,27 @@ router.route('/')
 
       const report = await db.models.report.findOne({where: {id: req.report.id}});
       const reportProject = await db.models.reportProject.findOne({where: {report_id: req.report.id}});
-      const notif = await db.models.notification.findOrCreate({
+      const project = await db.models.project.findOne({where: {id: reportProject.project_id}});
+      const template = await db.models.template.findOne({where: {id: report.templateId}});
+      const userGroup = await db.models.userGroup.findOne({where: {name: 'admin'}});
+
+      const notifyReq = await db.models.notification.findOrCreate({
         where: {
           userId: req.user.id,
           eventType: NOTIFICATION_EVENT.USER_BOUND,
           templateId: report.templateId,
           projectId: reportProject.project_id,
+          userGroupId: userGroup.id,
+        },
+      });
+
+      const notifyBinding = await db.models.notification.findOrCreate({
+        where: {
+          userId: bindUser.id,
+          eventType: NOTIFICATION_EVENT.USER_BOUND,
+          templateId: report.templateId,
+          projectId: reportProject.project_id,
+          userGroupId: userGroup.id,
         },
       });
 
@@ -145,17 +160,16 @@ router.route('/')
       try {
         await email.notifyUsers(
           `${bindUser.firstName} ${bindUser.lastName} has been bound to a report`,
-          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident} as ${role}`,
+          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident} as ${role}.
+          Report Type: ${template.name}
+          Patient Id: ${report.patientId}
+          Project: ${project.name}`,
           {
-            eventType: NOTIFICATION_EVENT.USER_BOUND,
-            templateId: req.report.templateId,
+            id: [notifyReq[0].id, notifyBinding[0].id],
           },
         );
-
-        await notif[0].update({status: 'Success'}, {userId: req.user.id});
         logger.info('Email sent successfully');
       } catch (error) {
-        await notif[0].update({status: 'Unsuccess'}, {userId: req.user.id});
         logger.error(`Email not sent successfully: ${error}`);
       }
 

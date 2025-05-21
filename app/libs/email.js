@@ -35,14 +35,15 @@ const getEmailList = async (triggers) => {
   const emailList = [];
   for (const notif of notifs) {
     if (notif.user) {
-      if (!emailList.includes(notif.user.email)
+      if (!emailList.some((el) => {return el.toEmail === notif.user.email;})
           && notif.user.email.endsWith(domain)
           && notif.user.allowNotifications) {
         emailList.push({toEmail: notif.user.email, notifId: notif.id, eventType: notif.eventType});
       }
-    } else if (notif.userGroup) {
+    }
+    if (notif.userGroup) {
       for (const groupUser of notif.userGroup.users) {
-        if (!emailList.includes(groupUser.email)
+        if (!emailList.some((el) => {return el.toEmail === groupUser.email;})
             && groupUser.email.endsWith(domain)
             && groupUser.allowNotifications) {
           emailList.push({toEmail: groupUser.email, notifId: notif.id, eventType: notif.eventType});
