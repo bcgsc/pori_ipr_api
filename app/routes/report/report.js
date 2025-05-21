@@ -332,13 +332,15 @@ router.route('/')
       report.projects.forEach((project) => {
         projectIdArray.push(project.project_id);
       });
+      const userGroup = await db.models.userGroup.findOne({where: {name: 'admin'}});
 
-      await db.models.notification.findOrCreate({
+      const notify = await db.models.notification.findOrCreate({
         where: {
           userId: req.user.id,
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
           projectId: report.projects[0].project_id,
+          userGroupId: userGroup.id,
         },
       });
 
@@ -351,9 +353,7 @@ router.route('/')
         Template: ${req.body.template}
         Patient: ${req.body.patientId}`,
         {
-          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
-          templateId: report.templateId,
-          projectId: projectIdArray,
+          id: notify[0].id,
         },
       );
 
