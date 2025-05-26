@@ -330,3 +330,16 @@ docker run -e IPR_DATABASE_HOSTNAME=localhost \
   --mount type=bind,source="$(pwd)"/keys,target=/keys \
   bcgsc/pori-ipr-api:latest
 ```
+
+## Reports search endpoint
+
+The search feature enables users to search for report(s) that match a given set of keywords in different categories. The search algorithm is pg_trigram fuzzy search, which allows for partial matches, dependant on the provided threshold
+
+Syntax: **/reports?searchParams=[<category>|<keyword>|<threshold>]**
+
+- *[]*: indicators of a search parameter block. A query can contain one or many parameter blocks 
+- *category*: the search category that a report belongs to. Possible values include patientId, projectName, diagnosis, keyVariant, kbVariant, structuralVariant, smallMutation, and therapeuticTarget
+- *keyword*: the search keyword that a report can match with. Could be a variant name or a therapeutic target name
+- *threshold*: the matching threshold scales from 0 to 1 and determines the cutoff of similarity between the search keyword and a match value. A threshold of 1 means the entire match value or a substring of it is identical to the search keyword.
+
+Example query: **/reports?searchParams=[keyVariant|EGFR|0.8][diagnosis|lung cancer|0.65]**
