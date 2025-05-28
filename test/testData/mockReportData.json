@@ -494,6 +494,16 @@
             "kbStatementRelated": true
         }
     ],
+    "observedVariantAnnotations": [
+        {
+            "variant": "test2",
+            "variantType": "mut",
+            "annotations": {
+                "rapidReportTableTag": "therapeutic",
+                "isThisATest": true
+            }
+        }
+    ],
     "smallMutations": [
         {
             "gene": "ZFP36L2",

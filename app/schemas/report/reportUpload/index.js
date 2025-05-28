@@ -87,8 +87,6 @@ const generateReportUploadSchema = (isJsonSchema) => {
       schema.definitions[model] = generatedSchema;
     }
   });
-
-  console.dir(schema.properties);
   return schema;
 };
 
