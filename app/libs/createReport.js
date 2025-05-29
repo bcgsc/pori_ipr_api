@@ -275,37 +275,9 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
       keyCheck.add(key);
     }
   }
-  let resultWithKeys;
   try {
     if (modelName === 'structuralVariants') {
-      // add the gene FK associations
-      /* const preparedInput = sectionContent.map(({key, gene1, gene2, annotations = [], ...newEntry}) => {
-        return {
-          key,
-          annotations,
-          values: {
-            ...newEntry,
-            reportId,
-            gene1Id: genesRecordsByName[gene1],
-            gene2Id: genesRecordsByName[gene2],
-          },
-        };
-      });
-      // Perform the bulkCreate, but only send the DB-compatible values
-      const createdRecords = await db.models[modelName].bulkCreate(
-        preparedInput.map((entry) => {return entry.values;}),
-        options,
-      );
-
-      // Re-associate the key with the created records
-      resultWithKeys = createdRecords.map((record, index) => {
-        return {
-          ...record.get({plain: true}), // or record.toJSON()
-          key: preparedInput[index].key,
-          annotations: preparedInput[index].annotations,
-        };
-      });
-      */ records = await db.models[modelName].bulkCreate(sectionContent.map(({
+      records = await db.models[modelName].bulkCreate(sectionContent.map(({
         key, gene1, gene2, ...newEntry
       }) => {
         return {
@@ -314,10 +286,8 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
           gene1Id: genesRecordsByName[gene1],
           gene2Id: genesRecordsByName[gene2],
         };
-      }), options); /**/
+      }), options);
     } else {
-      // add the gene FK association
-
       records = await db.models[modelName].bulkCreate(sectionContent.map(({key, gene, ...newEntry}) => {
         return {
           ...newEntry,
@@ -325,32 +295,6 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
           geneId: genesRecordsByName[gene],
         };
       }), options);
-      /*
-      const preparedInput = sectionContent.map(({key, gene, annotations = [], ...newEntry}) => {
-        return {
-          key,
-          annotations,
-          values: {
-            ...newEntry,
-            reportId,
-            geneId: genesRecordsByName[gene],
-          },
-        };
-      });
-      // Perform the bulkCreate, but only send the DB-compatible values
-      const createdRecords = await db.models[modelName].bulkCreate(
-        preparedInput.map((entry) => {return entry.values;}),
-        options,
-      );
-
-      // Re-associate the key with the created records
-      resultWithKeys = createdRecords.map((record, index) => {
-        return {
-          ...record.get({plain: true}), // or record.toJSON()
-          key: preparedInput[index].key,
-          annotations: preparedInput[index].annotations,
-        };
-      }); */
     }
   } catch (error) {
     throw new Error(`Unable to create variant section (${modelName}) ${error.message || error}`);
@@ -412,7 +356,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     return {...annotation, variantId: variantMapping[variantType][variant], variantType, variant};
   });
 
-  const createdObservedVariantAnnotations = await createReportObservedVariantAnnotationSection(report.id, 'observedVariantAnnotations', observedVariantAnnotations, {transaction});
+  await createReportObservedVariantAnnotationSection(report.id, 'observedVariantAnnotations', observedVariantAnnotations, {transaction});
 };
 
 /**
