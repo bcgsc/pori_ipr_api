@@ -496,11 +496,10 @@
     ],
     "observedVariantAnnotations": [
         {
-            "variant": "test2",
+            "variant": "test3",
             "variantType": "mut",
             "annotations": {
-                "rapidReportTableTag": "therapeutic",
-                "isThisATest": true
+                "isThisAnObservedVariantAnnotationsTest": true
             }
         }
     ],
@@ -562,6 +561,34 @@
             "library": "TEST LIBRARY",
             "selected": false,
             "key": "test1"
+        },
+        {
+            "gene": "ZFP36L2",
+            "transcript": "ENST00000282388",
+            "proteinChange": "p.Q999del",
+            "startPosition": 43451739,
+            "endPosition": 43451739,
+            "chromosome": "2",
+            "refSeq": "CCTG",
+            "altSeq": "C",
+            "zygosity": "sub [0/3]",
+            "tumourRefCount": 583,
+            "tumourAltCount": 4,
+            "tumourDepth": 590,
+            "rnaRefCount": 400,
+            "rnaAltCount": 15,
+            "rnaDepth": 415,
+            "normalRefCount": 40,
+            "normalAltCount": 0,
+            "normalDepth": 40,
+            "ncbiBuild": "GRCh37",
+            "hgvsProtein": "ZFP36L2:p.Q111del-test3",
+            "germline": false,
+            "tumourRefCopies": 60,
+            "tumourAltCopies": 20,
+            "library": "TEST LIBRARY",
+            "selected": false,
+            "key": "test3"
         }
     ],
     "mutationSignature": [
