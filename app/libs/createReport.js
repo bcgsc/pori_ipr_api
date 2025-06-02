@@ -131,7 +131,6 @@ const createStatementMatching = async (reportId, content, createdKbMatches, tran
  * Creates a new section for the report with the provided data
  *
  * @param {Number} reportId - The id of the report this section belongs to
- * @param {string} modelName - Name of the model for this section
  * @param {Array|Object} sectionContent - The record or records to be created for this section
  * @param {object} options - Options for creating report sections
  * @property {object} options.transaction - Transaction to run bulkCreate under
@@ -356,7 +355,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     return {...annotation, variantId: variantMapping[variantType][variant], variantType, variant};
   });
 
-  await createReportObservedVariantAnnotationSection(report.id, 'observedVariantAnnotations', observedVariantAnnotations, {transaction});
+  await createReportObservedVariantAnnotationSection(report.id, observedVariantAnnotations, {transaction});
 };
 
 /**
