@@ -137,7 +137,7 @@ const createStatementMatching = async (reportId, content, createdKbMatches, tran
  *
  * @returns {undefined}
  */
-const createReportObservedVariantAnnotationSection = async (reportId, modelName, sectionContent, options = {}) => {
+const createReportObservedVariantAnnotationSection = async (reportId, sectionContent, options = {}) => {
   const records = Array.isArray(sectionContent)
     ? sectionContent
     : [sectionContent];
