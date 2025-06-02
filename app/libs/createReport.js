@@ -159,7 +159,7 @@ const createReportObservedVariantAnnotationSection = async (reportId, sectionCon
     }
     return retvals;
   } catch (error) {
-    throw new Error(`Unable to create section (${modelName}): ${error.message || error}`);
+    throw new Error(`Unable to create section observedVariantAnnotation: ${error.message || error}`);
   }
 };
 
