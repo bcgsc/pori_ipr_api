@@ -226,6 +226,19 @@ describe('Tests for uploading a report and all of its components', () => {
     expect(totalExpectedStatements).toEqual(kbStatements.length);
   });
 
+  test('ObservedVariantAnnotations are linked correctly to observed variants', async () => {
+    const muts = await db.models.smallMutations.findAll({where: {report_id: reportId}});
+    const test3mut = muts.filter((mut) => {
+      return mut.hgvsProtein === 'ZFP36L2:p.Q111del-test3';
+    })[0];
+    const annotations = await db.models.observedVariantAnnotations.findAll({where: {report_id: reportId}});
+    const test3annotation = annotations.filter((ann) => {
+      return ann.annotations.isThisAnObservedVariantAnnotationsTest;
+    })[0];
+    expect(test3annotation.variantType).toEqual('mut');
+    expect(test3annotation.variantId).toEqual(test3mut.id);
+  });
+
   test('One variant record created for each input kbmatch record', async () => {
     const variants = mockReportData.kbMatches;
     expect(variants.length).toEqual(kbVariants.length);

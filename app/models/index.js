@@ -424,6 +424,13 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   });
 }
 
+observedVariantAnnotations.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+});
+analysisReports.hasMany(observedVariantAnnotations, {
+  as: 'observedVariantAnnotations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+});
+
 // Presentation Data
 const presentation = {};
 presentation.discussion = require('./reports/genomic/presentation/discussion.model')(sequelize, Sq);
