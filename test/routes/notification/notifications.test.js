@@ -127,7 +127,7 @@ describe('/notification/notifications', () => {
       projectId: project.id,
       userId: testUser.id,
       templateId: template.id,
-      eventType: 'test event 1',
+      eventType: 'reportCreated',
     });
 
     pun2 = await db.models.notification.create({
@@ -135,7 +135,7 @@ describe('/notification/notifications', () => {
       projectId: project.id,
       userId: user01.id,
       templateId: template.id,
-      eventType: 'test event 2',
+      eventType: 'reportCreated',
     });
 
     pun3 = await db.models.notification.create({
@@ -143,7 +143,7 @@ describe('/notification/notifications', () => {
       projectId: project2.id,
       userId: user01.id,
       templateId: template.id,
-      eventType: 'test event 3',
+      eventType: 'reportCreated',
     });
 
     pun4 = await db.models.notification.create({
@@ -151,7 +151,7 @@ describe('/notification/notifications', () => {
       projectId: project.id,
       userGroupId: userGroup1.id,
       templateId: template.id,
-      eventType: 'test event 1',
+      eventType: 'reportCreated',
     });
 
     pun5 = await db.models.notification.create({
@@ -159,7 +159,7 @@ describe('/notification/notifications', () => {
       projectId: project.id,
       userGroupId: userGroup2.id,
       templateId: template.id,
-      eventType: 'test event 2',
+      eventType: 'reportCreated',
     });
 
     pun6 = await db.models.notification.create({
@@ -167,7 +167,7 @@ describe('/notification/notifications', () => {
       projectId: project2.id,
       userGroupId: userGroup1.id,
       templateId: template.id,
-      eventType: 'test event 3',
+      eventType: 'reportCreated',
     });
   });
 
@@ -194,10 +194,9 @@ describe('/notification/notifications', () => {
   describe('GET', () => {
     test('/ - project ident - 200 Success', async () => {
       const res = await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?project=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send({project: project.ident})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -210,10 +209,9 @@ describe('/notification/notifications', () => {
 
     test('/ - user group ident - 200 Success', async () => {
       const res = await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?user_group=${userGroup1.ident}`)
         .auth(username, password)
         .type('json')
-        .send({user_group: userGroup1.ident})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -223,10 +221,9 @@ describe('/notification/notifications', () => {
 
     test('/ - user ident - 200 Success', async () => {
       const res = await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?user=${user01.ident}`)
         .auth(username, password)
         .type('json')
-        .send({user: user01.ident})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -236,10 +233,9 @@ describe('/notification/notifications', () => {
 
     test('/ - project and user ident - 200 Success', async () => {
       const res = await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?user=${user01.ident}&project=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send({user: user01.ident, project: project.ident})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -249,10 +245,9 @@ describe('/notification/notifications', () => {
 
     test('/ - project and user group ident - 200 Success', async () => {
       const res = await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?user_group=${userGroup1.ident}&project=${project.ident}`)
         .auth(username, password)
         .type('json')
-        .send({user_group: userGroup1.ident, project: project.ident})
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -262,28 +257,25 @@ describe('/notification/notifications', () => {
 
     test('/ - user ident - 404 user not found', async () => {
       await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?user=${uuidv4()}`)
         .auth(username, password)
         .type('json')
-        .send({user: uuidv4()})
         .expect(HTTP_STATUS.NOT_FOUND);
     });
 
     test('/ - project ident - 404 project not found', async () => {
       await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?project=${uuidv4()}`)
         .auth(username, password)
         .type('json')
-        .send({project: uuidv4()})
         .expect(HTTP_STATUS.NOT_FOUND);
     });
 
     test('/ - user group ident - 404 user group not found', async () => {
       await request
-        .get('/api/notification/notifications')
+        .get(`/api/notification/notifications?user_group=${uuidv4()}`)
         .auth(username, password)
         .type('json')
-        .send({user_group: uuidv4()})
         .expect(HTTP_STATUS.NOT_FOUND);
     });
   });
