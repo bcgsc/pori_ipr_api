@@ -332,17 +332,6 @@ router.route('/')
       report.projects.forEach((project) => {
         projectIdArray.push(project.project_id);
       });
-      const userGroup = await db.models.userGroup.findOne({where: {name: 'admin'}});
-
-      const notify = await db.models.notification.findOrCreate({
-        where: {
-          userId: req.user.id,
-          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
-          templateId: report.templateId,
-          projectId: report.projects[0].project_id,
-          userGroupId: userGroup.id,
-        },
-      });
 
       await email.notifyUsers(
         `Report Created: ${req.body.patientId} ${req.body.template}`,
@@ -351,9 +340,15 @@ router.route('/')
         Created by: ${req.user.firstName} ${req.user.lastName}
         Project: ${req.body.project}
         Template: ${req.body.template}
-        Patient: ${req.body.patientId}`,
+        Patient: ${req.body.patientId}
+
+        You're receiving this email because you have email notifications enabled in your account settings.
+        If you no longer wish to receive these notifications, you can unsubscribe at any time by visiting your User Profile and turning off the "Allow email notifications" option.`,
         {
-          id: notify[0].id,
+          userId: req.user.id,
+          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
+          templateId: report.templateId,
+          projectId: report.projects[0].project_id,
         },
       );
 
