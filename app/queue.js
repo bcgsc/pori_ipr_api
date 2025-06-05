@@ -44,13 +44,13 @@ const addJobToEmailQueue = async (data) => {
     logger.info('adding email to queue: ', data);
     const job = await emailQueue.add('job', data, EMAIL_REMOVE_CONFIG);
     try {
-      await db.models.notificationTrack.findOrCreate({where: {
+      await db.models.notificationTrack.create({
         notificationId: data.notifId,
         jobId: job.id,
         recipient: data.mailOptions.to,
         reason: data.eventType,
         outcome: 'created',
-      }});
+      });
     } catch (error) {
       logger.error(`Unable to create notification track ${error}`);
       throw new Error(error);
