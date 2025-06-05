@@ -1,5 +1,6 @@
 const nconf = require('nconf');
 const {merge} = require('lodash');
+require('dotenv').config();
 
 const ENV = process.env.NODE_ENV || 'local';
 
