@@ -152,20 +152,6 @@ const emailProcessor = async (job) => {
   });
 
   try {
-    try {
-      const notification = await db.models.notificationTrack.findOne({
-        where: {
-          notificationId: job.data.notifId,
-          jobId: job.id,
-        },
-      });
-      await notification.update({
-        outcome: 'processing',
-      });
-    } catch (error) {
-      logger.error(`Unable to add process notification track ${error}`);
-      throw new Error(error);
-    }
     await transporter.sendMail(job.data.mailOptions);
   } catch (err) {
     logger.error(JSON.stringify(job.data.mailOptions));
