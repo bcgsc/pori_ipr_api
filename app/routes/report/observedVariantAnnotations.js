@@ -1,4 +1,4 @@
-const HTTP_STATUS = require('http-status-codes');
+const {StatusCodes} = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
@@ -33,12 +33,16 @@ router.param('observedVariantAnnotation', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Error while getting observed variant annotation ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while getting observed variant annotation'}});
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({error: {message: 'Error while getting observed variant annotation'}});
   }
 
   if (!result) {
     logger.error(`Unable to find observed variant annotation, ident: ${ident}`);
-    return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: `Unable to find observed variant annotation, ident: ${ident}`}});
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({error: {message: `Unable to find observed variant annotation, ident: ${ident}`}});
   }
 
   // Add observed variant annotation to request
@@ -56,7 +60,7 @@ router.route('/')
     } catch (error) {
       const message = `Error checking variant type ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     // Check that the variant is in the db
@@ -68,13 +72,13 @@ router.route('/')
     } catch (error) {
       const message = `Error while checking that linked variant exists ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     if (!(variant)) {
       const message = 'Variant not found';
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     // add the variant id and remove the ident
@@ -87,7 +91,7 @@ router.route('/')
     } catch (error) {
       const message = `Error while validating observed variant annotation create request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     // check whether there is already a record for this variant id; don't make another one
@@ -103,12 +107,20 @@ router.route('/')
     } catch (error) {
       const message = `Error while checking for preexisting annotation record ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.BAD_REQUEST).json({error: {message}});
     }
     if (annotation) {
       const message = 'Annotation record already exists for this variant';
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.CONFLICT).json({
+        error: {message},
+        data: {
+          ident: annotation.ident,
+          variantId: req.body.variantId,
+          variantType: req.body.variantType,
+          reportId: req.report.id,
+        },
+      });
     }
 
     // Create new entry in db
@@ -117,10 +129,10 @@ router.route('/')
         ...req.body,
         reportId: req.report.id,
       });
-      return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
+      return res.status(StatusCodes.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create mutation burden ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to create mutation burden'},
       });
     }
@@ -135,7 +147,7 @@ router.route('/:observedVariantAnnotation([A-z0-9-]{36})')
     } catch (error) {
       const message = `Error while validating observed variant annotation update request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(StatusCodes.BAD_REQUEST).json({error: {message}});
     }
 
     try {
@@ -143,7 +155,7 @@ router.route('/:observedVariantAnnotation([A-z0-9-]{36})')
       return res.json(req.observedVariantAnnotation.view('public'));
     } catch (error) {
       logger.error(`Unable to create update observed variant annotation ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to create observed variant annotation'},
       });
     }
