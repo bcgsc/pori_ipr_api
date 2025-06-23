@@ -134,9 +134,12 @@ router.route('/')
 
     try {
       // validate request query parameters
+      const validateSchemaStartTime = performance.now();
       validateAgainstSchema(reportGetSchema, {
         paginated, limit, offset, sort, project, states, role, searchText, searchParams,
       }, false);
+      const validateSchemaEndTime = performance.now();
+      logger.info(`Validate schema execution time: ${validateSchemaEndTime - validateSchemaStartTime}`);
     } catch (err) {
       const message = `Error while validating the query params of the report GET request ${err}`;
       logger.error(message);
@@ -146,7 +149,10 @@ router.route('/')
     // Get projects the user has access to
     let projects;
     try {
+      const getUserProjectsStartTime = performance.now();
       projects = await getUserProjects(db.models.project, req.user);
+      const getUserProjectsEndTime = performance.now();
+      logger.info(`Get User Projects execution time: ${getUserProjectsEndTime - getUserProjectsStartTime}`);
       projects = projects.map((proj) => {
         return proj.name;
       });
@@ -158,6 +164,7 @@ router.route('/')
 
     // Check if they want reports from a specific project
     // and that they have access to that project
+    const checkProjectsStartTime = performance.now();
     if (project) {
       if (projects.includes(project)) {
         projects = project;
@@ -167,6 +174,8 @@ router.route('/')
         });
       }
     }
+    const checkProjectsEndTime = performance.now();
+    logger.info(`Check projects execution time: ${checkProjectsEndTime - checkProjectsStartTime}`);
 
     // Generate options for report query
     const opts = {
@@ -275,10 +284,18 @@ router.route('/')
     }
 
     try {
+      const findAllReportsStartTime = performance.now();
       const reports = await db.models.report.scope('public').findAndCountAll(opts);
+      const findAllReportsEndTime = performance.now();
+      logger.info(`Find all reports execution time: ${findAllReportsEndTime - findAllReportsStartTime}`);
       const results = {total: reports.count, reports: reports.rows};
 
-      return res.json(results);
+      const convertToJsonStartTime = performance.now();
+      const jsonBody = res.json(results);
+      const convertToJsonEndTime = performance.now();
+      logger.info(`Convert to json execution time: ${convertToJsonEndTime - convertToJsonStartTime}`);
+
+      return jsonBody;
     } catch (error) {
       logger.error(`Unable to lookup reports ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to lookup reports'}});
