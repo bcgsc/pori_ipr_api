@@ -41,8 +41,8 @@ const updateSchema = schemaGenerator(db.models.report, {
   },
 });
 
-// const DEFAULT_PAGE_LIMIT = 25;
-// const DEFAULT_PAGE_OFFSET = 0;
+const DEFAULT_PAGE_LIMIT = 25;
+const DEFAULT_PAGE_OFFSET = 0;
 
 // Register report middleware
 router.param('report', reportMiddleware);
@@ -115,15 +115,14 @@ router.route('/')
   .get(async (req, res) => {
     let {
       query: {
-        // paginated, limit, offset, sort, project, states, role, searchText, searchParams,
-        paginated, sort, project, states, role, searchText, searchParams,
+        paginated, limit, offset, sort, project, states, role, searchText, searchParams,
       },
     } = req;
 
     // Parse query parameters
     try {
-      // limit = (limit) ? parseInt(limit, 10) : DEFAULT_PAGE_LIMIT;
-      // offset = (offset) ? parseInt(offset, 10) : DEFAULT_PAGE_OFFSET;
+      limit = (limit) ? parseInt(limit, 10) : DEFAULT_PAGE_LIMIT;
+      offset = (offset) ? parseInt(offset, 10) : DEFAULT_PAGE_OFFSET;
       sort = (sort) ? parseReportSortQuery(sort) : undefined;
       states = (states) ? states.toLowerCase().split(',') : undefined;
     } catch (error) {
@@ -137,8 +136,7 @@ router.route('/')
       // validate request query parameters
       const validateSchemaStartTime = performance.now();
       validateAgainstSchema(reportGetSchema, {
-        // paginated, limit, offset, sort, project, states, role, searchText, searchParams,
-        paginated, sort, project, states, role, searchText, searchParams,
+        paginated, limit, offset, sort, project, states, role, searchText, searchParams,
       }, false);
       const validateSchemaEndTime = performance.now();
       logger.info(`Validate schema execution time: ${validateSchemaEndTime - validateSchemaStartTime}`);
@@ -202,10 +200,10 @@ router.route('/')
       // count is correct, but Sequelize never returns any rows.
       // Paginated can be added to searchText once this Sequelize bug is fixed.
       // Sequelize version is 6.5.0**
-      // ...((paginated && !searchText) ? {
-      //   offset,
-      //   limit,
-      // } : {}),
+      ...((paginated && !searchText) ? {
+        offset,
+        limit,
+      } : {}),
       order: (!sort) ? [
         ['state', 'desc'],
         ['patientId', 'desc'],
@@ -287,11 +285,10 @@ router.route('/')
 
     try {
       const findAllReportsStartTime = performance.now();
-      const reportsCount = await db.models.report.scope('public').count(opts);
-      const reports = await db.models.report.scope('public').findAll(opts);
+      const reports = await db.models.report.scope('public').findAndCountAll(opts);
       const findAllReportsEndTime = performance.now();
       logger.info(`Find all reports execution time: ${findAllReportsEndTime - findAllReportsStartTime}`);
-      const results = {total: reportsCount, reports};
+      const results = {total: reports.count, reports: reports.rows};
 
       const convertToJsonStartTime = performance.now();
       const jsonBody = res.json(results);
