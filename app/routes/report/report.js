@@ -285,10 +285,11 @@ router.route('/')
 
     try {
       const findAllReportsStartTime = performance.now();
-      const reports = await db.models.report.scope('public').findAndCountAll(opts);
+      const reportsCount = await db.models.report.scope('public').count(opts);
+      const reports = await db.models.report.scope('public').findAll(opts);
       const findAllReportsEndTime = performance.now();
       logger.info(`Find all reports execution time: ${findAllReportsEndTime - findAllReportsStartTime}`);
-      const results = {total: reports.count, reports: reports.rows};
+      const results = {total: reportsCount, reports};
 
       const convertToJsonStartTime = performance.now();
       const jsonBody = res.json(results);
