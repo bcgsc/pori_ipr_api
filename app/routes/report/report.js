@@ -51,6 +51,36 @@ router.route('/schema')
   .get((req, res) => {
     const schema = removeKeys(reportUploadSchema, '$id');
     return res.json(schema);
+  })
+  .post(async (req, res) => {
+    if (req.body.sampleInfo) {
+      // Clean sampleInfo input
+      const cleanSampleInfo = [];
+      for (const sampleInfoObject of req.body.sampleInfo) {
+        cleanSampleInfo.push(
+          {
+            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
+            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
+            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
+            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
+            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
+            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
+            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
+          },
+        );
+      }
+      req.body.sampleInfo = cleanSampleInfo;
+    }
+
+    try {
+      validateAgainstSchema(reportUploadSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the report content ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    return res.status(HTTP_STATUS.OK).json({message: 'json validated'});
   });
 
 router.route('/:report')

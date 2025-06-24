@@ -1553,7 +1553,26 @@
         "tags": [
           "Reports"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "ignore_extra_fields",
+            "in": "query",
+            "required": false,
+            "description": "ture, if you want to ignore the extra fields in json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload_contents",
+            "in": "query",
+            "required": false,
+            "description": "true, if you want to upload the json content to ipr for test purpose",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "basicAuth": []
@@ -1589,6 +1608,70 @@
           },
           "400": {
             "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/reports/schema": {
+      "get": {
+        "summary": "Get Reports JSON Schema",
+        "tags": [
+          "Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the json schema for genomic reports"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Validate the JSON Schema",
+        "description": "validate the provided json report",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/reportCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "json validated"
+          },
+          "400": {
+            "description": "fail to validate the json content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": "error message"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
@@ -1712,7 +1795,17 @@
         "tags": [
           "Reports Async"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "ignore_extra_fields",
+            "in": "query",
+            "required": false,
+            "description": "ture, if you want to ignore the extra fields in json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "basicAuth": []
