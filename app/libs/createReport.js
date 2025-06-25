@@ -184,33 +184,35 @@ const createReportGenes = async (report, content, options = {}) => {
  * @returns {object} content - The reformatted data
  */
 const updateKbMatchesInputFormat = (content) => {
-  content.kbMatches.forEach((item) => {
-    if ('kbStatementId' in item) {
-      const statement = {...item};
-      delete statement.variantType;
-      delete statement.variantId;
-      delete statement.kbVariant;
-      delete statement.kbVariantId;
-      delete statement.variant;
+  if (content.kbMatches) {
+    content.kbMatches.forEach((item) => {
+      if ('kbStatementId' in item) {
+        const statement = {...item};
+        delete statement.variantType;
+        delete statement.variantId;
+        delete statement.kbVariant;
+        delete statement.kbVariantId;
+        delete statement.variant;
 
-      if (!('kbMatchedStatements' in content)) {
-        content.kbMatchedStatements = [];
-      }
-      content.kbMatchedStatements.push(statement);
+        if (!('kbMatchedStatements' in content)) {
+          content.kbMatchedStatements = [];
+        }
+        content.kbMatchedStatements.push(statement);
 
-      const conditionSet = {
-        kbStatementId: item.kbStatementId,
-        matchedConditions: [{
-          observedVariantKey: item.variant,
-          kbVariantId: item.kbVariantId,
-        }],
-      };
-      if (!('kbStatementMatchedConditions' in content)) {
-        content.kbStatementMatchedConditions = [];
+        const conditionSet = {
+          kbStatementId: item.kbStatementId,
+          matchedConditions: [{
+            observedVariantKey: item.variant,
+            kbVariantId: item.kbVariantId,
+          }],
+        };
+        if (!('kbStatementMatchedConditions' in content)) {
+          content.kbStatementMatchedConditions = [];
+        }
+        content.kbStatementMatchedConditions.push(conditionSet);
       }
-      content.kbStatementMatchedConditions.push(conditionSet);
-    }
-  });
+    });
+  }
   return content;
 };
 

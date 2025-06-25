@@ -80,7 +80,7 @@ router.route('/schema')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    return res.status(HTTP_STATUS.OK).json({message: 'json validated'});
+    return res.status(HTTP_STATUS.OK).json({message: 'json validated success'});
   });
 
 router.route('/:report')
