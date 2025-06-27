@@ -230,12 +230,12 @@ Object.assign(schemas.notificationCreate.properties, {
   project: {
     type: 'string',
     format: 'uuid',
-    description: 'ident of project that user or user group want to be notified',
+    description: 'ident of project for which user or user group want to be notified',
   },
   template: {
     type: 'string',
     format: 'uuid',
-    description: 'ident of template that user or user group want to be notified',
+    description: 'ident of template for which user or user group want to be notified',
   },
 });
 
