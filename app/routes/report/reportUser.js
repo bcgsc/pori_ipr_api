@@ -132,30 +132,29 @@ router.route('/')
 
       const report = await db.models.report.findOne({where: {id: req.report.id}});
       const reportProject = await db.models.reportProject.findOne({where: {report_id: req.report.id}});
-      const notif = await db.models.notification.findOrCreate({
-        where: {
-          userId: req.user.id,
-          eventType: NOTIFICATION_EVENT.USER_BOUND,
-          templateId: report.templateId,
-          projectId: reportProject.project_id,
-        },
-      });
+      const project = await db.models.project.findOne({where: {id: reportProject.project_id}});
+      const template = await db.models.template.findOne({where: {id: report.templateId}});
 
       // Try sending email
       try {
         await email.notifyUsers(
           `${bindUser.firstName} ${bindUser.lastName} has been bound to a report`,
-          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident} as ${role}`,
+          `User ${bindUser.firstName} ${bindUser.lastName} has been bound to report ${req.report.ident} as ${role}.
+          Report Type: ${template.name}
+          Patient Id: ${report.patientId}
+          Project: ${project.name}
+
+          You're receiving this email because you have email notifications enabled in your account settings.
+          If you no longer wish to receive these notifications, you can unsubscribe at any time by visiting your User Profile and turning off the "Allow email notifications" option.`,
           {
+            userId: [req.user.id, bindUser.id],
             eventType: NOTIFICATION_EVENT.USER_BOUND,
-            templateId: req.report.templateId,
+            templateId: report.templateId,
+            projectId: reportProject.project_id,
           },
         );
-
-        await notif[0].update({status: 'Success'}, {userId: req.user.id});
         logger.info('Email sent successfully');
       } catch (error) {
-        await notif[0].update({status: 'Unsuccess'}, {userId: req.user.id});
         logger.error(`Email not sent successfully: ${error}`);
       }
 
