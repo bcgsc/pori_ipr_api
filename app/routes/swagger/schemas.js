@@ -10,7 +10,7 @@ const schemas = {};
 const ID_FIELDS = [
   'germlineReportId', 'user_id', 'createdBy_id', 'addedBy_id', 'variantId',
   'gene1Id', 'gene2Id', 'reviewerId', 'biofxAssignedId', 'logoId', 'headerId', 'templateId',
-  'product_id', 'addedById',
+  'product_id', 'addedById', 'userId', 'projectId', 'userGroupId',
 ];
 const PUBLIC_VIEW_EXCLUDE = [...ID_FIELDS, 'id', 'reportId', 'geneId', 'deletedAt', 'updatedBy'];
 const GENERAL_EXCLUDE = REPORT_EXCLUDE.concat(ID_FIELDS);
@@ -205,6 +205,42 @@ Object.assign(schemas.germlineReportUserCreate.properties, {
     format: 'uuid',
     description: 'ident of user to bind to germline report',
   },
+});
+
+// notification create
+schemas.notificationAssociations = schemaGenerator(db.models.notification, {
+  isJsonSchema: false, title: 'notificationAssociations', exclude: [...GENERAL_EXCLUDE], associations: true, includeAssociations: ['project', 'template', 'user'],
+});
+
+Object.assign(schemas.notificationCreate.properties, {
+  eventType: {
+    type: 'string',
+    description: 'either reportCreated or userBound',
+  },
+  user: {
+    type: 'string',
+    format: 'uuid',
+    description: 'ident of user to notify, either user or user_group should be specified',
+  },
+  user_group: {
+    type: 'string',
+    format: 'uuid',
+    description: 'ident of user group to notify, either user or user_group should be specified',
+  },
+  project: {
+    type: 'string',
+    format: 'uuid',
+    description: 'ident of project for which user or user group want to be notified',
+  },
+  template: {
+    type: 'string',
+    format: 'uuid',
+    description: 'ident of template for which user or user group want to be notified',
+  },
+});
+
+Object.assign(schemas.notificationCreate, {
+  required: ['project', 'template', 'eventType'],
 });
 
 // *PUT request body*

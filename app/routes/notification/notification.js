@@ -5,6 +5,7 @@ const db = require('../../models');
 const logger = require('../../log');
 
 const {getUserProjects, isAdmin} = require('../../libs/helperFunctions');
+const {NOTIFICATION_EVENT} = require('../../constants');
 
 const router = express.Router({mergeParams: true});
 
@@ -18,6 +19,9 @@ const pairs = {
 // for each entry in pairs, assumes the key-named value in
 // req.body is the ident, and gets the id of the corresponding object.
 router.use(async (req, res, next) => {
+  if (req.method === 'GET') {
+    req.body = req.query;
+  }
   const operations = [];
 
   for (const [key, value] of Object.entries(pairs)) {
@@ -95,9 +99,10 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // TODO: Delete admin check once notification is properly implemented/tested
-    if (!isAdmin(req.user)) {
-      return res.status(HTTP_STATUS.FORBIDDEN);
+    if (req.user.id !== req.body.user_id && !isAdmin(req.user)) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: 'only user self and admin can create notification'},
+      });
     }
 
     if (req.body.user_id && req.body.user_group_id) {
@@ -124,9 +129,15 @@ router.route('/')
       });
     }
 
-    if (!req.body.event_type) {
+    if (!req.body.eventType) {
       return res.status(HTTP_STATUS.CONFLICT).json({
         error: {message: 'Event type must be specified'},
+      });
+    }
+
+    if (!Object.values(NOTIFICATION_EVENT).includes(req.body.eventType)) {
+      return res.status(HTTP_STATUS.CONFLICT).json({
+        error: {message: 'Event type must be reportCreated or userBound'},
       });
     }
 
@@ -174,7 +185,7 @@ router.route('/')
           projectId: req.body.project_id,
           userId: req.body.user_id ? req.body.user_id : null,
           userGroupId: req.body.user_group_id ? req.body.user_group_id : null,
-          eventType: req.body.event_type,
+          eventType: req.body.eventType,
           templateId: req.body.template_id,
         },
       });
@@ -197,7 +208,7 @@ router.route('/')
     try {
       notification = await db.models.notification.findOne({
         where: {ident: req.body.ident},
-        attributes: ['id', 'ident'],
+        attributes: ['id', 'ident', 'userId'],
       });
     } catch (error) {
       logger.error(`Error while trying to find notification ${error}`);
@@ -210,6 +221,12 @@ router.route('/')
       logger.error(`Unable to find notification ${req.body.user}`);
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: {message: 'Unable to find the provided notification'},
+      });
+    }
+
+    if (req.user.id !== notification.userId && !isAdmin(req.user)) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: 'only user self and admin can delete notification'},
       });
     }
 
