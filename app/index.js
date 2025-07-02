@@ -10,7 +10,7 @@ const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
 const fileUpload = require('express-fileupload'); // File upload support
 const {setupBullBoard} = require('./bull-board');
-const {getReadyQueues} = require('./queue'); // exports { emailQueue, ... }
+const {setupQueues} = require('./queue'); // exports { emailQueue, ... }
 
 const conf = require('./config');
 const sequelize = require('./models');
@@ -147,7 +147,7 @@ const listen = async (port = null) => {
   }
 
   // bull-mq setup
-  const queues = Object.values(getReadyQueues());
+  const queues = setupQueues();
   setupBullBoard({app, queues});
 
   return app;
