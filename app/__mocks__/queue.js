@@ -18,4 +18,11 @@ const addJobToGraphkbNewUserQueue = async (data) => {
   return graphKbQueue;
 };
 
-module.exports = {addJobToEmailQueue, addJobToReportQueue, addJobToGraphkbNewUserQueue};
+const setupQueues = () => {return queue;};
+
+module.exports = {
+  setupQueues,
+  addJobToEmailQueue,
+  addJobToReportQueue,
+  addJobToGraphkbNewUserQueue,
+};
