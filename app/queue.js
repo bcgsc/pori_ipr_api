@@ -4,7 +4,7 @@ const {graphkbGetReadonlyGroupId, graphkbAddUser} = require('./api/graphkb');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
 const db = require('./models');
-const {sendEmail} = require('./sendemail');
+const {sendEmail} = require('./libs/email');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log');

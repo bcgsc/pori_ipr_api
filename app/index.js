@@ -10,7 +10,7 @@ const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
 const fileUpload = require('express-fileupload'); // File upload support
 const {setupBullBoard} = require('./bull-board');
-const {setupQueues} = require('./queue'); // exports { emailQueue, ... }
+const {setupQueues} = require('./queue');
 
 const conf = require('./config');
 const sequelize = require('./models');
