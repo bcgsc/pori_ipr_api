@@ -112,7 +112,7 @@ describe('/reports/{REPORTID}', () => {
       expect(reportIdentDB).toEqual(reportIdentQuery);
     });
 
-    test('Upload works with extra fields', async () => {
+    test('Upload fails with extra fields', async () => {
       const mockReport = JSON.parse(JSON.stringify(mockReportData));
       mockReport.extraField = 'extra';
 
@@ -124,6 +124,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.BAD_REQUEST);
 
       expect(typeof res.body).toBe('object');
+      expect(res.status).toEqual(HTTP_STATUS.BAD_REQUEST);
     }, LONGER_TIMEOUT);
 
     test('Upload works with ignored extra fields', async () => {
@@ -139,6 +140,7 @@ describe('/reports/{REPORTID}', () => {
         .expect(HTTP_STATUS.ACCEPTED);
 
       expect(typeof res.body).toBe('object');
+      expect(res.status).toEqual(HTTP_STATUS.ACCEPTED);
     }, LONGER_TIMEOUT);
   });
 
