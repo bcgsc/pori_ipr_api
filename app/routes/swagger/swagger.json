@@ -1553,7 +1553,26 @@
         "tags": [
           "Reports"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "ignore_extra_fields",
+            "in": "query",
+            "required": false,
+            "description": "ture, if you want to ignore the extra fields in json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload_contents",
+            "in": "query",
+            "required": false,
+            "description": "true, if you want to upload the json content to ipr for test purpose",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "basicAuth": []
@@ -1589,6 +1608,70 @@
           },
           "400": {
             "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/reports/schema": {
+      "get": {
+        "summary": "Get Reports JSON Schema",
+        "tags": [
+          "Reports"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the json schema for genomic reports"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Validate the JSON Schema",
+        "description": "validate the provided json report",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/reportCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "json validated"
+          },
+          "400": {
+            "description": "fail to validate the json content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": "error message"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
@@ -1712,7 +1795,17 @@
         "tags": [
           "Reports Async"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "ignore_extra_fields",
+            "in": "query",
+            "required": false,
+            "description": "ture, if you want to ignore the extra fields in json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "basicAuth": []
@@ -7879,6 +7972,164 @@
           },
           "404": {
             "description": "Template or signature types not found"
+          }
+        }
+      }
+    },
+    "/notification/notifications": {
+      "get": {
+        "summary": "Get Notifications",
+        "description": "Retrieve all notifications",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "description": "Filter notifications by user ident",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user_group",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by user_group ident",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by project ident",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "template",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by template ident",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/notificationAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Notification",
+        "description": "Upload a new notiifcation",
+        "parameters": [],
+        "requestBody": {
+          "description": "Notification data",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/notificationCreate"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the created notifcation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notificationAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "Must specify project, template, eventType, and user or user_group"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Notification",
+        "description": "Removes the specified notification",
+        "requestBody": {
+          "description": "Notification data",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ident": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ident of the notification"
+                  }
+                },
+                "required": ["ident"]
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Notification not found"
           }
         }
       }

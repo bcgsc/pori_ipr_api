@@ -51,6 +51,36 @@ router.route('/schema')
   .get((req, res) => {
     const schema = removeKeys(reportUploadSchema, '$id');
     return res.json(schema);
+  })
+  .post(async (req, res) => {
+    if (req.body.sampleInfo) {
+      // Clean sampleInfo input
+      const cleanSampleInfo = [];
+      for (const sampleInfoObject of req.body.sampleInfo) {
+        cleanSampleInfo.push(
+          {
+            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
+            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
+            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
+            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
+            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
+            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
+            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
+          },
+        );
+      }
+      req.body.sampleInfo = cleanSampleInfo;
+    }
+
+    try {
+      validateAgainstSchema(reportUploadSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the report content ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    return res.status(HTTP_STATUS.OK).json({message: 'json validated success'});
   });
 
 router.route('/:report')
@@ -333,15 +363,6 @@ router.route('/')
         projectIdArray.push(project.project_id);
       });
 
-      await db.models.notification.findOrCreate({
-        where: {
-          userId: req.user.id,
-          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
-          templateId: report.templateId,
-          projectId: report.projects[0].project_id,
-        },
-      });
-
       await email.notifyUsers(
         `Report Created: ${req.body.patientId} ${req.body.template}`,
         `New report:
@@ -349,11 +370,15 @@ router.route('/')
         Created by: ${req.user.firstName} ${req.user.lastName}
         Project: ${req.body.project}
         Template: ${req.body.template}
-        Patient: ${req.body.patientId}`,
+        Patient: ${req.body.patientId}
+
+        You're receiving this email because you have email notifications enabled in your account settings.
+        If you no longer wish to receive these notifications, you can unsubscribe at any time by visiting your User Profile and turning off the "Allow email notifications" option.`,
         {
+          userId: req.user.id,
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
-          projectId: projectIdArray,
+          projectId: report.projects[0].project_id,
         },
       );
 
