@@ -148,7 +148,9 @@ const listen = async (port = null) => {
 
   // bull-mq setup
   const queues = setupQueues();
+  logger.info('Queue setup complete.');
   setupBullBoard({app, queues});
+  logger.info('Bull board setup complete.');
 
   return app;
 };
