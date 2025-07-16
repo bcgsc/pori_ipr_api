@@ -57,7 +57,6 @@ const getEmailList = async (triggers) => {
 
 const notifyUsers = async (subject, text, triggers) => {
   const emailList = await getEmailList(triggers);
-
   for (const emailItem of emailList) {
     const {toEmail, notifId, eventType} = emailItem;
     const mailOptions = {

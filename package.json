@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node --max-old-space-size=6500 bin/server.js",
     "start:prod": "NODE_ENV=production node --max-old-space-size=6500 bin/server.js",
-    "start:dev": "NODE_ENV=development node --max-old-space-size=6500 bin/server.js",
+    "start:dev": "NODE_ENV=development node --trace-warnings --max-old-space-size=6500 bin/server.js",
     "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=6500 jest --config config/jest/jest.config.js --log-heap-usage --forceExit",
     "test_local": "NODE_ENV=test jest --runInBand --testTimeout=100000 -c --forceExit config/jest/jest.config.js test/",
     "jsdoc": "jsdoc -r app -R README.md -d jsdoc --package package.json -c config/jsdoc.config.js"
@@ -16,6 +16,8 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@alt3/sequelize-to-json-schemas": "^0.3.56",
+    "@bull-board/api": "^6.10.1",
+    "@bull-board/express": "^6.10.1",
     "ajv": "^6.10.2",
     "bcryptjs": "~2.4.3",
     "bullmq": "^5.1.11",

@@ -9,6 +9,8 @@ const cors = require('cors'); // CORS support
 const morgan = require('morgan'); // Logging
 const jwt = require('jsonwebtoken');
 const fileUpload = require('express-fileupload'); // File upload support
+const {setupBullBoard} = require('./bull-board');
+const {setupQueues} = require('./queue');
 
 const conf = require('./config');
 const sequelize = require('./models');
@@ -143,6 +145,13 @@ const listen = async (port = null) => {
   for (const {methods, path} of routes) {
     logger.info(`Registered route: (${Object.keys(methods).sort().join('|')}) ${path}`);
   }
+
+  // bull-mq setup
+  const queues = setupQueues();
+  logger.info('Queue setup complete.');
+  setupBullBoard({app, queues});
+  logger.info('Bull board setup complete.');
+
   return app;
 };
 
