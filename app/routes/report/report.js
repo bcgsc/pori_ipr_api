@@ -26,6 +26,7 @@ const {REPORT_UPDATE_BASE_URI, NOTIFICATION_EVENT} = require('../../constants');
 const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 const reportGetSchema = require('../../schemas/report/retrieve/reportGetQueryParamSchema');
+const { orderBy } = require('lodash');
 // Generate schema's
 const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
 
@@ -138,6 +139,48 @@ router.route('/:report')
       logger.error(`Error trying to delete report ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report'}});
     }
+  });
+
+router.route('/:report/state-history')
+  .get(async (req, res) => {
+    let reportHistory = [];
+    try {
+      reportHistory = await db.models.report.findAll({
+        where: {ident: req.params.report},
+        attributes: ['ident', 'updatedAt', 'state'],
+        order: [
+          ['updatedAt', 'ASC']
+        ],
+        paranoid: false,
+      });
+    } catch {
+      logger.error(`Error while trying to get report: ${ident} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get report'}});
+    }
+
+    // Nothing found?
+    if (reportHistory.length === 0) {
+      logger.error(`Unable to find the requested report ${ident}`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
+    }
+
+    if (!hasAccessToUnreviewedReports(req.user) && (reportHistory[reportHistory.length - 1].state !== 'reviewed' && reportHistory[reportHistory.length - 1].state !== 'completed')) {
+      logger.error(`User does not have unreviewed access to ${ident}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Unreviewed reports'}});
+    }
+
+    if (!hasAccessToNonProdReports(req.user) && reportHistory[reportHistory.length - 1].state === 'nonproduction') {
+      logger.error(`User does not have non-production access to ${ident}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
+    }
+
+    let filteredReportHistory = [reportHistory[0]];
+    for (let i = 1; i < reportHistory.length ; i++) {
+      if (reportHistory[i].state !== reportHistory[i-1].state) {
+        filteredReportHistory.push(reportHistory[i]);
+      }
+    }
+    return res.json(filteredReportHistory);
   });
 
 // Act on all reports
