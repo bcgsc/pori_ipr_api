@@ -150,6 +150,11 @@ schemas.appendices = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'appendices', include: ['seqQC', 'config'],
 });
 
+// report state history
+schemas.stateHistory = schemaGenerator(db.models.report, {
+  isJsonSchema: false, title: 'stateHistory', include: ['ident', 'updatedAt', 'state'],
+});
+
 // signatures - earliest signoff
 schemas.earliestSignOff = {
   ...schemas.signaturesAssociations,

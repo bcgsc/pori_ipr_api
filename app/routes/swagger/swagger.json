@@ -7450,6 +7450,43 @@
         }
       }
     },
+    "/reports/{report}/state-history": {
+      "get": {
+        "summary": "Get Report State History",
+        "description": "Retrieve the state history of a specific genomic report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "State History"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the state history of the specified genomic report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stateHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/templates": {
       "get": {
         "summary": "Get Templates",
