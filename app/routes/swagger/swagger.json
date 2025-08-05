@@ -7453,7 +7453,7 @@
     "/reports/{report}/state-history": {
       "get": {
         "summary": "Get Report State History",
-        "description": "Retrieve the state history of a specific genomic report",
+        "description": "Retrieve the state history of a specific report",
         "parameters": [
           {
             "$ref": "#/components/parameters/report"
@@ -7469,7 +7469,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns the state history of the specified genomic report",
+            "description": "Returns the state history of the specified report",
             "content": {
               "application/json": {
                 "schema": {
