@@ -45,7 +45,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
 
     if (keyword) {
       query.keyword = keyword;
-      query.queryType = 'keyword';
+      query.queryType = 'displayName';
     }
   }
 
