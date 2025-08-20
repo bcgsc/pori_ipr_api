@@ -147,6 +147,9 @@ module.exports = async (req, res, next) => {
       return route.match(value.path);
     });
 
+    const isUpdateRequest = UPDATE_METHODS.includes(req.method);
+    const hasMasterReportAccess = hasAccess(req.user, MASTER_REPORT_ACCESS);
+
     // Check that route and method have special rules
     if (spCase && spCase[req.method]) {
       if (spCase[req.method].includes('*')
@@ -187,8 +190,7 @@ module.exports = async (req, res, next) => {
       // belongs to or the user is trying to make an update
       // and they don't have update permissions throw an error
       if (!projectAccess(req.user, req.report)
-        || (UPDATE_METHODS.includes(req.method)
-          && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS)))
+        || (isUpdateRequest && !(boundUser || hasMasterReportAccess))
       ) {
         logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
         return res.status(FORBIDDEN).json({
@@ -198,9 +200,9 @@ module.exports = async (req, res, next) => {
 
       // If user is trying to make an update and the report is completed
       // and they dont have update permissions, throw an error
-      if (UPDATE_METHODS.includes(req.method)
+      if (isUpdateRequest
         && req.report.state === 'completed'
-        && !(boundUser || hasAccess(req.user, MASTER_REPORT_ACCESS))
+        && !(boundUser || hasMasterReportAccess)
       ) {
         logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl} - Report is marked as complete`);
         return res.status(FORBIDDEN).json({
@@ -211,8 +213,12 @@ module.exports = async (req, res, next) => {
       return next();
     }
 
-    // Allow users to edit themselves for allowNotifications field
-    if ((UPDATE_METHODS.includes(req.method) && !hasManagerAccess(req.user)) && !req.originalUrl.includes('/api/user')) {
+    const isAllowedNotifEndpoint = req.originalUrl.includes('/api/user')
+      || req.originalUrl.includes('/api/notification/notifications');
+    // Allow users to edit themselves for allowNotifications field on users or notifications
+    if ((isUpdateRequest && !hasManagerAccess(req.user))
+      && !isAllowedNotifEndpoint
+    ) {
       logger.error(`User: ${req.user.username} is trying to make a ${req.method} request to ${req.originalUrl}`);
       return res.status(FORBIDDEN).json({
         error: {message: 'You do not have the correct permissions to access this'},
