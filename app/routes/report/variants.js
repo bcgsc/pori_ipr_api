@@ -10,6 +10,7 @@ const logger = require('../../log');
 const {KB_PIVOT_MAPPING} = require('../../constants');
 
 const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy'];
+const OBSVARANNOTEXCLUDE = KBMATCHEXCLUDE;
 const STATEMENTEXCLUDE = ['id', 'reportId', 'deletedAt', 'updatedBy'];
 const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
 
@@ -30,7 +31,7 @@ const getVariants = async (tableName, variantType, reportId) => {
       {
         model: db.models.observedVariantAnnotations,
         as: 'observedVariantAnnotation',
-        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+        attributes: {exclude: OBSVARANNOTEXCLUDE},
       },
     ],
   });
@@ -45,7 +46,10 @@ const unknownSignificanceGeneFilter = {
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
   let allKbMatches;
-  if ((unknownSignificanceIncludes.includes(variantType)) && (!(signatureVariant.includes(variantType)))) {
+  if (
+    unknownSignificanceIncludes.includes(variantType)
+    && !signatureVariant.includes(variantType)
+  ) {
     allKbMatches = await db.models[tableName].scope('extended').findAll({
       order: [['id', 'ASC']],
       attributes: {
@@ -68,13 +72,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
               // where: {
               //  ...therapeuticAssociationFilterStatement,
               // },
-              through: {attributes: []},
+              through: {attributes: ['flags']},
             },
           ],
         },
         {
           model: db.models.observedVariantAnnotations,
-          attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+          attributes: {exclude: OBSVARANNOTEXCLUDE},
           as: 'observedVariantAnnotation',
         },
         {
@@ -104,13 +108,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
               attributes: {
                 exclude: STATEMENTEXCLUDE,
               },
-              through: {attributes: []},
+              through: {attributes: ['flags']},
             },
           ],
         },
         {
           model: db.models.observedVariantAnnotations,
-          attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+          attributes: {exclude: OBSVARANNOTEXCLUDE},
           as: 'observedVariantAnnotation',
         },
       ],
@@ -163,9 +167,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       variant.kbMatches = variant.kbMatches.map((kbmatch) => {
         const statements = kbmatch.kbMatchedStatements.filter((stmt) => {
           if ((stmt.category === 'therapeutic')
-          && stmt.matchedCancer
-          && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
-          && (stmt.relevance === 'sensitivity' || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A'))) {
+            && stmt.matchedCancer
+            && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
+            && (
+              stmt.relevance === 'sensitivity'
+              || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A')
+            )
+          ) {
             return true;
           }
           return false;
@@ -179,7 +187,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     // remove matches which have no matching statements
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
       variant.kbMatches = variant.kbMatches.filter((kbmatch) => {
-        kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements.filter((item) => {return item !== null;});
+        kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements
+          .filter((item) => {return item !== null;});
         return kbmatch.kbMatchedStatements.length > 0;
       });
       return variant;
@@ -211,7 +220,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           return true;
         }
         const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
-        return (!(variantRegexMatch));
+        return (!variantRegexMatch);
       });
       variant.kbMatches = kbmatches;
       return variant;
@@ -253,7 +262,10 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         if ((stmt.category === 'therapeutic')
         && stmt.matchedCancer
         && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
-        && (stmt.relevance === 'sensitivity' || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A'))) {
+        && (
+          stmt.relevance === 'sensitivity'
+          || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A')
+        )) {
           return true;
         }
         return false;
@@ -267,7 +279,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   // remove matches which have no matching statements
   unknownSignificanceResults = unknownSignificanceResults.map((variant) => {
     variant.kbMatches = variant.kbMatches.filter((kbmatch) => {
-      kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements.filter((item) => {return item !== null;});
+      kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements
+        .filter((item) => {return item !== null;});
       return kbmatch.kbMatchedStatements.length > 0;
     });
     return variant;
@@ -305,7 +318,9 @@ router.route('/')
         const tableName = KB_PIVOT_MAPPING[variantType];
 
         if (rapidTable) {
-          variantsArray.push(await getRapidReportVariants(tableName, variantType, req.report.id, rapidTable));
+          variantsArray.push(
+            await getRapidReportVariants(tableName, variantType, req.report.id, rapidTable),
+          );
         } else {
           variantsArray.push(await getVariants(tableName, variantType, req.report.id));
         }

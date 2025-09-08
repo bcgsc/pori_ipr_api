@@ -27,6 +27,11 @@ module.exports = (sequelize, Sq) => {
           key: 'id',
         },
       },
+      flags: {
+        type: Sq.JSONB,
+        allowNull: false,
+        defaultValue: {},
+      },
     },
     {
       ...DEFAULT_MAPPING_OPTIONS,
