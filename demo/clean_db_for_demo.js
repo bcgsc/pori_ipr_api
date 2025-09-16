@@ -30,6 +30,8 @@ const TRUNCATE_TABLES = [
   'germline_small_mutations_review',
   'germline_small_mutations_variant',
   'notifications',
+  'notifications_tracks',
+  'reports_users',
 ];
 
 const checkReportsCount = async (queryInterface, transaction, minReports = 3) => {
@@ -431,6 +433,17 @@ const cleanDb = async () => {
     await queryInterface.sequelize.query(
       `DELETE FROM projects
         WHERE deleted_at IS NOT NULL OR NOT (name in (:projects))`,
+      {transaction, replacements: {projects: ['PORI', 'TEST']}},
+    );
+
+    await queryInterface.sequelize.query(
+      'UPDATE projects SET "updated_by" = NULL',
+      {transaction},
+    );
+
+    await queryInterface.sequelize.query(
+      `DELETE FROM report_projects
+        WHERE NOT (project_id in (select id from projects where name in (:projects)))`,
       {transaction, replacements: {projects: ['PORI', 'TEST']}},
     );
 
