@@ -14,6 +14,21 @@ const OBSVARANNOTEXCLUDE = KBMATCHEXCLUDE;
 const STATEMENTEXCLUDE = ['id', 'reportId', 'deletedAt', 'updatedBy'];
 const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
 
+const isTherapeuticAssociationStatement = (stmt) => {
+  if (
+    (stmt.category === 'therapeutic')
+    && stmt.matchedCancer
+    && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
+    && (
+      stmt.relevance === 'sensitivity'
+      || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A')
+    )
+  ) {
+    return true;
+  }
+  return false;
+};
+
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({
     order: [['id', 'ASC']],
@@ -69,9 +84,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
               attributes: {
                 exclude: STATEMENTEXCLUDE,
               },
-              // where: {
-              //  ...therapeuticAssociationFilterStatement,
-              // },
               through: {attributes: ['flags']},
             },
           ],
@@ -148,6 +160,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     return (!(variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag));
   });
 
+  // ==== START therapeuticAssociationResults ====
   let therapeuticAssociationResults = [];
 
   if (!(variantType === 'exp')) { // omit expression variants from this table
@@ -162,27 +175,32 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       return variant;
     });
 
+    // therapeuticAssociationResults.forEach(({
+    //   displayName,
+    //   kbMatches,
+    // }, idx) => {
+    //   console.log(`${idx}: therapeuticAssociation original`);
+    //   console.log(`${displayName} : ${JSON.stringify(kbMatches.map(({ident}) => {return ident;}))}\n`);
+    // });
+
     // remove nonmatching statements
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
       variant.kbMatches = variant.kbMatches.map((kbmatch) => {
-        const statements = kbmatch.kbMatchedStatements.filter((stmt) => {
-          if ((stmt.category === 'therapeutic')
-            && stmt.matchedCancer
-            && ['IPR-A', 'IPR-B'].includes(stmt.iprEvidenceLevel)
-            && (
-              stmt.relevance === 'sensitivity'
-              || (stmt.relevance === 'resistance' && stmt.iprEvidenceLevel === 'IPR-A')
-            )
-          ) {
-            return true;
-          }
-          return false;
-        });
+        const statements = kbmatch.kbMatchedStatements.filter(isTherapeuticAssociationStatement);
         kbmatch.kbMatchedStatements = statements;
         return kbmatch;
       });
       return variant;
     });
+
+    // therapeuticAssociationResults.forEach(({
+    //   displayName,
+    //   kbMatches,
+    // }, idx) => {
+    //   console.log(`${idx}: tA removed nonmatching`);
+    //   console.log(`${displayName} : ${JSON.stringify(kbMatches)}\n`);
+    //   // console.log(`${displayName} : ${kbMatches}`);
+    // });
 
     // remove matches which have no matching statements
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
@@ -192,6 +210,15 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         return kbmatch.kbMatchedStatements.length > 0;
       });
       return variant;
+    });
+
+    therapeuticAssociationResults.forEach(({
+      displayName,
+      kbMatches,
+    }, idx) => {
+      console.log(`${idx}: matches no statements`);
+      console.log(`${displayName} : ${JSON.stringify(kbMatches)}\n`);
+      // console.log(`${displayName} : ${kbMatches}`);
     });
 
     // remove variants which have no matches
@@ -207,6 +234,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     return therapeuticAssociationResults;
   }
 
+  // ==== END therapeuticAssociationResults ====
+
+  // ==== START cancerRelevanceResults ====
   let cancerRelevanceResults = [];
   const cancerRelevanceResultsFiltered = [];
   if (!(variantType === 'exp')) { // omit expression variants from this table
@@ -247,6 +277,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     return cancerRelevanceResultsFiltered;
   }
 
+  // ==== END cancerRelevanceResults ====
+
+  // ==== START unknownSignificanceResults ====
   const unknownSignificanceResultsFiltered = [];
   let unknownSignificanceResults = [];
 
@@ -301,6 +334,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   // reason there may be to exclude them
   unknownSignificanceResultsFiltered.push(...unknownSignificanceFromAnnotation);
   return unknownSignificanceResultsFiltered;
+  // ==== END unknownSignificanceResults ====
 };
 
 // Routing for Alteration
@@ -331,6 +365,57 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve variants ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve variants'},
+      });
+    }
+  })
+  .post('/kb-match-flags', async (req, res) => { // Could rename the route as well later
+    try {
+      const {
+        kbMatchIdent,
+        kbMatchedStatementIdent,
+        variantIdent,
+        variantType,
+        // Generic for now -- could be more defined, just need the connection to be established
+        flagKey,
+        flagValue,
+      } = req.body;
+
+      if (!kbMatchIdent
+        || !kbMatchedStatementIdent
+        || !variantType
+        || !flagKey
+        || !flagValue
+      ) {
+        return res.status(400).json({error: 'Missing required fields'});
+      }
+
+      let join = await db.models.kbMatchJoin.findOne({
+        where: {kbMatchIdent, kbMatchedStatementIdent},
+      });
+
+      if (join) {
+        const flags = join.flags || {};
+        if (!flags[flagKey]) flags[flagKey] = {};
+        flags[flagKey][variantIdent] = flagValue; // keyed by ident string instead of variantId
+
+        join.flags = flags;
+        await join.save();
+        return res.json({updated: true, join});
+      }
+
+      join = await db.models.kbMatchJoin.create({
+        kbMatchIdent,
+        kbMatchedStatementIdent,
+        flags: {
+          [flagKey]: {[variantIdent]: flagValue},
+        },
+      });
+
+      return res.status(201).json({created: true, join});
+    } catch (err) {
+      logger.error(`Unable to update variant ${err}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Unable to retrieve variants'},
       });
