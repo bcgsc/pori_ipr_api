@@ -19,6 +19,11 @@ const LONGER_TIMEOUT = 100000;
 let server;
 let request;
 
+// TODO: add test that only selected statement/s is tagged
+// TODO: add test that statement is successfully untagged after tag is applied
+// TODO: test that retagging is successful and changing tag is successful
+// TODO: tests for invalid inputs - unexpected rapid table names or variant types
+
 const variantsProperties = [
   'ident', 'kbMatches',
 ];
