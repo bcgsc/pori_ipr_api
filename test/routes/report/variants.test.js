@@ -83,7 +83,7 @@ beforeAll(async () => {
 });
 
 // Tests for /kb-matches endpoint
-describe('/reports/{REPORTID}/kb-matches', () => {
+describe('/reports/{REPORTID}/variants', () => {
   let rapidReportIdent;
 
   beforeAll(async () => {
@@ -168,26 +168,30 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       // get first mut-type unknown sig var, tag it as therapeutic
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
+        .query({rapidTable: 'cancerRelevance'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
       const allvars = res.body.filter((variant) => {
-        return variant.variantType === 'mut';
+        return variant.variantType === 'cnv' && variant.gene.name === 'TA2gene';
       });
       const testvar = allvars[0];
+      // Use set-summary-table endpoint instead
+      const kbStatementIds = (testvar.kbMatches[0]?.kbMatchedStatements || []).map((s) => {return s.ident;});
+      console.dir(kbStatementIds);
       await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
         .auth(username, password)
         .type('json')
         .send({
           variantType: testvar.variantType,
           variantIdent: testvar.ident,
-          annotations: {rapidReportTableTag: 'therapeutic'},
+          kbStatementIds,
+          annotations: {rapidReportTableTag: 'therapeuticAssociation'},
         })
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.NO_CONTENT);
 
       // check it is now in therapeutic and is not in any other variant list
       const therapeutics = await request
@@ -221,25 +225,29 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       // get first unknown sig variant of mut type, tag it as cancer relevance
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
+        .query({rapidTable: 'therapeuticAssociation'})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
       expect(Array.isArray(res.body)).toBe(true);
       const allvars = res.body.filter((variant) => {
-        return variant.variantType === 'mut';
+        return variant.variantType === 'cnv' && variant.gene.name === 'TA1gene';
       });
       const testvar = allvars[0];
+      // Use set-summary-table endpoint instead
+      // Collect kbStatementIds from first kbMatch
+      const kbStatementIds = (testvar.kbMatches[0]?.kbMatchedStatements || []).map((s) => {return s.ident;});
       await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
         .auth(username, password)
         .type('json')
         .send({
           variantType: testvar.variantType,
           variantIdent: testvar.ident,
+          kbStatementIds,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
         })
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.NO_CONTENT);
 
       // check it is now in cancer-relevance and is not in any other variant list
       const therapeutics = await request
@@ -283,16 +291,19 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         return variant.variantType === 'cnv';
       });
       const testvar = allvars[0];
+      // Use set-summary-table endpoint instead
+      const kbStatementIds = (testvar.kbMatches[0]?.kbMatchedStatements || []).map((s) => {return s.ident;});
       await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
         .auth(username, password)
         .type('json')
         .send({
           variantType: testvar.variantType,
           variantIdent: testvar.ident,
+          kbStatementIds,
           annotations: {rapidReportTableTag: 'unknownSignificance'},
         })
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.NO_CONTENT);
 
       // check that it's now in unknown sig, and not in any other variant list
       const therapeutics = await request
@@ -336,16 +347,19 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         return variant.variantType === 'msi';
       });
       const testvar = allvars[0];
+      // Use set-summary-table endpoint instead
+      const kbStatementIds = (testvar.kbMatches[0]?.kbMatchedStatements || []).map((s) => {return s.ident;});
       await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
+        .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
         .auth(username, password)
         .type('json')
         .send({
           variantType: testvar.variantType,
           variantIdent: testvar.ident,
+          kbStatementIds,
           annotations: {rapidReportTableTag: 'noTable'},
         })
-        .expect(HTTP_STATUS.CREATED);
+        .expect(HTTP_STATUS.NO_CONTENT);
 
       // check that it's now not in any variant list
       const therapeutics = await request
@@ -380,6 +394,75 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   afterAll(async () => {
     await db.models.report.destroy({where: {ident: rapidReportIdent.ident}});
     // , force: true
+  }, LONGER_TIMEOUT);
+});
+
+// New tests for /set-summary-table endpoint
+describe('/reports/{REPORTID}/variants/set-summary-table', () => {
+  let rapidReportIdent;
+  let testVariant;
+  let testKbStatementIds;
+
+  beforeAll(async () => {
+    // Create a rapid report and get a variant
+    let rapidTemplate = await db.models.template.findOne({where: {name: 'rapid'}});
+    if (!rapidTemplate) {
+      rapidTemplate = await db.models.template.create({
+        name: 'rapid',
+        sections: [],
+      });
+    }
+    rapidReportIdent = await createReport(mockReportData);
+    // Get a variant and its kbMatchedStatements
+    const res = await request
+      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+      .query({rapidTable: 'cancerRelevance'})
+      .auth(username, password)
+      .type('json');
+    const allvars = res.body.filter((variant) => {
+      return variant.variantType === 'cnv' && variant.gene.name === 'TA3gene';
+    });
+    testVariant = allvars[0];
+    // Collect kbStatementIds from first kbMatch
+    testKbStatementIds = (testVariant.kbMatches[0]?.kbMatchedStatements || []).map((s) => {return s.ident;});
+  }, LONGER_TIMEOUT);
+
+  test('POST set-summary-table updates summary table tags for variant and statements', async () => {
+    const payload = {
+      variantIdent: testVariant.ident,
+      variantType: testVariant.variantType,
+      kbStatementIds: testKbStatementIds,
+      annotations: {rapidReportTableTag: 'therapeuticAssociation'},
+    };
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
+      .auth(username, password)
+      .type('json')
+      .send(payload)
+      .expect(HTTP_STATUS.NO_CONTENT);
+    // fetch variant again and check annotation/kbMatchedStatements updated
+    const res = await request
+      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
+      .query({rapidTable: 'therapeuticAssociation'})
+      .auth(username, password)
+      .type('json')
+      .expect(HTTP_STATUS.OK);
+    // Check that the variant and its statements have the rapidReportTableTag
+    const updatedVariant = res.body.find((v) => {return v.ident === testVariant.ident;});
+    expect(updatedVariant).toBeDefined();
+    // Check kbMatchedStatements rapidReportTableTag
+    const statements = updatedVariant.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
+    statements.forEach((stmt) => {
+      const tagDict = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
+      expect(tagDict).toBeDefined();
+      const variantList = tagDict?.[testVariant.variantType];
+      expect(Array.isArray(variantList)).toBe(true);
+      expect(variantList).toContain(testVariant.ident);
+    });
+  });
+
+  afterAll(async () => {
+    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}});
   }, LONGER_TIMEOUT);
 });
 
