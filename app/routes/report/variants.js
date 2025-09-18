@@ -140,16 +140,14 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       const tableTag = variant.observedVariantAnnotation.annotations.rapidReportTableTag;
       // pruning
       let variantKbMatches = variant.kbMatches.map((kbmatch) => {
-
         // remove non-tagged statements from the each kbmatch
-        let kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
+        const kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
           .filter((item) => {
-
             let taggedForVariant = false;
             // filter statements on kbData property rapidReportSummaryTable;
             // match to this variant's type and id
-            if (item.kbData.rapidSummaryVariantTable) {
-              const summaryTable = item.kbData.rapidSummaryVariantTable;
+            if (item.kbData.rapidReportTableTag) {
+              const summaryTable = item.kbData.rapidReportTableTag;
               if (
                 summaryTable &&
                 typeof summaryTable === 'object' &&
@@ -161,7 +159,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
                   typeof variantTypeTable === 'object' &&
                   Object.prototype.hasOwnProperty.call(variantTypeTable, [variantType])
                 ) {
-
                   const rapidTableVariants = variantTypeTable[variantType];
                   if (rapidTableVariants.includes(variant.ident)) {
                     taggedForVariant = true;
@@ -373,8 +370,10 @@ router.route('/set-summary-table/')
 
     // Check that the variant type is real
     let variantType;
+    let variantTable;
     try {
-      variantType = KB_PIVOT_MAPPING[req.body.variantType];
+      variantTable = KB_PIVOT_MAPPING[req.body.variantType];
+      variantType = req.body.variantType;
     } catch (error) {
       const message = `Error checking variant type ${error}`;
       logger.error(message);
@@ -384,7 +383,7 @@ router.route('/set-summary-table/')
     // Check that the variant is in the db
     let variant;
     try {
-      variant = await db.models[variantType].findOne({
+      variant = await db.models[variantTable].findOne({
         where: { ident: req.body.variantIdent, reportId: req.report.id },
         include: [
           {
@@ -489,36 +488,35 @@ router.route('/set-summary-table/')
           continue; // Skip this statement if it's not in the list
         }
         const kbData = { ...(stmt.kbData || {}) };
-        if (kbData.rapidSummaryVariantTable) {
-          const rapidTableVariants = kbData?.rapidSummaryVariantTable?.[rapidTable];
 
-          // if there's already an entry for this rapid table and variant type
-          if (rapidTableVariants &&
-            Object.prototype.hasOwnProperty.call(rapidTableVariants, req.body.variantType) &&
-            Array.isArray(rapidTableVariants[req.body.variantType])) {
+        const { variantIdent } = req.body;
 
-            // TODO check if it's in the list first
-            rapidTableVariants[req.body.variantType].push(req.body.variantIdent);
+        // Ensure `rapidReportTableTag` is initialized
+        kbData.rapidReportTableTag = kbData.rapidReportTableTag || {};
 
-          } else {
-            if (!kbData.rapidSummaryVariantTable[rapidTable]) {
-              kbData.rapidSummaryVariantTable[rapidTable] = {
-                [req.body.variantType]: [req.body.variantIdent]
-              }
-            }
+        // Remove `variantIdent` from all entries of rapidReportTableTag
+        for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
+          const typeMap = kbData.rapidReportTableTag[tableKey];
+          if (Array.isArray(typeMap?.[variantType])) {
+            typeMap[variantType] = typeMap[variantType].filter((id) => {id !== variantIdent});
           }
+        }
+
+        // Add `variantIdent` to the specified rapid table and variant type
+        if (!kbData.rapidReportTableTag[rapidTable]) {
+          kbData.rapidReportTableTag[rapidTable] = { [variantType]: [variantIdent] };
         } else {
-          kbData.rapidSummaryVariantTable = {
-            [req.body.rapidTable]: {
-              [req.body.variantType]: [req.body.variantIdent]
-            }
-          };
+          const tableEntry = kbData.rapidReportTableTag[rapidTable];
+          tableEntry[variantType] = tableEntry[variantType] || [];
+          if (!tableEntry[variantType].includes(variantIdent)) {
+            tableEntry[variantType].push(variantIdent);
+          }
         }
 
         // Queue for bulk update
         updatedStatements.push({
           id: stmt.id, // primary key
-          kbData
+          kbData,
         });
       }
     }
