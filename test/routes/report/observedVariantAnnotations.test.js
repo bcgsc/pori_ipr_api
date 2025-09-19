@@ -118,7 +118,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .send({
           variantType: 'mut',
           variantIdent: 'hello',
-          annotations: {rapidReportTableTag: 'therapeutic'},
+          annotations: {rapidReportTableTag: 'therapeuticAssociation'},
         })
         .expect(StatusCodes.BAD_REQUEST);
     });
@@ -131,7 +131,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .send({
           variantType: 'test',
           variantIdent: 'hello',
-          annotations: {rapidReportTableTag: 'therapeutic'},
+          annotations: {rapidReportTableTag: 'therapeuticAssociation'},
         })
         .expect(StatusCodes.BAD_REQUEST);
     });
@@ -156,7 +156,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .send({
           variantType: 'mut',
           variantIdent: variant.ident,
-          annotations: {rapidReportTableTag: 'therapeutic'},
+          annotations: {rapidReportTableTag: 'therapeuticAssociation'},
         })
         .expect(StatusCodes.CREATED);
 
@@ -182,13 +182,11 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .auth(username, password)
         .type('json')
         .expect(StatusCodes.OK);
-
       const allvars = res.body.filter((variant) => {
         return variant.variantType === 'mut';
       });
 
-      const annotations = {rapidReportTableTag: 'therapeutic', secondTag: 'testValue'};
-
+      const annotations = {rapidReportTableTag: 'therapeuticAssociation', secondTag: 'testValue'};
       const origVariant = allvars[0];
 
       // create the annotation
@@ -202,6 +200,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           annotations,
         })
         .expect(StatusCodes.CREATED);
+      console.log('here in test at 205');
 
       // get the created variant annotation and check it's correct
       const createdVar = await getVariantByIdent(origVariant.ident, rapidReportIdent.ident);
@@ -320,7 +319,8 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       expect(updatedRecord.observedVariantAnnotation.annotations.testTag).toEqual(annotations.testTag);
     });
 
-    test('Annotations delivered with rapid report variants endpt - OK', async () => {
+    // skipping test as rapid report tagging now works through different endpoint
+    test.skip('Annotations delivered with rapid report variants endpt - OK', async () => {
       const res = await request
         .get(`/api/reports/${rapidReportIdent.ident}/variants`)
         .auth(username, password)
@@ -358,7 +358,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       const updatedRecord = res2.body.filter((variant) => {
         return variant.ident === record.ident;
       })[0];
-
+      console.dir(updatedRecord);
       expect(updatedRecord.observedVariantAnnotation.annotations.testTag).toEqual('testValue');
     });
   });
