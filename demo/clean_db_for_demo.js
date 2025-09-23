@@ -159,6 +159,78 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
   }
 };
 
+const addPoriAdminUser = async (queryInterface, transaction) => {
+  console.log('create the pori_admin user. we assume the user does not already exist');
+  const [[poriAdmin]] = await queryInterface.sequelize.query(
+    `INSERT INTO users (
+        ident, username, password, type,
+        "firstName", "lastName", "email",
+        created_at, deleted_at, updated_at
+      ) values (
+        :uuid, :username, '', :type,
+        :firstName, :lastName, :email,
+        NOW(), NULL, NOW()
+      ) RETURNING id`,
+    {
+      transaction,
+      replacements: {
+        username: 'pori_admin',
+        firstName: 'pori_admin',
+        lastName: 'pori_admin',
+        type: 'bcgsc',
+        email: 'change@me.ca',
+        uuid: uuidv4(),
+      },
+    },
+  );
+  console.log('created', poriAdmin);
+
+  await queryInterface.sequelize.query(
+    `INSERT INTO user_metadata (
+        ident, user_id,
+        created_at, updated_at
+      ) values (
+        :uuid, :id,
+        NOW(), NOW()
+      )`,
+    {
+      transaction,
+      replacements: {
+        uuid: uuidv4(),
+        id: poriAdmin.id,
+      },
+    },
+  );
+
+  const [group] = await queryInterface.sequelize.query(
+    'SELECT * FROM user_groups WHERE deleted_at IS NULL AND name = :name',
+    {
+      transaction,
+      type: queryInterface.sequelize.QueryTypes.SELECT,
+      replacements: {
+        name: 'admin',
+      },
+    },
+  );
+
+  await queryInterface.sequelize.query(
+    `INSERT INTO user_group_members (
+        user_id, group_id,
+        created_at, deleted_at, updated_at
+      ) values (
+        :userId, :groupId,
+        NOW(), NULL, NOW()
+      )`,
+    {
+      transaction,
+      replacements: {
+        userId: poriAdmin.id,
+        groupId: group.id,
+      },
+    },
+  );
+};
+
 const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
   console.log('DROP all reports_signatures');
   await queryInterface.sequelize.query(
@@ -455,6 +527,7 @@ const cleanDb = async () => {
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
     await cleanUsers(queryInterface, transaction, reportsToKeep);
+    await addPoriAdminUser(queryInterface, transaction);
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
     console.log('anonymize reports_pairwise_expression_correlation patient id data');
