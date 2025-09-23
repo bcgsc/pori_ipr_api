@@ -2,9 +2,12 @@ const HTTP_STATUS = require('http-status-codes');
 const express = require('express');
 
 const router = express.Router({mergeParams: true});
+const genomicAlterationsMiddleware = require('../../../middleware/genomicAlterations');
+
 const db = require('../../../models');
 const logger = require('../../../log');
 const cache = require('../../../cache');
+const {KB_PIVOT_MAPPING} = require('../../../constants');
 
 const schemaGenerator = require('../../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
@@ -19,30 +22,7 @@ const updateSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
 });
 
 // Middleware for genomic alterations
-router.param('alteration', async (req, res, next, altIdent) => {
-  let result;
-  try {
-    result = await db.models.genomicAlterationsIdentified.findOne({
-      where: {ident: altIdent, reportId: req.report.id},
-    });
-  } catch (error) {
-    logger.error(`Unable to get genomic alterations ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      error: {message: 'Unable to get genomic alterations'},
-    });
-  }
-
-  if (!result) {
-    logger.error('Unable to locate genomic alterations');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({
-      error: {message: 'Unable to locate genomic alterations'},
-    });
-  }
-
-  // Add genomic alteration to request
-  req.alteration = result;
-  return next();
-});
+router.param('alteration', genomicAlterationsMiddleware);
 
 // Handle requests for alterations
 router.route('/:alteration([A-z0-9-]{36})')
@@ -104,6 +84,11 @@ router.route('/')
         where: {
           reportId: req.report.id,
         },
+        include: [
+          ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+            return {model: db.models[modelName].scope('public'), as: modelName};
+          }),
+        ],
       });
 
       if (key) {
