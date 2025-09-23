@@ -54,7 +54,6 @@ module.exports = (sequelize, Sq) => {
     },
     editable: {
       type: Sq.BOOLEAN,
-      allowNull: false,
     },
   }, {
     ...DEFAULT_OPTIONS,
