@@ -52,6 +52,10 @@ module.exports = (sequelize, Sq) => {
     description: {
       type: Sq.TEXT,
     },
+    editable: {
+      type: Sq.BOOLEAN,
+      allowNull: false,
+    },
   }, {
     ...DEFAULT_OPTIONS,
     tableName: 'templates',
