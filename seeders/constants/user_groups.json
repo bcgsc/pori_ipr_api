@@ -1,0 +1,46 @@
+[
+    {
+        "name": "manager",
+        "description": null
+    },
+    {
+        "name": "admin",
+        "description": null
+    },
+    {
+        "name": "non-production access",
+        "description": null
+    },
+    {
+        "name": "Unreviewed Access",
+        "description": null
+    },
+    {
+        "name": "Germline Access",
+        "description": null
+    },
+    {
+        "name": "all projects access",
+        "description": null
+    },
+    {
+        "name": "template edit access",
+        "description": null
+    },
+    {
+        "name": "appendix edit access",
+        "description": null
+    },
+    {
+        "name": "report assignment access",
+        "description": null
+    },
+    {
+        "name": "variant-text edit access",
+        "description": null
+    },
+    {
+        "name": "create report access",
+        "description": null
+    }
+]

@@ -1,0 +1,103 @@
+[
+    {
+        "name": "probe",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "kb-matches",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 2,
+        "description": null
+    },
+    {
+        "name": "COMPARISON",
+        "organization": null,
+        "sections": [
+            "summary",
+            "kb-matches",
+            "small-mutations",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 3,
+        "description": null
+    },
+    {
+        "name": "TCGA-cBioportal",
+        "organization": null,
+        "sections": [
+            "summary",
+            "analyst-comments",
+            "therapeutic-targets",
+            "kb-matches",
+            "expression",
+            "structural-variants",
+            "copy-number",
+            "small-mutations"
+        ],
+        "logo_id": null,
+        "header_id": null,
+        "description": null
+    },
+    {
+        "name": "genomic",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "analyst-comments",
+            "pathway-analysis",
+            "therapeutic-targets",
+            "kb-matches",
+            "slides",
+            "discussion",
+            "microbial",
+            "expression-correlation",
+            "mutation-signatures",
+            "mutation-burden",
+            "immune",
+            "small-mutations",
+            "copy-number",
+            "structural-variants",
+            "expression",
+            "appendices",
+            "pharmacogenomic",
+            "cancer-predisposition"
+        ],
+        "logo_id": null,
+        "header_id": 1,
+        "description": null
+    },
+    {
+        "name": "pharmacogenomic",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 1,
+        "description": null
+    },
+    {
+        "name": "rapid",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "kb-matches",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 1,
+        "description": null
+    },
+    {
+        "name": "legacy",
+        "organization": null,
+        "sections": [],
+        "logo_id": null,
+        "header_id": null,
+        "description": null
+    }
+]
