@@ -8,7 +8,7 @@ module.exports = async (req, res, next, altIdent) => {
   let result;
   try {
     result = await db.models.genomicAlterationsIdentified.findOne({
-      where: { ident: altIdent, reportId: req.report.id },
+      where: {ident: altIdent, reportId: req.report.id},
       include: [
         ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
           return {model: db.models[modelName].scope('public'), as: modelName};
@@ -32,5 +32,3 @@ module.exports = async (req, res, next, altIdent) => {
   req.alteration = result;
   return next();
 };
-
-
