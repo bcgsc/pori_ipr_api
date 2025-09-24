@@ -8,23 +8,23 @@ const ENV = process.env.NODE_ENV || 'local';
 let DEFAULT_DB_NAME = 'ipr-sync-dev';
 
 let REDIS_QUEUE_CONFIG = {
-  enableQueue: true,
-  host: 'iprdevredis.bcgsc.ca',
+  enableQueue: process.env.REDIS_ENABLE_QUEUE,
+  host: process.env.REDIS_HOST,
   port: 6381,
 };
 
 if (ENV === 'production') {
   DEFAULT_DB_NAME = 'ipr';
   REDIS_QUEUE_CONFIG = {
-    enableQueue: true,
-    host: 'iprredis01.bcgsc.ca',
+    enableQueue: process.env.REDIS_ENABLE_QUEUE,
+    host: process.env.REDIS_HOST,
     port: 6380,
   };
 } else if (ENV === 'staging') {
   DEFAULT_DB_NAME = 'ipr-sync-staging';
   REDIS_QUEUE_CONFIG = {
-    enableQueue: true,
-    host: 'iprdevredis.bcgsc.ca',
+    enableQueue: process.env.REDIS_ENABLE_QUEUE,
+    host: process.env.REDIS_HOST,
     port: 6382,
   };
 }
@@ -91,9 +91,7 @@ const DEFAULTS = {
     poolIdle: 5000,
   },
   redis: {
-    host: ENV === 'production'
-      ? 'iprredis.bcgsc.ca'
-      : 'iprdevredis.bcgsc.ca',
+    host: process.env.REDIS_HOST,
     port: ENV === 'staging'
       ? 6380
       : 6379,
