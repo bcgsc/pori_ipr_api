@@ -37,7 +37,34 @@
             "relevance": "sensitivity",
             "evidenceLevel": "table 2",
             "kbVariantId": "#23",
-            "kbStatementId": "#23"
+            "kbStatementId": "#23",
+            "context": "drugA"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA3",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "TA3kbmatch_2",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#24",
+            "kbStatementId": "#23",
+            "context": "drugB"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA3",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "TA3kbmatch_3",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#25",
+            "kbStatementId": "#25",
+            "context": "drugC"
         },
         {
             "category": "therapeutic",
