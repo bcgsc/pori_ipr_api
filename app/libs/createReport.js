@@ -234,8 +234,10 @@ const updateKbMatchesInputFormat = (content) => {
         if (!('kbMatchedStatements' in content)) {
           content.kbMatchedStatements = [];
         }
-        content.kbMatchedStatements.push(statement);
-
+        const stmtIds = content.kbMatchedStatements.map((s) => {return s.kbStatementId});
+        if (!stmtIds.includes(statement.kbStatementId)) {
+          content.kbMatchedStatements.push(statement);
+        }
         const conditionSet = {
           kbStatementId: item.kbStatementId,
           matchedConditions: [{
@@ -243,10 +245,21 @@ const updateKbMatchesInputFormat = (content) => {
             kbVariantId: item.kbVariantId,
           }],
         };
+
         if (!('kbStatementMatchedConditions' in content)) {
           content.kbStatementMatchedConditions = [];
         }
-        content.kbStatementMatchedConditions.push(conditionSet);
+        const exists = content.kbStatementMatchedConditions.some(cs =>
+          cs.kbStatementId === conditionSet.kbStatementId &&
+          cs.matchedConditions.length === conditionSet.matchedConditions.length &&
+          cs.matchedConditions.every((mc, index) =>
+            mc.observedVariantKey === conditionSet.matchedConditions[index].observedVariantKey &&
+            mc.kbVariantId === conditionSet.matchedConditions[index].kbVariantId
+          )
+        )
+        if (!exists) {
+          content.kbStatementMatchedConditions.push(conditionSet);
+        };
       }
     });
   }

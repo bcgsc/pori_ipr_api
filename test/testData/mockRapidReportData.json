@@ -51,7 +51,7 @@
             "evidenceLevel": "table 2",
             "kbVariantId": "#24",
             "kbStatementId": "#23",
-            "context": "drugB"
+            "context": "drugA"
         },
         {
             "category": "therapeutic",
@@ -64,7 +64,7 @@
             "evidenceLevel": "table 2",
             "kbVariantId": "#25",
             "kbStatementId": "#25",
-            "context": "drugC"
+            "context": "drugB"
         },
         {
             "category": "therapeutic",

@@ -170,7 +170,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       }
     }
   }
-
   // remove the tagged variants from further sorting
   allKbMatches = allKbMatches.filter((variant) => {
     return (!(variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag));
@@ -382,7 +381,6 @@ router.route('/set-summary-table/')
 
     // add the variant id and remove the ident
     req.body.variantId = variant.id;
-
     // check whether there is already a record for this variant id
     let annotation;
     try {
@@ -414,8 +412,8 @@ router.route('/set-summary-table/')
         const newAnnotation = {...(annotation.annotations || {})};
         newAnnotation.rapidReportTableTag = req.body.rapidTable;
         try {
-          await annotation.update({
-            annotation: newAnnotation,
+          await db.models.observedVariantAnnotations.update({
+            annotations: newAnnotation,
           }, {where: {id: annotation.id}});
         } catch (error) {
           logger.error(`Unable to create update observed variant annotation ${error}`);
@@ -535,7 +533,6 @@ router.route('/set-statement-summary-table/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-
     // Check that the variant is in the db
     let variant;
     try {
