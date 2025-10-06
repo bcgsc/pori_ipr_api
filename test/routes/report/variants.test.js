@@ -504,7 +504,7 @@ describe('/reports/{REPORTID}/variants/set-summary-table', () => {
     const ta3Therapeutic = therapeuticsRes.body.filter((v) => {return v.ident === ta3.ident;});
     expect(ta3Therapeutic.length).toBe(1);
     const therapeuticStatements = ta3Therapeutic[0].kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
-    expect(therapeuticStatements.length).toBe(3);  // #23 from two diff kbmatches; #25 from another kbmatch
+    expect(therapeuticStatements.length).toBe(3); // #23 from two diff kbmatches; #25 from another kbmatch
 
     // Set statements to unknownSignificance
     await request
@@ -546,7 +546,6 @@ describe('/reports/{REPORTID}/variants/set-summary-table', () => {
       const taVariantList = therapeuticAssocTags?.[ta3.variantType];
       expect(Array.isArray(taVariantList)).toBe(true);
       expect(taVariantList).not.toContain(ta3.ident);
-
     });
   });
 });

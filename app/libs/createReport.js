@@ -234,7 +234,7 @@ const updateKbMatchesInputFormat = (content) => {
         if (!('kbMatchedStatements' in content)) {
           content.kbMatchedStatements = [];
         }
-        const stmtIds = content.kbMatchedStatements.map((s) => {return s.kbStatementId});
+        const stmtIds = content.kbMatchedStatements.map((s) => {return s.kbStatementId;});
         if (!stmtIds.includes(statement.kbStatementId)) {
           content.kbMatchedStatements.push(statement);
         }
@@ -249,17 +249,17 @@ const updateKbMatchesInputFormat = (content) => {
         if (!('kbStatementMatchedConditions' in content)) {
           content.kbStatementMatchedConditions = [];
         }
-        const exists = content.kbStatementMatchedConditions.some(cs =>
-          cs.kbStatementId === conditionSet.kbStatementId &&
-          cs.matchedConditions.length === conditionSet.matchedConditions.length &&
-          cs.matchedConditions.every((mc, index) =>
-            mc.observedVariantKey === conditionSet.matchedConditions[index].observedVariantKey &&
-            mc.kbVariantId === conditionSet.matchedConditions[index].kbVariantId
-          )
-        )
+        const exists = content.kbStatementMatchedConditions.some((cs) => {
+          return cs.kbStatementId === conditionSet.kbStatementId
+          && cs.matchedConditions.length === conditionSet.matchedConditions.length
+          && cs.matchedConditions.every((mc, index) => {
+            return mc.observedVariantKey === conditionSet.matchedConditions[index].observedVariantKey
+            && mc.kbVariantId === conditionSet.matchedConditions[index].kbVariantId;
+          });
+        });
         if (!exists) {
           content.kbStatementMatchedConditions.push(conditionSet);
-        };
+        }
       }
     });
   }

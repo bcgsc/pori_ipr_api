@@ -15,9 +15,6 @@ const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']
 const OBSVARANNOTEXCLUDE = KBMATCHEXCLUDE;
 const STATEMENTEXCLUDE = ['id', 'reportId', 'deletedAt', 'updatedBy'];
 const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
-const validateAgainstSchema = require('../../libs/validateAgainstSchema');
-
-const {setRapidSummaryTableSchema} = require('../../schemas/report/setRapidSummaryTable');
 
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({
@@ -146,6 +143,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
               }
               return true;
             }
+            return false;
           });
         kbmatch.set('kbMatchedStatements', kbmatchKbMatchedStatements);
         return kbmatch;
@@ -425,7 +423,7 @@ router.route('/set-summary-table/')
     } else {
       // otherwise, create the annotation record
       try {
-        const result = await db.models.observedVariantAnnotations.create({
+        await db.models.observedVariantAnnotations.create({
           variantId: req.body.variantId,
           variantType: req.body.variantType,
           annotations: {rapidReportTableTag: req.body.rapidTable},
