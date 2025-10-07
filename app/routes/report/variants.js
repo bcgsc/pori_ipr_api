@@ -328,15 +328,96 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   return unknownSignificanceResultsFiltered;
 };
 
+const updateKbDataSummaryTableTag = (kbData, rapidTable, variantType, variantIdent) => {
+  // Ensure `rapidReportTableTag` is initialized
+  kbData.rapidReportTableTag = kbData.rapidReportTableTag || {};
+
+  // Remove `variantIdent` from all entries of rapidReportTableTag
+  for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
+    const typeMap = kbData.rapidReportTableTag[tableKey];
+    if (Array.isArray(typeMap?.[variantType])) {
+      typeMap[variantType] = typeMap[variantType].filter((id) => {return id !== variantIdent;});
+    }
+  }
+
+  // Add tag to the specified rapid table and variant type
+  if (!kbData.rapidReportTableTag[rapidTable]) {
+    kbData.rapidReportTableTag[rapidTable] = {[variantType]: [variantIdent]};
+  } else {
+    const tableEntry = kbData.rapidReportTableTag[rapidTable];
+    tableEntry[variantType] = tableEntry[variantType] || [];
+    if (!tableEntry[variantType].includes(variantIdent)) {
+      tableEntry[variantType].push(variantIdent);
+    }
+  }
+  return kbData;
+};
+
+const checkKbDataSummaryTableTag = (kbData, variantType, variantIdent) => {
+  let tag;
+  for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
+    const typeMap = kbData.rapidReportTableTag[tableKey];
+    if (Array.isArray(typeMap?.[variantType])) {
+      if (typeMap[variantType].includes(variantIdent)) {
+        tag = tableKey;
+      }
+    }
+  }
+  return tag;
+};
+
+// utils/variantUtils.js
+async function findVariantOrRespond({req, res, variantTable}) {
+  try {
+    const variant = await db.models[variantTable].findOne({
+      where: {
+        ident: req.body.variantIdent,
+        reportId: req.report.id,
+      },
+      include: [
+        {
+          model: db.models.kbMatches,
+          include: [
+            {
+              model: db.models.kbMatchedStatements,
+              as: 'kbMatchedStatements',
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!variant) {
+      const message = 'Variant not found';
+      logger.error(message);
+      res.status(400).json({error: {message}});
+      return null;
+    }
+
+    return variant;
+  } catch (error) {
+    const message = `Error while checking that linked variant exists ${error}`;
+    logger.error(message);
+    res.status(400).json({error: {message}});
+    return null;
+  }
+}
+
 router.route('/set-summary-table/')
   .post(async (req, res) => {
     // updates variant record and statement records
-
-    const rapidTable = req.body.annotations.rapidReportTableTag;
-    req.body.rapidTable = rapidTable;
+    let rapidTable;
+    try {
+      rapidTable = req.body.annotations.rapidReportTableTag;
+      req.body.rapidTable = rapidTable;
+    } catch (error) {
+      const message = `Error checking rapid report table tag ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
     // below is copied from observedVariantAnnotations.js, should probably DRY it
 
-    // Check that the variant type is real
+    // validate variant - check type is real and the variant exists
     let variantType;
     let variantTable;
     try {
@@ -348,38 +429,41 @@ router.route('/set-summary-table/')
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    // Check that the variant is in the db
-    let variant;
-    try {
-      variant = await db.models[variantTable].findOne({
-        where: {ident: req.body.variantIdent, reportId: req.report.id},
-        include: [
-          {
-            model: db.models.kbMatches,
-            include: [
-              {
-                model: db.models.kbMatchedStatements,
-                as: 'kbMatchedStatements',
-              },
-            ],
-          },
-        ],
-      });
-    } catch (error) {
-      const message = `Error while checking that linked variant exists ${error}`;
+    if (typeof req.body.kbStatementIds === 'undefined') {
+      const message = 'No statement ids found';
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    if (!(variant)) {
+    let variant;
+    try {
+      variant = await findVariantOrRespond({req, res, variantTable});
+    } catch (error) {
+      const message = `Error checking variant ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    if (!variant) {
       const message = 'Variant not found';
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    // add the variant id and remove the ident
     req.body.variantId = variant.id;
-    // check whether there is already a record for this variant id
+
+    // check if all statement idents are valid
+    const statements = variant.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
+    const statementIdSet = new Set(statements.map((stmt) => {return stmt.ident;}));
+    const invalidIds = req.body.kbStatementIds.filter((id) => {return !statementIdSet.has(id);});
+
+    if (invalidIds.length > 0) {
+      const msg = `Idents invalid for some kb statements: ${invalidIds.join(', ')}`;
+      logger.error(msg);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
+    }
+
+    // check whether there is already an annotation record for this variant
     let annotation;
     try {
       annotation = await db.models.observedVariantAnnotations.findOne({
@@ -396,7 +480,6 @@ router.route('/set-summary-table/')
     }
 
     if (annotation) {
-      // if annotation exists:
       // check if the annotation for this tag exists and is the same
       const reportTableTag = annotation.annotations?.rapidReportTableTag;
       let annotationMatch = false;
@@ -437,70 +520,34 @@ router.route('/set-summary-table/')
       }
     }
 
+    // now manage the variant's kb statement tags
     const updatedStatements = [];
 
     for (const match of variant.kbMatches) {
       // (match);
       for (const stmt of match.kbMatchedStatements) {
         const kbData = {...(stmt.kbData || {})};
-        kbData.rapidReportTableTag = kbData.rapidReportTableTag || {};
         const {variantIdent} = req.body;
 
         if (!req.body.kbStatementIds.includes(stmt.ident)) {
-          // if statement is not in the statement list,
-          // check if it is tagged; if no tag, add 'noTable';
-          // if a tag matching the current table, leave the tag
-          // if a different tag, change to 'noTable'
-          let tableTagged = false;
-          // check if it is tagged (has a)
-          for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
-            const typeMap = kbData.rapidReportTableTag[tableKey];
-            if (['noTable', rapidTable].includes(tableKey)) {
-              if (Array.isArray(typeMap?.[variantType])) {
-                if (typeMap[variantType].includes(variantIdent)) {
-                  tableTagged = true;
-                }
-              }
-            }
-          }
-
-          // if the table is not tagged tag it with 'noTable'
-          if (!tableTagged) {
-            if (!kbData.rapidReportTableTag.noTable) {
-              kbData.rapidReportTableTag.noTable = {[variantType]: [variantIdent]};
-            } else {
-              const tableEntry = kbData.rapidReportTableTag.noTable;
-              tableEntry[variantType] = tableEntry[variantType] || [];
-              if (!tableEntry[variantType].includes(variantIdent)) {
-                tableEntry[variantType].push(variantIdent);
-              }
-            }
+          // if statement is not in the statement list:
+          // set it to noTable unless it is already tagged with the current rapidTable or noTable
+          const currentTag = checkKbDataSummaryTableTag(kbData, variantType, variantIdent);
+          if (currentTag === null || !(['noTable', rapidTable].includes(currentTag))) {
+            const newKbData = updateKbDataSummaryTableTag(kbData, 'noTable', variantType, variantIdent);
+            updatedStatements.push({
+              id: stmt.id, // primary key
+              kbData: newKbData,
+            });
           }
         } else {
-          // Remove `variantIdent` from all entries of rapidReportTableTag
-          for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
-            const typeMap = kbData.rapidReportTableTag[tableKey];
-            if (Array.isArray(typeMap?.[variantType])) {
-              typeMap[variantType] = typeMap[variantType].filter((id) => {return id !== variantIdent;});
-            }
-          }
-          // Add `variantIdent` to the specified rapid table and variant type
-          if (!kbData.rapidReportTableTag[rapidTable]) {
-            kbData.rapidReportTableTag[rapidTable] = {[variantType]: [variantIdent]};
-          } else {
-            const tableEntry = kbData.rapidReportTableTag[rapidTable];
-            tableEntry[variantType] = tableEntry[variantType] || [];
-            if (!tableEntry[variantType].includes(variantIdent)) {
-              tableEntry[variantType].push(variantIdent);
-            }
-          }
+          // if statement is in the list, update (or add) the tag
+          const newKbData = updateKbDataSummaryTableTag(kbData, rapidTable, variantType, variantIdent);
+          updatedStatements.push({
+            id: stmt.id, // primary key
+            kbData: newKbData,
+          });
         }
-
-        // Queue for bulk update
-        updatedStatements.push({
-          id: stmt.id, // primary key
-          kbData,
-        });
       }
     }
     for (const stmt of updatedStatements) {
@@ -516,11 +563,17 @@ router.route('/set-statement-summary-table/')
   .post(async (req, res) => {
     // updates statement records
 
-    const rapidTable = req.body.annotations.rapidReportTableTag;
-    req.body.rapidTable = rapidTable;
-    // below is copied from observedVariantAnnotations.js, should probably DRY it
+    let rapidTable;
+    try {
+      rapidTable = req.body.annotations.rapidReportTableTag;
+      req.body.rapidTable = rapidTable;
+    } catch (error) {
+      const message = `Error checking rapid report table tag ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
 
-    // Check that the variant type is real
+    // validate variant - check type is real and make sure the record exists
     let variantType;
     let variantTable;
     try {
@@ -531,25 +584,18 @@ router.route('/set-statement-summary-table/')
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
-    // Check that the variant is in the db
+
+    if (typeof req.body.kbStatementIds === 'undefined') {
+      const message = 'No statement ids found';
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
     let variant;
     try {
-      variant = await db.models[variantTable].findOne({
-        where: {ident: req.body.variantIdent, reportId: req.report.id},
-        include: [
-          {
-            model: db.models.kbMatches,
-            include: [
-              {
-                model: db.models.kbMatchedStatements,
-                as: 'kbMatchedStatements',
-              },
-            ],
-          },
-        ],
-      });
+      variant = await findVariantOrRespond({req, res, variantTable});
     } catch (error) {
-      const message = `Error while checking that linked variant exists ${error}`;
+      const message = `Error checking variant ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
@@ -558,6 +604,17 @@ router.route('/set-statement-summary-table/')
       const message = 'Variant not found';
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    // check if all statement idents are valid
+    const statements = variant.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
+    const statementIdSet = new Set(statements.map((stmt) => {return stmt.ident;}));
+    const invalidIds = req.body.kbStatementIds.filter((id) => {return !statementIdSet.has(id);});
+
+    if (invalidIds.length > 0) {
+      const msg = `Idents invalid for some kb statements: ${invalidIds.join(', ')}`;
+      logger.error(msg);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: msg}});
     }
 
     // all we need to do is edit the rapidReportTableTags field in the statement kbData
@@ -573,32 +630,12 @@ router.route('/set-statement-summary-table/')
 
         const {variantIdent} = req.body;
 
-        // Ensure `rapidReportTableTag` is initialized
-        kbData.rapidReportTableTag = kbData.rapidReportTableTag || {};
-
-        // Remove `variantIdent` from all entries of rapidReportTableTag
-        for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
-          const typeMap = kbData.rapidReportTableTag[tableKey];
-          if (Array.isArray(typeMap?.[variantType])) {
-            typeMap[variantType] = typeMap[variantType].filter((id) => {return id !== variantIdent;});
-          }
-        }
-
-        // Add tag to the specified rapid table and variant type
-        if (!kbData.rapidReportTableTag[rapidTable]) {
-          kbData.rapidReportTableTag[rapidTable] = {[variantType]: [variantIdent]};
-        } else {
-          const tableEntry = kbData.rapidReportTableTag[rapidTable];
-          tableEntry[variantType] = tableEntry[variantType] || [];
-          if (!tableEntry[variantType].includes(variantIdent)) {
-            tableEntry[variantType].push(variantIdent);
-          }
-        }
+        const newKbData = updateKbDataSummaryTableTag(kbData, rapidTable, variantType, variantIdent);
 
         // Queue for bulk update
         updatedStatements.push({
           id: stmt.id, // primary key
-          kbData,
+          kbData: newKbData,
         });
       }
     }

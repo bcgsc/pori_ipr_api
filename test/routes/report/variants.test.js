@@ -383,6 +383,71 @@ describe('/reports/{REPORTID}/kb-matches', () => {
   }, LONGER_TIMEOUT);
 });
 
+async function fetchVariants({reportId, geneName, table = 'cancerRelevance', variantType = 'cnv'}) {
+  const res = await request
+    .get(`/api/reports/${reportId}/variants`)
+    .query({rapidTable: table})
+    .auth(username, password)
+    .type('json');
+
+  return res.body.filter((v) => {return v.variantType === variantType && v.gene.name === geneName;});
+}
+
+async function updateVariantTags(reportId, testVariant, stmtIds, tableTag) {
+  const payload = {
+    variantIdent: testVariant.ident,
+    variantType: testVariant.variantType,
+    kbStatementIds: stmtIds,
+    annotations: {rapidReportTableTag: tableTag},
+  };
+  await request
+    .post(`/api/reports/${reportId}/variants/set-summary-table/`)
+    .auth(username, password)
+    .type('json')
+    .send(payload)
+    .expect(HTTP_STATUS.NO_CONTENT);
+}
+
+async function updateStatementTags(reportId, testVariant, stmtIds, tableTag) {
+  const payload = {
+    variantIdent: testVariant.ident,
+    variantType: testVariant.variantType,
+    kbStatementIds: stmtIds,
+    annotations: {rapidReportTableTag: tableTag},
+  };
+  await request
+    .post(`/api/reports/${reportId}/variants/set-statement-summary-table/`)
+    .auth(username, password)
+    .type('json')
+    .send(payload)
+    .expect(HTTP_STATUS.NO_CONTENT);
+}
+
+async function fetchStatements(reportId) {
+  const res = await request
+    .get(`/api/reports/${reportId}/kb-matches/kb-matched-statements`)
+    .auth(username, password)
+    .type('json')
+    .expect(HTTP_STATUS.OK);
+
+  return res.body;
+}
+
+function assertTagPresence(statements, tag, variantType, variantIdent, shouldContain = true) {
+  statements.forEach((stmt) => {
+    const tagDict = stmt.kbData?.rapidReportTableTag?.[tag];
+    expect(tagDict).toBeDefined();
+    const variantList = tagDict?.[variantType] || [];
+    expect(Array.isArray(variantList)).toBe(true);
+
+    if (shouldContain) {
+      expect(variantList).toContain(variantIdent);
+    } else {
+      expect(variantList).not.toContain(variantIdent);
+    }
+  });
+}
+
 // New tests for /set-summary-table endpoint
 describe('/reports/{REPORTID}/variants/set-summary-table', () => {
   let rapidReportIdent;
@@ -406,147 +471,136 @@ describe('/reports/{REPORTID}/variants/set-summary-table', () => {
 
   test('POST sets summary table tags for variant and statements', async () => {
     // Get TA3 variant and its kbMatchedStatements
-    const res = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'cancerRelevance'})
-      .auth(username, password)
-      .type('json');
-    const allvars = res.body.filter((variant) => {
-      return variant.variantType === 'cnv' && variant.gene.name === 'TA3gene';
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
     });
-
-    const testVariant = allvars[0];
-    const testKbStatementIds = [];
+    const stmtIds = [];
     for (const kbMatch of testVariant.kbMatches || []) {
       for (const statement of kbMatch.kbMatchedStatements || []) {
         if (statement?.ident) {
-          testKbStatementIds.push(statement.ident);
+          stmtIds.push(statement.ident);
         }
       }
     }
-    const payload = {
-      variantIdent: testVariant.ident,
-      variantType: testVariant.variantType,
-      kbStatementIds: testKbStatementIds,
-      annotations: {rapidReportTableTag: 'therapeuticAssociation'},
-    };
-    await request
-      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
-      .auth(username, password)
-      .type('json')
-      .send(payload)
-      .expect(HTTP_STATUS.NO_CONTENT);
+    await updateVariantTags(rapidReportIdent.ident, testVariant, stmtIds, 'therapeuticAssociation');
+
     // fetch variant again and check annotation/kbMatchedStatements updated
-    const res2 = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'therapeuticAssociation'})
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-    // Check that the variant and its statements have the rapidReportTableTag
-    const updatedVariant = res2.body.find((v) => {return v.ident === testVariant.ident;});
-    expect(updatedVariant).toBeDefined();
-    // Check kbMatchedStatements rapidReportTableTag
-    const statements = updatedVariant.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
-    statements.forEach((stmt) => {
-      const tagDict = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[testVariant.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).toContain(testVariant.ident);
+    const [postUpdateVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
+      table: 'therapeuticAssociation',
     });
+    // Check that the variant and its statements now have the rapidReportTableTag
+    expect(postUpdateVariant.ident).toBe(testVariant.ident);
+    expect(postUpdateVariant).toBeDefined();
+    const statements = postUpdateVariant.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
+    assertTagPresence(statements, 'therapeuticAssociation', testVariant.variantType, testVariant.ident);
   });
 
   test('POST changes existing tags for variant and statements', async () => {
     // Find TA3 variant with two statements
 
-    const res = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'cancerRelevance'})
-      .auth(username, password)
-      .type('json');
-    const ta3Variants = res.body.filter((variant) => {
-      return variant.variantType === 'cnv' && variant.gene.name === 'TA3gene';
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
+      table: 'cancerRelevance',
     });
-    const [ta3] = ta3Variants;
     // Get kbMatchedStatements for TA3
-    const allStatements = [];
-    for (const kbMatch of ta3.kbMatches || []) {
+    const stmtIds = [];
+    for (const kbMatch of testVariant.kbMatches || []) {
       for (const statement of kbMatch.kbMatchedStatements || []) {
         if (statement?.ident) {
-          allStatements.push(statement.ident);
+          stmtIds.push(statement.ident);
         }
       }
     }
-    expect(allStatements.length).toBeGreaterThanOrEqual(2);
+    expect(stmtIds.length).toBeGreaterThanOrEqual(2);
 
-    // Tag all stmts as therapeuticAssociation
+    // Tag variant and stmts as therapeuticAssociation
+    await updateVariantTags(rapidReportIdent.ident, testVariant, stmtIds, 'therapeuticAssociation');
+
+    // fetch variant again and check annotation/kbMatchedStatements set
+    const [postUpdateVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
+      table: 'therapeuticAssociation',
+    });
+    expect(postUpdateVariant).toBeDefined();
+    expect(postUpdateVariant.ident).toBe(testVariant.ident);
+    const therapeuticStatements = postUpdateVariant.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
+    expect(therapeuticStatements.length).toBe(3); // #23 from two diff kbmatches; #25 from another kbmatch
+
+    // Update variant and statements to unknownSignificance
+    await updateVariantTags(rapidReportIdent.ident, testVariant, stmtIds, 'unknownSignificance');
+
+    // fetch variant again and check annotation/kbMatchedStatements updated
+    const [postUpdateVariant2] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
+      table: 'unknownSignificance',
+    });
+    expect(postUpdateVariant2).toBeDefined();
+    expect(postUpdateVariant2.ident).toBe(testVariant.ident);
+
+    // Check that the expected statement tags have been updated
+    const statements = postUpdateVariant2.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
+    assertTagPresence(statements, 'unknownSignificance', testVariant.variantType, testVariant.ident);
+    assertTagPresence(statements, 'therapeuticAssociation', testVariant.variantType, testVariant.ident, false);
+  });
+
+  test('POST fails with malformed input', async () => {
+    // Get TA3 variant and its kbMatchedStatements
+
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
+      table: 'cancerRelevance',
+    });
+    const testKbStatementIds = [];
+    for (const kbMatch of testVariant.kbMatches || []) {
+      for (const statement of kbMatch.kbMatchedStatements || []) {
+        expect(statement.kbData).toBe(null);
+        if (statement?.ident) {
+          testKbStatementIds.push(statement.ident);
+        }
+      }
+    }
+    let payload = {};
+
     await request
       .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
       .auth(username, password)
       .type('json')
-      .send({
-        variantType: ta3.variantType,
-        variantIdent: ta3.ident,
-        kbStatementIds: allStatements,
-        annotations: {rapidReportTableTag: 'therapeuticAssociation'},
-      })
-      .expect(HTTP_STATUS.NO_CONTENT);
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
-    // Check that expected stmts are retrieved for therapeuticAssociation
-    const therapeuticsRes = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'therapeuticAssociation'})
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
+    payload = {variantType: 'fake', variantIdent: 'also fake'};
 
-    const ta3Therapeutic = therapeuticsRes.body.filter((v) => {return v.ident === ta3.ident;});
-    expect(ta3Therapeutic.length).toBe(1);
-    const therapeuticStatements = ta3Therapeutic[0].kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
-    expect(therapeuticStatements.length).toBe(3); // #23 from two diff kbmatches; #25 from another kbmatch
-
-    // Set statements to unknownSignificance
     await request
-      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table`)
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
       .auth(username, password)
       .type('json')
-      .send({
-        variantType: ta3.variantType,
-        variantIdent: ta3.ident,
-        kbStatementIds: allStatements,
-        annotations: {rapidReportTableTag: 'unknownSignificance'},
-      })
-      .expect(HTTP_STATUS.NO_CONTENT);
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
-    // Check that expected variant is retrieved for noTable
-    const therapeuticsRes2 = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'unknownSignificance'})
+    payload = {variantType: 'cnv', variantIdent: testVariant.ident, annotations: {rapidReportTableTag2: 'test'}};
+
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
       .auth(username, password)
       .type('json')
-      .expect(HTTP_STATUS.OK);
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
-    const updatedVariants = therapeuticsRes2.body.filter((v) => {return v.ident === ta3.ident;});
-    expect(updatedVariants.length).toBe(1);
+    payload = {variantType: 'cnv', variantIdent: testVariant.ident, kbStatementIds: ['hello', 'world']};
 
-    // Check that the expected statement tags have been updated
-    const statements = updatedVariants[0].kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
-    statements.forEach((stmt) => {
-      // check that the noTable tag is correct
-      const tagDict = stmt.kbData?.rapidReportTableTag?.unknownSignificance;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[ta3.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).toContain(ta3.ident);
-
-      // check that the therapeuticAssoc tag has been removed
-      const therapeuticAssocTags = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
-      expect(therapeuticAssocTags).toBeDefined();
-      const taVariantList = therapeuticAssocTags?.[ta3.variantType];
-      expect(Array.isArray(taVariantList)).toBe(true);
-      expect(taVariantList).not.toContain(ta3.ident);
-    });
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
+      .auth(username, password)
+      .type('json')
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
 });
 
@@ -571,143 +625,86 @@ describe('/reports/{REPORTID}/variants/set-statement-summary-table', () => {
     await db.models.report.destroy({where: {ident: rapidReportIdent.ident}});
   });
 
-  test('POST set-statement-summary-table updates statements from no kbdata value to therapeuticAssociation', async () => {
+  test('POST updates statements from no kbdata value to therapeuticAssociation', async () => {
     // Get TA3 variant and its kbMatchedStatements
-    const res = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'cancerRelevance'})
-      .auth(username, password)
-      .type('json');
-    const allvars = res.body.filter((variant) => {
-      return variant.variantType === 'cnv' && variant.gene.name === 'TA3gene';
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
     });
+    const stmtIds = [];
 
-    const testVariant = allvars[0];
-    const testKbStatementIds = [];
-
+    // check all statements start with uninitialized kbdata; get their idents
     for (const kbMatch of testVariant.kbMatches || []) {
       for (const statement of kbMatch.kbMatchedStatements || []) {
         expect(statement.kbData).toBe(null);
         if (statement?.ident) {
-          testKbStatementIds.push(statement.ident);
+          stmtIds.push(statement.ident);
         }
       }
     }
-    const payload = {
-      variantIdent: testVariant.ident,
-      variantType: testVariant.variantType,
-      kbStatementIds: testKbStatementIds,
-      annotations: {rapidReportTableTag: 'therapeuticAssociation'},
-    };
-    await request
-      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
-      .auth(username, password)
-      .type('json')
-      .send(payload)
-      .expect(HTTP_STATUS.NO_CONTENT);
-    // fetch variant again and check annotation/kbMatchedStatements updated
-    const res2 = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/kb-matches/kb-matched-statements`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-    // Check that the variant and its statements have the rapidReportTableTag
-    const updatedVariants = res2.body.filter((v) => {return testKbStatementIds.includes(v.ident);});
+
+    // send the tag update
+    await updateStatementTags(rapidReportIdent.ident, testVariant, stmtIds, 'therapeuticAssociation');
+
+    // fetch variant again and check stmt tags are updated
+    const postUpdateStatements = await fetchStatements(rapidReportIdent.ident);
+
+    // Check that the variant and the specified statements have the rapidReportTableTag
+    const updatedVariants = postUpdateStatements.filter((v) => {return stmtIds.includes(v.ident);});
     expect(updatedVariants).toBeDefined();
+    expect(updatedVariants.length).toBe(stmtIds.length);
+    assertTagPresence(updatedVariants, 'therapeuticAssociation', testVariant.variantType, testVariant.ident);
 
-    // Check kbMatchedStatements rapidReportTableTag
-    updatedVariants.forEach((stmt) => {
-      const tagDict = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[testVariant.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).toContain(testVariant.ident);
-    });
-
-    const notUpdatedVariants = res2.body.filter((v) => {return !(testKbStatementIds.includes(v.ident));});
+    // check that not every statement was tagged
+    const notUpdatedVariants = postUpdateStatements.filter((v) => {return !(stmtIds.includes(v.ident));});
     expect(notUpdatedVariants.length).toBeGreaterThanOrEqual(1);
-
-    // Check kbMatchedStatements rapidReportTableTag
     notUpdatedVariants.forEach((stmt) => {
       expect(stmt.kbData).toBe(null);
     });
   });
 
-  test('POST set-statement-summary-table updates single statement from no tag to therapeuticAssociation', async () => {
+  test('POST updates single statement from no tag to therapeuticAssociation', async () => {
     // Get TA3 variant and its kbMatchedStatements
-    const res = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'cancerRelevance'})
-      .auth(username, password)
-      .type('json');
-    const allvars = res.body.filter((variant) => {
-      return variant.variantType === 'cnv' && variant.gene.name === 'TA3gene';
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
     });
+    const stmtIds = [];
 
-    const testVariant = allvars[0];
-    const testKbStatementIds = [];
+    // check all statements start with uninitialized kbdata; get their idents
     for (const kbMatch of testVariant.kbMatches || []) {
       for (const statement of kbMatch.kbMatchedStatements || []) {
         expect(statement.kbData).toBe(null);
         if (statement?.ident) {
-          testKbStatementIds.push(statement.ident);
+          stmtIds.push(statement.ident);
         }
       }
     }
-    const testKbStatementId = testKbStatementIds[0];
-    const payload = {
-      variantIdent: testVariant.ident,
-      variantType: testVariant.variantType,
-      kbStatementIds: [testKbStatementId],
-      annotations: {rapidReportTableTag: 'therapeuticAssociation'},
-    };
-    await request
-      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
-      .auth(username, password)
-      .type('json')
-      .send(payload)
-      .expect(HTTP_STATUS.NO_CONTENT);
-    // fetch variant again and check annotation/kbMatchedStatements updated
-    const res2 = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/kb-matches/kb-matched-statements`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-    // Check that the variant and its statements have the rapidReportTableTag
-    const updatedVariants = res2.body.filter((v) => {return testKbStatementId === v.ident;});
+    const stmtId = stmtIds[0];
+    // send the tag update
+    await updateStatementTags(rapidReportIdent.ident, testVariant, [stmtId], 'therapeuticAssociation');
+
+    // fetch variant again and check stmt tags are updated
+    const postUpdateStatements = await fetchStatements(rapidReportIdent.ident);
+
+    const updatedVariants = postUpdateStatements.filter((v) => {return stmtId === v.ident;});
     expect(updatedVariants.length).toBe(1);
+    assertTagPresence(updatedVariants, 'therapeuticAssociation', testVariant.variantType, testVariant.ident);
 
-    // Check kbMatchedStatements rapidReportTableTag
-    updatedVariants.forEach((stmt) => {
-      const tagDict = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[testVariant.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).toContain(testVariant.ident);
-    });
-
-    const notUpdatedVariants = res2.body.filter((v) => {return !(testKbStatementIds.includes(v.ident));});
+    const notUpdatedVariants = postUpdateStatements.filter((v) => {return !(stmtIds.includes(v.ident));});
     expect(notUpdatedVariants.length).toBeGreaterThanOrEqual(1);
-
-    // Check kbMatchedStatements rapidReportTableTag
     notUpdatedVariants.forEach((stmt) => {
       expect(stmt.kbData).toBe(null);
     });
   });
 
-  test('POST set-statement-summary-table updates statements from one tag to another (therapeuticAssociation to noTable)', async () => {
+  test('POST updates statements from one tag to another (therapeuticAssociation to noTable)', async () => {
     // Get TA3 variant and its kbMatchedStatements
-    const res = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-      .query({rapidTable: 'cancerRelevance'})
-      .auth(username, password)
-      .type('json');
-    const allvars = res.body.filter((variant) => {
-      return variant.variantType === 'cnv' && variant.gene.name === 'TA3gene';
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
     });
 
-    // get initial untagged kb statement
-    const testVariant = allvars[0];
     const testKbStatementIds = [];
     for (const kbMatch of testVariant.kbMatches || []) {
       for (const statement of kbMatch.kbMatchedStatements || []) {
@@ -717,90 +714,91 @@ describe('/reports/{REPORTID}/variants/set-statement-summary-table', () => {
         }
       }
     }
-    const testKbStatementId = testKbStatementIds[0];
+    const stmtId = testKbStatementIds[0];
 
     // tag it with first tag: therapeuticAssoc
-    const payload = {
-      variantIdent: testVariant.ident,
-      variantType: testVariant.variantType,
-      kbStatementIds: [testKbStatementId],
-      annotations: {rapidReportTableTag: 'therapeuticAssociation'},
-    };
-    await request
-      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
-      .auth(username, password)
-      .type('json')
-      .send(payload)
-      .expect(HTTP_STATUS.NO_CONTENT);
+    await updateStatementTags(rapidReportIdent.ident, testVariant, [stmtId], 'therapeuticAssociation');
 
     // fetch kb statement again and check that it has a rapid report table tag of TA
-    const res2 = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/kb-matches/kb-matched-statements`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-
-    const updatedVariants = res2.body.filter((v) => {return testKbStatementId === v.ident;});
+    const postUpdateStatements1 = await fetchStatements(rapidReportIdent.ident);
+    const updatedVariants = postUpdateStatements1.filter((v) => {return stmtId === v.ident;});
     expect(updatedVariants.length).toBe(1);
-
-    updatedVariants.forEach((stmt) => {
-      const tagDict = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[testVariant.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).toContain(testVariant.ident);
-    });
+    assertTagPresence(updatedVariants, 'therapeuticAssociation', testVariant.variantType, testVariant.ident);
 
     // Now change tag to noTable
-    const payload2 = {
-      variantIdent: testVariant.ident,
-      variantType: testVariant.variantType,
-      kbStatementIds: [testKbStatementId], // only changing tag for single statement
-      annotations: {rapidReportTableTag: 'noTable'},
-    };
-    await request
-      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
-      .auth(username, password)
-      .type('json')
-      .send(payload2)
-      .expect(HTTP_STATUS.NO_CONTENT);
+    await updateStatementTags(rapidReportIdent.ident, testVariant, [stmtId], 'noTable');
 
     // fetch variant again and check that its tag has been updated
-    const res3 = await request
-      .get(`/api/reports/${rapidReportIdent.ident}/kb-matches/kb-matched-statements`)
-      .auth(username, password)
-      .type('json')
-      .expect(HTTP_STATUS.OK);
-
-    const updatedVariants2 = res3.body.filter((v) => {return testKbStatementId === v.ident;});
+    const postUpdateStatements2 = await fetchStatements(rapidReportIdent.ident);
+    const updatedVariants2 = postUpdateStatements2.filter((v) => {return stmtId === v.ident;});
     expect(updatedVariants2.length).toBe(1);
 
     // first tag gone:
-    updatedVariants2.forEach((stmt) => {
-      const tagDict = stmt.kbData?.rapidReportTableTag?.therapeuticAssociation;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[testVariant.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).not.toContain(testVariant.ident);
-    });
+    assertTagPresence(updatedVariants2, 'therapeuticAssociation', testVariant.variantType, testVariant.ident, false);
 
     // second tag present:
-    updatedVariants2.forEach((stmt) => {
-      const tagDict = stmt.kbData?.rapidReportTableTag?.noTable;
-      expect(tagDict).toBeDefined();
-      const variantList = tagDict?.[testVariant.variantType];
-      expect(Array.isArray(variantList)).toBe(true);
-      expect(variantList).toContain(testVariant.ident);
-    });
+    assertTagPresence(updatedVariants2, 'noTable', testVariant.variantType, testVariant.ident);
 
     // no other statements tagged:
-    const notUpdatedVariants = res2.body.filter((v) => {return !(testKbStatementId === v.ident);});
+    const notUpdatedVariants = postUpdateStatements2.filter((v) => {return !(stmtId === v.ident);});
     expect(notUpdatedVariants.length).toBeGreaterThanOrEqual(1);
-
-    // Check kbMatchedStatements rapidReportTableTag
     notUpdatedVariants.forEach((stmt) => {
       expect(stmt.kbData).toBe(null);
     });
+  });
+
+  test('POST fails with malformed input', async () => {
+    // Get TA3 variant and its kbMatchedStatements
+
+    const [testVariant] = await fetchVariants({
+      reportId: rapidReportIdent.ident,
+      geneName: 'TA3gene',
+      table: 'cancerRelevance',
+    });
+    const testKbStatementIds = [];
+    for (const kbMatch of testVariant.kbMatches || []) {
+      for (const statement of kbMatch.kbMatchedStatements || []) {
+        expect(statement.kbData).toBe(null);
+        if (statement?.ident) {
+          testKbStatementIds.push(statement.ident);
+        }
+      }
+    }
+    let payload = {};
+
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
+      .auth(username, password)
+      .type('json')
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
+
+    payload = {variantType: 'fake', variantIdent: 'also fake'};
+
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
+      .auth(username, password)
+      .type('json')
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
+
+    payload = {variantType: 'cnv', variantIdent: testVariant.ident, annotations: {rapidReportTableTag2: 'test'}};
+
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
+      .auth(username, password)
+      .type('json')
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
+
+    payload = {variantType: 'cnv', variantIdent: testVariant.ident, kbStatementIds: ['hello', 'world']};
+
+    await request
+      .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)
+      .auth(username, password)
+      .type('json')
+      .send(payload)
+      .expect(HTTP_STATUS.BAD_REQUEST);
   });
 });
 
