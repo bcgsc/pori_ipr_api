@@ -7332,6 +7332,138 @@
         }
       }
     },
+    "/reports/{report}/set-summary-table": {
+      "post": {
+        "summary": "Set rapid report summary table for variant",
+        "description": "Set rapid report summary table for this variant and a subset of its linked statements",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "variantType",
+            "in": "query",
+            "required": true,
+            "description": "Type of variant to tag, eg 'cnv'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantIdent",
+            "in": "query",
+            "required": true,
+            "description": "Ident of variant to tag",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kbStatementIds",
+            "in": "query",
+            "required": true,
+            "description": "List of statements idents, associated with variant, to tag",
+            "schema": {
+              "type": "list"
+            }
+          },
+          {
+            "name": "rapidReportTableTag",
+            "in": "query",
+            "required": true,
+            "description": "Tag to apply, eg 'therapeuticAssociation'",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or variants not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/set-statement-summary-table": {
+      "post": {
+        "summary": "Set rapid report summary table for statement list only",
+        "description": "Set rapid report summary table for a list of statements associated with a single variant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "variantType",
+            "in": "query",
+            "required": true,
+            "description": "Type of variant associated with statements to tag, eg 'cnv'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantIdent",
+            "in": "query",
+            "required": true,
+            "description": "Ident of variant associated with statements to tag",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kbStatementIds",
+            "in": "query",
+            "required": true,
+            "description": "List of statements idents, associated with variant, to tag",
+            "schema": {
+              "type": "list"
+            }
+          },
+          {
+            "name": "rapidReportTableTag",
+            "in": "query",
+            "required": true,
+            "description": "Tag to apply, eg 'therapeuticAssociation'",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Variants"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or variants not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/observed-variant-annotations": {
       "post": {
         "summary": "Create observed variant annotation for this report",
@@ -8145,7 +8277,9 @@
                     "description": "The ident of the notification"
                   }
                 },
-                "required": ["ident"]
+                "required": [
+                  "ident"
+                ]
               }
             }
           }

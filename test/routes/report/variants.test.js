@@ -398,7 +398,7 @@ async function updateVariantTags(reportId, testVariant, stmtIds, tableTag) {
     variantIdent: testVariant.ident,
     variantType: testVariant.variantType,
     kbStatementIds: stmtIds,
-    annotations: {rapidReportTableTag: tableTag},
+    rapidReportTableTag: tableTag,
   };
   await request
     .post(`/api/reports/${reportId}/variants/set-summary-table/`)
@@ -413,7 +413,7 @@ async function updateStatementTags(reportId, testVariant, stmtIds, tableTag) {
     variantIdent: testVariant.ident,
     variantType: testVariant.variantType,
     kbStatementIds: stmtIds,
-    annotations: {rapidReportTableTag: tableTag},
+    rapidReportTableTag: tableTag,
   };
   await request
     .post(`/api/reports/${reportId}/variants/set-statement-summary-table/`)
@@ -584,7 +584,7 @@ describe('/reports/{REPORTID}/variants/set-summary-table', () => {
       .send(payload)
       .expect(HTTP_STATUS.BAD_REQUEST);
 
-    payload = {variantType: 'cnv', variantIdent: testVariant.ident, annotations: {rapidReportTableTag2: 'test'}};
+    payload = {variantType: 'cnv', variantIdent: testVariant.ident, rapidReportTableTag: 'test'};
 
     await request
       .post(`/api/reports/${rapidReportIdent.ident}/variants/set-summary-table/`)
@@ -782,7 +782,7 @@ describe('/reports/{REPORTID}/variants/set-statement-summary-table', () => {
       .send(payload)
       .expect(HTTP_STATUS.BAD_REQUEST);
 
-    payload = {variantType: 'cnv', variantIdent: testVariant.ident, annotations: {rapidReportTableTag2: 'test'}};
+    payload = {variantType: 'cnv', variantIdent: testVariant.ident, rapidReportTableTag: 'test'};
 
     await request
       .post(`/api/reports/${rapidReportIdent.ident}/variants/set-statement-summary-table/`)

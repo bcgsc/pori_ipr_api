@@ -408,7 +408,7 @@ router.route('/set-summary-table/')
     // updates variant record and statement records
     let rapidTable;
     try {
-      rapidTable = req.body.annotations.rapidReportTableTag;
+      rapidTable = req.body.rapidReportTableTag;
       req.body.rapidTable = rapidTable;
     } catch (error) {
       const message = `Error checking rapid report table tag ${error}`;
@@ -565,7 +565,7 @@ router.route('/set-statement-summary-table/')
 
     let rapidTable;
     try {
-      rapidTable = req.body.annotations.rapidReportTableTag;
+      rapidTable = req.body.rapidReportTableTag;
       req.body.rapidTable = rapidTable;
     } catch (error) {
       const message = `Error checking rapid report table tag ${error}`;
