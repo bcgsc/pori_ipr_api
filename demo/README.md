@@ -67,17 +67,22 @@ DATABASE_HOSTNAME=eg iprdevdb.bcgsc.ca
 DB_DUMP_LOCATION=the filesystem location of the pg_dump output file
 DATABASE_NAME=the name you want to use for the demo db
 
+If database running on a host, also export values for:
+
+PGHOST=$DATABASE_HOSTNAME
+PGDATABASE=$DATABASE_NAME
+
 1) run the restore script with the option to avoid loading triggers
 2) ssh to the db's host, or set it in the command. Then run the clean script command
 3) run the restore script again with the option to load triggers.
 
 ```bash
 
-DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="no_triggers" bash demo/restore_iprdb_dump.sh
+DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="no_triggers" bash demo/restore_iprdb_dump.sh &> restore_no_triggers.log
 
-node demo/clean_db_for_demo.js --database.name $DATABASE_NAME --database.hostname $DATABASE_HOSTNAME
+node demo/clean_db_for_demo.js --database.name $DATABASE_NAME --database.hostname $DATABASE_HOSTNAME &> clean_db.log
 
-DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="only_triggers" bash demo/restore_iprdb_dump.sh
+DB_DUMP_LOCATION=$DB_DUMP_LOCATION READONLY_PASSWORD=root TRIGGERS_OPTION="only_triggers" bash demo/restore_iprdb_dump.sh &> restore_only_triggers.log
 ```
 
 Expect error messages as the script tries to create a user that already exists.
