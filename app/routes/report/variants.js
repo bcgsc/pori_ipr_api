@@ -330,6 +330,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
 const updateKbDataSummaryTableTag = (kbData, rapidTable, variantType, variantIdent) => {
   // Ensure `rapidReportTableTag` is initialized
+  kbData = kbData || {};
   kbData.rapidReportTableTag = kbData.rapidReportTableTag || {};
 
   // Remove `variantIdent` from all entries of rapidReportTableTag
@@ -355,8 +356,11 @@ const updateKbDataSummaryTableTag = (kbData, rapidTable, variantType, variantIde
 
 const checkKbDataSummaryTableTag = (kbData, variantType, variantIdent) => {
   let tag;
-  for (const tableKey of Object.keys(kbData.rapidReportTableTag)) {
-    const typeMap = kbData.rapidReportTableTag[tableKey];
+  const thiskbData = kbData || {};
+  const rapidReportTableTags = thiskbData.rapidReportTableTag || {};
+
+  for (const tableKey of Object.keys(rapidReportTableTags)) {
+    const typeMap = rapidReportTableTags[tableKey];
     if (Array.isArray(typeMap?.[variantType])) {
       if (typeMap[variantType].includes(variantIdent)) {
         tag = tableKey;
@@ -680,5 +684,11 @@ router.route('/')
       });
     }
   });
+
+// Attach utils for testing
+router._testUtils = {
+  checkKbDataSummaryTableTag,
+  updateKbDataSummaryTableTag,
+};
 
 module.exports = router;

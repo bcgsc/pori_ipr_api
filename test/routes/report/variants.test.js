@@ -7,6 +7,10 @@ const db = require('../../../app/models');
 const mockReportData = require('../../testData/mockRapidReportData.json');
 const createReport = require('../../../app/libs/createReport');
 
+const router = require('../../../app/routes/report/variants');
+
+const {checkKbDataSummaryTableTag, updateKbDataSummaryTableTag} = router._testUtils;
+
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
@@ -447,6 +451,125 @@ function assertTagPresence(statements, tag, variantType, variantIdent, shouldCon
     }
   });
 }
+
+describe('checkKbDataSummaryTableTag and updateKbDataSummaryTableTag utils', () => {
+  test('checkKbDataSummaryTableTag identifies presence/absence of tag correctly', () => {
+    const kbData = {
+      rapidReportTableTag: {
+        therapeuticAssociation: {
+          cnv: ['var1', 'var2'],
+          mut: ['var3'],
+        },
+        cancerRelevance: {
+          cnv: ['var4'],
+        },
+      },
+    };
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var2')).toBe('therapeuticAssociation');
+    expect(checkKbDataSummaryTableTag(kbData, 'mut', 'var3')).toBe('therapeuticAssociation');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var4')).toBe('cancerRelevance');
+  });
+
+  test('checkKbDataSummaryTableTag returns undefined when kbData empty', () => {
+    const kbData = {};
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(undefined);
+  });
+
+  test('checkKbDataSummaryTableTag returns undefined when kbData.rapidReportTabletag dict empty', () => {
+    const kbData = {rapidReportTableTag: {}};
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(undefined);
+  });
+
+  test('checkKbDataSummaryTableTag returns undefined when variantType entry not found', () => {
+    const kbData = {
+      rapidReportTableTag: {
+        cancerRelevance: {
+          cnv: ['var4'],
+        },
+      },
+    };
+    expect(checkKbDataSummaryTableTag(kbData, 'variantTypeNotFound', 'var4')).toBe(undefined);
+  });
+
+  test('checkKbDataSummaryTableTag returns undefined when variantIdent list null or empty', () => {
+    let kbData = {
+      rapidReportTableTag: {
+        cancerRelevance: {
+          cnv: null,
+        },
+      },
+    };
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(undefined);
+    kbData = {
+      rapidReportTableTag: {
+        cancerRelevance: {
+          cnv: [],
+        },
+      },
+    };
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(undefined);
+  });
+
+  test('checkKbDataSummaryTableTag returns undefined when variantIdent not in list', () => {
+    const kbData = {
+      rapidReportTableTag: {
+        cancerRelevance: {
+          cnv: ['var1'],
+        },
+      },
+    };
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'variantIdentNotFound')).toBe(undefined);
+  });
+
+  test('updateKbDataSummaryTableTag adds/removes tags correctly', () => {
+    let kbData = {};
+    const ta = 'therapeuticAssociation';
+    const cr = 'cancerRelevance';
+    // add first tag
+    kbData = updateKbDataSummaryTableTag(kbData, ta, 'cnv', 'var1');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(ta);
+
+    // add second tag, different var
+    kbData = updateKbDataSummaryTableTag(kbData, ta, 'cnv', 'var2');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var2')).toBe(ta);
+
+    // add third tag, different varType
+    kbData = updateKbDataSummaryTableTag(kbData, ta, 'mut', 'var3');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var2')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'mut', 'var3')).toBe(ta);
+
+    // add fourth tag, different table
+    kbData = updateKbDataSummaryTableTag(kbData, cr, 'cnv', 'var4');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var2')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'mut', 'var3')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var4')).toBe(cr);
+
+    // update tag to existing different tag
+    kbData = updateKbDataSummaryTableTag(kbData, cr, 'cnv', 'var2');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var2')).toBe(cr);
+    expect(checkKbDataSummaryTableTag(kbData, 'mut', 'var3')).toBe(ta);
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var4')).toBe(cr);
+
+    // update tag to new tag
+    kbData = updateKbDataSummaryTableTag(kbData, 'newTag', 'cnv', 'var1');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe('newTag');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var2')).toBe(cr);
+    expect(checkKbDataSummaryTableTag(kbData, 'mut', 'var3')).toBe(ta);
+  });
+
+  test('updateKbDataSummaryTableTag handles null kbData', () => {
+    let kbData = null;
+    const ta = 'therapeuticAssociation';
+
+    // update tag to existing different tag
+    kbData = updateKbDataSummaryTableTag(kbData, ta, 'cnv', 'var1');
+    expect(checkKbDataSummaryTableTag(kbData, 'cnv', 'var1')).toBe(ta);
+  });
+});
 
 // New tests for /set-summary-table endpoint
 describe('/reports/{REPORTID}/variants/set-summary-table', () => {
