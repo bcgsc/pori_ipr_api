@@ -133,6 +133,18 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag) {
       const tableTag = variant.observedVariantAnnotation.annotations.rapidReportTableTag;
 
+      const lofMatches = variant.kbMatches.filter((kbmatch) => {
+        const kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
+          .filter((stmt) => {
+            if (stmt.relevance.includes('loss of function')) {
+              return true;
+            }
+            return false;
+          });
+        kbmatch.set('kbMatchedStatements', kbmatchKbMatchedStatements);
+        return kbmatch;
+      });
+      const lof = lofMatches.length > 0;
       // prune out statements where context is not therapeutic, if filtering for table 1
       let variantKbMatches = variant.kbMatches.map((kbmatch) => {
         const kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
@@ -153,6 +165,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         return kbmatch.kbMatchedStatements.length > 0;
       });
       variant.set('kbMatches', variantKbMatches);
+      variant.set('lossOfFunction', lof);
 
       // don't use this variant if it has no tagged kb statements
       if (variant.kbMatches.length > 0) {
@@ -180,10 +193,14 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
     // remove nonmatching kbmatches
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
-      variant.kbMatches = variant.kbMatches.filter((item) => {
-        const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
-        return !(variantRegexMatch);
-      });
+      if (variant.lossOfFunction) {
+        variant.kbMatches = variant.kbMatches.filter((item) => {
+          const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
+          return !(variantRegexMatch);
+        });
+      }
+      // pop field with no further use
+      delete variant.lossOfFunction;
       return variant;
     });
 
