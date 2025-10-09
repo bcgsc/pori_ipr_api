@@ -187,7 +187,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
     // remove nonmatching kbmatches
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
-      if (variant.lossOfFunction) {
+      if (!variant.lossOfFunction) {
         variant.kbMatches = variant.kbMatches.filter((item) => {
           const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
           return !(variantRegexMatch);
