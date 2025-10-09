@@ -133,18 +133,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag) {
       const tableTag = variant.observedVariantAnnotation.annotations.rapidReportTableTag;
 
-      const lofMatches = variant.kbMatches.filter((kbmatch) => {
-        const kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
-          .filter((stmt) => {
-            if (stmt.relevance.includes('loss of function')) {
-              return true;
-            }
-            return false;
-          });
-        kbmatch.set('kbMatchedStatements', kbmatchKbMatchedStatements);
-        return kbmatch;
+      const lof = variant.kbMatches.some((kbmatch) => {
+        return kbmatch.kbMatchedStatements.some((stmt) => {
+          return stmt.relevance.includes('loss of function');
+        });
       });
-      const lof = lofMatches.length > 0;
+      variant.set('lossOfFunction', lof);
+
       // prune out statements where context is not therapeutic, if filtering for table 1
       let variantKbMatches = variant.kbMatches.map((kbmatch) => {
         const kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
@@ -165,7 +160,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         return kbmatch.kbMatchedStatements.length > 0;
       });
       variant.set('kbMatches', variantKbMatches);
-      variant.set('lossOfFunction', lof);
 
       // don't use this variant if it has no tagged kb statements
       if (variant.kbMatches.length > 0) {
