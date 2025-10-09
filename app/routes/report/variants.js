@@ -137,13 +137,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       let variantKbMatches = variant.kbMatches.map((kbmatch) => {
         const kbmatchKbMatchedStatements = kbmatch.kbMatchedStatements
           .filter((stmt) => {
-            if (stmt.category === 'therapeutic') {
-              if (rapidTable === 'therapeuticAssociation') {
+            if (rapidTable === 'therapeuticAssociation') {
+              if (stmt.category === 'therapeutic') {
                 return true;
               }
-              return true;
+              return false;
             }
-            return false;
+            return true;
           });
         kbmatch.set('kbMatchedStatements', kbmatchKbMatchedStatements);
         return kbmatch;
