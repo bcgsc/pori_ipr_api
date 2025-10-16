@@ -1,0 +1,68 @@
+[
+    {
+        "id": 30,
+        "ident": "c748c8d9-af5b-4a53-b94f-410eef89f8d0",
+        "name": "manager",
+        "description": null
+    },
+    {
+        "id": 4,
+        "ident": "3dfcf582-fed8-11e6-bc64-92361f002671",
+        "name": "admin",
+        "description": null
+    },
+    {
+        "id": 41,
+        "ident": "3a8a4e8e-7c1e-4fd7-87b2-cb37496923a6",
+        "name": "non-production access",
+        "description": null
+    },
+    {
+        "id": 42,
+        "ident": "817b5830-6c99-4ff5-bea6-7a85cda5012f",
+        "name": "Unreviewed Access",
+        "description": null
+    },
+    {
+        "id": 43,
+        "ident": "e1cc8ca5-1e0b-475a-b4d1-6c822c7588f0",
+        "name": "Germline Access",
+        "description": null
+    },
+    {
+        "id": 46,
+        "ident": "2d646aae-6f30-4ddc-af10-bb36c333fbe4",
+        "name": "all projects access",
+        "description": null
+    },
+    {
+        "id": 47,
+        "ident": "cbed38e3-b93e-48fd-8204-1338287b4142",
+        "name": "template edit access",
+        "description": null
+    },
+    {
+        "id": 48,
+        "ident": "ae26b43c-5883-4b23-89b0-8a99a8c9802a",
+        "name": "appendix edit access",
+        "description": null
+    },
+    {
+        "id": 50,
+        "ident": "7d6c6fdb-a357-4a21-991b-cff653301baf",
+        "name": "report assignment access",
+        "description": null
+    },
+    {
+        "id": 51,
+        "ident": "bb933f0f-662b-4ad9-a3d8-412f7249dee8",
+        "name": "variant-text edit access",
+        "description": null
+    },
+    {
+        "id": 52,
+        "ident": "2841d7dd-80a4-47e1-abcf-f22fa9fbe187",
+        "name": "create report access",
+        "description": null
+    }
+]
