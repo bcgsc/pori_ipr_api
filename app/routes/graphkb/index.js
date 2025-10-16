@@ -2,7 +2,7 @@ const {StatusCodes} = require('http-status-codes');
 const express = require('express');
 
 const logger = require('../../log');
-const loginMiddleware = require('../../middleware/graphkb');
+const graphkbLoginMiddleware = require('../../middleware/graphkb');
 const {
   graphkbAutocomplete,
   graphkbEvidenceLevels,
@@ -63,7 +63,7 @@ const errorMap = {
   },
 };
 
-router.use(loginMiddleware);
+router.use(graphkbLoginMiddleware);
 
 /**
  * Autocomplete endpoint for interfacing with GraphKB. This endpoint is used by the client
