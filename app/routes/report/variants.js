@@ -13,6 +13,7 @@ const KBMATCHEXCLUDE = ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']
 const OBSVARANNOTEXCLUDE = KBMATCHEXCLUDE;
 const STATEMENTEXCLUDE = ['id', 'reportId', 'deletedAt', 'updatedBy'];
 const MUTATION_REGEX = '^([^\\s]+)(\\s)(mutation[s]?)?(missense)?$';
+const MSI_CUTOFF = 20;
 
 const getVariants = async (tableName, variantType, reportId) => {
   return db.models[tableName].scope('extended').findAll({
@@ -38,87 +39,60 @@ const getVariants = async (tableName, variantType, reportId) => {
 };
 
 const unknownSignificanceIncludes = ['mut'];
-const signatureVariant = ['tmb', 'msi', 'sigv'];
-
-const unknownSignificanceGeneFilter = {
-  [Op.or]: [{oncogene: true}, {tumourSuppressor: true}, {cancerGeneListMatch: true}],
-};
+const geneLinkedVariantTypes = ['mut', 'cnv', 'exp'];
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
   let allKbMatches;
-  if (
-    unknownSignificanceIncludes.includes(variantType)
-    && !signatureVariant.includes(variantType)
-  ) {
-    allKbMatches = await db.models[tableName].scope('extended').findAll({
-      order: [['id', 'ASC']],
-      attributes: {
-        include: [[literal(`'${variantType}'`), 'variantType']],
-      },
-      where: {
-        reportId,
-      },
-      include: [
-        {
-          model: db.models.kbMatches,
-          attributes: {exclude: KBMATCHEXCLUDE},
-          include: [
-            {
-              model: db.models.kbMatchedStatements,
-              as: 'kbMatchedStatements',
-              attributes: {
-                exclude: STATEMENTEXCLUDE,
-              },
-              // where: {
-              //  ...therapeuticAssociationFilterStatement,
-              // },
-              through: {attributes: ['flags']},
+
+  const query = {
+    order: [['id', 'ASC']],
+    attributes: {
+      include: [[literal(`'${variantType}'`), 'variantType']],
+    },
+    where: {
+      reportId,
+    },
+    include: [
+      {
+        model: db.models.kbMatches,
+        attributes: {exclude: KBMATCHEXCLUDE},
+        include: [
+          {
+            model: db.models.kbMatchedStatements,
+            as: 'kbMatchedStatements',
+            attributes: {
+              exclude: STATEMENTEXCLUDE,
             },
-          ],
-        },
-        {
-          model: db.models.observedVariantAnnotations,
-          attributes: {exclude: OBSVARANNOTEXCLUDE},
-          as: 'observedVariantAnnotation',
-        },
-        {
-          model: db.models.genes.scope('minimal'),
-          as: 'gene',
-          where: unknownSignificanceGeneFilter, // TODO does including this remove results that would otherwise be in allKbMatches
-        },
-      ],
-    });
+            through: {attributes: ['flags']},
+          },
+        ],
+      },
+      {
+        model: db.models.observedVariantAnnotations,
+        attributes: {exclude: OBSVARANNOTEXCLUDE},
+        as: 'observedVariantAnnotation',
+      },
+    ],
+  };
+  if (geneLinkedVariantTypes.includes(variantType)) {
+    const geneSubquery = {
+      model: db.models.genes.scope('minimal'),
+      as: 'gene',
+    };
+    query.include.push(geneSubquery);
+  }
+
+  // if the table is unknownSignificance, only get subset of variant types
+  if (rapidTable === 'unknownSignificance') {
+    if (unknownSignificanceIncludes.includes(variantType)) {
+      allKbMatches = await db.models[tableName].scope('extended').findAll(query);
+    }
   } else {
-    allKbMatches = await db.models[tableName].scope('extended').findAll({
-      order: [['id', 'ASC']],
-      attributes: {
-        include: [[literal(`'${variantType}'`), 'variantType']],
-      },
-      where: {
-        reportId,
-      },
-      include: [
-        {
-          model: db.models.kbMatches,
-          attributes: {exclude: KBMATCHEXCLUDE},
-          include: [
-            {
-              model: db.models.kbMatchedStatements,
-              as: 'kbMatchedStatements',
-              attributes: {
-                exclude: STATEMENTEXCLUDE,
-              },
-              through: {attributes: ['flags']},
-            },
-          ],
-        },
-        {
-          model: db.models.observedVariantAnnotations,
-          attributes: {exclude: OBSVARANNOTEXCLUDE},
-          as: 'observedVariantAnnotation',
-        },
-      ],
-    });
+    allKbMatches = await db.models[tableName].scope('extended').findAll(query);
+  }
+
+  if (!allKbMatches) {
+    return [];
   }
 
   // do initial filtering based on contents of annotations - these should override defaults
@@ -159,6 +133,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
         return !(variantRegexMatch);
       });
+
       return variant;
     });
 
@@ -181,6 +156,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         kbmatch.kbMatchedStatements = statements;
         return kbmatch;
       });
+
       return variant;
     });
 
@@ -191,12 +167,14 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           .filter((item) => {return item !== null;});
         return kbmatch.kbMatchedStatements.length > 0;
       });
+
       return variant;
     });
 
     // remove variants which have no matches
     therapeuticAssociationResults = therapeuticAssociationResults.filter((variant) => {
       const kbmatches = variant.kbMatches.filter((item) => {return item !== null;});
+
       return kbmatches.length > 0;
     });
   }
@@ -214,8 +192,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
     // remove nonmatching kbmatches
     cancerRelevanceResults = cancerRelevanceResults.map((variant) => {
+      // TODO: msi score check should be done once on variant, not at each match
       const kbmatches = variant.kbMatches.filter((item) => {
-        const msiMatch = (item.variantType === 'msi' && item.score >= 20);
+        const msiMatch = (item.variantType === 'msi' && variant.score >= MSI_CUTOFF);
         if (msiMatch) {
           return true;
         }
@@ -254,9 +233,17 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     unknownSignificanceResults = JSON.parse(JSON.stringify(allKbMatches));
   }
 
-  // refine unknownSignificance results to only include therapeuticAssoc-qualifying matches
+  // refine unknownSignificance results to only include variants that EITHER:
+  // a - have a linked gene that is oncogene, cancerGeneList or tumourSuppressor true, OR
+  // b - therapeuticAssoc-qualifying matches
   // (unless they are tagged - add the tagged results back after filtering)
   unknownSignificanceResults = unknownSignificanceResults.map((variant) => {
+    if (
+      // this is safe to check because variantType is smallMutation which always has a gene
+      variant.gene.oncogene || variant.gene.cancerGeneListMatch || variant.gene.tumourSuppressor
+    ) {
+      return variant;
+    }
     variant.kbMatches = variant.kbMatches.map((kbmatch) => {
       const statements = kbmatch.kbMatchedStatements.filter((stmt) => {
         if ((stmt.category === 'therapeutic')
@@ -276,7 +263,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     return variant;
   });
 
-  // remove matches which have no matching statements
+  // remove matches which have no matching statements...
   unknownSignificanceResults = unknownSignificanceResults.map((variant) => {
     variant.kbMatches = variant.kbMatches.filter((kbmatch) => {
       kbmatch.kbMatchedStatements = kbmatch.kbMatchedStatements
@@ -284,6 +271,11 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       return kbmatch.kbMatchedStatements.length > 0;
     });
     return variant;
+  });
+
+  // remove variants which have no matches
+  unknownSignificanceResults = unknownSignificanceResults.filter((variant) => {
+    return variant.kbMatches.length > 0;
   });
 
   // remove variants already included in a different section
