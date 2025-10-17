@@ -3,7 +3,7 @@ const express = require('express');
 
 const router = express.Router({mergeParams: true});
 
-const {Op, literal} = require('sequelize');
+const {literal} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
 
