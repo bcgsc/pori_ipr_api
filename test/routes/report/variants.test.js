@@ -384,7 +384,7 @@ describe('/reports/{REPORTID}/variants', () => {
         variantType: 'msi',
         variant: 'TA4',
         iprEvidenceLevel: 'IPR-B',
-        kbVariant: 'TA4 mutation',
+        kbVariant: 'TA4 specific',
         matchedCancer: true,
         relevance: 'resistance',
         kbVariantId: '#33',
@@ -838,10 +838,6 @@ describe('/reports/{REPORTID}/variants', () => {
       expect(table).toBe('noTable');
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
-
-    // add sv tests for alternate gene join
-    // https://ipr.bcgsc.ca/report/c0b1597f-b89c-442d-aab4-ba1b6eff3f4b/summary
-    // https://ipr.bcgsc.ca/report/f7345344-446e-4b40-b0c7-5cd6b68c8227/summary
 
     // delete report
     afterAll(async () => {

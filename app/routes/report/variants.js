@@ -39,6 +39,7 @@ const getVariants = async (tableName, variantType, reportId) => {
 };
 
 const unknownSignificanceIncludes = ['mut'];
+const cancerRelevanceOmits = ['exp'];
 const geneLinkedVariantTypes = ['mut', 'cnv', 'exp'];
 
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
@@ -85,6 +86,11 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   // if the table is unknownSignificance, only get subset of variant types
   if (rapidTable === 'unknownSignificance') {
     if (unknownSignificanceIncludes.includes(variantType)) {
+      allKbMatches = await db.models[tableName].scope('extended').findAll(query);
+    }
+  } else if (rapidTable === 'cancerRelevance') {
+    // exclude expression variants from cancer relevance table
+    if (!cancerRelevanceOmits.includes(variantType)) {
       allKbMatches = await db.models[tableName].scope('extended').findAll(query);
     }
   } else {
@@ -187,36 +193,37 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
   let cancerRelevanceResults = [];
   const cancerRelevanceResultsFiltered = [];
-  if (!(variantType === 'exp')) { // omit expression variants from this table
-    cancerRelevanceResults = JSON.parse(JSON.stringify(allKbMatches));
+  cancerRelevanceResults = JSON.parse(JSON.stringify(allKbMatches));
 
-    // remove nonmatching kbmatches
-    cancerRelevanceResults = cancerRelevanceResults.map((variant) => {
-      // TODO: msi score check should be done once on variant, not at each match
-      const kbmatches = variant.kbMatches.filter((item) => {
-        const msiMatch = (item.variantType === 'msi' && variant.score >= MSI_CUTOFF);
-        if (msiMatch) {
-          return true;
-        }
-        const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
-        return (!variantRegexMatch);
-      });
-      variant.kbMatches = kbmatches;
-      return variant;
+  // remove msi variants below cutoff
+  cancerRelevanceResults = cancerRelevanceResults.filter((variant) => {
+    if (variantType === 'msi') {
+      return (variant.score >= MSI_CUTOFF);
+    }
+    return true;
+  });
+
+  // remove kbmatches that fail the regex
+  cancerRelevanceResults = cancerRelevanceResults.map((variant) => {
+    const kbmatches = variant.kbMatches.filter((item) => {
+      const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
+      return (!variantRegexMatch);
     });
+    variant.kbMatches = kbmatches;
+    return variant;
+  });
 
-    // remove variants which now have no matches
-    cancerRelevanceResults = cancerRelevanceResults.filter((variant) => {
-      const kbmatches = variant.kbMatches.filter((item) => {return item !== null;});
-      return kbmatches.length > 0;
-    });
+  // remove variants which now have no matches
+  cancerRelevanceResults = cancerRelevanceResults.filter((variant) => {
+    const kbmatches = variant.kbMatches.filter((item) => {return item !== null;});
+    return kbmatches.length > 0;
+  });
 
-    for (const row of cancerRelevanceResults) {
-      if (!(therapeuticAssociationResults.find(
-        (e) => {return e.ident === row.ident;},
-      ))) {
-        cancerRelevanceResultsFiltered.push(row);
-      }
+  for (const row of cancerRelevanceResults) {
+    if (!(therapeuticAssociationResults.find(
+      (e) => {return e.ident === row.ident;},
+    ))) {
+      cancerRelevanceResultsFiltered.push(row);
     }
   }
 
