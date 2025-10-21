@@ -26,6 +26,7 @@ const CREATE_DATA = {
     'msi',
     'small-mutation',
   ],
+  editable: true,
 };
 
 const UPLOAD_DATA = {
@@ -36,6 +37,7 @@ const UPLOAD_DATA = {
     'therapeutic-targets',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const UPLOAD_DATA_BY_MANAGER = {
@@ -46,6 +48,7 @@ const UPLOAD_DATA_BY_MANAGER = {
     'therapeutic-targets',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const UPDATE_DATA = {
@@ -56,6 +59,18 @@ const UPDATE_DATA = {
     'microbial',
     'structural-variants',
   ],
+  editable: true,
+};
+
+const UPDATE_DATA_NOT_EDITABLE = {
+  name: 'Test Update Template - not editable',
+  organization: 'Test Update Org',
+  description: 'Test Update Description',
+  sections: [
+    'microbial',
+    'structural-variants',
+  ],
+  editable: false,
 };
 
 const UPDATE_DATA_BY_MANAGER = {
@@ -66,6 +81,7 @@ const UPDATE_DATA_BY_MANAGER = {
     'microbial',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const UPDATE_DATA_BY_BIOINFORMATICIAN = {
@@ -76,6 +92,7 @@ const UPDATE_DATA_BY_BIOINFORMATICIAN = {
     'microbial',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const DELETE_DATA = {
@@ -86,6 +103,7 @@ const DELETE_DATA = {
     'therapeutic-targets',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const DELETE_DATA_BY_MANAGER = {
@@ -96,6 +114,7 @@ const DELETE_DATA_BY_MANAGER = {
     'therapeutic-targets',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const DELETE_DATA_BY_BIOINFORMATICIAN = {
@@ -106,6 +125,7 @@ const DELETE_DATA_BY_BIOINFORMATICIAN = {
     'therapeutic-targets',
     'structural-variants',
   ],
+  editable: true,
 };
 
 const templateProperties = [
@@ -227,6 +247,7 @@ describe('/templates', () => {
         .field('description', 'Test Upload Description')
         .field('sections', 'therapeutic-targets')
         .field('sections', 'structural-variants')
+        .field('editable', 'true')
         .auth(username, password)
         .expect(HTTP_STATUS.CREATED);
 
@@ -258,6 +279,7 @@ describe('/templates', () => {
         .field('description', 'Test Upload Description')
         .field('sections', 'therapeutic-targets')
         .field('sections', 'structural-variants')
+        .field('editable', 'true')
         .auth(managerUsername, password)
         .expect(HTTP_STATUS.CREATED);
 
@@ -324,17 +346,20 @@ describe('/templates', () => {
 
   describe('PUT', () => {
     let templateUpdate;
+    let templateUpdateNotEditable;
     let templateUpdateManager;
     let templateUpdateBioinf;
 
     beforeEach(async () => {
       templateUpdate = await db.models.template.create(UPDATE_DATA);
+      templateUpdateNotEditable = await db.models.template.create(UPDATE_DATA_NOT_EDITABLE);
       templateUpdateManager = await db.models.template.create(UPDATE_DATA_BY_MANAGER);
       templateUpdateBioinf = await db.models.template.create(UPDATE_DATA_BY_BIOINFORMATICIAN);
     });
 
     afterEach(async () => {
       await db.models.template.destroy({where: {ident: templateUpdate.ident}, force: true});
+      await db.models.template.destroy({where: {ident: templateUpdateNotEditable.ident}, force: true});
       await db.models.template.destroy({where: {ident: templateUpdateManager.ident}, force: true});
       await db.models.template.destroy({where: {ident: templateUpdateBioinf.ident}, force: true});
     });
@@ -403,6 +428,16 @@ describe('/templates', () => {
 
       // Delete template and images
       await db.models.image.destroy({where: {ident: {[Op.in]: newImages}}, force: true});
+    }, LONGER_TIMEOUT);
+
+    test('/{template} - 400 - template not editable', async () => {
+      await request
+        .put(`${BASE_URI}/${templateUpdateNotEditable.ident}`)
+        .field('name', 'New Name')
+        .field('sections', 'therapeutic-targets')
+        .field('sections', 'genes')
+        .auth(username, password)
+        .expect(HTTP_STATUS.BAD_REQUEST);
     }, LONGER_TIMEOUT);
 
     test('/{template} - 403 - bioinformatician edit fails', async () => {
