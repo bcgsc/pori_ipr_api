@@ -35,6 +35,10 @@ router.route('/:template([A-z0-9-]{36})')
     return res.json(req.template.view('public'));
   })
   .put(async (req, res) => {
+    if (!req.template.editable) {
+      logger.error(`The template "${req.template.name}" is not editable.`);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message: `The template "${req.template.name}" is not editable.`}});
+    }
     // Validate request against schema
     try {
       validateAgainstSchema(updateSchema, req.body, false);
