@@ -353,3 +353,12 @@ Syntax: **/reports?searchParams=[<category>|<keyword>|<threshold>]**
 - *threshold*: the matching threshold scales from 0 to 1 and determines the cutoff of similarity between the search keyword and a match value. A threshold of 1 means the entire match value or a substring of it is identical to the search keyword.
 
 Example query: **/reports?searchParams=[keyVariant|EGFR|0.8][diagnosis|lung cancer|0.65]**
+
+## Compatibility Matrix
+
+| IPR API | IPR Client | GraphKB API |
+|---------|------------|-------------|
+| v8.2.1  | ~v7.1.2    | ~v3.16.0    |
+| v8.2.0  | ~v7.1.0    | ~v3.15.0    |
+| v8.1.0  | ~v7.0.0    | ~v3.15.0    |
+| v8.0.0  | ~v6.30.0   | ~v3.15.0    |
