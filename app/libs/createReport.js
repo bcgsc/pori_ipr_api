@@ -207,7 +207,6 @@ const createReportGenes = async (report, content, options = {}) => {
     for (const gene of genes) {
       geneDefns[gene.name] = gene.id;
     }
-
     return geneDefns;
   } catch (error) {
     throw new Error(`Unable to create report genes ${error.message || error}`);
@@ -234,7 +233,10 @@ const updateKbMatchesInputFormat = (content) => {
         if (!('kbMatchedStatements' in content)) {
           content.kbMatchedStatements = [];
         }
-        content.kbMatchedStatements.push(statement);
+        const stmtIds = content.kbMatchedStatements.map((s) => {return s.kbStatementId;});
+        if (!stmtIds.includes(statement.kbStatementId)) {
+          content.kbMatchedStatements.push(statement);
+        }
 
         const conditionSet = {
           kbStatementId: item.kbStatementId,
@@ -246,7 +248,17 @@ const updateKbMatchesInputFormat = (content) => {
         if (!('kbStatementMatchedConditions' in content)) {
           content.kbStatementMatchedConditions = [];
         }
-        content.kbStatementMatchedConditions.push(conditionSet);
+        const exists = content.kbStatementMatchedConditions.some((cs) => {
+          return cs.kbStatementId === conditionSet.kbStatementId
+          && cs.matchedConditions.length === conditionSet.matchedConditions.length
+          && cs.matchedConditions.every((mc, index) => {
+            return mc.observedVariantKey === conditionSet.matchedConditions[index].observedVariantKey
+            && mc.kbVariantId === conditionSet.matchedConditions[index].kbVariantId;
+          });
+        });
+        if (!exists) {
+          content.kbStatementMatchedConditions.push(conditionSet);
+        }
       }
     });
   }
@@ -312,6 +324,7 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
 const createReportVariantSections = async (report, content, transaction) => {
   // create the genes first since they will need to be linked to the variant records
   const geneDefns = await createReportGenes(report, content, {transaction});
+
   // create the variants and create a mapping from their input 'key' value to the new records
   const variantMapping = {};
   const variantPromises = Object.keys(KB_PIVOT_MAPPING).map(async (variantType) => {
@@ -321,8 +334,8 @@ const createReportVariantSections = async (report, content, transaction) => {
     if (!Array.isArray(content[variantModel]) && typeof content[variantModel] === 'object') {
       content[variantModel] = [content[variantModel]];
     }
-    const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
 
+    const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
     variantMapping[variantType] = mapping;
   });
   // create the probe results (linked to gene but not to kbMatches)

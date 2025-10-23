@@ -67,14 +67,6 @@ const checkVariantsFilter = (
   expect(found).toBe(true);
 };
 
-const variantInList = (variant, variantList) => {
-  const matches = variantList.find((item) => {
-    const found = ((item.ident === variant.ident) && (item.variantType === variant.variantType));
-    return found;
-  });
-  return matches !== undefined;
-};
-
 // Start API
 beforeAll(async () => {
   const port = await getPort({port: CONFIG.get('web:port')});
@@ -82,8 +74,39 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-// Tests for /kb-matches endpoint
-describe('/reports/{REPORTID}/kb-matches', () => {
+/**
+ * Checks which rapid report table a variant will appear in
+ *
+ * @param {string} reportId - The ID of the report to check.
+ * @param {string} variantDisplayName - The display name of the variant.
+ * @param {string} variantType - The type of the variant to check.
+ * @returns {Promise<string>} - The name of the table found or 'noTable'.
+ */
+async function checkRapidReportTable(reportId, variantDisplayName, variantType) {
+  const tablenames = ['therapeuticAssociation', 'cancerRelevance', 'unknownSignificance'];
+  const tablesFoundIn = [];
+  for (const tablename of tablenames) {
+    const res = await request
+      .get(`/api/reports/${reportId}/variants`)
+      .query({rapidTable: tablename})
+      .auth(username, password)
+      .type('json');
+
+    const variants = res.body.filter((variant) => {return variant.variantType === variantType;});
+    const variantNames = variants.map((variant) => {return variant.displayName;});
+    if (variantNames.includes(variantDisplayName)) {
+      tablesFoundIn.push(tablename);
+    }
+  }
+  expect(tablesFoundIn.length).toBeLessThan(2);
+  if (tablesFoundIn.length === 0) {
+    return 'noTable';
+  }
+  return tablesFoundIn[0];
+}
+
+// Tests for /variantss endpoint
+describe('/reports/{REPORTID}/variants', () => {
   let rapidReportIdent;
 
   beforeAll(async () => {
@@ -96,9 +119,8 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         sections: [],
       });
     }
-
     rapidReportIdent = await createReport(mockReportData);
-  }, LONGER_TIMEOUT);
+  });
 
   describe('GET', () => {
     test('Getting Therapeutic Association - OK', async () => {
@@ -131,6 +153,7 @@ describe('/reports/{REPORTID}/kb-matches', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(Array.isArray(res.body)).toBe(true);
+
       checkVariants(res.body[0]);
 
       checkVariantsFilter(
@@ -164,226 +187,666 @@ describe('/reports/{REPORTID}/kb-matches', () => {
       );
     });
 
-    test('Tagging non-therapeutic var as therapeutic moves it to therapeutic - OK', async () => {
-      // get first mut-type unknown sig var, tag it as therapeutic
-      const res = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
+    test('IPR-A, disease match, and passed mutation regex check put sensitivity therapeutic match in table 1 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 specific variant',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      const allvars = res.body.filter((variant) => {
-        return variant.variantType === 'mut';
-      });
-      const testvar = allvars[0];
-      await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-        .auth(username, password)
-        .type('json')
-        .send({
-          variantType: testvar.variantType,
-          variantIdent: testvar.ident,
-          annotations: {rapidReportTableTag: 'therapeutic'},
-        })
-        .expect(HTTP_STATUS.CREATED);
-
-      // check it is now in therapeutic and is not in any other variant list
-      const therapeutics = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const cancerRelevance = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const unknownSig = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const variantIsTherapeutic = variantInList(testvar, therapeutics.body);
-      expect(variantIsTherapeutic).toBe(true);
-      const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body);
-      expect(variantIsCancerRelevant).toBe(false);
-      const variantIsUnknown = variantInList(testvar, unknownSig.body);
-      expect(variantIsUnknown).toBe(false);
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('therapeuticAssociation');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
-    test('Tagging non-cancerRelevance var as cancerRelevance moves it to cancer relevance - OK', async () => {
-      // get first unknown sig variant of mut type, tag it as cancer relevance
-      const res = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      expect(Array.isArray(res.body)).toBe(true);
-      const allvars = res.body.filter((variant) => {
-        return variant.variantType === 'mut';
-      });
-      const testvar = allvars[0];
-      await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-        .auth(username, password)
-        .type('json')
-        .send({
-          variantType: testvar.variantType,
-          variantIdent: testvar.ident,
-          annotations: {rapidReportTableTag: 'cancerRelevance'},
-        })
-        .expect(HTTP_STATUS.CREATED);
+    test('IPR-A, disease match, and passed mutation regex check put resistance therapeutic match in table 1 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
 
-      // check it is now in cancer-relevance and is not in any other variant list
-      const therapeutics = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const cancerRelevance = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const unknownSig = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const variantIsTherapeutic = variantInList(testvar, therapeutics.body);
-      expect(variantIsTherapeutic).toBe(false);
-      const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body);
-      expect(variantIsCancerRelevant).toBe(true);
-      const variantIsUnknown = variantInList(testvar, unknownSig.body);
-      expect(variantIsUnknown).toBe(false);
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('therapeuticAssociation');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
-    test('Tagging non-unknownSig var as unknown sig moves it to unknown sig - OK', async () => {
-      // get first eligible therapeutic var, tag it as unknown sig
-      const res = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      expect(Array.isArray(res.body)).toBe(true);
-      const allvars = res.body.filter((variant) => {
-        // ensuring this is not an already-annotated var, since we used mut before
-        return variant.variantType === 'cnv';
-      });
-      const testvar = allvars[0];
-      await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-        .auth(username, password)
-        .type('json')
-        .send({
-          variantType: testvar.variantType,
-          variantIdent: testvar.ident,
-          annotations: {rapidReportTableTag: 'unknownSignificance'},
-        })
-        .expect(HTTP_STATUS.CREATED);
+    test('IPR-B, disease match, and passed mutation regex check put sensitivity therapeutic match in table 1 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
 
-      // check that it's now in unknown sig, and not in any other variant list
-      const therapeutics = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const cancerRelevance = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const unknownSig = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const variantIsTherapeutic = variantInList(testvar, therapeutics.body);
-      expect(variantIsTherapeutic).toBe(false);
-      const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body);
-      expect(variantIsCancerRelevant).toBe(false);
-      const variantIsUnknown = variantInList(testvar, unknownSig.body);
-      expect(variantIsUnknown).toBe(true);
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('therapeuticAssociation');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
-    test('Tagging variant with noTable removes it from rapid report summary results - OK', async () => {
-      // grab first available therapeutic variant, tag it as noTable
-      const res = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      expect(Array.isArray(res.body)).toBe(true);
-      const allvars = res.body.filter((variant) => {
-        // ensuring this is not an already-annotated var, since we used mut and cnv before
-        return variant.variantType === 'msi';
-      });
-      const testvar = allvars[0];
-      await request
-        .post(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations`)
-        .auth(username, password)
-        .type('json')
-        .send({
-          variantType: testvar.variantType,
-          variantIdent: testvar.ident,
-          annotations: {rapidReportTableTag: 'noTable'},
-        })
-        .expect(HTTP_STATUS.CREATED);
+    test('IPR-B, disease match, and passed mutation regex check put resistance therapeutic match in table 2 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
 
-      // check that it's now not in any variant list
-      const therapeutics = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'therapeuticAssociation'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const cancerRelevance = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'cancerRelevance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-      const unknownSig = await request
-        .get(`/api/reports/${rapidReportIdent.ident}/variants`)
-        .query({rapidTable: 'unknownSignificance'})
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      const variantIsTherapeutic = variantInList(testvar, therapeutics.body);
-      expect(variantIsTherapeutic).toBe(false);
-      const variantIsCancerRelevant = variantInList(testvar, cancerRelevance.body);
-      expect(variantIsCancerRelevant).toBe(false);
-      const variantIsUnknown = variantInList(testvar, unknownSig.body);
-      expect(variantIsUnknown).toBe(false);
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
+
+    test('Low evidence level, disease match, and passed mutation regex check put therapeutic match in table 2 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-C',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('High evidence, disease mismatch, and passed mutation regex check put therapeutic match in table 2 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 specific',
+        matchedCancer: false,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('High evidence, disease-match, and failed mutation regex check put therapeutic match in table 3 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('MSI matches above cutoff put in table 2 - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'msi',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.msi = newMockReportData.msi.concat([{
+        score: 21,
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'msi');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('MSI matches below cutoff put in no table - OK', async () => {
+      // create report
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'msi',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.msi = newMockReportData.msi.concat([{
+        score: 19,
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'msi');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('IPR-A, diseased-matched, sensitivity therapeutic mut variants put in table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('IPR-A, diseased-matched, resistance therapeutic mut variants put in table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('IPR-B, diseased-matched, sensitivity therapeutic mut variants put in table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('IPR-B, diseased-matched, resistance therapeutic variants omitted from table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('Low evidence, disease-matched, therapeutic variants omitted from table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-C',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: false,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('High evidence, not disease matched, therapeutic variants omitted from table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: false,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('High evidence, disease-matched, non-therapeutic variants omitted from table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'prognostic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene'}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('Non-qualifying variants put in table 3 if in cancer gene list - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene', cancerGeneListMatch: true}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('Non-qualifying variants put in table 3 if on tumour suppressor gene - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene', tumourSuppressor: true}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('Non-qualifying variants put in table 3 if on oncogene - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene', oncogene: true}]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4gene',
+        key: 'TA4',
+        displayName: 'TA4',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('SVs can be put in table 1 and 2 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'sv',
+        variant: 'TA4 sv table 1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      },
+      {
+        category: 'therapeutic',
+        variantType: 'sv',
+        variant: 'TA4 sv table 2',
+        iprEvidenceLevel: 'IPR-C',
+        kbVariant: 'TA4 specific',
+        matchedCancer: false,
+        relevance: 'sensitivity',
+        kbVariantId: '#34',
+        kbStatementId: '#34',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4agene', oncogene: true}, {name: 'TA4bgene', oncogene: true}]);
+      newMockReportData.structuralVariants = [{
+        gene1: 'TA4agene',
+        gene2: 'TA4bgene',
+        name: 'TA4 sv table 1',
+        displayName: 'TA4 sv table 1',
+        key: 'TA4 sv table 1',
+      },
+      {
+        gene1: 'TA4agene',
+        gene2: 'TA4bgene',
+        name: 'TA4 sv table 2',
+        displayName: 'TA4 sv table 2',
+        key: 'TA4 sv table 2',
+      }];
+      const reportIdent = await createReport(newMockReportData);
+
+      const var1table = await checkRapidReportTable(reportIdent.ident, 'TA4 sv table 1', 'sv');
+      expect(var1table).toBe('therapeuticAssociation');
+      const var2table = await checkRapidReportTable(reportIdent.ident, 'TA4 sv table 2', 'sv');
+      expect(var2table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('SVs can not be put in table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'sv',
+        variant: 'TA4 sv no table',
+        iprEvidenceLevel: 'IPR-B',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4agene', oncogene: true}, {name: 'TA4bgene', oncogene: true}]);
+      newMockReportData.structuralVariants = [{
+        key: 'TA4 sv no table',
+        gene1: 'TA4agene',
+        gene2: 'TA4bgene',
+        name: 'TA4 sv no table',
+        displayName: 'TA4 sv no table',
+      }];
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4 sv no table', 'sv');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('CNVs can be put in table 1 and table 2 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'cnv',
+        variant: 'TA4 cnv table 1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 specific',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }, {
+        category: 'therapeutic',
+        variantType: 'cnv',
+        variant: 'TA4 cnv table 2',
+        iprEvidenceLevel: 'IPR-D',
+        kbVariant: 'TA4 specific',
+        matchedCancer: false,
+        relevance: 'sensitivity',
+        kbVariantId: '#34',
+        kbStatementId: '#34',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4agene', oncogene: true}, {name: 'TA4bgene'}]);
+      newMockReportData.copyVariants = newMockReportData.copyVariants.concat([
+        {
+          gene: 'TA4agene',
+          key: 'TA4 cnv table 1',
+          displayName: 'TA4 cnv table 1',
+        },
+        {
+          gene: 'TA4bgene',
+          key: 'TA4 cnv table 2',
+          displayName: 'TA4 cnv table 2',
+        },
+      ]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const var1table = await checkRapidReportTable(reportIdent.ident, 'TA4 cnv table 1', 'cnv');
+      expect(var1table).toBe('therapeuticAssociation');
+      const var2table = await checkRapidReportTable(reportIdent.ident, 'TA4 cnv table 2', 'cnv');
+      expect(var2table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('CNVs can not be put in table 3 - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'cnv',
+        variant: 'TA4',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
+      }]);
+      newMockReportData.genes = newMockReportData.genes.concat([{name: 'TA4gene', oncogene: true}]);
+      newMockReportData.copyVariants = newMockReportData.copyVariants.concat([
+        {
+          gene: 'TA4gene',
+          key: 'TA4',
+          displayName: 'TA4',
+        },
+      ]);
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'cnv');
+      expect(table).toBe('noTable');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    // delete report
+    afterAll(async () => {
+      await db.models.report.destroy({where: {ident: rapidReportIdent.ident}}, {force: true});
+    }, LONGER_TIMEOUT);
   });
 
-  // delete report
   afterAll(async () => {
-    await db.models.report.destroy({where: {ident: rapidReportIdent.ident}});
-    // , force: true
-  }, LONGER_TIMEOUT);
-});
-
-afterAll(async () => {
-  global.gc && global.gc();
-  await server.close();
+    global.gc && global.gc();
+    await server.close();
+  });
 });
