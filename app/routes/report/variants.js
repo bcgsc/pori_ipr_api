@@ -109,7 +109,20 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   const unknownSignificanceFromAnnotation = [];
   const doNotReport = [];
 
+  const tumourSuppressorLofVariants = {};
+
   for (const variant of allKbMatches) {
+    // check whether the variant has LOF effect on tumour suppressor gene
+    const tumourSuppressorLof = variant.kbMatches.some((kbmatch) => {
+      return kbmatch.kbMatchedStatements.some((stmt) => {
+        if (variant.gene?.tumourSuppressor) {
+          return stmt.relevance?.includes('loss of function');
+        }
+        return false;
+      });
+    });
+    tumourSuppressorLofVariants[variant.ident] = tumourSuppressorLof;
+
     if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag) {
       const tableTag = variant.observedVariantAnnotation.annotations.rapidReportTableTag;
 
@@ -160,11 +173,15 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
     // remove nonmatching kbmatches
     therapeuticAssociationResults = therapeuticAssociationResults.map((variant) => {
-      variant.kbMatches = variant.kbMatches.filter((item) => {
-        const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
-        return !(variantRegexMatch);
-      });
-
+      // if the variant has a loss of function effect on a tumour suppressor gene,
+      // retain matches where the mutation is of type 'GENENAME mutation';
+      // otherwise, remove these
+      if (!tumourSuppressorLofVariants[variant.ident]) {
+        variant.kbMatches = variant.kbMatches.filter((item) => {
+          const variantRegexMatch = item.kbVariant.match(MUTATION_REGEX);
+          return !(variantRegexMatch);
+        });
+      }
       return variant;
     });
 
