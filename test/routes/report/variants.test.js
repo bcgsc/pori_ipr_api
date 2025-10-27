@@ -873,12 +873,12 @@ describe('/reports/{REPORTID}/variants', () => {
         evidenceLevel: 'table 2',
         kbVariantId: '#27',
         kbStatementId: '#27',
-      }])
+      }]);
       newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
         gene: 'TA1gene',
         key: 'TA1',
         displayName: 'TA1',
-      }])
+      }]);
 
       const reportIdent = await createReport(newMockReportData);
 
@@ -905,12 +905,13 @@ describe('/reports/{REPORTID}/variants', () => {
           evidenceLevel: 'table 2',
           kbVariantId: '#28',
           kbStatementId: '#28',
-        }])
+        },
+      ]);
       newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
         gene: 'TA1agene',
         key: 'TA1a',
         displayName: 'TA1a',
-      }])
+      }]);
 
       const reportIdent = await createReport(newMockReportData);
 
@@ -949,12 +950,13 @@ describe('/reports/{REPORTID}/variants', () => {
           evidenceLevel: 'table 2',
           kbVariantId: '#30',
           kbStatementId: '#30',
-        }])
+        },
+      ]);
       newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
         gene: 'TA1bgene',
         key: 'TA1b',
         displayName: 'TA1b',
-      }])
+      }]);
 
       const reportIdent = await createReport(newMockReportData);
 
@@ -995,12 +997,13 @@ describe('/reports/{REPORTID}/variants', () => {
           evidenceLevel: 'table 2',
           kbVariantId: '#32',
           kbStatementId: '#32',
-        }])
+        },
+      ]);
       newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
         gene: 'TA1cgene',
         key: 'TA1c',
         displayName: 'TA1c',
-      }])
+      }]);
 
       const reportIdent = await createReport(newMockReportData);
 
@@ -1040,12 +1043,13 @@ describe('/reports/{REPORTID}/variants', () => {
           evidenceLevel: 'table 2',
           kbVariantId: '#32',
           kbStatementId: '#32',
-        }])
+        },
+      ]);
       newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
         gene: 'TA1dgene',
         key: 'TA1d',
         displayName: 'TA1d',
-      }])
+      }]);
 
       const reportIdent = await createReport(newMockReportData);
 
