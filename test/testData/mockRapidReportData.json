@@ -6,6 +6,69 @@
         {
             "category": "therapeutic",
             "variantType": "cnv",
+            "variant": "TA1",
+            "iprEvidenceLevel": "IPR-A",
+            "kbVariant": "TA1-kbmatch",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 1",
+            "kbVariantId": "#21",
+            "kbStatementId": "#21"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA2",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "TA2kbmatch",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#22",
+            "kbStatementId": "#22"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA3",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "TA3kbmatch",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#23",
+            "kbStatementId": "#23",
+            "context": "drugA"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA3",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "TA3kbmatch_2",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#24",
+            "kbStatementId": "#23",
+            "context": "drugA"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
+            "variant": "TA3",
+            "iprEvidenceLevel": "IPR-D",
+            "kbVariant": "TA3kbmatch_3",
+            "matchedCancer": true,
+            "relevance": "sensitivity",
+            "evidenceLevel": "table 2",
+            "kbVariantId": "#25",
+            "kbStatementId": "#25",
+            "context": "drugB"
+        },
+        {
+            "category": "therapeutic",
+            "variantType": "cnv",
             "variant": "TA",
             "iprEvidenceLevel": "IPR-A",
             "kbVariant": "this should be in table 1",
@@ -251,6 +314,15 @@
             "name": "table1CV"
         },
         {
+            "name": "TA1gene"
+        },
+        {
+            "name": "TA2gene"
+        },
+        {
+            "name": "TA3gene"
+        },
+        {
             "name": "table2CV"
         }
     ],
@@ -291,6 +363,21 @@
             "gene": "table1CV",
             "key": "TA",
             "displayName": "table 1"
+        },
+        {
+            "gene": "TA1gene",
+            "key": "TA1",
+            "displayName": "table 1"
+        },
+        {
+            "gene": "TA2gene",
+            "key": "TA2",
+            "displayName": "table 2"
+        },
+        {
+            "gene": "TA3gene",
+            "key": "TA3",
+            "displayName": "table 2"
         },
         {
             "gene": "table2CV",

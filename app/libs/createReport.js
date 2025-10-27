@@ -245,6 +245,7 @@ const updateKbMatchesInputFormat = (content) => {
             kbVariantId: item.kbVariantId,
           }],
         };
+
         if (!('kbStatementMatchedConditions' in content)) {
           content.kbStatementMatchedConditions = [];
         }

@@ -151,7 +151,6 @@ const listen = async (port = null) => {
   logger.info('Queue setup complete.');
   setupBullBoard({app, queues});
   logger.info('Bull board setup complete.');
-
   return app;
 };
 
