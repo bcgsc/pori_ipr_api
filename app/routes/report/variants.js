@@ -116,7 +116,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
     const tumourSuppressorLof = variant.kbMatches.some((kbmatch) => {
       return kbmatch.kbMatchedStatements.some((stmt) => {
         if (variant.gene?.tumourSuppressor) {
-          return stmt.relevance?.includes('loss of function');
+          return (stmt.relevance?.includes('loss of function')
+          && !(stmt.relevance?.includes('no loss of function')));
         }
         return false;
       });
