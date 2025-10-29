@@ -887,6 +887,50 @@ describe('/reports/{REPORTID}/variants', () => {
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
+    test('LOF promotion: Qualifying mutation-type matches not promoted if no-lof variant on tumour suppressor gene found - OK', async () => {
+      // TA1 - expect lof promotion to occur - table 1
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1gene',
+        tumourSuppressor: true,
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA1 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        evidenceLevel: 'table 1',
+        kbVariantId: '#26',
+        kbStatementId: '#26',
+      },
+      {
+        category: 'biological',
+        variantType: 'mut',
+        variant: 'TA1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA1 frameshift mutation',
+        matchedCancer: true,
+        relevance: 'no loss of function',
+        evidenceLevel: 'table 2',
+        kbVariantId: '#27',
+        kbStatementId: '#27',
+      }]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1gene',
+        key: 'TA1',
+        displayName: 'TA1',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
     test('LOF promotion: Mutation-type matches not promoted if no lof variant - OK', async () => {
       const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
       newMockReportData.genes = newMockReportData.genes.concat([{
