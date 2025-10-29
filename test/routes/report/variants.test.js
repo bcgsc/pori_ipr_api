@@ -843,6 +843,265 @@ describe('/reports/{REPORTID}/variants', () => {
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
+    test('LOF promotion: Qualifying mutation-type matches promoted if lof variant on tumour suppressor gene found - OK', async () => {
+      // TA1 - expect lof promotion to occur - table 1
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1gene',
+        tumourSuppressor: true,
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA1 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        evidenceLevel: 'table 1',
+        kbVariantId: '#26',
+        kbStatementId: '#26',
+      },
+      {
+        category: 'biological',
+        variantType: 'mut',
+        variant: 'TA1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA1 frameshift mutation',
+        matchedCancer: true,
+        relevance: 'likely loss of function',
+        evidenceLevel: 'table 2',
+        kbVariantId: '#27',
+        kbStatementId: '#27',
+      }]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1gene',
+        key: 'TA1',
+        displayName: 'TA1',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1', 'mut');
+      expect(table).toBe('therapeuticAssociation');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('LOF promotion: Qualifying mutation-type matches not promoted if no-lof variant on tumour suppressor gene found - OK', async () => {
+      // TA1 - expect lof promotion to occur - table 1
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1gene',
+        tumourSuppressor: true,
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA1 mutation',
+        matchedCancer: true,
+        relevance: 'sensitivity',
+        evidenceLevel: 'table 1',
+        kbVariantId: '#26',
+        kbStatementId: '#26',
+      },
+      {
+        category: 'biological',
+        variantType: 'mut',
+        variant: 'TA1',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA1 frameshift mutation',
+        matchedCancer: true,
+        relevance: 'no loss of function',
+        evidenceLevel: 'table 2',
+        kbVariantId: '#27',
+        kbStatementId: '#27',
+      }]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1gene',
+        key: 'TA1',
+        displayName: 'TA1',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('LOF promotion: Mutation-type matches not promoted if no lof variant - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1agene',
+        tumourSuppressor: true,
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([
+        {
+          category: 'therapeutic',
+          variantType: 'mut',
+          variant: 'TA1a',
+          iprEvidenceLevel: 'IPR-A',
+          kbVariant: 'TA1a mutation',
+          matchedCancer: true,
+          relevance: 'sensitivity',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#28',
+          kbStatementId: '#28',
+        },
+      ]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1agene',
+        key: 'TA1a',
+        displayName: 'TA1a',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1a', 'mut');
+      expect(table).toBe('unknownSignificance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('LOF promotion: Mutation-type matches not promoted if lof variant not on a tumour suppressor gene - OK', async () => {
+      // TA1b - loss of function found but gene is not a tumour suppressor - expect table 2
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1bgene',
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([
+        {
+          category: 'therapeutic',
+          variantType: 'mut',
+          variant: 'TA1b',
+          iprEvidenceLevel: 'IPR-A',
+          kbVariant: 'TA1b mutation',
+          matchedCancer: true,
+          relevance: 'sensitivity',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#29',
+          kbStatementId: '#29',
+        },
+        {
+          category: 'biological',
+          variantType: 'mut',
+          variant: 'TA1b',
+          iprEvidenceLevel: 'IPR-A',
+          kbVariant: 'TA1b frameshift mutation',
+          matchedCancer: true,
+          relevance: 'likely loss of function',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#30',
+          kbStatementId: '#30',
+        },
+      ]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1bgene',
+        key: 'TA1b',
+        displayName: 'TA1b',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1b', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('LOF promotion: Mutation-type matches not promoted if not qualifying due to unmatched disease type - OK', async () => {
+      // TA1c - qualifying loss of function found but other kbmatch is not a disease match - expect table 2
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1cgene',
+        tumourSuppressor: true,
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([
+        {
+          category: 'therapeutic',
+          variantType: 'mut',
+          variant: 'TA1c',
+          iprEvidenceLevel: 'IPR-B',
+          kbVariant: 'TA1c mutation',
+          matchedCancer: false,
+          relevance: 'sensitivity',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#31',
+          disease: 'not a matching disease',
+          kbStatementId: '#31',
+        },
+        {
+          category: 'biological',
+          variantType: 'mut',
+          variant: 'TA1c',
+          iprEvidenceLevel: 'IPR-A',
+          kbVariant: 'TA1c frameshift mutation',
+          matchedCancer: true,
+          relevance: 'likely loss of function',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#32',
+          kbStatementId: '#32',
+        },
+      ]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1cgene',
+        key: 'TA1c',
+        displayName: 'TA1c',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1c', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
+    test('LOF promotion: Mutation-type matches not promoted if not qualifying due to ipr evidence level - OK', async () => {
+      // TA1d - qualifying loss of function found but other kbmatch is not IPR-B or higher - expect table 2
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([{
+        name: 'TA1dgene',
+        tumourSuppressor: true,
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([
+        {
+          category: 'therapeutic',
+          variantType: 'mut',
+          variant: 'TA1d',
+          iprEvidenceLevel: 'IPR-D',
+          kbVariant: 'TA1d mutation',
+          matchedCancer: true,
+          relevance: 'sensitivity',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#31',
+          kbStatementId: '#31',
+        },
+        {
+          category: 'biological',
+          variantType: 'mut',
+          variant: 'TA1d',
+          iprEvidenceLevel: 'IPR-A',
+          kbVariant: 'TA1d frameshift mutation',
+          matchedCancer: true,
+          relevance: 'likely loss of function',
+          evidenceLevel: 'table 2',
+          kbVariantId: '#32',
+          kbStatementId: '#32',
+        },
+      ]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA1dgene',
+        key: 'TA1d',
+        displayName: 'TA1d',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA1d', 'mut');
+      expect(table).toBe('cancerRelevance');
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
     // delete report
     afterAll(async () => {
       await db.models.report.destroy({where: {ident: rapidReportIdent.ident}}, {force: true});
