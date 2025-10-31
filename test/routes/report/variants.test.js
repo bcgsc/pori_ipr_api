@@ -850,6 +850,7 @@ describe('/reports/{REPORTID}/variants', () => {
         {name: 'TA4bgene', cancerGeneListMatch: true},
         {name: 'TA4cgene', tumourSuppressor: true},
         {name: 'TA4dgene'},
+        {name: 'TA4egene', oncogene: true},
       ]);
       newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
         gene: 'TA4agene',
@@ -870,6 +871,22 @@ describe('/reports/{REPORTID}/variants', () => {
         gene: 'TA4dgene',
         key: 'TA4d',
         displayName: 'TA4d',
+      },
+      {
+        gene: 'TA4egene',
+        key: 'TA4e',
+        displayName: 'TA4e',
+      }]);
+      newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
+        category: 'therapeutic',
+        variantType: 'mut',
+        variant: 'TA4e',
+        iprEvidenceLevel: 'IPR-A',
+        kbVariant: 'TA4e specific',
+        matchedCancer: true,
+        relevance: 'resistance',
+        kbVariantId: '#33',
+        kbStatementId: '#33',
       }]);
       const reportIdent = await createReport(newMockReportData);
 
@@ -880,7 +897,9 @@ describe('/reports/{REPORTID}/variants', () => {
       table = await checkRapidReportTable(reportIdent.ident, 'TA4c', 'mut');
       expect(table).toBe('unknownSignificance');
       table = await checkRapidReportTable(reportIdent.ident, 'TA4d', 'mut');
-      expect(table).toBe('noTable');
+      expect(table).toBe('noTable'); // don't put in table 3 if not qualifying
+      table = await checkRapidReportTable(reportIdent.ident, 'TA4e', 'mut');
+      expect(table).toBe('therapeuticAssociation'); // don't skip table 1 if qualifying for table 1
 
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });

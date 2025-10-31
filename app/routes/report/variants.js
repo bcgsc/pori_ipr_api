@@ -64,7 +64,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
   // get variants that don't have kbmatches in the unknownSignificance table (if gene check passes)
   if (rapidTable === 'unknownSignificance') {
-    kbmatchJoin.include[0].required = false;
+    kbmatchJoin.required = false;
   }
 
   const query = {
@@ -119,16 +119,13 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
   const tumourSuppressorLofVariants = {};
 
-  // separate out variants with no kbmatches, if filtering for table 3
+  // separate out variants that qualify based on gene properties alone, if filtering for table 3
   if (rapidTable === 'unknownSignificance') {
     for (const variant of allKbMatches) {
-      // don't use this variant if it has no tagged kb statements
-      if (variant.kbMatches.length === 0) {
-        if (variant.gene.cancerGeneListMatch
-            || variant.gene.oncogene
-            || variant.gene.tumourSuppressor) {
-          unknownSignificanceFromGeneProperty.push(variant);
-        }
+      if (variant.gene.cancerGeneListMatch
+          || variant.gene.oncogene
+          || variant.gene.tumourSuppressor) {
+        unknownSignificanceFromGeneProperty.push(variant);
       }
     }
   }
@@ -353,6 +350,11 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   unknownSignificanceResults = unknownSignificanceResults.filter((variant) => {
     return variant.kbMatches.length > 0;
   });
+
+  // add variants back to unknownSig list, that are tagged for this table based on gene properties alone
+  // so that they can be filtered out of results if they are in TA or CR
+  unknownSignificanceResults.push(...unknownSignificanceFromGeneProperty);
+
   // remove variants already included in a different section
   for (const row of unknownSignificanceResults) {
     if (!(therapeuticAssociationResults.find(
@@ -367,9 +369,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   // add variants that are tagged for this table regardless of whatever other
   // reason there may be to exclude them
   unknownSignificanceResultsFiltered.push(...unknownSignificanceFromAnnotation);
-
-  // add variants that are tagged for this table based on gene properties alone
-  unknownSignificanceResultsFiltered.push(...unknownSignificanceFromGeneProperty);
 
   return unknownSignificanceResultsFiltered;
 };
