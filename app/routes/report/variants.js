@@ -47,6 +47,26 @@ const geneLinkedVariantTypes = ['mut', 'cnv', 'exp'];
 const getRapidReportVariants = async (tableName, variantType, reportId, rapidTable) => {
   let allKbMatches;
 
+  const kbmatchJoin = {
+    model: db.models.kbMatches,
+    attributes: {exclude: KBMATCHEXCLUDE},
+    include: [
+      {
+        model: db.models.kbMatchedStatements,
+        as: 'kbMatchedStatements',
+        attributes: {
+          exclude: STATEMENTEXCLUDE,
+        },
+        through: {attributes: ['flags']},
+      },
+    ],
+  };
+
+  // get variants that don't have kbmatches in the unknownSignificance table (if gene check passes)
+  if (rapidTable === 'unknownSignificance') {
+    kbmatchJoin.include[0].required = false;
+  }
+
   const query = {
     order: [['id', 'ASC']],
     attributes: {
@@ -56,20 +76,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
       reportId,
     },
     include: [
-      {
-        model: db.models.kbMatches,
-        attributes: {exclude: KBMATCHEXCLUDE},
-        include: [
-          {
-            model: db.models.kbMatchedStatements,
-            as: 'kbMatchedStatements',
-            attributes: {
-              exclude: STATEMENTEXCLUDE,
-            },
-            through: {attributes: ['flags']},
-          },
-        ],
-      },
+      kbmatchJoin,
       {
         model: db.models.observedVariantAnnotations,
         attributes: {exclude: OBSVARANNOTEXCLUDE},
@@ -107,9 +114,28 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   const therapeuticResultsFromAnnotation = [];
   const cancerRelevanceResultsFromAnnotation = [];
   const unknownSignificanceFromAnnotation = [];
+  const unknownSignificanceFromGeneProperty = [];
   const doNotReport = [];
 
   const tumourSuppressorLofVariants = {};
+
+  // separate out variants with no kbmatches, if filtering for table 3
+  if (rapidTable === 'unknownSignificance') {
+    for (const variant of allKbMatches) {
+      // don't use this variant if it has no tagged kb statements
+      if (variant.kbMatches.length === 0) {
+        if (variant.gene.cancerGeneListMatch
+            || variant.gene.oncogene
+            || variant.gene.tumourSuppressor) {
+          unknownSignificanceFromGeneProperty.push(variant);
+        }
+      }
+    }
+  }
+  // remove the kbmatch-less variants from further sorting
+  allKbMatches = allKbMatches.filter((variant) => {
+    return (variant.kbMatches.length > 0);
+  });
 
   for (const variant of allKbMatches) {
     // check whether the variant has LOF effect on tumour suppressor gene
@@ -341,6 +367,10 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   // add variants that are tagged for this table regardless of whatever other
   // reason there may be to exclude them
   unknownSignificanceResultsFiltered.push(...unknownSignificanceFromAnnotation);
+
+  // add variants that are tagged for this table based on gene properties alone
+  unknownSignificanceResultsFiltered.push(...unknownSignificanceFromGeneProperty);
+
   return unknownSignificanceResultsFiltered;
 };
 

@@ -843,6 +843,48 @@ describe('/reports/{REPORTID}/variants', () => {
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
+    test('Variants with no kbmatches can be put in table 3 if gene is tumourSuppressor, cancergenelist or oncogene - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([
+        {name: 'TA4agene', oncogene: true},
+        {name: 'TA4bgene', cancerGeneListMatch: true},
+        {name: 'TA4cgene', tumourSuppressor: true},
+        {name: 'TA4dgene'},
+      ]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA4agene',
+        key: 'TA4a',
+        displayName: 'TA4a',
+      },
+      {
+        gene: 'TA4bgene',
+        key: 'TA4b',
+        displayName: 'TA4b',
+      },
+      {
+        gene: 'TA4cgene',
+        key: 'TA4c',
+        displayName: 'TA4c',
+      },
+      {
+        gene: 'TA4dgene',
+        key: 'TA4d',
+        displayName: 'TA4d',
+      }]);
+      const reportIdent = await createReport(newMockReportData);
+
+      let table = await checkRapidReportTable(reportIdent.ident, 'TA4a', 'mut');
+      expect(table).toBe('unknownSignificance');
+      table = await checkRapidReportTable(reportIdent.ident, 'TA4b', 'mut');
+      expect(table).toBe('unknownSignificance');
+      table = await checkRapidReportTable(reportIdent.ident, 'TA4c', 'mut');
+      expect(table).toBe('unknownSignificance');
+      table = await checkRapidReportTable(reportIdent.ident, 'TA4d', 'mut');
+      expect(table).toBe('noTable');
+
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
     test('LOF promotion: Qualifying mutation-type matches promoted if lof variant on tumour suppressor gene found - OK', async () => {
       // TA1 - expect lof promotion to occur - table 1
       const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
