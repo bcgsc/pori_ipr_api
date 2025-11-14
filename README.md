@@ -155,6 +155,16 @@ Once you are done with testing, delete the temporary database
 dropdb -U ipr_service -h iprdevdb.bcgsc.ca DEVSU-777-temp-ipr-sync-dev
 ```
 
+## Seeder
+
+Use seeder to load the default templates, projects and users for db.
+
+```bash
+npx sequelize-cli db:seed:all --url "postgres://$IPR_SERVICE_USER:$IPR_SERVICE_PASS@$IPR_DATABASE_SERVER/$IPR_DATABASE_NAME"
+
+npx sequelize-cli db:seed:undo --url "postgres://$IPR_SERVICE_USER:$IPR_SERVICE_PASS@$IPR_DATABASE_SERVER/$IPR_DATABASE_NAME"
+```
+
 ## Database Insert Not Through API
 
 When adding/inserting entries directly into a database table without using the API, be sure to update the primary key (id)
@@ -247,7 +257,7 @@ pm2 start current/pm2.config.js --env production
 │   │
 │   ├── middleware                      # Middleware
 │   │                                   Location for all globally required middleware definitions.
-│   │ 
+│   │
 │   ├── schemas                         # Schemas
 │   │                                   Location for all globally required schema definitions.
 │   │
@@ -299,7 +309,7 @@ pm2 start current/pm2.config.js --env production
 │
 ├── migrations                          # Migrations
 │                                       Contains files for updating db schemas and data
-│ 
+│
 └── migrationTools                      # Migration Tools
                                         Contains files with functions to help with migrations
 ```
@@ -330,3 +340,25 @@ docker run -e IPR_DATABASE_HOSTNAME=localhost \
   --mount type=bind,source="$(pwd)"/keys,target=/keys \
   bcgsc/pori-ipr-api:latest
 ```
+
+## Reports search endpoint
+
+The search feature enables users to search for report(s) that match a given set of keywords in different categories. The search algorithm is pg_trigram fuzzy search, which allows for partial matches, dependant on the provided threshold
+
+Syntax: **/reports?searchParams=[<category>|<keyword>|<threshold>]**
+
+- *[]*: indicators of a search parameter block. A query can contain one or many parameter blocks
+- *category*: the search category that a report belongs to. Possible values include patientId, projectName, diagnosis, keyVariant, kbVariant, structuralVariant, smallMutation, and therapeuticTarget
+- *keyword*: the search keyword that a report can match with. Could be a variant name or a therapeutic target name
+- *threshold*: the matching threshold scales from 0 to 1 and determines the cutoff of similarity between the search keyword and a match value. A threshold of 1 means the entire match value or a substring of it is identical to the search keyword.
+
+Example query: **/reports?searchParams=[keyVariant|EGFR|0.8][diagnosis|lung cancer|0.65]**
+
+## Compatibility Matrix
+
+| IPR API | IPR Client | GraphKB API |
+|---------|------------|-------------|
+| v8.3.0  | ~v7.1.2    | ~v3.16.0    |
+| v8.2.0  | ~v7.1.0    | ~v3.15.0    |
+| v8.1.0  | ~v7.0.0    | ~v3.15.0    |
+| v8.0.0  | ~v6.30.0   | ~v3.15.0    |

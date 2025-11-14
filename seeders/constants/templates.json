@@ -1,0 +1,124 @@
+[
+    {
+        "id": 2,
+        "ident": "06840983-066c-4f17-b8a0-74d9d5459d6c",
+        "name": "probe",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "kb-matches",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 2,
+        "description": null,
+        "editable": false
+    },
+    {
+        "id": 5,
+        "ident": "0dea4c9e-7bfc-44ef-9367-5836a1b81aed",
+        "name": "COMPARISON",
+        "organization": null,
+        "sections": [
+            "summary",
+            "kb-matches",
+            "small-mutations",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 3,
+        "description": null,
+        "editable": false
+    },
+    {
+        "id": 6,
+        "ident": "db8fd451-fbd6-4dd4-8157-1177e8338ac4",
+        "name": "TCGA-cBioportal",
+        "organization": null,
+        "sections": [
+            "summary",
+            "analyst-comments",
+            "therapeutic-targets",
+            "kb-matches",
+            "expression",
+            "structural-variants",
+            "copy-number",
+            "small-mutations"
+        ],
+        "logo_id": null,
+        "header_id": null,
+        "description": null,
+        "editable": false
+    },
+    {
+        "id": 1,
+        "ident": "2f70d2a5-975b-4ffe-a1e6-f821a075c0dd",
+        "name": "genomic",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "analyst-comments",
+            "pathway-analysis",
+            "therapeutic-targets",
+            "kb-matches",
+            "slides",
+            "discussion",
+            "microbial",
+            "expression-correlation",
+            "mutation-signatures",
+            "mutation-burden",
+            "immune",
+            "small-mutations",
+            "copy-number",
+            "structural-variants",
+            "expression",
+            "appendices",
+            "pharmacogenomic",
+            "cancer-predisposition"
+        ],
+        "logo_id": null,
+        "header_id": 1,
+        "description": null,
+        "editable": false
+    },
+    {
+        "id": 7,
+        "ident": "6b45edb8-7f0f-4603-920c-1a3f031eca6a",
+        "name": "pharmacogenomic",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 1,
+        "description": null,
+        "editable": false
+    },
+    {
+        "id": 11,
+        "ident": "ce9dd5b6-2541-4e0b-8a66-ad094808cd16",
+        "name": "rapid",
+        "organization": "BC Cancer",
+        "sections": [
+            "summary",
+            "kb-matches",
+            "appendices"
+        ],
+        "logo_id": null,
+        "header_id": 1,
+        "description": null,
+        "editable": false
+    },
+    {
+        "id": 16,
+        "ident": "ea3e2dd2-1da0-454a-9299-1ef770524559",
+        "name": "legacy",
+        "organization": null,
+        "sections": [],
+        "logo_id": null,
+        "header_id": null,
+        "description": null,
+        "editable": false
+    }
+]

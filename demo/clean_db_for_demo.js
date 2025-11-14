@@ -30,6 +30,8 @@ const TRUNCATE_TABLES = [
   'germline_small_mutations_review',
   'germline_small_mutations_variant',
   'notifications',
+  'notifications_tracks',
+  'reports_users',
 ];
 
 const checkReportsCount = async (queryInterface, transaction, minReports = 3) => {
@@ -155,6 +157,78 @@ const addDemoUserToProject = async (queryInterface, transaction, demoUser, proje
       },
     );
   }
+};
+
+const addPoriAdminUser = async (queryInterface, transaction) => {
+  console.log('create the pori_admin user. we assume the user does not already exist');
+  const [[poriAdmin]] = await queryInterface.sequelize.query(
+    `INSERT INTO users (
+        ident, username, password, type,
+        "firstName", "lastName", "email",
+        created_at, deleted_at, updated_at
+      ) values (
+        :uuid, :username, '', :type,
+        :firstName, :lastName, :email,
+        NOW(), NULL, NOW()
+      ) RETURNING id`,
+    {
+      transaction,
+      replacements: {
+        username: 'pori_admin',
+        firstName: 'pori_admin',
+        lastName: 'pori_admin',
+        type: 'bcgsc',
+        email: 'change@me.ca',
+        uuid: uuidv4(),
+      },
+    },
+  );
+  console.log('created', poriAdmin);
+
+  await queryInterface.sequelize.query(
+    `INSERT INTO user_metadata (
+        ident, user_id,
+        created_at, updated_at
+      ) values (
+        :uuid, :id,
+        NOW(), NOW()
+      )`,
+    {
+      transaction,
+      replacements: {
+        uuid: uuidv4(),
+        id: poriAdmin.id,
+      },
+    },
+  );
+
+  const [group] = await queryInterface.sequelize.query(
+    'SELECT * FROM user_groups WHERE deleted_at IS NULL AND name = :name',
+    {
+      transaction,
+      type: queryInterface.sequelize.QueryTypes.SELECT,
+      replacements: {
+        name: 'admin',
+      },
+    },
+  );
+
+  await queryInterface.sequelize.query(
+    `INSERT INTO user_group_members (
+        user_id, group_id,
+        created_at, deleted_at, updated_at
+      ) values (
+        :userId, :groupId,
+        NOW(), NULL, NOW()
+      )`,
+    {
+      transaction,
+      replacements: {
+        userId: poriAdmin.id,
+        groupId: group.id,
+      },
+    },
+  );
 };
 
 const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
@@ -435,6 +509,17 @@ const cleanDb = async () => {
     );
 
     await queryInterface.sequelize.query(
+      'UPDATE projects SET "updated_by" = NULL',
+      {transaction},
+    );
+
+    await queryInterface.sequelize.query(
+      `DELETE FROM report_projects
+        WHERE NOT (project_id in (select id from projects where name in (:projects)))`,
+      {transaction, replacements: {projects: ['PORI', 'TEST']}},
+    );
+
+    await queryInterface.sequelize.query(
       'UPDATE reports SET "createdBy_id" = NULL',
       {transaction},
     );
@@ -442,6 +527,7 @@ const cleanDb = async () => {
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
     await cleanUsers(queryInterface, transaction, reportsToKeep);
+    await addPoriAdminUser(queryInterface, transaction);
     await checkReportsCount(queryInterface, transaction, reportsToKeep.length);
 
     console.log('anonymize reports_pairwise_expression_correlation patient id data');

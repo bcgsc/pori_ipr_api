@@ -21,6 +21,7 @@ const EXCLUDE_SECTIONS = new Set([
   'ReportUserFilter',
   'users',
   'kbMatchedStatements',
+  'observedVariantAnnotations',
 ]);
 
 /**
@@ -127,6 +128,42 @@ const createStatementMatching = async (reportId, content, createdKbMatches, tran
 };
 
 /**
+ * Creates a new section for the report with the provided data
+ *
+ * @param {Number} reportId - The id of the report this section belongs to
+ * @param {Array|Object} sectionContent - The record or records to be created for this section
+ * @param {object} options - Options for creating report sections
+ * @property {object} options.transaction - Transaction to run bulkCreate under
+ *
+ * @returns {undefined}
+ */
+const createReportObservedVariantAnnotationSection = async (reportId, sectionContent, options = {}) => {
+  const records = Array.isArray(sectionContent)
+    ? sectionContent
+    : [sectionContent];
+  const retvals = [];
+  try {
+    for (const record of records) {
+      const annotationData = {
+        variantType: record.variantType,
+        variantId: record.variantId,
+        annotations: record.annotations,
+      };
+
+      const annotation = await db.models.observedVariantAnnotations.create({
+        reportId,
+        ...annotationData,
+      }, options);
+      annotation.dataValues.variant = record.variant;
+      retvals.push(annotation.dataValues);
+    }
+    return retvals;
+  } catch (error) {
+    throw new Error(`Unable to create section observedVariantAnnotation: ${error.message || error}`);
+  }
+};
+
+/**
  * Given the content for a report to be created, pull gene names from
  * the variant sections and create the genes which will be used as
  * foreign keys in these records
@@ -170,7 +207,6 @@ const createReportGenes = async (report, content, options = {}) => {
     for (const gene of genes) {
       geneDefns[gene.name] = gene.id;
     }
-
     return geneDefns;
   } catch (error) {
     throw new Error(`Unable to create report genes ${error.message || error}`);
@@ -184,33 +220,49 @@ const createReportGenes = async (report, content, options = {}) => {
  * @returns {object} content - The reformatted data
  */
 const updateKbMatchesInputFormat = (content) => {
-  content.kbMatches.forEach((item) => {
-    if ('kbStatementId' in item) {
-      const statement = {...item};
-      delete statement.variantType;
-      delete statement.variantId;
-      delete statement.kbVariant;
-      delete statement.kbVariantId;
-      delete statement.variant;
+  if (content.kbMatches) {
+    content.kbMatches.forEach((item) => {
+      if ('kbStatementId' in item) {
+        const statement = {...item};
+        delete statement.variantType;
+        delete statement.variantId;
+        delete statement.kbVariant;
+        delete statement.kbVariantId;
+        delete statement.variant;
 
-      if (!('kbMatchedStatements' in content)) {
-        content.kbMatchedStatements = [];
-      }
-      content.kbMatchedStatements.push(statement);
+        if (!('kbMatchedStatements' in content)) {
+          content.kbMatchedStatements = [];
+        }
+        const stmtIds = content.kbMatchedStatements.map((s) => {return s.kbStatementId;});
+        if (!stmtIds.includes(statement.kbStatementId)) {
+          content.kbMatchedStatements.push(statement);
+        }
 
-      const conditionSet = {
-        kbStatementId: item.kbStatementId,
-        matchedConditions: [{
-          observedVariantKey: item.variant,
-          kbVariantId: item.kbVariantId,
-        }],
-      };
-      if (!('kbStatementMatchedConditions' in content)) {
-        content.kbStatementMatchedConditions = [];
+        const conditionSet = {
+          kbStatementId: item.kbStatementId,
+          matchedConditions: [{
+            observedVariantKey: item.variant,
+            kbVariantId: item.kbVariantId,
+          }],
+        };
+
+        if (!('kbStatementMatchedConditions' in content)) {
+          content.kbStatementMatchedConditions = [];
+        }
+        const exists = content.kbStatementMatchedConditions.some((cs) => {
+          return cs.kbStatementId === conditionSet.kbStatementId
+          && cs.matchedConditions.length === conditionSet.matchedConditions.length
+          && cs.matchedConditions.every((mc, index) => {
+            return mc.observedVariantKey === conditionSet.matchedConditions[index].observedVariantKey
+            && mc.kbVariantId === conditionSet.matchedConditions[index].kbVariantId;
+          });
+        });
+        if (!exists) {
+          content.kbStatementMatchedConditions.push(conditionSet);
+        }
       }
-      content.kbStatementMatchedConditions.push(conditionSet);
-    }
-  });
+    });
+  }
   return content;
 };
 
@@ -237,10 +289,8 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
       keyCheck.add(key);
     }
   }
-
   try {
     if (modelName === 'structuralVariants') {
-      // add the gene FK associations
       records = await db.models[modelName].bulkCreate(sectionContent.map(({
         key, gene1, gene2, ...newEntry
       }) => {
@@ -252,7 +302,6 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
         };
       }), options);
     } else {
-      // add the gene FK association
       records = await db.models[modelName].bulkCreate(sectionContent.map(({key, gene, ...newEntry}) => {
         return {
           ...newEntry,
@@ -264,7 +313,6 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   } catch (error) {
     throw new Error(`Unable to create variant section (${modelName}) ${error.message || error}`);
   }
-
   const mapping = {};
   for (let i = 0; i < sectionContent.length; i++) {
     if (sectionContent[i].key) {
@@ -291,12 +339,10 @@ const createReportVariantSections = async (report, content, transaction) => {
     const mapping = await createReportVariantsSection(report.id, geneDefns, variantModel, content[variantModel] || [], {transaction});
     variantMapping[variantType] = mapping;
   });
-
   // create the probe results (linked to gene but not to kbMatches)
   variantPromises.push(createReportVariantsSection(report.id, geneDefns, 'probeResults', content.probeResults || [], {transaction}));
 
   await Promise.all(variantPromises);
-
   // then the kb matches which must be linked to the variants
   const kbMatches = (content.kbMatches || []).map(({variant, variantType, ...match}) => {
     if (variantMapping[variantType] === undefined) {
@@ -313,6 +359,19 @@ const createReportVariantSections = async (report, content, transaction) => {
   const createdKbMatches = await createReportKbMatchSection(report.id, 'kbMatches', kbMatches, {transaction});
 
   await createStatementMatching(report.id, content, createdKbMatches, transaction);
+  // then the observed variant annotations which must be linked to the variants
+
+  const observedVariantAnnotations = (content.observedVariantAnnotations || []).map(({variant, variantType, ...annotation}) => {
+    if (variantMapping[variantType] === undefined) {
+      throw new Error(`cannot link annotations to variant type ${variantType} as none were specified`);
+    }
+    if (variantMapping[variantType][variant] === undefined) {
+      throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
+    }
+    return {...annotation, variantId: variantMapping[variantType][variant], variantType, variant};
+  });
+
+  await createReportObservedVariantAnnotationSection(report.id, observedVariantAnnotations, {transaction});
 };
 
 /**

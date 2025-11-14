@@ -51,6 +51,36 @@ router.route('/schema')
   .get((req, res) => {
     const schema = removeKeys(reportUploadSchema, '$id');
     return res.json(schema);
+  })
+  .post(async (req, res) => {
+    if (req.body.sampleInfo) {
+      // Clean sampleInfo input
+      const cleanSampleInfo = [];
+      for (const sampleInfoObject of req.body.sampleInfo) {
+        cleanSampleInfo.push(
+          {
+            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
+            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
+            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
+            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
+            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
+            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
+            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
+          },
+        );
+      }
+      req.body.sampleInfo = cleanSampleInfo;
+    }
+
+    try {
+      validateAgainstSchema(reportUploadSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the report content ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    return res.status(HTTP_STATUS.OK).json({message: 'json validated success'});
   });
 
 router.route('/:report')
@@ -108,6 +138,48 @@ router.route('/:report')
       logger.error(`Error trying to delete report ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error trying to delete report'}});
     }
+  });
+
+router.route('/:report/state-history')
+  .get(async (req, res) => {
+    let reportHistory = [];
+    try {
+      reportHistory = await db.models.report.findAll({
+        where: {ident: req.params.report},
+        attributes: ['ident', 'updatedAt', 'state'],
+        order: [
+          ['updatedAt', 'ASC'],
+        ],
+        paranoid: false,
+      });
+    } catch (error) {
+      logger.error(`Error while trying to get report: ${req.params.report} ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while trying to get report'}});
+    }
+
+    // Nothing found?
+    if (reportHistory.length === 0) {
+      logger.error(`Unable to find the requested report ${req.params.report}`);
+      return res.status(HTTP_STATUS.NOT_FOUND).json({error: {message: 'Unable to find the requested report'}});
+    }
+
+    if (!hasAccessToUnreviewedReports(req.user) && (reportHistory[reportHistory.length - 1].state !== 'reviewed' && reportHistory[reportHistory.length - 1].state !== 'completed')) {
+      logger.error(`User does not have unreviewed access to ${req.params.report}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Unreviewed reports'}});
+    }
+
+    if (!hasAccessToNonProdReports(req.user) && reportHistory[reportHistory.length - 1].state === 'nonproduction') {
+      logger.error(`User does not have non-production access to ${req.params.report}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: {message: 'User does not have access to Non-Production reports'}});
+    }
+
+    const filteredReportHistory = [reportHistory[0]];
+    for (let i = 1; i < reportHistory.length; i++) {
+      if (reportHistory[i].state !== reportHistory[i - 1].state) {
+        filteredReportHistory.push(reportHistory[i]);
+      }
+    }
+    return res.json(filteredReportHistory);
   });
 
 // Act on all reports
@@ -333,15 +405,6 @@ router.route('/')
         projectIdArray.push(project.project_id);
       });
 
-      await db.models.notification.findOrCreate({
-        where: {
-          userId: req.user.id,
-          eventType: NOTIFICATION_EVENT.REPORT_CREATED,
-          templateId: report.templateId,
-          projectId: report.projects[0].project_id,
-        },
-      });
-
       await email.notifyUsers(
         `Report Created: ${req.body.patientId} ${req.body.template}`,
         `New report:
@@ -349,11 +412,15 @@ router.route('/')
         Created by: ${req.user.firstName} ${req.user.lastName}
         Project: ${req.body.project}
         Template: ${req.body.template}
-        Patient: ${req.body.patientId}`,
+        Patient: ${req.body.patientId}
+
+        You're receiving this email because you have email notifications enabled in your account settings.
+        If you no longer wish to receive these notifications, you can unsubscribe at any time by visiting your User Profile and turning off the "Allow email notifications" option.`,
         {
+          userId: req.user.id,
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
-          projectId: projectIdArray,
+          projectId: report.projects[0].project_id,
         },
       );
 

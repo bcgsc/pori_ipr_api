@@ -405,6 +405,21 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   });
 }
 
+for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
+  sequelize.models[modelName].hasMany(summary.genomicAlterationsIdentified, {
+    foreignKey: 'variantId',
+    constraints: false,
+    scope: {
+      [KB_PIVOT_COLUMN]: pivotValue,
+    },
+  });
+  summary.genomicAlterationsIdentified.belongsTo(sequelize.models[modelName], {
+    foreignKey: 'variantId',
+    constraints: false,
+    as: modelName,
+  });
+}
+
 // IMPORTANT: Must be defined after variant models so that the includes can be found
 const observedVariantAnnotations = require('./reports/observedVariantAnnotations')(sequelize, Sq);
 
@@ -423,6 +438,13 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
     as: modelName,
   });
 }
+
+observedVariantAnnotations.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+});
+analysisReports.hasMany(observedVariantAnnotations, {
+  as: 'observedVariantAnnotations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+});
 
 // Presentation Data
 const presentation = {};
