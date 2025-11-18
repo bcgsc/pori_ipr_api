@@ -358,7 +358,7 @@ Example query: **/reports?searchParams=[keyVariant|EGFR|0.8][diagnosis|lung canc
 
 | IPR API | IPR Client | GraphKB API |
 |---------|------------|-------------|
-| v8.2.1  | ~v7.1.2    | ~v3.16.0    |
+| v8.3.0  | ~v7.1.2    | ~v3.16.0    |
 | v8.2.0  | ~v7.1.0    | ~v3.15.0    |
 | v8.1.0  | ~v7.0.0    | ~v3.15.0    |
 | v8.0.0  | ~v6.30.0   | ~v3.15.0    |
