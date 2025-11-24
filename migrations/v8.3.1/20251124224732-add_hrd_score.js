@@ -1,18 +1,20 @@
+const TABLE = 'reports';
+
 module.exports = {
-  async up(queryInterface, Sq) {
+  up: async (queryInterface, Sq) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
       await queryInterface.addColumn(
-        'reports',
+        TABLE,
         'hrd_score',
         {
-          type: Sq.Float,
+          type: Sq.FLOAT,
         },
         {transaction},
       );
     });
   },
 
-  async down() {
+  down: async () => {
     throw new Error('Not Implemented!');
   },
 };
