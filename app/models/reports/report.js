@@ -26,6 +26,11 @@ module.exports = (sequelize, Sq) => {
       field: 'hrdetect_score',
       type: Sq.FLOAT,
     },
+    hrdScore: {
+      name: 'hrdScore',
+      field: 'hrd_score',
+      type: Sq.FLOAT,
+    },
     genomeTmb: {
       name: 'genomeTmb',
       field: 'genome_tmb',
