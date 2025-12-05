@@ -353,12 +353,12 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
 
   // add variants back to unknownSig list, that are tagged for this table based on gene properties alone
   // so that they can be filtered out of results if they are in TA or CR
-  const existingVariantIds = new Set(unknownSignificanceResults.map((variant) => {return variant.id;}));
+  const existingVariants = new Set(unknownSignificanceResults.map((variant) => {return variant.ident;}));
 
   unknownSignificanceFromGeneProperty.forEach((variant) => {
-    if (!existingVariantIds.has(variant.id)) {
+    if (!existingVariants.has(variant.ident)) {
       unknownSignificanceResults.push(variant);
-      existingVariantIds.add(variant.id);
+      existingVariants.add(variant.ident);
     }
   });
 
