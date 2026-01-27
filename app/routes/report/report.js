@@ -417,7 +417,6 @@ router.route('/')
         You're receiving this email because you have email notifications enabled in your account settings.
         If you no longer wish to receive these notifications, you can unsubscribe at any time by visiting your User Profile and turning off the "Allow email notifications" option.`,
         {
-          userId: req.user.id,
           eventType: NOTIFICATION_EVENT.REPORT_CREATED,
           templateId: report.templateId,
           projectId: report.projects[0].project_id,
