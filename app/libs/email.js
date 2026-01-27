@@ -8,12 +8,11 @@ const getEmailList = async (triggers) => {
   const notifs = await db.models.notification.scope('extended').findAll({
     where: triggers,
   });
-
   const emailList = [];
   for (const notif of notifs) {
     if (notif.user) {
       if (!emailList.some((el) => {return el.toEmail === notif.user.email;})
-          && notif.user.email.endsWith(domain)
+          && notif.user.email.endsWith(domain)  // TODO: remove after feature is working internally
           && notif.user.allowNotifications) {
         emailList.push({toEmail: notif.user.email, notifId: notif.id, eventType: notif.eventType});
       }
@@ -21,14 +20,13 @@ const getEmailList = async (triggers) => {
     if (notif.userGroup) {
       for (const groupUser of notif.userGroup.users) {
         if (!emailList.some((el) => {return el.toEmail === groupUser.email;})
-            && groupUser.email.endsWith(domain)
+            && groupUser.email.endsWith(domain)  // TODO: remove
             && groupUser.allowNotifications) {
           emailList.push({toEmail: groupUser.email, notifId: notif.id, eventType: notif.eventType});
         }
       }
     }
   }
-
   return emailList;
 };
 
