@@ -360,6 +360,23 @@ router.route('/')
     const {
       query: {ignore_extra_fields, upload_contents},
     } = req;
+
+    let userProjects;
+    try {
+      userProjects = await getUserProjects(db.models.project, req.user);
+      userProjects = userProjects.map((proj) => {
+        return proj.name;
+      });
+    } catch (error) {
+      const message = `Error while trying to get project access ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
+    }
+
+    if (req.body.project && !userProjects.includes(req.body.project)) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: `User does not have access to project ${req.body.project}`});
+    }
+
     if (req.body.sampleInfo) {
       // Clean sampleInfo input
       const cleanSampleInfo = [];
