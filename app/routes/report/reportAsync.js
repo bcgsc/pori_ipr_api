@@ -4,7 +4,7 @@ const {v4: uuidv4} = require('uuid');
 const reportAsyncMiddleware = require('../../middleware/reportAsync');
 
 const {addJobToReportQueue} = require('../../queue');
-
+const db = require('../../models');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
