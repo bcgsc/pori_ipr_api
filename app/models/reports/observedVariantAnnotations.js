@@ -37,6 +37,11 @@ module.exports = (sequelize, Sq) => {
         },
       },
     },
+    flags: {
+      name: 'flags',
+      field: 'flags',
+      type: Sq.ARRAY(Sq.TEXT),
+    }
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_observed_variant_annotations',

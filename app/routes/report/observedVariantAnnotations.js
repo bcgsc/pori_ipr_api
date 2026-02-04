@@ -20,7 +20,7 @@ const createSchema = schemaGenerator(db.models.observedVariantAnnotations, {
 // we only want to allow updates to annotations
 const updateSchema = schemaGenerator(db.models.observedVariantAnnotations, {
   baseUri: REPORT_UPDATE_BASE_URI,
-  required: ['annotations'],
+  required: ['annotations', 'flags'],
   exclude: ['variantType', 'variantId', 'ident', 'createdAt'],
 });
 
