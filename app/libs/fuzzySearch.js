@@ -10,6 +10,8 @@ const PARAM_TABLE_MAP = {
   structuralVariant: 'reports_structural_variants',
   smallMutation: 'reports_small_mutations',
   therapeuticTarget: 'reports_therapeutic_targets',
+  mutationSignature: 'reports_mutation_signature',
+  msiStatus: 'reports_msi',
 };
 
 const PARAM_COLUMN_MAP = {
@@ -21,6 +23,8 @@ const PARAM_COLUMN_MAP = {
   structuralVariant: 'display_name',
   smallMutation: 'display_name',
   therapeuticTarget: 'therapy',
+  mutationSignature: 'signature',
+  msiStatus: 'score',
 };
 
 const PARAM_MODEL_MAP = {
@@ -32,6 +36,8 @@ const PARAM_MODEL_MAP = {
   structuralVariant: 'structuralVariants',
   smallMutation: 'smallMutations',
   therapeuticTarget: 'therapeuticTarget',
+  mutationSignature: 'mutationSignature',
+  msiStatus: 'msi',
 };
 
 const PARAM_ATTRIBUTE_MAP = {
@@ -43,6 +49,8 @@ const PARAM_ATTRIBUTE_MAP = {
   structuralVariant: ['displayName'],
   smallMutation: ['displayName'],
   therapeuticTarget: ['therapy', 'context'],
+  mutationSignature: ['signature', 'selected'],
+  msiStatus: ['score'],
 };
 
 const fuzzySearchQuery = (searchParams) => {
@@ -78,6 +86,31 @@ const fuzzySearchQuery = (searchParams) => {
                                   WHERE word_similarity >= ${matchingThreshold}
                                   ${fuzzyQuery ? 'INTERSECT' : ''}
                                   ${fuzzyQuery ?? ''}`;
+            fuzzyQuery = newFuzzyQuery;
+          } else if (tableName === 'reports_mutation_signature') {
+            const newFuzzyQuery = `SELECT "report_id"
+                                  FROM (SELECT report_id, word_similarity('${paramKeyword}', "${columnName}"), ${tableName}.deleted_at AS dlt 
+                                        FROM ${tableName}
+                                        WHERE selected=true) AS subquery
+                                  WHERE word_similarity >= ${matchingThreshold} AND dlt IS NULL
+                                  ${fuzzyQuery ? 'INTERSECT' : ''}
+                                  ${fuzzyQuery ?? ''}`;
+            fuzzyQuery = newFuzzyQuery;
+          } else if (tableName === 'reports_msi') {
+            let newFuzzyQuery;
+            if (paramKeyword.toLowerCase() === 'msi') {
+              newFuzzyQuery = `SELECT "report_id"
+                                FROM ${tableName}
+                                WHERE ${columnName} >= 20 AND deleted_at IS NULL
+                                ${fuzzyQuery ? 'INTERSECT' : ''}
+                                ${fuzzyQuery ?? ''}`;
+            } else if (paramKeyword.toLowerCase() === 'mss') {
+              newFuzzyQuery = `SELECT "report_id"
+                              FROM ${tableName}
+                              WHERE ${columnName} < 20 AND deleted_at IS NULL
+                              ${fuzzyQuery ? 'INTERSECT' : ''}
+                              ${fuzzyQuery ?? ''}`;
+            }
             fuzzyQuery = newFuzzyQuery;
           } else {
             const newFuzzyQuery = `SELECT "report_id"
@@ -121,12 +154,21 @@ const fuzzySearchInclude = (searchParams, db, searchCategory) => {
           const tableName = PARAM_TABLE_MAP[paramCategory];
           const columnName = PARAM_COLUMN_MAP[paramCategory];
           // Construct fuzzy search query
-          const newFuzzyQuery = `SELECT "${columnName}"
-                                FROM (SELECT "${columnName}", word_similarity('${paramKeyword}', "${columnName}") 
-                                      FROM ${tableName}) AS subquery
-                                WHERE word_similarity >= ${matchingThreshold}
-                                ${fuzzyQuery ? 'UNION' : ''}
-                                ${fuzzyQuery ?? ''}`;
+          let newFuzzyQuery;
+          if (tableName === 'reports_msi') {
+            newFuzzyQuery = `SELECT "${columnName}"
+                            FROM ${tableName}
+                            ${fuzzyQuery ? 'UNION' : ''}
+                            ${fuzzyQuery ?? ''}`;
+          } else {
+            newFuzzyQuery = `SELECT "${columnName}"
+                            FROM (SELECT "${columnName}", word_similarity('${paramKeyword}', "${columnName}") 
+                                  FROM ${tableName}) AS subquery
+                            WHERE word_similarity >= ${matchingThreshold}
+                            ${fuzzyQuery ? 'UNION' : ''}
+                            ${fuzzyQuery ?? ''}`;
+          }
+
           fuzzyQuery = newFuzzyQuery;
         }
       });
