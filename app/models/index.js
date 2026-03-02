@@ -289,6 +289,13 @@ analysisReports.hasMany(proteinVariants, {
 
 const observedVariantAnnotations = require('./reports/observedVariantAnnotations')(sequelize, Sq);
 
+observedVariantAnnotations.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+});
+analysisReports.hasMany(observedVariantAnnotations, {
+  as: 'observedVariantAnnotations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
+});
+
 for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   sequelize.models[modelName].hasOne(observedVariantAnnotations, {
     foreignKey: 'variantId',
