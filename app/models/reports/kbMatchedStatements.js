@@ -122,7 +122,16 @@ module.exports = (sequelize, Sq) => {
             as: 'kbMatches',
             include: [
               ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-                return {model: sequelize.models[modelName].scope('public'), as: modelName};
+                return {
+                  model: sequelize.models[modelName].scope('public'), 
+                  as: modelName,
+                  include: [
+                    {
+                      model: sequelize.models.observedVariantAnnotations,
+                      as: 'observedVariantAnnotation',
+                    }
+                  ]
+                };
               }),
             ],
             attributes: {

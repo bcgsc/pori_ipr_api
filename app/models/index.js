@@ -287,6 +287,24 @@ analysisReports.hasMany(proteinVariants, {
   as: 'proteinVariants', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
 });
 
+const observedVariantAnnotations = require('./reports/observedVariantAnnotations')(sequelize, Sq);
+
+for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
+  sequelize.models[modelName].hasOne(observedVariantAnnotations, {
+    foreignKey: 'variantId',
+    constraints: false,
+    scope: {
+      [KB_PIVOT_COLUMN]: pivotValue,
+    },
+    as: 'observedVariantAnnotation',
+  });
+  observedVariantAnnotations.belongsTo(sequelize.models[modelName], {
+    foreignKey: 'variantId',
+    constraints: false,
+    as: modelName,
+  });
+}
+
 // This adds the gene to variant relationships to the table which have a foreign key to the genes table
 for (const name of GENE_LINKED_VARIANT_MODELS) {
   const variantModel = sequelize.models[name];
@@ -420,31 +438,15 @@ for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
   });
 }
 
-// IMPORTANT: Must be defined after variant models so that the includes can be found
-const observedVariantAnnotations = require('./reports/observedVariantAnnotations')(sequelize, Sq);
+// IMPORTANT: Must add scope after variant models so that the includes can be found
+const extendedScope = {
+  attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
+  include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
+    return {model: sequelize.models[modelName].scope('public'), as: modelName};
+  }),
+};
 
-for (const [pivotValue, modelName] of Object.entries(KB_PIVOT_MAPPING)) {
-  sequelize.models[modelName].hasOne(observedVariantAnnotations, {
-    foreignKey: 'variantId',
-    constraints: false,
-    scope: {
-      [KB_PIVOT_COLUMN]: pivotValue,
-    },
-    as: 'observedVariantAnnotation',
-  });
-  observedVariantAnnotations.belongsTo(sequelize.models[modelName], {
-    foreignKey: 'variantId',
-    constraints: false,
-    as: modelName,
-  });
-}
-
-observedVariantAnnotations.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
-});
-analysisReports.hasMany(observedVariantAnnotations, {
-  as: 'observedVariantAnnotations', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true, foreignKeyConstraint: true,
-});
+observedVariantAnnotations.addScope('extended', extendedScope);
 
 // Presentation Data
 const presentation = {};
