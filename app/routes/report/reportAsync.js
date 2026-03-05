@@ -59,6 +59,14 @@ router.route('/')
       req.body.sampleInfo = cleanSampleInfo;
     }
 
+    if (req.body.seqQC) {
+      req.body.dataType = req.body.seqQC.filter(
+        (item) => {return item.Sample?.startsWith('Tumour');},
+      ).map(
+        (item) => {return item.Sample.replace(/^Tumour\s+/i, '');},
+      ).join(', ');
+    }
+
     try {
       // eslint-disable-next-line camelcase
       if (ignore_extra_fields) {
