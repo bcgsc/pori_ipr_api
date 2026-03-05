@@ -330,6 +330,8 @@ router.route('/')
         ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'structuralVariant') : []),
         ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'smallMutation') : []),
         ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'therapeuticTarget') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'mutationSignature') : []),
+        ...((searchParams) ? fuzzySearchInclude(searchParams, db, 'msiStatus') : []),
       ],
     };
 

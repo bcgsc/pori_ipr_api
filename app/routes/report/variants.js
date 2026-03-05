@@ -548,9 +548,11 @@ router.route('/set-summary-table/')
       if (!annotationMatch) {
         const newAnnotation = {...(annotation.annotations || {})};
         newAnnotation.rapidReportTableTag = req.body.rapidTable;
+        const newFlags = req.body.flags ?? null;
         try {
           await db.models.observedVariantAnnotations.update({
             annotations: newAnnotation,
+            flags: newFlags,
           }, {where: {id: annotation.id}});
         } catch (error) {
           logger.error(`Unable to create update observed variant annotation ${error}`);
@@ -566,6 +568,7 @@ router.route('/set-summary-table/')
           variantId: req.body.variantId,
           variantType: req.body.variantType,
           annotations: {rapidReportTableTag: req.body.rapidTable},
+          flags: req.body.flags ?? null,
           reportId: req.report.id,
         });
       } catch (error) {

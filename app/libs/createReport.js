@@ -148,6 +148,7 @@ const createReportObservedVariantAnnotationSection = async (reportId, sectionCon
         variantType: record.variantType,
         variantId: record.variantId,
         annotations: record.annotations,
+        flags: record.flags,
       };
 
       const annotation = await db.models.observedVariantAnnotations.create({

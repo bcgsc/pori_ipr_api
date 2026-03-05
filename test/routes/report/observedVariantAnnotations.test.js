@@ -101,6 +101,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'cnv',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
+          flags: ['test'],
         })
         .expect(StatusCodes.CREATED);
 
@@ -108,6 +109,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       const annotation = checkVar.observedVariantAnnotation;
       expect(annotation.variantType).toEqual('cnv');
       expect(annotation.annotations.rapidReportTableTag).toEqual('cancerRelevance');
+      expect(annotation.flags).toEqual(['test']);
     });
 
     test('Does not create new annotation with no matching variant - OK', async () => {
@@ -119,6 +121,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: 'hello',
           annotations: {rapidReportTableTag: 'therapeuticAssociation'},
+          flags: ['test'],
         })
         .expect(StatusCodes.BAD_REQUEST);
     });
@@ -132,6 +135,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'test',
           variantIdent: 'hello',
           annotations: {rapidReportTableTag: 'therapeuticAssociation'},
+          flags: ['test'],
         })
         .expect(StatusCodes.BAD_REQUEST);
     });
@@ -157,6 +161,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'therapeuticAssociation'},
+          flags: ['test'],
         })
         .expect(StatusCodes.CREATED);
 
@@ -168,6 +173,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: variant.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance'},
+          flags: ['test'],
         })
         .expect(StatusCodes.CONFLICT);
     });
@@ -198,18 +204,20 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: 'mut',
           variantIdent: origVariant.ident,
           annotations,
+          flags: ['test'],
         })
         .expect(StatusCodes.CREATED);
-      console.log('here in test at 205');
 
       // get the created variant annotation and check it's correct
       const createdVar = await getVariantByIdent(origVariant.ident, rapidReportIdent.ident);
       expect(createdVar.observedVariantAnnotation.annotations.secondTag).toEqual(annotations.secondTag);
       expect(createdVar.observedVariantAnnotation.annotations.rapidReportTableTag).toEqual(annotations.rapidReportTableTag);
+      expect(createdVar.observedVariantAnnotation.flags).toEqual(['test']);
 
       // do the update
       const updatedSecondTag = 'testValue2';
       annotations.secondTag = updatedSecondTag;
+      const updatedFlags = ['updated'];
 
       await request
         .put(`/api/reports/${rapidReportIdent.ident}/observed-variant-annotations/${createdVar.observedVariantAnnotation.ident}`)
@@ -217,6 +225,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .type('json')
         .send({
           annotations,
+          flags: updatedFlags,
         })
         .expect(StatusCodes.OK);
 
@@ -224,6 +233,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
       const updatedVar = await getVariantByIdent(origVariant.ident, rapidReportIdent.ident);
       expect(updatedVar.observedVariantAnnotation.annotations.secondTag).toEqual(updatedSecondTag);
       expect(updatedVar.observedVariantAnnotation.annotations.rapidReportTableTag).toEqual(annotations.rapidReportTableTag);
+      expect(updatedVar.observedVariantAnnotation.flags).toEqual(updatedFlags);
     });
   });
 
@@ -260,6 +270,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType,
           variantIdent: record.ident,
           annotations,
+          flags: ['test'],
         })
         .expect(StatusCodes.CREATED);
 
@@ -275,6 +286,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         .expect(StatusCodes.OK);
       const record2 = res2.body;
       expect(record2.observedVariantAnnotation.annotations.testTag).toEqual(annotations.testTag);
+      expect(record2.observedVariantAnnotation.flags).toEqual(['test']);
     });
 
     test('Annotations delivered with variants endpt - OK', async () => {
@@ -305,6 +317,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: record.variantType,
           variantIdent: record.ident,
           annotations,
+          flags: ['test'],
         })
         .expect(StatusCodes.CREATED);
 
@@ -317,6 +330,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
         return variant.ident === record.ident;
       })[0];
       expect(updatedRecord.observedVariantAnnotation.annotations.testTag).toEqual(annotations.testTag);
+      expect(updatedRecord.observedVariantAnnotation.flags).toEqual(['test']);
     });
 
     // skipping test as rapid report tagging now works through different endpoint
@@ -346,6 +360,7 @@ describe('/reports/{REPORTID}/observed-variant-annotations', () => {
           variantType: record.variantType,
           variantIdent: record.ident,
           annotations: {rapidReportTableTag: 'cancerRelevance', testTag: 'testValue'},
+          flags: ['test'],
         })
         .expect(StatusCodes.CREATED);
 
