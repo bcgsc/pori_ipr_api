@@ -6,6 +6,7 @@ const {
 module.exports = async (req, res, next) => {
   // Get Authorization Header
   const respUser = await getUser(req, res);
+  if (res.headersSent) return;
   req.user = respUser;
-  return next();
+  next();
 };

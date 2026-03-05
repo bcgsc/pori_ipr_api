@@ -45,11 +45,16 @@ const getUser = async (req, res) => {
     try {
       credentials = Buffer.from(token.split(' ')[1], 'base64').toString('utf-8').split(':');
     } catch (err) {
+      logger.error('The authentication header you provided was not properly formatted.');
       return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'The authentication header you provided was not properly formatted.'});
     }
     try {
       const respAccess = await keycloak.getToken(credentials[0], credentials[1]);
-      token = respAccess.access_token;
+      if (respAccess.error) {
+        logger.error(`Failed to get the keycloak token "${respAccess.error}": ${respAccess.error_description}`);
+      } else {
+        token = respAccess.access_token;
+      }
     } catch (error) {
       let errorDescription;
       try {
@@ -63,6 +68,7 @@ const getUser = async (req, res) => {
     }
   }
   if (!token) {
+    logger.error('Missing required Authorization token');
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'Missing required Authorization token'});
   }
 
@@ -72,10 +78,12 @@ const getUser = async (req, res) => {
     decoded = await jwt.verify(token, pubKey, {algorithms: ['RS256']});
   } catch (err) {
     logger.debug(`token verification failed against key ${nconf.get('keycloak:keyfile')}`);
+    logger.error(`Invalid or expired authorization token: (${err.message})`);
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: `Invalid or expired authorization token: (${err.message})`});
   }
   // Check for IPR access
   if (!decoded.realm_access.roles.includes(nconf.get('keycloak:role'))) {
+    logger.error('IPR Access Error: Keycloak role missing');
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'IPR Access Error: Keycloak role missing'});
   }
   const username = decoded.preferred_username;
@@ -107,7 +115,7 @@ const getUser = async (req, res) => {
         include,
       });
     } catch (err) {
-      logger.error(err);
+      logger.error(`Invalid authorization token: ${err}`);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({message: 'Invalid authorization token'});
     }
 
