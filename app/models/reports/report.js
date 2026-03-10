@@ -168,6 +168,12 @@ module.exports = (sequelize, Sq) => {
       type: Sq.STRING,
       defaultValue: null,
     },
+    dataType: {
+      name: 'dataType',
+      field: 'data_type',
+      type: Sq.STRING,
+      defaultValue: null,
+    },
     uploadContents: {
       name: 'uploadContents',
       field: 'upload_contents',
