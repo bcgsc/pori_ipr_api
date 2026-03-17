@@ -40,7 +40,7 @@ const getVariants = async (tableName, variantType, reportId) => {
   });
 };
 
-const unknownSignificanceIncludes = ['mut', 'cnv'];
+const unknownSignificanceIncludes = ['mut'];
 const cancerRelevanceOmits = ['exp'];
 const geneLinkedVariantTypes = ['mut', 'cnv', 'exp'];
 
