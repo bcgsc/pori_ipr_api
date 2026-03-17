@@ -37,24 +37,20 @@ module.exports = (sequelize, Sq) => {
         },
       },
     },
+    flags: {
+      name: 'flags',
+      field: 'flags',
+      type: Sq.ARRAY(Sq.TEXT),
+    },
   }, {
     ...DEFAULT_REPORT_OPTIONS,
     tableName: 'reports_observed_variant_annotations',
     scopes: {
       public: {
         attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
-        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-          return {model: sequelize.models[modelName].scope('public'), as: modelName};
-        }),
       },
       minimal: {
         attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
-      },
-      extended: {
-        attributes: {exclude: ['id', 'reportId', 'variantId', 'deletedAt', 'updatedBy']},
-        include: Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-          return {model: sequelize.models[modelName].scope('extended'), as: modelName};
-        }),
       },
     },
     hooks: {
