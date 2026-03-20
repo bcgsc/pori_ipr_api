@@ -15,10 +15,10 @@ const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../const
 
 // Generate schemas
 const createSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
-  baseUri: REPORT_CREATE_BASE_URI, propertiesToIgnore: ['variantIdent'],
+  baseUri: REPORT_CREATE_BASE_URI, additionalProperties: true,
 });
 const updateSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
-  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true, propertiesToIgnore: ['variantIdent'],
+  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true, additionalProperties: true,
 });
 
 // Middleware for genomic alterations
@@ -42,7 +42,8 @@ router.route('/:alteration([A-z0-9-]{36})')
     try {
       let variantId;
       if (req.body.variantIdent) {
-        const variant = await db.models.variant.findOne({
+        const modelName = KB_PIVOT_MAPPING[req.body.variantType];
+        const variant = await db.models[modelName].findOne({
           where: {ident: req.body.variantIdent},
         });
         variantId = variant.id;
@@ -124,7 +125,8 @@ router.route('/')
       req.body.reportId = req.report.id;
       let variantId;
       if (req.body.variantIdent) {
-        const variant = await db.models.variant.findOne({
+        const modelName = KB_PIVOT_MAPPING[req.body.variantType];
+        const variant = await db.models[modelName].findOne({
           where: {ident: req.body.variantIdent},
         });
         variantId = variant.id;
