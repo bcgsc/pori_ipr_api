@@ -1,8 +1,8 @@
 const getPort = require('get-port');
 const supertest = require('supertest');
 const HTTP_STATUS = require('http-status-codes');
-
 const db = require('../../../../app/models');
+const {KB_PIVOT_MAPPING} = require('../../../../app/constants');
 // get test user info
 const CONFIG = require('../../../../app/config');
 const {listen} = require('../../../../app');
@@ -10,18 +10,8 @@ const {listen} = require('../../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const ALTERATION_DATA = {
-  geneVariant: 'TEST GENE VARIANT',
-  germline: true,
-};
-
-const ALTERATION_UPDATE_DATA = {
-  geneVariant: 'UPDATED GENE VARIANT',
-  germline: false,
-};
-
 const alterationProperties = [
-  'ident', 'createdAt', 'geneVariant', 'germline',
+  'ident', 'createdAt', 'geneVariant', 'germline', 'variantType', 'variantIdent',
 ];
 
 const checkAlteration = (alterationObject) => {
@@ -44,6 +34,9 @@ const checkAlterations = (alterations) => {
 
 let server;
 let request;
+let variant;
+let ALTERATION_DATA;
+let ALTERATION_UPDATE_DATA;
 
 // Start API
 beforeAll(async () => {
@@ -63,6 +56,23 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
       templateId: template.id,
       patientId: 'PROBE_TEST_PATIENT',
     });
+
+    // Find a random variant for testing
+    const modelName = KB_PIVOT_MAPPING["cnv"];
+    variant = await db.models[modelName].findOne();
+    ALTERATION_DATA = {
+      geneVariant: 'TEST GENE VARIANT',
+      variantType: 'cnv',
+      variantIdent: variant.ident,
+      germline: true,
+    };
+
+    ALTERATION_UPDATE_DATA = {
+      geneVariant: 'UPDATED GENE VARIANT',
+      variantType: 'cnv',
+      variantIdent: variant.ident,
+      germline: false,
+    };
   });
 
   afterAll(async () => {
