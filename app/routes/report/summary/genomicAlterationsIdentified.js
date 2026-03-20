@@ -15,10 +15,10 @@ const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../const
 
 // Generate schemas
 const createSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
-  baseUri: REPORT_CREATE_BASE_URI,
+  baseUri: REPORT_CREATE_BASE_URI, propertiesToIgnore: ['variantIdent'],
 });
 const updateSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
-  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true,
+  baseUri: REPORT_UPDATE_BASE_URI, nothingRequired: true, propertiesToIgnore: ['variantIdent'],
 });
 
 // Middleware for genomic alterations
@@ -40,7 +40,14 @@ router.route('/:alteration([A-z0-9-]{36})')
     }
 
     try {
-      await req.alteration.update(req.body, {userId: req.user.id});
+      let variantId;
+      if (req.body.variantIdent) {
+        const variant = await db.models.variant.findOne({
+          where: {ident: req.body.variantIdent},
+        });
+        variantId = variant.id;
+      }
+      await req.alteration.update({...req.body, variantId}, {userId: req.user.id});
       return res.json(req.alteration.view('public'));
     } catch (error) {
       logger.error(`Unable to update genomic alterations ${error}`);
@@ -115,8 +122,14 @@ router.route('/')
 
     try {
       req.body.reportId = req.report.id;
-
-      const result = await db.models.genomicAlterationsIdentified.create(req.body);
+      let variantId;
+      if (req.body.variantIdent) {
+        const variant = await db.models.variant.findOne({
+          where: {ident: req.body.variantIdent},
+        });
+        variantId = variant.id;
+      }
+      const result = await db.models.genomicAlterationsIdentified.create({...req.body, variantId});
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create genomic alteration entry ${error}`);
