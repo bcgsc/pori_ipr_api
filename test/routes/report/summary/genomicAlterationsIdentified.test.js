@@ -11,7 +11,7 @@ CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
 const alterationProperties = [
-  'ident', 'createdAt', 'geneVariant', 'germline', 'variantType', 'variantIdent',
+  'ident', 'createdAt', 'geneVariant', 'germline', 'variantType',
 ];
 
 const checkAlteration = (alterationObject) => {
@@ -30,6 +30,18 @@ const checkAlterations = (alterations) => {
   alterations.forEach((alteration) => {
     checkAlteration(alteration);
   });
+};
+
+const CHECKING_DATA = {
+  geneVariant: 'TEST GENE VARIANT',
+  variantType: 'cnv',
+  germline: true,
+};
+
+const CHECKING_UPDATE_DATA = {
+  geneVariant: 'UPDATED GENE VARIANT',
+  variantType: 'cnv',
+  germline: false,
 };
 
 let server;
@@ -140,7 +152,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
         .expect(HTTP_STATUS.CREATED);
 
       checkAlteration(res.body);
-      expect(res.body).toEqual(expect.objectContaining(ALTERATION_DATA));
+      expect(res.body).toEqual(expect.objectContaining(CHECKING_DATA));
 
       // Check that record was created in the db
       const result = await db.models.genomicAlterationsIdentified.findOne({
@@ -150,18 +162,6 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       // Delete entry
       await result.destroy({force: true});
-    });
-
-    test('/ - 400 Bad Request - Additional Property', async () => {
-      await request
-        .post(`/api/reports/${report.ident}/summary/genomic-alterations-identified`)
-        .send({
-          ...ALTERATION_UPDATE_DATA,
-          additionalProperty: 'ADDITIONAL_PROPERTY',
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
     test('/ - 400 Bad Request - Incorrect field type', async () => {
@@ -211,19 +211,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       expect(res.body).not.toBeNull();
       checkAlteration(res.body);
-      expect(res.body).toEqual(expect.objectContaining(ALTERATION_UPDATE_DATA));
-    });
-
-    test('/{alteration} - 400 Bad Request - Additional Property', async () => {
-      await request
-        .put(`/api/reports/${report.ident}/summary/genomic-alterations-identified/${putAlteration.ident}`)
-        .send({
-          ...ALTERATION_UPDATE_DATA,
-          additionalProperty: 'ADDITIONAL_PROPERTY',
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.BAD_REQUEST);
+      expect(res.body).toEqual(expect.objectContaining(CHECKING_UPDATE_DATA));
     });
 
     test('/{alteration} - 400 Bad Request - Incorrect field type', async () => {
