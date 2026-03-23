@@ -70,7 +70,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
     });
 
     // Find a random variant for testing
-    const modelName = KB_PIVOT_MAPPING["cnv"];
+    const modelName = KB_PIVOT_MAPPING.cnv;
     variant = await db.models[modelName].findOne();
     ALTERATION_DATA = {
       geneVariant: 'TEST GENE VARIANT',
