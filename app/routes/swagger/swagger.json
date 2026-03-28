@@ -7619,6 +7619,216 @@
         }
       }
     },
+    "/reports/{report}/hla-types": {
+      "get": {
+        "summary": "Get HLA types",
+        "description": "Retrieve all HLA types that you have access to",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "HLA types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of HLA types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/hlaTypesAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Insufficient access to get HLA types"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add HLA type",
+        "description": "Upload a new HLA type",
+        "tags": [
+          "HLA types"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/hlaTypesCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns an object containing a message and the ident of the HLA type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "ident": {
+                      "$ref": "#/components/schemas/ident"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/reports/{report}/hla-types/{hlaType}": {
+      "get": {
+        "summary": "Get HLA Type",
+        "description": "Retrieve an HLA type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/hlaType"
+          }
+        ],
+        "tags": [
+          "HLA types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified HLA type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hlaTypesAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "HLA type not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update HLA Type",
+        "description": "Update the details of an HLA type",
+        "tags": [
+          "HLA types"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/hlaType"
+          }
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/hlaTypesUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the details of the updated HLA type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hlaTypesAssociations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "HLA type not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete HLA Type",
+        "description": "Removes the specified HLA type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/hlaType"
+          }
+        ],
+        "tags": [
+          "HLA types"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "HLA type not found"
+          }
+        }
+      }
+    },
     "/templates": {
       "get": {
         "summary": "Get Templates",
@@ -8662,6 +8872,16 @@
         "in": "path",
         "required": true,
         "description": "observed variant annotation ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "hlaType": {
+        "name": "hlaType",
+        "in": "path",
+        "required": true,
+        "description": "HLA types report ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"

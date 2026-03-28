@@ -4,12 +4,13 @@ const {v4: uuidv4} = require('uuid');
 const reportAsyncMiddleware = require('../../middleware/reportAsync');
 
 const {addJobToReportQueue} = require('../../queue');
-
+const db = require('../../models');
 const logger = require('../../log');
 
 const router = express.Router({mergeParams: true});
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
+const {getUserProjects} = require('../../libs/helperFunctions');
 
 // Generate schema's
 const reportUploadSchema = require('../../schemas/report/reportUpload')(true);
@@ -24,6 +25,21 @@ router.route('/')
       query: {ignore_extra_fields},
     } = req;
 
+    let userProjects;
+    try {
+      userProjects = await getUserProjects(db.models.project, req.user);
+      userProjects = userProjects.map((proj) => {
+        return proj.name;
+      });
+    } catch (error) {
+      const message = `Error while trying to get project access ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message}});
+    }
+
+    if (req.body.project && !userProjects.includes(req.body.project)) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({error: `User does not have access to project ${req.body.project}`});
+    }
     if (req.body.sampleInfo) {
       // Clean sampleInfo input
       const cleanSampleInfo = [];
@@ -41,6 +57,14 @@ router.route('/')
         );
       }
       req.body.sampleInfo = cleanSampleInfo;
+    }
+
+    if (req.body.seqQC) {
+      req.body.dataType = req.body.seqQC.filter(
+        (item) => {return item.Sample?.startsWith('Tumour');},
+      ).map(
+        (item) => {return item.Sample.replace(/^Tumour\s+/i, '');},
+      ).join(', ');
     }
 
     try {

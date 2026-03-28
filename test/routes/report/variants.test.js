@@ -815,7 +815,7 @@ describe('/reports/{REPORTID}/variants', () => {
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
-    test('CNVs can be put in table 3 - OK', async () => {
+    test('CNVs can not be put in table 3 - OK', async () => {
       const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
       newMockReportData.kbMatches = newMockReportData.kbMatches.concat([{
         category: 'therapeutic',
@@ -839,7 +839,7 @@ describe('/reports/{REPORTID}/variants', () => {
       const reportIdent = await createReport(newMockReportData);
 
       const table = await checkRapidReportTable(reportIdent.ident, 'TA4', 'cnv');
-      expect(table).toBe('unknownSignificance');
+      expect(table).toBe('noTable');
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
@@ -1489,20 +1489,20 @@ describe('/reports/{REPORTID}/variants/set-summary-table', () => {
     expect(therapeuticStatements.length).toBe(3); // #23 from two diff kbmatches; #25 from another kbmatch
 
     // Update variant and statements to unknownSignificance
-    await updateVariantTags(rapidReportIdent.ident, testVariant, stmtIds, 'unknownSignificance');
+    await updateVariantTags(rapidReportIdent.ident, testVariant, stmtIds, 'cancerRelevance');
 
     // fetch variant again and check annotation/kbMatchedStatements updated
     const [postUpdateVariant2] = await fetchVariants({
       reportId: rapidReportIdent.ident,
       geneName: 'TA3gene',
-      table: 'unknownSignificance',
+      table: 'cancerRelevance',
     });
     expect(postUpdateVariant2).toBeDefined();
     expect(postUpdateVariant2.ident).toBe(testVariant.ident);
 
     // Check that the expected statement tags have been updated
     const statements = postUpdateVariant2.kbMatches.flatMap((kb) => {return kb.kbMatchedStatements;});
-    assertTagPresence(statements, 'unknownSignificance', testVariant.variantType, testVariant.ident);
+    assertTagPresence(statements, 'cancerRelevance', testVariant.variantType, testVariant.ident);
     assertTagPresence(statements, 'therapeuticAssociation', testVariant.variantType, testVariant.ident, false);
   });
 
