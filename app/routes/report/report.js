@@ -9,7 +9,7 @@ const {parseReportSortQuery} = require('../../libs/queryOperations');
 const db = require('../../models');
 const logger = require('../../log');
 const {getUserProjects} = require('../../libs/helperFunctions');
-const {removeKeys} = require('../../libs/helperFunctions');
+const {removeKeys, cleanSampleInfo, cleanSeqQC} = require('../../libs/helperFunctions');
 
 const {hasAccessToNonProdReports,
   hasAccessToUnreviewedReports, isAdmin} = require('../../libs/helperFunctions');
@@ -54,45 +54,11 @@ router.route('/schema')
   })
   .post(async (req, res) => {
     if (req.body.sampleInfo) {
-      // Clean sampleInfo input
-      const cleanSampleInfo = [];
-      for (const sampleInfoObject of req.body.sampleInfo) {
-        cleanSampleInfo.push(
-          {
-            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
-            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
-            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
-            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
-            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
-            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
-            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
-          },
-        );
-      }
-      req.body.sampleInfo = cleanSampleInfo;
+      req.body.sampleInfo = cleanSampleInfo(req.body.sampleInfo);
     }
 
     if (req.body.seqQC) {
-      // Clean seqQC input
-      const cleanSeqQC = [];
-      for (const seqQCObject of req.body.seqQC) {
-        cleanSeqQC.push(
-          {
-            reads: (seqQCObject.Reads) ? seqQCObject.Reads : seqQCObject.reads,
-            bioQC: (seqQCObject.bioQC) ? seqQCObject.bioQC : seqQCObject.bioQC,
-            labQC: (seqQCObject.labQC) ? seqQCObject.labQC : seqQCObject.labQC,
-            sample: (seqQCObject.Sample) ? seqQCObject.Sample : seqQCObject.sampleName,
-            library: (seqQCObject.Library) ? seqQCObject.Library : seqQCObject.library,
-            coverage: (seqQCObject.Coverage) ? seqQCObject.Coverage : seqQCObject.coverage,
-            inputNg: (seqQCObject.Input_ng) ? seqQCObject.Input_ng : seqQCObject.inputNg,
-            inputUg: (seqQCObject.Input_ug) ? seqQCObject.Input_ug : seqQCObject.inputUg,
-            protocol: (seqQCObject.Protocol) ? seqQCObject.Protocol : seqQCObject.protocol,
-            sampleName: (seqQCObject['Sample Name']) ? seqQCObject['Sample Name'] : seqQCObject.sampleName,
-            duplicateReadsPerc: (seqQCObject.Duplicate_Reads_Perc) ? seqQCObject.Duplicate_Reads_Perc : seqQCObject.duplicateReadsPerc,
-          },
-        );
-      }
-      req.body.seqQC = cleanSeqQC;
+      req.body.seqQC = cleanSeqQC(req.body.seqQC);
     }
 
     try {
@@ -403,45 +369,11 @@ router.route('/')
     }
 
     if (req.body.sampleInfo) {
-      // Clean sampleInfo input
-      const cleanSampleInfo = [];
-      for (const sampleInfoObject of req.body.sampleInfo) {
-        cleanSampleInfo.push(
-          {
-            sample: (sampleInfoObject.Sample) ? sampleInfoObject.Sample : sampleInfoObject.sample,
-            pathoTc: (sampleInfoObject['Patho TC']) ? sampleInfoObject['Patho TC'] : sampleInfoObject.pathoTc,
-            biopsySite: (sampleInfoObject['Biopsy Site']) ? sampleInfoObject['Biopsy Site'] : sampleInfoObject.biopsySite,
-            biopsyType: (sampleInfoObject['Biopsy Type']) ? sampleInfoObject['Biopsy Type'] : sampleInfoObject.biopsyType,
-            sampleName: (sampleInfoObject['Sample Name']) ? sampleInfoObject['Sample Name'] : sampleInfoObject.sampleName,
-            primarySite: (sampleInfoObject['Primary Site']) ? sampleInfoObject['Primary Site'] : sampleInfoObject.primarySite,
-            collectionDate: (sampleInfoObject['Collection Date']) ? sampleInfoObject['Collection Date'] : sampleInfoObject.collectionDate,
-          },
-        );
-      }
-      req.body.sampleInfo = cleanSampleInfo;
+      req.body.sampleInfo = cleanSampleInfo(req.body.sampleInfo);
     }
 
     if (req.body.seqQC) {
-      // Clean seqQC input
-      const cleanSeqQC = [];
-      for (const seqQCObject of req.body.seqQC) {
-        cleanSeqQC.push(
-          {
-            reads: (seqQCObject.Reads) ? seqQCObject.Reads : seqQCObject.reads,
-            bioQC: (seqQCObject.bioQC) ? seqQCObject.bioQC : seqQCObject.bioQC,
-            labQC: (seqQCObject.labQC) ? seqQCObject.labQC : seqQCObject.labQC,
-            sample: (seqQCObject.Sample) ? seqQCObject.Sample : seqQCObject.sampleName,
-            library: (seqQCObject.Library) ? seqQCObject.Library : seqQCObject.library,
-            coverage: (seqQCObject.Coverage) ? seqQCObject.Coverage : seqQCObject.coverage,
-            inputNg: (seqQCObject.Input_ng) ? seqQCObject.Input_ng : seqQCObject.inputNg,
-            inputUg: (seqQCObject.Input_ug) ? seqQCObject.Input_ug : seqQCObject.inputUg,
-            protocol: (seqQCObject.Protocol) ? seqQCObject.Protocol : seqQCObject.protocol,
-            sampleName: (seqQCObject['Sample Name']) ? seqQCObject['Sample Name'] : seqQCObject.sampleName,
-            duplicateReadsPerc: (seqQCObject.Duplicate_Reads_Perc) ? seqQCObject.Duplicate_Reads_Perc : seqQCObject.duplicateReadsPerc,
-          },
-        );
-      }
-      req.body.seqQC = cleanSeqQC;
+      req.body.seqQC = cleanSeqQC(req.body.seqQC);
 
       req.body.dataType = req.body.seqQC.filter(
         (item) => {return item.Sample?.startsWith('Tumour');},
