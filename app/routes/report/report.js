@@ -422,6 +422,27 @@ router.route('/')
     }
 
     if (req.body.seqQC) {
+      // Clean seqQC input
+      const cleanSeqQC = [];
+      for (const seqQCObject of req.body.seqQC) {
+        cleanSeqQC.push(
+          {
+            reads: (seqQCObject.Reads) ? seqQCObject.Reads : seqQCObject.reads,
+            bioQC: (seqQCObject.bioQC) ? seqQCObject.bioQC : seqQCObject.bioQC,
+            labQC: (seqQCObject.labQC) ? seqQCObject.labQC : seqQCObject.labQC,
+            sample: (seqQCObject.Sample) ? seqQCObject.Sample : seqQCObject.sampleName,
+            library: (seqQCObject.Library) ? seqQCObject.Library : seqQCObject.library,
+            coverage: (seqQCObject.Coverage) ? seqQCObject.Coverage : seqQCObject.coverage,
+            inputNg: (seqQCObject.Input_ng) ? seqQCObject.Input_ng : seqQCObject.inputNg,
+            inputUg: (seqQCObject.Input_ug) ? seqQCObject.Input_ug : seqQCObject.inputUg,
+            protocol: (seqQCObject.Protocol) ? seqQCObject.Protocol : seqQCObject.protocol,
+            sampleName: (seqQCObject['Sample Name']) ? seqQCObject['Sample Name'] : seqQCObject.sampleName,
+            duplicateReadsPerc: (seqQCObject.Duplicate_Reads_Perc) ? seqQCObject.Duplicate_Reads_Perc : seqQCObject.duplicateReadsPerc,
+          },
+        );
+      }
+      req.body.seqQC = cleanSeqQC;
+
       req.body.dataType = req.body.seqQC.filter(
         (item) => {return item.Sample?.startsWith('Tumour');},
       ).map(

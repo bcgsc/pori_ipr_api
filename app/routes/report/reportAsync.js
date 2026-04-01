@@ -80,9 +80,7 @@ router.route('/')
         );
       }
       req.body.seqQC = cleanSeqQC;
-    }
 
-    if (req.body.seqQC) {
       req.body.dataType = req.body.seqQC.filter(
         (item) => {return item.Sample?.startsWith('Tumour');},
       ).map(
