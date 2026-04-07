@@ -16,6 +16,9 @@ jobs:
       - run: docker build --file Dockerfile --tag bcgsc/pori-ipr-api:latest --tag bcgsc/pori-ipr-api:${{ github.event.release.tag_name }} .
       - run: docker push bcgsc/pori-ipr-api:${{ github.event.release.tag_name }}
       - run: docker push bcgsc/pori-ipr-api:latest
-      - run: docker build --file Dockerfile.db --tag bcgsc/pori-ipr-demodb:latest --tag bcgsc/pori-ipr-demodb:${{ github.event.release.tag_name }} .
+      - run: docker build --file Dockerfile.demo.db --tag bcgsc/pori-ipr-demodb:latest --tag bcgsc/pori-ipr-demodb:${{ github.event.release.tag_name }} .
       - run: docker push bcgsc/pori-ipr-demodb:${{ github.event.release.tag_name }}
       - run: docker push bcgsc/pori-ipr-demodb:latest
+      - run: docker build --file Dockerfile.new_deployment.db --tag bcgsc/pori-ipr-db:latest --tag bcgsc/pori-ipr-db:${{ github.event.release.tag_name }} .
+      - run: docker push bcgsc/pori-ipr-db:${{ github.event.release.tag_name }}
+      - run: docker push bcgsc/pori-ipr-db:latest
