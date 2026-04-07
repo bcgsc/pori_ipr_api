@@ -6,82 +6,72 @@ NB the process for doing this is almost exactly the same as for prepping the dem
 
 These instructions assume you are using the BCGSC prod or dev ipr database.
 
+First, you'll need to export some environment variables:
+
+export IPR_SERVICE_PASSWORD=<ipr_service password>
+export TEMP_DB_NAME=<eg newdb>
+export DB_DUMP_LOCATION=<eg current_db.dump>
+export DATABASE_HOSTNAME=<eg iprdevdb.bcgsc.ca>
+
+
 ## Create a dump of the production database (see migrationTools create).
 
-export PGPASSWORD=<password of the USER, which is probably ipr_service>
-
 ```bash
-pg_dump -Fc -U <USER> -h <HOSTNAME> -d <DATABASE_NAME> > new_demo.dump
+PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_dump -Fc -U ipr_service -h <HOSTNAME> -d <DATABASE_NAME> > new_demo.dump
 ```
 
 ## Reload and edit that db dump
 
 Reload that data to the db in a separate database and pare it down to what is needed for a new deployment.
 
-export the following values to terminal (update these values as necessary):
-
-export IPR_SERVICE_PASSWORD=<ipr_service password> \
-export IPR_SERVICE_USER=ipr_service \
-export IPR_GRAPHKB_PASSWORD=<password for the ipr graphkb user>
-export TEMPLATE_NAME=<name of new template to create> \
-export TEMP_DB_NAME=<eg newdb> \
-export DB_DUMP_LOCATION=<eg current_db.dump> \
-export DATABASE_HOSTNAME=<eg iprdevdb.bcgsc.ca>
-export CURR_TEMPLATE=<any currently extant db or template>
-
-
-#### Create the template db, if it doesn't exist yet.
+#### Create the empty temporary db for running the cleaning scripts on
 
 ```bash
-PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U "$IPR_SERVICE_USER" -d "$CURR_TEMPLATE" -h "$DATABASE_HOSTNAME" -c "CREATE DATABASE $TEMPLATE_NAME OWNER $IPR_SERVICE_USER IS_TEMPLATE = true;"
-PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U "$IPR_SERVICE_USER" -d "$CURR_TEMPLATE" -h "$DATABASE_HOSTNAME" -c "GRANT CONNECT ON DATABASE $TEMPLATE_NAME TO PUBLIC; REVOKE TEMPORARY ON DATABASE $TEMPLATE_NAME FROM PUBLIC;"
-PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME" -d "$TEMPLATE_NAME" -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME" -d "$TEMPLATE_NAME" -c "CREATE EXTENSION IF NOT EXISTS \"fuzzystrmatch\";"
-PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME" -d "$TEMPLATE_NAME" -c "CREATE EXTENSION IF NOT EXISTS \"pg_trgm\";"
+PGPASSWORD="$IPR_SERVICE_PASSWORD" createdb -U ipr_service -T template0 "$TEMP_DB_NAME" -h iprdevdb.bcgsc.ca
+
+PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U ipr_service -d postgres -h iprdevdb.bcgsc.ca -c "GRANT CONNECT ON DATABASE $TEMP_DB_NAME TO PUBLIC; REVOKE TEMPORARY ON DATABASE $TEMP_DB_NAME FROM PUBLIC;"
 ```
 
+#### Run the restore script to load the data into the empty temporary db - but not the triggers
 
-#### Create the empty db
+Cleaning the db requires triggers and constraints to be absent.
 
-```bash
-PGPASSWORD="$IPR_SERVICE_PASSWORD" createdb -U "$IPR_SERVICE_USER" -T "$TEMPLATE_NAME" "$TEMP_DB_NAME" -h "$DATABASE_HOSTNAME"
-```
-
-#### Run the restore script to load the data, but not the triggers (cleaning the db requires these triggers to be absent)
+Note that any data added in this step could violate the temporarily suspended constraints, and if it does you won't be able to add them back. Be careful with any preparation scripts you run at this stage.
 
 ```bash
-PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_restore -n public --section=pre-data --section=data --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$TEMP_DB_NAME" -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME"
+PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_restore -n public --section=pre-data --section=data --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$TEMP_DB_NAME" -U ipr_service -h iprdevdb.bcgsc.ca
 ```
 
 #### Run the clean db script used for creating the demo; then run the prep db script to create the pori admin user
 
-Note that if the database was dumped from an older version, you may need to migrate the schema to ensure it is up to date first.
+If necessary, run migrations.
 
 ```bash
-PGPASSWORD="$IPR_SERVICE_PASSWORD" npx sequelize-cli db:migrate --url postgres://${IPR_SERVICE_USER}@${DATABASE_HOSTNAME}:5432/${TEMP_DB_NAME}
+PGPASSWORD="$IPR_SERVICE_PASSWORD" npx sequelize-cli db:migrate --url postgres://ipr_service@iprdevdb.bcgsc.ca:5432/${TEMP_DB_NAME}
 ```
 
-Then:
+Then, 1 - clean the db the same way you would when preparing the demo. This removes all reports except those in TEST and replaces all users with demo user. 2 - ensures the pori_admin user is created, the image tables are fully truncated, all sequences are reset to lowest possible value, and db is vaccuumed. These bash commands assume your working directory is the directory this readme is in.
 
 ```bash
-node demo/clean_db_for_demo.js --database.name "$TEMP_DB_NAME" --database.hostname "$DATABASE_HOSTNAME" --database.password "$IPR_DATABASE_PASSWORD"
-node database_for_new_deployment/prep_db_for_new_deployment.js --database.name "$TEMP_DB_NAME" --database.hostname "$DATABASE_HOSTNAME" --database.password "$IPR_DATABASE_PASSWORD"
+node ../demo/clean_db_for_demo.js --database.name "$TEMP_DB_NAME" --database.hostname iprdevdb.bcgsc.ca --database.password "$IPR_SERVICE_PASSWORD"
+node prep_db_for_new_deployment.js --database.name "$TEMP_DB_NAME" --database.hostname iprdevdb.bcgsc.ca --database.password "$IPR_SERVICE_PASSWORD"
+```
+
+Take a look in the db and make sure the users, user_groups, projects, permissions and templates tables look like you expect, and make sure there are no 'temporary' tables left in there.
 
 #### Check the size of the cleaned database. This should be MUCH smaller than the original and is the one that will be included in the git repository.
 
-NB the demo db is not more than 2 gb in the db and only 30m in the repo. This db should be about the same. You can check its size with the psql command
+NB the demo db is not more than 2 gb in the db and only 30m in the repo. This db should be significantly less because the image data has been removed. You can check its size with the following psql command:
 
 ```bash
-PGPASSWORD=$IPR_SERVICE_PASSWORD psql -U $IPR_SERVICE_USER -h $DATABASE_HOSTNAME -d "$TEMP_DB_NAME" -c "vacuum full;"
-
-PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME" -d "$TEMP_DB_NAME" -c "SELECT pg_size_pretty( pg_database_size('$TEMP_DB_NAME'));"
+PGPASSWORD="$IPR_SERVICE_PASSWORD" psql -U ipr_service -h iprdevdb.bcgsc.ca -d "$TEMP_DB_NAME" -c "SELECT pg_size_pretty( pg_database_size('$TEMP_DB_NAME'));"
 ```
 
 #### Run the restore script again to load the triggers
 
 ```bash
 
-PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_restore -n public --section=post-data --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$TEMP_DB_NAME" -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME"
+PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_restore -n public --section=post-data --no-acl --no-owner -Fc "$DB_DUMP_LOCATION" -d "$TEMP_DB_NAME" -U ipr_service -h iprdevdb.bcgsc.ca
 ```
 
 Make sure you are not trying to add the fullsize db to the repo. If it's still showing you a fullsize db try running
@@ -90,7 +80,7 @@ vacuum and then rechecking the size.
 ## Create a dump of the newly cleaned database.
 
 ```bash
-PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_dump -Fc -U "$IPR_SERVICE_USER" -h "$DATABASE_HOSTNAME" -d "$TEMP_DB_NAME" > database_for_new_deployment/ipr_new_deployment.postgres.dump
+PGPASSWORD="$IPR_SERVICE_PASSWORD" pg_dump -Fc -U ipr_service -h "$DATABASE_HOSTNAME" -d "$TEMP_DB_NAME" > database_for_new_deployment/ipr_new_deployment.postgres.dump
 ```
 
 git add this file to update the repo.

@@ -294,7 +294,7 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
   console.log('create the demo user metadata if not exists');
 
   const [userMetadata] = await queryInterface.sequelize.query(
-    'SELECT * FROM user_metadata where id = :id AND deleted_at IS NULL',
+    'SELECT * FROM user_metadata where user_id = :id AND deleted_at IS NULL',
     {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
@@ -384,7 +384,7 @@ const cleanUsers = async (queryInterface, transaction, reportsToKeep) => {
   console.log('create the demo user metadata if not exists');
 
   const [adminUserMetadata] = await queryInterface.sequelize.query(
-    'SELECT * FROM user_metadata where id = :id AND deleted_at IS NULL',
+    'SELECT * FROM user_metadata where user_id = :id AND deleted_at IS NULL',
     {
       transaction,
       type: queryInterface.sequelize.QueryTypes.SELECT,
