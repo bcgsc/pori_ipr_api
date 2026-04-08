@@ -2,6 +2,7 @@ const Sq = require('sequelize');
 const {v4: uuidv4} = require('uuid');
 const nconf = require('../app/config');
 const logger = require('../app/log');
+const modelsSequelize = require('../app/models');
 // Load logging library
 const dbSettings = nconf.get('database');
 
@@ -23,6 +24,31 @@ const sequelize = new Sq(
     logging: null,
   },
 );
+
+const normalizeTableName = (tableReference) => {
+  if (typeof tableReference === 'string') {
+    return tableReference;
+  }
+  if (!tableReference || !tableReference.tableName) {
+    return null;
+  }
+  if (tableReference.schema && tableReference.schema !== dbSettings.schema) {
+    return null;
+  }
+  return tableReference.tableName;
+};
+
+const expectedTableNames = new Set([
+  'SequelizeMeta',
+  ...Object.values(modelsSequelize.models)
+    .map((model) => normalizeTableName(model.getTableName()))
+    .filter(Boolean),
+]);
+
+modelsSequelize.close()
+  .catch((err) => {
+    logger.error(err);
+  });
 
 const clearImagesTable = async (queryInterface, transaction) => {
   console.log('remove all records from the images table and reports-image-data table');
@@ -95,6 +121,37 @@ const clearUserMetadataTable = async (queryInterface, transaction) => {
       transaction,
     },
   );
+};
+
+const dropUnexpectedTables = async (queryInterface, transaction) => {
+  console.log('drop tables not defined in sequelize models');
+  const tables = await queryInterface.sequelize.query(
+    `SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = :schema
+        AND table_type = 'BASE TABLE'`,
+    {
+      transaction,
+      type: queryInterface.sequelize.QueryTypes.SELECT,
+      replacements: {
+        schema: dbSettings.schema,
+      },
+    },
+  );
+
+  const unexpectedTables = tables
+    .map(({table_name: tableName}) => tableName)
+    .filter((tableName) => !expectedTableNames.has(tableName));
+
+  for (const tableName of unexpectedTables) {
+    console.log(`drop unexpected table ${tableName}`);
+    await queryInterface.sequelize.query(
+      `DROP TABLE IF EXISTS ${queryInterface.quoteTable({schema: dbSettings.schema, tableName})} CASCADE`,
+      {
+        transaction,
+      },
+    );
+  }
 };
 
 const resetOwnedSequences = async (queryInterface, transaction) => {
@@ -280,6 +337,7 @@ const cleanDb = async () => {
     await clearImagesTable(queryInterface, transaction);
     await clearVariantTextsTable(queryInterface, transaction);
     await clearUserMetadataTable(queryInterface, transaction);
+    await dropUnexpectedTables(queryInterface, transaction);
     await resetOwnedSequences(queryInterface, transaction);
     await addPoriAdminUser(queryInterface, transaction);
   });
