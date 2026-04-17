@@ -376,9 +376,9 @@ router.route('/')
       req.body.seqQC = cleanSeqQC(req.body.seqQC);
 
       req.body.dataType = req.body.seqQC.filter(
-        (item) => {return item.Sample?.startsWith('Tumour');},
+        (item) => {return item.sample?.startsWith('Tumour');},
       ).map(
-        (item) => {return item.Sample.replace(/^Tumour\s+/i, '');},
+        (item) => {return item.sample.replace(/^Tumour\s+/i, '');},
       ).join(', ');
     }
 
