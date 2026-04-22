@@ -12,6 +12,15 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
+    legendId: {
+      name: 'legendId',
+      field: 'legend_id',
+      type: Sq.INTEGER,
+      references: {
+        model: 'pathway_analysis_legends',
+        key: 'id',
+      },
+    },
     pathway: {
       type: Sq.TEXT,
       allowNull: true,
@@ -19,11 +28,6 @@ module.exports = (sequelize, Sq) => {
         description: 'SVG image of pathway',
         schema: {format: 'svg', type: 'string'},
       },
-    },
-    legend: {
-      type: Sq.ENUM(['v1', 'v2', 'v3', 'custom']),
-      allowNull: false,
-      defaultValue: 'v3',
     },
   }, {
     ...DEFAULT_REPORT_OPTIONS,

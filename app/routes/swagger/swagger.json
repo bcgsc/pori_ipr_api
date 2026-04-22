@@ -4595,6 +4595,225 @@
         }
       }
     },
+    "/reports/{report}/legend": {
+      "post": {
+        "summary": "Add Legend Images",
+        "description": "Upload new legend images to report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "requestBody": {
+          "description": "Legend images to upload (allows multiple images with different versions)",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "{version}": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "legend image to upload"
+                  },
+                  "{version}_title": {
+                    "type": "string",
+                    "description": "title of legend image specified by version"
+                  },
+                  "{version}_caption": {
+                    "type": "string",
+                    "description": "caption of legend image specified by version"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "207": {
+            "description": "Returns an array of objects indicating which legend images were uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string"
+                      },
+                      "upload": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax or no files attached"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/legend/{legend}": {
+      "get": {
+        "summary": "Get Legend Image",
+        "description": "Retrieve a specific legend image",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/legend"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified legend image"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or legend not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Legend Image",
+        "description": "Removes the specified legend image",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "$ref": "#/components/parameters/legend"
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "description": "Whether to do a hard delete or not",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report or legend not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/legend/retrieve/{version}": {
+      "get": {
+        "summary": "Get Legend Images by Version",
+        "description": "Retrieve legend image data for specified versions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "description": "Comma separated list of legend versions (e.g. v1,v2)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of legend images that match the version"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
+    "/reports/{report}/legend/versionlist": {
+      "get": {
+        "summary": "Get Legend Version List",
+        "description": "Retrieve a list of all legend versions for a report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of legend entries without image data"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/kb-matches": {
       "get": {
         "summary": "Get KB Matches",
@@ -8832,6 +9051,16 @@
         "in": "path",
         "required": true,
         "description": "image ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "legend": {
+        "name": "legend",
+        "in": "path",
+        "required": true,
+        "description": "legend image ident",
         "schema": {
           "type": "string",
           "format": "UUIDv4"
