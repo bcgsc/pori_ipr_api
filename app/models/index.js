@@ -113,6 +113,16 @@ patientInformation.belongsTo(analysisReports, {
   as: 'report', foreignKey: 'reportId', onDelete: 'CASCADE', onUpdate: 'CASCADE', constraints: true,
 });
 
+// seqqc
+const seqQC = require('./reports/seqqc')(sequelize, Sq);
+
+seqQC.belongsTo(analysisReports, {
+  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+});
+analysisReports.hasMany(seqQC, {
+  as: 'seqQC', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
+});
+
 // Summary
 const summary = {};
 summary.variantCounts = require('./reports/genomic/summary/variantCounts')(sequelize, Sq);
