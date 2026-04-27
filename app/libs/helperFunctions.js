@@ -227,6 +227,38 @@ const removeKeys = (obj, targetKey) => {
   return obj;
 };
 
+const cleanSampleInfo = (sampleInfo = []) => {
+  return sampleInfo.map((sampleInfoObject) => {
+    return {
+      sample: sampleInfoObject.Sample ?? sampleInfoObject.sample,
+      pathoTc: sampleInfoObject['Patho TC'] ?? sampleInfoObject.pathoTc,
+      biopsySite: sampleInfoObject['Biopsy Site'] ?? sampleInfoObject.biopsySite,
+      biopsyType: sampleInfoObject['Biopsy Type'] ?? sampleInfoObject.biopsyType,
+      sampleName: sampleInfoObject['Sample Name'] ?? sampleInfoObject.sampleName,
+      primarySite: sampleInfoObject['Primary Site'] ?? sampleInfoObject.primarySite,
+      collectionDate: sampleInfoObject['Collection Date'] ?? sampleInfoObject.collectionDate,
+    };
+  });
+};
+
+const cleanSeqQC = (seqQC = []) => {
+  return seqQC.map((seqQCObject) => {
+    return {
+      reads: seqQCObject.Reads ?? seqQCObject.reads,
+      bioQC: seqQCObject.bioQC,
+      labQC: seqQCObject.labQC,
+      sample: seqQCObject.Sample ?? seqQCObject.sample,
+      library: seqQCObject.Library ?? seqQCObject.library,
+      coverage: seqQCObject.Coverage ?? seqQCObject.coverage,
+      inputNg: seqQCObject.Input_ng ?? seqQCObject.inputNg,
+      inputUg: seqQCObject.Input_ug ?? seqQCObject.inputUg,
+      protocol: seqQCObject.Protocol ?? seqQCObject.protocol,
+      sampleName: seqQCObject['Sample Name'] ?? seqQCObject.sampleName,
+      duplicateReadsPerc: seqQCObject.Duplicate_Reads_Perc ?? seqQCObject.duplicateReadsPerc,
+    };
+  });
+};
+
 module.exports = {
   includesAll,
   sanitizeHtml,
@@ -244,4 +276,6 @@ module.exports = {
   projectAccess,
   isIntersectionBy,
   removeKeys,
+  cleanSampleInfo,
+  cleanSeqQC,
 };
