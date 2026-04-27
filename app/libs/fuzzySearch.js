@@ -9,7 +9,7 @@ const PARAM_TABLE_MAP = {
   kbVariant: 'reports_kb_matches',
   structuralVariant: 'reports_structural_variants',
   smallMutation: 'reports_small_mutations',
-  therapeuticTarget: 'reports_therapeutic_targets',
+  therapy: 'reports_therapeutic_targets',
   mutationSignature: 'reports_mutation_signature',
   msiStatus: 'reports_msi',
 };
@@ -22,7 +22,7 @@ const PARAM_COLUMN_MAP = {
   kbVariant: 'kb_variant',
   structuralVariant: 'display_name',
   smallMutation: 'display_name',
-  therapeuticTarget: 'therapy',
+  therapy: 'therapy',
   mutationSignature: 'signature',
   msiStatus: 'score',
 };
@@ -35,7 +35,7 @@ const PARAM_MODEL_MAP = {
   kbVariant: 'kbMatches',
   structuralVariant: 'structuralVariants',
   smallMutation: 'smallMutations',
-  therapeuticTarget: 'therapeuticTarget',
+  therapy: 'therapeuticTarget',
   mutationSignature: 'mutationSignature',
   msiStatus: 'msi',
 };
@@ -48,7 +48,7 @@ const PARAM_ATTRIBUTE_MAP = {
   kbVariant: ['kbVariant'],
   structuralVariant: ['displayName'],
   smallMutation: ['displayName'],
-  therapeuticTarget: ['therapy', 'context'],
+  therapy: ['therapy', 'context'],
   mutationSignature: ['signature', 'selected'],
   msiStatus: ['score'],
 };

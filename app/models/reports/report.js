@@ -76,7 +76,9 @@ module.exports = (sequelize, Sq) => {
       },
       allowNull: false,
     },
-    seqQC: {
+    seqQc: {
+      name: 'seqQc',
+      field: 'seq_qc',
       type: Sq.JSONB,
       jsonSchema: {
         schema: {

@@ -38,6 +38,10 @@ module.exports = async (req, res, next, ident) => {
       model: db.models.signatures.scope('public'),
       as: 'signatures',
     },
+    {
+      model: db.models.seqQC.scope('public'),
+      as: 'seqQC',
+    },
   ];
 
   let result;

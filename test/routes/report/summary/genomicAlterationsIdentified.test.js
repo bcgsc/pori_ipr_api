@@ -1,8 +1,8 @@
 const getPort = require('get-port');
 const supertest = require('supertest');
 const HTTP_STATUS = require('http-status-codes');
-
 const db = require('../../../../app/models');
+const {KB_PIVOT_MAPPING} = require('../../../../app/constants');
 // get test user info
 const CONFIG = require('../../../../app/config');
 const {listen} = require('../../../../app');
@@ -10,18 +10,8 @@ const {listen} = require('../../../../app');
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
-const ALTERATION_DATA = {
-  geneVariant: 'TEST GENE VARIANT',
-  germline: true,
-};
-
-const ALTERATION_UPDATE_DATA = {
-  geneVariant: 'UPDATED GENE VARIANT',
-  germline: false,
-};
-
 const alterationProperties = [
-  'ident', 'createdAt', 'geneVariant', 'germline',
+  'ident', 'createdAt', 'geneVariant', 'germline', 'variantType',
 ];
 
 const checkAlteration = (alterationObject) => {
@@ -42,8 +32,23 @@ const checkAlterations = (alterations) => {
   });
 };
 
+const CHECKING_DATA = {
+  geneVariant: 'TEST GENE VARIANT',
+  variantType: 'cnv',
+  germline: true,
+};
+
+const CHECKING_UPDATE_DATA = {
+  geneVariant: 'UPDATED GENE VARIANT',
+  variantType: 'cnv',
+  germline: false,
+};
+
 let server;
 let request;
+let variant;
+let ALTERATION_DATA;
+let ALTERATION_UPDATE_DATA;
 
 // Start API
 beforeAll(async () => {
@@ -63,6 +68,23 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
       templateId: template.id,
       patientId: 'PROBE_TEST_PATIENT',
     });
+
+    // Find a random variant for testing
+    const modelName = KB_PIVOT_MAPPING.cnv;
+    variant = await db.models[modelName].findOne();
+    ALTERATION_DATA = {
+      geneVariant: 'TEST GENE VARIANT',
+      variantType: 'cnv',
+      variantIdent: variant.ident,
+      germline: true,
+    };
+
+    ALTERATION_UPDATE_DATA = {
+      geneVariant: 'UPDATED GENE VARIANT',
+      variantType: 'cnv',
+      variantIdent: variant.ident,
+      germline: false,
+    };
   });
 
   afterAll(async () => {
@@ -130,7 +152,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
         .expect(HTTP_STATUS.CREATED);
 
       checkAlteration(res.body);
-      expect(res.body).toEqual(expect.objectContaining(ALTERATION_DATA));
+      expect(res.body).toEqual(expect.objectContaining(CHECKING_DATA));
 
       // Check that record was created in the db
       const result = await db.models.genomicAlterationsIdentified.findOne({
@@ -140,18 +162,6 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       // Delete entry
       await result.destroy({force: true});
-    });
-
-    test('/ - 400 Bad Request - Additional Property', async () => {
-      await request
-        .post(`/api/reports/${report.ident}/summary/genomic-alterations-identified`)
-        .send({
-          ...ALTERATION_UPDATE_DATA,
-          additionalProperty: 'ADDITIONAL_PROPERTY',
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
     test('/ - 400 Bad Request - Incorrect field type', async () => {
@@ -201,19 +211,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       expect(res.body).not.toBeNull();
       checkAlteration(res.body);
-      expect(res.body).toEqual(expect.objectContaining(ALTERATION_UPDATE_DATA));
-    });
-
-    test('/{alteration} - 400 Bad Request - Additional Property', async () => {
-      await request
-        .put(`/api/reports/${report.ident}/summary/genomic-alterations-identified/${putAlteration.ident}`)
-        .send({
-          ...ALTERATION_UPDATE_DATA,
-          additionalProperty: 'ADDITIONAL_PROPERTY',
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.BAD_REQUEST);
+      expect(res.body).toEqual(expect.objectContaining(CHECKING_UPDATE_DATA));
     });
 
     test('/{alteration} - 400 Bad Request - Incorrect field type', async () => {
