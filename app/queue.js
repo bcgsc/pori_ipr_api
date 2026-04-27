@@ -1,22 +1,26 @@
 const {Queue, Worker} = require('bullmq');
-const nodemailer = require('nodemailer');
 const {graphkbGetReadonlyGroupId, graphkbAddUser} = require('./api/graphkb');
 const conf = require('./config');
 const createReport = require('./libs/createReport');
 const db = require('./models');
-const {sendEmail} = require('./libs/email');
+const {sendEmail} = require('./libs/mailer');
 
 const {host, port, enableQueue} = conf.get('redis_queue');
 const logger = require('./log');
 const CONFIG = require('./config');
 
-const {email, password, ehost, failemail} = CONFIG.get('email');
+const {failemail} = CONFIG.get('email');
 
 let emailQueue = null;
 let reportQueue = null;
 let graphkbNewUserQueue = null;
 
 const EMAIL_REMOVE_CONFIG = {
+  backoff: {
+    type: 'exponential',
+    delay: 2000,
+  },
+  delay: 5000,
   removeOnComplete: {age: 3600},
   removeOnFail: {age: 86400},
   attempts: 10,
@@ -77,7 +81,7 @@ const onEmailWorkerFailed = async (job) => {
 
   try {
     if (failemail) {
-      await sendEmail('Notification failed', job.data, failemail);
+      await sendEmail({to: failemail, subject: 'Notification failed', text: job.data});
     }
   } catch (error) {
     logger.error(`Unable to send email ${error}`);
@@ -93,7 +97,6 @@ const setUpEmailWorker = (emailJobProcessor) => {
   });
   worker.on('completed', async (job) => {
     await onEmailWorkerCompleted(job);
-    await job.remove();
     logger.info(`Email job with ID ${job.id} has been completed.`);
   });
   worker.on('failed', async (job, err) => {
@@ -103,13 +106,8 @@ const setUpEmailWorker = (emailJobProcessor) => {
 };
 
 const emailProcessor = async (job) => {
-  const transporter = nodemailer.createTransport({
-    host: ehost,
-    auth: {user: email, pass: password},
-    tls: {rejectUnauthorized: false},
-  });
   try {
-    await transporter.sendMail(job.data.mailOptions);
+    await sendEmail(job.data.mailOptions);
   } catch (err) {
     logger.error(JSON.stringify(job.data.mailOptions));
     throw new Error(err);
