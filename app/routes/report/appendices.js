@@ -13,7 +13,8 @@ router.route('/')
     try {
       const result = await db.models.report.findOne({
         where: {ident: req.report.ident},
-        attributes: ['seqQC', 'config'],
+        attributes: ['seqQc', 'config'],
+        include: ['seqQC'],
       });
       return res.json(result);
     } catch (error) {

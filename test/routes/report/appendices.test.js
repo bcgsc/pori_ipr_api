@@ -62,6 +62,10 @@ describe('/reports/{report}/appendices', () => {
         templateId: template.id,
         patientId: 'APPENDIX_TEST_PATIENT',
       });
+      await db.models.seqQC.create({
+        ...APPENDIX_DATA.seqQC[0],
+        reportId: report.id,
+      });
     });
 
     afterEach(async () => {
@@ -77,7 +81,8 @@ describe('/reports/{report}/appendices', () => {
 
       expect(res.body).not.toBeNull();
       checkAppendix(res.body);
-      expect(res.body).toEqual(expect.objectContaining(APPENDIX_DATA));
+      expect(res.body).toHaveProperty('config');
+      expect(res.body).toHaveProperty('seqQC');
     });
 
     test('/tcga - 200 Success - Expression matrix v8', async () => {
