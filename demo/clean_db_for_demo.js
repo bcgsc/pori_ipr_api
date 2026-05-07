@@ -596,7 +596,7 @@ const cleanDb = async () => {
       `UPDATE reports
         SET config = '',
           age_of_consent = NULL,
-          "seqQC" = NULL,
+          "seq_qc" = NULL,
           biopsy_date = NULL`,
       {
         transaction,
