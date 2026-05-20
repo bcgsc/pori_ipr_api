@@ -1,7 +1,7 @@
 const {v4: uuidv4} = require('uuid');
 
 module.exports = {
-  up: async (queryInterface, Sq) => {
+  up: async (queryInterface) => {
     await queryInterface.sequelize.transaction(async (transaction) => {
       const reports = await queryInterface.sequelize.query(
         `
