@@ -126,7 +126,7 @@ module.exports = async (req, res, next) => {
       ? new Date(userMetadata.lastLoginAt).toDateString()
       : '';
     if (userLastLogin !== currentDate) {
-      await userMetadata.update({lastLoginAt: new Date(), updatedBy: req.user.id});
+      await userMetadata.update({lastLoginAt: new Date()}, {userId: req.user.id});
     }
 
     try {
