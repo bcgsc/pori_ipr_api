@@ -134,6 +134,9 @@ module.exports = (sequelize, Sq) => {
       field: 'tumour_ref_copies',
       type: Sq.INTEGER,
     },
+    exon: {
+      type: Sq.TEXT,
+    },
     library: {
       type: Sq.TEXT,
     },
