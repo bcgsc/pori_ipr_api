@@ -46,12 +46,16 @@ beforeAll(async () => {
 // Tests for user related endpoints
 describe('/user', () => {
   let testUser;
+  let managerUser;
   let adminGroup;
 
   beforeAll(async () => {
     // get test user
     testUser = await db.models.user.findOne({
       where: {username},
+    });
+    managerUser = await db.models.user.findOne({
+      where: {username: managerUsername},
     });
     adminGroup = await db.models.userGroup.findOne({
       where: {name: 'admin'},
@@ -162,6 +166,16 @@ describe('/user', () => {
         })
         .expect(HTTP_STATUS.CREATED);
 
+      const createdUser = await db.models.user.findOne({
+        where: {ident: res.body.ident},
+      });
+      const createdMetadata = await db.models.userMetadata.findOne({
+        where: {userId: createdUser.id},
+      });
+
+      expect(createdUser.updatedBy).toBe(testUser.id);
+      expect(createdMetadata.updatedBy).toBe(testUser.id);
+
       // Remove test user from db
       await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
@@ -179,6 +193,16 @@ describe('/user', () => {
           lastName: 'LastName1Test',
         })
         .expect(HTTP_STATUS.CREATED);
+
+      const createdUser = await db.models.user.findOne({
+        where: {ident: res.body.ident},
+      });
+      const createdMetadata = await db.models.userMetadata.findOne({
+        where: {userId: createdUser.id},
+      });
+
+      expect(createdUser.updatedBy).toBe(managerUser.id);
+      expect(createdMetadata.updatedBy).toBe(managerUser.id);
 
       // Remove test user from db
       await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
