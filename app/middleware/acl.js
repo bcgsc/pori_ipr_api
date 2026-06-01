@@ -121,13 +121,16 @@ module.exports = async (req, res, next) => {
   try {
     // Update last time the user logged in, limit to once a day
     const currentDate = new Date().toDateString();
-    let userMetadata = await db.models.userMetadata.findOrCreate({where: {userId: req.user.id}});
+    let userMetadata = await db.models.userMetadata.findOrCreate({
+      where: {userId: req.user.id},
+      defaults: {updatedBy: req.user.id},
+    });
     userMetadata = userMetadata[0];
     const userLastLogin = userMetadata.lastLoginAt
       ? new Date(userMetadata.lastLoginAt).toDateString()
       : '';
     if (userLastLogin !== currentDate) {
-      await userMetadata.update({lastLoginAt: new Date()});
+      await userMetadata.update({lastLoginAt: new Date()}, {userId: req.user.id});
     }
 
     try {
