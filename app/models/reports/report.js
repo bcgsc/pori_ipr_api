@@ -76,20 +76,6 @@ module.exports = (sequelize, Sq) => {
       },
       allowNull: false,
     },
-    seqQc: {
-      name: 'seqQc',
-      field: 'seq_qc',
-      type: Sq.JSONB,
-      jsonSchema: {
-        schema: {
-          type: 'array',
-          items: {
-            type: 'object',
-          },
-          example: [{Reads: '2534M', bioQC: 'passed'}],
-        },
-      },
-    },
     config: {
       type: Sq.TEXT,
     },
