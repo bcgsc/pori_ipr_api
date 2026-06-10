@@ -260,9 +260,15 @@ router.route('/')
       // Create transaction
       transaction = await db.transaction();
       // Create user
-      const createdUser = await db.models.user.create(req.body, {transaction});
+      const createdUser = await db.models.user.create({
+        ...req.body,
+        updatedBy: req.user.id,
+      }, {transaction});
       // Create user metadata
-      await db.models.userMetadata.create({userId: createdUser.id}, {transaction});
+      await db.models.userMetadata.create({
+        userId: createdUser.id,
+        updatedBy: req.user.id,
+      }, {transaction});
       // Commit changes
       await transaction.commit();
       // Return new user
