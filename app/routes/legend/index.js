@@ -62,7 +62,7 @@ router.route('/')
   .get(async (req, res) => {
     try {
       const legends = await db.models.legend.findAll();
-      return res.json(legends.map((legend) => legend.view('public')));
+      return res.json(legends.map((legend) => {return legend.view('public');}));
     } catch (error) {
       logger.error(`Error while retrieving legend images ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Error while retrieving legend images'}});

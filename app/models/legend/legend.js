@@ -1,4 +1,4 @@
-const { DEFAULT_COLUMNS } = require('../base');
+const {DEFAULT_COLUMNS} = require('../base');
 
 module.exports = (sequelize, Sq) => {
   const legend = sequelize.define(
