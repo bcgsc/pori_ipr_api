@@ -946,10 +946,10 @@
     "legends": [
         {
             "id": 1,
-            "version": "v1",
-            "path": "test/testData/images/msig_snvs_all_strelka.png",
-            "title": "Test Pathway Analysis Legend",
-            "caption": "Test Pathway Analysis Legend"
+            "filename": "pathway_legend_v1.png",
+            "path": "test/testData/images/pathway_legend_v1.png",
+            "name": "v1",
+            "default": true
         }
     ]
 }

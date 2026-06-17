@@ -4595,15 +4595,11 @@
         }
       }
     },
-    "/reports/{report}/legend": {
+    "/legend": {
       "post": {
         "summary": "Add Legend Images",
         "description": "Upload new legend images to report",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "description": "Legend images to upload (allows multiple images with different versions)",
           "required": true,
@@ -4612,18 +4608,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "{version}": {
+                  "name": {
                     "type": "string",
-                    "format": "binary",
-                    "description": "legend image to upload"
+                    "description": "legend name / version (e.g. v1, v2, etc.)"
                   },
-                  "{version}_title": {
-                    "type": "string",
-                    "description": "title of legend image specified by version"
-                  },
-                  "{version}_caption": {
-                    "type": "string",
-                    "description": "caption of legend image specified by version"
+                  "default": {
+                    "type": "boolean",
+                    "description": "whether this legend image is the default"
                   }
                 }
               }
@@ -4672,14 +4663,11 @@
         }
       }
     },
-    "/reports/{report}/legend/{legend}": {
+    "/legend/{legend}": {
       "get": {
         "summary": "Get Legend Image",
         "description": "Retrieve a specific legend image",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
           {
             "$ref": "#/components/parameters/legend"
           }
@@ -4709,9 +4697,6 @@
         "description": "Removes the specified legend image",
         "parameters": [
           {
-            "$ref": "#/components/parameters/report"
-          },
-          {
             "$ref": "#/components/parameters/legend"
           },
           {
@@ -4740,76 +4725,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report or legend not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/legend/retrieve/{version}": {
-      "get": {
-        "summary": "Get Legend Images by Version",
-        "description": "Retrieve legend image data for specified versions",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          },
-          {
-            "name": "version",
-            "in": "path",
-            "required": true,
-            "description": "Comma separated list of legend versions (e.g. v1,v2)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "tags": [
-          "Legends"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns an array of legend images that match the version"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report not found"
-          }
-        }
-      }
-    },
-    "/reports/{report}/legend/versionlist": {
-      "get": {
-        "summary": "Get Legend Version List",
-        "description": "Retrieve a list of all legend versions for a report",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/report"
-          }
-        ],
-        "tags": [
-          "Legends"
-        ],
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns an array of legend entries without image data"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "description": "Report not found"
+            "description": "legend not found"
           }
         }
       }
