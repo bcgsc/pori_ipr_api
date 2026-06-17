@@ -134,14 +134,7 @@ summary.therapeuticTargets = require('./reports/genomic/summary/therapeuticTarge
 summary.microbial = require('./reports/genomic/summary/microbial')(sequelize, Sq);
 
 // Pathway Analysis Legends
-const pathwayAnalysisLegends = require('./reports/legend')(sequelize, Sq);
-
-pathwayAnalysisLegends.belongsTo(analysisReports, {
-  as: 'report', foreignKey: 'reportId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
-});
-analysisReports.hasMany(pathwayAnalysisLegends, {
-  as: 'legends', foreignKey: 'reportId', onDelete: 'CASCADE', constraints: true,
-});
+const pathwayAnalysisLegends = require('./legend/legend')(sequelize, Sq);
 
 summary.pathwayAnalysis.belongsTo(pathwayAnalysisLegends, {
   as: 'legend', foreignKey: 'legendId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,

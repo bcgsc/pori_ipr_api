@@ -56,16 +56,15 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
  * @param {object} options - An object containing additional image upload options
  *
  * @property {string} options.filename - An optional filename for the image
- * @property {string} options.caption - An optional caption for the image
- * @property {string} options.title - An optional title for the image
- * @property {string} options.category - An optional category for the image
+ * @property {string} options.name - An optional name for the legend
+ * @property {boolean|string} options.default - Whether this legend is the default
  * @property {object} options.transaction - An optional transaction to run the create under
  *
  * @returns {Promise<object>} - Returns the created legend db entry
  * @throws {Promise<Error>} - Something goes wrong with image processing and saving entry
  */
-const uploadLegendImage = async (reportId, version, image, options = {}) => {
-  logger.verbose(`Loading legend (${version}) image`);
+const uploadLegendImage = async (image, options = {}) => {
+  logger.verbose('Loading legend image');
 
   const config = {format: DEFAULT_FORMAT, size: IMAGE_SIZE_LIMIT};
 
@@ -73,16 +72,11 @@ const uploadLegendImage = async (reportId, version, image, options = {}) => {
     const imageData = await processImage(image, config.size, config.format);
 
     return db.models.legend.create({
-      reportId,
       format: config.format,
       filename: options.filename,
-      version,
+      name: options.name || options.filename,
       data: imageData,
-      caption: options.caption,
-      title: options.title,
-      width: config.width,
-      height: config.height,
-      category: options.category,
+      default: options.default === true || options.default === 'true',
     }, {transaction: options.transaction});
   } catch (error) {
     logger.error(`Error processing legend image ${options.filename} ${error}`);

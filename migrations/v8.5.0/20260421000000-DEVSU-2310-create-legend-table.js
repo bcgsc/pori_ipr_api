@@ -6,15 +6,6 @@ module.exports = {
     return queryInterface.sequelize.transaction(async (transaction) => {
       await queryInterface.createTable(TABLE, {
         ...DEFAULT_COLUMNS,
-        reportId: {
-          name: 'reportId',
-          field: 'report_id',
-          type: Sq.INTEGER,
-          references: {
-            model: 'reports',
-            key: 'id',
-          },
-        },
         format: {
           type: Sq.ENUM('PNG', 'JPG'),
           defaultValue: 'PNG',
@@ -23,7 +14,7 @@ module.exports = {
           type: Sq.TEXT,
           allowNull: false,
         },
-        version: {
+        name: {
           type: Sq.TEXT,
           allowNull: false,
         },
@@ -31,17 +22,9 @@ module.exports = {
           type: Sq.TEXT,
           allowNull: false,
         },
-        title: {
-          type: Sq.TEXT,
-        },
-        caption: {
-          type: Sq.TEXT,
-        },
-        height: {
-          type: Sq.INTEGER,
-        },
-        width: {
-          type: Sq.INTEGER,
+        default: {
+          type: Sq.BOOLEAN,
+          defaultValue: false,
         },
       }, {transaction});
     });
