@@ -4658,7 +4658,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report not found"
+            "description": "Legend not found"
           }
         }
       }

@@ -7,7 +7,7 @@ module.exports = {
       await queryInterface.createTable(TABLE, {
         ...DEFAULT_COLUMNS,
         format: {
-          type: Sq.ENUM('PNG', 'JPG'),
+          type: Sq.ENUM('PNG', 'JPG', 'SVG'),
           defaultValue: 'PNG',
         },
         filename: {

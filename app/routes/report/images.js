@@ -50,13 +50,11 @@ const uploadReportImage = async (reportId, key, image, options = {}) => {
 /**
  * Resize, reformat and upload a legend image to the pathway_analysis_legends table
  *
- * @param {Number} reportId - The primary key for the report this legend belongs to (to create FK relationship)
- * @param {string} version - The legend version identifier (e.g. 'v1', 'v2', 'v3')
  * @param {Buffer|string} image - Buffer containing image data or the absolute path to the image file
  * @param {object} options - An object containing additional image upload options
  *
  * @property {string} options.filename - An optional filename for the image
- * @property {string} options.name - An optional name for the legend
+ * @property {string} options.name - An optional name/version for the legend
  * @property {boolean|string} options.default - Whether this legend is the default
  * @property {object} options.transaction - An optional transaction to run the create under
  *

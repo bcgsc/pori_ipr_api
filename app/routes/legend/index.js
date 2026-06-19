@@ -76,7 +76,8 @@ router.route('/')
     }
 
     try {
-      const results = await Promise.all(Object.entries(req.files).map(async ([key, image]) => {
+      const results = [];
+      for (const [key, image] of Object.entries(req.files)) {
         try {
           // Set options (value or undefined)
           const options = {
@@ -88,12 +89,13 @@ router.route('/')
           // Load image
           const createdLegend = await uploadLegendImage(image.data, options);
           await createdLegend.ensureDefaultExists();
+
           // Return that this image was uploaded successfully
-          return {name: key, upload: 'successful'};
+          results.push({name: key, upload: 'successful'});
         } catch (error) {
-          return {name: key, upload: 'failed', error};
+          results.push({name: key, upload: 'failed', error});
         }
-      }));
+      }
       return res.status(HTTP_STATUS.MULTI_STATUS).json(results);
     } catch (error) {
       logger.error(`Error while uploading images ${error}`);

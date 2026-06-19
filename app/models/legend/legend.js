@@ -6,7 +6,7 @@ module.exports = (sequelize, Sq) => {
     {
       ...DEFAULT_COLUMNS,
       format: {
-        type: Sq.ENUM('PNG', 'JPG'),
+        type: Sq.ENUM('PNG', 'JPG', 'SVG'),
         defaultValue: 'PNG',
       },
       filename: {
@@ -31,7 +31,7 @@ module.exports = (sequelize, Sq) => {
       indexes: [
         {
           unique: true,
-          fields: [],
+          fields: ['default'],
           where: {
             default: true,
             deleted_at: null,
@@ -53,7 +53,10 @@ module.exports = (sequelize, Sq) => {
             await sequelize.models.legend.update(
               {default: false},
               {
-                where: {id: {[sequelize.Sequelize.Op.ne]: instance.id}},
+                where: {
+                  default: true,
+                  id: {[sequelize.Sequelize.Op.ne]: instance.id},
+                },
                 transaction: options.transaction,
               },
             );
@@ -65,7 +68,10 @@ module.exports = (sequelize, Sq) => {
             await sequelize.models.legend.update(
               {default: false},
               {
-                where: {id: {[sequelize.Sequelize.Op.ne]: instance.id}},
+                where: {
+                  default: true,
+                  id: {[sequelize.Sequelize.Op.ne]: instance.id},
+                },
                 transaction: options.transaction,
               },
             );
