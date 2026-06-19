@@ -89,13 +89,13 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legendId', 2)
+        .field('legendId', 1)
         .expect(HTTP_STATUS.OK);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legendId).toBe(2);
+      expect(res.body.legendId).toBe(1);
     });
 
     test('/ - 400 Bad request - Invalid legend fk', async () => {
@@ -173,13 +173,13 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legendId', 2)
+        .field('legendId', 1)
         .expect(HTTP_STATUS.CREATED);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legendId).toBe(2);
+      expect(res.body.legendId).toBe(1);
 
       // Remove pathway analysis
       await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
@@ -216,7 +216,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legendId', 2)
+        .field('legendId', 1)
         .expect(HTTP_STATUS.CONFLICT);
 
       // Remove pathway analysis
