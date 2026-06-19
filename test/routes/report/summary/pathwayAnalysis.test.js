@@ -32,6 +32,7 @@ beforeAll(async () => {
 
 describe('/reports/{report}/summary/pathway-analysis', () => {
   let report;
+  let legend;
 
   beforeAll(async () => {
     // Get genomic template
@@ -40,6 +41,13 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
     report = await db.models.report.create({
       templateId: template.id,
       patientId: 'TESTPATIENT1234',
+    });
+    // Create legend for pathway analysis tests
+    legend = await db.models.legend.create({
+      filename: 'pathway_legend_v1.png',
+      name: 'v1',
+      data: 'v1Data',
+      default: true,
     });
   });
 
@@ -89,13 +97,13 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legendId', 1)
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.OK);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legendId).toBe(1);
+      expect(res.body.legendId).toBe(legend.id);
     });
 
     test('/ - 400 Bad request - Invalid legend fk', async () => {
@@ -113,7 +121,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/golden.jpg')
-        .field('legendId', 1)
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -173,13 +181,13 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legendId', 1)
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.CREATED);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legendId).toBe(1);
+      expect(res.body.legendId).toBe(legend.id);
 
       // Remove pathway analysis
       await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
@@ -201,7 +209,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/golden.jpg')
-        .field('legendId', 1)
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -216,7 +224,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legendId', 1)
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.CONFLICT);
 
       // Remove pathway analysis
@@ -226,6 +234,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 
   // Delete report
   afterAll(async () => {
+    await db.models.legend.destroy({where: {id: legend.id}, force: true});
     await db.models.report.destroy({where: {id: report.id}, force: true});
   });
 });
