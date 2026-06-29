@@ -24,6 +24,9 @@ module.exports = (sequelize, Sq) => {
       default: {
         type: Sq.BOOLEAN,
         defaultValue: false,
+        set(value) {
+          this.setDataValue('default', value === true || value === 'true');
+        },
       },
     },
     {
@@ -55,7 +58,6 @@ module.exports = (sequelize, Sq) => {
               {
                 where: {
                   default: true,
-                  id: {[sequelize.Sequelize.Op.ne]: instance.id},
                 },
                 transaction: options.transaction,
               },
@@ -93,20 +95,28 @@ module.exports = (sequelize, Sq) => {
   };
 
   // Ensure at least one default exists
-  legend.prototype.ensureDefaultExists = async function () {
+  legend.ensureDefaultExists = async function (options = {}) {
+    const {transaction} = options;
     const hasDefault = await sequelize.models.legend.findOne({
       where: {default: true},
+      transaction,
+      lock: transaction ? transaction.LOCK.UPDATE : undefined,
     });
 
     if (!hasDefault) {
       const mostRecent = await sequelize.models.legend.findOne({
         order: [['createdAt', 'DESC']],
+        transaction,
+        lock: transaction ? transaction.LOCK.UPDATE : undefined,
       });
-
       if (mostRecent) {
-        await mostRecent.update({default: true});
+        await mostRecent.update({default: true}, {transaction});
       }
     }
+  };
+
+  legend.prototype.ensureDefaultExists = async function (options = {}) {
+    return legend.ensureDefaultExists(options);
   };
 
   return legend;

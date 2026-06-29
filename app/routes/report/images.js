@@ -74,7 +74,7 @@ const uploadLegendImage = async (image, options = {}) => {
       filename: options.filename,
       name: options.name || options.filename,
       data: imageData,
-      default: options.default === true || options.default === 'true',
+      default: options.default,
     }, {transaction: options.transaction});
   } catch (error) {
     logger.error(`Error processing legend image ${options.filename} ${error}`);

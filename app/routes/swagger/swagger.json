@@ -4596,6 +4596,34 @@
       }
     },
     "/legend": {
+      "get": {
+        "summary": "Get Legend Images",
+        "description": "Retrieve all legend images",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legend"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of all legend images"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legends not found"
+          }
+        }
+      },
       "post": {
         "summary": "Add Legend Images",
         "description": "Upload new legend images to report",
@@ -4639,7 +4667,7 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "version": {
+                      "name": {
                         "type": "string"
                       },
                       "upload": {
@@ -4688,7 +4716,7 @@
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "description": "Report or legend not found"
+            "description": "Legend not found"
           }
         }
       },
