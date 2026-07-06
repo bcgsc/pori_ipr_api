@@ -38,6 +38,7 @@ userMetadata.belongsTo(user, {
 
 // Projects
 const project = require('./project/project')(sequelize, Sq);
+const projectVariantTextJoin = require('./project/projectVariantTextJoin')(sequelize, Sq);
 const userProject = require('./project/userProject')(sequelize, Sq);
 const reportProject = require('./project/reportProject')(sequelize, Sq);
 
@@ -610,14 +611,14 @@ const variantText = require('./variantText/variantText')(sequelize, Sq);
 template.hasMany(variantText, {
   as: 'variant_texts', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
 });
-project.hasMany(variantText, {
-  as: 'variant_texts', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+project.belongsToMany(variantText, {
+  as: 'variant_texts', through: {model: projectVariantTextJoin, unique: false}, foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
 });
 variantText.belongsTo(template, {
   as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-variantText.belongsTo(project, {
-  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+variantText.belongsToMany(project, {
+  as: 'projects', through: {model: projectVariantTextJoin, unique: false}, foreignKey: 'variantTextId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Template Appendix

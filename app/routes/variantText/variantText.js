@@ -25,14 +25,47 @@ const updateSchema = schemaGenerator(db.models.variantText, {
 });
 
 const pairs = {
-  project: db.models.project,
   template: db.models.template,
+};
+
+const variantTextPublicAttributes = {
+  exclude: ['id', 'deletedAt', 'updatedBy', 'templateId'],
+};
+
+const variantTextPublicInclude = [
+  {model: db.models.template.scope('minimal'), as: 'template'},
+  {
+    model: db.models.project.scope('minimal'),
+    as: 'projects',
+    through: {attributes: []},
+  },
+];
+
+const hasProjectAccessForAll = (user, projectIdents = []) => {
+  return projectIdents.every((ident) => {
+    return projectAccess(user, {projects: [{ident}]});
+  });
 };
 
 // for each entry in pairs, assumes the key-named value in
 // req.body is the ident, and gets the id of the corresponding object.
 router.use(async (req, res, next) => {
   const operations = [];
+
+  delete req.body.projectId;
+  delete req.body.projectIds;
+
+  if (req.body.project && !req.body.projects) {
+    req.body.projects = [req.body.project];
+  }
+
+  if (req.body.projects && !Array.isArray(req.body.projects)) {
+    req.body.projects = [req.body.projects];
+  }
+
+  if (Array.isArray(req.body.projects)) {
+    req.body.projects = [...new Set(req.body.projects.filter((ident) => {return Boolean(ident);}))];
+  }
 
   for (const [key, value] of Object.entries(pairs)) {
     // delete user input ids for safety
@@ -55,6 +88,30 @@ router.use(async (req, res, next) => {
     }
   }
 
+  if (Array.isArray(req.body.projects) && req.body.projects.length) {
+    const operation = db.models.project.findAll({
+      where: {
+        ident: req.body.projects,
+      },
+    }).then((projects) => {
+      if (projects.length !== req.body.projects.length) {
+        const foundProjectIdents = projects.map((project) => {return project.ident;});
+        const missingProjectIdent = req.body.projects.find((ident) => {
+          return !foundProjectIdents.includes(ident);
+        });
+
+        logger.error(`Unable to find project ${missingProjectIdent}`);
+        const error = new Error('Unable to find project');
+        error.statusCode = HTTP_STATUS.NOT_FOUND;
+        throw error;
+      }
+
+      req.body.projectIds = projects.map((project) => {return project.id;});
+    });
+
+    operations.push(operation);
+  }
+
   try {
     await Promise.all(operations);
     next();
@@ -74,10 +131,8 @@ router.param('variantText', async (req, res, next, ident) => {
   try {
     result = await db.models.variantText.findOne({
       where: {ident},
-      include: [
-        {model: db.models.template.scope('minimal'), as: 'template'},
-        {model: db.models.project.scope('minimal'), as: 'project'},
-      ],
+      attributes: variantTextPublicAttributes,
+      include: variantTextPublicInclude,
     });
   } catch (error) {
     logger.error(`Error while trying to get variant text ${error}`);
@@ -93,13 +148,13 @@ router.param('variantText', async (req, res, next, ident) => {
     });
   }
 
-  if (result.project.ident) {
-    const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: result.project.ident}]});
+  if (result.projects?.length) {
+    const userHasProjectAccess = projectAccess(req.user, {projects: result.projects});
 
     if (!userHasProjectAccess) {
-      logger.error(`user ${req.user.username} does not have access to project ${req.body.project}`);
+      logger.error(`user ${req.user.username} does not have access to variant text ${ident}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
-        error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
+        error: {message: `user ${req.user.username} does not have access to variant text ${ident}`},
       });
     }
   }
@@ -113,23 +168,49 @@ router.route('/:variantText([A-z0-9-]{36})')
     return res.json(req.variantText.view('public'));
   })
   .put(async (req, res) => {
+    const requestedProjectIdents = req.body.projects || (req.body.project ? [req.body.project] : []);
+
+    if (requestedProjectIdents.length && !hasProjectAccessForAll(req.user, requestedProjectIdents)) {
+      logger.error(`user ${req.user.username} does not have access to variant text projects ${requestedProjectIdents.join(', ')}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: `user ${req.user.username} does not have access to all requested projects`},
+      });
+    }
+
+    const variantTextBody = {...req.body};
+    delete variantTextBody.project;
+    delete variantTextBody.projects;
+    delete variantTextBody.projectIds;
+
     try {
       // validate against the model
-      validateAgainstSchema(updateSchema, req.body, false);
+      validateAgainstSchema(updateSchema, variantTextBody, false);
     } catch (error) {
       const message = `There was an error validating variant text ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
     }
 
-    if (req.body.text) {
-      req.body.text = sanitizeHtml(req.body.text);
+    if (variantTextBody.text) {
+      variantTextBody.text = sanitizeHtml(variantTextBody.text);
     }
 
     try {
-      await req.variantText.update(req.body, {userId: req.user.id});
-      await req.variantText.reload();
-      return res.json(req.variantText.view('public'));
+      if (Object.keys(variantTextBody).length) {
+        await req.variantText.update(variantTextBody, {userId: req.user.id});
+      }
+
+      if (Array.isArray(req.body.projectIds)) {
+        await req.variantText.setProjects(req.body.projectIds);
+      }
+
+      const updatedVariantText = await db.models.variantText.findOne({
+        where: {id: req.variantText.id},
+        attributes: variantTextPublicAttributes,
+        include: variantTextPublicInclude,
+      });
+
+      return res.json(updatedVariantText.view('public'));
     } catch (error) {
       logger.error(`Error while trying to update variant text ${error}`);
       if (`${error}` === 'SequelizeUniqueConstraintError: Validation error') {
@@ -157,35 +238,43 @@ router.route('/')
   .get(async (req, res) => {
     const userProjects = await getUserProjects(db.models.project, req.user);
     const projectIdents = userProjects.map((project) => {return project.ident;});
+    const requestedProjectIdents = req.body.projects || (req.body.project ? [req.body.project] : []);
 
-    if (req.body.project) {
-      const userHasProjectAccess = projectAccess(req.user, {projects: [{ident: req.body.project}]});
-
-      if (!userHasProjectAccess) {
-        logger.error(`user ${req.user.username} does not have access to variant text ${req.body.project}`);
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          error: {message: `user ${req.user.username} does not have access to variant text ${req.body.project}`},
-        });
-      }
+    if (requestedProjectIdents.length && !hasProjectAccessForAll(req.user, requestedProjectIdents)) {
+      logger.error(`user ${req.user.username} does not have access to variant text projects ${requestedProjectIdents.join(', ')}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: `user ${req.user.username} does not have access to all requested projects`},
+      });
     }
+
+    const requestedProjectIds = Array.isArray(req.body.projectIds) ? req.body.projectIds : [];
 
     try {
       const whereClause = {
         ...((req.body.templateId == null) ? {} : {templateId: req.body.templateId}),
-        ...((req.body.projectId == null) ? {} : {projectId: req.body.projectId}),
         ...((req.body.variantName == null) ? {} : {variantName: req.body.variantName}),
         ...((req.body.cancerType == null) ? {}
           : {cancerType: {[Op.contains]: [req.body.cancerType]}}),
       };
 
-      let results = await db.models.variantText.scope('public').findAll({
+      let results = await db.models.variantText.findAll({
         where: whereClause,
+        attributes: variantTextPublicAttributes,
+        include: variantTextPublicInclude,
       });
 
       results = results.filter((variantText) => {
-        if (variantText.project.ident) {
-          return projectIdents.includes(variantText.project.ident);
+        const variantTextProjectIdents = (variantText.projects || []).map((project) => {return project.ident;});
+        const variantTextProjectIds = (variantText.projects || []).map((project) => {return project.id;});
+
+        if (variantTextProjectIdents.length && !variantTextProjectIdents.some((ident) => {return projectIdents.includes(ident);})) {
+          return false;
         }
+
+        if (requestedProjectIds.length && !variantTextProjectIds.some((projectId) => {return requestedProjectIds.includes(projectId);})) {
+          return false;
+        }
+
         return true;
       });
 
@@ -198,16 +287,35 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
-    // Validate request against schema
-    try {
-      delete req.body.project;
-      delete req.body.template;
+    const requestedProjectIdents = req.body.projects || (req.body.project ? [req.body.project] : []);
 
-      if (typeof req.body.cancerType === 'string') {
-        req.body.cancerType = [req.body.cancerType];
+    if (!requestedProjectIdents.length) {
+      const message = 'Error while validating variant text create request at least one project is required';
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    if (!hasProjectAccessForAll(req.user, requestedProjectIdents)) {
+      logger.error(`user ${req.user.username} does not have access to variant text projects ${requestedProjectIdents.join(', ')}`);
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: `user ${req.user.username} does not have access to all requested projects`},
+      });
+    }
+
+    // Validate request against schema
+    const createBody = {...req.body};
+
+    try {
+      delete createBody.project;
+      delete createBody.projects;
+      delete createBody.projectIds;
+      delete createBody.template;
+
+      if (typeof createBody.cancerType === 'string') {
+        createBody.cancerType = [createBody.cancerType];
       }
 
-      await validateAgainstSchema(createSchema, req.body);
+      await validateAgainstSchema(createSchema, createBody);
     } catch (error) {
       const message = `Error while validating variant text create request ${error}`;
       logger.error(message);
@@ -216,17 +324,21 @@ router.route('/')
 
     try {
       // Sanitize text
-      if (req.body.text) {
-        req.body.text = sanitizeHtml(req.body.text);
+      if (createBody.text) {
+        createBody.text = sanitizeHtml(createBody.text);
       }
 
       const newVariantText = await db.models.variantText.create(
-        req.body,
+        createBody,
       );
 
+      await newVariantText.setProjects(req.body.projectIds || []);
+
       // Load new variant text with associations
-      const result = await db.models.variantText.scope('public').findOne({
+      const result = await db.models.variantText.findOne({
         where: {id: newVariantText.id},
+        attributes: variantTextPublicAttributes,
+        include: variantTextPublicInclude,
       });
 
       return res.status(HTTP_STATUS.CREATED).json(result);

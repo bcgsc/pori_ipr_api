@@ -32,11 +32,11 @@ module.exports = (sequelize, Sq) => {
     scopes: {
       public: {
         attributes: {
-          exclude: ['id', 'deletedAt', 'updatedBy'],
+          exclude: ['deletedAt', 'updatedBy'],
         },
       },
       minimal: {
-        attributes: ['ident', 'name'],
+        attributes: ['id', 'ident', 'name'],
       },
     },
   });
