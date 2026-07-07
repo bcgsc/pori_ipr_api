@@ -74,7 +74,7 @@ const checkVariantTextsProjectPermissions = (reports) => {
 };
 
 const ensureProjectVariantTextJoinTable = async () => {
-  const [rows] = await db.query("SELECT to_regclass('public.project_variant_text_join') AS table_name;");
+  const [rows] = await db.query('SELECT to_regclass(\'public.project_variant_text_join\') AS table_name;');
 
   if (!rows[0] || !rows[0].table_name) {
     await db.query(`
@@ -278,7 +278,7 @@ describe('/variant-text', () => {
 
   describe('PUT - /:variantText', () => {
     test('/ - 200 Success', async () => {
-      const res = await request
+      await request
         .put(`${BASE_URI}/${variantText.ident}`)
         .query({
           groups: [{name: VARIANT_EDIT_ACCESS}],
@@ -384,7 +384,9 @@ describe('/variant-text', () => {
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body).toHaveLength(0);
+      expect(res.body).not.toHaveLength(0);
+      expect(res.body.map((variantTextResponse) => {return variantTextResponse.ident;}))
+        .toContain(variantTextOpt.ident);
     });
 
     test('POST / - 400 test constraint on null project', async () => {
