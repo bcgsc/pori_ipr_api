@@ -131,7 +131,6 @@ router.param('variantText', async (req, res, next, ident) => {
   try {
     result = await db.models.variantText.findOne({
       where: {ident},
-      attributes: variantTextPublicAttributes,
       include: variantTextPublicInclude,
     });
   } catch (error) {
@@ -168,13 +167,45 @@ router.route('/:variantText([A-z0-9-]{36})')
     return res.json(req.variantText.view('public'));
   })
   .put(async (req, res) => {
-    const requestedProjectIdents = req.body.projects || (req.body.project ? [req.body.project] : []);
+    const requestedProjectIdentsRaw = req.body.projects || (req.body.project ? [req.body.project] : []);
+    const requestedProjectIdents = (Array.isArray(requestedProjectIdentsRaw) ? requestedProjectIdentsRaw : [requestedProjectIdentsRaw])
+      .map((project) => {
+        if (typeof project === 'string') {
+          return project;
+        }
+
+        return project?.ident;
+      })
+      .filter((ident) => {return Boolean(ident);});
 
     if (requestedProjectIdents.length && !hasProjectAccessForAll(req.user, requestedProjectIdents)) {
       logger.error(`user ${req.user.username} does not have access to variant text projects ${requestedProjectIdents.join(', ')}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         error: {message: `user ${req.user.username} does not have access to all requested projects`},
       });
+    }
+
+    let requestedProjectIds;
+    if (requestedProjectIdents.length) {
+      const projects = await db.models.project.findAll({
+        where: {
+          ident: requestedProjectIdents,
+        },
+      });
+
+      if (projects.length !== requestedProjectIdents.length) {
+        const foundProjectIdents = projects.map((project) => {return project.ident;});
+        const missingProjectIdent = requestedProjectIdents.find((ident) => {
+          return !foundProjectIdents.includes(ident);
+        });
+
+        logger.error(`Unable to find project ${missingProjectIdent}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          error: {message: 'Unable to find project'},
+        });
+      }
+
+      requestedProjectIds = projects.map((project) => {return project.id;});
     }
 
     const variantTextBody = {...req.body};
@@ -200,8 +231,8 @@ router.route('/:variantText([A-z0-9-]{36})')
         await req.variantText.update(variantTextBody, {userId: req.user.id});
       }
 
-      if (Array.isArray(req.body.projectIds)) {
-        await req.variantText.setProjects(req.body.projectIds);
+      if (Array.isArray(requestedProjectIds)) {
+        await req.variantText.setProjects(requestedProjectIds);
       }
 
       const updatedVariantText = await db.models.variantText.findOne({

@@ -278,7 +278,7 @@ describe('/variant-text', () => {
 
   describe('PUT - /:variantText', () => {
     test('/ - 200 Success', async () => {
-      await request
+      const res = await request
         .put(`${BASE_URI}/${variantText.ident}`)
         .query({
           groups: [{name: VARIANT_EDIT_ACCESS}],
@@ -287,7 +287,10 @@ describe('/variant-text', () => {
         .send(UPDATE_DATA)
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+        .expect(HTTP_STATUS.OK);
+
+      checkVariantText(res.body);
+      expect(res.body.text).toEqual(UPDATE_DATA.text);
     });
 
     test('/ - 400 Bad Request not updateable field', async () => {
@@ -336,7 +339,15 @@ describe('/variant-text', () => {
         })
         .auth(username, password)
         .type('json')
-        .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+        .expect(HTTP_STATUS.NO_CONTENT);
+
+      // Verify variant text is soft-deleted
+      const deletedVariantText = await db.models.variantText.findOne({
+        where: {ident: deleteVariantText.ident},
+        paranoid: false,
+      });
+
+      expect(deletedVariantText.deletedAt).not.toBeNull();
     });
 
     test('/ - 403 Forbidden user group', async () => {
