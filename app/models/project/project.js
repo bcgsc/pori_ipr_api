@@ -36,7 +36,10 @@ module.exports = (sequelize, Sq) => {
         },
       },
       minimal: {
-        attributes: ['id', 'ident', 'name'],
+        attributes: ['ident', 'name'],
+      },
+      variantText: {
+        attributes: ['id', 'ident', 'name', 'description'],
       },
     },
   });

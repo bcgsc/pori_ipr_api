@@ -35,7 +35,7 @@ const variantTextPublicAttributes = {
 const variantTextPublicInclude = [
   {model: db.models.template.scope('minimal'), as: 'template'},
   {
-    model: db.models.project.scope('minimal'),
+    model: db.models.project.scope('variantText'),
     as: 'projects',
     through: {attributes: []},
   },
