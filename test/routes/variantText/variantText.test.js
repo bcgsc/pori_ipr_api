@@ -328,7 +328,6 @@ describe('/variant-text', () => {
       // delete newly created data and all of their components
       await db.models.variantText.destroy({
         where: {ident: deleteVariantText.ident},
-        force: true,
       });
     });
 
