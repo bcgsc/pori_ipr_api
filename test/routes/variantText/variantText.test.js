@@ -135,11 +135,10 @@ describe('/variant-text', () => {
     // delete newly created data and all of their components
     await db.models.variantText.destroy({
       where: {templateId: template?.id},
-      force: true,
     });
-    await project?.destroy({force: true});
-    await template?.destroy({force: true});
-    await unauthorizedProject?.destroy({force: true});
+    await project?.destroy();
+    await template?.destroy();
+    await unauthorizedProject?.destroy();
   });
 
   describe('GET - /', () => {
