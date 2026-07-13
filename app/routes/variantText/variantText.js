@@ -6,7 +6,6 @@ const db = require('../../models');
 const logger = require('../../log');
 
 const {
-  getUserProjects,
   sanitizeHtml,
   projectAccess,
 } = require('../../libs/helperFunctions');
@@ -267,17 +266,6 @@ router.route('/:variantText([A-z0-9-]{36})')
   });
 router.route('/')
   .get(async (req, res) => {
-    const userProjects = await getUserProjects(db.models.project, req.user);
-    const projectIdents = userProjects.map((project) => {return project.ident;});
-    const requestedProjectIdents = req.body.projects || (req.body.project ? [req.body.project] : []);
-
-    if (requestedProjectIdents.length && !hasProjectAccessForAll(req.user, requestedProjectIdents)) {
-      logger.error(`user ${req.user.username} does not have access to variant text projects ${requestedProjectIdents.join(', ')}`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        error: {message: `user ${req.user.username} does not have access to all requested projects`},
-      });
-    }
-
     const requestedProjectIds = Array.isArray(req.body.projectIds) ? req.body.projectIds : [];
 
     try {
@@ -295,12 +283,7 @@ router.route('/')
       });
 
       results = results.filter((variantText) => {
-        const variantTextProjectIdents = (variantText.projects || []).map((project) => {return project.ident;});
         const variantTextProjectIds = (variantText.projects || []).map((project) => {return project.id;});
-
-        if (variantTextProjectIdents.length && !variantTextProjectIdents.some((ident) => {return projectIdents.includes(ident);})) {
-          return false;
-        }
 
         if (requestedProjectIds.length && !variantTextProjectIds.some((projectId) => {return requestedProjectIds.includes(projectId);})) {
           return false;

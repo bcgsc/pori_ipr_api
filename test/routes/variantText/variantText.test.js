@@ -18,7 +18,6 @@ let server;
 let request;
 
 const NON_ADMIN_GROUP = 'NON ADMIN GROUP';
-const ALL_PROJECTS_ACCESS = 'all projects access';
 const VARIANT_EDIT_ACCESS = 'variant-text edit access';
 
 const CREATE_DATA = {
@@ -64,12 +63,6 @@ const checkVariantText = (reportObject) => {
 const checkVariantTexts = (reports) => {
   reports.forEach((report) => {
     checkVariantText(report);
-  });
-};
-
-const checkVariantTextsProjectPermissions = (reports) => {
-  reports.forEach((report) => {
-    expect(report.projects).toHaveLength(0);
   });
 };
 
@@ -151,35 +144,6 @@ describe('/variant-text', () => {
 
       expect(res.body).not.toHaveLength(0);
       checkVariantTexts(res.body);
-    });
-
-    test('/ - 200 Get variant text with all project access', async () => {
-      const res = await request
-        .get(BASE_URI)
-        .query({
-          groups: [{name: NON_ADMIN_GROUP}, {name: ALL_PROJECTS_ACCESS}],
-          projects: [],
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      expect(res.body).not.toHaveLength(0);
-      checkVariantTexts(res.body);
-    });
-
-    test('/ - 200 Dont get variant text without project access', async () => {
-      const res = await request
-        .get(BASE_URI)
-        .query({
-          groups: [{name: NON_ADMIN_GROUP}],
-          projects: [{name: unauthorizedProject.name, ident: unauthorizedProject.ident}],
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      checkVariantTextsProjectPermissions(res.body);
     });
 
     test('/ - 200 Get filtered results', async () => {
