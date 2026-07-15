@@ -82,7 +82,42 @@ const uploadLegendImage = async (image, options = {}) => {
   }
 };
 
+/**
+ * Resize, reformat and replace the image on an existing legend entry
+ *
+ * @param {object} legend - The legend db instance to update
+ * @param {object} image - The uploaded file, containing a data buffer and name
+ * @param {object} options - An object containing additional update options
+ *
+ * @property {object} options.updates - Additional legend fields to update (e.g. name, default)
+ * @property {Number} options.userId - The id of the user performing the update
+ * @property {object} options.transaction - An optional transaction to run the update under
+ *
+ * @returns {Promise<object>} - Returns the updated legend db entry
+ * @throws {Promise<Error>} - Something goes wrong with image processing and saving entry
+ */
+const updateLegendImage = async (legend, image, options = {}) => {
+  logger.verbose('Updating legend image');
+
+  const config = {format: DEFAULT_FORMAT, size: IMAGE_SIZE_LIMIT};
+
+  try {
+    const imageData = await processImage(image.data, config.size, config.format);
+
+    return legend.update({
+      ...options.updates,
+      format: config.format,
+      filename: image.name.trim(),
+      data: imageData,
+    }, {userId: options.userId, transaction: options.transaction});
+  } catch (error) {
+    logger.error(`Error processing legend image ${image.name} ${error}`);
+    throw new Error(`Error processing legend image ${image.name} ${error}`);
+  }
+};
+
 module.exports = {
   uploadReportImage,
   uploadLegendImage,
+  updateLegendImage,
 };

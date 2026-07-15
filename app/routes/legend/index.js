@@ -3,7 +3,7 @@ const express = require('express');
 
 const db = require('../../models');
 const logger = require('../../log');
-const {uploadLegendImage} = require('../report/images');
+const {uploadLegendImage, updateLegendImage} = require('../report/images');
 
 const router = express.Router({mergeParams: true});
 
@@ -33,11 +33,19 @@ router.route('/:legend([A-z0-9-]{36})')
     return res.json(req.legend.view('public'));
   })
   .put(async (req, res) => {
+    // Use the first uploaded file, if any, to replace the stored image
+    const [image] = req.files ? Object.values(req.files) : [];
+
     try {
       await db.transaction(async (transaction) => {
-        await req.legend.update(req.body, {userId: req.user.id, transaction});
+        if (image) {
+          await updateLegendImage(req.legend, image, {updates: req.body, userId: req.user.id, transaction});
+        } else {
+          await req.legend.update(req.body, {userId: req.user.id, transaction});
+        }
         await db.models.legend.ensureDefaultExists({transaction});
       });
+      await req.legend.reload();
       return res.json(req.legend.view('public'));
     } catch (error) {
       logger.error(`Error while updating legend image ${error}`);

@@ -230,6 +230,49 @@ describe('/legend', () => {
       expect(updatedSecondLegend.default).toBe(true);
       expect(updatedFirstLegend.default).toBe(false);
     });
+
+    test('/{legend} - uploading a new image replaces the stored image', async () => {
+      const legend = await db.models.legend.create(
+        buildLegendData({data: 'oldData', filename: 'old.png'}),
+      );
+
+      const res = await request
+        .put(`/api/legend/${legend.ident}`)
+        .attach('image', 'test/testData/images/golden.jpg')
+        .field('name', 'updated name')
+        .auth(username, password)
+        .expect(HTTP_STATUS.OK);
+
+      checkLegend(res.body);
+      expect(res.body.name).toBe('updated name');
+      expect(res.body.filename).toBe('golden.jpg');
+      expect(res.body.format).toBe('PNG');
+      expect(res.body.data).not.toBe('oldData');
+
+      // The replacement is persisted, not just reflected in the response
+      const updated = await db.models.legend.findByPk(legend.id);
+      expect(updated.data).not.toBe('oldData');
+      expect(updated.filename).toBe('golden.jpg');
+    });
+
+    test('/{legend} - metadata-only update preserves the existing image', async () => {
+      const legend = await db.models.legend.create(
+        buildLegendData({data: 'keepThisData', name: 'original'}),
+      );
+
+      const res = await request
+        .put(`/api/legend/${legend.ident}`)
+        .send({name: 'renamed'})
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.name).toBe('renamed');
+      expect(res.body.data).toBe('keepThisData');
+
+      const updated = await db.models.legend.findByPk(legend.id);
+      expect(updated.data).toBe('keepThisData');
+    });
   });
 });
 
