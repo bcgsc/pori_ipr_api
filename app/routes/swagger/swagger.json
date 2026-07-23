@@ -2048,6 +2048,46 @@
         }
       }
     },
+    "/reports/{report}/user/history": {
+      "get": {
+        "summary": "Get Report-User Binding History",
+        "description": "Retrieve the full history of report-user bindings for a report, including bindings that have since been removed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Report Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all report-user bindings for the report, including removed bindings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/reportUserHistory"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/summary/microbial": {
       "get": {
         "summary": "Get microbial data",

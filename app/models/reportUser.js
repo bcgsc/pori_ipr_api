@@ -46,6 +46,15 @@ module.exports = (sequelize, Sq) => {
             {model: sequelize.models.user.scope('public'), as: 'user'},
           ],
         },
+        history: {
+          attributes: {
+            exclude: ['id', 'reportId', 'user_id', 'addedBy_id', 'updatedBy'],
+          },
+          include: [
+            {model: sequelize.models.user.scope('public'), as: 'user'},
+            {model: sequelize.models.user.scope('public'), as: 'addedBy'},
+          ],
+        },
       },
     },
   );

@@ -155,6 +155,15 @@ schemas.stateHistory = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'stateHistory', include: ['ident', 'updatedAt', 'state'],
 });
 
+// report-user binding history
+schemas.reportUserHistory = schemaGenerator(db.models.reportUser, {
+  isJsonSchema: false,
+  title: 'reportUserHistory',
+  include: ['ident', 'role', 'createdAt', 'updatedAt', 'deletedAt'],
+  associations: true,
+  includeAssociations: ['user', 'addedBy'],
+});
+
 // signatures - earliest signoff
 schemas.earliestSignOff = {
   ...schemas.signaturesAssociations,
