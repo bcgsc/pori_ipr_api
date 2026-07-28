@@ -4758,6 +4758,36 @@
         }
       }
     },
+    "/legend/{legendId}": {
+      "get": {
+        "summary": "Get Legend Image by ID",
+        "description": "Retrieve a specific legend image by numeric ID",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legendId"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified legend image"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legend not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/kb-matches": {
       "get": {
         "summary": "Get KB Matches",
@@ -9008,6 +9038,15 @@
         "schema": {
           "type": "string",
           "format": "UUIDv4"
+        }
+      },
+      "legendId": {
+        "name": "legendId",
+        "in": "path",
+        "required": true,
+        "description": "legend image ID",
+        "schema": {
+          "type": "integer"
         }
       },
       "alteration": {

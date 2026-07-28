@@ -74,6 +74,26 @@ router.route('/:legend([A-z0-9-]{36})')
     }
   });
 
+// Route for querying legend by numeric id
+router.route('/:legendId(\\d+)')
+  .get(async (req, res) => {
+    try {
+      const legend = await db.models.legend.findByPk(req.params.legendId);
+      if (!legend) {
+        logger.error(`Unable to find legend with id ${req.params.legendId}`);
+        const msg = 'Unable to find the requested legend';
+        return res.status(HTTP_STATUS.NOT_FOUND)
+          .json({error: {message: msg}});
+      }
+      return res.json(legend.view('public'));
+    } catch (error) {
+      logger.error(`Unable to lookup legend by id error: ${error.message}`);
+      const msg = 'Unable to lookup legend';
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({error: {message: msg}});
+    }
+  });
+
 // Route for adding a legend image
 router.route('/')
   .get(async (req, res) => {
