@@ -12,15 +12,16 @@ module.exports = (sequelize, Sq) => {
         key: 'id',
       },
     },
-    legendId: {
-      name: 'legendId',
-      field: 'legend_id',
-      type: Sq.INTEGER,
-      references: {
-        model: 'pathway_analysis_legends',
-        key: 'id',
-      },
-    },
+    // DEVSU-2310 batch 2: re-enable with the update-pathway-analysis-legend-fk migration
+    // legendId: {
+    //   name: 'legendId',
+    //   field: 'legend_id',
+    //   type: Sq.INTEGER,
+    //   references: {
+    //     model: 'pathway_analysis_legends',
+    //     key: 'id',
+    //   },
+    // },
     pathway: {
       type: Sq.TEXT,
       allowNull: true,
