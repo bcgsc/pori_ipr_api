@@ -7,11 +7,23 @@ const genomicAlterationsMiddleware = require('../../../middleware/genomicAlterat
 const db = require('../../../models');
 const logger = require('../../../log');
 const cache = require('../../../cache');
-const {KB_PIVOT_MAPPING} = require('../../../constants');
+const {KB_PIVOT_MAPPING, GENE_LINKED_VARIANT_MODELS} = require('../../../constants');
 
 const schemaGenerator = require('../../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
 const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../constants');
+
+const getVariantInclude = (modelName) => {
+  const isGeneLinkedVariant = GENE_LINKED_VARIANT_MODELS.includes(modelName);
+  const scopeName = isGeneLinkedVariant ? 'extended' : 'public';
+  const scopedModel = db.models[modelName].options.scopes?.[scopeName]
+    ? db.models[modelName].scope(scopeName)
+    : db.models[modelName].scope('public');
+  return {
+    model: scopedModel,
+    as: modelName,
+  };
+};
 
 // Generate schemas
 const createSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
@@ -92,11 +104,7 @@ router.route('/')
         where: {
           reportId: req.report.id,
         },
-        include: [
-          ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-            return {model: db.models[modelName].scope('public'), as: modelName};
-          }),
-        ],
+        include: Object.values(KB_PIVOT_MAPPING).map(getVariantInclude),
       });
 
       if (key) {
