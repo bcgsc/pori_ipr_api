@@ -79,7 +79,7 @@ router.route('/')
       return res.json(req.pathwayAnalysis.view('public'));
     } catch (error) {
       logger.error(`Unable to update pathway analysis ${error}`);
-      return res.status().json({error: {message: 'Unable to update pathway analysis'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to update pathway analysis'}});
     }
   })
   .delete(async (req, res) => {
