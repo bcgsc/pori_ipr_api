@@ -105,7 +105,7 @@ class Routing extends RouterInterface {
 
     // Global legend routes
     this.router.use('/legend', legendRoute);
-    
+
     // Get therapeutic targets routes (all reports)
     this.router.use('/therapeutic-targets', therapeuticTargetsRoute);
 
