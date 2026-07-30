@@ -213,6 +213,36 @@ describe('Testing ACL methods', () => {
       expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
     });
 
+    test('Special case for create project with create project access', async () => {
+      req.user.groups = [{name: 'create project access'}];
+      req.originalUrl = '/api/project';
+      req.method = 'POST';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('Create project is forbidden without create project access', async () => {
+      req.user.groups = [{name: 'hello'}];
+      req.originalUrl = '/api/project';
+      req.method = 'POST';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).toHaveBeenCalledWith(FORBIDDEN);
+    });
+
+    test('User search allows create project access', async () => {
+      req.user.groups = [{name: 'create project access'}];
+      req.originalUrl = '/api/user/search';
+      req.method = 'GET';
+
+      await Acl(req, res, () => {});
+
+      expect(res.status).not.toHaveBeenCalledWith(FORBIDDEN);
+    });
+
     test('Special case (matching route and method) where the user is not allowed to edit', async () => {
       req.originalUrl = '/api/template/fsddfds';
       req.method = 'PUT';

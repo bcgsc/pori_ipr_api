@@ -35,6 +35,10 @@ const SPECIAL_CASES = [
     DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'variant-text edit access'}],
   },
   {
+    path: pathToRegexp('/api/user/search'),
+    GET: [{name: 'admin'}, {name: 'manager'}, {name: 'create project access'}],
+  },
+  {
     path: pathToRegexp('/api/user/:user'),
     GET: [{name: 'admin'}, {name: 'manager'}, {name: 'report assignment access'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}],
@@ -50,7 +54,7 @@ const SPECIAL_CASES = [
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
   { // TODO double check these permissions
-    path: pathToRegexp('/api/reports/:report/observed-variant-annotation'),
+    path: pathToRegexp('/api/reports/:report/observed-variant-annotations'),
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
     PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'create report access'}],
   },
@@ -92,11 +96,11 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/project'),
-    POST: [{name: 'admin'}],
+    POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create project access'}],
   },
   {
     path: pathToRegexp('/api/project/:project'),
-    PUT: [{name: 'admin'}],
+    PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'create project access'}],
     DELETE: [{name: 'admin'}],
   },
   {
