@@ -4595,6 +4595,199 @@
         }
       }
     },
+    "/legend": {
+      "get": {
+        "summary": "Get Legend Images",
+        "description": "Retrieve all legend images",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legend"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of all legend images"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legends not found"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Legend Images",
+        "description": "Upload new legend images to report",
+        "parameters": [],
+        "requestBody": {
+          "description": "Legend images to upload (allows multiple images with different versions)",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "legend name / version (e.g. v1, v2, etc.)"
+                  },
+                  "default": {
+                    "type": "boolean",
+                    "description": "whether this legend image is the default"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "207": {
+            "description": "Returns an array of objects indicating which legend images were uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "upload": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request syntax or no files attached"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legend not found"
+          }
+        }
+      }
+    },
+    "/legend/{legend}": {
+      "get": {
+        "summary": "Get Legend Image",
+        "description": "Retrieve a specific legend image",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legend"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified legend image"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legend not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Legend Image",
+        "description": "Removes the specified legend image",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legend"
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "description": "Whether to do a hard delete or not",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "legend not found"
+          }
+        }
+      }
+    },
+    "/legend/{legendId}": {
+      "get": {
+        "summary": "Get Legend Image by ID",
+        "description": "Retrieve a specific legend image by numeric ID",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legendId"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified legend image"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legend not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/kb-matches": {
       "get": {
         "summary": "Get KB Matches",
@@ -8835,6 +9028,25 @@
         "schema": {
           "type": "string",
           "format": "UUIDv4"
+        }
+      },
+      "legend": {
+        "name": "legend",
+        "in": "path",
+        "required": true,
+        "description": "legend image ident",
+        "schema": {
+          "type": "string",
+          "format": "UUIDv4"
+        }
+      },
+      "legendId": {
+        "name": "legendId",
+        "in": "path",
+        "required": true,
+        "description": "legend image ID",
+        "schema": {
+          "type": "integer"
         }
       },
       "alteration": {
