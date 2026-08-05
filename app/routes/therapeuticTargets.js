@@ -11,7 +11,7 @@ router.route('/')
   .get(async (req, res) => {
     try {
       const results = await db.models.therapeuticTarget.scope('public').findAll({
-        order: [['rank', 'ASC']],
+        order: [['reportId', 'ASC'], ['rank', 'ASC']],
         include: [
           {
             model: db.models.report,
@@ -23,7 +23,9 @@ router.route('/')
       return res.json(results);
     } catch (error) {
       logger.error(`Unable to retrieve therapeutic targets ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({error: {message: 'Unable to retrieve therapeutic targets'}});
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Unable to retrieve therapeutic targets'},
+      });
     }
   });
 
