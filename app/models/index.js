@@ -134,6 +134,20 @@ summary.probeResults = require('./reports/probeResults')(sequelize, Sq);
 summary.therapeuticTargets = require('./reports/genomic/summary/therapeuticTargets')(sequelize, Sq);
 summary.microbial = require('./reports/genomic/summary/microbial')(sequelize, Sq);
 
+// Pathway Analysis Legends
+// DEVSU-2310 batch 2: restore `const pathwayAnalysisLegends =` when re-enabling the associations below
+require('./legend/legend')(sequelize, Sq);
+
+// DEVSU-2310 batch 2: re-enable with the update-pathway-analysis-legend-fk migration.
+// These associations define the legendId attribute on pathwayAnalysis, so they must
+// stay commented out alongside the model attribute until legend_id exists.
+// summary.pathwayAnalysis.belongsTo(pathwayAnalysisLegends, {
+//   as: 'legend', foreignKey: 'legendId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+// });
+// pathwayAnalysisLegends.hasMany(summary.pathwayAnalysis, {
+//   as: 'pathwayAnalyses', foreignKey: 'legendId', onDelete: 'SET NULL', constraints: true,
+// });
+
 analysisReports.belongsTo(user, {
   as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true,
 });
