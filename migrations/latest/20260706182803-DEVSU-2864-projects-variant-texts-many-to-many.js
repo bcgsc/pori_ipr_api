@@ -33,6 +33,21 @@ module.exports = {
         },
       }, {transaction});
 
+      await queryInterface.addIndex(PROJECT_VARIANT_TEXT_JOIN, ['project_id'], {
+        name: 'idx_project_variant_text_join_project_id',
+        transaction,
+      });
+      await queryInterface.addIndex(PROJECT_VARIANT_TEXT_JOIN, ['variant_text_id'], {
+        name: 'idx_project_variant_text_join_variant_text_id',
+        transaction,
+      });
+      await queryInterface.addIndex(PROJECT_VARIANT_TEXT_JOIN, ['project_id', 'variant_text_id'], {
+        name: 'uq_project_variant_text_join_project_variant_text',
+        unique: true,
+        where: {deleted_at: {[Sq.Op.eq]: null}},
+        transaction,
+      });
+
       // Migrate data from variant texts to join table
       await queryInterface.sequelize.query(
         // eslint-disable-next-line no-multi-str
