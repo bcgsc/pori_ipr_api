@@ -40,3 +40,5 @@ module.exports = async (req, res, next, altIdent) => {
   req.alteration = result;
   return next();
 };
+
+module.exports.getVariantInclude = getVariantInclude;
