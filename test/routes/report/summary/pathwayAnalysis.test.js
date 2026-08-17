@@ -71,7 +71,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
-    
+
       checkPathwayAnalysis(res.body);
       expect(res.body.ident).toBe(pathwayAnalysis.ident);
     });
@@ -99,9 +99,9 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
         .field('legendId', legend.id)
         .expect(HTTP_STATUS.OK);
-    
+
       checkPathwayAnalysis(res.body);
-    
+
       expect(res.body.pathway).not.toBeNull();
       expect(res.body.legendId).toBe(legend.id);
     });
@@ -183,12 +183,12 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
         .field('legendId', legend.id)
         .expect(HTTP_STATUS.CREATED);
-    
+
       checkPathwayAnalysis(res.body);
-    
+
       expect(res.body.pathway).not.toBeNull();
       expect(res.body.legendId).toBe(legend.id);
-    
+
       // Remove pathway analysis
       await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
     });
