@@ -135,7 +135,6 @@ summary.microbial = require('./reports/genomic/summary/microbial')(sequelize, Sq
 
 // Pathway Analysis Legends
 const pathwayAnalysisLegends = require('./legend/legend')(sequelize, Sq);
-require('./legend/legend')(sequelize, Sq);
 
 summary.pathwayAnalysis.belongsTo(pathwayAnalysisLegends, {
   as: 'legend', foreignKey: 'legendId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
