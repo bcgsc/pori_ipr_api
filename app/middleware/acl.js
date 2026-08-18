@@ -95,6 +95,10 @@ const SPECIAL_CASES = [
     DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
   },
   {
+    path: pathToRegexp('/api/therapeutic-targets'),
+    GET: [{name: 'admin'}],
+  },
+  {
     path: pathToRegexp('/api/project'),
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'create project access'}],
   },
