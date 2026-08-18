@@ -201,6 +201,21 @@ describe('/variant-text', () => {
       checkVariantText(res.body);
     });
 
+    test('/ - 400 Reject duplicate variant text', async () => {
+      await request
+        .post(BASE_URI)
+        .send({
+          text: variantText.text,
+          variantName: variantText.variantName,
+          cancerType: variantText.cancerType,
+          project: project.ident,
+          template: template.ident,
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
+    });
+
     test('/ - 403 Create forbidden on not allowed groups', async () => {
       await request
         .post(BASE_URI)
@@ -338,15 +353,23 @@ describe('/variant-text', () => {
 
   describe('Extra features test', () => {
     let variantTextOpt;
+    let unauthorizedVariantText;
 
     beforeEach(async () => {
       // Create variant text to be used in delete tests
       variantTextOpt = await db.models.variantText.create(UPLOAD_DATA_NO_PROJECT);
+      unauthorizedVariantText = await db.models.variantText.create({
+        ...UPLOAD_DATA_NO_PROJECT,
+        variantName: uuidv4(),
+      });
+      await unauthorizedVariantText.setProjects([unauthorizedProject.id]);
     });
 
     afterEach(async () => {
       // delete newly created data and all of their components
       await variantTextOpt?.destroy({force: true});
+      await unauthorizedVariantText?.setProjects([]);
+      await unauthorizedVariantText?.destroy();
     });
 
     test('GET / - 200 Get variant text with project is null', async () => {
@@ -363,6 +386,22 @@ describe('/variant-text', () => {
       expect(res.body).not.toHaveLength(0);
       expect(res.body.map((variantTextResponse) => {return variantTextResponse.ident;}))
         .toContain(variantTextOpt.ident);
+    });
+
+    test('GET / - 200 only returns project text the user can access', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_ADMIN_GROUP}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const returnedIdents = res.body.map((variantTextResponse) => {return variantTextResponse.ident;});
+      expect(returnedIdents).toContain(variantTextOpt.ident);
+      expect(returnedIdents).not.toContain(unauthorizedVariantText.ident);
     });
 
     test('POST / - 400 test constraint on null project', async () => {

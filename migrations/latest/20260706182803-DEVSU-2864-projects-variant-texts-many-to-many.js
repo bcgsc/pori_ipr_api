@@ -65,6 +65,16 @@ module.exports = {
 
       // Remove projects fk column from variant_texts
       await queryInterface.removeColumn(VARIANT_TEXTS_TABLE, 'project_id', {transaction});
+
+      // Preserve variant text uniqueness after removing the project foreign key
+      await queryInterface.sequelize.query(`
+        create unique index if not exists variant_text_unique_index
+        on variant_texts ((array[
+          variant_name,
+          string_array_to_string(cancer_type, '', ''),
+          template_id::text
+        ]))
+        where deleted_at is null;`, {transaction});
     });
   },
 

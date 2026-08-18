@@ -7,6 +7,7 @@ const logger = require('../../log');
 
 const {
   sanitizeHtml,
+  getUserProjects,
   projectAccess,
 } = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
@@ -147,9 +148,7 @@ router.param('variantText', async (req, res, next, ident) => {
   }
 
   if (result.projects?.length) {
-    const userHasProjectAccess = projectAccess(req.user, {projects: result.projects});
-
-    if (!userHasProjectAccess) {
+    if (!result.projects?.length || !projectAccess(req.user, {projects: result.projects})) {
       logger.error(`user ${req.user.username} does not have access to variant text ${ident}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         error: {message: `user ${req.user.username} does not have access to variant text ${ident}`},
@@ -231,7 +230,11 @@ router.route('/:variantText([A-z0-9-]{36})')
       }
 
       if (Array.isArray(requestedProjectIds)) {
-        await req.variantText.setProjects(requestedProjectIds);
+        const invisibleProjectIds = (req.variantText.projects || [])
+          .filter((project) => {return !projectAccess(req.user, {projects: [project]});})
+          .map((project) => {return project.id;});
+
+        await req.variantText.setProjects([...new Set([...requestedProjectIds, ...invisibleProjectIds])]);
       }
 
       const updatedVariantText = await db.models.variantText.findOne({
@@ -266,9 +269,9 @@ router.route('/:variantText([A-z0-9-]{36})')
   });
 router.route('/')
   .get(async (req, res) => {
-    const requestedProjectIds = Array.isArray(req.body.projectIds) ? req.body.projectIds : [];
-
     try {
+      const userProjects = await getUserProjects(db.models.project, req.user);
+      const userProjectIdents = new Set(userProjects.map((project) => {return project.ident;}));
       const whereClause = {
         ...((req.body.templateId == null) ? {} : {templateId: req.body.templateId}),
         ...((req.body.variantName == null) ? {} : {variantName: req.body.variantName}),
@@ -283,13 +286,13 @@ router.route('/')
       });
 
       results = results.filter((variantText) => {
-        const variantTextProjectIds = (variantText.projects || []).map((project) => {return project.id;});
+        const variantTextProjects = variantText.projects || [];
 
-        if (requestedProjectIds.length && !variantTextProjectIds.some((projectId) => {return requestedProjectIds.includes(projectId);})) {
-          return false;
+        if (!variantTextProjects.length) {
+          return true;
         }
 
-        return true;
+        return variantTextProjects.some((project) => {return userProjectIdents.has(project.ident);});
       });
 
       return res.json(results);
@@ -342,9 +345,11 @@ router.route('/')
         createBody.text = sanitizeHtml(createBody.text);
       }
 
-      const newVariantText = await db.models.variantText.create(
-        createBody,
-      );
+      const newVariantText = await db.transaction(async (transaction) => {
+        const created = await db.models.variantText.create(createBody, {transaction});
+        await created.setProjects(req.body.projectIds || [], {transaction});
+        return created;
+      });
 
       await newVariantText.setProjects(req.body.projectIds || []);
 

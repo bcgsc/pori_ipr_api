@@ -34,7 +34,7 @@ module.exports = (sequelize, Sq) => {
         {
           name: 'variant_text_unique_index',
           unique: true,
-          fields: ['variant_name', 'cancer_type', 'template_id', 'project_id'],
+          fields: ['variant_name', 'cancer_type', 'template_id'],
           where: {
             deleted_at: {
               [Sq.Op.eq]: null,
