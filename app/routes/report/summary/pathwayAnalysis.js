@@ -163,6 +163,21 @@ router.route('/')
     // Add reports id to request
     req.body.reportId = req.report.id;
 
+    // Associate the default legend image if none was explicitly provided
+    if (!req.body.legendId) {
+      try {
+        const defaultLegend = await db.models.legend.findOne({where: {default: true}});
+        if (defaultLegend) {
+          req.body.legendId = defaultLegend.id;
+        }
+      } catch (error) {
+        logger.error(`Unable to lookup default legend error: ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Unable to lookup default legend'},
+        });
+      }
+    }
+
     try {
       const result = await db.models.pathwayAnalysis.create(req.body);
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
