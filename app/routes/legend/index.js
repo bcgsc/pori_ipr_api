@@ -124,13 +124,14 @@ router.route('/')
           };
 
           // Load image
+          let legend;
           await db.transaction(async (transaction) => {
-            await uploadLegendImage(image.data, {...options, transaction});
+            legend = await uploadLegendImage(image.data, {...options, transaction});
             await db.models.legend.ensureDefaultExists({transaction});
           });
 
           // Return that this image was uploaded successfully
-          results.push({name: key, upload: 'successful'});
+          results.push({name: key, upload: 'successful', legendId: legend.id});
         } catch (error) {
           results.push({name: key, upload: 'failed', error: {message: error.message}});
         }

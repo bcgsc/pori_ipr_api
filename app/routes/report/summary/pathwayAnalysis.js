@@ -64,6 +64,32 @@ router.route('/')
       req.body.pathway = req.files.pathway.data.toString();
     }
 
+    // Resolve a legend given by ident to its fk before validating,
+    // the update schema only knows about legendId
+    if (req.body.legendIdent !== undefined) {
+      const {legendIdent} = req.body;
+      delete req.body.legendIdent;
+
+      let legend;
+      try {
+        legend = await db.models.legend.findOne({where: {ident: legendIdent}});
+      } catch (error) {
+        logger.error(`Unable to lookup legend ${legendIdent} error: ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Unable to lookup legend'},
+        });
+      }
+
+      if (!legend) {
+        logger.error(`Unable to find legend ${legendIdent}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          error: {message: 'Unable to find the requested legend'},
+        });
+      }
+
+      req.body.legendId = legend.id;
+    }
+
     try {
       // validate against the model
       validateAgainstSchema(updateSchema, req.body, false);
@@ -136,6 +162,21 @@ router.route('/')
 
     // Add reports id to request
     req.body.reportId = req.report.id;
+
+    // Associate the default legend image if none was explicitly provided
+    if (!req.body.legendId) {
+      try {
+        const defaultLegend = await db.models.legend.findOne({where: {default: true}});
+        if (defaultLegend) {
+          req.body.legendId = defaultLegend.id;
+        }
+      } catch (error) {
+        logger.error(`Unable to lookup default legend error: ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Unable to lookup default legend'},
+        });
+      }
+    }
 
     try {
       const result = await db.models.pathwayAnalysis.create(req.body);

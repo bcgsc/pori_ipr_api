@@ -5,15 +5,6 @@ module.exports = (sequelize, Sq) => {
     'variantText',
     {
       ...DEFAULT_COLUMNS,
-      projectId: {
-        type: Sq.INTEGER,
-        name: 'projectId',
-        field: 'project_id',
-        references: {
-          model: 'projects',
-          key: 'id',
-        },
-      },
       templateId: {
         type: Sq.INTEGER,
         name: 'templateId',
@@ -43,7 +34,7 @@ module.exports = (sequelize, Sq) => {
         {
           name: 'variant_text_unique_index',
           unique: true,
-          fields: ['variant_name', 'cancer_type', 'template_id', 'project_id'],
+          fields: ['variant_name', 'cancer_type', 'template_id'],
           where: {
             deleted_at: {
               [Sq.Op.eq]: null,
@@ -59,13 +50,17 @@ module.exports = (sequelize, Sq) => {
           },
           include: [
             {model: sequelize.models.template.scope('minimal'), as: 'template'},
-            {model: sequelize.models.project.scope('minimal'), as: 'project'},
+            {
+              model: sequelize.models.project.scope('minimal'),
+              as: 'projects',
+              through: {attributes: []},
+            },
           ],
         },
         extended: {
           include: [
             {model: sequelize.models.template, as: 'template'},
-            {model: sequelize.models.project, as: 'project'},
+            {model: sequelize.models.project, as: 'projects', through: {attributes: []}},
           ],
         },
       },
