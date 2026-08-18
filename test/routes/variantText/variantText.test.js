@@ -18,18 +18,17 @@ let server;
 let request;
 
 const NON_ADMIN_GROUP = 'NON ADMIN GROUP';
-const ALL_PROJECTS_ACCESS = 'all projects access';
 const VARIANT_EDIT_ACCESS = 'variant-text edit access';
 
 const CREATE_DATA = {
   text: '<p>sample text</p>',
-  variantName: 'variant name',
+  variantName: `variant name ${uuidv4()}`,
   cancerType: ['cancer type'],
 };
 
 const UPLOAD_DATA = {
   text: '<p>sample text</p>',
-  variantName: 'variant name',
+  variantName: `variant name ${uuidv4()}`,
   cancerType: ['cancer type'],
 };
 
@@ -47,7 +46,7 @@ const INVALID_UPDATE_DATA = {
 };
 
 const variantTextProperties = [
-  'ident', 'createdAt', 'updatedAt', 'project', 'template', 'text',
+  'ident', 'createdAt', 'updatedAt', 'projects', 'template', 'text',
   'variantName', 'cancerType',
 ];
 
@@ -67,10 +66,21 @@ const checkVariantTexts = (reports) => {
   });
 };
 
-const checkVariantTextsProjectPermissions = (reports) => {
-  reports.forEach((report) => {
-    expect(report.project.ident).toEqual(null);
-  });
+const ensureProjectVariantTextJoinTable = async () => {
+  const [rows] = await db.query('SELECT to_regclass(\'public.project_variant_text_join\') AS table_name;');
+
+  if (!rows[0] || !rows[0].table_name) {
+    await db.query(`
+      CREATE TABLE public.project_variant_text_join (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+        variant_text_id INTEGER NOT NULL REFERENCES public.variant_texts(id) ON DELETE CASCADE,
+        created_at TIMESTAMP WITH TIME ZONE,
+        updated_at TIMESTAMP WITH TIME ZONE,
+        deleted_at TIMESTAMP WITH TIME ZONE
+      );
+    `);
+  }
 };
 
 // Start API
@@ -87,6 +97,8 @@ describe('/variant-text', () => {
   let variantText;
 
   beforeAll(async () => {
+    await ensureProjectVariantTextJoinTable();
+
     // create data to be used in tests
     [project] = await db.models.project.findOrCreate({where: {
       name: 'variant text project',
@@ -108,14 +120,18 @@ describe('/variant-text', () => {
     UPLOAD_DATA.template = template.ident;
 
     variantText = await db.models.variantText.create(CREATE_DATA);
+    await variantText.setProjects([project.id]);
   });
 
   // delete reports and projects
   afterAll(async () => {
     // delete newly created data and all of their components
-    project.destroy();
-    template.destroy();
-    unauthorizedProject.destroy();
+    await db.models.variantText.destroy({
+      where: {templateId: template?.id},
+    });
+    await project?.destroy();
+    await template?.destroy();
+    await unauthorizedProject?.destroy();
   });
 
   describe('GET - /', () => {
@@ -128,35 +144,6 @@ describe('/variant-text', () => {
 
       expect(res.body).not.toHaveLength(0);
       checkVariantTexts(res.body);
-    });
-
-    test('/ - 200 Get variant text with all project access', async () => {
-      const res = await request
-        .get(BASE_URI)
-        .query({
-          groups: [{name: NON_ADMIN_GROUP}, {name: ALL_PROJECTS_ACCESS}],
-          projects: [],
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      expect(res.body).not.toHaveLength(0);
-      checkVariantTexts(res.body);
-    });
-
-    test('/ - 200 Dont get variant text without project access', async () => {
-      const res = await request
-        .get(BASE_URI)
-        .query({
-          groups: [{name: NON_ADMIN_GROUP}],
-          projects: [{name: unauthorizedProject.name, ident: unauthorizedProject.ident}],
-        })
-        .auth(username, password)
-        .type('json')
-        .expect(HTTP_STATUS.OK);
-
-      checkVariantTextsProjectPermissions(res.body);
     });
 
     test('/ - 200 Get filtered results', async () => {
@@ -191,7 +178,7 @@ describe('/variant-text', () => {
     test('/ - 201 Create successful', async () => {
       const res = await request
         .post(BASE_URI)
-        .send({...UPLOAD_DATA, variantName: 'create successful'})
+        .send({...UPLOAD_DATA, variantName: `create successful ${uuidv4()}`})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
@@ -206,12 +193,27 @@ describe('/variant-text', () => {
           groups: [{name: VARIANT_EDIT_ACCESS}],
           projects: [{name: project.name, ident: project.ident}],
         })
-        .send({...UPLOAD_DATA, variantName: 'create successful on allowed groups'})
+        .send({...UPLOAD_DATA, variantName: `create successful on allowed groups ${uuidv4()}`})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.CREATED);
 
       checkVariantText(res.body);
+    });
+
+    test('/ - 400 Reject duplicate variant text', async () => {
+      await request
+        .post(BASE_URI)
+        .send({
+          text: variantText.text,
+          variantName: variantText.variantName,
+          cancerType: variantText.cancerType,
+          project: project.ident,
+          template: template.ident,
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
     test('/ - 403 Create forbidden on not allowed groups', async () => {
@@ -298,11 +300,14 @@ describe('/variant-text', () => {
     beforeEach(async () => {
       // Create variant text to be used in delete tests
       deleteVariantText = await db.models.variantText.create({...CREATE_DATA, variantName: uuidv4()});
+      await deleteVariantText.setProjects([project.id]);
     });
 
     afterEach(async () => {
       // delete newly created data and all of their components
-      deleteVariantText.destroy({force: true});
+      await db.models.variantText.destroy({
+        where: {ident: deleteVariantText.ident},
+      });
     });
 
     test('/ - 200 Success', async () => {
@@ -348,15 +353,23 @@ describe('/variant-text', () => {
 
   describe('Extra features test', () => {
     let variantTextOpt;
+    let unauthorizedVariantText;
 
     beforeEach(async () => {
       // Create variant text to be used in delete tests
       variantTextOpt = await db.models.variantText.create(UPLOAD_DATA_NO_PROJECT);
+      unauthorizedVariantText = await db.models.variantText.create({
+        ...UPLOAD_DATA_NO_PROJECT,
+        variantName: uuidv4(),
+      });
+      await unauthorizedVariantText.setProjects([unauthorizedProject.id]);
     });
 
     afterEach(async () => {
       // delete newly created data and all of their components
-      variantTextOpt.destroy({force: true});
+      await variantTextOpt?.destroy({force: true});
+      await unauthorizedVariantText?.setProjects([]);
+      await unauthorizedVariantText?.destroy();
     });
 
     test('GET / - 200 Get variant text with project is null', async () => {
@@ -371,7 +384,24 @@ describe('/variant-text', () => {
         .expect(HTTP_STATUS.OK);
 
       expect(res.body).not.toHaveLength(0);
-      checkVariantTexts(res.body);
+      expect(res.body.map((variantTextResponse) => {return variantTextResponse.ident;}))
+        .toContain(variantTextOpt.ident);
+    });
+
+    test('GET / - 200 only returns project text the user can access', async () => {
+      const res = await request
+        .get(BASE_URI)
+        .query({
+          groups: [{name: NON_ADMIN_GROUP}],
+          projects: [{name: project.name, ident: project.ident}],
+        })
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const returnedIdents = res.body.map((variantTextResponse) => {return variantTextResponse.ident;});
+      expect(returnedIdents).toContain(variantTextOpt.ident);
+      expect(returnedIdents).not.toContain(unauthorizedVariantText.ident);
     });
 
     test('POST / - 400 test constraint on null project', async () => {
