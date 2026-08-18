@@ -62,7 +62,8 @@ describe('/legend', () => {
 
   describe('GET', () => {
     test('/{legend} - 200 Success', async () => {
-      // Create legend
+      // Create a default legend so the new legend below isn't auto-promoted
+      await db.models.legend.create(buildLegendData({default: true}));
       const legend = await db.models.legend.create(mockLegendData);
 
       const res = await request

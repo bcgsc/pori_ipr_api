@@ -79,6 +79,16 @@ module.exports = (sequelize, Sq) => {
             );
           }
         },
+        // Guarantee the invariant holds regardless of the calling code path
+        afterCreate: async (instance, options) => {
+          await sequelize.models.legend.ensureDefaultExists({transaction: options.transaction});
+        },
+        afterUpdate: async (instance, options) => {
+          await sequelize.models.legend.ensureDefaultExists({transaction: options.transaction});
+        },
+        afterDestroy: async (instance, options) => {
+          await sequelize.models.legend.ensureDefaultExists({transaction: options.transaction});
+        },
       },
     },
   );
