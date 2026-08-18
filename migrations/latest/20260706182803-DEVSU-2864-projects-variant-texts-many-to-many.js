@@ -42,7 +42,7 @@ module.exports = {
         transaction,
       });
       await queryInterface.addIndex(PROJECT_VARIANT_TEXT_JOIN, ['project_id', 'variant_text_id'], {
-        name: 'uq_project_variant_text_join_project_variant_text',
+        name: 'idx_project_variant_text_join_project_variant_text',
         unique: true,
         where: {deleted_at: {[Sq.Op.eq]: null}},
         transaction,
