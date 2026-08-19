@@ -3,10 +3,12 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 
 const db = require('../../../../app/models');
+const {Op} = db.Sequelize;
 const CONFIG = require('../../../../app/config');
 const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
+jest.setTimeout(20000);
 const {username, password} = CONFIG.get('testing');
 
 let server;
@@ -32,7 +34,7 @@ beforeAll(async () => {
 
 describe('/reports/{report}/summary/pathway-analysis', () => {
   let report;
-  let legend;
+  const TEST_SUFFIX = `${Date.now()}-${process.pid}`;
 
   beforeAll(async () => {
     // Get genomic template
@@ -41,13 +43,6 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
     report = await db.models.report.create({
       templateId: template.id,
       patientId: 'TESTPATIENT1234',
-    });
-    // Create legend for pathway analysis tests
-    legend = await db.models.legend.create({
-      filename: 'pathway_legend_v1.png',
-      name: 'v1',
-      data: 'v1Data',
-      default: true,
     });
   });
 
@@ -79,16 +74,24 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 
   describe('PUT', () => {
     let pathwayAnalysis;
+    let legend;
 
     beforeEach(async () => {
       pathwayAnalysis = await db.models.pathwayAnalysis.create({
         reportId: report.id,
+      });
+      legend = await db.models.legend.create({
+        filename: 'pathway_legend_v1.png',
+        name: `put-legend-${TEST_SUFFIX}`,
+        data: 'v1Data',
+        default: false,
       });
     });
 
     // Delete pathway analysis
     afterEach(async () => {
       await db.models.pathwayAnalysis.destroy({where: {ident: pathwayAnalysis.ident}, force: true});
+      await db.models.legend.destroy({where: {id: legend.id}, force: true});
     });
 
     test('/ - 200 Success', async () => {
@@ -175,6 +178,21 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
   });
 
   describe('POST', () => {
+    let legend;
+
+    beforeEach(async () => {
+      legend = await db.models.legend.create({
+        filename: 'pathway_legend_v1.png',
+        name: `post-legend-${TEST_SUFFIX}`,
+        data: 'v1Data',
+        default: false,
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.legend.destroy({where: {id: legend.id}, force: true});
+    });
+
     test('/ - 201 Created', async () => {
       const res = await request
         .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
@@ -194,6 +212,14 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
     });
 
     test('/ - 201 Created - Default legend automatically associated', async () => {
+      await db.models.legend.update({default: false}, {where: {id: legend.id}});
+      const defaultLegend = await db.models.legend.create({
+        filename: 'pathway_legend_v1.png',
+        name: `default-legend-${TEST_SUFFIX}`,
+        data: 'v1Data',
+        default: true,
+      });
+
       const res = await request
         .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
@@ -204,10 +230,11 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legendId).toBe(legend.id);
+      expect(res.body.legendId).toBe(defaultLegend.id);
 
       // Remove pathway analysis
       await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
+      await db.models.legend.destroy({where: {id: defaultLegend.id}, force: true});
     });
 
     test('/ - 400 Bad request - Invalid legend id', async () => {
@@ -251,7 +278,19 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 
   // Delete report
   afterAll(async () => {
-    await db.models.legend.destroy({where: {id: legend.id}, force: true});
+    await db.models.pathwayAnalysis.destroy({where: {reportId: report.id}, force: true});
+    await db.models.legend.destroy({
+      where: {
+        name: {
+          [Op.or]: [
+            {[Op.like]: `put-legend-${TEST_SUFFIX}%`},
+            {[Op.like]: `post-legend-${TEST_SUFFIX}%`},
+            {[Op.like]: `default-legend-${TEST_SUFFIX}%`},
+          ],
+        },
+      },
+      force: true,
+    });
     await db.models.report.destroy({where: {id: report.id}, force: true});
   });
 });
