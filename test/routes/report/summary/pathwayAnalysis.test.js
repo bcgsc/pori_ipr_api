@@ -3,6 +3,7 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 
 const db = require('../../../../app/models');
+
 const {Op} = db.Sequelize;
 const CONFIG = require('../../../../app/config');
 const {listen} = require('../../../../app');

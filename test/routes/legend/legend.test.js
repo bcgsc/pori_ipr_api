@@ -5,6 +5,7 @@ const db = require('../../../app/models');
 
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
+
 const {Op} = db.Sequelize;
 
 CONFIG.set('env', 'test');
