@@ -90,6 +90,23 @@ router.route('/')
       req.body.legendId = legend.id;
     }
 
+    const legendIdProvided = req.body.legendId !== undefined
+      && req.body.legendId !== null
+      && req.body.legendId !== '';
+
+    if (legendIdProvided) {
+      const parsedLegendId = Number(req.body.legendId);
+      const isValidLegendId = Number.isInteger(parsedLegendId) && parsedLegendId > 0;
+      if (!isValidLegendId) {
+        logger.error(`Invalid legend id provided: ${req.body.legendId}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Invalid legend id'},
+        });
+      }
+
+      req.body.legendId = parsedLegendId;
+    }
+
     try {
       // validate against the model
       validateAgainstSchema(updateSchema, req.body, false);
@@ -154,6 +171,19 @@ router.route('/')
     const legendIdProvided = req.body.legendId !== undefined
       && req.body.legendId !== null
       && req.body.legendId !== '';
+
+    if (legendIdProvided) {
+      const parsedLegendId = Number(req.body.legendId);
+      const isValidLegendId = Number.isInteger(parsedLegendId) && parsedLegendId > 0;
+      if (!isValidLegendId) {
+        logger.error(`Invalid legend id provided: ${req.body.legendId}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Invalid legend id'},
+        });
+      }
+
+      req.body.legendId = parsedLegendId;
+    }
 
     // If no legendId was provided, try to attach the default legend.
     // If there are no legend records, leave legendId as null.
