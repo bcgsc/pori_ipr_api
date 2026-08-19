@@ -238,6 +238,25 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
       await db.models.legend.destroy({where: {id: defaultLegend.id}, force: true});
     });
 
+    test('/ - 201 Created - No legend records and no legendId', async () => {
+      await db.models.legend.destroy({where: {}, force: true});
+
+      const res = await request
+        .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
+        .auth(username, password)
+        .type('json')
+        .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
+        .expect(HTTP_STATUS.CREATED);
+
+      checkPathwayAnalysis(res.body);
+
+      expect(res.body.pathway).not.toBeNull();
+      expect(res.body.legendId).toBeNull();
+
+      // Remove pathway analysis
+      await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
+    });
+
     test('/ - 400 Bad request - Invalid legend id', async () => {
       await request
         .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
