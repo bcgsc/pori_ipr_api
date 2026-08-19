@@ -8,7 +8,7 @@ const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
-const {username, managerUsername, password} = CONFIG.get('testing');
+const {username, managerUsername, bioinformaticianUsername, password} = CONFIG.get('testing');
 
 const LONGER_TIMEOUT = 100000;
 
@@ -112,6 +112,18 @@ describe('/project', () => {
         .send({name: 'new-project-test-project01'})
         .expect(HTTP_STATUS.CREATED);
 
+      const createdProject = await db.models.project.findOne({
+        where: {ident: res.body.ident},
+      });
+      const requestUser = await db.models.user.findOne({
+        where: {username},
+      });
+      const userProjectBinding = await db.models.userProject.findOne({
+        where: {project_id: createdProject.id, user_id: requestUser.id},
+      });
+
+      expect(userProjectBinding).not.toBeNull();
+
       // Remove test project from db
       await db.models.project.destroy({where: {ident: res.body.ident}, force: true});
     });
@@ -119,7 +131,7 @@ describe('/project', () => {
     test('/ - 403 forbidden to non-admin', async () => {
       await request
         .post('/api/project')
-        .auth(managerUsername, password)
+        .auth(bioinformaticianUsername, password)
         .type('json')
         .send({name: 'new-project-test-project02'})
         .expect(HTTP_STATUS.FORBIDDEN);

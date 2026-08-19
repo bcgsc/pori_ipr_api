@@ -2187,6 +2187,41 @@
         }
       }
     },
+    "/therapeutic-targets": {
+      "get": {
+        "summary": "Get All Therapeutic Targets",
+        "description": "Returns all therapeutic targets across all reports. Admin only.",
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all therapeutic targets across all reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/therapeuticTargetAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "User does not have permission to access this endpoint (admin only)"
+          }
+        }
+      }
+    },
     "/project/{project}/therapeutic-targets": {
       "get": {
         "summary": "Get All Therapeutic Targets For a Project",
