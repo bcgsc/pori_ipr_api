@@ -17,7 +17,7 @@ module.exports = {
 
       // Datafix: map existing legend values to legend_id using legends table
       await queryInterface.sequelize.query(
-        `UPDATE "${TABLE}" SET legend_id = l.id FROM pathway_analysis_legends l WHERE "${TABLE}".legend::text = l.name AND EXISTS (SELECT 1 FROM pathway_analysis_legends);`,
+        `UPDATE "${TABLE}" SET legend_id = l.id FROM pathway_analysis_legends l WHERE "${TABLE}".legend::text = l.name;`,
         {transaction},
       );
 
@@ -43,7 +43,7 @@ module.exports = {
 
       // Datafix: restore legend enum value from linked legend name where possible
       await queryInterface.sequelize.query(
-        `UPDATE "${TABLE}" SET legend = l.name::"enum_reports_summary_pathway_analysis_legend" FROM pathway_analysis_legends l WHERE "${TABLE}".legend_id = l.id AND l.name IN ('v1', 'v2', 'v3', 'custom') AND EXISTS (SELECT 1 FROM pathway_analysis_legends);`,
+        `UPDATE "${TABLE}" SET legend = l.name::"enum_reports_summary_pathway_analysis_legend" FROM pathway_analysis_legends l WHERE "${TABLE}".legend_id = l.id AND l.name IN ('v1', 'v2', 'v3', 'custom');`,
         {transaction},
       );
 
