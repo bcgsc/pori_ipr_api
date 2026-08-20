@@ -6,11 +6,14 @@ const db = require('../../../app/models');
 const CONFIG = require('../../../app/config');
 const {listen} = require('../../../app');
 
+const {Op} = db.Sequelize;
+
 CONFIG.set('env', 'test');
 const {username, password} = CONFIG.get('testing');
 
 let server;
 let request;
+const TEST_PREFIX = `legend-route-test-${Date.now()}-${process.pid}`;
 
 const legendProperties = [
   'ident', 'createdAt', 'updatedAt', 'format', 'filename',
@@ -41,7 +44,7 @@ describe('/legend', () => {
   const buildLegendData = (overrides = {}) => {
     return {
       filename: 'pathway_legend_v1.png',
-      name: 'v1',
+      name: `${TEST_PREFIX}-v1`,
       data: 'v1Data',
       default: false,
       ...overrides,
@@ -55,7 +58,9 @@ describe('/legend', () => {
 
   afterEach(async () => {
     await db.models.legend.destroy({
-      where: {},
+      where: {
+        name: {[Op.like]: `${TEST_PREFIX}%`},
+      },
       force: true,
     });
   });
@@ -89,10 +94,13 @@ describe('/legend', () => {
 
   describe('POST', () => {
     test('POST / - 207 Multi-Status successful', async () => {
+      const uploadFieldName = `${TEST_PREFIX}-v1-upload`;
+      const legendName = `${TEST_PREFIX}-v1`;
+
       const res = await request
         .post('/api/legend')
-        .attach('v1', 'test/testData/images/pathway_legend_v1.png')
-        .field('name', 'v1')
+        .attach(uploadFieldName, 'test/testData/images/pathway_legend_v1.png')
+        .field('name', legendName)
         .auth(username, password)
         .expect(HTTP_STATUS.MULTI_STATUS);
 
@@ -102,26 +110,28 @@ describe('/legend', () => {
 
       const [result] = res.body;
 
-      expect(result.name).toBe('v1');
+      expect(result.name).toBe(uploadFieldName);
       expect(result.upload).toBe('successful');
       expect(result.error).toBe(undefined);
 
-      const legend = await db.models.legend.findOne({where: {name: 'v1'}});
+      const legend = await db.models.legend.findOne({where: {name: legendName}});
       expect(legend).toEqual(expect.objectContaining({
         format: 'PNG',
         filename: 'pathway_legend_v1.png',
-        name: 'v1',
+        name: legendName,
         default: true,
       }));
     });
 
     test('POST / - default=true promotes new legend as only default', async () => {
       const currentDefault = await db.models.legend.create(buildLegendData({default: true}));
+      const uploadFieldName = `${TEST_PREFIX}-golden-upload`;
+      const legendName = `${TEST_PREFIX}-Golden-Test`;
 
       const res = await request
         .post('/api/legend')
-        .attach('golden', 'test/testData/images/golden.jpg')
-        .field('name', 'Golden Test')
+        .attach(uploadFieldName, 'test/testData/images/golden.jpg')
+        .field('name', legendName)
         .field('default', 'true')
         .auth(username, password)
         .expect(HTTP_STATUS.MULTI_STATUS);
@@ -132,12 +142,12 @@ describe('/legend', () => {
 
       const [result] = res.body;
 
-      expect(result.name).toBe('golden');
+      expect(result.name).toBe(uploadFieldName);
       expect(result.upload).toBe('successful');
       expect(result.error).toBe(undefined);
 
       const [newDefault, oldDefault] = await Promise.all([
-        db.models.legend.findOne({where: {name: 'Golden Test'}}),
+        db.models.legend.findOne({where: {name: legendName}}),
         db.models.legend.findByPk(currentDefault.id),
       ]);
 
@@ -236,16 +246,17 @@ describe('/legend', () => {
       const legend = await db.models.legend.create(
         buildLegendData({data: 'oldData', filename: 'old.png'}),
       );
+      const updatedName = `${TEST_PREFIX}-updated-name`;
 
       const res = await request
         .put(`/api/legend/${legend.ident}`)
         .attach('image', 'test/testData/images/golden.jpg')
-        .field('name', 'updated name')
+        .field('name', updatedName)
         .auth(username, password)
         .expect(HTTP_STATUS.OK);
 
       checkLegend(res.body);
-      expect(res.body.name).toBe('updated name');
+      expect(res.body.name).toBe(updatedName);
       expect(res.body.filename).toBe('golden.jpg');
       expect(res.body.format).toBe('PNG');
       expect(res.body.data).not.toBe('oldData');
@@ -258,17 +269,18 @@ describe('/legend', () => {
 
     test('/{legend} - metadata-only update preserves the existing image', async () => {
       const legend = await db.models.legend.create(
-        buildLegendData({data: 'keepThisData', name: 'original'}),
+        buildLegendData({data: 'keepThisData', name: `${TEST_PREFIX}-original`}),
       );
+      const renamedValue = `${TEST_PREFIX}-renamed`;
 
       const res = await request
         .put(`/api/legend/${legend.ident}`)
-        .send({name: 'renamed'})
+        .send({name: renamedValue})
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body.name).toBe('renamed');
+      expect(res.body.name).toBe(renamedValue);
       expect(res.body.data).toBe('keepThisData');
 
       const updated = await db.models.legend.findByPk(legend.id);

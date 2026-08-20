@@ -36,7 +36,12 @@ const SPECIAL_CASES = [
   },
   {
     path: pathToRegexp('/api/user/search'),
-    GET: [{name: 'admin'}, {name: 'manager'}, {name: 'create project access'}],
+    GET: [
+      {name: 'admin'},
+      {name: 'manager'},
+      {name: 'create project access'},
+      {name: 'report assignment access'},
+    ],
   },
   {
     path: pathToRegexp('/api/user/:user'),
@@ -93,6 +98,10 @@ const SPECIAL_CASES = [
     POST: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
     PUT: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
     DELETE: [{name: 'admin'}, {name: 'manager'}, {name: 'appendix edit access'}],
+  },
+  {
+    path: pathToRegexp('/api/therapeutic-targets'),
+    GET: [{name: 'admin'}],
   },
   {
     path: pathToRegexp('/api/project'),
