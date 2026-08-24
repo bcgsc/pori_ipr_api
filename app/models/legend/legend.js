@@ -89,7 +89,7 @@ module.exports = (sequelize, Sq) => {
       const {
         id, deletedAt, updatedBy, ...publicView
       } = this.dataValues;
-      return publicView;
+      return {...publicView, legendId: id};
     }
     return this;
   };

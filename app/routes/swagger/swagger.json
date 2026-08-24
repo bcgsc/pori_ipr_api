@@ -2227,6 +2227,41 @@
         }
       }
     },
+    "/therapeutic-targets": {
+      "get": {
+        "summary": "Get All Therapeutic Targets",
+        "description": "Returns all therapeutic targets across all reports. Admin only.",
+        "tags": [
+          "Therapeutic Targets"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all therapeutic targets across all reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/therapeuticTargetAssociations"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "User does not have permission to access this endpoint (admin only)"
+          }
+        }
+      }
+    },
     "/project/{project}/therapeutic-targets": {
       "get": {
         "summary": "Get All Therapeutic Targets For a Project",
@@ -4794,6 +4829,36 @@
           },
           "404": {
             "description": "legend not found"
+          }
+        }
+      }
+    },
+    "/legend/{legendId}": {
+      "get": {
+        "summary": "Get Legend Image by ID",
+        "description": "Retrieve a specific legend image by numeric ID",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legendId"
+          }
+        ],
+        "tags": [
+          "Legends"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the details of the specified legend image"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Legend not found"
           }
         }
       }
@@ -9048,6 +9113,15 @@
         "schema": {
           "type": "string",
           "format": "UUIDv4"
+        }
+      },
+      "legendId": {
+        "name": "legendId",
+        "in": "path",
+        "required": true,
+        "description": "legend image ID",
+        "schema": {
+          "type": "integer"
         }
       },
       "alteration": {

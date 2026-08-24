@@ -64,6 +64,49 @@ router.route('/')
       req.body.pathway = req.files.pathway.data.toString();
     }
 
+    // Resolve a legend given by ident to its fk before validating,
+    // the update schema only knows about legendId
+    if (req.body.legendIdent !== undefined) {
+      const {legendIdent} = req.body;
+      delete req.body.legendIdent;
+
+      let legend;
+      try {
+        legend = await db.models.legend.findOne({where: {ident: legendIdent}});
+      } catch (error) {
+        logger.error(`Unable to lookup legend ${legendIdent} error: ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Unable to lookup legend'},
+        });
+      }
+
+      if (!legend) {
+        logger.error(`Unable to find legend ${legendIdent}`);
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          error: {message: 'Unable to find the requested legend'},
+        });
+      }
+
+      req.body.legendId = legend.id;
+    }
+
+    const legendIdProvided = req.body.legendId !== undefined
+      && req.body.legendId !== null
+      && req.body.legendId !== '';
+
+    if (legendIdProvided) {
+      const parsedLegendId = Number(req.body.legendId);
+      const isValidLegendId = Number.isInteger(parsedLegendId) && parsedLegendId > 0;
+      if (!isValidLegendId) {
+        logger.error(`Invalid legend id provided: ${req.body.legendId}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Invalid legend id'},
+        });
+      }
+
+      req.body.legendId = parsedLegendId;
+    }
+
     try {
       // validate against the model
       validateAgainstSchema(updateSchema, req.body, false);
@@ -123,6 +166,56 @@ router.route('/')
 
       // Add svg data to request
       req.body.pathway = req.files.pathway.data.toString();
+    }
+
+    const legendIdProvided = req.body.legendId !== undefined
+      && req.body.legendId !== null
+      && req.body.legendId !== '';
+
+    if (legendIdProvided) {
+      const parsedLegendId = Number(req.body.legendId);
+      const isValidLegendId = Number.isInteger(parsedLegendId) && parsedLegendId > 0;
+      if (!isValidLegendId) {
+        logger.error(`Invalid legend id provided: ${req.body.legendId}`);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: {message: 'Invalid legend id'},
+        });
+      }
+
+      req.body.legendId = parsedLegendId;
+    }
+
+    // If no legendId was provided, try to attach the default legend.
+    // If there are no legend records, leave legendId as null.
+    if (!legendIdProvided) {
+      try {
+        const defaultLegend = await db.models.legend.findOne({where: {default: true}});
+        req.body.legendId = defaultLegend ? defaultLegend.id : null;
+      } catch (error) {
+        logger.error(`Unable to lookup default legend error: ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Unable to lookup default legend'},
+        });
+      }
+    }
+
+    // If a legendId is present (either provided by caller or default-resolved),
+    // ensure the legend row exists before creating the pathway analysis.
+    if (req.body.legendId !== null && req.body.legendId !== undefined && req.body.legendId !== '') {
+      try {
+        const legend = await db.models.legend.findByPk(req.body.legendId);
+        if (!legend) {
+          logger.error(`Unable to find legend id ${req.body.legendId}`);
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            error: {message: 'Invalid legend id'},
+          });
+        }
+      } catch (error) {
+        logger.error(`Unable to lookup legend id ${req.body.legendId} error: ${error}`);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Unable to lookup legend'},
+        });
+      }
     }
 
     try {
