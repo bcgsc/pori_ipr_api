@@ -115,9 +115,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   const cancerRelevanceResultsFromAnnotation = [];
   const unknownSignificanceFromAnnotation = [];
   const unknownSignificanceFromGeneProperty = [];
-  const doNotReport = [];
   const doNotReportIdents = new Set();
-
   const tumourSuppressorLofVariants = {};
 
   // separate out variants that qualify based on gene properties alone, if filtering for table 3
