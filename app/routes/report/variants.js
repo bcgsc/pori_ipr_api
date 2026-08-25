@@ -115,13 +115,16 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   const cancerRelevanceResultsFromAnnotation = [];
   const unknownSignificanceFromAnnotation = [];
   const unknownSignificanceFromGeneProperty = [];
-  const doNotReport = [];
-
+  const doNotReportIdents = new Set();
   const tumourSuppressorLofVariants = {};
 
   // separate out variants that qualify based on gene properties alone, if filtering for table 3
   if (rapidTable === 'unknownSignificance') {
     for (const variant of allKbMatches) {
+      if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag === 'noTable') {
+        doNotReportIdents.add(variant.ident);
+        continue;
+      }
       if (variant.gene.cancerGeneListMatch
           || variant.gene.oncogene
           || variant.gene.tumourSuppressor) {
@@ -180,7 +183,8 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
         } else if (tableTag === 'unknownSignificance') {
           unknownSignificanceFromAnnotation.push(variant);
         } else if (tableTag === 'noTable') {
-          doNotReport.push(variant);
+          console.log(`Variant ${variant.ident} is tagged as noTable, will not be reported`);
+          doNotReportIdents.add(variant.ident);
         }
       }
     }
@@ -356,7 +360,7 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   const existingVariants = new Set(unknownSignificanceResults.map((variant) => {return variant.ident;}));
 
   unknownSignificanceFromGeneProperty.forEach((variant) => {
-    if (!existingVariants.has(variant.ident)) {
+    if (!existingVariants.has(variant.ident) && !doNotReportIdents.has(variant.ident)) {
       unknownSignificanceResults.push(variant);
       existingVariants.add(variant.ident);
     }
@@ -377,7 +381,9 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   // reason there may be to exclude them
   unknownSignificanceResultsFiltered.push(...unknownSignificanceFromAnnotation);
 
-  return unknownSignificanceResultsFiltered;
+  return unknownSignificanceResultsFiltered.filter((variant) => {
+    return !doNotReportIdents.has(variant.ident);
+  });
 };
 
 const updateKbDataSummaryTableTag = (kbData, rapidTable, variantType, variantIdent) => {
