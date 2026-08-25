@@ -122,7 +122,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
   if (rapidTable === 'unknownSignificance') {
     for (const variant of allKbMatches) {
       if (variant?.observedVariantAnnotation?.annotations?.rapidReportTableTag === 'noTable') {
-        doNotReport.push(variant);
         doNotReportIdents.add(variant.ident);
         continue;
       }
@@ -185,7 +184,6 @@ const getRapidReportVariants = async (tableName, variantType, reportId, rapidTab
           unknownSignificanceFromAnnotation.push(variant);
         } else if (tableTag === 'noTable') {
           console.log(`Variant ${variant.ident} is tagged as noTable, will not be reported`);
-          doNotReport.push(variant);
           doNotReportIdents.add(variant.ident);
         }
       }
