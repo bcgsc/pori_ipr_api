@@ -904,6 +904,39 @@ describe('/reports/{REPORTID}/variants', () => {
       await db.models.report.destroy({where: {ident: reportIdent.ident}});
     });
 
+    test('Variants tagged noTable stay out of table 3 even when gene properties qualify and there are no kbmatches - OK', async () => {
+      const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
+      newMockReportData.genes = newMockReportData.genes.concat([
+        {name: 'TA5gene', oncogene: true},
+      ]);
+      newMockReportData.smallMutations = newMockReportData.smallMutations.concat([{
+        gene: 'TA5gene',
+        key: 'TA5',
+        displayName: 'TA5',
+      }]);
+
+      const reportIdent = await createReport(newMockReportData);
+
+      const ta5Variant = await db.models.smallMutations.findOne({
+        where: {
+          reportId: reportIdent.id,
+          displayName: 'TA5',
+        },
+      });
+
+      await db.models.observedVariantAnnotations.create({
+        variantId: ta5Variant.id,
+        variantType: 'mut',
+        annotations: {rapidReportTableTag: 'noTable'},
+        reportId: reportIdent.id,
+      });
+
+      const table = await checkRapidReportTable(reportIdent.ident, 'TA5', 'mut');
+      expect(table).toBe('noTable');
+
+      await db.models.report.destroy({where: {ident: reportIdent.ident}});
+    });
+
     test('LOF promotion: Qualifying mutation-type matches promoted if lof variant on tumour suppressor gene found - OK', async () => {
       // TA1 - expect lof promotion to occur - table 1
       const newMockReportData = JSON.parse(JSON.stringify(mockReportData));
