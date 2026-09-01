@@ -118,7 +118,7 @@ describe('/reports/{REPORTID}', () => {
       reportId: report.id,
       name: mockReportData.genes[0].name,
     });
-    
+
     variant = await db.models.copyVariants.create({
       displayName: KEYVARIANT,
       reportId: report.id,

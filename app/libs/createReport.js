@@ -376,7 +376,7 @@ const createGenomicAlterationsIdentified = async (report, content, variantMappin
       if (variantMapping[variantType] === undefined || variantMapping[variantType] === null) {
         throw new Error(`cannot link genomic alteration to variant type ${variantType} as none were specified`);
       }
-      if (variantMapping[variantType][variant] === undefined || variantMapping[variantType][variant] ===null) {
+      if (variantMapping[variantType][variant] === undefined || variantMapping[variantType][variant] === null) {
         throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
       }
       const associatedVariant = variantMapping[variantType][variant];
@@ -385,18 +385,14 @@ const createGenomicAlterationsIdentified = async (report, content, variantMappin
       if (associatedVariant.displayName === undefined || associatedVariant.displayName === null) {
         if (variantType === 'exp') {
           variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.expressionState})`;
-        }
-        else if (variantType === 'cnv') {
+        } else if (variantType === 'cnv') {
           variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.cnvState})`;
-        }
-        else if (variantType === 'mut') {
+        } else if (variantType === 'mut') {
           variantDisplayName = `${associatedVariant.gene.name || '?'}:${associatedVariant.proteinChange}`;
-        }
-        else {
+        } else {
           variantDisplayName = `(${associatedVariant.gene1.name || '?'},${associatedVariant.gene2.name || '?'}):fusion(e.${associatedVariant.exon1 || '?'},e.${associatedVariant.exon2 || '?'})`;
         }
-      }
-      else {
+      } else {
         variantDisplayName = associatedVariant.displayName;
       }
       return {...alteration, variantType, variantId: associatedVariant.id, variantIdent: associatedVariant.ident, geneVariant: variantDisplayName, germline: associatedVariant.germline};
@@ -407,7 +403,7 @@ const createGenomicAlterationsIdentified = async (report, content, variantMappin
   try {
     logger.info(`creating report (genomicAlterationsIdentified) section (${report.ident})`);
     await db.models.genomicAlterationsIdentified.bulkCreate(
-      genomicAlterations.map((alteration) => ({...alteration, reportId: report.id})),
+      genomicAlterations.map((alteration) => {return {...alteration, reportId: report.id};}),
       {transaction},
     );
   } catch (error) {
