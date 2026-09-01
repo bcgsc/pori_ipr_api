@@ -22,6 +22,7 @@ const EXCLUDE_SECTIONS = new Set([
   'users',
   'kbMatchedStatements',
   'observedVariantAnnotations',
+  'genomicAlterationsIdentified',
 ]);
 
 /**
@@ -281,6 +282,7 @@ const updateKbMatchesInputFormat = (content) => {
 const createReportVariantsSection = async (reportId, genesRecordsByName, modelName, sectionContent, options = {}) => {
   const keyCheck = new Set();
   let records;
+  let hydratedRecordsById = {};
   // check the 'key' is unique
   for (const {key} of sectionContent) {
     if (key) {
@@ -314,13 +316,99 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
   } catch (error) {
     throw new Error(`Unable to create variant section (${modelName}) ${error.message || error}`);
   }
+
+  // For key alterations to have manually created displayName, gene model has to be eager loaded. Check if model is gene-linked then eager load gene if so
+  if (GENE_LINKED_VARIANT_MODELS.includes(modelName)) {
+    // Load created variants with linked genes for downstream display-name generation.
+    try {
+      const include = modelName === 'structuralVariants'
+        ? [
+          {model: db.models.genes, as: 'gene1'},
+          {model: db.models.genes, as: 'gene2'},
+        ]
+        : [{model: db.models.genes, as: 'gene'}];
+
+      const createdIds = records.map((record) => {
+        return record.id;
+      });
+
+      const hydratedRecords = await db.models[modelName].findAll({
+        where: {
+          id: {
+            [Op.in]: createdIds,
+          },
+        },
+        include,
+        transaction: options.transaction,
+      });
+
+      hydratedRecordsById = hydratedRecords.reduce((result, record) => {
+        result[record.id] = record;
+        return result;
+      }, {});
+    } catch (error) {
+      throw new Error(`Unable to eager-load genes for variant section (${modelName}) ${error.message || error}`);
+    }
+  }
+
   const mapping = {};
   for (let i = 0; i < sectionContent.length; i++) {
     if (sectionContent[i].key) {
-      mapping[sectionContent[i].key] = records[i].id;
+      mapping[sectionContent[i].key] = hydratedRecordsById[records[i].id] || records[i];
     }
   }
   return mapping;
+};
+
+/**
+ * Creates genomicAlterationsIdentified records, linking each to the appropriate variant
+ * via the variant key and variantType from the input content. DEVSU-3013 & DEVSU-2854
+ *
+ * @param {object} report - The report object these alterations belong to
+ * @param {object} content - The data for the report upload
+ * @param {object} variantMapping - Mapping of variantType -> { variantKey -> variant record }
+ * @param {object} transaction - The transaction to run the creates under
+ * @returns {undefined}
+ */
+const createGenomicAlterationsIdentified = async (report, content, variantMapping, transaction) => {
+  const genomicAlterations = (content.genomicAlterationsIdentified || []).map(({variant, variantType, ...alteration}) => {
+    if (variant !== undefined) {
+      if (variantMapping[variantType] === undefined || variantMapping[variantType] === null) {
+        throw new Error(`cannot link genomic alteration to variant type ${variantType} as none were specified`);
+      }
+      if (variantMapping[variantType][variant] === undefined || variantMapping[variantType][variant] === null) {
+        throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
+      }
+      const associatedVariant = variantMapping[variantType][variant];
+      let variantDisplayName;
+      // Manually create displayName for variants that have null value since the property is non-nullable
+      if (associatedVariant.displayName === undefined || associatedVariant.displayName === null) {
+        if (variantType === 'exp') {
+          variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.expressionState})`;
+        } else if (variantType === 'cnv') {
+          variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.cnvState})`;
+        } else if (variantType === 'mut') {
+          variantDisplayName = `${associatedVariant.gene.name || '?'}:${associatedVariant.proteinChange}`;
+        } else {
+          variantDisplayName = `(${associatedVariant.gene1.name || '?'},${associatedVariant.gene2.name || '?'}):fusion(e.${associatedVariant.exon1 || '?'},e.${associatedVariant.exon2 || '?'})`;
+        }
+      } else {
+        variantDisplayName = associatedVariant.displayName;
+      }
+      return {...alteration, variantType, variantId: associatedVariant.id, variantIdent: associatedVariant.ident, geneVariant: variantDisplayName, germline: associatedVariant.germline};
+    }
+    return {...alteration};
+  });
+
+  try {
+    logger.info(`creating report (genomicAlterationsIdentified) section (${report.ident})`);
+    await db.models.genomicAlterationsIdentified.bulkCreate(
+      genomicAlterations.map((alteration) => {return {...alteration, reportId: report.id};}),
+      {transaction},
+    );
+  } catch (error) {
+    throw new Error(`Unable to create genomic alterations identified: ${error.message || error}`);
+  }
 };
 
 const createReportVariantSections = async (report, content, transaction) => {
@@ -352,7 +440,7 @@ const createReportVariantSections = async (report, content, transaction) => {
     if (variantMapping[variantType][variant] === undefined) {
       throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
     }
-    return {...match, variantId: variantMapping[variantType][variant], variantType, variant};
+    return {...match, variantId: variantMapping[variantType][variant].id, variantType, variant};
   });
 
   content = updateKbMatchesInputFormat(content);
@@ -369,10 +457,12 @@ const createReportVariantSections = async (report, content, transaction) => {
     if (variantMapping[variantType][variant] === undefined) {
       throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
     }
-    return {...annotation, variantId: variantMapping[variantType][variant], variantType, variant};
+    return {...annotation, variantId: variantMapping[variantType][variant].id, variantType, variant};
   });
 
   await createReportObservedVariantAnnotationSection(report.id, observedVariantAnnotations, {transaction});
+
+  await createGenomicAlterationsIdentified(report, content, variantMapping, transaction);
 };
 
 /**
