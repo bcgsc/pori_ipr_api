@@ -84,6 +84,7 @@ describe('/reports/{REPORTID}', () => {
   let reportCompleted2;
   let reportNonProduction2;
   let reportDualProj;
+  let variant;
 
   beforeAll(async () => {
     // Get genomic template
@@ -107,22 +108,28 @@ describe('/reports/{REPORTID}', () => {
       tumourContent: 100,
       m1m2Score: 22.5,
     });
+
     await db.models.reportProject.create({
       reportId: report.id,
       project_id: project.id,
-    });
-    await db.models.genomicAlterationsIdentified.create({
-      geneVariant: KEYVARIANT,
-      reportId: report.id,
     });
 
     const gene = await db.models.genes.create({
       reportId: report.id,
       name: mockReportData.genes[0].name,
     });
-    const variant = await db.models.copyVariants.create({
+    
+    variant = await db.models.copyVariants.create({
+      displayName: KEYVARIANT,
       reportId: report.id,
       geneId: gene.id,
+    });
+
+    await db.models.genomicAlterationsIdentified.create({
+      variantType: 'cnv',
+      geneVariant: variant.displayName,
+      variantIdent: variant.ident,
+      reportId: report.id,
     });
 
     await db.models.kbMatches.create({
@@ -136,6 +143,7 @@ describe('/reports/{REPORTID}', () => {
       patientId: mockReportData.patientId,
       state: 'ready',
     });
+
     await db.models.reportProject.create({
       reportId: reportReady.id,
       project_id: project.id,
@@ -146,6 +154,7 @@ describe('/reports/{REPORTID}', () => {
       patientId: mockReportData.patientId,
       state: 'nonproduction',
     });
+
     await db.models.reportProject.create({
       reportId: reportNonProduction.id,
       project_id: project.id,
@@ -156,6 +165,7 @@ describe('/reports/{REPORTID}', () => {
       patientId: mockReportData.patientId,
       state: 'reviewed',
     });
+
     await db.models.reportProject.create({
       reportId: reportReviewed.id,
       project_id: project.id,
@@ -166,6 +176,7 @@ describe('/reports/{REPORTID}', () => {
       patientId: mockReportData.patientId,
       state: 'completed',
     });
+
     await db.models.reportProject.create({
       reportId: reportCompleted.id,
       project_id: project.id,
@@ -175,11 +186,13 @@ describe('/reports/{REPORTID}', () => {
       templateId: template.id,
       patientId: mockReportData.patientId,
     });
+
     await db.models.reportProject.create({
       reportId: reportDualProj.id,
       project_id: project.id,
       additionalProject: false,
     });
+
     await db.models.reportProject.create({
       reportId: reportDualProj.id,
       project_id: project2.id,
@@ -488,7 +501,7 @@ describe('/reports/{REPORTID}', () => {
 
     test('/ - search by key variant - 200 Success', async () => {
       const res = await request
-        .get(`/api/reports?searchParams=[keyVariant|${KEYVARIANT}|1]`)
+        .get(`/api/reports?searchParams=[keyVariant|${variant.displayName}|1]`)
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.OK);
@@ -497,7 +510,7 @@ describe('/reports/{REPORTID}', () => {
 
       for (const resReport of res.body.reports) {
         for (const gAI of resReport.genomicAlterationsIdentified) {
-          expect(gAI.geneVariant).toEqual(KEYVARIANT);
+          expect(gAI.geneVariant).toEqual(variant.displayName);
         }
       }
     }, LONGER_TIMEOUT);

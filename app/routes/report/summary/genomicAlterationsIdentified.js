@@ -121,14 +121,16 @@ router.route('/')
     try {
       req.body.reportId = req.report.id;
       let variantId;
+      let germline = false;
       if (req.body.variantIdent) {
         const modelName = KB_PIVOT_MAPPING[req.body.variantType];
         const variant = await db.models[modelName].findOne({
           where: {ident: req.body.variantIdent},
         });
         variantId = variant.id;
+        germline = variant.germline; // DEVSU-3013 & DEVSU-2854: Set germline value based on the variant's germline property for consistency
       }
-      const result = await db.models.genomicAlterationsIdentified.create({...req.body, variantId});
+      const result = await db.models.genomicAlterationsIdentified.create({...req.body, variantId, germline});
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {
       logger.error(`Unable to create genomic alteration entry ${error}`);

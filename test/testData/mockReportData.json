@@ -120,6 +120,10 @@
         {
             "geneVariant": "ZNF217 (amplification)",
             "germline": true
+        },
+        {
+            "variantType": "exp",
+            "variant": "hash12345678"
         }
     ],
     "pathwayAnalysis": {
