@@ -7,11 +7,12 @@ const genomicAlterationsMiddleware = require('../../../middleware/genomicAlterat
 const db = require('../../../models');
 const logger = require('../../../log');
 const cache = require('../../../cache');
-const {KB_PIVOT_MAPPING} = require('../../../constants');
+const {KB_PIVOT_MAPPING, REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../constants');
 
 const schemaGenerator = require('../../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../../libs/validateAgainstSchema');
-const {REPORT_CREATE_BASE_URI, REPORT_UPDATE_BASE_URI} = require('../../../constants');
+
+const getVariantInclude = require('../../../middleware/genomicAlterations').getVariantInclude;
 
 // Generate schemas
 const createSchema = schemaGenerator(db.models.genomicAlterationsIdentified, {
@@ -92,11 +93,7 @@ router.route('/')
         where: {
           reportId: req.report.id,
         },
-        include: [
-          ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-            return {model: db.models[modelName].scope('public'), as: modelName};
-          }),
-        ],
+        include: Object.values(KB_PIVOT_MAPPING).map(getVariantInclude),
       });
 
       if (key) {
