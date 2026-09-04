@@ -164,6 +164,18 @@ schemas.reportUserHistory = schemaGenerator(db.models.reportUser, {
   includeAssociations: ['user', 'addedBy'],
 });
 
+// signature history
+schemas.signaturesHistory = schemaGenerator(db.models.signatures, {
+  isJsonSchema: false,
+  title: 'signaturesHistory',
+  include: [
+    'ident', 'createdAt', 'updatedAt', 'deletedAt',
+    'authorSignedAt', 'reviewerSignedAt', 'creatorSignedAt',
+  ],
+  associations: true,
+  includeAssociations: ['authorSignature', 'reviewerSignature', 'creatorSignature'],
+});
+
 // signatures - earliest signoff
 schemas.earliestSignOff = {
   ...schemas.signaturesAssociations,
