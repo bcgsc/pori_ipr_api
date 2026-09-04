@@ -47,6 +47,38 @@ const checkReportUsers = (reportUsers) => {
   });
 };
 
+const checkReportUserHistoryEntry = (entry) => {
+  expect(entry).toEqual(expect.objectContaining({
+    ident: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    role: expect.any(String),
+    user: expect.objectContaining({
+      ident: expect.any(String),
+      username: expect.any(String),
+    }),
+  }));
+  expect(entry).toEqual(expect.not.objectContaining({
+    id: expect.any(Number),
+    reportId: expect.any(Number),
+    user_id: expect.any(Number),
+    addedBy_id: expect.any(Number),
+  }));
+
+  if (entry.addedBy) {
+    expect(entry.addedBy).toEqual(expect.objectContaining({
+      ident: expect.any(String),
+      username: expect.any(String),
+    }));
+  }
+};
+
+const checkReportUserHistory = (reportUserHistory) => {
+  reportUserHistory.forEach((entry) => {
+    checkReportUserHistoryEntry(entry);
+  });
+};
+
 const REPORT_ASSIGNMENT_ACCESS = 'report assignment access';
 const ALL_PROJECTS_ACCESS = 'all projects access';
 const UNREVIEWED_ACCESS = 'unreviewed access';
@@ -129,6 +161,50 @@ describe('/reports/{REPORTID}/user', () => {
         .auth(username, password)
         .type('json')
         .expect(HTTP_STATUS.NOT_FOUND);
+    });
+
+    test('/history - 200 Success', async () => {
+      const res = await request
+        .get(`/api/reports/${report.ident}/user/history`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+      checkReportUserHistory(res.body);
+
+      // The active binding created in beforeAll should be present and not removed
+      const activeEntry = res.body.find((entry) => {
+        return entry.ident === userReportBinding.ident;
+      });
+      expect(activeEntry).not.toBeUndefined();
+      expect(activeEntry.deletedAt).toBeNull();
+    });
+
+    test('/history - 200 Success - includes removed bindings', async () => {
+      const removedBinding = await db.models.reportUser.create({
+        user_id: createUser.id,
+        reportId: report.id,
+        role: 'admin',
+        addedBy_id: user.id,
+      });
+      await removedBinding.destroy();
+
+      const res = await request
+        .get(`/api/reports/${report.ident}/user/history`)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.OK);
+
+      const historyEntry = res.body.find((entry) => {
+        return entry.ident === removedBinding.ident;
+      });
+      expect(historyEntry).not.toBeUndefined();
+      expect(historyEntry.deletedAt).toEqual(expect.any(String));
+      expect(historyEntry.addedBy).toEqual(expect.objectContaining({
+        ident: user.ident,
+      }));
     });
   });
 

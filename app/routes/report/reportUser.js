@@ -1,4 +1,11 @@
-const HTTP_STATUS = require('http-status-codes');
+const {StatusCodes: {
+  INTERNAL_SERVER_ERROR,
+  NOT_FOUND,
+  NO_CONTENT,
+  BAD_REQUEST,
+  CONFLICT,
+  CREATED,
+}} = require('http-status-codes');
 const express = require('express');
 
 const db = require('../../models');
@@ -32,14 +39,14 @@ router.param('reportUser', async (req, res, next, ident) => {
     });
   } catch (error) {
     logger.error(`Error while trying to find report user error: ${error}`);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(INTERNAL_SERVER_ERROR).json({
       error: {message: 'Error while trying to find report user'},
     });
   }
 
   if (!result) {
     logger.error('Unable to find report-user binding');
-    return res.status(HTTP_STATUS.NOT_FOUND).json({
+    return res.status(NOT_FOUND).json({
       error: {message: 'Unable to find report-user binding'},
     });
   }
@@ -57,11 +64,34 @@ router.route('/:reportUser([A-z0-9-]{36})')
   .delete(async (req, res) => {
     try {
       await req.reportUser.destroy();
-      return res.status(HTTP_STATUS.NO_CONTENT).send();
+      return res.status(NO_CONTENT).send();
     } catch (error) {
       logger.error(`Error while trying to delete report-user binding ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to delete report-user binding'},
+      });
+    }
+  });
+
+/**
+ * Route for retrieving the full history of report-user bindings for a report,
+ * including bindings that have since been removed
+ */
+router.route('/history')
+  .get(async (req, res) => {
+    try {
+      const reportUserHistory = await db.models.reportUser.scope('history').findAll({
+        where: {reportId: req.report.id},
+        order: [
+          ['createdAt', 'ASC'],
+        ],
+        paranoid: false,
+      });
+      return res.json(reportUserHistory);
+    } catch (error) {
+      logger.error(`Error while trying to get report-user binding history ${error}`);
+      return res.status(INTERNAL_SERVER_ERROR).json({
+        error: {message: 'Error while trying to get report-user binding history'},
       });
     }
   });
@@ -80,7 +110,7 @@ router.route('/')
     } catch (error) {
       const message = `Error while validating report-user binding create request ${error}`;
       logger.error(message);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+      return res.status(BAD_REQUEST).json({error: {message}});
     }
 
     // Find user
@@ -89,14 +119,14 @@ router.route('/')
       bindUser = await db.models.user.findOne({where: {ident: user}});
     } catch (error) {
       logger.error(`Error trying to find user to bind ${user}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error trying to find user to bind'},
       });
     }
 
     if (!bindUser) {
       logger.error(`Unable to find user to bind: ${user}`);
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
+      return res.status(NOT_FOUND).json({
         error: {message: 'Unable to find user to bind'},
       });
     }
@@ -109,14 +139,14 @@ router.route('/')
       });
     } catch (error) {
       logger.error(`Error trying to find user binding ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error trying to find user binding'},
       });
     }
 
     if (binding) {
       logger.error('User already bound to report');
-      return res.status(HTTP_STATUS.CONFLICT).json({
+      return res.status(CONFLICT).json({
         error: {message: 'User already bound to report'},
       });
     }
@@ -159,10 +189,10 @@ router.route('/')
       }
 
       await req.report.reload();
-      return res.status(HTTP_STATUS.CREATED).json(req.report.view('public'));
+      return res.status(CREATED).json(req.report.view('public'));
     } catch (error) {
       logger.error(`Error while creating user-report binding ${error}`);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      return res.status(INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while creating user-report binding'},
       });
     }
