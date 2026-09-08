@@ -1,4 +1,4 @@
-FROM node:20-trixie
+FROM node:16-bookworm
 
 # Update and remove list of packages
 # Install and use Jemalloc
