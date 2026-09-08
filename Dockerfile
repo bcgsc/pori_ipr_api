@@ -1,4 +1,4 @@
-FROM node:16-bullseye
+FROM node:20-trixie
 
 # Update and remove list of packages
 # Install and use Jemalloc
