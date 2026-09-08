@@ -6285,6 +6285,72 @@
         }
       }
     },
+    "/variant-text/schema": {
+      "get": {
+        "summary": "Get Variant Text JSON Schema",
+        "tags": [
+          "variant text"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the json schema for variant text"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Validate the JSON Schema",
+        "description": "validate the provided json variant text",
+        "tags": [
+          "variant text"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/variantTextCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "json validated"
+          },
+          "400": {
+            "description": "fail to validate the json content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
     "/variant-text/{variantText}": {
       "get": {
         "summary": "Get Variant Text",
