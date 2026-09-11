@@ -9,6 +9,7 @@ const {
   sanitizeHtml,
   getUserProjects,
   projectAccess,
+  removeKeys,
 } = require('../../libs/helperFunctions');
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -16,20 +17,8 @@ const {BASE_EXCLUDE} = require('../../schemas/exclude');
 
 const router = express.Router({mergeParams: true});
 
-// Generate schema's
-const createSchema = schemaGenerator(db.models.variantText, {
-  baseUri: '/create', exclude: [...BASE_EXCLUDE],
-});
-const updateSchema = schemaGenerator(db.models.variantText, {
-  baseUri: '/update', include: ['cancerType', 'text'], nothingRequired: true,
-});
-
-const pairs = {
-  template: db.models.template,
-};
-
 const variantTextPublicAttributes = {
-  exclude: ['id', 'deletedAt', 'updatedBy', 'templateId'],
+  exclude: ['id', 'deletedAt', 'updatedBy', 'templateId', 'projectId'],
 };
 
 const variantTextPublicInclude = [
@@ -40,6 +29,41 @@ const variantTextPublicInclude = [
     through: {attributes: []},
   },
 ];
+
+// Generate schema's
+const templateResponseSchema = schemaGenerator(db.models.template, {
+  baseUri: '/schema/template',
+  include: ['ident', 'name'],
+  isSubSchema: true,
+});
+
+const projectResponseSchema = schemaGenerator(db.models.project, {
+  baseUri: '/schema/project',
+  include: ['ident', 'name', 'description'],
+  isSubSchema: true,
+});
+
+const variantTextResponseSchema = schemaGenerator(db.models.variantText, {
+  baseUri: '/schema',
+  exclude: [...variantTextPublicAttributes.exclude],
+  properties: {
+    template: templateResponseSchema,
+    projects: {
+      type: 'array',
+      items: projectResponseSchema,
+    },
+  },
+});
+const createSchema = schemaGenerator(db.models.variantText, {
+  baseUri: '/create', exclude: [...BASE_EXCLUDE],
+});
+const updateSchema = schemaGenerator(db.models.variantText, {
+  baseUri: '/update', include: ['cancerType', 'text'], nothingRequired: true,
+});
+
+const pairs = {
+  template: db.models.template,
+};
 
 const hasProjectAccessForAll = (user, projectIdents = []) => {
   return projectIdents.every((ident) => {
@@ -124,6 +148,23 @@ router.use(async (req, res, next) => {
     });
   }
 });
+
+router.route('/schema')
+  .get((req, res) => {
+    const schema = removeKeys(variantTextResponseSchema, '$id');
+    return res.json(schema);
+  })
+  .post(async (req, res) => {
+    try {
+      validateAgainstSchema(createSchema, req.body);
+    } catch (error) {
+      const message = `There was an error validating the variant text content ${error}`;
+      logger.error(message);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({error: {message}});
+    }
+
+    return res.status(HTTP_STATUS.OK).json({message: 'json validated success'});
+  });
 
 // Middleware for variant text
 router.param('variantText', async (req, res, next, ident) => {
