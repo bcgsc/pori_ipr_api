@@ -43,7 +43,6 @@ router.route('/:legend([A-z0-9-]{36})')
         } else {
           await req.legend.update(req.body, {userId: req.user.id, transaction});
         }
-        await db.models.legend.ensureDefaultExists({transaction});
       });
       await req.legend.reload();
       return res.json(req.legend.view('public'));
@@ -55,16 +54,10 @@ router.route('/:legend([A-z0-9-]{36})')
   })
   .delete(async (req, res) => {
     const force = (req.query.force === 'true');
-    const wasDefault = req.legend.default;
 
     try {
       await db.transaction(async (transaction) => {
         await req.legend.destroy({force, transaction});
-
-        // Only re-evaluate the default if we just removed the default one.
-        if (wasDefault) {
-          await db.models.legend.ensureDefaultExists({transaction});
-        }
       });
       return res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
@@ -127,7 +120,6 @@ router.route('/')
           let legend;
           await db.transaction(async (transaction) => {
             legend = await uploadLegendImage(image.data, {...options, transaction});
-            await db.models.legend.ensureDefaultExists({transaction});
           });
 
           // Return that this image was uploaded successfully
