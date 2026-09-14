@@ -1,5 +1,6 @@
 const CONFIG = require('../config');
 const db = require('../models');
+const {sendEmail} = require('./mailer');
 const {addJobToEmailQueue} = require('../queue');
 
 const {email, domain} = CONFIG.get('email');

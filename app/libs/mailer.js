@@ -3,24 +3,26 @@ const CONFIG = require('../config');
 
 const {email, password, domain, ehost} = CONFIG.get('email');
 
-const transporter = nodemailer.createTransport({
-  host: ehost,
-  auth: {
-    user: email,
-    pass: password,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+const sendEmail = async (subject, text, toEmail) => {
+  const transporter = nodemailer.createTransport({
+    host: ehost,
+    auth: {
+      user: email,
+      pass: password,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
 
-const sendEmail = async ({to, subject, text}) => {
-  return transporter.sendMail({
+  const mailOptions = {
     from: `${email}${domain}`,
-    to,
+    to: toEmail,
     subject,
     text,
-  });
+  };
+
+  return transporter.sendMail(mailOptions);
 };
 
 module.exports = {sendEmail};
