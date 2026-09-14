@@ -140,9 +140,9 @@ schemas.reportAssociations = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'reportAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'config'], associations: true, includeAssociations: ['patientInformation', 'createdBy', 'template', 'users'],
 });
 
-// analysis report
+// variant text
 schemas.variantTextAssociations = schemaGenerator(db.models.variantText, {
-  isJsonSchema: false, title: 'variantTextAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'projectId'], associations: true, includeAssociations: ['template', 'project'],
+  isJsonSchema: false, title: 'variantTextAssociations', exclude: [...PUBLIC_VIEW_EXCLUDE, 'projectId'], associations: true, includeAssociations: ['template', 'projects'],
 });
 
 // appendices
@@ -153,6 +153,27 @@ schemas.appendices = schemaGenerator(db.models.report, {
 // report state history
 schemas.stateHistory = schemaGenerator(db.models.report, {
   isJsonSchema: false, title: 'stateHistory', include: ['ident', 'updatedAt', 'state'],
+});
+
+// report-user binding history
+schemas.reportUserHistory = schemaGenerator(db.models.reportUser, {
+  isJsonSchema: false,
+  title: 'reportUserHistory',
+  include: ['ident', 'role', 'createdAt', 'updatedAt', 'deletedAt'],
+  associations: true,
+  includeAssociations: ['user', 'addedBy'],
+});
+
+// signature history
+schemas.signaturesHistory = schemaGenerator(db.models.signatures, {
+  isJsonSchema: false,
+  title: 'signaturesHistory',
+  include: [
+    'ident', 'createdAt', 'updatedAt', 'deletedAt',
+    'authorSignedAt', 'reviewerSignedAt', 'creatorSignedAt',
+  ],
+  associations: true,
+  includeAssociations: ['authorSignature', 'reviewerSignature', 'creatorSignature'],
 });
 
 // signatures - earliest signoff

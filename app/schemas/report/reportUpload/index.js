@@ -3,6 +3,7 @@ const {BASE_EXCLUDE} = require('../../exclude');
 const variantSchemas = require('./variant');
 const kbMatchesSchema = require('./kbMatches');
 const observedVariantAnnotationsSchema = require('./observedVariantAnnotations');
+const genomicAlterationsIdentifiedSchema = require('./genomicAlterationsIdentified');
 const schemaGenerator = require('../../schemaGenerator');
 const {UPLOAD_BASE_URI} = require('../../../constants');
 
@@ -69,7 +70,7 @@ const generateReportUploadSchema = (isJsonSchema) => {
     presentationSlides, users, projects, ...associations
   } = db.models.report.associations;
 
-  schema.definitions = {...variantSchemas(isJsonSchema), kbMatches: kbMatchesSchema(isJsonSchema), observedVariantAnnotations: observedVariantAnnotationsSchema(isJsonSchema)};
+  schema.definitions = {...variantSchemas(isJsonSchema), kbMatches: kbMatchesSchema(isJsonSchema), observedVariantAnnotations: observedVariantAnnotationsSchema(isJsonSchema), genomicAlterationsIdentified: genomicAlterationsIdentifiedSchema(isJsonSchema)};
 
   // add all associated schemas
   Object.values(associations).forEach((association) => {
