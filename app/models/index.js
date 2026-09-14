@@ -38,6 +38,7 @@ userMetadata.belongsTo(user, {
 
 // Projects
 const project = require('./project/project')(sequelize, Sq);
+const projectVariantTextJoin = require('./project/projectVariantTextJoin')(sequelize, Sq);
 const userProject = require('./project/userProject')(sequelize, Sq);
 const reportProject = require('./project/reportProject')(sequelize, Sq);
 
@@ -132,6 +133,16 @@ summary.pathwayAnalysis = require('./reports/genomic/summary/pathwayAnalysis')(s
 summary.probeResults = require('./reports/probeResults')(sequelize, Sq);
 summary.therapeuticTargets = require('./reports/genomic/summary/therapeuticTargets')(sequelize, Sq);
 summary.microbial = require('./reports/genomic/summary/microbial')(sequelize, Sq);
+
+// Pathway Analysis Legends
+const pathwayAnalysisLegends = require('./legend/legend')(sequelize, Sq);
+
+summary.pathwayAnalysis.belongsTo(pathwayAnalysisLegends, {
+  as: 'legend', foreignKey: 'legendId', targetKey: 'id', onDelete: 'SET NULL', constraints: true,
+});
+pathwayAnalysisLegends.hasMany(summary.pathwayAnalysis, {
+  as: 'pathwayAnalyses', foreignKey: 'legendId', onDelete: 'SET NULL', constraints: true,
+});
 
 analysisReports.belongsTo(user, {
   as: 'createdBy', foreignKey: 'createdBy_id', targetKey: 'id', onDelete: 'SET NULL', controlled: true,
@@ -610,14 +621,14 @@ const variantText = require('./variantText/variantText')(sequelize, Sq);
 template.hasMany(variantText, {
   as: 'variant_texts', foreignKey: 'templateId', onDelete: 'CASCADE', constraints: true,
 });
-project.hasMany(variantText, {
-  as: 'variant_texts', foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
+project.belongsToMany(variantText, {
+  as: 'variant_texts', through: {model: projectVariantTextJoin, unique: false}, foreignKey: 'projectId', onDelete: 'CASCADE', constraints: true,
 });
 variantText.belongsTo(template, {
   as: 'template', foreignKey: 'templateId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
 });
-variantText.belongsTo(project, {
-  as: 'project', foreignKey: 'projectId', targetKey: 'id', onDelete: 'CASCADE', constraints: true,
+variantText.belongsToMany(project, {
+  as: 'projects', through: {model: projectVariantTextJoin, unique: false}, foreignKey: 'variantTextId', onDelete: 'CASCADE', constraints: true,
 });
 
 // Template Appendix

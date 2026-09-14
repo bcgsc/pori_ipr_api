@@ -35,7 +35,6 @@ const checkAlterations = (alterations) => {
 const CHECKING_DATA = {
   geneVariant: 'TEST GENE VARIANT',
   variantType: 'cnv',
-  germline: true,
 };
 
 const CHECKING_UPDATE_DATA = {
@@ -153,6 +152,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       checkAlteration(res.body);
       expect(res.body).toEqual(expect.objectContaining(CHECKING_DATA));
+      expect(res.body.germline).toBe(variant.germline);
 
       // Check that record was created in the db
       const result = await db.models.genomicAlterationsIdentified.findOne({

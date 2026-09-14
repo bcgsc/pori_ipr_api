@@ -64,5 +64,11 @@
         "ident": "2841d7dd-80a4-47e1-abcf-f22fa9fbe187",
         "name": "create report access",
         "description": null
+    },
+    {
+        "id": 53,
+        "ident": "490bead8-2837-4521-aeef-43c517b9a289",
+        "name": "create project access",
+        "description": null
     }
 ]

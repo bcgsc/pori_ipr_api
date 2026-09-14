@@ -68,6 +68,7 @@ describe('/user/settings', () => {
         where: {userId: testUser.id},
       });
       expect(results.length).toBe(1);
+      expect(results[0].updatedBy).toBe(testUser.id);
     });
   });
 });

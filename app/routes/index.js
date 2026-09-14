@@ -19,6 +19,8 @@ const notificationRoute = require('./notification');
 const variantTextRoute = require('./variantText');
 const templateRoute = require('./template');
 const appendixRoute = require('./appendix');
+const legendRoute = require('./legend');
+const therapeuticTargetsRoute = require('./therapeuticTargets');
 
 // Get module route files
 const RouterInterface = require('./routingInterface');
@@ -100,6 +102,12 @@ class Routing extends RouterInterface {
 
     // Get appendix routes
     this.router.use('/appendix', appendixRoute);
+
+    // Global legend routes
+    this.router.use('/legend', legendRoute);
+
+    // Get therapeutic targets routes (all reports)
+    this.router.use('/therapeutic-targets', therapeuticTargetsRoute);
 
     return true;
   }

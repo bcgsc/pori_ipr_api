@@ -2,18 +2,26 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../models');
 const logger = require('../log');
 
-const {KB_PIVOT_MAPPING} = require('../constants');
+const {KB_PIVOT_MAPPING, GENE_LINKED_VARIANT_MODELS} = require('../constants');
+
+const getVariantInclude = (modelName) => {
+  const isGeneLinkedVariant = GENE_LINKED_VARIANT_MODELS.includes(modelName);
+  const scopeName = isGeneLinkedVariant ? 'extended' : 'public';
+  const scopedModel = db.models[modelName].options.scopes?.[scopeName]
+    ? db.models[modelName].scope(scopeName)
+    : db.models[modelName].scope('public');
+  return {
+    model: scopedModel,
+    as: modelName,
+  };
+};
 
 module.exports = async (req, res, next, altIdent) => {
   let result;
   try {
     result = await db.models.genomicAlterationsIdentified.findOne({
       where: {ident: altIdent, reportId: req.report.id},
-      include: [
-        ...Object.values(KB_PIVOT_MAPPING).map((modelName) => {
-          return {model: db.models[modelName].scope('public'), as: modelName};
-        }),
-      ],
+      include: Object.values(KB_PIVOT_MAPPING).map(getVariantInclude),
     });
   } catch (error) {
     logger.error(`Unable to get genomic alterations ${error}`);
@@ -32,3 +40,5 @@ module.exports = async (req, res, next, altIdent) => {
   req.alteration = result;
   return next();
 };
+
+module.exports.getVariantInclude = getVariantInclude;

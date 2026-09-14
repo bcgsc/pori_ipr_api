@@ -21,11 +21,14 @@ router.route('/')
   })
   .put(async (req, res) => {
     try {
-      await db.models.userMetadata.update({settings: req.body}, {
+      await db.models.userMetadata.update({
+        settings: req.body,
+        updatedBy: req.user.id,
+      }, {
         where: {
           user_id: req.user.id,
         },
-        fields: ['settings'],
+        fields: ['settings', 'updatedBy'],
         hooks: false,
         limit: 1,
       });

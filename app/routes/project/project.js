@@ -7,7 +7,9 @@ const db = require('../../models');
 const logger = require('../../log');
 
 const projectMiddleware = require('../../middleware/project');
-const {hasMasterAccess} = require('../../libs/helperFunctions');
+const {hasMasterAccess, hasAccess} = require('../../libs/helperFunctions');
+
+const CREATE_PROJECT_ACCESS = ['admin', 'manager', 'create project access'];
 
 const schemaGenerator = require('../../schemas/schemaGenerator');
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -115,6 +117,12 @@ router.route('/')
     }
   })
   .post(async (req, res) => {
+    if (!hasAccess(req.user, CREATE_PROJECT_ACCESS)) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        error: {message: 'You do not have the correct permissions to create a project'},
+      });
+    }
+
     try {
       // validate request against the model
       validateAgainstSchema(createSchema, req.body);
@@ -134,6 +142,11 @@ router.route('/')
         logger.error(`Project ${req.body.name} already exists`);
         return res.status(HTTP_STATUS.CONFLICT).json({error: {message: 'Project already exists'}});
       }
+
+      await db.models.userProject.findOrCreate({
+        where: {project_id: result.id, user_id: req.user.id},
+        defaults: {project_id: result.id, user_id: req.user.id},
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(result.view('public'));
     } catch (error) {

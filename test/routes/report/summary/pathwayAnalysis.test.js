@@ -3,16 +3,19 @@ const supertest = require('supertest');
 const getPort = require('get-port');
 
 const db = require('../../../../app/models');
+
+const {Op} = db.Sequelize;
 const CONFIG = require('../../../../app/config');
 const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
+jest.setTimeout(20000);
 const {username, password} = CONFIG.get('testing');
 
 let server;
 let request;
 
-const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'pathway', 'legend'];
+const pathwayProperties = ['ident', 'createdAt', 'updatedAt', 'pathway', 'legendId'];
 
 const checkPathwayAnalysis = (pathwayObject) => {
   pathwayProperties.forEach((element) => {
@@ -32,6 +35,7 @@ beforeAll(async () => {
 
 describe('/reports/{report}/summary/pathway-analysis', () => {
   let report;
+  const TEST_SUFFIX = `${Date.now()}-${process.pid}`;
 
   beforeAll(async () => {
     // Get genomic template
@@ -71,16 +75,24 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 
   describe('PUT', () => {
     let pathwayAnalysis;
+    let legend;
 
     beforeEach(async () => {
       pathwayAnalysis = await db.models.pathwayAnalysis.create({
         reportId: report.id,
+      });
+      legend = await db.models.legend.create({
+        filename: 'pathway_legend_v1.png',
+        name: `put-legend-${TEST_SUFFIX}`,
+        data: 'v1Data',
+        default: false,
       });
     });
 
     // Delete pathway analysis
     afterEach(async () => {
       await db.models.pathwayAnalysis.destroy({where: {ident: pathwayAnalysis.ident}, force: true});
+      await db.models.legend.destroy({where: {id: legend.id}, force: true});
     });
 
     test('/ - 200 Success', async () => {
@@ -89,21 +101,21 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legend', 'v2')
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.OK);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legend).toBe('v2');
+      expect(res.body.legendId).toBe(legend.id);
     });
 
-    test('/ - 400 Bad request - Invalid legend', async () => {
+    test('/ - 400 Bad request - Invalid legend fk', async () => {
       await request
         .put(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
-        .send({legend: 'Not valid legend'})
+        .send({legendId: 'Not valid legend id'})
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -113,7 +125,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/golden.jpg')
-        .field('legend', 'v1')
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -167,31 +179,91 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
   });
 
   describe('POST', () => {
+    let legend;
+
+    beforeEach(async () => {
+      legend = await db.models.legend.create({
+        filename: 'pathway_legend_v1.png',
+        name: `post-legend-${TEST_SUFFIX}`,
+        data: 'v1Data',
+        default: false,
+      });
+    });
+
+    afterEach(async () => {
+      await db.models.legend.destroy({where: {id: legend.id}, force: true});
+    });
+
     test('/ - 201 Created', async () => {
       const res = await request
         .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legend', 'custom')
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.CREATED);
 
       checkPathwayAnalysis(res.body);
 
       expect(res.body.pathway).not.toBeNull();
-      expect(res.body.legend).toBe('custom');
+      expect(res.body.legendId).toBe(legend.id);
 
       // Remove pathway analysis
       await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
     });
 
-    test('/ - 400 Bad request - Invalid legend', async () => {
+    test('/ - 201 Created - Default legend automatically associated', async () => {
+      await db.models.legend.update({default: false}, {where: {id: legend.id}});
+      const defaultLegend = await db.models.legend.create({
+        filename: 'pathway_legend_v1.png',
+        name: `default-legend-${TEST_SUFFIX}`,
+        data: 'v1Data',
+        default: true,
+      });
+
+      const res = await request
+        .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
+        .auth(username, password)
+        .type('json')
+        .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
+        .expect(HTTP_STATUS.CREATED);
+
+      checkPathwayAnalysis(res.body);
+
+      expect(res.body.pathway).not.toBeNull();
+      expect(res.body.legendId).toBe(defaultLegend.id);
+
+      // Remove pathway analysis
+      await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
+      await db.models.legend.destroy({where: {id: defaultLegend.id}, force: true});
+    });
+
+    test('/ - 201 Created - No legend records and no legendId', async () => {
+      await db.models.legend.destroy({where: {}, force: true});
+
+      const res = await request
+        .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
+        .auth(username, password)
+        .type('json')
+        .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
+        .expect(HTTP_STATUS.CREATED);
+
+      checkPathwayAnalysis(res.body);
+
+      expect(res.body.pathway).not.toBeNull();
+      expect(res.body.legendId).toBeNull();
+
+      // Remove pathway analysis
+      await db.models.pathwayAnalysis.destroy({where: {ident: res.body.ident}});
+    });
+
+    test('/ - 400 Bad request - Invalid legend id', async () => {
       await request
         .post(`/api/reports/${report.ident}/summary/pathway-analysis`)
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legend', 'Not valid legend')
+        .field('legendId', 'Not valid legend id')
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -201,7 +273,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/golden.jpg')
-        .field('legend', 'v1')
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.BAD_REQUEST);
     });
 
@@ -216,7 +288,7 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
         .auth(username, password)
         .type('json')
         .attach('pathway', 'test/testData/images/pathwayAnalysisData.svg')
-        .field('legend', 'v2')
+        .field('legendId', legend.id)
         .expect(HTTP_STATUS.CONFLICT);
 
       // Remove pathway analysis
@@ -226,6 +298,19 @@ describe('/reports/{report}/summary/pathway-analysis', () => {
 
   // Delete report
   afterAll(async () => {
+    await db.models.pathwayAnalysis.destroy({where: {reportId: report.id}, force: true});
+    await db.models.legend.destroy({
+      where: {
+        name: {
+          [Op.or]: [
+            {[Op.like]: `put-legend-${TEST_SUFFIX}%`},
+            {[Op.like]: `post-legend-${TEST_SUFFIX}%`},
+            {[Op.like]: `default-legend-${TEST_SUFFIX}%`},
+          ],
+        },
+      },
+      force: true,
+    });
     await db.models.report.destroy({where: {id: report.id}, force: true});
   });
 });

@@ -142,7 +142,7 @@ router.route('/')
     const {report: {id: reportId}, body} = req;
     try {
       await db.transaction(async (transaction) => {
-        return Promise.all(body.map((target) => {
+        await Promise.all(body.map((target) => {
           return db.models.therapeuticTarget.update(
             {rank: target.rank},
             {
@@ -155,6 +155,30 @@ router.route('/')
             },
           );
         }));
+
+        await db.models.signatures.update({
+          authorId: null,
+          authorSignedAt: null,
+          reviewerId: null,
+          reviewerSignedAt: null,
+        }, {
+          where: {reportId},
+          individualHooks: true,
+          paranoid: true,
+          transaction,
+          userId: req.user.id,
+        });
+
+        // If the report was "reviewed" send it back to "ready"
+        await db.models.report.update({
+          state: 'ready',
+        }, {
+          where: {id: reportId, state: 'reviewed'},
+          individualHooks: true,
+          paranoid: true,
+          transaction,
+          userId: req.user.id,
+        });
       });
 
       return res.json({updated: true});

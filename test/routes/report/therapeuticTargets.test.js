@@ -390,6 +390,76 @@ describe('/therapeutic-targets', () => {
             .type('json')
             .expect(HTTP_STATUS.BAD_REQUEST);
         }, LONGER_TIMEOUT);
+
+        describe('rank update and report signatures', () => {
+          let signature;
+          let user;
+          let originalState;
+
+          beforeEach(async () => {
+            user = await db.models.user.findOne({where: {username}});
+            signature = await db.models.signatures.create({
+              reportId: report.id,
+              authorId: user.id,
+              authorSignedAt: new Date(),
+              reviewerId: user.id,
+              reviewerSignedAt: new Date(),
+              creatorId: user.id,
+              creatorSignedAt: new Date(),
+            });
+            // state is excluded from signature removal, so setting it
+            // here does not wipe the signature we just created
+            ({state: originalState} = await db.models.report.findOne({
+              where: {id: report.id},
+            }));
+            await db.models.report.update(
+              {state: 'reviewed'},
+              {where: {id: report.id}, hooks: false},
+            );
+          });
+
+          afterEach(async () => {
+            if (signature) {
+              await db.models.signatures.destroy({
+                where: {ident: signature.ident},
+                force: true,
+              });
+            }
+            // restore the original state - report.state is allowNull: false
+            await db.models.report.update(
+              {state: originalState},
+              {where: {id: report.id}, hooks: false},
+            );
+          });
+
+          test('reorder revokes author + reviewer signatures, keeps creator', async () => {
+            await request
+              .put(`/api/reports/${report.ident}/therapeutic-targets`)
+              .auth(username, password)
+              .send([
+                {ident: originalGene.ident, rank: newTarget.rank},
+                {ident: newTarget.ident, rank: originalGene.rank},
+              ])
+              .type('json')
+              .expect(HTTP_STATUS.OK);
+
+            const updatedSignature = await db.models.signatures.findOne({
+              where: {reportId: report.id},
+            });
+            expect(updatedSignature.authorId).toBe(null);
+            expect(updatedSignature.authorSignedAt).toBe(null);
+            expect(updatedSignature.reviewerId).toBe(null);
+            expect(updatedSignature.reviewerSignedAt).toBe(null);
+            // creator signature is intentionally preserved
+            expect(updatedSignature.creatorId).toBe(user.id);
+            expect(updatedSignature.creatorSignedAt).not.toBe(null);
+
+            const updatedReport = await db.models.report.findOne({
+              where: {id: report.id},
+            });
+            expect(updatedReport.state).toBe('ready');
+          }, LONGER_TIMEOUT);
+        });
       });
 
       test.todo('Bad request on update and set gene to null');
