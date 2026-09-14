@@ -2048,6 +2048,46 @@
         }
       }
     },
+    "/reports/{report}/user/history": {
+      "get": {
+        "summary": "Get Report-User Binding History",
+        "description": "Retrieve the full history of report-user bindings for a report, including bindings that have since been removed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Report Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all report-user bindings for the report, including removed bindings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/reportUserHistory"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/summary/microbial": {
       "get": {
         "summary": "Get microbial data",
@@ -6162,6 +6202,46 @@
         }
       }
     },
+    "/reports/{report}/signatures/history": {
+      "get": {
+        "summary": "Get Signature History",
+        "description": "Retrieve every signature record a report has had, including removed signatures. Note: the first record is moved to the end of the array, so entries are not strictly ordered by creation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/report"
+          }
+        ],
+        "tags": [
+          "Signatures"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of all signature records for the report, including removed signatures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/signaturesHistory"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Report not found"
+          }
+        }
+      }
+    },
     "/reports/{report}/signatures/sign/{role}": {
       "put": {
         "summary": "Add Signature",
@@ -6278,6 +6358,72 @@
           },
           "400": {
             "description": "Malformed request syntax"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/variant-text/schema": {
+      "get": {
+        "summary": "Get Variant Text JSON Schema",
+        "tags": [
+          "variant text"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the json schema for variant text"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Validate the JSON Schema",
+        "description": "validate the provided json variant text",
+        "tags": [
+          "variant text"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/variantTextCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "json validated"
+          },
+          "400": {
+            "description": "fail to validate the json content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
