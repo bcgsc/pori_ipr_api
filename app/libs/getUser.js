@@ -81,11 +81,7 @@ const getUser = async (req, res) => {
     logger.error(`Invalid or expired authorization token: (${err.message})`);
     return res.status(HTTP_STATUS.FORBIDDEN).json({message: `Invalid or expired authorization token: (${err.message})`});
   }
-  // Check for IPR access
-  if (!decoded.realm_access.roles.includes(nconf.get('keycloak:role'))) {
-    logger.error('IPR Access Error: Keycloak role missing');
-    return res.status(HTTP_STATUS.FORBIDDEN).json({message: 'IPR Access Error: Keycloak role missing'});
-  }
+
   const username = decoded.preferred_username;
   const expiry = decoded.exp;
 
