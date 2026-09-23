@@ -69,19 +69,22 @@ router.use(graphkbLoginMiddleware);
  * Autocomplete endpoint for interfacing with GraphKB. This endpoint is used by the client
  * for the therapeutic options input forms
  */
-router.get('/:targetType(variant|signature|therapy|evidenceLevel|context)', async (req, res) => {
-  try {
-    const data = await graphkbAutocomplete(
-      req.params.targetType,
-      req.graphkbToken,
-      req.query?.search,
-    );
-    return res.status(StatusCodes.OK).json(data);
-  } catch (error) {
-    logger.error(error);
-    return res.status(StatusCodes.SERVICE_UNAVAILABLE).json(`GraphKB lookup error: ${error}`);
-  }
-});
+router.get(
+  '/:targetType(variant|signature|therapy|disease|evidenceLevel|context)',
+  async (req, res) => {
+    try {
+      const data = await graphkbAutocomplete(
+        req.params.targetType,
+        req.graphkbToken,
+        req.query?.search,
+      );
+      return res.status(StatusCodes.OK).json(data);
+    } catch (error) {
+      logger.error(error);
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).json(`GraphKB lookup error: ${error}`);
+    }
+  },
+);
 
 /**
  * Endpoint for retrieving IPR evidence levels from GraphKB. This endpoint is used by the client

@@ -108,6 +108,18 @@ describe('GET /graphkb/:targetType', () => {
       await testAutocompleteWithoutKeyword(request, 'therapy');
     });
   });
+
+  describe('GET /disease', () => {
+    test('with keyword', async () => {
+      const result = await testAutocompleteWithKeyword(request, 'disease', 'colorectal');
+      expect(result[0]).toHaveProperty('@class', 'Disease');
+    });
+
+    test('without keyword', async () => {
+      const result = await testAutocompleteWithoutKeyword(request, 'disease');
+      expect(result[0]).toHaveProperty('@class', 'Disease');
+    });
+  });
 });
 
 describe('GET /graphkb/evidence-levels', () => {

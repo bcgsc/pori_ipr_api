@@ -32,6 +32,8 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
       delete query.limit; // short list with short names, just return all
     } else if (targetType === 'therapy') {
       query.target = 'Therapy';
+    } else if (targetType === 'disease') {
+      query.target = 'Disease';
     } else if (targetType === 'signature') {
       query.target = 'Signature';
     } else {

@@ -30,6 +30,9 @@ jest.mock('../app/api/graphkb', () => {
         case 'therapy':
           classValue = 'Therapy';
           break;
+        case 'disease':
+          classValue = 'Disease';
+          break;
       }
 
       return {
