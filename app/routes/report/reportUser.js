@@ -183,7 +183,6 @@ router.route('/')
             projectId: reportProject.project_id,
           },
         );
-        logger.info('Email sent successfully');
       } catch (error) {
         logger.error(`Email not sent successfully: ${error}`);
       }
