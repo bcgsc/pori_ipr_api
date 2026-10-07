@@ -13,7 +13,7 @@ const AUTOCOMPLETE_LIMIT = 50;
  * @returns {object} response body from graphkb
  */
 const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => {
-  const {uri} = CONFIG.get('graphkb');
+  const { uri } = CONFIG.get('graphkb');
 
   const query = {
     returnProperties: ['@class', '@rid', 'displayName'],
@@ -25,7 +25,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
   if (targetType === 'context') {
     query.target = 'Vocabulary';
     query.queryType = 'ancestors';
-    query.filters = {name: 'therapeutic indicator'};
+    query.filters = { name: 'therapeutic indicator' };
   } else {
     if (targetType === 'evidenceLevel') {
       query.target = 'EvidenceLevel';
@@ -34,6 +34,19 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
       query.target = 'Therapy';
     } else if (targetType === 'disease') {
       query.target = 'Disease';
+      query.filters = {
+        "AND": [
+          {
+            "operator": "CONTAINSTEXT",
+            "name": keyword,
+          },
+          {
+            "operator": "IN",
+            "source": ["#38:0"], // DEVSU-2859 Using OncoTree as the source since the diseases being used to match in pori python are also from OncoTree.
+          }
+        ],
+      };
+      query.returnProperties = [...query.returnProperties, 'source.name'];
     } else if (targetType === 'signature') {
       query.target = 'Signature';
     } else {
@@ -45,7 +58,7 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
       ]);
     }
 
-    if (keyword) {
+    if (keyword && targetType !== 'disease') {
       query.keyword = keyword;
       query.queryType = 'displayName';
     }
@@ -83,13 +96,13 @@ const graphkbAutocomplete = async (targetType, graphkbToken, keyword = null) => 
  * @returns {object} response body from graphkb
  */
 const graphkbEvidenceLevels = async (graphkbToken) => {
-  const {uri} = CONFIG.get('graphkb');
+  const { uri } = CONFIG.get('graphkb');
 
   const query = {
     filters: {
       source: {
         target: 'Source',
-        filters: {name: 'ipr'},
+        filters: { name: 'ipr' },
       },
     },
     orderBy: 'displayName',
@@ -119,11 +132,11 @@ const graphkbEvidenceLevels = async (graphkbToken) => {
  * @returns {object} response body from graphkb
  */
 const graphkbStatement = async (graphkbToken, statementId) => {
-  const {uri} = CONFIG.get('graphkb');
+  const { uri } = CONFIG.get('graphkb');
 
   const query = {
     filters: [
-      {'@rid': `${statementId}`},
+      { '@rid': `${statementId}` },
     ],
     limit: 1,
     target: 'Statement',
@@ -152,11 +165,11 @@ const graphkbStatement = async (graphkbToken, statementId) => {
 };
 
 const graphkbGetReadonlyGroupId = async (graphkbToken) => {
-  const {uri} = CONFIG.get('graphkb');
+  const { uri } = CONFIG.get('graphkb');
 
   const query = {
     filters: [
-      {name: 'readonly'},
+      { name: 'readonly' },
     ],
     target: 'UserGroup',
     returnProperties: [
@@ -177,7 +190,7 @@ const graphkbGetReadonlyGroupId = async (graphkbToken) => {
 };
 
 const graphkbAddUser = async (graphkbToken, userName, userEmail, groupId) => {
-  const {uri} = CONFIG.get('graphkb');
+  const { uri } = CONFIG.get('graphkb');
 
   const query = {
     name: userName,
