@@ -2,13 +2,13 @@ const getPort = require('get-port');
 const supertest = require('supertest');
 const HTTP_STATUS = require('http-status-codes');
 const db = require('../../../../app/models');
-const { KB_PIVOT_MAPPING } = require('../../../../app/constants');
+const {KB_PIVOT_MAPPING} = require('../../../../app/constants');
 // get test user info
 const CONFIG = require('../../../../app/config');
-const { listen } = require('../../../../app');
+const {listen} = require('../../../../app');
 
 CONFIG.set('env', 'test');
-const { username, password } = CONFIG.get('testing');
+const {username, password} = CONFIG.get('testing');
 
 const alterationProperties = [
   'ident', 'createdAt', 'geneVariant', 'germline', 'variantType',
@@ -55,7 +55,7 @@ let DUPLICATE_ALTERATION_TWO_DATA;
 
 // Start API
 beforeAll(async () => {
-  const port = await getPort({ port: CONFIG.get('web:port') });
+  const port = await getPort({port: CONFIG.get('web:port')});
   server = await listen(port);
   request = supertest(server);
 });
@@ -65,7 +65,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
   beforeAll(async () => {
     // Get genomic template
-    const template = await db.models.template.findOne({ where: { name: 'genomic' } });
+    const template = await db.models.template.findOne({where: {name: 'genomic'}});
     // Create report
     report = await db.models.report.create({
       templateId: template.id,
@@ -108,7 +108,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
   });
 
   afterAll(async () => {
-    return report.destroy({ force: true });
+    return report.destroy({force: true});
   });
 
   describe('GET', () => {
@@ -122,7 +122,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
     afterEach(async () => {
       return db.models.genomicAlterationsIdentified.destroy({
-        where: { ident: getAlteration.ident },
+        where: {ident: getAlteration.ident},
         force: true,
       });
     });
@@ -177,12 +177,12 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       // Check that record was created in the db
       const result = await db.models.genomicAlterationsIdentified.findOne({
-        where: { ident: res.body.ident },
+        where: {ident: res.body.ident},
       });
       expect(result).not.toBeNull();
 
       // Delete entry
-      await result.destroy({ force: true });
+      await result.destroy({force: true});
     });
 
     test('/ - 201 Created - different associated variants allowed with same report/geneVariant/germline/variantType', async () => {
@@ -202,19 +202,19 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       // Check that record was created in the db
       const firstAlteration = await db.models.genomicAlterationsIdentified.findOne({
-        where: { ident: firstAlterationRes.body.ident },
+        where: {ident: firstAlterationRes.body.ident},
       });
 
       const secondAlteration = await db.models.genomicAlterationsIdentified.findOne({
-        where: { ident: secondAlterationRes.body.ident },
+        where: {ident: secondAlterationRes.body.ident},
       });
 
       expect(firstAlteration).not.toBeNull();
       expect(secondAlteration).not.toBeNull();
 
       // Delete entry
-      await firstAlteration.destroy({ force: true });
-      await secondAlteration.destroy({ force: true });
+      await firstAlteration.destroy({force: true});
+      await secondAlteration.destroy({force: true});
     });
 
     test('/ - 400 Bad Request - Incorrect field type', async () => {
@@ -251,7 +251,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
     });
 
     afterEach(async () => {
-      return putAlteration.destroy({ force: true });
+      return putAlteration.destroy({force: true});
     });
 
     test('/{alteration} - 200 Success', async () => {
@@ -292,7 +292,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
     });
 
     afterEach(async () => {
-      return deleteAlteration.destroy({ force: true });
+      return deleteAlteration.destroy({force: true});
     });
 
     test('/{alteration} - 204 No Content', async () => {
@@ -304,7 +304,7 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       // get record check that it is soft-deleted
       const result = await db.models.genomicAlterationsIdentified.findOne({
-        where: { ident: deleteAlteration.ident },
+        where: {ident: deleteAlteration.ident},
         paranoid: false,
       });
 

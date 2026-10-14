@@ -8,8 +8,8 @@ module.exports = {
       await queryInterface.removeIndex(
         GENOMIC_ALTERATIONS_TABLE,
         GENOMIC_ALTERATIONS_INDEX_NAME,
-        { concurrently: true },
-        { transaction },
+        {concurrently: true},
+        {transaction},
       );
 
       await queryInterface.addIndex(GENOMIC_ALTERATIONS_TABLE, {
@@ -22,7 +22,7 @@ module.exports = {
             [Sq.Op.eq]: null,
           },
         },
-      }, { transaction });
+      }, {transaction});
     });
   },
 
@@ -31,7 +31,7 @@ module.exports = {
       await queryInterface.removeIndex(
         GENOMIC_ALTERATIONS_TABLE,
         GENOMIC_ALTERATIONS_INDEX_NAME,
-        { transaction },
+        {transaction},
       );
 
       await queryInterface.addIndex(GENOMIC_ALTERATIONS_TABLE, {
@@ -43,7 +43,7 @@ module.exports = {
             [Sq.Op.eq]: null,
           },
         },
-      }, { transaction });
+      }, {transaction});
     });
   },
 };
