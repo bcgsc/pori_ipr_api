@@ -70,7 +70,7 @@ router.use(graphkbLoginMiddleware);
  * for the therapeutic options input forms
  */
 router.get(
-  '/:targetType(variant|signature|therapy|disease|evidenceLevel|context)',
+  '/:targetType(variant|signature|therapy|oncotree|evidenceLevel|context)',
   async (req, res) => {
     try {
       const data = await graphkbAutocomplete(

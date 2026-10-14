@@ -8940,7 +8940,7 @@
         "name": "Target Type",
         "in": "path",
         "required": true,
-        "description": "Target type, one of: variant, therapy, evidenceLevel or context",
+        "description": "Target type, one of: variant, signature, therapy, displayName, oncotree (diseases), evidenceLevel, or context",
         "schema": {
           "type": "string"
         }
