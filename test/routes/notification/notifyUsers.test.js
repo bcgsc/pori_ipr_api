@@ -14,13 +14,14 @@ describe('notifyUsers environment gating', () => {
   let template;
   let user;
   let notif;
+  let adminGroup;
+  let adminMembership;
   let triggers;
   let jobs;
   let getSpy;
 
   // nconf set() can't override nested config defaults in-process, so spy on CONFIG.get instead
   let currentEnv = 'test';
-  let currentTestRecipient = '';
 
   beforeAll(async () => {
     project = await db.models.project.create({name: `notif-env-${uuidv4()}`});
@@ -49,13 +50,15 @@ describe('notifyUsers environment gating', () => {
       eventType: 'reportCreated',
     });
 
+    [adminGroup] = await db.models.userGroup.findOrCreate({where: {name: 'admin'}});
+
     triggers = {userId: user.id, eventType: 'reportCreated'};
     jobs = queue.setupQueues();
 
     const realGet = CONFIG.get.bind(CONFIG);
     getSpy = jest.spyOn(CONFIG, 'get').mockImplementation((key) => {
       if (key === 'email') {
-        return {email: 'PORIReportUpdates', domain: DOMAIN, testrecipient: currentTestRecipient};
+        return {email: 'PORIReportUpdates', domain: DOMAIN};
       }
       if (key === 'env') {
         return currentEnv;
@@ -66,6 +69,9 @@ describe('notifyUsers environment gating', () => {
 
   afterAll(async () => {
     getSpy.mockRestore();
+    if (adminMembership) {
+      await adminMembership.destroy({force: true});
+    }
     return Promise.all([
       notif.destroy({force: true}),
       user.destroy({force: true}),
@@ -80,7 +86,6 @@ describe('notifyUsers environment gating', () => {
 
   test('production - sends to the real recipient with an unmodified subject', async () => {
     currentEnv = 'production';
-    currentTestRecipient = '';
 
     await email.notifyUsers(SUBJECT, 'body', triggers);
 
@@ -89,23 +94,25 @@ describe('notifyUsers environment gating', () => {
     expect(jobs[0].mailOptions.subject).toEqual(SUBJECT);
   });
 
-  test('non-prod - redirects to the test recipient and annotates the subject', async () => {
+  test('non-prod - skips recipients who are not admins', async () => {
     currentEnv = 'development';
-    currentTestRecipient = 'tester@notiftest.com';
-
-    await email.notifyUsers(SUBJECT, 'body', triggers);
-
-    expect(jobs).toHaveLength(1);
-    expect(jobs[0].mailOptions.to).toEqual('tester@notiftest.com');
-    expect(jobs[0].mailOptions.subject).toEqual(`[NON-PROD → ${user.email}] ${SUBJECT}`);
-  });
-
-  test('non-prod - skips sending when no test recipient is configured', async () => {
-    currentEnv = 'development';
-    currentTestRecipient = '';
 
     await email.notifyUsers(SUBJECT, 'body', triggers);
 
     expect(jobs).toHaveLength(0);
+  });
+
+  test('non-prod - sends to a recipient who is an admin, with a non-prod subject', async () => {
+    currentEnv = 'development';
+    adminMembership = await db.models.userGroupMember.create({
+      group_id: adminGroup.id,
+      user_id: user.id,
+    });
+
+    await email.notifyUsers(SUBJECT, 'body', triggers);
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].mailOptions.to).toEqual(user.email);
+    expect(jobs[0].mailOptions.subject).toEqual(`[NON-PROD IPR][reportCreated] ${SUBJECT}`);
   });
 });
