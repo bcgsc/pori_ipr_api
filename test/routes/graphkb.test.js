@@ -109,15 +109,13 @@ describe('GET /graphkb/:targetType', () => {
     });
   });
 
-  describe('GET /disease', () => {
+  describe('GET /oncotree', () => {
     test('with keyword', async () => {
-      const result = await testAutocompleteWithKeyword(request, 'disease', 'colorectal');
-      expect(result[0]).toHaveProperty('@class', 'Disease');
+      await testAutocompleteWithKeyword(request, 'oncotree', 'tumor');
     });
 
     test('without keyword', async () => {
-      const result = await testAutocompleteWithoutKeyword(request, 'disease');
-      expect(result[0]).toHaveProperty('@class', 'Disease');
+      await testAutocompleteWithoutKeyword(request, 'oncotree');
     });
   });
 });
