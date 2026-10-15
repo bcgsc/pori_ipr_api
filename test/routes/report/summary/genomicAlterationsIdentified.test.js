@@ -46,8 +46,12 @@ const CHECKING_UPDATE_DATA = {
 let server;
 let request;
 let variant;
+let variantOne;
+let variantTwo;
 let ALTERATION_DATA;
 let ALTERATION_UPDATE_DATA;
+let DUPLICATE_ALTERATION_ONE_DATA;
+let DUPLICATE_ALTERATION_TWO_DATA;
 
 // Start API
 beforeAll(async () => {
@@ -71,6 +75,9 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
     // Find a random variant for testing
     const modelName = KB_PIVOT_MAPPING.cnv;
     variant = await db.models[modelName].findOne();
+    variantOne = await db.models[modelName].findOne();
+    variantTwo = await db.models[modelName].findOne();
+
     ALTERATION_DATA = {
       geneVariant: 'TEST GENE VARIANT',
       variantType: 'cnv',
@@ -82,6 +89,20 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
       geneVariant: 'UPDATED GENE VARIANT',
       variantType: 'cnv',
       variantIdent: variant.ident,
+      germline: false,
+    };
+
+    DUPLICATE_ALTERATION_ONE_DATA = {
+      geneVariant: 'DUPLICATE TEST VARIANT',
+      variantType: 'cnv',
+      variantIdent: variantOne.ident,
+      germline: false,
+    };
+
+    DUPLICATE_ALTERATION_TWO_DATA = {
+      geneVariant: 'DUPLICATE TEST VARIANT',
+      variantType: 'cnv',
+      variantIdent: variantTwo.ident,
       germline: false,
     };
   });
@@ -162,6 +183,38 @@ describe('/reports/{report}/summary/genomic-alterations-identified', () => {
 
       // Delete entry
       await result.destroy({force: true});
+    });
+
+    test('/ - 201 Created - different associated variants allowed with same report/geneVariant/germline/variantType', async () => {
+      const firstAlterationRes = await request
+        .post(`/api/reports/${report.ident}/summary/genomic-alterations-identified`)
+        .send(DUPLICATE_ALTERATION_ONE_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      const secondAlterationRes = await request
+        .post(`/api/reports/${report.ident}/summary/genomic-alterations-identified`)
+        .send(DUPLICATE_ALTERATION_TWO_DATA)
+        .auth(username, password)
+        .type('json')
+        .expect(HTTP_STATUS.CREATED);
+
+      // Check that record was created in the db
+      const firstAlteration = await db.models.genomicAlterationsIdentified.findOne({
+        where: {ident: firstAlterationRes.body.ident},
+      });
+
+      const secondAlteration = await db.models.genomicAlterationsIdentified.findOne({
+        where: {ident: secondAlterationRes.body.ident},
+      });
+
+      expect(firstAlteration).not.toBeNull();
+      expect(secondAlteration).not.toBeNull();
+
+      // Delete entry
+      await firstAlteration.destroy({force: true});
+      await secondAlteration.destroy({force: true});
     });
 
     test('/ - 400 Bad Request - Incorrect field type', async () => {
