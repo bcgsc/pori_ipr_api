@@ -52,7 +52,6 @@ const DEFAULTS = {
       ? 'https://sso.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token'
       : 'https://keycloakdev01.bcgsc.ca/auth/realms/GSC/protocol/openid-connect/token',
     clientId: 'IPR',
-    role: 'IPR',
     keyfile: ENV === 'production'
       ? 'keys/prodkey.pem'
       : 'keys/devkey.pem',
