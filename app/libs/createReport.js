@@ -381,19 +381,15 @@ const createGenomicAlterationsIdentified = async (report, content, variantMappin
       }
       const associatedVariant = variantMapping[variantType][variant];
       let variantDisplayName;
-      // Manually create displayName for variants that have null value since the property is non-nullable
-      if (associatedVariant.displayName === undefined || associatedVariant.displayName === null) {
-        if (variantType === 'exp') {
-          variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.expressionState})`;
-        } else if (variantType === 'cnv') {
-          variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.cnvState})`;
-        } else if (variantType === 'mut') {
-          variantDisplayName = `${associatedVariant.gene.name || '?'}:${associatedVariant.proteinChange}`;
-        } else {
-          variantDisplayName = `(${associatedVariant.gene1.name || '?'},${associatedVariant.gene2.name || '?'}):fusion(e.${associatedVariant.exon1 || '?'},e.${associatedVariant.exon2 || '?'})`;
-        }
+      // Manually create geneVariant field for variant since associated variant's displayName may be inaccurate or missing gene name DEVSU-3034
+      if (variantType === 'exp') {
+        variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.expressionState})`;
+      } else if (variantType === 'cnv') {
+        variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.cnvState})`;
+      } else if (variantType === 'mut') {
+        variantDisplayName = `${associatedVariant.gene.name || '?'}:${associatedVariant.proteinChange}`;
       } else {
-        variantDisplayName = associatedVariant.displayName;
+        variantDisplayName = `(${associatedVariant.gene1.name || '?'},${associatedVariant.gene2.name || '?'}):fusion(e.${associatedVariant.exon1 || '?'},e.${associatedVariant.exon2 || '?'})`;
       }
       return {...alteration, variantType, variantId: associatedVariant.id, variantIdent: associatedVariant.ident, geneVariant: variantDisplayName, germline: associatedVariant.germline};
     }
