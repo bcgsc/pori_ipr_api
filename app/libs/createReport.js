@@ -361,6 +361,31 @@ const createReportVariantsSection = async (reportId, genesRecordsByName, modelNa
 };
 
 /**
+ * Build the geneVariant label for a genomic alteration from its linked variant.
+ * Rebuilt from variant fields because the variant's displayName may be inaccurate or missing the gene name (DEVSU-3034).
+ *
+ * @param {string} variantType - The variant type (e.g. exp, cnv, mut, sv)
+ * @param {object} variant - The variant record (with gene/gene1/gene2 eager loaded where applicable)
+ * @returns {string|null} - The formatted label, or the variant's displayName for unsupported types
+ */
+const formatGeneVariant = (variantType, variant) => {
+  const geneName = (gene) => {return gene?.name || '?';};
+
+  switch (variantType) {
+    case 'exp':
+      return `${geneName(variant.gene)} (${variant.expressionState ?? '?'})`;
+    case 'cnv':
+      return `${geneName(variant.gene)} (${variant.cnvState ?? '?'})`;
+    case 'mut':
+      return `${geneName(variant.gene)}:${variant.proteinChange ?? '?'}`;
+    case 'sv':
+      return `(${geneName(variant.gene1)},${geneName(variant.gene2)}):fusion(e.${variant.exon1 ?? '?'},e.${variant.exon2 ?? '?'})`;
+    default:
+      return variant.displayName ?? null;
+  }
+};
+
+/**
  * Creates genomicAlterationsIdentified records, linking each to the appropriate variant
  * via the variant key and variantType from the input content. DEVSU-3013 & DEVSU-2854
  *
@@ -380,22 +405,8 @@ const createGenomicAlterationsIdentified = async (report, content, variantMappin
         throw new Error(`invalid link (variant=${variant}) variant definition does not exist`);
       }
       const associatedVariant = variantMapping[variantType][variant];
-      let variantDisplayName;
-      // Manually create displayName for variants that have null value since the property is non-nullable
-      if (associatedVariant.displayName === undefined || associatedVariant.displayName === null) {
-        if (variantType === 'exp') {
-          variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.expressionState})`;
-        } else if (variantType === 'cnv') {
-          variantDisplayName = `${associatedVariant.gene.name || '?'} (${associatedVariant.cnvState})`;
-        } else if (variantType === 'mut') {
-          variantDisplayName = `${associatedVariant.gene.name || '?'}:${associatedVariant.proteinChange}`;
-        } else {
-          variantDisplayName = `(${associatedVariant.gene1.name || '?'},${associatedVariant.gene2.name || '?'}):fusion(e.${associatedVariant.exon1 || '?'},e.${associatedVariant.exon2 || '?'})`;
-        }
-      } else {
-        variantDisplayName = associatedVariant.displayName;
-      }
-      return {...alteration, variantType, variantId: associatedVariant.id, variantIdent: associatedVariant.ident, geneVariant: variantDisplayName, germline: associatedVariant.germline};
+      const geneVariant = formatGeneVariant(variantType, associatedVariant);
+      return {...alteration, variantType, variantId: associatedVariant.id, variantIdent: associatedVariant.ident, geneVariant: geneVariant ?? '?', germline: associatedVariant.germline};
     }
     return {...alteration};
   });
