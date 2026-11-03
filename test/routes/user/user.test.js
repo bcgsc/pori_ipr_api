@@ -6,6 +6,7 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../../../app/models');
 // get test user info
 const CONFIG = require('../../../app/config');
+const keycloak = require('../../../app/api/keycloak');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
@@ -206,6 +207,97 @@ describe('/user', () => {
 
       // Remove test user from db
       await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
+    });
+
+    test('/ - creates user in keycloak for admin/manager in docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const createUserSpy = jest.spyOn(keycloak, 'createUser').mockResolvedValue({id: 'kc-user'});
+
+      const res = await request
+        .post('/api/user')
+        .auth(managerUsername, password)
+        .type('json')
+        .send({
+          username: `Testuser-${uuidv4()}`,
+          type: 'bcgsc',
+          email: 'keycloak-test@test.com',
+          firstName: 'KeycloakFirstName',
+          lastName: 'KeycloakLastName',
+        })
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(dockerSpy).toHaveBeenCalled();
+      expect(createUserSpy).toHaveBeenCalledWith(expect.objectContaining({
+        username: expect.any(String),
+        email: 'keycloak-test@test.com',
+        firstName: 'KeycloakFirstName',
+        lastName: 'KeycloakLastName',
+      }));
+      expect(createUserSpy.mock.calls[0][0]).not.toHaveProperty('password');
+
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
+      dockerSpy.mockRestore();
+      createUserSpy.mockRestore();
+    });
+
+    test('/ - does not share local passwords with keycloak in docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const createUserSpy = jest.spyOn(keycloak, 'createUser').mockResolvedValue({id: 'kc-user'});
+      let createdIdent;
+
+      try {
+        const res = await request
+          .post('/api/user')
+          .auth(managerUsername, password)
+          .type('json')
+          .send({
+            username: `Testuser-${uuidv4()}`,
+            type: 'local',
+            password: 'local-password-must-stay-local',
+            email: 'local-keycloak-test@test.com',
+            firstName: 'LocalFirstName',
+            lastName: 'LocalLastName',
+          })
+          .expect(HTTP_STATUS.CREATED);
+
+        createdIdent = res.body.ident;
+        expect(createUserSpy).toHaveBeenCalledTimes(1);
+        expect(createUserSpy.mock.calls[0][0]).not.toHaveProperty('password');
+      } finally {
+        if (createdIdent) {
+          await db.models.user.destroy({where: {ident: createdIdent}, force: true});
+        }
+        dockerSpy.mockRestore();
+        createUserSpy.mockRestore();
+      }
+    });
+
+    test('/ - rolls back the database user when keycloak rejects creation', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const createUserSpy = jest.spyOn(keycloak, 'createUser')
+        .mockRejectedValue(new Error('Keycloak returned 409'));
+      const newUsername = `Testuser-${uuidv4()}`;
+
+      try {
+        await request
+          .post('/api/user')
+          .auth(managerUsername, password)
+          .type('json')
+          .send({
+            username: newUsername,
+            type: 'bcgsc',
+            email: 'rejected-keycloak-test@test.com',
+            firstName: 'RejectedFirstName',
+            lastName: 'RejectedLastName',
+          })
+          .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+
+        expect(createUserSpy).toHaveBeenCalledTimes(1);
+        expect(await db.models.user.findOne({where: {username: newUsername}})).toBeNull();
+      } finally {
+        dockerSpy.mockRestore();
+        createUserSpy.mockRestore();
+      }
     });
 
     test('/ - 403 forbidden for bioinformatician', async () => {

@@ -329,6 +329,7 @@ Then to start the container
 
 ```bash
 docker run -e IPR_DATABASE_HOSTNAME=localhost \
+  -e IPR_DEPLOYMENT=docker \
   -e IPR_DATABASE_NAME=ipr_demo \
   -e IPR_DATABASE_PASSWORD=root \
   -e IPR_DATABASE_USERNAME=ipr_service \
@@ -340,6 +341,8 @@ docker run -e IPR_DATABASE_HOSTNAME=localhost \
   --mount type=bind,source="$(pwd)"/keys,target=/keys \
   bcgsc/pori-ipr-api:latest
 ```
+
+Keycloak user creation requires both `IPR_DEPLOYMENT=docker` and a configured Keycloak URL on port 8888 (for example, `localhost:8888` or `keycloak:8888`). This is independent of `NODE_ENV`. Local user passwords stay in the API database; Keycloak users receive a temporary password that must be reset on initial login.
 
 ## Reports search endpoint
 
