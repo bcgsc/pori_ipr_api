@@ -175,6 +175,17 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({error: {message: msg}});
     }
 
+    if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
+      try {
+        await keycloak.deleteUser(req.userByIdent.username);
+      } catch (error) {
+        logger.error(`Error deleting Keycloak user ${req.userByIdent.username}: ${error}`);
+        return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Error while trying to delete user in Keycloak'},
+        });
+      }
+    }
+
     try {
       await req.userByIdent.destroy();
       return res.status(HTTP_STATUS.StatusCodes.NO_CONTENT).send();

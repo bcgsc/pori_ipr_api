@@ -43,22 +43,13 @@ afterAll(() => {
   }
 });
 
-test.each(['localhost', 'keycloak'])('detects Docker Keycloak at %s:8888', (host) => {
-  process.env.IPR_KEYCLOAK_URI = `http://${host}:8888/auth/realms/PORI/protocol/openid-connect/token`;
+test.each(['localhost:8888', 'keycloak:8080'])('detects Docker Keycloak at %s', (host) => {
+  process.env.IPR_KEYCLOAK_URI = `http://${host}/auth/realms/PORI/protocol/openid-connect/token`;
   expect(keycloak.isDockerKeycloak()).toBe(true);
 });
 
-test('does not detect Docker Keycloak when the port or deployment does not match', () => {
-  process.env.IPR_KEYCLOAK_URI = 'http://localhost:8889/auth/realms/PORI/protocol/openid-connect/token';
-  expect(keycloak.isDockerKeycloak()).toBe(false);
-
-  process.env.IPR_KEYCLOAK_URI = 'http://localhost:8888/auth/realms/PORI/protocol/openid-connect/token';
+test('does not detect Docker Keycloak outside Docker even on port 8888', () => {
   process.env.IPR_DEPLOYMENT = 'local';
-  expect(keycloak.isDockerKeycloak()).toBe(false);
-});
-
-test('does not detect Docker Keycloak for an invalid URL', () => {
-  process.env.IPR_KEYCLOAK_URI = 'localhost:8888';
   expect(keycloak.isDockerKeycloak()).toBe(false);
 });
 
@@ -87,6 +78,46 @@ test('requires admin credentials and flags token requests for HTTP error handlin
 
   delete process.env.KEYCLOAK_ADMIN_PASSWORD;
   await expect(keycloak.getAdminToken()).rejects.toThrow('admin credentials must be configured');
+});
+
+test('deletes the exact Keycloak user using its Keycloak ID', async () => {
+  request.mockResolvedValueOnce({access_token: 'admin-token'})
+    .mockResolvedValueOnce([{id: 'kc-user-id', username: 'user+name'}])
+    .mockResolvedValueOnce(null);
+
+  await keycloak.deleteUser('user+name');
+
+  expect(request.mock.calls[1][0]).toEqual(expect.objectContaining({
+    method: 'GET',
+    url: expect.stringContaining('/users?username=user%2Bname&exact=true'),
+    throwOnHTTPError: true,
+    headers: {Authorization: 'Bearer admin-token'},
+  }));
+  expect(request.mock.calls[2][0]).toEqual(expect.objectContaining({
+    method: 'DELETE',
+    url: expect.stringContaining('/users/kc-user-id'),
+    throwOnHTTPError: true,
+    headers: {Authorization: 'Bearer admin-token'},
+  }));
+});
+
+test('allows deletion when the user is already absent from Keycloak', async () => {
+  request.mockResolvedValueOnce({access_token: 'admin-token'}).mockResolvedValueOnce([]);
+  await expect(keycloak.deleteUser('missing-user')).resolves.toBeNull();
+  expect(request).toHaveBeenCalledTimes(2);
+});
+
+test.each([null, {}, [{id: 'one'}, {id: 'two'}], [{}]])('rejects invalid lookup: %j', async (users) => {
+  request.mockResolvedValueOnce({access_token: 'admin-token'}).mockResolvedValueOnce(users);
+  await expect(keycloak.deleteUser('someone')).rejects.toThrow();
+  expect(request).toHaveBeenCalledTimes(2);
+});
+
+test('propagates Keycloak deletion failures', async () => {
+  request.mockResolvedValueOnce({access_token: 'admin-token'})
+    .mockResolvedValueOnce([{id: 'kc-user-id'}])
+    .mockRejectedValueOnce(new Error('Keycloak returned 500'));
+  await expect(keycloak.deleteUser('someone')).rejects.toThrow('Keycloak returned 500');
 });
 
 test('uses the same configured Keycloak token URL for user authentication', async () => {

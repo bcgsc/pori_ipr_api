@@ -560,6 +560,60 @@ describe('/user', () => {
       expect(deletedUser.deletedAt).not.toBeNull();
     });
 
+    test.each([username, managerUsername])('deletes Keycloak user as %s', async (actor) => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const deleteUserSpy = jest.spyOn(keycloak, 'deleteUser').mockResolvedValue(null);
+
+      try {
+        await request
+          .delete(`/api/user/${deleteTestUser.ident}`)
+          .auth(actor, password)
+          .expect(HTTP_STATUS.NO_CONTENT);
+
+        expect(deleteUserSpy).toHaveBeenCalledWith(deleteTestUser.username);
+        expect(await db.models.user.findOne({where: {ident: deleteTestUser.ident}})).toBeNull();
+      } finally {
+        dockerSpy.mockRestore();
+        deleteUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - retains IPR user when Keycloak deletion fails', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const deleteUserSpy = jest.spyOn(keycloak, 'deleteUser')
+        .mockRejectedValue(new Error('Keycloak returned 500'));
+
+      try {
+        const res = await request
+          .delete(`/api/user/${deleteTestUser.ident}`)
+          .auth(managerUsername, password)
+          .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+
+        expect(res.body.error.message).toBe('Error while trying to delete user in Keycloak');
+        expect(await db.models.user.findOne({where: {ident: deleteTestUser.ident}})).not.toBeNull();
+      } finally {
+        dockerSpy.mockRestore();
+        deleteUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - skips Keycloak deletion outside docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(false);
+      const deleteUserSpy = jest.spyOn(keycloak, 'deleteUser').mockResolvedValue(null);
+
+      try {
+        await request
+          .delete(`/api/user/${deleteTestUser.ident}`)
+          .auth(username, password)
+          .expect(HTTP_STATUS.NO_CONTENT);
+
+        expect(deleteUserSpy).not.toHaveBeenCalled();
+      } finally {
+        dockerSpy.mockRestore();
+        deleteUserSpy.mockRestore();
+      }
+    });
+
     test('/{user} - 403 forbidden to manager when user is admin', async () => {
       await request
         .delete(`/api/user/${deleteTestUserWhoIsAdmin.ident}`)
