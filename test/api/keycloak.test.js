@@ -80,6 +80,48 @@ test('requires admin credentials and flags token requests for HTTP error handlin
   await expect(keycloak.getAdminToken()).rejects.toThrow('admin credentials must be configured');
 });
 
+test('updates the exact Keycloak user profile without changing credentials', async () => {
+  request.mockResolvedValueOnce({access_token: 'admin-token'})
+    .mockResolvedValueOnce([{id: 'kc/user-id', username: 'user+name'}])
+    .mockResolvedValueOnce(null);
+
+  await expect(keycloak.updateUser({
+    username: 'user+name',
+    firstName: 'UpdatedFirst',
+    lastName: 'UpdatedLast',
+    email: 'updated@example.com',
+    password: 'local-password-must-not-be-shared',
+  })).resolves.toBeNull();
+
+  expect(request).toHaveBeenCalledTimes(3);
+  const usersUrl = 'http://localhost:8888/auth/admin/realms/'
+    + `${encodeURIComponent(process.env.KEYCLOAK_REALM || 'PORI')}/users`;
+  expect(request).toHaveBeenNthCalledWith(2, {
+    method: 'GET',
+    url: `${usersUrl}?username=user%2Bname&exact=true`,
+    json: true,
+    throwOnHTTPError: true,
+    headers: {Authorization: 'Bearer admin-token'},
+  });
+  expect(request).toHaveBeenNthCalledWith(3, {
+    method: 'PUT',
+    url: `${usersUrl}/kc%2Fuser-id`,
+    json: true,
+    throwOnHTTPError: true,
+    body: JSON.stringify({
+      enabled: true,
+      emailVerified: true,
+      firstName: 'UpdatedFirst',
+      lastName: 'UpdatedLast',
+      email: 'updated@example.com',
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer admin-token',
+    },
+  });
+});
+
 test('deletes the exact Keycloak user using its Keycloak ID', async () => {
   request.mockResolvedValueOnce({access_token: 'admin-token'})
     .mockResolvedValueOnce([{id: 'kc-user-id', username: 'user+name'}])

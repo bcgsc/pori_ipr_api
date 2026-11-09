@@ -459,6 +459,82 @@ describe('/user', () => {
       expect(res.body.firstName).toBe('NewFirstName-manager');
     });
 
+    test.each([username, managerUsername])('updates Keycloak user as %s', async (actor) => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const updateUserSpy = jest.spyOn(keycloak, 'updateUser').mockResolvedValue(null);
+      const updates = {
+        username: putTestUser.username,
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        email: 'updated-keycloak@example.com',
+      };
+
+      try {
+        const res = await request
+          .put(`/api/user/${putTestUser.ident}`)
+          .send(updates)
+          .auth(actor, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(updateUserSpy).toHaveBeenCalledTimes(1);
+        expect(updateUserSpy).toHaveBeenCalledWith(updates);
+        checkUser(res.body);
+        expect(res.body).toEqual(expect.objectContaining(updates));
+        await putTestUser.reload();
+        expect(putTestUser.get()).toEqual(expect.objectContaining(updates));
+      } finally {
+        dockerSpy.mockRestore();
+        updateUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - retains IPR profile when Keycloak update fails', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const updateUserSpy = jest.spyOn(keycloak, 'updateUser')
+        .mockRejectedValue(new Error('Keycloak returned 500'));
+      const originalFirstName = putTestUser.firstName;
+
+      try {
+        const res = await request
+          .put(`/api/user/${putTestUser.ident}`)
+          .send({username: putTestUser.username, firstName: 'RejectedFirstName'})
+          .auth(managerUsername, password)
+          .type('json')
+          .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+
+        expect(updateUserSpy).toHaveBeenCalledTimes(1);
+        expect(res.body.error.message).toBe('Error while trying to update user in Keycloak');
+        await putTestUser.reload();
+        expect(putTestUser.firstName).toBe(originalFirstName);
+      } finally {
+        dockerSpy.mockRestore();
+        updateUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - skips Keycloak update outside docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(false);
+      const updateUserSpy = jest.spyOn(keycloak, 'updateUser').mockResolvedValue(null);
+
+      try {
+        const res = await request
+          .put(`/api/user/${putTestUser.ident}`)
+          .send({firstName: 'UpdatedOutsideDocker'})
+          .auth(managerUsername, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(updateUserSpy).not.toHaveBeenCalled();
+        expect(res.body.firstName).toBe('UpdatedOutsideDocker');
+        await putTestUser.reload();
+        expect(putTestUser.firstName).toBe('UpdatedOutsideDocker');
+      } finally {
+        dockerSpy.mockRestore();
+        updateUserSpy.mockRestore();
+      }
+    });
+
     test('/{user} - 403 - forbidden to manager when user is admin', async () => {
       await request
         .put(`/api/user/${adminPutTestUser.ident}`)

@@ -123,6 +123,62 @@ $keycloak.createUser = async ({username, firstName, lastName, email}) => {
   });
 };
 
+$keycloak.updateUser = async ({username, firstName, lastName, email}) => {
+  const baseUrl = getKeycloakBaseUrl();
+  const realm = process.env.KEYCLOAK_REALM || 'PORI';
+
+  if (!baseUrl) {
+    throw new Error('Keycloak base URL is not configured');
+  }
+
+  const adminToken = await $keycloak.getAdminToken();
+  if (!adminToken || !adminToken.access_token) {
+    throw new Error(`Unable to obtain Keycloak admin token: ${JSON.stringify(adminToken)}`);
+  }
+
+  const usersUrl = `${baseUrl.replace(/\/$/, '')}/admin/realms/${encodeURIComponent(realm)}/users`;
+  const headers = {Authorization: `Bearer ${adminToken.access_token}`};
+  const users = await request({
+    method: 'GET',
+    url: `${usersUrl}?username=${encodeURIComponent(username)}&exact=true`,
+    json: true,
+    throwOnHTTPError: true,
+    headers,
+  });
+
+  if (!Array.isArray(users)) {
+    throw new Error('Invalid Keycloak user lookup response');
+  }
+
+  // An already absent Keycloak user should not prevent deletion from IPR.
+  if (users.length === 0) {
+    return null;
+  }
+  if (users.length !== 1 || !users[0].id) {
+    throw new Error('Unable to uniquely identify Keycloak user');
+  }
+
+  const payload = {
+    enabled: true,
+    emailVerified: true,
+    firstName,
+    lastName,
+    email,
+  };
+
+  return request({
+    method: 'PUT',
+    url: `${baseUrl.replace(/\/$/, '')}/admin/realms/${realm}/users/${encodeURIComponent(users[0].id)}`,
+    json: true,
+    throwOnHTTPError: true,
+    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken.access_token}`,
+    },
+  });
+};
+
 $keycloak.deleteUser = async (username) => {
   const baseUrl = getKeycloakBaseUrl();
   const realm = process.env.KEYCLOAK_REALM || 'PORI';

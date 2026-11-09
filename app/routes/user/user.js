@@ -137,6 +137,22 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       }
     }
 
+    if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
+      try {
+        await keycloak.updateUser({
+          username: req.body.username,
+          email: req.body.email,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+        });
+      } catch (error) {
+        logger.error(`Error updating Keycloak user ${req.body.username}: ${error}`);
+        return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Error while trying to update user in Keycloak'},
+        });
+      }
+    }
+
     try {
       // Validate input
       validateAgainstSchema(updateSchema, req.body, false);
