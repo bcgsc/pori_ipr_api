@@ -58,8 +58,8 @@ $keycloak.getToken = async (username, password) => {
 
 $keycloak.getAdminToken = async () => {
   const baseUrl = getKeycloakBaseUrl();
-  const adminUsername = process.env.KEYCLOAK_ADMIN_USERNAME || process.env.KEYCLOAK_ADMIN_USER;
-  const adminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD || process.env.KEYCLOAK_ADMIN_PASS;
+  const adminUsername = process.env.KEYCLOAK_ADMIN_USER;
+  const adminPassword = process.env.KEYCLOAK_ADMIN_PASS;
 
   if (!baseUrl || !adminUsername || !adminPassword) {
     throw new Error('Keycloak URL and admin credentials must be configured');
