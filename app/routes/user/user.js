@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const {Op} = require('sequelize');
 const db = require('../../models');
 const logger = require('../../log');
+const keycloak = require('../../api/keycloak');
 const {isAdmin, isManager} = require('../../libs/helperFunctions');
 
 const validateAgainstSchema = require('../../libs/validateAgainstSchema');
@@ -136,6 +137,22 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       }
     }
 
+    if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
+      try {
+        await keycloak.updateUser({
+          username: req.body.username,
+          email: req.body.email,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+        });
+      } catch (error) {
+        logger.error(`Error updating Keycloak user ${req.body.username}: ${error}`);
+        return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Error while trying to update user in Keycloak'},
+        });
+      }
+    }
+
     try {
       // Validate input
       validateAgainstSchema(updateSchema, req.body, false);
@@ -172,6 +189,17 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       const msg = 'User who is not admin may not delete admin user';
       logger.error(msg);
       return res.status(HTTP_STATUS.StatusCodes.FORBIDDEN).json({error: {message: msg}});
+    }
+
+    if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
+      try {
+        await keycloak.deleteUser(req.userByIdent.username);
+      } catch (error) {
+        logger.error(`Error deleting Keycloak user ${req.userByIdent.username}: ${error}`);
+        return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Error while trying to delete user in Keycloak'},
+        });
+      }
     }
 
     try {
@@ -269,12 +297,32 @@ router.route('/')
         userId: createdUser.id,
         updatedBy: req.user.id,
       }, {transaction});
+
+      if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
+        try {
+          await keycloak.createUser({
+            username: req.body.username,
+            email: req.body.email,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+          });
+        } catch (error) {
+          await transaction.rollback();
+          logger.error(`Error creating Keycloak user ${req.body.username}: ${error}`);
+          return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: {message: 'Error while trying to create new user in Keycloak'},
+          });
+        }
+      }
+
       // Commit changes
       await transaction.commit();
       // Return new user
       return res.status(HTTP_STATUS.StatusCodes.CREATED).json(createdUser.view('public'));
     } catch (error) {
-      await transaction.rollback();
+      if (transaction) {
+        await transaction.rollback();
+      }
       logger.error(`Error while trying to create new user ${error}`);
       return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {message: 'Error while trying to create new user'},

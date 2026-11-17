@@ -43,6 +43,7 @@ const DEFAULT_TEST_BIOINFORMATICIAN_USER = 'ipr-bamboo-bioinformatician';
 
 const DEFAULTS = {
   env: ENV,
+  deployment: process.env.IPR_DEPLOYMENT || ENV,
   web: {
     port: 8080,
     ssl: '/etc/ssl/certs/current/combinedcert.cert',

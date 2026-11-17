@@ -6,6 +6,7 @@
   "main": "bin/server.js",
   "scripts": {
     "start": "node --max-old-space-size=6500 bin/server.js",
+    "start:docker": "IPR_DEPLOYMENT=docker node --max-old-space-size=6500 bin/server.js",
     "start:prod": "NODE_ENV=production node --max-old-space-size=6500 bin/server.js",
     "start:dev": "NODE_ENV=development node --trace-warnings --max-old-space-size=6500 bin/server.js",
     "test": "NODE_ENV=test NODE_OPTIONS=--max-old-space-size=6500 jest --config config/jest/jest.config.js --log-heap-usage --forceExit",

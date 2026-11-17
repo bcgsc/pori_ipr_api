@@ -6,6 +6,7 @@ const HTTP_STATUS = require('http-status-codes');
 const db = require('../../../app/models');
 // get test user info
 const CONFIG = require('../../../app/config');
+const keycloak = require('../../../app/api/keycloak');
 const {listen} = require('../../../app');
 
 CONFIG.set('env', 'test');
@@ -208,6 +209,97 @@ describe('/user', () => {
       await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
     });
 
+    test('/ - creates user in keycloak for admin/manager in docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const createUserSpy = jest.spyOn(keycloak, 'createUser').mockResolvedValue({id: 'kc-user'});
+
+      const res = await request
+        .post('/api/user')
+        .auth(managerUsername, password)
+        .type('json')
+        .send({
+          username: `Testuser-${uuidv4()}`,
+          type: 'bcgsc',
+          email: 'keycloak-test@test.com',
+          firstName: 'KeycloakFirstName',
+          lastName: 'KeycloakLastName',
+        })
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(dockerSpy).toHaveBeenCalled();
+      expect(createUserSpy).toHaveBeenCalledWith(expect.objectContaining({
+        username: expect.any(String),
+        email: 'keycloak-test@test.com',
+        firstName: 'KeycloakFirstName',
+        lastName: 'KeycloakLastName',
+      }));
+      expect(createUserSpy.mock.calls[0][0]).not.toHaveProperty('password');
+
+      await db.models.user.destroy({where: {ident: res.body.ident}, force: true});
+      dockerSpy.mockRestore();
+      createUserSpy.mockRestore();
+    });
+
+    test('/ - does not share local passwords with keycloak in docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const createUserSpy = jest.spyOn(keycloak, 'createUser').mockResolvedValue({id: 'kc-user'});
+      let createdIdent;
+
+      try {
+        const res = await request
+          .post('/api/user')
+          .auth(managerUsername, password)
+          .type('json')
+          .send({
+            username: `Testuser-${uuidv4()}`,
+            type: 'local',
+            password: 'local-password-must-stay-local',
+            email: 'local-keycloak-test@test.com',
+            firstName: 'LocalFirstName',
+            lastName: 'LocalLastName',
+          })
+          .expect(HTTP_STATUS.CREATED);
+
+        createdIdent = res.body.ident;
+        expect(createUserSpy).toHaveBeenCalledTimes(1);
+        expect(createUserSpy.mock.calls[0][0]).not.toHaveProperty('password');
+      } finally {
+        if (createdIdent) {
+          await db.models.user.destroy({where: {ident: createdIdent}, force: true});
+        }
+        dockerSpy.mockRestore();
+        createUserSpy.mockRestore();
+      }
+    });
+
+    test('/ - rolls back the database user when keycloak rejects creation', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const createUserSpy = jest.spyOn(keycloak, 'createUser')
+        .mockRejectedValue(new Error('Keycloak returned 409'));
+      const newUsername = `Testuser-${uuidv4()}`;
+
+      try {
+        await request
+          .post('/api/user')
+          .auth(managerUsername, password)
+          .type('json')
+          .send({
+            username: newUsername,
+            type: 'bcgsc',
+            email: 'rejected-keycloak-test@test.com',
+            firstName: 'RejectedFirstName',
+            lastName: 'RejectedLastName',
+          })
+          .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+
+        expect(createUserSpy).toHaveBeenCalledTimes(1);
+        expect(await db.models.user.findOne({where: {username: newUsername}})).toBeNull();
+      } finally {
+        dockerSpy.mockRestore();
+        createUserSpy.mockRestore();
+      }
+    });
+
     test('/ - 403 forbidden for bioinformatician', async () => {
       await request
         .post('/api/user')
@@ -367,6 +459,82 @@ describe('/user', () => {
       expect(res.body.firstName).toBe('NewFirstName-manager');
     });
 
+    test.each([username, managerUsername])('updates Keycloak user as %s', async (actor) => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const updateUserSpy = jest.spyOn(keycloak, 'updateUser').mockResolvedValue(null);
+      const updates = {
+        username: putTestUser.username,
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        email: 'updated-keycloak@example.com',
+      };
+
+      try {
+        const res = await request
+          .put(`/api/user/${putTestUser.ident}`)
+          .send(updates)
+          .auth(actor, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(updateUserSpy).toHaveBeenCalledTimes(1);
+        expect(updateUserSpy).toHaveBeenCalledWith(updates);
+        checkUser(res.body);
+        expect(res.body).toEqual(expect.objectContaining(updates));
+        await putTestUser.reload();
+        expect(putTestUser.get()).toEqual(expect.objectContaining(updates));
+      } finally {
+        dockerSpy.mockRestore();
+        updateUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - retains IPR profile when Keycloak update fails', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const updateUserSpy = jest.spyOn(keycloak, 'updateUser')
+        .mockRejectedValue(new Error('Keycloak returned 500'));
+      const originalFirstName = putTestUser.firstName;
+
+      try {
+        const res = await request
+          .put(`/api/user/${putTestUser.ident}`)
+          .send({username: putTestUser.username, firstName: 'RejectedFirstName'})
+          .auth(managerUsername, password)
+          .type('json')
+          .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+
+        expect(updateUserSpy).toHaveBeenCalledTimes(1);
+        expect(res.body.error.message).toBe('Error while trying to update user in Keycloak');
+        await putTestUser.reload();
+        expect(putTestUser.firstName).toBe(originalFirstName);
+      } finally {
+        dockerSpy.mockRestore();
+        updateUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - skips Keycloak update outside docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(false);
+      const updateUserSpy = jest.spyOn(keycloak, 'updateUser').mockResolvedValue(null);
+
+      try {
+        const res = await request
+          .put(`/api/user/${putTestUser.ident}`)
+          .send({firstName: 'UpdatedOutsideDocker'})
+          .auth(managerUsername, password)
+          .type('json')
+          .expect(HTTP_STATUS.OK);
+
+        expect(updateUserSpy).not.toHaveBeenCalled();
+        expect(res.body.firstName).toBe('UpdatedOutsideDocker');
+        await putTestUser.reload();
+        expect(putTestUser.firstName).toBe('UpdatedOutsideDocker');
+      } finally {
+        dockerSpy.mockRestore();
+        updateUserSpy.mockRestore();
+      }
+    });
+
     test('/{user} - 403 - forbidden to manager when user is admin', async () => {
       await request
         .put(`/api/user/${adminPutTestUser.ident}`)
@@ -466,6 +634,60 @@ describe('/user', () => {
         where: {ident: deleteTestUserManager.ident}, paranoid: false,
       });
       expect(deletedUser.deletedAt).not.toBeNull();
+    });
+
+    test.each([username, managerUsername])('deletes Keycloak user as %s', async (actor) => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const deleteUserSpy = jest.spyOn(keycloak, 'deleteUser').mockResolvedValue(null);
+
+      try {
+        await request
+          .delete(`/api/user/${deleteTestUser.ident}`)
+          .auth(actor, password)
+          .expect(HTTP_STATUS.NO_CONTENT);
+
+        expect(deleteUserSpy).toHaveBeenCalledWith(deleteTestUser.username);
+        expect(await db.models.user.findOne({where: {ident: deleteTestUser.ident}})).toBeNull();
+      } finally {
+        dockerSpy.mockRestore();
+        deleteUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - retains IPR user when Keycloak deletion fails', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
+      const deleteUserSpy = jest.spyOn(keycloak, 'deleteUser')
+        .mockRejectedValue(new Error('Keycloak returned 500'));
+
+      try {
+        const res = await request
+          .delete(`/api/user/${deleteTestUser.ident}`)
+          .auth(managerUsername, password)
+          .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+
+        expect(res.body.error.message).toBe('Error while trying to delete user in Keycloak');
+        expect(await db.models.user.findOne({where: {ident: deleteTestUser.ident}})).not.toBeNull();
+      } finally {
+        dockerSpy.mockRestore();
+        deleteUserSpy.mockRestore();
+      }
+    });
+
+    test('/{user} - skips Keycloak deletion outside docker', async () => {
+      const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(false);
+      const deleteUserSpy = jest.spyOn(keycloak, 'deleteUser').mockResolvedValue(null);
+
+      try {
+        await request
+          .delete(`/api/user/${deleteTestUser.ident}`)
+          .auth(username, password)
+          .expect(HTTP_STATUS.NO_CONTENT);
+
+        expect(deleteUserSpy).not.toHaveBeenCalled();
+      } finally {
+        dockerSpy.mockRestore();
+        deleteUserSpy.mockRestore();
+      }
     });
 
     test('/{user} - 403 forbidden to manager when user is admin', async () => {
