@@ -19,7 +19,7 @@ const request = require('../../app/request');
 const keycloak = require('../../app/api/keycloak');
 
 const environmentKeys = [
-  'IPR_DEPLOYMENT', 'IPR_KEYCLOAK_URI', 'KEYCLOAK_ADMIN_USERNAME', 'KEYCLOAK_ADMIN_PASSWORD',
+  'IPR_DEPLOYMENT', 'IPR_KEYCLOAK_URI', 'KEYCLOAK_ADMIN_USER', 'KEYCLOAK_ADMIN_PASS',
 ];
 const originalEnvironment = Object.fromEntries(environmentKeys.map((key) => {
   return [key, process.env[key]];
@@ -28,8 +28,8 @@ const originalEnvironment = Object.fromEntries(environmentKeys.map((key) => {
 beforeEach(() => {
   process.env.IPR_DEPLOYMENT = 'docker';
   process.env.IPR_KEYCLOAK_URI = 'http://localhost:8888/auth/realms/PORI/protocol/openid-connect/token';
-  process.env.KEYCLOAK_ADMIN_USERNAME = 'admin';
-  process.env.KEYCLOAK_ADMIN_PASSWORD = 'admin';
+  process.env.KEYCLOAK_ADMIN_USER = 'admin';
+  process.env.KEYCLOAK_ADMIN_PASS = 'admin';
   request.mockReset();
 });
 
@@ -76,7 +76,7 @@ test('requires admin credentials and flags token requests for HTTP error handlin
   await keycloak.getAdminToken();
   expect(request.mock.calls[0][0].throwOnHTTPError).toBe(true);
 
-  delete process.env.KEYCLOAK_ADMIN_PASSWORD;
+  delete process.env.KEYCLOAK_ADMIN_PASS;
   await expect(keycloak.getAdminToken()).rejects.toThrow('admin credentials must be configured');
 });
 

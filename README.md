@@ -338,13 +338,13 @@ docker run -e IPR_DATABASE_HOSTNAME=localhost \
   -e IPR_GRAPHKB_URI='http://localhost:8080/api' \
   -e IPR_KEYCLOAK_KEYFILE=/keys/keycloak.key \
   -e IPR_KEYCLOAK_URI='http://localhost:8888/auth/realms/PORI/protocol/openid-connect/token' \
-  -e KEYCLOAK_ADMIN_USERNAME \
-  -e KEYCLOAK_ADMIN_PASSWORD \
+  -e KEYCLOAK_ADMIN_USER \
+  -e KEYCLOAK_ADMIN_PASS \
   --mount type=bind,source="$(pwd)"/keys,target=/keys \
   bcgsc/pori-ipr-api:latest
 ```
 
-Export `KEYCLOAK_ADMIN_USERNAME` and `KEYCLOAK_ADMIN_PASSWORD` in the host environment before running this example, or supply them to the API container through your deployment's secret management. These must be credentials for a Keycloak admin with permission to create users in the `PORI` realm; the IPR admin user's credentials do not grant Keycloak admin access.
+Export `KEYCLOAK_ADMIN_USER` and `KEYCLOAK_ADMIN_PASS` in the host environment before running this example, or supply them to the API container through your deployment's secret management. These must be credentials for a Keycloak admin with permission to create users in the `PORI` realm; the IPR admin user's credentials do not grant Keycloak admin access.
 
 Keycloak user creation is enabled by `IPR_DEPLOYMENT=docker`, independently of `NODE_ENV`. The API uses the configured `IPR_KEYCLOAK_URI` without requiring a specific port. Local user passwords stay in the API database; Keycloak users receive a temporary password that must be reset on initial login.
 
