@@ -1,8 +1,8 @@
 const form = require('form-urlencoded').default;
+const generator = require('generate-password');
 const request = require('../request');
 const nconf = require('../config');
 const logger = require('../log');
-const generator = require('generate-password');
 
 const $keycloak = {};
 const KEYCLOAK_REQUEST_TIMEOUT_MS = 10000;

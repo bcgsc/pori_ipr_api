@@ -61,7 +61,7 @@ describe('request deadlines', () => {
     });
     server.on('connection', (socket) => {
       sockets.add(socket);
-      socket.on('close', () => sockets.delete(socket));
+      socket.on('close', () => {return sockets.delete(socket);});
     });
     await new Promise((resolve) => {
       server.listen(0, '127.0.0.1', resolve);
@@ -70,11 +70,13 @@ describe('request deadlines', () => {
   });
 
   afterEach(() => {
-    sockets.forEach((socket) => socket.destroy());
+    sockets.forEach((socket) => {return socket.destroy();});
   });
 
   afterAll(async () => {
-    await new Promise((resolve) => server.close(resolve));
+    await new Promise((resolve) => {
+      server.close(resolve);
+    });
   });
 
   test.each(['/silent', '/partial'])('aborts and rejects a stalled %s response', async (path) => {
