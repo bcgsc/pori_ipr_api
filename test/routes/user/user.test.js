@@ -272,10 +272,13 @@ describe('/user', () => {
       }
     });
 
-    test('/ - rolls back the database user when keycloak rejects creation', async () => {
+    test.each([
+      new Error('Keycloak returned 409'),
+      Object.assign(new Error('Keycloak request timed out'), {code: 'ETIMEDOUT'}),
+    ])('/ - rolls back the database user when keycloak rejects creation: %s', async (error) => {
       const dockerSpy = jest.spyOn(keycloak, 'isDockerKeycloak').mockReturnValue(true);
       const createUserSpy = jest.spyOn(keycloak, 'createUser')
-        .mockRejectedValue(new Error('Keycloak returned 409'));
+        .mockRejectedValue(error);
       const newUsername = `Testuser-${uuidv4()}`;
 
       try {

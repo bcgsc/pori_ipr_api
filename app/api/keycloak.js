@@ -2,8 +2,10 @@ const form = require('form-urlencoded').default;
 const request = require('../request');
 const nconf = require('../config');
 const logger = require('../log');
+const generator = require('generate-password');
 
 const $keycloak = {};
+const KEYCLOAK_REQUEST_TIMEOUT_MS = 10000;
 
 const getKeycloakUri = () => {
   const keycloakConfig = nconf.get('keycloak') || {};
@@ -12,6 +14,17 @@ const getKeycloakUri = () => {
     || keycloakConfig.uri
     || nconf.get('keycloak:uri')
     || '';
+};
+
+const getKeycloakRealm = () => {
+  const baseUrl = getKeycloakUri();
+  const match = baseUrl.match(/\/auth\/realms\/([^/]+)/);
+
+  if (!match) {
+    throw new Error('Keycloak URL must contain /auth/realms/<realm>/');
+  }
+
+  return match[1];
 };
 
 const getKeycloakBaseUrl = () => {
@@ -70,6 +83,7 @@ $keycloak.getAdminToken = async () => {
   const options = {
     method: 'POST',
     url: tokenUrl,
+    timeout: KEYCLOAK_REQUEST_TIMEOUT_MS,
     json: true,
     throwOnHTTPError: true,
     body: form({
@@ -89,7 +103,7 @@ $keycloak.getAdminToken = async () => {
 
 $keycloak.createUser = async ({username, firstName, lastName, email}) => {
   const baseUrl = getKeycloakBaseUrl();
-  const realm = process.env.KEYCLOAK_REALM || 'PORI';
+  const realm = getKeycloakRealm();
 
   if (!baseUrl) {
     throw new Error('Keycloak base URL is not configured');
@@ -100,6 +114,15 @@ $keycloak.createUser = async ({username, firstName, lastName, email}) => {
     throw new Error(`Unable to obtain Keycloak admin token: ${JSON.stringify(adminToken)}`);
   }
 
+  const tempPassword = generator.generate({
+    length: 12,
+    numbers: true,
+    symbols: true,
+    uppercase: true,
+    lowercase: true,
+    strict: true,
+  });
+
   const payload = {
     username,
     enabled: true,
@@ -107,12 +130,13 @@ $keycloak.createUser = async ({username, firstName, lastName, email}) => {
     firstName,
     lastName,
     email,
-    credentials: [{type: 'password', value: 'PORI-temporary-password', temporary: true}],
+    credentials: [{type: 'password', value: tempPassword, temporary: true}],
   };
 
   return request({
     method: 'POST',
     url: `${baseUrl.replace(/\/$/, '')}/admin/realms/${realm}/users`,
+    timeout: KEYCLOAK_REQUEST_TIMEOUT_MS,
     json: true,
     throwOnHTTPError: true,
     body: JSON.stringify(payload),
@@ -125,7 +149,7 @@ $keycloak.createUser = async ({username, firstName, lastName, email}) => {
 
 $keycloak.updateUser = async ({username, firstName, lastName, email}) => {
   const baseUrl = getKeycloakBaseUrl();
-  const realm = process.env.KEYCLOAK_REALM || 'PORI';
+  const realm = getKeycloakRealm();
 
   if (!baseUrl) {
     throw new Error('Keycloak base URL is not configured');
@@ -149,18 +173,15 @@ $keycloak.updateUser = async ({username, firstName, lastName, email}) => {
   if (!Array.isArray(users)) {
     throw new Error('Invalid Keycloak user lookup response');
   }
-
-  // An already absent Keycloak user should not prevent deletion from IPR.
   if (users.length === 0) {
-    return null;
+    throw new Error(`Keycloak user not found: ${username}`);
   }
   if (users.length !== 1 || !users[0].id) {
     throw new Error('Unable to uniquely identify Keycloak user');
   }
 
   const payload = {
-    enabled: true,
-    emailVerified: true,
+    ...(email !== undefined && email !== users[0].email ? {emailVerified: false} : {}),
     firstName,
     lastName,
     email,
@@ -181,7 +202,7 @@ $keycloak.updateUser = async ({username, firstName, lastName, email}) => {
 
 $keycloak.deleteUser = async (username) => {
   const baseUrl = getKeycloakBaseUrl();
-  const realm = process.env.KEYCLOAK_REALM || 'PORI';
+  const realm = getKeycloakRealm();
 
   if (!baseUrl) {
     throw new Error('Keycloak base URL is not configured');

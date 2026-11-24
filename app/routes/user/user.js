@@ -137,22 +137,6 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       }
     }
 
-    if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
-      try {
-        await keycloak.updateUser({
-          username: req.body.username,
-          email: req.body.email,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-        });
-      } catch (error) {
-        logger.error(`Error updating Keycloak user ${req.body.username}: ${error}`);
-        return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
-          error: {message: 'Error while trying to update user in Keycloak'},
-        });
-      }
-    }
-
     try {
       // Validate input
       validateAgainstSchema(updateSchema, req.body, false);
@@ -160,6 +144,22 @@ router.route('/:userByIdent([A-z0-9-]{36})')
       const message = `There was an error validating the user update request ${error}`;
       logger.error(message);
       return res.status(HTTP_STATUS.StatusCodes.BAD_REQUEST).json({error: {message}});
+    }
+
+    if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
+      try {
+        await keycloak.updateUser({
+          username: req.userByIdent.username,
+          email: req.body.email,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+        });
+      } catch (error) {
+        logger.error(`Error updating Keycloak user ${req.userByIdent.username}: ${error}`);
+        return res.status(HTTP_STATUS.StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: {message: 'Error while trying to update user in Keycloak'},
+        });
+      }
     }
 
     if (req.body.password) {
@@ -300,6 +300,7 @@ router.route('/')
 
       if (keycloak.isDockerKeycloak() && (isAdmin(req.user) || isManager(req.user))) {
         try {
+          // Both outbound requests have aborting deadlines so stalls reach rollback.
           await keycloak.createUser({
             username: req.body.username,
             email: req.body.email,

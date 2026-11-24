@@ -14,7 +14,11 @@ jest.mock('../../app/config', () => {
 jest.mock('../../app/log', () => {
   return {debug: jest.fn()};
 });
+jest.mock('generate-password', () => {
+  return {generate: jest.fn()};
+});
 
+const generator = require('generate-password');
 const request = require('../../app/request');
 const keycloak = require('../../app/api/keycloak');
 
@@ -31,6 +35,7 @@ beforeEach(() => {
   process.env.KEYCLOAK_ADMIN_USER = 'admin';
   process.env.KEYCLOAK_ADMIN_PASS = 'admin';
   request.mockReset();
+  generator.generate.mockReset().mockReturnValue('MockPass12!@');
 });
 
 afterAll(() => {
@@ -65,9 +70,20 @@ test('creates users with a temporary password instead of their local password', 
   });
 
   const [, [createRequest]] = request.mock.calls;
+  expect(request.mock.calls[0][0].timeout).toBe(10000);
+  expect(createRequest.timeout).toBe(10000);
   expect(createRequest.throwOnHTTPError).toBe(true);
+  expect(generator.generate).toHaveBeenCalledTimes(1);
+  expect(generator.generate).toHaveBeenCalledWith({
+    length: 12,
+    numbers: true,
+    symbols: true,
+    uppercase: true,
+    lowercase: true,
+    strict: true,
+  });
   expect(JSON.parse(createRequest.body).credentials).toEqual([
-    {type: 'password', value: 'PORI-temporary-password', temporary: true},
+    {type: 'password', value: 'MockPass12!@', temporary: true},
   ]);
 });
 
@@ -80,9 +96,46 @@ test('requires admin credentials and flags token requests for HTTP error handlin
   await expect(keycloak.getAdminToken()).rejects.toThrow('admin credentials must be configured');
 });
 
+test.each(['admin token', 'user creation'])('propagates a timeout during %s', async (stage) => {
+  const error = Object.assign(new Error('Request timed out'), {code: 'ETIMEDOUT'});
+  if (stage === 'user creation') {
+    request.mockResolvedValueOnce({access_token: 'admin-token'});
+  }
+  request.mockRejectedValueOnce(error);
+
+  await expect(keycloak.createUser({username: 'someone'})).rejects.toBe(error);
+  expect(request).toHaveBeenCalledTimes(stage === 'user creation' ? 2 : 1);
+});
+
+test.each(['createUser', 'updateUser', 'deleteUser'])('%s extracts the realm from the configured URL', async (method) => {
+  process.env.IPR_KEYCLOAK_URI = 'http://localhost:8888/auth/realms/custom-realm/protocol/openid-connect/token';
+  request.mockResolvedValueOnce({access_token: 'admin-token'})
+    .mockResolvedValueOnce([{id: 'kc-user-id'}])
+    .mockResolvedValueOnce(null);
+
+  await keycloak[method](method === 'deleteUser' ? 'someone' : {username: 'someone'});
+
+  expect(request.mock.calls[1][0].url).toMatch(
+    /^http:\/\/localhost:8888\/auth\/admin\/realms\/custom-realm\/users(?:\?|$)/,
+  );
+});
+
+test('rejects a configured URL without a realm', async () => {
+  process.env.IPR_KEYCLOAK_URI = 'http://localhost:8888/auth';
+
+  await expect(keycloak.createUser({username: 'someone'})).rejects.toThrow(
+    'Keycloak URL must contain /auth/realms/<realm>/',
+  );
+  expect(request).not.toHaveBeenCalled();
+});
+
 test('updates the exact Keycloak user profile without changing credentials', async () => {
   request.mockResolvedValueOnce({access_token: 'admin-token'})
-    .mockResolvedValueOnce([{id: 'kc/user-id', username: 'user+name'}])
+    .mockResolvedValueOnce([{
+      id: 'kc/user-id',
+      username: 'user+name',
+      email: 'previous@example.com',
+    }])
     .mockResolvedValueOnce(null);
 
   await expect(keycloak.updateUser({
@@ -94,8 +147,7 @@ test('updates the exact Keycloak user profile without changing credentials', asy
   })).resolves.toBeNull();
 
   expect(request).toHaveBeenCalledTimes(3);
-  const usersUrl = 'http://localhost:8888/auth/admin/realms/'
-    + `${encodeURIComponent(process.env.KEYCLOAK_REALM || 'PORI')}/users`;
+  const usersUrl = 'http://localhost:8888/auth/admin/realms/PORI/users';
   expect(request).toHaveBeenNthCalledWith(2, {
     method: 'GET',
     url: `${usersUrl}?username=user%2Bname&exact=true`,
@@ -109,8 +161,7 @@ test('updates the exact Keycloak user profile without changing credentials', asy
     json: true,
     throwOnHTTPError: true,
     body: JSON.stringify({
-      enabled: true,
-      emailVerified: true,
+      emailVerified: false,
       firstName: 'UpdatedFirst',
       lastName: 'UpdatedLast',
       email: 'updated@example.com',
